@@ -4,9 +4,18 @@ import { useState, useEffect } from 'react';
 import { canPreviewReveal } from './test-tools/reveal-testing/revealTestConfig';
 
 const COPY = {
-  lucky_pick: { title: 'Choose your Lucky Pick', description: 'Select a game to continue to the secure checkout.' },
-  gift_package: { title: 'Gift a Lucky Pick', description: 'Add the recipient details before continuing to the secure checkout.' },
-  tip: { title: 'Leave a tip', description: 'Thank you so much for your support! Your generosity keeps the magic alive. Choose an amount in Canadian dollars to continue to the secure checkout.' },
+  lucky_pick: {
+    title: 'Lucky Reveal',
+    description: 'Your complete reveal appears on the website: 6 Pick or 7 Pick numbers, lucky color, and lucky day. No email delivery is included.',
+  },
+  gift_package: {
+    title: 'Lucky Reveal Gift Edition',
+    description: 'The exact same reveal on the website, plus delivered by email to your recipient with an optional personal message.',
+  },
+  tip: {
+    title: 'Leave a tip',
+    description: 'Thank you so much for your support! Your generosity keeps the magic alive. Suggested CAD $5.00 — enter any amount you like in Canadian dollars to continue to the secure checkout.',
+  },
 };
 
 export default function CheckoutModal({ type, onClose, onPreviewReveal }) {

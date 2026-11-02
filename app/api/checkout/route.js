@@ -6,14 +6,14 @@ export const runtime = 'nodejs';
 
 const checkoutOptions = {
   lucky_pick: {
-    name: 'Lucky Pick Canada',
-    description: 'A 6 Pick or 7 Pick result with no duplicate numbers, slow reveal with stars and Aurora, lucky color, and lucky day of the week.',
+    name: 'Lucky Pick',
+    description: 'Your complete reveal on the website: 6 Pick or 7 Pick numbers, lucky color, and lucky day. No email delivery is included.',
     unitAmount: 100,
   },
   gift_package: {
-    name: 'Lucky Pick Canada gift package',
-    description: 'Send a Lucky Pick reveal by email with a personal greeting.',
-    unitAmount: 299,
+    name: 'Lucky Pick Gift',
+    description: 'The same complete reveal, plus delivered by email to your recipient with an optional personal message.',
+    unitAmount: 199,
   },
 };
 
@@ -96,7 +96,7 @@ export async function POST(request) {
       }
 
       checkoutOption = {
-        name: 'Lucky Pick Canada tip jar',
+        name: 'Tip Jar',
         description: 'Thanks for supporting Lucky Pick Canada.',
         unitAmount: tipAmount,
       };

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import LuckyRevealPopup from '../../lucky-reveal-popup';
+import { buildLuckyReveal, LUCKY_COLORS, LUCKY_DAYS } from '../../lucky-reveal';
 
 // Create a deterministic reveal based on revealId
 function createRevealFromId(revealId: string) {
@@ -32,12 +33,9 @@ function createRevealFromId(revealId: string) {
   }
   const luckyNumbers = numbers.slice(0, count).sort((a, b) => a - b);
   
-  // Pick lucky color and day deterministically
-  const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
-  const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
-  const luckyColor = luckyColors[Math.floor(seededRandom() * luckyColors.length)];
-  const luckyDay = luckyDays[Math.floor(seededRandom() * luckyDays.length)];
+  // Pick lucky color and day deterministically from the shared reveal vocabulary
+  const luckyColor = LUCKY_COLORS[Math.floor(seededRandom() * LUCKY_COLORS.length)];
+  const luckyDay = LUCKY_DAYS[Math.floor(seededRandom() * LUCKY_DAYS.length)];
   
   return {
     game: {
@@ -55,7 +53,7 @@ function RevealPageContent() {
   const searchParams = useSearchParams();
   const revealId = params?.revealId as string;
   const [reveal, setReveal] = useState<any>(null);
-  const [showGiftBanner, setShowGiftBanner] = useState(false);
+  const [giftDelivered, setGiftDelivered] = useState(false);
   const [authError, setAuthError] = useState<string>('');
   
   const recipientEmail = searchParams?.get('recipientEmail') || '';
@@ -70,37 +68,35 @@ function RevealPageContent() {
             return res.json();
           })
           .then(data => {
-if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) || data.metadata?.checkoutType === 'lucky_pick')) {
-               // Render actual server-verified gift data if available, fallback to deterministic
-               if (data.metadata.giftNumbers) {
-                 const numbers = data.metadata.giftNumbers.split(',').map(Number);
-                 setReveal({
-                   game: {
-                     name: numbers.length === 7 ? '7 Pick' : '6 Pick',
-                     numbers: numbers,
-                   },
-                   luckyColor: data.metadata.giftLuckyColor || 'Star Gold',
-                   luckyDay: data.metadata.giftLuckyDay || 'Friday',
-                 });
-               } else if (data.reveal?.numbers?.length) {
-                 // Paid Lucky Pick sessions return the persisted server-generated
-                 // reveal. It must be used as-is so the same paid session always
-                 // renders the same pick.
-                 setReveal({
-                   game: {
-                     name: data.reveal.game === '7' ? '7 Pick' : '6 Pick',
-                     numbers: data.reveal.numbers,
-                   },
-                   luckyColor: data.reveal.luckyColor || 'Star Gold',
-                   luckyDay: data.reveal.luckyDay || 'Friday',
-                 });
-               } else if (data.metadata?.checkoutType === 'lucky_pick') {
-                 // Never substitute a locally derived pick for a paid Lucky Pick.
-                 setAuthError('Unable to verify this gift delivery.');
-               } else {
-                 setReveal(createRevealFromId(revealId));
-               }
-             } else {
+            const metadata = data.metadata || {};
+            let verifiedReveal = null;
+
+            if (data.success && metadata.checkoutType === 'gift_package' && metadata.giftNumbers) {
+              // Gift Edition results must match the emailed reveal exactly.
+              const numbers = String(metadata.giftNumbers).split(',').map(Number);
+              verifiedReveal = buildLuckyReveal({
+                game: numbers.length === 7 ? '7' : '6',
+                numbers,
+                luckyColor: metadata.giftLuckyColor,
+                luckyDay: metadata.giftLuckyDay,
+              });
+            } else if (data.success && data.reveal?.numbers?.length) {
+              // Paid Lucky Reveal sessions return the persisted server-generated
+              // reveal. It must be used as-is so the same paid session always
+              // renders the same pick.
+              verifiedReveal = buildLuckyReveal({
+                game: data.reveal.game ?? data.game,
+                numbers: data.reveal.numbers,
+                luckyColor: data.reveal.luckyColor,
+                luckyDay: data.reveal.luckyDay,
+              });
+            }
+
+            if (verifiedReveal) {
+              setReveal(verifiedReveal);
+              setGiftDelivered(Boolean(metadata.giftDeliveredAt));
+            } else {
+              // Never substitute a locally derived pick for a paid reveal.
               setAuthError('Unable to verify this gift delivery.');
             }
           })
@@ -119,11 +115,7 @@ if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.met
     }
   }, [revealId]);
 
-  useEffect(() => {
-    if (recipientEmail && recipientEmail.trim() !== '') {
-      setShowGiftBanner(true);
-    }
-  }, [recipientEmail]);
+  const showGiftBanner = giftDelivered && recipientEmail.trim() !== '';
   
   const handleClose = () => {
     router.push('/');
@@ -178,7 +170,7 @@ if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.met
           <span style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             🎁 Gift Dispatched Successfully: A special gem-tier pick has been emailed to <strong style={{ color: '#fff0ac', textDecoration: 'underline', textUnderlineOffset: '3px' }}>{recipientEmail.replace(/[<>"']/g, '')}</strong>
           </span>
-          <button type="button" onClick={() => setShowGiftBanner(false)} style={{
+          <button type="button" onClick={() => setGiftDelivered(false)} style={{
             background: 'rgba(255, 255, 255, 0.15)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             borderRadius: '20px',

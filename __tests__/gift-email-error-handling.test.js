@@ -10,7 +10,7 @@ function makeSession(metadata = {}) {
   return {
     id: 'cs_test_123',
     payment_status: 'paid',
-    amount_total: 299,
+    amount_total: 199,
     currency: 'cad',
     metadata: {
       checkoutType: 'gift_package',
@@ -241,5 +241,28 @@ describe('Gift delivery error handling', () => {
     expect(result.ok).toBe(false);
     expect(global.fetch).not.toHaveBeenCalled();
     expectOwnedLockReleased(redisMock);
+  });
+
+  it('never emails the standard website-only Lucky Reveal', async () => {
+    currentSession = makeSession({ checkoutType: 'lucky_pick' });
+    currentSession.amount_total = 100;
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain('Only a paid $1.99 gift package');
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+  });
+
+  it('rejects a gift-typed session paid at the standard price', async () => {
+    currentSession = makeSession();
+    currentSession.amount_total = 100;
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result.ok).toBe(false);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
   });
 });
