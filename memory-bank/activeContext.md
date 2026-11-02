@@ -6,7 +6,7 @@
 - **Not added:** meteorites and shooting-star effects were explicitly not required and were not added.
 - **Preserved:** reveal copy, numbers, lucky colour/day cards, `ShareLuckyPickButton`, the gold map CTA, the close control, Escape handling, autofocus, animation timings, and every unrelated route. No payment, email, database, API route, dependency, or deployment file changed.
 - **Artifacts:** `specs/074-lucky-reveal-milky-way-background/{spec,plan,tasks}.md` plus `checklists/requirements.md`; `.specify/feature.json` points there. New guard: `__tests__/lucky-reveal-background.test.js`.
-- **Verification:** recorded in the PR report; no browser-level screenshot of the reveal was produced in this environment.
+- **Verification:** PASS — focused `__tests__/lucky-reveal-background.test.js` 5/5; full `pnpm exec vitest run` 28 files / 273 tests; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, production build, refresh-docs 19/19); production build `.next` 297,335,723 bytes / 283.56 MiB (< 495 MB). FAIL (environment): the Playwright reveal check cannot run here — Chromium needed locally extracted NSS/NSPR plus the ATK/cairo/pango stack, then its renderer closed on the first navigation (`page.goto: Target page, context or browser has been closed`), the same container limitation recorded in earlier sessions. No browser screenshot; CI Playwright remains the confirmation path.
 
 ---
 
