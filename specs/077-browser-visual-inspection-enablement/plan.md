@@ -82,3 +82,26 @@ the owner's personal browser session.
   `pnpm`, as `AGENTS.md` requires, and the production build size measured against the 495 MB maximum.
 - Final diff audit proving the change set is documentation-only.
 - PR summary updated as the single canonical report; PR left open and unmerged.
+
+## Phase 5 — Resolution without root (follow-up)
+
+The follow-up request is to make the browser usable while **keeping** the security posture: no root,
+no `no-new-privileges` change, no sandbox weakening, image-level inclusion preferred. The image is
+not editable from inside the workspace, so the design is the strongest non-privileged equivalent:
+
+1. **Download, don't install.** `apt-get` is given user-owned `Dir::State::lists` and `Dir::Cache`
+   under `~/.apt-user`, which makes `update` and `--download-only install` work as an unprivileged
+   user. apt never runs `dpkg` as root; `dpkg-deb -x` unpacks each `.deb` into a private prefix.
+2. **Prefix outside the repository.** `~/.local/chromium-libs` keeps `git status` clean, stays off the
+   application build, and lives inside the durable `/workspace` tree so it survives archive/restore.
+3. **Both runtime paths covered.** Libraries come from `LD_LIBRARY_PATH`; text comes from a private
+   fontconfig file, because the image ships no `/etc/fonts` and Chromium otherwise draws blank boxes.
+4. **One command, idempotent.** `scripts/setup-chromium-libs.sh` performs all of it, self-verifies
+   with `ldd` (0 missing), and exposes `--check` and `--env` so the environment can be applied to any
+   shell or process without editing global configuration.
+5. **Evidence, then claims.** `artifacts/capture-site-screenshots.cjs` drives the repository's pinned
+   `playwright-chromium`, captures three viewports, and records status, overflow, image and text facts
+   in `report.json`; the PNGs are then inspected directly.
+
+**What this cannot do**: add the libraries to the shared base image. That requires the workspace image
+owner; the PR records the exact package list and the one-line Dockerfile change to request.

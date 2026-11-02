@@ -38,6 +38,17 @@
 - [x] T017 Audit the complete final diff and confirm it matches the reported files.
 - [x] T018 Record the task, task groups, documents reviewed, verification results, remaining limitations and `USEFUL RESULT` in the single PR summary.
 
+## Phase 7 — Resolution without root (follow-up)
+
+- [x] T019 [FOLLOW-UP] Confirm no root and no sandbox change is permitted for the solution, and that the image cannot be modified from inside the workspace.
+- [x] T020 [FOLLOW-UP] Prove `apt-get` can refresh lists into a user-owned state directory without root (`Dir::State::lists` / `Dir::Cache` pointed at `~/.apt-user`) — exit 0, 26.6 MB fetched.
+- [x] T021 [FOLLOW-UP] Download the Chromium dependency closure with `--download-only --reinstall install` and unpack it with `dpkg-deb -x` into `~/.local/chromium-libs` (47 `.deb` files, 27 MB prefix, 0 extraction failures).
+- [x] T022 [FOLLOW-UP] Add a private fontconfig file because the image has no `/etc/fonts`, so text renders instead of blanking.
+- [x] T023 [FOLLOW-UP] Add `scripts/setup-chromium-libs.sh` (idempotent, `--check` and `--env` modes) so a fresh workspace can reproduce the prefix with one command; it self-verifies `ldd` with 0 missing objects.
+- [x] T024 [FOLLOW-UP] Add `artifacts/capture-site-screenshots.cjs` and capture the live site at 1440×900, 390×844 and 412×915 — Chromium 153.0.8010.12, HTTP 200 on all three, 0 px overflow, no broken images. Screenshots and `report.json` committed under `artifacts/browser-proof/`.
+- [x] T025 [FOLLOW-UP] Inspect the captured PNGs visually (desktop and mobile) and record what actually rendered.
+- [ ] T026 [FOLLOW-UP] Image-level inclusion (so a brand-new workspace needs no setup step) requires the workspace image owner; the exact package list and Dockerfile line are recorded in the PR for the owner to request.
+
 ## Dependencies
 
 - T003–T007 block the root-cause statement in T011.

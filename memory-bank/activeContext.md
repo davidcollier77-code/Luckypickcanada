@@ -1,3 +1,14 @@
+# Active Context — Chromium Visual Inspection Enabled Without Root (2026-11-02)
+
+- **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR #1681 open and unmerged. Follow-up to the #1681 audit, at the owner's direction: no root, no `no-new-privileges` change, no sandbox weakening.
+- **Implemented:** `scripts/setup-chromium-libs.sh` provisions Chromium's runtime libraries at user level — `apt-get` with `Dir::State::lists`/`Dir::Cache` pointed at `~/.apt-user` (works unprivileged, exit 0), `--download-only --reinstall install` for the dependency closure, `dpkg-deb -x` into `~/.local/chromium-libs` (27 MB), plus a private fontconfig file because the image has no `/etc/fonts`. `artifacts/capture-site-screenshots.cjs` drives the repository's pinned `playwright-chromium` and writes PNGs + `report.json` into `artifacts/browser-proof/`.
+- **Verified:** `ldd` on `chromium-1243/chrome-linux64/chrome` reports **0** missing shared objects (was 16); Chromium **153.0.8010.12** launched through Playwright and captured `https://luckypickcanada.ca/` at 1440x900, 390x844 and 412x915 — all HTTP 200, `scrollWidth === clientWidth` (0 px overflow), no broken images, real text (4106 chars). Screenshots inspected: Milky Way backdrop, gold maple-leaf mark, Cinzel headings, nav and "Explore Your Luck" CTA all paint on desktop and mobile.
+- **Not changed:** no root, no sandbox flags, no repository dependency, no `package.json`/lockfile edit, no website code or configuration. The prefix is outside the repo under `$HOME`, which is durable in `/workspace`, so it survives archive/restore for this workspace only; a fresh workspace reruns the script once.
+- **Remaining:** image-level inclusion (so a fresh workspace needs nothing) is a platform change I cannot make — the exact package list and Dockerfile line are in the PR for the owner to request. Node is 26 in the sandbox vs the 22 pin, so local results remain weaker evidence than CI.
+- **Artifacts:** `specs/077-browser-visual-inspection-enablement/{spec,plan,tasks}.md` extended (no new feature directory).
+
+---
+
 # Active Context — Browser Visual Inspection Enablement Audit (2026-11-02)
 
 - **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR open and unmerged. **Audit-only:** no package, permission, configuration, website or application change was made.

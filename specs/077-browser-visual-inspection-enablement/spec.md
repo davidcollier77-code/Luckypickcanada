@@ -82,6 +82,32 @@ measurable directly instead of inferred:
 missing-library failure surfacing through Playwright's launch handshake. They were never evidence of
 a rendering defect in the website.
 
+### Resolution without root (follow-up, 2026-11-02)
+
+The owner then asked for the libraries through a supported platform-level path **without root and
+without weakening sandbox security**. Because the image itself cannot be changed from inside the
+workspace, the libraries were provisioned at user level from the official Ubuntu archive, with apt
+used only as a downloader:
+
+- `apt-get -o Dir::State::lists=$HOME/.apt-user/lists -o Dir::Cache=$HOME/.apt-user/cache … update`
+  succeeds as an unprivileged user (exit 0; 26.6 MB of package indexes fetched).
+- `apt-get … --download-only --reinstall install` fetched the 47 official `.deb` files covering the
+  Chromium dependency closure; `dpkg-deb -x` unpacked them into `~/.local/chromium-libs` (27 MB).
+  `sudo` was never invoked and `no-new-privileges` was left untouched.
+- `LD_LIBRARY_PATH` plus a private fontconfig file
+  (`~/.local/chromium-libs/etc/fonts/lpc-fonts.conf`) let the browser find both the libraries and the
+  fonts; the image ships no `/etc/fonts`, which would otherwise render text as blank boxes.
+
+Result: `ldd` on `chromium-1243/chrome-linux64/chrome` reports **0 missing** shared objects (it was
+16), and Chromium **153.0.8010.12** launched through the repository's pinned `playwright-chromium`
+build and captured real screenshots of `https://luckypickcanada.ca/` at 1440×900, 390×844 and
+412×915 — all HTTP 200, `scrollWidth === clientWidth` (0 px horizontal overflow), no broken images.
+
+Persistence: the prefix lives under `$HOME`, inside the durable `/workspace` tree, so it survives
+archive/restore **for this workspace**. It is not part of the shared base image, so a brand-new
+workspace must run `scripts/setup-chromium-libs.sh` once; image-level inclusion remains a platform
+change that only the workspace image owner can make.
+
 ### Repository (already correct — nothing to build)
 
 - `playwright.config.ts` already configures Chromium with three projects (desktop 1440x900,

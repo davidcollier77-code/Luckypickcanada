@@ -1,0 +1,146 @@
+{
+  "target": "https://luckypickcanada.ca/",
+  "capturedAt": "2026-11-02T20:54:57.175Z",
+  "browser": {
+    "name": "chromium",
+    "version": "153.0.8010.12"
+  },
+  "platform": "linux",
+  "results": [
+    {
+      "label": "desktop-1440x900",
+      "status": 200,
+      "title": "Lucky Pick Canada | Daily Lucky Picks, Cards & Stories",
+      "heading": "Lucky Pick Canada",
+      "url": "https://luckypickcanada.ca/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "document": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "scrollHeight": 7419
+      },
+      "images": {
+        "total": 4,
+        "loaded": 3,
+        "broken": []
+      },
+      "bodyBackground": "rgba(0, 0, 0, 0)",
+      "visibleTextLength": 4106,
+      "horizontalOverflow": 0,
+      "consoleErrors": [
+        "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com\". Note that 'script-",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Fetch API cannot load data:,. Refused to connect because it violates the document's Content Security Policy.",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%o font-size:0;color:transparent {}",
+        "%c%o font-size:0;color:transparent {}"
+      ],
+      "screenshots": [
+        "luckypickcanada-desktop-1440x900.png",
+        "luckypickcanada-desktop-1440x900-fullpage.png"
+      ],
+      "bytes": [
+        {
+          "file": "luckypickcanada-desktop-1440x900.png",
+          "size": 2053289
+        },
+        {
+          "file": "luckypickcanada-desktop-1440x900-fullpage.png",
+          "size": 4131630
+        }
+      ]
+    },
+    {
+      "label": "mobile-390x844",
+      "status": 200,
+      "title": "Lucky Pick Canada | Daily Lucky Picks, Cards & Stories",
+      "heading": "Lucky Pick Canada",
+      "url": "https://luckypickcanada.ca/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "document": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollHeight": 6707
+      },
+      "images": {
+        "total": 4,
+        "loaded": 4,
+        "broken": []
+      },
+      "bodyBackground": "rgba(0, 0, 0, 0)",
+      "visibleTextLength": 4106,
+      "horizontalOverflow": 0,
+      "consoleErrors": [
+        "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com\". Note that 'script-",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Fetch API cannot load data:,. Refused to connect because it violates the document's Content Security Policy.",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%o font-size:0;color:transparent {}",
+        "%c%o font-size:0;color:transparent {}"
+      ],
+      "screenshots": [
+        "luckypickcanada-mobile-390x844.png"
+      ],
+      "bytes": [
+        {
+          "file": "luckypickcanada-mobile-390x844.png",
+          "size": 1934590
+        }
+      ]
+    },
+    {
+      "label": "mobile-412x915",
+      "status": 200,
+      "title": "Lucky Pick Canada | Daily Lucky Picks, Cards & Stories",
+      "heading": "Lucky Pick Canada",
+      "url": "https://luckypickcanada.ca/",
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "document": {
+        "scrollWidth": 412,
+        "clientWidth": 412,
+        "scrollHeight": 6741
+      },
+      "images": {
+        "total": 4,
+        "loaded": 4,
+        "broken": []
+      },
+      "bodyBackground": "rgba(0, 0, 0, 0)",
+      "visibleTextLength": 4106,
+      "horizontalOverflow": 0,
+      "consoleErrors": [
+        "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com\". Note that 'script-",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%d font-size:0;color:transparent NaN",
+        "%c%o font-size:0;color:transparent {}",
+        "%c%o font-size:0;color:transparent {}",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstes",
+        "Fetch API cannot load data:,. Refused to connect because it violates the document's Content Security Policy."
+      ],
+      "screenshots": [
+        "luckypickcanada-mobile-412x915.png"
+      ],
+      "bytes": [
+        {
+          "file": "luckypickcanada-mobile-412x915.png",
+          "size": 2188485
+        }
+      ]
+    }
+  ]
+}
