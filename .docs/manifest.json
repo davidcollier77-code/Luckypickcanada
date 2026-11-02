@@ -44,7 +44,8 @@
       "/cloudflare/cloudflare-docs/pages",
       "/websites/neon",
       "/websites/mdn_web_audio",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/debian/debian-reference"
     ],
     "polishing": [
       "/vercel/next.js",
@@ -134,7 +135,8 @@
       "/cloudflare/cloudflare-docs/pages",
       "/posthog/posthog-js",
       "/websites/mdn_web_audio",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/debian/debian-reference"
     ],
     "seo": [
       "/vercel/next.js",
@@ -352,6 +354,10 @@
     "/google/eng-practices": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/google/eng-practices/master/review/reviewer/looking-for.md"
+    },
+    "/debian/debian-reference": {
+      "type": "url",
+      "url": "https://www.debian.org/doc/manuals/debian-reference/debian-reference.en.txt"
     }
   },
   "inventory": [
@@ -405,7 +411,8 @@
     "/websites/web_dev_images",
     "/google-gemini/gemini-skills/gemini-api-dev",
     "/google/eng-practices",
-    "/websites/mdn_image_types"
+    "/websites/mdn_image_types",
+    "/debian/debian-reference"
   ],
   "githubShas": {
     "/github/docs": "33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57",
