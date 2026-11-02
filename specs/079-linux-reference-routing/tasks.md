@@ -31,5 +31,6 @@
 - **PASS** — Manifest/group instruction/Spec Kit updates committed to this branch.
 - **PASS** — Final branch manifest assertions: exactly two target groups, one source URL, one inventory entry, and the expected sanitized snapshot name.
 - **PASS** — Complete PR diff reviewed; PR #1683 summary updated to match the actual changes and verification evidence.
-- **PENDING** — `node scripts/test-refresh-docs.js` and `./freebuff-verify.sh` were not run locally because no repository shell is available in this session; PR CI workflows are running.
+- **PENDING** — `node scripts/test-refresh-docs.js` and `./freebuff-verify.sh` were not run locally because no repository shell is available in this session.
+- **PENDING** — Current-head CI after the conflict-repair commits; the workflow-run lookup has not returned runs for the latest head.
 - **PENDING** — Actual updater execution after the manifest reaches the default branch.
