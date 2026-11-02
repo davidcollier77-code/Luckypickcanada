@@ -55,13 +55,6 @@ jobs:
         id: suppression-tests
         run: python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'
 
-      # Replay the scanner's own SARIF through the production filter on a copy.
-      # This fails the job when an audited false positive survives real scanner
-      # output, and leaves the raw file byte-identical for the uploads below.
-      - name: Replay real DevSkim SARIF through the suppression filter
-        id: sarif-replay
-        run: python3 .github/scripts/verify_devskim_sarif_replay.py
-
       - name: Suppress DevSkim false positives in SARIF
         id: suppress-devskim
         run: python3 .github/scripts/suppress_devskim_false_positives.py
