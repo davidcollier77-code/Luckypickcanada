@@ -1,42 +1,9 @@
 import { Redis } from "@upstash/redis";
-
-const luckyColors = [
-  "Aurora Green",
-  "Star Gold",
-  "Midnight Blue",
-  "Lucky Red",
-  "Moonlight Silver",
-  "Northern Purple",
-  "Sky Blue",
-];
-const luckyDays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
-export function generateNumbers(count, max) {
-  const numbers = Array.from({ length: max }, (_, index) => index + 1);
-
-  for (let index = numbers.length - 1; index > 0; index -= 1) {
-    const randomBuffer = new Uint32Array(1);
-    crypto.getRandomValues(randomBuffer);
-    const swapIndex = randomBuffer[0] % (index + 1);
-    [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
-  }
-
-  return numbers.slice(0, count).sort((a, b) => a - b);
-}
-
-function pickOne(items) {
-  const randomBuffer = new Uint32Array(1);
-  crypto.getRandomValues(randomBuffer);
-  return items[randomBuffer[0] % items.length];
-}
+import {
+  LUCKY_COLORS,
+  LUCKY_DAYS,
+  createLuckyReveal,
+} from "./lucky-reveal";
 
 function escapeHtml(value) {
   return String(value || "")
@@ -47,15 +14,18 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+/**
+ * The Gift Edition sends exactly the reveal the standard Lucky Reveal produces,
+ * through the same generator, with only the email-specific game label added.
+ */
 export function createGiftReveal(metadata) {
-  const isSevenPick = metadata.luckyPickGame === "7";
-  const numbers = generateNumbers(isSevenPick ? 7 : 6, isSevenPick ? 50 : 49);
+  const reveal = createLuckyReveal(metadata?.luckyPickGame === "7" ? "7" : "6");
 
   return {
-    gameName: isSevenPick ? "7 Pick" : "6 Pick",
-    numbers,
-    luckyColor: pickOne(luckyColors),
-    luckyDay: pickOne(luckyDays),
+    gameName: reveal.game.name,
+    numbers: reveal.game.numbers,
+    luckyColor: reveal.luckyColor,
+    luckyDay: reveal.luckyDay,
   };
 }
 
@@ -271,8 +241,8 @@ function getStoredPendingGiftReveal(metadata) {
         !Number.isInteger(number) || number < 1 || number > maxNumber,
     ) ||
     new Set(numbers).size !== expectedCount ||
-    !luckyColors.includes(metadata.giftLuckyColor) ||
-    !luckyDays.includes(metadata.giftLuckyDay)
+    !LUCKY_COLORS.includes(metadata.giftLuckyColor) ||
+    !LUCKY_DAYS.includes(metadata.giftLuckyDay)
   ) {
     return null;
   }

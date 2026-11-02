@@ -76,6 +76,46 @@ describe('Free preview reveal boundaries', () => {
   });
 });
 
+describe('Unified Lucky Reveal purchase options', () => {
+  const checkoutSource = readFileSync(join(process.cwd(), 'app/api/checkout/route.js'), 'utf8');
+  const homepageSource = readFileSync(join(process.cwd(), 'app/homepage/HomePage.js'), 'utf8');
+  const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
+
+  it('preserves the existing prices for both purchase options', () => {
+    expect(checkoutSource).toMatch(/lucky_pick: \{[\s\S]*?unitAmount: 100,/);
+    expect(checkoutSource).toMatch(/gift_package: \{[\s\S]*?unitAmount: 299,/);
+  });
+
+  it('keeps both purchase callbacks intact', () => {
+    expect(checkoutSource).toContain('/?payment=success&session_id={CHECKOUT_SESSION_ID}');
+    expect(checkoutSource).toContain('/api/gift-delivery?session_id={CHECKOUT_SESSION_ID}');
+  });
+
+  it('labels the two options consistently', () => {
+    expect(checkoutSource).toContain("name: 'Lucky Reveal'");
+    expect(checkoutSource).toContain("name: 'Lucky Reveal Gift Edition'");
+    expect(modalSource).toContain("title: 'Lucky Reveal'");
+    expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
+    expect(homepageSource).toContain('Lucky Reveal Gift Edition');
+    expect(homepageSource).toContain('No email delivery');
+  });
+
+  it('states that only the standard option skips email delivery', () => {
+    expect(checkoutSource).toMatch(/lucky_pick: \{[\s\S]*?No email delivery/);
+    expect(modalSource).toMatch(/lucky_pick: \{[\s\S]*?No email delivery/);
+  });
+
+  it('requires recipient details only for the Gift Edition', () => {
+    expect(checkoutSource).toContain("if (checkoutType === 'gift_package') {");
+    expect(modalSource).toContain("type === 'gift_package' &&");
+  });
+
+  it('does not send email from the standard checkout path', () => {
+    const standardOption = checkoutSource.match(/lucky_pick: \{[\s\S]*?\},/)?.[0] || '';
+    expect(standardOption).not.toMatch(/resend|send-gift|gift-delivery|recipientEmail/i);
+  });
+});
+
 describe('Gift email link security', () => {
   function findRepoRoot(startDirectory = process.cwd()) {
     const filesystemRoot = parse(startDirectory).root;

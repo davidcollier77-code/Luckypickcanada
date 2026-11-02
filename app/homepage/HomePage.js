@@ -7,7 +7,7 @@ import { playButtonClick } from '../lib/audio';
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { createLuckyReveal } from '../lucky-reveal';
+import { buildLuckyReveal, createLuckyReveal } from '../lucky-reveal';
 const FAQSection = dynamic(() => import('./FAQSection'));
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
@@ -100,15 +100,19 @@ export default function HomePage() {
       // persisted server-generated reveal for this specific checkout session.
       fetchVerifiedSession(sessionId)
         .then(data => {
-          if (data.success && data.reveal?.numbers?.length) {
-            setLuckyReveal({
-              game: {
-                name: data.game === '7' ? '7 Pick' : '6 Pick',
-                numbers: data.reveal.numbers,
-              },
-              luckyColor: data.reveal.luckyColor,
-              luckyDay: data.reveal.luckyDay,
-            });
+          // Both purchase options share this one presentation mapping, so the
+          // paid Lucky Reveal always renders the server-verified results.
+          const verifiedReveal = data.success
+            ? buildLuckyReveal({
+                game: data.game,
+                numbers: data.reveal?.numbers,
+                luckyColor: data.reveal?.luckyColor,
+                luckyDay: data.reveal?.luckyDay,
+              })
+            : null;
+
+          if (verifiedReveal) {
+            setLuckyReveal(verifiedReveal);
           } else if (data.success) {
             console.error('Lucky reveal data missing from verified session');
             setSuggestionError('Unable to load your lucky reveal. Please contact support if you were charged.');
@@ -455,25 +459,25 @@ export default function HomePage() {
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
-        <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
-          Create a personal LuckyPickCanada moment, or send a thoughtful digital gift.
+        <SectionHeading eyebrow="Two ways to receive it" id="picks-heading" title="Lucky Reveal">
+          One reveal, two ways to receive it: see it on the website, or send the Gift Edition by email.
         </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           <article className="homepage-offer homepage-offer-featured">
-            <p className="homepage-offer-kicker">$1 Lucky Pick</p>
-            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Make your moment personal.</h3>
-            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>
+            <p className="homepage-offer-kicker">Lucky Reveal · CAD $1</p>
+            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal</h3>
+            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Your complete reveal — 6 Pick or 7 Pick numbers, lucky color, and lucky day — appears on the website.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
-            <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose a Lucky Pick</button>
+            <p className="homepage-offer-note">Website reveal only · No email delivery</p>
+            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose Lucky Reveal</button>
           </article>
           <article className="homepage-offer">
             <picture><source type="image/avif" srcSet="/1784889264858-352w.avif 352w, /1784889264858.avif 704w" sizes="(max-width: 768px) 352px, 704px" /><source type="image/webp" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" /><img className="homepage-offer-image" src="/1784889264858.png" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" suppressHydrationWarning={true} /></picture>
-            <p className="homepage-offer-kicker">$2.99 Gift Experience</p>
-            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Gift Experience</h3>
-            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Share a little Canadian magic with someone you know. The Gift Experience turns Lucky Pick Canada into a fun surprise made to brighten someone’s day.</p>
-            <p className="homepage-offer-note">Gift package · CAD $2.99</p>
-            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Gift a Lucky Pick</button>
+            <p className="homepage-offer-kicker">Lucky Reveal Gift Edition · CAD $2.99</p>
+            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal Gift Edition</h3>
+            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">The exact same reveal, delivered by email to someone you choose, with an optional personal message.</p>
+            <p className="homepage-offer-note">Website reveal + email delivery · CAD $2.99</p>
+            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Gift the Gift Edition</button>
           </article>
           </div>
       </section>

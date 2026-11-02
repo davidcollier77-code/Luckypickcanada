@@ -6,13 +6,13 @@ export const runtime = 'nodejs';
 
 const checkoutOptions = {
   lucky_pick: {
-    name: 'Lucky Pick Canada',
-    description: 'A 6 Pick or 7 Pick result with no duplicate numbers, slow reveal with stars and Aurora, lucky color, and lucky day of the week.',
+    name: 'Lucky Reveal',
+    description: 'Your complete reveal on the website: 6 Pick or 7 Pick numbers, lucky color, and lucky day. No email delivery is included.',
     unitAmount: 100,
   },
   gift_package: {
-    name: 'Lucky Pick Canada gift package',
-    description: 'Send a Lucky Pick reveal by email with a personal greeting.',
+    name: 'Lucky Reveal Gift Edition',
+    description: 'The same complete reveal, plus delivered by email to your recipient with an optional personal message.',
     unitAmount: 299,
   },
 };

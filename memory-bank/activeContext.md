@@ -1,3 +1,17 @@
+# Active Context — Unified Lucky Reveal Experience (2026-11-02)
+
+- **Task group:** `creation`; branch `freebuff/a4e5adf82c1dee56b92ed6ee`; target `main`; PR left open and unmerged.
+- **Task:** consolidate the two paid reveal products into one shared Lucky Reveal system with two purchase options — **Lucky Reveal** (website results only) and **Lucky Reveal Gift Edition** (same results, also emailed).
+- **Verified price discrepancy:** the work request described the standard option as $1.99, but `app/api/checkout/route.js` charges `unitAmount: 100` (CAD $1.00) and the homepage advertised "CAD $1". The request and `AGENTS.md` §5 forbid altering live prices, so $1.00 was preserved and the discrepancy is reported in the PR instead of being silently changed.
+- **Consolidation:** `app/lucky-reveal.js` is now the single source for reveal generation, the lucky colour/day vocabulary, game rules, number validation, and the popup data mapping (`buildLuckyReveal`, which returns `null` rather than inventing results). `app/gift-email.js` lost its duplicate `generateNumbers`, `pickOne`, colour/day arrays, and reveal generator; `createGiftReveal` now derives from `createLuckyReveal`. `app/homepage/HomePage.js` and `app/reveal/[revealId]/page.tsx` both present through `buildLuckyReveal`, and the reveal page's fabricated fallback reveal was removed. The gift banner now depends on the server-reported `giftDeliveredAt` instead of a URL parameter.
+- **Purchase options:** both keep their existing prices (100/299), metadata, and success callbacks; only product names/descriptions and customer copy changed, to "Lucky Reveal" and "Lucky Reveal Gift Edition" with explicit email-inclusion statements.
+- **Preserved safeguards:** webhook gating on `gift_package`, `validateGiftSession` (paid, type, 299, cad), Redis `SET NX` delivery lock with ownership-token release, `giftDeliveredAt` idempotency, persisted pending payload, stable `Idempotency-Key: gift-<sessionId>`, 23-hour retry window, and the separate review-required state.
+- **Verified:** `pnpm exec tsc --noEmit` exit 0; `pnpm exec vitest run` 26 files / 252 tests PASS; focused reveal/payment suites 53 tests PASS; `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, production build, refresh-docs 19/19); production build 297,486,461 bytes / 283.71 MiB (< 495 MB); final diff audited (9 modified files, 2 new paths).
+- **Not verified:** no live Stripe test-mode purchase, no real Resend send (no keys in this environment), and no browser-level click-through. Payment and email behaviour is covered by the existing mocked delivery suite plus the new regression tests.
+- **Artifacts:** `specs/073-unified-lucky-reveal/{spec,plan,tasks}.md`; `.specify/feature.json` updated.
+
+---
+
 # Active Context — Enable the Public Preview in Production (2026-11-01)
 
 - **Task group:** `troubleshooting`; branch `freebuff/enable-production-preview-switch`; target `main`.
