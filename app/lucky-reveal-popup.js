@@ -1,5 +1,5 @@
 'use client';
-import { playButtonClick } from './lib/audio';
+import { playButtonClick, playRevealSparkle, preloadRevealSparkle } from './lib/audio';
 
 import { useState, useEffect, useCallback } from 'react';
 import LuckyRevealCelebration from './lucky-reveal-celebration';
@@ -171,6 +171,28 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [closeReveal, isOpen]);
+
+  // Opening sparkle: the reveal previously appeared in silence, so it now opens
+  // with one brief same-origin chime. Reduced-motion visitors keep the silent
+  // reveal, matching the celebration's existing sound policy.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    let isActive = true;
+    preloadRevealSparkle()
+      .then(() => {
+        if (!isActive) return undefined;
+        return playRevealSparkle();
+      })
+      .catch((error) => {
+        console.warn('Reveal opening sparkle unavailable', error);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isOpen]);
 
   if (!isOpen || !reveal) {
     return null;

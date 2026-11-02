@@ -1,3 +1,16 @@
+# Active Context — Lucky Reveal Confetti Phase 1 (2026-11-02)
+
+- **Task groups:** `polishing` + `audio`; branch `freebuff/d4bf506e672ecbddc0a33655`; PR left open and unmerged.
+- **Verified baseline:** the shipped celebration fired 112 particles in one tick (34+34+16+16+12) from a canvas created imperatively and appended to `document.body` as a fixed `z-index: 100` layer with `ticks: 160` (about 2.67 s); the 18-leaf settled pile stayed mounted behind the panel for the whole reveal; the reveal opened in silence (only `playConfettiPop()` at the final number).
+- **Confetti:** `app/lucky-reveal-celebration.jsx` now renders the canvas inside the reveal overlay in its own `.lucky-celebration-particles` layer (`z-index: 3`, above the panel, clipped), caps particles with `MAX_ACTIVE_PARTICLES = 96` enforced against a shared budget, schedules five waves (24+24+14+14+10 = 86) at 0/500/1000 ms with `ticks: 150` per leaf so the confetti runs about 3.5 s, fades and unmounts the layer at 4.2 s, and releases every timer and the instance on finish and unmount. The settled-leaf pile, gold glow, flash, palette and layer order behind the panel are unchanged.
+- **Sounds:** the finishing pop is unchanged (`/sounds/confetti-pop.wav`, 0.90 s). The missing opening sparkle was added in `app/lib/audio.js` (`preloadRevealSparkle`/`playRevealSparkle`, committed `/sounds/chime-sound.mp3`, 1.25 s, volume 0.28) and played once from `app/lucky-reveal-popup.js`; skipped for reduced motion, matching the celebration's sound policy.
+- **Number modes:** generation is untouched (`6 -> 1-49`, `7 -> 1-50`); numbers keep the 2.0 s start and 0.35 s stagger, and the celebration delay stays `(2.0 + (n-1)*0.35 + 0.95) s`.
+- **Artifacts:** `specs/080-lucky-reveal-confetti-phase1/{spec,plan,tasks}.md`; `.specify/feature.json` points there. Guards: new `__tests__/lucky-reveal-confetti-phase1.test.js`, updated `__tests__/components/LuckyRevealCelebration.test.jsx` and `__tests__/lucky-reveal-celebration.test.js`.
+- **Verification:** `pnpm exec vitest run` 33 files / 332 tests PASS; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; production build 299,133,609 B / 285.3 MiB (< 495 MB). Chromium probe (`scripts/setup-chromium-libs.sh`, `artifacts/reveal-confetti-phase1-probe.cjs`): 1440x900 and 390x844 with 6 and 7 picks show the canvas inside the reveal, `body > canvas` 0, painted leaves, celebration after the final number, layer and canvas gone afterwards, both sound files requested, no page errors, reduced motion unchanged. Audible playback is unverified (no audio output device here).
+- **Setup note:** pnpm was absent; installed with `npm i -g pnpm@10.30.3 --prefix "$HOME/.local"` (a global install without a prefix fails in this image) and dependencies with `pnpm install --frozen-lockfile`.
+
+---
+
 # Active Context — Lucky Reveal Follow-up Polish (2026-11-02)
 
 - **Task groups:** `polishing` + `troubleshooting`; branch `freebuff/reveal-polish-followups`; PR left open and unmerged.

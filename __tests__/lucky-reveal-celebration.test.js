@@ -105,8 +105,11 @@ describe('Lucky Reveal celebration', () => {
     expect(celebrationSource).not.toMatch(/\.(png|webp|avif)\b/);
   });
 
-  it('keeps the celebration inside the two-to-three second window', () => {
-    expect(celebrationSource).toMatch(/ticks: 1[0-7]\d\b/);
+  it('keeps the confetti inside the requested three-to-four second window', () => {
+    // Phase 1 (feature 080) replaced the fixed 160 ticks with a declared
+    // lifetime and a wave schedule that totals about 3.5 seconds.
+    expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 150;');
+    expect(celebrationSource).toContain('ticks: PARTICLE_LIFETIME_TICKS');
     expect(celebrationSource).toContain('lucky-celebration-flash 1s');
   });
 
@@ -116,8 +119,12 @@ describe('Lucky Reveal celebration', () => {
       /if \(prefersReducedMotion\) \{[\s\S]{0,160}setIsCelebrating\(true\)/,
     );
     expect(celebrationSource).toContain('window.clearTimeout(timer)');
-    expect(celebrationSource).toContain('canvasRef.current?.remove()');
+    // Phase 1: timers and particles are released together, and the canvas is a
+    // React child that unmounts with the layer instead of a body-level element.
+    expect(celebrationSource).toContain('clearTimers();');
+    expect(celebrationSource).toContain('releaseConfetti();');
     expect(celebrationSource).toContain('confettiRef.current?.reset()');
+    expect(celebrationSource).not.toContain('document.body.appendChild');
     expect(celebrationSource).toMatch(/\.lucky-celebration-flash \{ display: none; \}/);
   });
 
