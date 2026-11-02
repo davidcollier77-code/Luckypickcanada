@@ -1,3 +1,14 @@
+# Active Context — Lucky Reveal Polish and Device-Native Sharing (2026-11-02)
+
+- **Task group:** `polishing`; branch `freebuff/734cbf62690b478727fca4a5`; PR left open and unmerged.
+- **Verified baseline:** feature 074 had already replaced the reveal background with the homepage Milky Way artwork. The popup rendered all six or seven numbers in one wrapping flex row, showed the lucky colour as text only, and `app/share-lucky-pick-button.js` expanded a nine-action card (Share directly, Copy share link, Copy card message, Facebook, X, Friends and family, Email, Text) without sharing an image.
+- **Change:** new `app/lucky-reveal-presentation.js` owns the row layout (6 → 3 + 3, 7 → 4 + 3, order preserved) and one swatch per lucky colour; new `app/lucky-reveal-share-image.js` draws a 1200x1500 PNG from the reveal data (rows, swatch, colour name, day, logo, site link, disclaimer); `app/lucky-reveal-popup.js` renders centred rows, the swatch beside the colour name, a golden shimmer, a small maple-leaf sparkle, Milky Way wording, and a `prefers-reduced-motion` block; `app/share-lucky-pick-button.js` is now one **Share My Reveal** control using `navigator.share({ files })` with a compact download / copy image / copy link fallback window and `AbortError` cancellation handling.
+- **Preserved:** `LuckyRevealPopup` remains the single reveal for the homepage, the free preview, and the gift route; Personal and Gift still present through `buildLuckyReveal`, and the gift route still reads the stored `giftNumbers` / `giftLuckyColor` / `giftLuckyDay`. No Stripe, checkout, webhook, gift-email, Resend, database, environment, deployment, or Little Luck Map file changed.
+- **Artifacts:** `specs/075-lucky-reveal-polish/{spec,plan,tasks}.md` plus `checklists/requirements.md`; `.specify/feature.json` points there. Guard test: `__tests__/lucky-reveal-polish.test.js`.
+- **Verification:** recorded in the single PR summary; browser-level share-panel testing is not possible in this container.
+
+---
+
 # Active Context — Milky Way Background for the Lucky Reveal (2026-11-02)
 
 - **Task group:** `polishing`; branch `freebuff/22482c484ffb5108687ad98e`; PR left open and unmerged.
