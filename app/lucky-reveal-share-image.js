@@ -141,7 +141,6 @@ function drawNumbers(context, numbers) {
       context.beginPath();
       context.arc(centreX, centreY, ballSize / 2, 0, Math.PI * 2);
       context.fill();
-      context.restore();
 
       context.strokeStyle = 'rgba(255, 245, 203, 0.75)';
       context.lineWidth = 3;
@@ -155,8 +154,7 @@ function drawNumbers(context, numbers) {
       const numberSize = number >= 10 ? 52 : 58;
       context.font = `900 ${numberSize}px system-ui, sans-serif`;
       context.fillText(String(number), centreX, centreY + 2);
-      context.textAlign = 'left';
-      context.textBaseline = 'alphabetic';
+      context.restore();
     });
   });
 
@@ -213,8 +211,7 @@ function drawDayMarker(context, centreX, centreY, radius) {
   context.restore();
 }
 
-function drawResultCards(context, reveal) {
-  const cardY = 872;
+function drawResultCards(context, reveal, cardY) {
   const cardHeight = 264;
   const gap = 48;
   const cardWidth = (WIDTH - PADDING * 2 - gap) / 2;
@@ -311,8 +308,8 @@ export async function createLuckyRevealShareImage(reveal) {
   }
 
   drawHeader(context, reveal, logo);
-  drawNumbers(context, reveal.game.numbers);
-  drawResultCards(context, reveal);
+  const cardsTop = drawNumbers(context, reveal.game.numbers);
+  drawResultCards(context, reveal, cardsTop);
   drawFooter(context);
 
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));

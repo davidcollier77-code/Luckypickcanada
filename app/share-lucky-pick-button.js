@@ -280,7 +280,8 @@ export default function ShareLuckyPickButton({ reveal }) {
                 href={previewUrl || undefined}
                 download="lucky-reveal.png"
                 className="share-lucky-option"
-                style={{ ...optionStyle, textDecoration: 'none' }}
+                style={{ ...optionStyle, textDecoration: 'none', ...(previewUrl ? {} : { opacity: 0.45, pointerEvents: 'none' }) }}
+                aria-disabled={!previewUrl}
               >
                 <span aria-hidden="true">⬇</span> Download the image
               </a>
