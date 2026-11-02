@@ -8,11 +8,11 @@ This is the repository's authoritative workflow and safety policy. The user's ta
 
 1. Read this file first.
 2. Read `.freebuff/freebuff.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
-3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`.
-4. Read the selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for routing. The Gemini API Developer Skill is a conditional specialist reference, not a requirement for every coding task. Consult it only when the task directly involves implementing, configuring, investigating, or troubleshooting code that calls the Gemini API or SDK. It is routed through the `creation`, `troubleshooting`, and `deep-dive` groups only. Do not load it merely because a task, PR title, documentation page, or reviewer mentions Gemini. Apply its API-specific guidance only to directly relevant work. It supplements, but never overrides, this repository governance. Reading it does not authorize a Gemini API or model migration. Use other group documents only when they materially help with the task.
+3. Select at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. You may select multiple groups when the task requires them. Read and follow the instructions for every selected group.
+4. Read each selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for documentation routing. Use the manifest to identify reference documents that materially help with the task.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
-The general Gemini API overview `.docs/creation/_websites_ai_google_dev_gemini-api.md` is an optional reference for tasks that directly implement, configure, or troubleshoot Gemini API integrations. The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains an ordinary conditional reference; consult it only for Gemini CLI work. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
+The manifest is an index, not an instruction to read every listed source. Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
 
 ## 2. SPEC KIT AND EXECUTION
 
@@ -31,7 +31,7 @@ Run `./freebuff-verify.sh` and the checks required by the selected task group. R
 Inspect the complete final diff before submission. The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Never create duplicate reports or PRs, and do not ask whether the required summary should be created or updated. Clearly label checks as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Pending checks are a truthful status, not a reason to withhold a safe PR; they must never be presented as passed.
 
 Keep the summary concise and aligned with the Master Work Request. Include:
-- Task goal, selected task group, and brief reason for that group.
+- Task goal, selected task group(s), and brief reason for each selected group.
 - Short implementation result and exact files changed.
 - Required Spec Kit stages and artifact paths; mention only routed documents/resources that materially informed the work.
 - Actual verification commands and results, including anything failed, blocked, pending, or not run.
