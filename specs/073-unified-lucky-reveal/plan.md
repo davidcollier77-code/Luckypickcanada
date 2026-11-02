@@ -61,6 +61,16 @@ Gemini API call), so no library snapshot was needed. Existing repository code wa
 - `app/homepage/HomePage.js`: both offer cards share structure and copy that states what each
   includes; reveal construction moves to `buildLuckyReveal`.
 
+### Checkout labels and the dead route file (2026-11-02 follow-up)
+
+- `app/api/checkout/route.js`: only `product_data.name` changes — "Lucky Pick", "Lucky Pick Gift",
+  and the already-correct "Tip Jar". The website keeps "Lucky Reveal". Amounts (100/199), `cad`,
+  `mode: 'payment'`, metadata, callbacks and the gift-delivery guard are all untouched.
+- `app/api/verify-session/route.js` (0 bytes, tracked) is deleted. `route.ts` is the only
+  implementation: the previous build's `.next/server/app/api/verify-session/route.js` contained
+  route.ts's own strings, and the file's history contains two commits that intended to remove the
+  duplicate placeholder. A test now asserts the endpoint has exactly one route module.
+
 ### Results presentation (`app/reveal/[revealId]/page.tsx`)
 
 - Uses the shared vocabulary and `buildLuckyReveal`.

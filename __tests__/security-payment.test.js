@@ -92,8 +92,9 @@ describe('Unified Lucky Reveal purchase options', () => {
   });
 
   it('labels the two options consistently', () => {
-    expect(checkoutSource).toContain("name: 'Lucky Reveal'");
-    expect(checkoutSource).toContain("name: 'Lucky Reveal Gift Edition'");
+    // Stripe Checkout uses the official product names; the website keeps the Lucky Reveal presentation.
+    expect(checkoutSource).toContain("name: 'Lucky Pick'");
+    expect(checkoutSource).toContain("name: 'Lucky Pick Gift'");
     expect(modalSource).toContain("title: 'Lucky Reveal'");
     expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
     expect(homepageSource).toContain('Lucky Reveal Gift Edition');
@@ -113,6 +114,15 @@ describe('Unified Lucky Reveal purchase options', () => {
   it('does not send email from the standard checkout path', () => {
     const standardOption = checkoutSource.match(/lucky_pick: \{[\s\S]*?\},/)?.[0] || '';
     expect(standardOption).not.toMatch(/resend|send-gift|gift-delivery|recipientEmail/i);
+  });
+});
+
+describe('Verify-session route module', () => {
+  it('keeps exactly one route module for the endpoint', () => {
+    expect(existsSync(join(process.cwd(), 'app/api/verify-session/route.ts'))).toBe(true);
+    // A second empty route.js beside route.ts is an unresolved duplicate that can shadow the real
+    // handler; it was a 0-byte tracked placeholder and must not come back.
+    expect(existsSync(join(process.cwd(), 'app/api/verify-session/route.js'))).toBe(false);
   });
 });
 

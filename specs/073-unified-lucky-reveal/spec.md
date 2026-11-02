@@ -110,8 +110,11 @@ includes email delivery.
   random generator or duplicated vocabulary.
 - **FR-003**: Both purchase options MUST present results through the shared mapping, and a reveal
   whose numbers cannot be validated MUST NOT be replaced with locally generated results.
-- **FR-004**: The customer-facing labels MUST be **Lucky Reveal** and **Lucky Reveal Gift Edition**,
-  and each MUST state whether email delivery is included.
+- **FR-004**: The website MUST keep the **Lucky Reveal** and **Lucky Reveal Gift Edition**
+  presentation and state whether email delivery is included, while the **Stripe Checkout product
+  labels** MUST use the official names **Lucky Pick**, **Lucky Pick Gift**, and **Tip Jar**.
+- **FR-010**: Exactly one route module MUST exist per App Router endpoint. The empty tracked
+  `app/api/verify-session/route.js` placeholder MUST NOT remain beside the real `route.ts`.
 - **FR-005**: The standard option MUST NOT trigger gift email delivery, and must fail closed if gift
   delivery is invoked for it.
 - **FR-006**: The Gift Edition MUST continue to send the purchased reveal through the existing email
@@ -132,12 +135,18 @@ includes email delivery.
 - **SC-003**: Automated tests prove prices, callbacks, and both labels are intact.
 - **SC-004**: The existing gift delivery suite still passes, and `./freebuff-verify.sh` passes with a
   production build under the 495 MB maximum.
+- **SC-005**: Automated tests prove the three Stripe Checkout product labels and that the
+  `verify-session` endpoint has a single route module compiling `route.ts`.
 
 ## Assumptions and Limits
 
 - The checkout creates each product inline with `price_data`; the application references no stored
   Stripe product or price ID, so Stripe Dashboard product records could not be inspected from here
-  and are not claimed as verified.
+  and are not claimed as verified. "Product label" below therefore means the Checkout
+  `product_data.name`, which is the only product name this application supplies.
+- `app/api/verify-session/route.js` was a 0-byte tracked placeholder. The production build's
+  `.next/server/app/api/verify-session/route.js` contained `route.ts`'s own strings, which proves
+  Next resolved `route.ts`; only the empty file was removed and `route.ts` is untouched.
 - The Gift Edition keeps its own post-purchase landing route (`/reveal/<sessionId>`) because that
   route is part of the existing gift-delivery handshake; both routes render the same reveal component
   with the same validated data shape.

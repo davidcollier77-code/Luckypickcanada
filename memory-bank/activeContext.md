@@ -1,3 +1,14 @@
+# Active Context - Official Checkout Labels and Dead Route Cleanup (2026-11-02)
+
+- **Task group:** `creation`; same branch and PR as the Stripe alignment work (PR #1673), left open and unmerged.
+- **Checkout labels:** `product_data.name` in `app/api/checkout/route.js` is now "Lucky Pick", "Lucky Pick Gift" and "Tip Jar". Amounts (100/199), `cad`, `mode: 'payment'`, metadata, callbacks, the gift `amount_total` guard and the customer-entered tip are unchanged. The website keeps "Lucky Reveal" / "Lucky Reveal Gift Edition"; no website heading, modal title or reveal component was renamed.
+- **Dead route file:** `app/api/verify-session/route.js` was a 0-byte tracked file (blob e69de29b) beside `route.ts`. Its history shows `04dfc68d` and `6f25e8c5` both intended to remove the duplicate placeholder, but `6f25e8c5` only deleted its one-line comment and left an empty blob. The compiled route `.next/server/app/api/verify-session/route.js` was 24,011 bytes with sha256 7aaf4f9b... before the removal and byte-identical after it, and contains `route.ts` strings, so `route.ts` is the implementation that ships. Only the empty file was deleted; `route.ts` is untouched.
+- **Regression guards:** the official Checkout labels are pinned in `__tests__/stripe-product-alignment.test.js` and `__tests__/security-payment.test.js`, alongside an assertion that `route.ts` exists and no `route.js` sits beside it.
+- **Verified:** focused 4 files / 44 tests PASS; full suite `27 files / 261 tests` PASS; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, build, refresh-docs 19/19); production build 337,254,590 bytes / 321.6 MiB (< 495 MB); after removal the build still emits `/api/verify-session` with a byte-identical compiled chunk.
+- **Not verified:** live Stripe test-mode checkout for any of the three products, Stripe Dashboard product records, a real Resend delivery, and browser click-through.
+
+---
+
 # Active Context - Stripe Product Alignment (2026-11-02)
 
 - **Task group:** `creation`; same branch and PR as the unified reveal work (PR #1673), left open and unmerged.

@@ -44,6 +44,12 @@
 - [x] T020 Update the gift price copy in `app/homepage/HomePage.js` and the reveal test-tool comments to CAD $1.99.
 - [x] T021 Add `__tests__/stripe-product-alignment.test.js` and update the prices asserted in `__tests__/security-payment.test.js` and `__tests__/gift-email-error-handling.test.js`.
 
+## Phase 8 — Official Checkout labels and dead route cleanup (added 2026-11-02)
+
+- [x] T022 Set the Stripe Checkout product names to `Lucky Pick` and `Lucky Pick Gift` in `app/api/checkout/route.js`, keeping the Lucky Reveal website presentation and every amount, currency, and callback unchanged.
+- [x] T023 Update `__tests__/security-payment.test.js` and `__tests__/stripe-product-alignment.test.js` for the official labels and the unchanged website labels.
+- [x] T024 Prove `app/api/verify-session/route.js` is an empty tracked placeholder, confirm the compiled endpoint comes from `route.ts`, and delete only the empty file.
+
 ## Dependencies
 
 - T002 blocks T003, T006–T008, and T012.

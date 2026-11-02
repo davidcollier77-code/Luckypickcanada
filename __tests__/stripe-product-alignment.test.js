@@ -64,10 +64,17 @@ describe('Stripe product alignment', () => {
     expect(modalSource).toContain('Suggested CAD $5.00');
   });
 
-  it('uses the consolidated product names on the Stripe checkout page', () => {
-    expect(checkoutSource).toContain("name: 'Lucky Reveal'");
-    expect(checkoutSource).toContain("name: 'Lucky Reveal Gift Edition'");
-    expect(checkoutSource).toContain("name: 'Tip Jar'");
+  it('uses the official product names on the Stripe Checkout page', () => {
+    expect(checkoutSource).toContain("name: 'Lucky Pick',");
+    expect(checkoutSource).toContain("name: 'Lucky Pick Gift',");
+    expect(checkoutSource).toContain("name: 'Tip Jar',");
+    expect(checkoutSource).not.toContain("name: 'Lucky Reveal'");
+  });
+
+  it('keeps the Lucky Reveal presentation on the website', () => {
+    expect(homepageSource).toContain('Lucky Reveal Gift Edition');
+    expect(modalSource).toContain("title: 'Lucky Reveal'");
+    expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
   });
 
   it('advertises the same prices on the website as it charges', () => {

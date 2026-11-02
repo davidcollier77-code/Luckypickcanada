@@ -6,12 +6,12 @@ export const runtime = 'nodejs';
 
 const checkoutOptions = {
   lucky_pick: {
-    name: 'Lucky Reveal',
+    name: 'Lucky Pick',
     description: 'Your complete reveal on the website: 6 Pick or 7 Pick numbers, lucky color, and lucky day. No email delivery is included.',
     unitAmount: 100,
   },
   gift_package: {
-    name: 'Lucky Reveal Gift Edition',
+    name: 'Lucky Pick Gift',
     description: 'The same complete reveal, plus delivered by email to your recipient with an optional personal message.',
     unitAmount: 199,
   },
