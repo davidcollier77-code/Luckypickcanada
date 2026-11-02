@@ -43,3 +43,10 @@ Add one small, fail-closed offset normalization helper to the DevSkim SARIF filt
 - Add `test_unrelated_line_removal_keeps_the_audited_fixture_working` and `test_unrelated_line_insertion_keeps_the_audited_fixture_working`: the first replays exactly this PR's one-line deletion, the second proves the offset arithmetic follows an insertion.
 - Derive the replay test's "genuine finding" line as the first line that is not an audited timeout, instead of a hard-coded `17` that happened to be the emoji array.
 - No change to the filter, the allowlist, the workflow, permissions, schedule, or the append-only report mechanism.
+
+## Phase 3 — Real-SARIF replay gate (2026-11-02 follow-up 2)
+
+- Add `.github/scripts/verify_devskim_sarif_replay.py`. It copies the scanner's `devskim-alerts.sarif` into a temporary directory and calls the production `suppress_sarif()` on that copy, so the checked code path is exactly the one that produces the uploaded SARIF.
+- Assertions after the replay: no audited false positive (declared by path, rule, and source line) is still present; no filtered result carries an approved justification; every removed location is inside the reviewed allowlist and uses a rule the filter is permitted to suppress; a second `process_sarif()` pass finds nothing left to suppress; and the raw SARIF is byte-identical afterwards.
+- Run it in the existing `lint` job between the fixture tests and the real suppression step, with no `continue-on-error`, so a survivor fails the job. Triggers, permissions, concurrency, the append-only report mechanism and the Monday `35 1 * * 1` schedule are unchanged.
+- Cover the gate itself with tests that make it fail: an unvalidatable scanner region that leaves the audited finding in place, and a non-allowlisted finding carrying an approved justification.

@@ -58,7 +58,7 @@ As the repository owner, I want the remaining inventory scan completed and recon
 
 ## Follow-up (2026-11-02): DevSkim CI failure caused by line-pinned fixtures
 
-**Status**: Implemented and locally verified; CI re-run pending on the new head.
+**Status**: Implemented; CI re-run PASSED on head `8f26fecb` (run `41421657355`, all steps success, Code Scanning reports no new alerts).
 
 ### Verified cause (from the failed run, not inferred)
 
@@ -80,6 +80,19 @@ As the repository owner, I want the remaining inventory scan completed and recon
 - **SC-005**: The focused Python suite passes at the PR head (measured: 63 tests, `OK`).
 - **SC-006**: The DevSkim workflow's suppression-test step passes on the new head.
 - **SC-007**: Genuine findings still survive filtering (an off-token timer in an allowlisted spec and a finding in a non-allowlisted path).
+
+## Follow-up 2 (2026-11-02): real-SARIF replay gate
+
+**Status**: Implemented and locally verified.
+
+A passing unit fixture only proves the filter for synthetic regions. The workflow now also replays the scanner's own SARIF through the production entry point (`suppress_sarif`) on a temporary copy and fails the job when an audited false positive survives in real output.
+
+- **FR-011**: The replay MUST invoke the same production entry point the upload uses, so the gate cannot validate a parallel implementation.
+- **FR-012**: The gate MUST fail the job when an audited false positive is still present in the filtered payload, when a finding outside the reviewed allowlist was removed, when an approved suppression survives into the filtered SARIF, or when a second pass still finds suppressible results.
+- **FR-013**: The gate MUST NOT modify the raw scanner SARIF (it is compared byte-for-byte before and after) and MUST NOT change triggers, permissions, concurrency, or the Monday schedule.
+- **SC-008**: A run in which the audited finding is left unsuppressed fails the job instead of silently passing.
+- **SC-009**: A run in which a non-allowlisted finding is filtered out fails the job.
+- **SC-010**: With real scanner output the gate reports the suppressed/removed/remaining counts and the audited families it removed.
 
 ## Baseline integration audit (2026-11-02)
 

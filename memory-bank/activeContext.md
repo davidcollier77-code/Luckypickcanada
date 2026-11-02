@@ -1,3 +1,16 @@
+# Active Context — Real-SARIF Replay Gate for the DevSkim Filter (2026-11-02)
+
+- **Task group:** `security`; branch `freebuff/lucky-reveal-unified-card`; PR #1674, left open and unmerged.
+- **Gap addressed:** the Python fixture exercised synthetic SARIF regions only, so a change in real DevSkim output (offset convention, columns, snippet shape) could silently stop suppression while every unit test stayed green.
+- **New gate:** `.github/scripts/verify_devskim_sarif_replay.py` copies `devskim-alerts.sarif` into a temporary directory, runs the production `suppress_sarif()` on that copy, and fails when an audited false positive (both CTA specs, `DS172411`, `test.setTimeout(<digits>);`) is still present, when a finding outside the reviewed allowlist was removed, when an approved suppression survives into the filtered payload, or when a second pass still finds suppressible results. The raw SARIF is compared byte-for-byte and never written.
+- **Workflow:** the gate runs in the existing `lint` job between the fixture tests and the real suppression step, with no `continue-on-error`. Triggers, permissions, concurrency, the append-only report mechanism and the Monday `35 1 * * 1` schedule are unchanged.
+- **Tests:** the focused suite is now 68 tests, `OK` (new: pass/preserve-raw, survivor, non-allowlisted removal, missing SARIF, and workflow ordering).
+- **Verified:** `py_compile` exit 0 on all three scripts; focused suite 68 tests OK; `./freebuff-verify.sh` exit 0 (`All verification steps passed`, Spec Kit gate on specs/066, refresh-docs 19/19).
+- **Pre-existing CI failure, not caused by this change:** Visual QA job `125198372573` at head `8f26fecb` fails only `Run AGENTS.md Spec Kit verification`. The gate (`scripts/verify-speckit-task.sh`) allows one feature directory per PR, and this PR changes both `specs/066-devskim-playwright-offset-remediation` (DevSkim repair) and `specs/073-unified-lucky-reveal` (card consolidation). Both records are genuine, so neither was deleted to force green; the owner must decide which feature owns this PR.
+- **Not run:** the gate has not yet executed against a real scanner SARIF locally — this runner has no DevSkim CLI release asset, no dotnet, and no artifact download; the next CI run performs that replay on the real file.
+
+---
+
 # Active Context — DevSkim Fixture Repair and Payment/Email Baseline Audit (2026-11-02)
 
 - **Task group:** `security`; branch `freebuff/lucky-reveal-unified-card`; PR #1674, left open and unmerged.

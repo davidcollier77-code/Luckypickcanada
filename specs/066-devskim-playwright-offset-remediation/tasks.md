@@ -54,3 +54,14 @@
 - **NOT RUN — live Stripe test-mode checkout:** no Stripe credentials and no browser session; real charges are forbidden.
 - **NOT RUN — live Resend delivery:** `RESEND_API_KEY` is a deployment secret unavailable to this runner; no email was sent.
 - **NOT ACCESSIBLE — deployed secret values:** Cloudflare secret values cannot be read; absence from this checkout is not evidence of absence in production.
+
+## Phase 5: 2026-11-02 follow-up 2 (real-SARIF replay gate)
+
+- [x] T021 Confirm the current coverage gap: the fixture tests synthetic regions only, so a change in real scanner output could stop suppression while the suite stays green.
+- [x] T022 Add `.github/scripts/verify_devskim_sarif_replay.py`, replaying the real SARIF through the production `suppress_sarif()` on a temporary copy.
+- [x] T023 Declare the audited false-positive family (both CTA specs, `DS172411`, `test.setTimeout(<digits>);`) and fail when one survives.
+- [x] T024 Fail when a non-allowlisted location is removed, an approved suppression survives, or a second pass still finds suppressible results; assert the raw SARIF is byte-identical.
+- [x] T025 Wire the gate into the existing `lint` job before the suppression step, without `continue-on-error` and without touching triggers, permissions, concurrency or the schedule.
+- [x] T026 Add regression tests that make the gate fail (unvalidatable region, non-allowlisted removal) plus workflow-wiring guards.
+- [x] T027 Re-run the Python suite, `py_compile`, a real scanner replay, `./freebuff-verify.sh` and measure the build.
+- [x] T028 Inspect the final diff, update the single PR body, leave the PR open and unmerged.
