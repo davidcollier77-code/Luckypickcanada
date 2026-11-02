@@ -81,9 +81,9 @@ describe('Unified Lucky Reveal purchase options', () => {
   const homepageSource = readFileSync(join(process.cwd(), 'app/homepage/HomePage.js'), 'utf8');
   const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
 
-  it('preserves the existing prices for both purchase options', () => {
+  it('uses the official one-time prices for both purchase options', () => {
     expect(checkoutSource).toMatch(/lucky_pick: \{[\s\S]*?unitAmount: 100,/);
-    expect(checkoutSource).toMatch(/gift_package: \{[\s\S]*?unitAmount: 299,/);
+    expect(checkoutSource).toMatch(/gift_package: \{[\s\S]*?unitAmount: 199,/);
   });
 
   it('keeps both purchase callbacks intact', () => {

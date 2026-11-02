@@ -13,7 +13,7 @@ const checkoutOptions = {
   gift_package: {
     name: 'Lucky Reveal Gift Edition',
     description: 'The same complete reveal, plus delivered by email to your recipient with an optional personal message.',
-    unitAmount: 299,
+    unitAmount: 199,
   },
 };
 
@@ -96,7 +96,7 @@ export async function POST(request) {
       }
 
       checkoutOption = {
-        name: 'Lucky Pick Canada tip jar',
+        name: 'Tip Jar',
         description: 'Thanks for supporting Lucky Pick Canada.',
         unitAmount: tipAmount,
       };

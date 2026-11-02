@@ -473,10 +473,10 @@ export default function HomePage() {
           </article>
           <article className="homepage-offer">
             <picture><source type="image/avif" srcSet="/1784889264858-352w.avif 352w, /1784889264858.avif 704w" sizes="(max-width: 768px) 352px, 704px" /><source type="image/webp" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" /><img className="homepage-offer-image" src="/1784889264858.png" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" suppressHydrationWarning={true} /></picture>
-            <p className="homepage-offer-kicker">Lucky Reveal Gift Edition · CAD $2.99</p>
+            <p className="homepage-offer-kicker">Lucky Reveal Gift Edition · CAD $1.99</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal Gift Edition</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">The exact same reveal, delivered by email to someone you choose, with an optional personal message.</p>
-            <p className="homepage-offer-note">Website reveal + email delivery · CAD $2.99</p>
+            <p className="homepage-offer-note">Website reveal + email delivery · CAD $1.99</p>
             <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Gift the Gift Edition</button>
           </article>
           </div>

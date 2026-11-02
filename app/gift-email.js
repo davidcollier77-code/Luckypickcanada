@@ -204,12 +204,12 @@ function validateGiftSession(session) {
   if (
     session.payment_status !== "paid" ||
     metadata.checkoutType !== "gift_package" ||
-    session.amount_total !== 299 ||
+    session.amount_total !== 199 ||
     session.currency !== "cad"
   ) {
     return {
       ok: false,
-      reason: "Only a paid $2.99 gift package can send a gift email.",
+      reason: "Only a paid $1.99 gift package can send a gift email.",
     };
   }
 

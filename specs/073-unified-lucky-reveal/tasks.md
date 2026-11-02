@@ -26,7 +26,7 @@
 
 - [x] T009 [US3] Align both homepage offer cards on the labels Lucky Reveal and Lucky Reveal Gift Edition with explicit inclusion statements in `app/homepage/HomePage.js`.
 - [x] T010 [US3] Align the modal descriptions for both options in `app/checkout-modal.jsx`.
-- [x] T011 [US3] Rename the `gift_package` checkout option to "Lucky Reveal Gift Edition" while keeping `unitAmount: 299` in `app/api/checkout/route.js`.
+- [x] T011 [US3] Rename the `gift_package` checkout option to "Lucky Reveal Gift Edition" in `app/api/checkout/route.js`.
 
 ## Phase 6 — Tests and verification
 
@@ -36,10 +36,18 @@
 - [x] T015 Run `pnpm exec vitest run`, `pnpm tsc --noEmit`, `./freebuff-verify.sh`, and measure the production build size.
 - [x] T016 Audit the complete final diff and record the result in the single PR summary.
 
+## Phase 7 — Stripe product alignment (added 2026-11-02, same feature and PR)
+
+- [x] T017 Realign the Gift Edition price 299 → 199 in `app/api/checkout/route.js` and the matching `amount_total` guard in `app/gift-email.js` (authorized by the owner's Stripe alignment request).
+- [x] T018 Rename the tip jar Stripe product to "Tip Jar" while keeping the customer-entered `tipAmount` and the $0.50 minimum in `app/api/checkout/route.js`.
+- [x] T019 State the suggested CAD $5.00 tip in `app/checkout-modal.jsx`.
+- [x] T020 Update the gift price copy in `app/homepage/HomePage.js` and the reveal test-tool comments to CAD $1.99.
+- [x] T021 Add `__tests__/stripe-product-alignment.test.js` and update the prices asserted in `__tests__/security-payment.test.js` and `__tests__/gift-email-error-handling.test.js`.
+
 ## Dependencies
 
 - T002 blocks T003, T006–T008, and T012.
-- T005, T011, and T013 must land together so no option can reach the wrong delivery path.
+- T005, T011, T013, T017, and T018 must land together so no option can reach the wrong delivery path and the gift price guard never disagrees with the charged amount.
 - Verification (T015) runs only after every implementation task is complete.
 
 ## Implementation Strategy

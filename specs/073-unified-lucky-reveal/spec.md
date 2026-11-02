@@ -15,14 +15,17 @@ purchase options: **Lucky Reveal** (results on the website, no email) and **Luck
 - Standard reveal: `app/api/checkout/route.js` option `lucky_pick` at `unitAmount: 100` (CAD $1.00) →
   `success_url /?payment=success&session_id=…`; `app/homepage/HomePage.js` verifies the session and
   renders `app/lucky-reveal-popup.js`. No email is involved anywhere on this path.
-- Gift reveal: option `gift_package` at `unitAmount: 299` (CAD $2.99) → `success_url
+- Gift reveal: option `gift_package` at `unitAmount: 199` (CAD $1.99) → `success_url
   /api/gift-delivery?session_id=…`; `app/gift-email.js` generates and emails the reveal and
   `app/api/gift-delivery/route.js` redirects to `/reveal/<sessionId>`, which also renders
   `app/lucky-reveal-popup.js`.
-- **Price discrepancy:** the work request labels the standard option "$1.99", but the repository
-  charges `unitAmount: 100` (CAD $1.00) and the homepage advertises "CAD $1". Changing a live price
-  is explicitly forbidden by the request and by `AGENTS.md` §5, so the existing $1.00 price is
-  preserved and the discrepancy is reported rather than silently "fixed".
+- **Price realignment (authorized 2026-11-02):** the consolidation request labelled the standard
+  option "$1.99" and the Gift Edition "$2.99", but the repository charged `unitAmount: 100` (CAD
+  $1.00) and `unitAmount: 299` (CAD $2.99). The owner's follow-on request states the official setup
+  as **Lucky Pick CAD $1.00** and **Lucky Pick Gift CAD $1.99** (both one-time, Tip Jar suggested CAD
+  $5.00 with a customer-entered amount). The standard $1.00 price was already correct and is
+  unchanged; the Gift Edition `unitAmount` is corrected 299 → 199, and the matching
+  `amount_total` guard in `validateGiftSession` moves with it so gift delivery still works.
 - Duplicated reveal logic found and measured:
   - `app/gift-email.js` re-implemented `generateNumbers`, the colour/day arrays, and `pickOne`, and
     `createGiftReveal` re-implemented `createLuckyReveal` behind a different result shape.
@@ -33,7 +36,7 @@ purchase options: **Lucky Reveal** (results on the website, no email) and **Luck
     whose stored numbers were missing, so the website could show results that were never emailed.
 - Existing email safeguards already exist and must be preserved: Stripe webhook gating on
   `checkoutType === 'gift_package'`, `validateGiftSession` requiring `payment_status: 'paid'`,
-  `checkoutType`, `amount_total: 299`, `currency: 'cad'`, a Redis `SET NX` delivery lock with an
+  `checkoutType`, `amount_total: 199`, `currency: 'cad'`, a Redis `SET NX` delivery lock with an
   ownership token, `giftDeliveredAt` idempotency, a persisted pending payload, a stable Resend
   `Idempotency-Key` of `gift-<sessionId>`, and a 23-hour retry window.
 
@@ -113,7 +116,12 @@ includes email delivery.
   delivery is invoked for it.
 - **FR-006**: The Gift Edition MUST continue to send the purchased reveal through the existing email
   delivery system with its existing safeguards.
-- **FR-007**: Purchase prices and checkout callbacks MUST remain unchanged.
+- **FR-007**: Purchase prices MUST match the official one-time setup — Lucky Pick CAD $1.00, Lucky
+  Pick Gift CAD $1.99, Tip Jar suggested CAD $5.00 with a customer-entered amount — and checkout
+  callbacks MUST remain unchanged.
+- **FR-009**: Every checkout session MUST remain a one-time CAD payment; no recurring price,
+  subscription mode, or stored price ID may be introduced, and the Tip Jar MUST NOT become a fixed
+  charge.
 - **FR-008**: The reveal animation, artwork, layout of the surrounding site, and unrelated homepage
   features MUST remain unchanged.
 
@@ -127,8 +135,9 @@ includes email delivery.
 
 ## Assumptions and Limits
 
-- The published standard price is CAD $1.00, not $1.99. The price is preserved; changing it needs
-  separate owner authorization.
+- The checkout creates each product inline with `price_data`; the application references no stored
+  Stripe product or price ID, so Stripe Dashboard product records could not be inspected from here
+  and are not claimed as verified.
 - The Gift Edition keeps its own post-purchase landing route (`/reveal/<sessionId>`) because that
   route is part of the existing gift-delivery handshake; both routes render the same reveal component
   with the same validated data shape.

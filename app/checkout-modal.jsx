@@ -14,7 +14,7 @@ const COPY = {
   },
   tip: {
     title: 'Leave a tip',
-    description: 'Thank you so much for your support! Your generosity keeps the magic alive. Choose an amount in Canadian dollars to continue to the secure checkout.',
+    description: 'Thank you so much for your support! Your generosity keeps the magic alive. Suggested CAD $5.00 — enter any amount you like in Canadian dollars to continue to the secure checkout.',
   },
 };
 

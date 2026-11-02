@@ -3,7 +3,7 @@
 ## Purpose
 
 `REVEAL_TEST_MODE` is the single on/off switch for the **Preview Reveal — FREE** button in the
-$1 Lucky Pick and $2.99 Gift checkout modals. The button opens the existing reveal animation
+$1 Lucky Pick and $1.99 Gift checkout modals. The button opens the existing reveal animation
 (6 Pick or 7 Pick, as selected in the modal) so the presentation can be checked without paying.
 
 The preview is public: no account or login is required while the switch is on.
@@ -37,7 +37,7 @@ both modals. The paid checkout button is unaffected in either state.
 
 ## Scope
 
-- Included: the $1 Lucky Pick and $2.99 Gift checkout modals, with their 6 Pick and 7 Pick reveal
+- Included: the $1 Lucky Pick and $1.99 Gift checkout modals, with their 6 Pick and 7 Pick reveal
   presentations.
 - Excluded: the tip jar (no preview button, tip payments unchanged), Lucky Card Reveal, and all
   production payment, verification, email, and database systems.

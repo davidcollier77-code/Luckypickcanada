@@ -20,10 +20,12 @@
   source before planning.
 - **III. Implementation Sequence** — inspect, plan (this file), implement, test, diff audit, report.
 - **IV. Protect Core Systems** — Stripe and Resend are **inspected and preserved**. The Master Work
-  Request explicitly authorizes this task's payment/email safeguards. Only Stripe product
-  **display name/description strings** in `checkoutOptions` change; `unitAmount`, `metadata`,
-  `success_url`, `cancel_url`, webhook handling, and all delivery code paths keep their behaviour.
-  No schema, secret, or environment change.
+  Request explicitly authorizes this task's payment/email safeguards. Stripe product **display
+  name/description strings** in `checkoutOptions` change, and the Gift Edition `unitAmount` is
+  realigned 299 → 199 under the owner's follow-on Stripe alignment request ("Lucky Pick Gift — CAD
+  $1.99"), together with the single matching `amount_total` guard in `validateGiftSession` so no
+  paid gift can be refused. `metadata`, `success_url`, `cancel_url`, webhook handling, and all other
+  delivery code paths keep their behaviour. No schema, secret, or environment change.
 - **V. Resource Conservation** — no MCP, no dependency, no documentation refresh; `.docs/` untouched.
 
 **Gate result**: PASS with the payment section scoped as above and recorded in the PR report.
@@ -52,7 +54,9 @@ Gemini API call), so no library snapshot was needed. Existing repository code wa
 ### Purchase options and copy
 
 - `app/api/checkout/route.js`: option names/descriptions become "Lucky Reveal" and "Lucky Reveal Gift
-  Edition" with an explicit email statement; amounts (100/299), metadata, and callbacks unchanged.
+  Edition" with an explicit email statement; amounts become the official 100/199, and metadata and
+  callbacks are unchanged. The Tip Jar keeps `unitAmount: tipAmount` with its CAD-entered amount and
+  its $0.50 minimum, and its Stripe product name becomes "Tip Jar".
 - `app/checkout-modal.jsx`: type copy states the difference at the point of purchase.
 - `app/homepage/HomePage.js`: both offer cards share structure and copy that states what each
   includes; reveal construction moves to `buildLuckyReveal`.
@@ -71,6 +75,10 @@ Gemini API call), so no library snapshot was needed. Existing repository code wa
 - `__tests__/gift-email-error-handling.test.js`: standard-price and standard-type sessions never
   reach Resend.
 - `__tests__/security-payment.test.js`: prices, callbacks, labels, and email statements.
+- New `__tests__/stripe-product-alignment.test.js`: the three products' names and prices, `cad`
+  currency, the single `mode: 'payment'` session creation, absence of subscription/recurring/price-ID
+  usage, a customer-entered Tip Jar amount, and agreement between the checkout price and the gift
+  `amount_total` guard.
 
 **Post-design Constitution re-check**: PASS — the change stays inside the reveal/purchase-option
 scope, adds no dependency, and preserves every existing safeguard.

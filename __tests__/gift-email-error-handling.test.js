@@ -10,7 +10,7 @@ function makeSession(metadata = {}) {
   return {
     id: 'cs_test_123',
     payment_status: 'paid',
-    amount_total: 299,
+    amount_total: 199,
     currency: 'cad',
     metadata: {
       checkoutType: 'gift_package',
@@ -250,7 +250,7 @@ describe('Gift delivery error handling', () => {
     const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toContain('Only a paid $2.99 gift package');
+    expect(result.reason).toContain('Only a paid $1.99 gift package');
     expect(global.fetch).not.toHaveBeenCalled();
     expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
   });
