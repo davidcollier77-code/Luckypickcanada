@@ -92,3 +92,29 @@ Gemini API call), so no library snapshot was needed. Existing repository code wa
 
 **Post-design Constitution re-check**: PASS — the change stays inside the reveal/purchase-option
 scope, adds no dependency, and preserves every existing safeguard.
+
+### Customer-facing consolidation (2026-11-02)
+
+- `app/homepage/HomePage.js`: the two offer cards collapse into one `homepage-offer-featured` card
+  labelled **Lucky Reveal** with a single **Choose a Lucky Pick** button. The gift artwork is
+  kept (it is not deleted) and the card states both delivery options and their prices. The removed
+  handler pair becomes `openLuckyRevealCheckout`, which opens the popup with the new
+  `lucky_reveal` type.
+- `app/checkout-modal.jsx`: a new `lucky_reveal` mode owns the two choices. The existing game
+  fieldset stays; a delivery fieldset carries `Personal Reveal — CAD $1.00` and
+  `Gift Reveal — CAD $1.99` and resolves into the hidden `checkoutType`, so the paid form still
+  posts `lucky_pick` or `gift_package` exactly as `/api/checkout` expects. Recipient fields render
+  only when the resolved type is `gift_package`; the modal repeats the selected amount for
+  confirmation. The direct `lucky_pick`, `gift_package`, and `tip` modes are unchanged.
+- `app/test-tools/reveal-testing/revealTestConfig.js`: `lucky_reveal` joins the preview allowlist, so
+  the free preview stays available without touching the paid path.
+- `themes/default/homepage.css`: delivery-option styling plus a desktop rule keeping the single
+  card's copy clear of the decorative artwork. The reserved map slot is zero-height.
+- Reserved map location: `<div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />`
+  sits directly below the reveal section and above the Tip Jar. No map component, geolocation, IP
+  lookup, province detection, schema, or location data is added.
+- Browser verification: `tests/visual/lucky-reveal-selection.spec.ts` proves the single card, the
+  reserved slot's position and emptiness, all four purchase combinations through an intercepted
+  `/api/checkout` POST, keyboard selection, and reduced motion on desktop and both mobile
+  viewports. `tests/visual/gold-cta.spec.ts` moves from nine to eight homepage gold CTAs because the
+  merged card removes one button.

@@ -376,14 +376,13 @@ export default function HomePage() {
     setLuckyReveal(createLuckyReveal(luckyPickGame));
   }
 
-  function openLuckyPickCheckout(event) {
+  /**
+   * Opens the single Lucky Reveal selection popup, where the customer chooses
+   * 6 Pick or 7 Pick and then the Personal or Gift delivery option.
+   */
+  function openLuckyRevealCheckout(event) {
     event.currentTarget.blur();
-    setCheckoutType('lucky_pick');
-  }
-
-  function openGiftCheckout(event) {
-    event.currentTarget.blur();
-    setCheckoutType('gift_package');
+    setCheckoutType('lucky_reveal');
   }
 
   function openTipJar(event) {
@@ -459,28 +458,28 @@ export default function HomePage() {
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
-        <SectionHeading eyebrow="Two ways to receive it" id="picks-heading" title="Lucky Reveal">
-          One reveal, two ways to receive it: see it on the website, or send the Gift Edition by email.
+        <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Reveal">
+          Choose 6 Pick or 7 Pick, then keep the reveal for yourself on the website or send the Gift Edition by email.
         </SectionHeading>
-        <div className="homepage-offer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+        <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article className="homepage-offer homepage-offer-featured">
-            <p className="homepage-offer-kicker">Lucky Reveal · CAD $1</p>
+            <picture><source type="image/avif" srcSet="/1784889264858-352w.avif 352w, /1784889264858.avif 704w" sizes="(max-width: 768px) 352px, 704px" /><source type="image/webp" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" /><img className="homepage-offer-image" src="/1784889264858.png" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" alt="" width="704" height="1524" loading="lazy" suppressHydrationWarning={true} /></picture>
+            <p className="homepage-offer-kicker">Lucky Reveal · CAD $1.00 or CAD $1.99</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal</h3>
-            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Your complete reveal — 6 Pick or 7 Pick numbers, lucky color, and lucky day — appears on the website.</p>
-            <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
-            <p className="homepage-offer-note">Website reveal only · No email delivery</p>
-            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose a Lucky Pick</button>
+            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">One reveal, and you choose how it reaches you. Pick 6 Pick or 7 Pick for your numbers, lucky color, and lucky day — then keep it for yourself on the website, or send the very same reveal to someone by email.</p>
+            <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span><span>Personal Reveal</span><span>Gift Reveal</span></div>
+            <p className="homepage-offer-note">Personal Reveal · CAD $1.00 — no email delivery. Gift Reveal · CAD $1.99 — same reveal, email delivery included.</p>
+            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyRevealCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose a Lucky Pick</button>
           </article>
-          <article className="homepage-offer">
-            <picture><source type="image/avif" srcSet="/1784889264858-352w.avif 352w, /1784889264858.avif 704w" sizes="(max-width: 768px) 352px, 704px" /><source type="image/webp" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" /><img className="homepage-offer-image" src="/1784889264858.png" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" suppressHydrationWarning={true} /></picture>
-            <p className="homepage-offer-kicker">Lucky Reveal Gift Edition · CAD $1.99</p>
-            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal Gift Edition</h3>
-            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">The exact same reveal, delivered by email to someone you choose, with an optional personal message.</p>
-            <p className="homepage-offer-note">Website reveal + email delivery · CAD $1.99</p>
-            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Gift a Lucky Pick</button>
-          </article>
-          </div>
+        </div>
       </section>
+
+      {/*
+        Reserved homepage slot for the future Lucky Map. It deliberately renders
+        nothing: no map, no location lookup, and no location data collection. The
+        map sits directly below the unified reveal section, above the Tip Jar.
+      */}
+      <div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />
 
       <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>
@@ -555,7 +554,7 @@ export default function HomePage() {
 
 
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onPreviewReveal={(revealType, luckyPickGame) => {
-        if (revealType === 'lucky_pick' || revealType === 'gift_package') {
+        if (revealType === 'lucky_reveal' || revealType === 'lucky_pick' || revealType === 'gift_package') {
           setCheckoutType(null);
           startLuckyReveal(luckyPickGame);
         }

@@ -60,3 +60,15 @@
 
 One sequential pass: shared module first, then both purchase options, then presentation, then the
 regression suite, then the verification gate and diff audit.
+
+## Phase 9 — Customer-facing consolidation (added 2026-11-02)
+
+- [x] T025 Replace the two homepage purchase cards with one **Lucky Reveal** card and one **Choose a Lucky Pick** button in `app/homepage/HomePage.js`, keeping the gift artwork and the existing card styling.
+- [x] T026 Add the unified `lucky_reveal` mode to `app/checkout-modal.jsx`: 6 Pick / 7 Pick plus Personal Reveal — CAD $1.00 / Gift Reveal — CAD $1.99, resolving into the existing hidden `checkoutType` and showing recipient fields only for the gift.
+- [x] T027 Keep the free preview available for the unified popup in `app/test-tools/reveal-testing/revealTestConfig.js` without changing the paid submit path.
+- [x] T028 Reserve the future map location as an empty, zero-height `#lucky-map` slot directly below the reveal section in `app/homepage/HomePage.js`; no map, geolocation, IP lookup, province detection, schema, or location data.
+- [x] T029 Add delivery-option styling and the reserved-slot rule to `themes/default/homepage.css`.
+- [x] T030 Add `tests/visual/lucky-reveal-selection.spec.ts` covering the single card, the four combinations, the posted payload, keyboard control, reduced motion, and the empty map slot; update `gold-cta.spec.ts` for the merged CTA.
+- [x] T031 Update `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`, and `__tests__/stripe-product-alignment.test.js` for the one-card, one-popup flow.
+- [x] T032 Run the browser suite on desktop and both mobile viewports, `pnpm exec vitest run`, `pnpm exec tsc --noEmit`, and `./freebuff-verify.sh`, and measure the production build size.
+- [x] T033 Audit the complete final diff and record the result in the single PR summary.

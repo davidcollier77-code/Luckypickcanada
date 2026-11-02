@@ -14,7 +14,7 @@ const EDGE = 'rgb(138, 85, 12)';
 const MAIN_GOLD = 'rgb(220, 174, 78)';
 
 // Assigned leading emoji per homepage CTA, in DOM order.
-const HOMEPAGE_EMOJI = ['✨', '♠', '🔮', '🍀', '🎁', '🎁', '❤️', '💡', 'ℹ️'];
+const HOMEPAGE_EMOJI = ['✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
 
 const HOMEPAGE_WORDING = [
   'Check Lucky Meter',
@@ -22,7 +22,6 @@ const HOMEPAGE_WORDING = [
   'CONSULT THE ORACLE',
   'EXPLORE LUCKY STORIES',
   'Choose a Lucky Pick',
-  'Gift a Lucky Pick',
   'Open the tip jar',
   'Send suggestion',
   'Read Our Story',
@@ -77,7 +76,7 @@ test.describe('Site-wide gold CTA', () => {
       };
     }));
 
-    expect(ctas).toHaveLength(9);
+    expect(ctas).toHaveLength(8);
 
     ctas.forEach((cta, index) => {
       // FR-001: the measured metallic ramp, not the previous vivid yellow.

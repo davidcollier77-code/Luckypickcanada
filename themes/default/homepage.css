@@ -778,3 +778,27 @@ body:has(.homepage-sky-backdrop)::after {
 .checkout-modal-preview-button:hover, .checkout-modal-preview-button:focus-visible { background: rgba(255, 235, 174, .2); border-color: rgba(255, 235, 174, .85); }
 .checkout-modal-preview-button:active { transform: scale(.98); }
 .checkout-modal-preview-note { margin: 0; color: rgba(255, 246, 212, .72); font-size: .78rem; line-height: 1.45; }
+
+/* Unified Lucky Reveal card: one purchase card carries the whole offer, so the
+   card copy keeps clear of the decorative gift artwork on desktop. */
+@media (min-width: 781px) {
+  .homepage-offer:only-child > :not(.homepage-offer-image):not(picture) { max-width: 58%; }
+}
+/* Reserved slot for the future Lucky Map directly below the reveal section.
+   Empty on purpose, so it occupies no visual space and collects no data. */
+.homepage-map-slot { height: 0; }
+
+/* Delivery choice inside the unified Lucky Reveal popup. */
+.checkout-delivery-fieldset { display: grid; grid-template-columns: 1fr; gap: .65rem; border: 0; padding: 0; }
+.checkout-modal-form .checkout-delivery-fieldset { display: grid; }
+.checkout-delivery-fieldset legend { padding: 0; margin-bottom: .35rem; color: #fff0ba; font-weight: 800; }
+.checkout-delivery-option { display: grid; gap: .3rem; padding: .75rem .85rem; border: 1px solid rgba(255, 225, 145, .3); border-radius: 12px; background: rgba(0, 0, 0, .18); cursor: pointer; transition: border-color .2s ease, background-color .2s ease; }
+.checkout-delivery-option:hover { border-color: rgba(255, 225, 145, .55); }
+.checkout-delivery-option.is-selected { border-color: #ffe2a0; background: rgba(255, 226, 160, .12); }
+.checkout-delivery-option input { width: auto; margin: 0; }
+.checkout-delivery-choice { display: flex; align-items: center; gap: .5rem; font-weight: 900; color: #fff6d4; }
+.checkout-delivery-note { color: rgba(255, 246, 212, .72); font-size: .82rem; font-weight: 600; line-height: 1.45; }
+.checkout-modal-summary { margin: 0; color: #ffe8a0; font-size: .88rem; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) {
+  .checkout-delivery-option { transition: none; }
+}
