@@ -67,7 +67,7 @@ jobs:
         run: python3 .github/scripts/suppress_devskim_false_positives.py
 
       - name: Warn when DevSkim suppression is skipped or fails
-        if: always() && (steps.python-syntax.outcome == 'failure' || steps.suppression-tests.outcome == 'failure' || steps.suppress-devskim.outcome == 'failure')
+        if: always() && (steps.python-syntax.outcome == 'failure' || steps.suppression-tests.outcome == 'failure' || steps.sarif-replay.outcome == 'failure' || steps.suppress-devskim.outcome == 'failure')
         run: echo "::warning::DevSkim suppression did not complete successfully; the original SARIF will be uploaded without these suppressions."
 
       - name: Upload DevSkim scan results to GitHub Security tab

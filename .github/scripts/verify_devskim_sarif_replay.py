@@ -182,12 +182,12 @@ def _carries_verified_suppression(result):
 def _assert_audited_findings_removed(raw_results, filtered_keys, workspace):
     """Fail when an audited false positive is still present after filtering."""
     raw_keys = Counter(_location_key(result) for _, _, result in raw_results)
-    audited_occurrences = Counter()
     audited_removed = []
     audited_absent = []
 
     for finding in AUDITED_FALSE_POSITIVES:
         present = 0
+        audited_occurrences = Counter()
         for _, _, result in raw_results:
             if result.get("ruleId") != finding.rule_id:
                 continue
