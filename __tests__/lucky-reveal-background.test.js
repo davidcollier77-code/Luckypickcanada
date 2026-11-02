@@ -25,9 +25,9 @@ describe('Lucky Reveal background', () => {
     expect(popupSource).toContain(avif);
     expect(popupSource).toContain(jpeg);
 
-    // Same format preference order as the homepage backdrop.
-    expect(popupSource.indexOf(webp)).toBeLessThan(popupSource.indexOf(avif));
-    expect(popupSource.indexOf(avif)).toBeLessThan(popupSource.indexOf(jpeg));
+    // Same format preference order as the homepage backdrop (AVIF → WebP → JPEG).
+    expect(popupSource.indexOf(avif)).toBeLessThan(popupSource.indexOf(webp));
+    expect(popupSource.indexOf(webp)).toBeLessThan(popupSource.indexOf(jpeg));
 
     for (const asset of [
       'crystal-ball-bg-desktop.webp',

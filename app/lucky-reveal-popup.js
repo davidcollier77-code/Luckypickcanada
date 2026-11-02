@@ -29,7 +29,7 @@ const dayDescriptions = {
 // that artwork only; the homepage's animated star canvases and shooting-star
 // effects are deliberately not carried into this experience.
 const MILKY_WAY_BACKDROP_IMAGE =
-  "image-set(url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg'))";
+  "image-set(url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg'))";
 
 const overlayStyle = {
   position: 'fixed',
@@ -53,6 +53,7 @@ const dialogStyle = {
   padding: 'clamp(1.5rem, 5vw, 2.5rem)',
   borderRadius: 28,
   color: '#fff7d6',
+  border: '1px solid',
   backdropFilter: 'blur(24px)',
   WebkitBackdropFilter: 'blur(24px)',
 };
