@@ -2,6 +2,7 @@
 import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect, useCallback } from 'react';
+import LuckyRevealCelebration from './lucky-reveal-celebration';
 import ShareLuckyPickButton from './share-lucky-pick-button';
 import {
   getLuckyColorSwatch,
@@ -52,6 +53,9 @@ const overlayStyle = {
 
 const dialogStyle = {
   position: 'relative',
+  // The celebration layer sits above the panel, so the panel needs its own stack
+  // level to keep the results and controls above the overlay background.
+  zIndex: 2,
   width: 'min(100%, 720px)',
   maxHeight: '92vh',
   overflow: 'auto',
@@ -166,6 +170,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   // Let colors card start after all numbers are fully animating
   const startColorsDelay = startNumbersDelay + (numItems * 0.35) + 0.6;
   const startDaysDelay = startColorsDelay + 0.6;
+  // Celebrate once the final number has landed, not when the popup opens.
+  const celebrationDelayMs = (startNumbersDelay + (numItems - 1) * 0.35 + 0.95) * 1000;
 
   const theme = themeGlows[reveal.luckyColor] || themeGlows['Aurora Green'];
   // The Milky Way artwork behind the dialog is the reveal background now, so the
@@ -492,6 +498,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
           </button>
         </div>
       </section>
+
+      <LuckyRevealCelebration startDelayMs={celebrationDelayMs} />
     </div>
   );
 }

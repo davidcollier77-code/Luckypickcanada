@@ -12,7 +12,14 @@ import {
 const WIDTH = 1200;
 const HEIGHT = 1500;
 const PADDING = 96;
-const LOGO_SRC = '/BackgroundEraser_20260724_163638777.png';
+// The logo is the only raster asset the share image draws. AVIF is the smallest
+// source, WebP covers browsers without AVIF decoding, and the original PNG is the
+// last resort. The generated share image itself stays PNG for device sharing.
+const LOGO_SOURCES = [
+  '/BackgroundEraser_20260724_163638777.avif',
+  '/BackgroundEraser_20260724_163638777.webp',
+  '/BackgroundEraser_20260724_163638777.png',
+];
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -21,6 +28,23 @@ function loadImage(src) {
     image.onerror = reject;
     image.src = src;
   });
+}
+
+/**
+ * Loads the first logo format the browser can decode, in AVIF, WebP, PNG order.
+ *
+ * @returns {Promise<Image|null>} The decoded logo, or null when no format loads.
+ */
+async function loadLogo() {
+  for (const src of LOGO_SOURCES) {
+    try {
+      return await loadImage(src);
+    } catch {
+      // Try the next format; the wordmark branding covers a total failure.
+    }
+  }
+
+  return null;
 }
 
 function drawRoundedRect(context, x, y, width, height, radius) {
@@ -300,12 +324,7 @@ export async function createLuckyRevealShareImage(reveal) {
 
   drawBackground(context);
 
-  let logo = null;
-  try {
-    logo = await loadImage(LOGO_SRC);
-  } catch {
-    // The wordmark branding remains when the logo cannot be loaded.
-  }
+  const logo = await loadLogo();
 
   drawHeader(context, reveal, logo);
   const cardsTop = drawNumbers(context, reveal.game.numbers);
