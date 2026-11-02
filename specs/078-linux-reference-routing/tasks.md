@@ -22,13 +22,14 @@
 - [x] T010 Parse the final branch manifest and assert exactly two group memberships, one source configuration, one inventory entry, and the expected snapshot name.
 - [ ] T011 Run `node scripts/test-refresh-docs.js` and `./freebuff-verify.sh` in a repository shell; report exact results.
 - [ ] T012 Re-trigger the documentation updater after the branch change is merged; verify the canonical Troubleshooting snapshot and Deep-dive link.
-- [ ] T013 Review the complete PR diff and update this PR's single canonical summary; leave it open and unmerged.
+- [x] T013 Review the complete PR diff and update this PR's single canonical summary; leave it open and unmerged.
 
 ## Verification Status
 
 - **PASS** — Wrangler's original group routing and updater's canonical-copy/link implementation inspected.
 - **PASS** — Official Debian Reference and Ubuntu package-management sources selected.
 - **PASS** — Manifest/group instruction/Spec Kit updates committed to this branch.
-- **PENDING** — Final branch manifest assertions and repository verification; no repository shell is available in this session.
-- **PENDING** — Actual updater execution, which cannot include branch-only manifest changes until they reach the default branch.
-- **PENDING** — Current-head CI and final PR diff review.
+- **PASS** — Final branch manifest assertions: exactly two target groups, one source URL, one inventory entry, and the expected sanitized snapshot name.
+- **PASS** — Complete PR diff reviewed; PR #1683 summary updated to match the actual changes and verification evidence.
+- **PENDING** — `node scripts/test-refresh-docs.js` and `./freebuff-verify.sh` were not run locally because no repository shell is available in this session; PR CI workflows are running.
+- **PENDING** — Actual updater execution after the manifest reaches the default branch.
