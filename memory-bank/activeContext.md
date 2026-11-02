@@ -1,3 +1,14 @@
+# Active Context — Linux reference documentation routing (2026-11-02)
+
+- **Task groups:** `troubleshooting` and `deep-dive`, matching the existing Wrangler documentation routing.
+- **Branch:** `freebuff/linux-reference-routing-20261102`; documentation-routing change is being prepared for review.
+- **Reference:** Official Debian Reference plain-text manual, registered as `/debian/debian-reference` using `https://www.debian.org/doc/manuals/debian-reference/debian-reference.en.txt`.
+- **Routing:** The manifest registers this one source in both target groups. The existing updater writes the canonical snapshot to Troubleshooting and a relative symlink (or safe file fallback) to Deep-dive. Expected snapshot path: `.docs/troubleshooting/_debian_debian-reference.md`, linked from `.docs/deep-dive/_debian_debian-reference.md`.
+- **Safety:** Both group instructions make the reference conditional, require checking the actual distribution and permissions, and prohibit privilege or sandbox bypasses. The updater implementation is unchanged.
+- **Verification status:** Manifest and updater behavior are being checked in the PR. The real documentation refresh is pending because the updater on the default branch cannot see this manifest change until the PR is merged; no generated snapshot is claimed yet.
+
+---
+
 # Active Context — Chromium Visual Inspection Enabled Without Root (2026-11-02)
 
 - **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR #1681 open and unmerged. Follow-up to the #1681 audit, at the owner's direction: no root, no `no-new-privileges` change, no sandbox weakening.
