@@ -276,3 +276,75 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
     </div>
   );
 }
+
+const CELEBRATION_CSS = `
+  @keyframes lucky-celebration-flash {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.82); }
+    22% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, 0) scale(1.08); }
+  }
+  @keyframes lucky-celebration-finish-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes lucky-settled-leaf-in {
+    from { opacity: 0; }
+    to { opacity: var(--leaf-opacity, 0.9); }
+  }
+  .lucky-celebration {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .lucky-celebration-flash {
+    position: absolute;
+    left: 50%;
+    bottom: -8%;
+    width: min(74vw, 640px);
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 244, 190, 0.5) 0%, rgba(250, 204, 21, 0.26) 34%, rgba(245, 158, 11, 0) 70%);
+    opacity: 0;
+    animation: lucky-celebration-flash 1s ease-out forwards;
+  }
+  .lucky-celebration-finish {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: clamp(76px, 15vh, 140px);
+    opacity: 0;
+    animation: lucky-celebration-finish-in 0.9s ease-out 1s forwards;
+  }
+  .lucky-celebration-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(62% 130% at 50% 100%, rgba(250, 204, 21, 0.34) 0%, rgba(245, 158, 11, 0.14) 46%, rgba(245, 158, 11, 0) 80%);
+  }
+  .lucky-settled-leaf {
+    position: absolute;
+    opacity: 0;
+    filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.45));
+    animation: lucky-settled-leaf-in 0.8s ease-out forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lucky-celebration-flash { display: none; }
+    .lucky-celebration-finish { animation: none !important; opacity: 1; }
+    .lucky-settled-leaf { animation: none !important; opacity: var(--leaf-opacity, 0.9); }
+  }
+`;
+
+/** Injects celebration CSS into <head> once on mount and removes it on unmount. */
+function CelebrationStyles() {
+  useEffect(() => {
+    const el = document.createElement('style');
+    el.setAttribute('data-lucky-celebration', '');
+    el.textContent = CELEBRATION_CSS;
+    document.head.appendChild(el);
+    return () => {
+      el.remove();
+    };
+  }, []);
+  return null;
+}
