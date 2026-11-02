@@ -19,7 +19,7 @@
 
 ## Phase 3: Verify and report
 
-- [ ] T010 Parse the final branch manifest and assert exactly two group memberships, one source configuration, one inventory entry, and the expected snapshot name.
+- [x] T010 Parse the final branch manifest and assert exactly two group memberships, one source configuration, one inventory entry, and the expected snapshot name.
 - [ ] T011 Run `node scripts/test-refresh-docs.js` and `./freebuff-verify.sh` in a repository shell; report exact results.
 - [ ] T012 Re-trigger the documentation updater after the branch change is merged; verify the canonical Troubleshooting snapshot and Deep-dive link.
 - [ ] T013 Review the complete PR diff and update this PR's single canonical summary; leave it open and unmerged.
