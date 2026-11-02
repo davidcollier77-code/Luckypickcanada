@@ -3,6 +3,11 @@ import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect, useCallback } from 'react';
 import ShareLuckyPickButton from './share-lucky-pick-button';
+import {
+  getLuckyColorSwatch,
+  getLuckyColorSwatchGradient,
+  splitLuckyNumberRows,
+} from './lucky-reveal-presentation';
 
 const colorDescriptions = {
   'Aurora Green': 'Vibrant and shifting, like the northern lights dancing over the boreal forest.',
@@ -113,6 +118,7 @@ function SlowWords({ children, startDelay = 0 }) {
   return words.map((word, index) => (
     <span
       key={`${word}-${index}`}
+      className="lucky-reveal-word"
       style={{
         display: 'inline-block',
         marginRight: '0.35ch',
@@ -172,6 +178,14 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     background: 'linear-gradient(180deg, rgba(2, 6, 23, 0.72) 0%, rgba(3, 7, 18, 0.82) 100%)',
   };
 
+  // Six picks read as 3 + 3 and seven as 4 + 3, centred, in the stored order.
+  const numberRows = splitLuckyNumberRows(reveal.game.numbers);
+  const rowOffsets = numberRows.map((_, rowIndex) =>
+    numberRows.slice(0, rowIndex).reduce((total, row) => total + row.length, 0),
+  );
+  const colorSwatch = getLuckyColorSwatch(reveal.luckyColor);
+  const colorSwatchGradient = getLuckyColorSwatchGradient(reveal.luckyColor);
+
   return (
     <div role="presentation" style={overlayStyle}>
       <section role="dialog" aria-modal="true" aria-labelledby="lucky-reveal-title" style={dynamicDialogStyle}>
@@ -225,6 +239,76 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             100% { opacity: 1; transform: translateY(0) scale(1); }
           }
 
+          @keyframes lucky-reveal-shimmer-sweep {
+            0% { transform: translateX(-120%); opacity: 0; }
+            18% { opacity: 0.9; }
+            100% { transform: translateX(120%); opacity: 0; }
+          }
+
+          @keyframes lucky-reveal-sparkle-twinkle {
+            0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(-8deg); }
+            50% { opacity: 1; transform: scale(1.08) rotate(8deg); }
+          }
+
+          .lucky-reveal-number {
+            width: clamp(2.5rem, 11.5vw, 3.25rem);
+            height: clamp(2.5rem, 11.5vw, 3.25rem);
+            font-size: clamp(1rem, 3.4vw, 1.2rem);
+          }
+
+          .lucky-reveal-number-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            width: 100%;
+          }
+
+          .lucky-reveal-swatch {
+            width: 1.65rem;
+            height: 1.65rem;
+            border-radius: 999px;
+            flex: 0 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+          }
+
+          .lucky-reveal-shimmer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            background: linear-gradient(115deg, transparent 32%, rgba(255, 240, 180, 0.22) 45%, rgba(255, 255, 255, 0.42) 50%, rgba(255, 240, 180, 0.22) 55%, transparent 68%);
+            transform: translateX(-120%);
+            animation: lucky-reveal-shimmer-sweep 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+
+          .lucky-reveal-sparkle {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 22px;
+            height: 22px;
+            opacity: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.65));
+            animation: lucky-reveal-sparkle-twinkle 4.5s ease-in-out infinite;
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .lucky-reveal-word,
+            .lucky-reveal-number,
+            .lucky-reveal-card {
+              animation: none !important;
+              opacity: 1 !important;
+              transform: none !important;
+            }
+            .lucky-reveal-shimmer { display: none !important; }
+            .lucky-reveal-sparkle {
+              animation: none !important;
+              opacity: 0.7 !important;
+              transform: none !important;
+            }
+          }
+
           .lucky-close-btn-hover:hover {
             border-color: rgba(255, 235, 160, 0.6) !important;
             background: rgba(15, 23, 42, 0.9) !important;
@@ -255,7 +339,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             <SlowWords startDelay={0.4}>Your lucky reveal is here</SlowWords>
           </h2>
           <p style={{ maxWidth: 560, lineHeight: 1.8, fontSize: '1.1rem', color: '#e2e8f0', marginBottom: '2rem' }}>
-            <SlowWords startDelay={1.15}>Auroras and stars are revealing your randomly generated lucky pick, lucky color, and lucky day of the week.</SlowWords>
+            <SlowWords startDelay={1.15}>The Milky Way and a sky full of stars are revealing your randomly generated lucky pick, lucky color, and lucky day of the week.</SlowWords>
           </p>
 
           <article style={{
@@ -268,45 +352,79 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: '#f6edd4', fontFamily: 'serif', fontSize: '1.4rem', fontWeight: 800, letterSpacing: '0.5px' }}>
+            <span
+              aria-hidden="true"
+              className="lucky-reveal-shimmer"
+              style={{ animationDelay: `${startNumbersDelay + numItems * 0.35 + 0.15}s` }}
+            />
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              viewBox="0 0 24 24"
+              className="lucky-reveal-sparkle"
+              style={{ animationDelay: `${startNumbersDelay + numItems * 0.35 + 0.45}s` }}
+            >
+              <defs>
+                <linearGradient id="lucky-reveal-maple-gold" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fff7d6" />
+                  <stop offset="55%" stopColor="#facc15" />
+                  <stop offset="100%" stopColor="#b8801f" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M12 1.9l1.9 4.3 3.6-2.2-.9 4.1 4.2-.5-3 3.1 3 3.1-4.2-.5.9 4.1-3.6-2.2L12 20.1l-1.9-4.9-3.6 2.2.9-4.1-4.2.5 3-3.1-3-3.1 4.2.5-.9-4.1 3.6 2.2z"
+                fill="url(#lucky-reveal-maple-gold)"
+              />
+            </svg>
+            <h3 style={{ marginTop: 0, marginBottom: '0.9rem', color: '#f6edd4', fontFamily: 'serif', fontSize: '1.4rem', fontWeight: 800, letterSpacing: '0.5px' }}>
               <SlowWords startDelay={1.9}>{reveal.game.name}</SlowWords>
             </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
-              {reveal.game.numbers.map((number, numberIndex) => (
-                <span
-                  key={number}
-                  style={{
-                    display: 'inline-grid',
-                    placeItems: 'center',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle at 35% 30%, #064e3b 0%, #022c22 70%, #011c15 100%)',
-                    color: '#facc15',
-                    fontWeight: 900,
-                    fontSize: '1.15rem',
-                    fontFamily: 'monospace',
-                    border: '2px solid #e8ba52',
-                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
-                    opacity: 0,
-                    transform: 'translateY(24px) scale(0.5)',
-                    animationName: 'lucky-number-reveal, lucky-glow-pulse',
-                    animationDuration: '0.9s, 3s',
-                    animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out',
-                    animationDelay: `${startNumbersDelay + numberIndex * 0.35}s, ${startNumbersDelay + numberIndex * 0.35 + 0.9}s`,
-                    animationIterationCount: '1, infinite',
-                    animationDirection: 'normal, alternate',
-                    animationFillMode: 'forwards, none',
-                  }}
-                >
-                  {number}
-                </span>
+            <span
+              aria-hidden="true"
+              style={{ display: 'block', height: 1, margin: '0 0 1.1rem', background: 'linear-gradient(90deg, rgba(250, 204, 21, 0), rgba(250, 204, 21, 0.55), rgba(250, 204, 21, 0))' }}
+            />
+            <div style={{ display: 'grid', gap: '0.6rem', justifyItems: 'center' }}>
+              {numberRows.map((row, rowIndex) => (
+                <div key={`lucky-row-${rowIndex}`} className="lucky-reveal-number-row">
+                  {row.map((number, columnIndex) => {
+                    const numberIndex = rowOffsets[rowIndex] + columnIndex;
+
+                    return (
+                      <span
+                        key={`${number}-${numberIndex}`}
+                        className="lucky-reveal-number"
+                        style={{
+                          display: 'inline-grid',
+                          placeItems: 'center',
+                          borderRadius: '50%',
+                          background: 'radial-gradient(circle at 35% 30%, #064e3b 0%, #022c22 70%, #011c15 100%)',
+                          color: '#facc15',
+                          fontWeight: 900,
+                          fontFamily: 'monospace',
+                          border: '2px solid #e8ba52',
+                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+                          opacity: 0,
+                          transform: 'translateY(24px) scale(0.5)',
+                          animationName: 'lucky-number-reveal, lucky-glow-pulse',
+                          animationDuration: '0.9s, 3s',
+                          animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out',
+                          animationDelay: `${startNumbersDelay + numberIndex * 0.35}s, ${startNumbersDelay + numberIndex * 0.35 + 0.9}s`,
+                          animationIterationCount: '1, infinite',
+                          animationDirection: 'normal, alternate',
+                          animationFillMode: 'forwards, none',
+                        }}
+                      >
+                        {number}
+                      </span>
+                    );
+                  })}
+                </div>
               ))}
             </div>
           </article>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1.25rem', marginTop: '1.25rem' }}>
-            <div style={{
+            <div className="lucky-reveal-card" style={{
               padding: '1.25rem',
               borderRadius: 20,
               background: 'rgba(16, 185, 129, 0.08)',
@@ -317,11 +435,21 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
               animationDelay: `${startColorsDelay}s`
             }}>
               <p style={{ margin: '0 0 0.5rem', color: '#34d399', fontWeight: 800, fontSize: '0.85rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Lucky color</p>
-              <strong style={{ fontSize: '1.45rem', display: 'block', color: '#fff', marginBottom: '0.5rem', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{reveal.luckyColor}</strong>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+                <span
+                  aria-hidden="true"
+                  className="lucky-reveal-swatch"
+                  style={{
+                    background: colorSwatchGradient,
+                    boxShadow: `0 0 14px ${colorSwatch.ring}`,
+                  }}
+                />
+                <strong style={{ fontSize: '1.45rem', display: 'block', color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>{reveal.luckyColor}</strong>
+              </div>
               {colorDesc && <p style={{ margin: 0, fontSize: '0.92rem', color: '#94a3b8', lineHeight: 1.5 }}>{colorDesc}</p>}
             </div>
 
-            <div style={{
+            <div className="lucky-reveal-card" style={{
               padding: '1.25rem',
               borderRadius: 20,
               background: 'rgba(253, 230, 138, 0.08)',
