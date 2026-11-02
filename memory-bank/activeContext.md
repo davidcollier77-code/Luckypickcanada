@@ -11,6 +11,17 @@
 
 ---
 
+# Active Context — Customer-Facing Lucky Reveal Consolidation (2026-11-02)
+
+- **Task group:** `creation`; branch `freebuff/a4e5adf82c1dee56b92ed6ee`; same PR #1673, left open and unmerged.
+- **Homepage:** the two purchase cards are now one `homepage-offer-featured` **Lucky Reveal** card with a single **Choose a Lucky Pick** button and one handler (`openLuckyRevealCheckout`). The gift artwork is retained, not deleted; merge, gift, and price copy live on the one card.
+- **Selection popup:** `app/checkout-modal.jsx` gained a `lucky_reveal` mode. The existing 6 Pick / 7 Pick fieldset is joined by a delivery fieldset (`Personal Reveal — CAD $1.00`, `Gift Reveal — CAD $1.99`) that resolves into the hidden `checkoutType`, so the paid form still posts `lucky_pick` or `gift_package`. Recipient fields render only for the resolved gift type, and the modal shows the selected amount. Direct `lucky_pick`/`gift_package`/`tip` modes are unchanged.
+- **Preserved:** Stripe labels (Lucky Pick / Lucky Pick Gift / Tip Jar), amounts 100/199, `mode: 'payment'`, `cad`, metadata, callbacks, gift recipient validation and delivery safeguards, the Tip Jar, the free preview switch (now including the unified popup), and every unrelated homepage section.
+- **Future map:** an empty zero-height `<div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />` sits directly below the reveal section and above the Tip Jar. No map, geolocation, IP lookup, province detection, schema, or location collection was added.
+- **Tests:** `tests/visual/lucky-reveal-selection.spec.ts` (single card, map slot, four posted combinations, keyboard, reduced motion), updated `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`, `__tests__/stripe-product-alignment.test.js`, and `gold-cta.spec.ts` (nine to eight homepage CTAs).
+- **Not verified:** no live Stripe test-mode purchase and no real gift email; browser results are recorded in the PR report.
+
+---
 
 ---
 
