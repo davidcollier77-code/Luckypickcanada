@@ -1,3 +1,15 @@
+# Active Context — Milky Way Background for the Lucky Reveal (2026-11-02)
+
+- **Task group:** `polishing`; branch `freebuff/22482c484ffb5108687ad98e`; PR left open and unmerged.
+- **Verified baseline:** the Lucky Reveal experience is `LuckyRevealPopup` (`app/lucky-reveal-popup.js`), rendered by `app/homepage/HomePage.js`, the free preview switch, and `app/reveal/[revealId]/page.tsx`. Its own background was a `rgba(2, 4, 8, 0.90)` scrim with `blur(12px)`, a dialog gradient carrying a lucky-colour `radialGlow`, three animated aurora blobs, and nine `lucky-twinkle` star points. The homepage artwork is the fixed `.homepage-sky-backdrop` layer, which paints `/assets/crystal-ball-bg-desktop.{webp,avif,jpeg}` through `image-set()` at `center 45% / cover`.
+- **Change:** `app/lucky-reveal-popup.js` now paints that same artwork (same three variants, same format order, same focal point, same `#02050a` base colour) on its full-viewport overlay, and the reveal-only background is gone: no aurora blobs, no twinkle stars, no `starPositions`, no `radialGlow`, and the three keyframes plus their `mixBlendMode` layers were deleted. The panel keeps a dark scrim for legibility and retains the lucky-colour border and shadow.
+- **Not added:** meteorites and shooting-star effects were explicitly not required and were not added.
+- **Preserved:** reveal copy, numbers, lucky colour/day cards, `ShareLuckyPickButton`, the gold map CTA, the close control, Escape handling, autofocus, animation timings, and every unrelated route. No payment, email, database, API route, dependency, or deployment file changed.
+- **Artifacts:** `specs/074-lucky-reveal-milky-way-background/{spec,plan,tasks}.md` plus `checklists/requirements.md`; `.specify/feature.json` points there. New guard: `__tests__/lucky-reveal-background.test.js`.
+- **Verification:** recorded in the PR report; no browser-level screenshot of the reveal was produced in this environment.
+
+---
+
 # Active Context — DevSkim SARIF Replay Gate and Fixture Repair (2026-11-02)
 
 - **Task group:** `security`; branch `freebuff/devskim-sarif-gate`; PR #1675, left open and unmerged.

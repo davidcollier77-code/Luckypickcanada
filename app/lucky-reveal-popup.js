@@ -24,6 +24,13 @@ const dayDescriptions = {
   'Sunday': 'A day of quiet reflection, like the gentle lapping of waves on a quiet Atlantic shore.'
 };
 
+// The homepage paints its sky through `.homepage-sky-backdrop`, which uses this
+// same Milky Way / starfield artwork (AVIF, WebP, then JPEG). The reveal reuses
+// that artwork only; the homepage's animated star canvases and shooting-star
+// effects are deliberately not carried into this experience.
+const MILKY_WAY_BACKDROP_IMAGE =
+  "image-set(url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg'))";
+
 const overlayStyle = {
   position: 'fixed',
   inset: 0,
@@ -31,8 +38,11 @@ const overlayStyle = {
   display: 'grid',
   placeItems: 'center',
   padding: '1rem',
-  background: 'rgba(2, 4, 8, 0.90)',
-  backdropFilter: 'blur(12px)',
+  backgroundColor: '#02050a',
+  backgroundImage: `linear-gradient(180deg, rgba(2, 6, 13, 0.1) 0%, rgba(2, 5, 11, 0.05) 34%, rgba(2, 5, 10, 0.1) 64%, rgba(1, 4, 8, 0.4) 100%), ${MILKY_WAY_BACKDROP_IMAGE}`,
+  backgroundPosition: 'center, center 45%',
+  backgroundSize: 'auto, cover',
+  backgroundRepeat: 'no-repeat, no-repeat',
 };
 
 const dialogStyle = {
@@ -51,37 +61,30 @@ const themeGlows = {
   'Aurora Green': {
     borderColor: 'rgba(52, 211, 153, 0.45)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(16, 185, 129, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)',
   },
   'Star Gold': {
     borderColor: 'rgba(251, 191, 36, 0.55)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(245, 158, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(245, 158, 11, 0.35) 0%, transparent 60%)',
   },
   'Midnight Blue': {
     borderColor: 'rgba(96, 165, 250, 0.45)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(59, 130, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)',
   },
   'Lucky Red': {
     borderColor: 'rgba(248, 113, 113, 0.45)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(239, 68, 68, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(239, 68, 68, 0.25) 0%, transparent 60%)',
   },
   'Moonlight Silver': {
     borderColor: 'rgba(226, 232, 240, 0.5)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(226, 232, 240, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(226, 232, 240, 0.25) 0%, transparent 60%)',
   },
   'Northern Purple': {
     borderColor: 'rgba(167, 139, 250, 0.45)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(139, 92, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)',
   },
   'Sky Blue': {
     borderColor: 'rgba(34, 211, 238, 0.45)',
     boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(6, 182, 212, 0.25) 0%, transparent 60%)',
   }
 };
 
@@ -147,18 +150,6 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     return null;
   }
 
-  const starPositions = [
-    { top: '8%', left: '15%', size: '2px', delay: '0.2s', duration: '4s' },
-    { top: '15%', left: '82%', size: '1.5px', delay: '1.5s', duration: '5s' },
-    { top: '24%', left: '48%', size: '3px', delay: '0.7s', duration: '3s' },
-    { top: '42%', left: '12%', size: '1.2px', delay: '2.1s', duration: '6s' },
-    { top: '58%', left: '88%', size: '2.5px', delay: '1.1s', duration: '4.5s' },
-    { top: '72%', left: '25%', size: '1.8px', delay: '3.2s', duration: '5.5s' },
-    { top: '85%', left: '76%', size: '2px', delay: '0.5s', duration: '4.2s' },
-    { top: '33%', left: '92%', size: '2.2px', delay: '1.8s', duration: '3.8s' },
-    { top: '65%', left: '5%', size: '1.5px', delay: '2.7s', duration: '5.2s' },
-  ];
-
   const colorDesc = colorDescriptions[reveal.luckyColor] || '';
   const dayDesc = dayDescriptions[reveal.luckyDay] || '';
 
@@ -170,11 +161,14 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   const startDaysDelay = startColorsDelay + 0.6;
 
   const theme = themeGlows[reveal.luckyColor] || themeGlows['Aurora Green'];
+  // The Milky Way artwork behind the dialog is the reveal background now, so the
+  // panel is a quiet scrim that keeps the results legible over it. The lucky
+  // colour still drives the border glow and the outer shadow.
   const dynamicDialogStyle = {
     ...dialogStyle,
     borderColor: theme.borderColor,
     boxShadow: theme.boxShadow,
-    background: `${theme.radialGlow}, radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 50%), linear-gradient(180deg, rgba(2, 6, 23, 0.65) 0%, rgba(3, 7, 18, 0.75) 100%)`,
+    background: 'linear-gradient(180deg, rgba(2, 6, 23, 0.72) 0%, rgba(3, 7, 18, 0.82) 100%)',
   };
 
   return (
@@ -225,23 +219,6 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             }
           }
 
-          @keyframes lucky-aurora-glow-1 {
-            0% { transform: translate(-30%, -20%) scale(1) rotate(0deg); opacity: 0.25; }
-            50% { transform: translate(-10%, -10%) scale(1.15) rotate(15deg); opacity: 0.45; }
-            100% { transform: translate(-30%, -20%) scale(1) rotate(0deg); opacity: 0.25; }
-          }
-
-          @keyframes lucky-aurora-glow-2 {
-            0% { transform: translate(20%, -30%) scale(1.2) rotate(0deg); opacity: 0.2; }
-            50% { transform: translate(5%, -15%) scale(1) rotate(-10deg); opacity: 0.38; }
-            100% { transform: translate(20%, -30%) scale(1.2) rotate(0deg); opacity: 0.2; }
-          }
-
-          @keyframes lucky-twinkle {
-            0%, 100% { opacity: 0.2; transform: scale(0.8); filter: blur(1px); }
-            50% { opacity: 0.9; transform: scale(1.3); filter: blur(2px); }
-          }
-
           @keyframes lucky-premium-fade-in {
             0% { opacity: 0; transform: translateY(18px) scale(0.96); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -268,67 +245,6 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             filter: brightness(0.95);
           }
         `}</style>
-
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 28, pointerEvents: 'none' }}>
-          <div style={{
-            position: 'absolute',
-            top: '-25%',
-            left: '-20%',
-            width: '110%',
-            height: '110%',
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at center, rgba(16, 185, 129, 0.25) 0%, rgba(45, 212, 191, 0.15) 40%, transparent 75%)',
-            filter: 'blur(60px)',
-            animation: 'lucky-aurora-glow-1 16s ease-in-out infinite alternate',
-            mixBlendMode: 'screen'
-          }} />
-
-          <div style={{
-            position: 'absolute',
-            top: '-35%',
-            right: '-25%',
-            width: '115%',
-            height: '115%',
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 75%)',
-            filter: 'blur(65px)',
-            animation: 'lucky-aurora-glow-2 20s ease-in-out infinite alternate',
-            mixBlendMode: 'screen'
-          }} />
-
-          <div style={{
-            position: 'absolute',
-            bottom: '-20%',
-            left: '10%',
-            width: '80%',
-            height: '60%',
-            borderRadius: '50%',
-            background: 'radial-gradient(ellipse at center, rgba(236, 72, 153, 0.15) 0%, rgba(217, 70, 239, 0.08) 50%, transparent 70%)',
-            filter: 'blur(55px)',
-            animation: 'lucky-aurora-glow-1 22s ease-in-out infinite alternate-reverse',
-            mixBlendMode: 'screen'
-          }} />
-
-          {starPositions.map((star, index) => (
-            <span
-              key={index}
-              style={{
-                position: 'absolute',
-                top: star.top,
-                left: star.left,
-                width: `calc(${star.size} * 4)`,
-                height: `calc(${star.size} * 4)`,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 20%, rgba(250, 204, 21, 0.1) 50%, transparent 80%)',
-                boxShadow: '0 0 15px rgba(255, 255, 255, 0.3), 0 0 25px rgba(250, 204, 21, 0.2)',
-                animation: `lucky-twinkle ${star.duration} ease-in-out infinite`,
-                animationDelay: star.delay,
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none'
-              }}
-            />
-          ))}
-        </div>
 
         <div style={{ position: 'relative', zIndex: 2 }}>
           <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2.5, color: '#10b981', fontWeight: 900, fontSize: '0.85rem' }}>
