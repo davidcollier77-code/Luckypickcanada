@@ -44,7 +44,7 @@
   "desktop.sharePreview": {
     "width": 1200,
     "height": 1500,
-    "src": "blob:http://127.0.0.1:3001/6af"
+    "src": "blob:<preview-url>"
   },
   "desktop.logoRequests": [
     "lucky-reveal-logo-232.avif"
@@ -161,7 +161,7 @@
   "mobile.sharePreview": {
     "width": 1200,
     "height": 1500,
-    "src": "blob:http://127.0.0.1:3001/779"
+    "src": "blob:<preview-url>"
   },
   "mobile.logoRequests": [
     "lucky-reveal-logo-232.avif"
