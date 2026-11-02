@@ -58,13 +58,18 @@ const dialogStyle = {
   zIndex: 2,
   width: 'min(100%, 720px)',
   maxHeight: '92vh',
-  overflow: 'auto',
-  padding: 'clamp(1.5rem, 5vw, 2.5rem)',
+  // The panel itself does not scroll: the body scrolls inside it, so the close
+  // control stays pinned in the corner instead of scrolling out of reach.
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  padding: 0,
   borderRadius: 28,
   color: '#fff7d6',
   border: '1px solid',
-  backdropFilter: 'blur(24px)',
-  WebkitBackdropFilter: 'blur(24px)',
+  // Matches the homepage's translucent card surface so the Milky Way shows through.
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
 };
 
 const themeGlows = {
@@ -100,10 +105,18 @@ const themeGlows = {
 
 const closeButtonStyle = {
   position: 'absolute',
-  top: 18,
-  right: 18,
-  width: 38,
-  height: 38,
+  top: 15,
+  right: 15,
+  // 44px keeps the control at the minimum reliable touch target; the visual
+  // circle is unchanged apart from being 6px larger.
+  width: 44,
+  height: 44,
+  // The reveal body sits in a positioned wrapper (z-index 2) that used to paint
+  // over the button's lower half, so most of the circle ignored taps. The button
+  // now sits above all panel content.
+  zIndex: 3,
+  padding: 0,
+  lineHeight: 1,
   border: '1px solid rgba(255, 235, 160, 0.2)',
   borderRadius: '50%',
   background: 'rgba(15, 23, 42, 0.6)',
@@ -113,6 +126,8 @@ const closeButtonStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  touchAction: 'manipulation',
+  WebkitTapHighlightColor: 'transparent',
   transition: 'all 0.2s ease',
 };
 
@@ -174,14 +189,15 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   const celebrationDelayMs = (startNumbersDelay + (numItems - 1) * 0.35 + 0.95) * 1000;
 
   const theme = themeGlows[reveal.luckyColor] || themeGlows['Aurora Green'];
-  // The Milky Way artwork behind the dialog is the reveal background now, so the
-  // panel is a quiet scrim that keeps the results legible over it. The lucky
-  // colour still drives the border glow and the outer shadow.
+  // The panel uses the same translucent black glass as the homepage cards, so the
+  // Milky Way artwork and the celebration show through it. The lucky colour still
+  // drives the border glow and the outer shadow.
   const dynamicDialogStyle = {
     ...dialogStyle,
     borderColor: theme.borderColor,
     boxShadow: theme.boxShadow,
-    background: 'linear-gradient(180deg, rgba(2, 6, 23, 0.72) 0%, rgba(3, 7, 18, 0.82) 100%)',
+    background:
+      'linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))',
   };
 
   // Six picks read as 3 + 3 and seven as 4 + 3, centred, in the stored order.
@@ -337,7 +353,19 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
           }
         `}</style>
 
-        <div style={{ position: 'relative', zIndex: 2 }}>
+        <div
+          className="lucky-reveal-scroll"
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            overscrollBehavior: 'contain',
+            padding: 'clamp(1.5rem, 5vw, 2.5rem)',
+          }}
+        >
           <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2.5, color: '#10b981', fontWeight: 900, fontSize: '0.85rem' }}>
             <SlowWords>Payment complete</SlowWords>
           </p>
@@ -499,6 +527,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
         </div>
       </section>
 
+      {/* Behind the panel (z-index 1 vs 2) so the decorative pile can never cover a
+          number, the copy, the share control, or the map button. */}
       <LuckyRevealCelebration startDelayMs={celebrationDelayMs} />
     </div>
   );

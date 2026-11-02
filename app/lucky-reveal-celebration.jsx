@@ -11,17 +11,31 @@ import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/maple
 const GOLD_LEAF_COLORS = ['#FBBF24', '#F59E0B', '#D97706'];
 
 // The pile of fallen leaves along the bottom edge is the same maple leaf drawn as
-// inline SVG, so the finish stays vector and needs no extra raster asset.
+// inline SVG, so the finish stays vector and needs no extra raster asset. The
+// leaves are stacked in three overlapping layers with irregular spacing, sizes
+// and rotations so the finish reads as a small pile rather than a row.
 const SETTLED_LEAVES = [
-  { left: '5%', bottom: 6, size: 30, rotate: -22, color: '#FBBF24', opacity: 0.92, delay: 0 },
-  { left: '14%', bottom: 1, size: 22, rotate: 14, color: '#FDE68A', opacity: 0.82, delay: 0.06 },
-  { left: '24%', bottom: 10, size: 27, rotate: 8, color: '#F59E0B', opacity: 0.88, delay: 0.12 },
-  { left: '35%', bottom: 3, size: 20, rotate: -12, color: '#FBBF24', opacity: 0.78, delay: 0.18 },
-  { left: '47%', bottom: 8, size: 33, rotate: -6, color: '#FDE68A', opacity: 0.95, delay: 0.24 },
-  { left: '59%', bottom: 2, size: 24, rotate: 18, color: '#F59E0B', opacity: 0.84, delay: 0.3 },
-  { left: '71%', bottom: 9, size: 28, rotate: -16, color: '#FBBF24', opacity: 0.9, delay: 0.36 },
-  { left: '83%', bottom: 3, size: 21, rotate: 10, color: '#FDE68A', opacity: 0.8, delay: 0.42 },
-  { left: '94%', bottom: 7, size: 27, rotate: -20, color: '#F59E0B', opacity: 0.88, delay: 0.48 },
+  // Back layer: larger, darker leaves that sit under everything else.
+  { left: '8%', bottom: 34, size: 34, rotate: -34, color: '#D97706', opacity: 0.42, delay: 0, layer: 0 },
+  { left: '23%', bottom: 37, size: 30, rotate: 24, color: '#B45309', opacity: 0.38, delay: 0.03, layer: 0 },
+  { left: '41%', bottom: 39, size: 37, rotate: -14, color: '#D97706', opacity: 0.4, delay: 0.06, layer: 0 },
+  { left: '62%', bottom: 35, size: 32, rotate: 30, color: '#B45309', opacity: 0.38, delay: 0.09, layer: 0 },
+  { left: '84%', bottom: 33, size: 36, rotate: -24, color: '#D97706', opacity: 0.42, delay: 0.12, layer: 0 },
+  // Middle layer: the bulk of the pile, tucked into the back leaves.
+  { left: '3%', bottom: 17, size: 26, rotate: 18, color: '#F59E0B', opacity: 0.7, delay: 0.1, layer: 1 },
+  { left: '15%', bottom: 14, size: 31, rotate: -28, color: '#FBBF24', opacity: 0.72, delay: 0.14, layer: 1 },
+  { left: '31%', bottom: 19, size: 24, rotate: 40, color: '#F59E0B', opacity: 0.68, delay: 0.18, layer: 1 },
+  { left: '48%', bottom: 15, size: 29, rotate: -20, color: '#FBBF24', opacity: 0.74, delay: 0.22, layer: 1 },
+  { left: '67%', bottom: 18, size: 25, rotate: 34, color: '#F59E0B', opacity: 0.7, delay: 0.26, layer: 1 },
+  { left: '81%', bottom: 13, size: 30, rotate: -32, color: '#FBBF24', opacity: 0.72, delay: 0.3, layer: 1 },
+  { left: '94%', bottom: 19, size: 23, rotate: 12, color: '#F59E0B', opacity: 0.66, delay: 0.34, layer: 1 },
+  // Front layer: small, bright leaves resting on top of the pile.
+  { left: '9%', bottom: 3, size: 21, rotate: -8, color: '#FDE68A', opacity: 0.9, delay: 0.26, layer: 2 },
+  { left: '27%', bottom: 1, size: 25, rotate: 26, color: '#FBBF24', opacity: 0.95, delay: 0.3, layer: 2 },
+  { left: '44%', bottom: 5, size: 19, rotate: -42, color: '#FDE68A', opacity: 0.88, delay: 0.34, layer: 2 },
+  { left: '60%', bottom: 1, size: 24, rotate: 10, color: '#FBBF24', opacity: 0.94, delay: 0.38, layer: 2 },
+  { left: '77%', bottom: 6, size: 20, rotate: -16, color: '#FDE68A', opacity: 0.9, delay: 0.42, layer: 2 },
+  { left: '90%', bottom: 2, size: 23, rotate: 32, color: '#FBBF24', opacity: 0.92, delay: 0.46, layer: 2 },
 ];
 
 /**
@@ -196,7 +210,9 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
         .lucky-celebration {
           position: absolute;
           inset: 0;
-          z-index: 3;
+          /* Behind the reveal panel (z-index 2): the finish is decorative and must
+             never sit over numbers, copy, the share control, or the map button. */
+          z-index: 1;
           pointer-events: none;
           overflow: hidden;
         }
@@ -217,7 +233,7 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
           position: absolute;
           inset-inline: 0;
           bottom: 0;
-          height: clamp(76px, 15vh, 140px);
+          height: clamp(96px, 18vh, 168px);
           opacity: 0;
           animation: lucky-celebration-finish-in 0.9s ease-out 1s forwards;
         }
@@ -263,6 +279,7 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
               bottom: leaf.bottom,
               width: leaf.size,
               height: leaf.size,
+              zIndex: leaf.layer,
               color: leaf.color,
               transform: `translate(-50%, 0) rotate(${leaf.rotate}deg)`,
               '--leaf-opacity': leaf.opacity,
