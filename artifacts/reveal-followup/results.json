@@ -1,0 +1,259 @@
+{
+  "desktop.closeBox": {
+    "width": 44,
+    "height": 44
+  },
+  "desktop.hitTest": {
+    "topEdge": {
+      "tag": "BUTTON",
+      "text": "×",
+      "isCloseTarget": true
+    },
+    "centre": {
+      "tag": "SPAN",
+      "text": "×",
+      "isCloseTarget": true
+    },
+    "lower": {
+      "tag": "BUTTON",
+      "text": "×",
+      "isCloseTarget": true
+    }
+  },
+  "desktop.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1010,
+      "clientHeight": 826
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "desktop.sharePreview": {
+    "width": 1200,
+    "height": 1500,
+    "src": "blob:<preview-url>"
+  },
+  "desktop.logoRequests": [
+    "lucky-reveal-logo-232.avif"
+  ],
+  "desktop.click-beforeScroll-closed": true,
+  "desktop.closedBeforeScroll": true,
+  "desktop.closeAfterScroll": {
+    "inViewport": true,
+    "hit": true,
+    "top": 52
+  },
+  "desktop.click-afterScroll-closed": true,
+  "desktop.closedAfterScroll": true,
+  "desktop.escapeClosed": true,
+  "desktop.seven.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1010,
+      "clientHeight": 826
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "desktop.seven.numbers": [
+    "15",
+    "20",
+    "30",
+    "34",
+    "39",
+    "46",
+    "47"
+  ],
+  "desktop.click-seven-closed": true,
+  "desktop.seven.closed": true,
+  "desktop.seven.leafCount": 18,
+  "desktop.gift.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1010,
+      "clientHeight": 826
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "desktop.gift.heading": "Yourluckyrevealishere",
+  "desktop.click-gift-closed": true,
+  "desktop.gift.closed": true,
+  "mobile.closeBox": {
+    "width": 44,
+    "height": 44
+  },
+  "mobile.hitTest": {
+    "topEdge": {
+      "tag": "BUTTON",
+      "text": "×",
+      "isCloseTarget": true
+    },
+    "centre": {
+      "tag": "SPAN",
+      "text": "×",
+      "isCloseTarget": true
+    },
+    "lower": {
+      "tag": "BUTTON",
+      "text": "×",
+      "isCloseTarget": true
+    }
+  },
+  "mobile.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1067,
+      "clientHeight": 774
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "mobile.sharePreview": {
+    "width": 1200,
+    "height": 1500,
+    "src": "blob:<preview-url>"
+  },
+  "mobile.logoRequests": [
+    "lucky-reveal-logo-232.avif"
+  ],
+  "mobile.click-beforeScroll-closed": true,
+  "mobile.closedBeforeScroll": true,
+  "mobile.closeAfterScroll": {
+    "inViewport": true,
+    "hit": true,
+    "top": 50
+  },
+  "mobile.click-afterScroll-closed": true,
+  "mobile.closedAfterScroll": true,
+  "mobile.escapeClosed": true,
+  "mobile.seven.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1067,
+      "clientHeight": 774
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "mobile.seven.numbers": [
+    "12",
+    "17",
+    "18",
+    "28",
+    "43",
+    "47",
+    "49"
+  ],
+  "mobile.click-seven-closed": true,
+  "mobile.seven.closed": true,
+  "mobile.seven.leafCount": 18,
+  "mobile.gift.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1067,
+      "clientHeight": 774
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "mobile.gift.heading": "Yourluckyrevealishere",
+  "mobile.click-gift-closed": true,
+  "mobile.gift.closed": true,
+  "reduced.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1067,
+      "clientHeight": 774
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 0,
+    "overlaps": []
+  },
+  "reduced.click-static-closed": true,
+  "reduced.closed": true
+}

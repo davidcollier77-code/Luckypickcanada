@@ -1,3 +1,16 @@
+# Active Context — Lucky Reveal Follow-up Polish (2026-11-02)
+
+- **Task groups:** `polishing` + `troubleshooting`; branch `freebuff/reveal-polish-followups`; PR left open and unmerged.
+- **Merged baseline:** PR #1680 (feature 076 celebration and share-logo AVIF/WebP) is merged; this work is a new branch from that merge (`4600ced8`).
+- **Close button:** measured in Chromium before the fix: the panel's content wrapper (`position: relative; z-index: 2`) covered the lower 32 px of the 38 px X on mobile (every probe point hit `P`/`H2`) and the lower 16 px on desktop, and scrolling the panel moved the X to `top: -129` (desktop) / `-240` (mobile). Fix: the button is now `z-index: 3`, 44x44 with `touch-action: manipulation`, and the panel no longer scrolls — the `.lucky-reveal-scroll` body does, so the X stays pinned. After: every probe point hit-tests the button, one click closes the reveal before and after scrolling, and Escape still closes, on desktop 1440x900 and mobile 390x844, for 6 and 7 picks.
+- **Leaf pile:** `SETTLED_LEAVES` is now 18 overlapping leaves in three explicit layers (`zIndex: leaf.layer`) with varied size, rotation and opacity, over the existing gold glow; the celebration layer is `z-index: 1`, behind the panel (`z-index: 2`), so the finish cannot cover numbers, copy, the share control or the map CTA (probe: `paintedAbovePanel: false`, zero reportable overlaps).
+- **Container:** the panel now uses the homepage card gradient `linear-gradient(145deg, rgba(5,11,18,.7), rgba(7,19,27,.52) 52%, rgba(8,7,18,.62))` with `blur(16px)`, keeping the lucky-colour border/glow and radius 28.
+- **Images:** audit with measured bytes. Reveal background stays AVIF 474,841 / WebP 427,992 / JPEG 535,956. The share logo is now `public/assets/lucky-reveal-logo-232.{avif,webp,png}` (12,141 / 22,500 / 24,039 B, 232x502, alpha) generated from the 1920x4152 PNG, replacing a 195,149 B AVIF download for a 116 px draw; the PNG share output is unchanged. Inline SVG artwork stays vector (0 requests); `golden-maple-leaf` already ships AVIF -> WebP -> SVG.
+- **Artifacts:** `specs/078-lucky-reveal-followup-polish/{spec,plan,tasks}.md`; `.specify/feature.json` points there. Guards: `__tests__/lucky-reveal-followup.test.js` plus the updated 076 suites. Browser evidence: `artifacts/reveal-followup-probe.cjs` and `artifacts/reveal-followup/`.
+- **Verification:** full `pnpm exec vitest run` (320 tests), `pnpm exec tsc --noEmit`, and `./freebuff-verify.sh` passed; production build 409,750,967 B / 390.77 MiB. Chromium works in this workspace via `scripts/setup-chromium-libs.sh`; the dev runtime does not hydrate here, so browser checks run against `next start` on port 3001.
+
+---
+
 # Active Context — Chromium Visual Inspection Enabled Without Root (2026-11-02)
 
 - **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR #1681 open and unmerged. Follow-up to the #1681 audit, at the owner's direction: no root, no `no-new-privileges` change, no sandbox weakening.

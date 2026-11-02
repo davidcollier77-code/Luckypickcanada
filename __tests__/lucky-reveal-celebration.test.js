@@ -163,9 +163,9 @@ describe('Reveal raster images', () => {
   });
 
   it('loads the share-image logo AVIF first, WebP second, PNG last', () => {
-    const avif = '/BackgroundEraser_20260724_163638777.avif';
-    const webp = '/BackgroundEraser_20260724_163638777.webp';
-    const png = '/BackgroundEraser_20260724_163638777.png';
+    const avif = '/assets/lucky-reveal-logo-232.avif';
+    const webp = '/assets/lucky-reveal-logo-232.webp';
+    const png = '/assets/lucky-reveal-logo-232.png';
 
     expect(shareImageSource).toContain('LOGO_SOURCES');
     expect(shareImageSource).toContain('loadLogo');
@@ -174,9 +174,9 @@ describe('Reveal raster images', () => {
 
     // Every source must actually exist, so a fallback never 404s.
     for (const asset of [
-      'BackgroundEraser_20260724_163638777.avif',
-      'BackgroundEraser_20260724_163638777.webp',
-      'BackgroundEraser_20260724_163638777.png',
+      'assets/lucky-reveal-logo-232.avif',
+      'assets/lucky-reveal-logo-232.webp',
+      'assets/lucky-reveal-logo-232.png',
     ]) {
       expect(existsSync(join(process.cwd(), 'public', asset))).toBe(true);
     }

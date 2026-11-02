@@ -12,13 +12,15 @@ import {
 const WIDTH = 1200;
 const HEIGHT = 1500;
 const PADDING = 96;
-// The logo is the only raster asset the share image draws. AVIF is the smallest
-// source, WebP covers browsers without AVIF decoding, and the original PNG is the
-// last resort. The generated share image itself stays PNG for device sharing.
+// The logo is the only raster asset the share image draws, and it is drawn at
+// 116px. These variants are the same artwork at 232px wide (2x the drawn size),
+// so the renderer no longer downloads the 1920x4152 original: AVIF first, WebP
+// for browsers without AVIF decoding, PNG last. The generated share image itself
+// stays PNG for device sharing.
 const LOGO_SOURCES = [
-  '/BackgroundEraser_20260724_163638777.avif',
-  '/BackgroundEraser_20260724_163638777.webp',
-  '/BackgroundEraser_20260724_163638777.png',
+  '/assets/lucky-reveal-logo-232.avif',
+  '/assets/lucky-reveal-logo-232.webp',
+  '/assets/lucky-reveal-logo-232.png',
 ];
 
 function loadImage(src) {

@@ -109,7 +109,8 @@ describe('LuckyRevealCelebration', () => {
     expect(container.querySelector('.lucky-celebration')).not.toBeNull();
     expect(container.querySelector('.lucky-celebration-flash')).not.toBeNull();
     expect(container.querySelector('.lucky-celebration-glow')).not.toBeNull();
-    expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(9);
+    // A layered pile, not an even row.
+    expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(18);
     expect(document.querySelectorAll('body > canvas')).toHaveLength(1);
   });
 
@@ -125,7 +126,7 @@ describe('LuckyRevealCelebration', () => {
     expect(audio.playConfettiPop).not.toHaveBeenCalled();
     expect(fired).toHaveLength(0);
     expect(document.querySelectorAll('body > canvas')).toHaveLength(0);
-    expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(9);
+    expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(18);
   });
 
   it('removes the particle canvas when the reveal closes', async () => {
