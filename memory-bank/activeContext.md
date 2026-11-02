@@ -1,3 +1,28 @@
+# Active Context — DevSkim Fixture Repair and Payment/Email Baseline Audit (2026-11-02)
+
+- **Task group:** `security`; branch `freebuff/lucky-reveal-unified-card`; PR #1674, left open and unmerged.
+- **Verified DevSkim CI failure:** run `41419872774` job `125192572027` failed only the step `Test DevSkim suppression filter` (scanner and syntax steps passed; SARIF uploads ran; the report-update job was skipped). Reproduced locally as 6 failures + 9 errors.
+- **Root cause:** the UTF-16 fixture in `.github/scripts/test_suppress_devskim_false_positives.py` stored absolute line numbers for the audited `test.setTimeout(180_000)` calls in `tests/visual/sitewide-gold-cta.spec.ts`. PR #1674 merged two CTA wording lines into one, so every later line moved up by one; the stale numbers tripped the `startswith` guard (failures) and `line.index("setTimeout")` (`ValueError: substring not found`, errors). The SARIF filter itself was correct and is unchanged.
+- **Correction:** findings are discovered by scanning source for the strict `test.setTimeout(<digits>);` call; token and line numbers come from the match. Added coverage guards (audited call must still exist, astral divergence must still be exercised) and two regressions that replay an unrelated line deletion and insertion.
+- **Verified:** focused Python suite 63 tests `OK` exit 0; `py_compile` exit 0.
+- **Payments/email audit:** `app/api/checkout/route.js`, `app/api/verify-session/route.ts`, `app/api/stripe-webhook/route.js`, `app/gift-email.js`, `app/api/gift-delivery/route.js` are unchanged by PR #1674. Products, prices, currency, one-time mode, gift `amount_total` guard, recipient validation, webhook signature verification, Redis lock/idempotency and the personal-reveal email block all read as before; evidence recorded in `specs/066-devskim-playwright-offset-remediation/spec.md`.
+- **Env:** `GIFT_FROM_EMAIL` is a plain `wrangler.jsonc` var; `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `RESEND_API_KEY` are Cloudflare secrets and are legitimately absent from the repository. Their deployed values were not accessible; local absence is not evidence of a production gap.
+- **Not run:** live Stripe test-mode checkout, live Resend delivery, deployed secret inspection, and current-head CI (pending).
+
+---
+
+# Active Context — Customer-Facing Lucky Reveal Consolidation (2026-11-02)
+
+- **Task group:** `creation`; branch `freebuff/a4e5adf82c1dee56b92ed6ee`; same PR #1673, left open and unmerged.
+- **Homepage:** the two purchase cards are now one `homepage-offer-featured` **Lucky Reveal** card with a single **Choose a Lucky Pick** button and one handler (`openLuckyRevealCheckout`). The gift artwork is retained, not deleted; merge, gift, and price copy live on the one card.
+- **Selection popup:** `app/checkout-modal.jsx` gained a `lucky_reveal` mode. The existing 6 Pick / 7 Pick fieldset is joined by a delivery fieldset (`Personal Reveal — CAD $1.00`, `Gift Reveal — CAD $1.99`) that resolves into the hidden `checkoutType`, so the paid form still posts `lucky_pick` or `gift_package`. Recipient fields render only for the resolved gift type, and the modal shows the selected amount. Direct `lucky_pick`/`gift_package`/`tip` modes are unchanged.
+- **Preserved:** Stripe labels (Lucky Pick / Lucky Pick Gift / Tip Jar), amounts 100/199, `mode: 'payment'`, `cad`, metadata, callbacks, gift recipient validation and delivery safeguards, the Tip Jar, the free preview switch (now including the unified popup), and every unrelated homepage section.
+- **Future map:** an empty zero-height `<div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />` sits directly below the reveal section and above the Tip Jar. No map, geolocation, IP lookup, province detection, schema, or location collection was added.
+- **Tests:** `tests/visual/lucky-reveal-selection.spec.ts` (single card, map slot, four posted combinations, keyboard, reduced motion), updated `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`, `__tests__/stripe-product-alignment.test.js`, and `gold-cta.spec.ts` (nine to eight homepage CTAs).
+- **Not verified:** no live Stripe test-mode purchase and no real gift email; browser results are recorded in the PR report.
+
+---
+
 # Active Context - Official Checkout Labels and Dead Route Cleanup (2026-11-02)
 
 - **Task group:** `creation`; same branch and PR as the Stripe alignment work (PR #1673), left open and unmerged.

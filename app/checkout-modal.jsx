@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { canPreviewReveal } from './test-tools/reveal-testing/revealTestConfig';
 
 const COPY = {
+  lucky_reveal: {
+    title: 'Lucky Reveal',
+    description: 'Choose 6 Pick or 7 Pick, then choose how you receive your reveal.',
+  },
   lucky_pick: {
     title: 'Lucky Reveal',
     description: 'Your complete reveal appears on the website: 6 Pick or 7 Pick numbers, lucky color, and lucky day. No email delivery is included.',
@@ -18,13 +22,40 @@ const COPY = {
   },
 };
 
+/**
+ * The two delivery choices offered by the unified Lucky Reveal popup. The
+ * `value` is the existing checkout type, so the paid form keeps posting the
+ * same `checkoutType` that `/api/checkout` already handles. Prices are display
+ * copy only; the charged amount stays in the server route.
+ */
+const DELIVERY_OPTIONS = [
+  {
+    value: 'lucky_pick',
+    label: 'Personal Reveal — CAD $1.00',
+    note: 'Your reveal appears on the website. No gift recipient details, no email delivery.',
+  },
+  {
+    value: 'gift_package',
+    label: 'Gift Reveal — CAD $1.99',
+    note: 'The same reveal, delivered by email to your recipient with an optional personal message.',
+  },
+];
+
 export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
+  const [deliveryType, setDeliveryType] = useState('lucky_pick');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copy = COPY[type];
   if (!copy) {
     return null;
   }
+
+  // The unified popup resolves its delivery choice into the existing checkout
+  // type; the direct Lucky Pick, Gift and Tip flows keep their own type.
+  const isUnified = type === 'lucky_reveal';
+  const checkoutType = isUnified ? deliveryType : type;
+  const isRevealFlow = checkoutType === 'lucky_pick' || checkoutType === 'gift_package';
+  const chosenDelivery = DELIVERY_OPTIONS.find((option) => option.value === checkoutType);
   const isPreviewEnabled = canPreviewReveal(type);
 
   useEffect(() => {
@@ -69,7 +100,7 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
    * Stripe, taking payment, or sending any email.
    */
   function startPreviewReveal() {
-    onPreviewReveal?.(type, luckyPickGame);
+    onPreviewReveal?.(checkoutType, luckyPickGame);
   }
 
   return (
@@ -80,15 +111,29 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
         <h2 id="checkout-modal-title">{copy.title}</h2>
         <p>{copy.description}</p>
         <form action="/api/checkout" method="post" className="checkout-modal-form" onSubmit={requestRevealAccess}>
-          <input type="hidden" name="checkoutType" value={type} />
-          {(type === 'lucky_pick' || type === 'gift_package') && (
+          <input type="hidden" name="checkoutType" value={checkoutType} />
+          {isRevealFlow && (
             <fieldset>
               <legend>Choose your game</legend>
               <label><input type="radio" name="luckyPickGame" value="6" checked={luckyPickGame === '6'} onChange={() => setLuckyPickGame('6')} /> 6 Pick</label>
               <label><input type="radio" name="luckyPickGame" value="7" checked={luckyPickGame === '7'} onChange={() => setLuckyPickGame('7')} /> 7 Pick</label>
             </fieldset>
           )}
-          {type === 'gift_package' && (
+          {isUnified && (
+            <fieldset className="checkout-delivery-fieldset">
+              <legend>Choose how you receive it</legend>
+              {DELIVERY_OPTIONS.map((option) => (
+                <label key={option.value} className={`checkout-delivery-option${checkoutType === option.value ? ' is-selected' : ''}`}>
+                  <span className="checkout-delivery-choice">
+                    <input type="radio" name="deliveryType" value={option.value} checked={checkoutType === option.value} onChange={() => setDeliveryType(option.value)} />
+                    <span>{option.label}</span>
+                  </span>
+                  <span className="checkout-delivery-note">{option.note}</span>
+                </label>
+              ))}
+            </fieldset>
+          )}
+          {checkoutType === 'gift_package' && (
             <>
               <label><span className="inline-flex items-center gap-1">Recipient name<span aria-hidden="true" className="text-red-500">*</span></span><input name="recipientName" required maxLength="80" autoComplete="name" /></label>
               <label><span className="inline-flex items-center gap-1">Recipient email<span aria-hidden="true" className="text-red-500">*</span></span><input name="recipientEmail" type="email" required maxLength="120" autoComplete="email" /></label>
@@ -97,6 +142,9 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
             </>
           )}
           {type === 'tip' && <label><span className="inline-flex items-center gap-1">Tip amount (CAD)<span aria-hidden="true" className="text-red-500">*</span></span><input name="tipAmount" type="number" min="0.50" step="0.01" inputMode="decimal" required placeholder="5.00" /></label>}
+          {isRevealFlow && chosenDelivery && (
+            <p className="checkout-modal-summary" aria-live="polite">Selected: <strong>{chosenDelivery.label}</strong></p>
+          )}
           <button type="submit" disabled={isSubmitting} className="gold-3d-btn checkout-modal-submit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔒</span>{isSubmitting ? 'Please wait...' : 'Continue to secure checkout'}</button>
         </form>
         {isPreviewEnabled && (

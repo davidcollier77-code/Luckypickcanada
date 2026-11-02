@@ -66,11 +66,11 @@ test.describe('Homepage Gold CTA', () => {
     });
   });
 
-  test('nine gold CTAs keep the raised rest treatment and stay aligned', async ({ page }, testInfo) => {
+  test('eight gold CTAs keep the raised rest treatment and stay aligned', async ({ page }, testInfo) => {
     test.setTimeout(180_000);
     await openHomepage(page);
 
-    await expect(page.locator(GOLD_CTA)).toHaveCount(9);
+    await expect(page.locator(GOLD_CTA)).toHaveCount(8);
 
     // One pass keeps every measurement on the same scroll offset, so the
     // overlap and alignment comparisons are meaningful.

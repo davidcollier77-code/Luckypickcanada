@@ -77,22 +77,28 @@ generator, and its numbers validate through the shared popup mapper.
 3. **Given** a repeated webhook, **Then** `giftDeliveredAt` and the stable idempotency key prevent a
    second email.
 
-### User Story 3 — See one clear choice between the two options (Priority: P2)
+### User Story 3 — Choose one reveal in one place (Priority: P2)
 
-A visitor sees two visually consistent options with the labels **Lucky Reveal** and
-**Lucky Reveal Gift Edition**, including a plain statement of what each includes.
+A visitor sees a single **Lucky Reveal** card and, from its one button, chooses **6 Pick** or
+**7 Pick** and then **Personal Reveal — CAD $1.00** or **Gift Reveal — CAD $1.99**, with a plain
+statement of what each delivery option includes.
 
-**Independent Test**: Homepage and modal copy contain both labels and say that only the Gift Edition
-includes email delivery.
+**Independent Test**: The homepage renders exactly one reveal card and one entry button; the popup
+captures both choices; a browser test submits all four combinations and inspects the checkout
+payload.
 
 **Acceptance Scenarios**:
 
-1. **Given** the homepage, **Then** both options share the same card structure and state their
-   difference.
-2. **Given** the modal, **Then** the description for each type states whether email delivery is
-   included.
-3. **Given** the Stripe checkout page, **Then** the product name and description match the chosen
-   option.
+1. **Given** the homepage, **Then** there is one Lucky Reveal card with one primary button, and the
+   removed second card's information lives in the popup.
+2. **Given** the popup, **Then** the game and delivery choices are both selectable before checkout,
+   and only the Gift Reveal asks for recipient details.
+3. **Given** any of the four combinations, **When** the form is submitted, **Then** `checkoutType`
+   is `lucky_pick` (100) or `gift_package` (199) matching the chosen delivery and `luckyPickGame`
+   matches the chosen game.
+4. **Given** a personal selection, **Then** the posted form carries no recipient name or email.
+5. **Given** the Stripe Checkout page, **Then** the product name remains **Lucky Pick** /
+   **Lucky Pick Gift** and the website experience remains **Lucky Reveal**.
 
 ### Edge Cases
 
@@ -110,9 +116,9 @@ includes email delivery.
   random generator or duplicated vocabulary.
 - **FR-003**: Both purchase options MUST present results through the shared mapping, and a reveal
   whose numbers cannot be validated MUST NOT be replaced with locally generated results.
-- **FR-004**: The website MUST keep the **Lucky Reveal** and **Lucky Reveal Gift Edition**
-  presentation and state whether email delivery is included, while the **Stripe Checkout product
-  labels** MUST use the official names **Lucky Pick**, **Lucky Pick Gift**, and **Tip Jar**.
+- **FR-004**: The website MUST keep the **Lucky Reveal** presentation and state whether email
+  delivery is included, while the **Stripe Checkout product labels** MUST use the official names
+  **Lucky Pick**, **Lucky Pick Gift**, and **Tip Jar**.
 - **FR-010**: Exactly one route module MUST exist per App Router endpoint. The empty tracked
   `app/api/verify-session/route.js` placeholder MUST NOT remain beside the real `route.ts`.
 - **FR-005**: The standard option MUST NOT trigger gift email delivery, and must fail closed if gift
@@ -137,6 +143,12 @@ includes email delivery.
   production build under the 495 MB maximum.
 - **SC-005**: Automated tests prove the three Stripe Checkout product labels and that the
   `verify-session` endpoint has a single route module compiling `route.ts`.
+- **SC-006**: Automated and browser tests prove the homepage shows exactly one Lucky Reveal card,
+  that its single popup offers both games and both delivery options, and that all four combinations
+  post the correct `checkoutType` and `luckyPickGame`.
+- **SC-007**: Browser tests prove a personal selection posts no recipient data, the popup works by
+  keyboard and under `prefers-reduced-motion`, and the reserved map slot is empty and positioned
+  between the reveal section and the Tip Jar.
 
 ## Assumptions and Limits
 
@@ -151,3 +163,9 @@ includes email delivery.
   route is part of the existing gift-delivery handshake; both routes render the same reveal component
   with the same validated data shape.
 - No Stripe product, price ID, webhook, database schema, or environment variable is added.
+- The unified popup posts the two existing checkout types (`lucky_pick`, `gift_package`), so
+  `/api/checkout`, its metadata, callbacks, and the gift-delivery guard are unchanged. The extra
+  `deliveryType` radio is display state only and is ignored by the server route.
+- The future Lucky Map is represented by an empty, zero-height `#lucky-map` slot directly below the
+  reveal section. It renders no map and collects no location data; province-level aggregate design
+  is left to that future task.

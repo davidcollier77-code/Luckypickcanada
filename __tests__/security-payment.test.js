@@ -97,8 +97,10 @@ describe('Unified Lucky Reveal purchase options', () => {
     expect(checkoutSource).toContain("name: 'Lucky Pick Gift'");
     expect(modalSource).toContain("title: 'Lucky Reveal'");
     expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
-    expect(homepageSource).toContain('Lucky Reveal Gift Edition');
-    expect(homepageSource).toContain('No email delivery');
+    expect(modalSource).toContain("label: 'Personal Reveal — CAD $1.00'");
+    expect(modalSource).toContain("label: 'Gift Reveal — CAD $1.99'");
+    expect(homepageSource).toContain('Choose a Lucky Pick');
+    expect(homepageSource).toContain('no email delivery');
   });
 
   it('states that only the standard option skips email delivery', () => {
@@ -108,7 +110,7 @@ describe('Unified Lucky Reveal purchase options', () => {
 
   it('requires recipient details only for the Gift Edition', () => {
     expect(checkoutSource).toContain("if (checkoutType === 'gift_package') {");
-    expect(modalSource).toContain("type === 'gift_package' &&");
+    expect(modalSource).toContain("checkoutType === 'gift_package' &&");
   });
 
   it('does not send email from the standard checkout path', () => {
@@ -153,5 +155,46 @@ describe('Gift email link security', () => {
 
     expect(anchor).not.toBeNull();
     expect(anchor[0]).toContain('rel="noopener noreferrer"');
+  });
+});
+
+
+describe('Unified Lucky Reveal homepage card', () => {
+  const homepageSource = readFileSync(join(process.cwd(), 'app/homepage/HomePage.js'), 'utf8');
+  const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
+  const revealSection = homepageSource.slice(
+    homepageSource.indexOf('id="personalized"'),
+    homepageSource.indexOf('id="lucky-map"'),
+  );
+
+  it('replaces the two purchase cards with one Lucky Reveal card', () => {
+    expect(revealSection.match(/<article/g)).toHaveLength(1);
+    expect(revealSection.match(/homepage-offer-featured/g)).toHaveLength(1);
+    expect(revealSection.match(/Choose a Lucky Pick/g)).toHaveLength(1);
+    expect(homepageSource).not.toContain('Gift the Gift Edition');
+    expect(homepageSource).not.toContain('Choose Lucky Reveal<');
+  });
+
+  it('moves both delivery choices into the one selection popup', () => {
+    expect(homepageSource).toContain("setCheckoutType('lucky_reveal')");
+    expect(modalSource).toContain("type === 'lucky_reveal'");
+    expect(modalSource).toContain("value: 'lucky_pick'");
+    expect(modalSource).toContain("value: 'gift_package'");
+    expect(modalSource).toContain('name="deliveryType"');
+    // The paid form still posts the existing checkout types the API handles.
+    expect(modalSource).toContain('<input type="hidden" name="checkoutType" value={checkoutType} />');
+  });
+
+  it('keeps the future map slot directly below the reveal section and collects nothing', () => {
+    const revealIndex = homepageSource.indexOf('id="personalized"');
+    const mapIndex = homepageSource.indexOf('id="lucky-map"');
+    const tipIndex = homepageSource.indexOf('id="tip-jar-section"');
+
+    expect(revealIndex).toBeGreaterThan(-1);
+    expect(mapIndex).toBeGreaterThan(revealIndex);
+    expect(mapIndex).toBeLessThan(tipIndex);
+    // No map UI, geolocation, IP lookup, province detection or location storage was added.
+    expect(homepageSource).not.toMatch(/geolocation|geoip|ipapi|ip-api|province/i);
+    expect(homepageSource).toContain('<div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />');
   });
 });

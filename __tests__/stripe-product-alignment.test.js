@@ -72,7 +72,9 @@ describe('Stripe product alignment', () => {
   });
 
   it('keeps the Lucky Reveal presentation on the website', () => {
-    expect(homepageSource).toContain('Lucky Reveal Gift Edition');
+    expect(homepageSource).toContain('Choose a Lucky Pick');
+    expect(homepageSource).toContain('Personal Reveal');
+    expect(homepageSource).toContain('Gift Reveal');
     expect(modalSource).toContain("title: 'Lucky Reveal'");
     expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
   });
