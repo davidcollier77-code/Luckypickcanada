@@ -14,7 +14,7 @@
 - [x] T005 Create `specs/079-linux-reference-routing/plan.md` with routing, updater, distro-detection, and sandbox-safety decisions.
 - [x] T006 Add `/debian/debian-reference` once to both intended group arrays, its source URL to `.docs/manifest.json`, and one inventory entry.
 - [x] T007 Add the conditional Linux reference and distro/permission safeguards to `.freebuff/troubleshooting.md` and `.freebuff/deep-dive.md`.
-- [x] T008 Update `.specify/feature.json` and `memory-bank/activeContext.md`.
+- [x] T008 Preserve the newer `main` versions of `.specify/feature.json` and `memory-bank/activeContext.md`; keep the Linux task records in the conflict-free `specs/079-linux-reference-routing/` directory.
 - [x] T009 Create this executable task record at `specs/079-linux-reference-routing/tasks.md`.
 
 ## Phase 3: Verify and report
