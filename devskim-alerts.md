@@ -41,3 +41,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **ERROR — DS173237** — `.docs/manifest.json:413` — Do not store tokens or keys in source code. <!-- devskim-id:a270890bed0ffd56e1f3 -->
 - **ERROR — DS173237** — `.docs/manifest.json:412` — Do not store tokens or keys in source code. <!-- devskim-id:efee26810497c62d6105 -->
 - **ERROR — DS173237** — `.docs/manifest.json:411` — Do not store tokens or keys in source code. <!-- devskim-id:c3d45b69c97b71e1b23b -->
+
+- **NOTE — DS162092** — `playwright.config.ts:31` — Do not leave debug code in production <!-- devskim-id:6f2091e338a4467a0ab7 -->
