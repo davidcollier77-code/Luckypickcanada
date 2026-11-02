@@ -5,7 +5,7 @@
 - **Reference:** Official Debian Reference plain-text manual, registered as `/debian/debian-reference` using `https://www.debian.org/doc/manuals/debian-reference/debian-reference.en.txt`.
 - **Routing:** The manifest registers this one source in both target groups. The existing updater writes the canonical snapshot to Troubleshooting and a relative symlink (or safe file fallback) to Deep-dive. Expected snapshot path: `.docs/troubleshooting/_debian_debian-reference.md`, linked from `.docs/deep-dive/_debian_debian-reference.md`.
 - **Safety:** Both group instructions make the reference conditional, require checking the actual distribution and permissions, and prohibit privilege or sandbox bypasses. The updater implementation is unchanged.
-- **Verification status:** Manifest and updater behavior are being checked in the PR. The real documentation refresh is pending because the updater on the default branch cannot see this manifest change until the PR is merged; no generated snapshot is claimed yet.
+- **Verification status:** Manifest/group-pointer assertions PASS; updater filename, canonical-first-group, and symlink/fallback behavior verified by source inspection. PR #1683 CI is running. Snapshot generation remains pending until this manifest reaches `main` and the documentation updater runs; no generated snapshot is claimed yet.
 
 ---
 
