@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 import suppress_devskim_false_positives as suppressions
+import verify_devskim_sarif_replay as replay_check
 
 
 SHA = "a" * 40
@@ -1070,6 +1071,7 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
     def test_suppression_failures_fail_the_scan_job(self):
         for name in (
             "Test DevSkim suppression filter",
+            "Replay real DevSkim SARIF through the suppression filter",
             "Suppress DevSkim false positives in SARIF",
         ):
             with self.subTest(step=name):
@@ -1081,6 +1083,22 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
         report_header = self.workflow_text[start:end]
         self.assertIn("needs: lint", report_header)
         self.assertNotIn("always()", report_header)
+
+    def test_real_sarif_replay_runs_before_the_suppression_step(self):
+        replay_step = self._step_block(
+            "Replay real DevSkim SARIF through the suppression filter"
+        )
+        self.assertIn(
+            "python3 .github/scripts/verify_devskim_sarif_replay.py", replay_step
+        )
+        self.assertLess(
+            self.workflow_text.index(
+                "      - name: Replay real DevSkim SARIF through the suppression filter"
+            ),
+            self.workflow_text.index(
+                "      - name: Suppress DevSkim false positives in SARIF"
+            ),
+        )
 
     def test_raw_sarif_and_artifact_are_still_uploaded_after_a_suppression_failure(self):
         for name in (
@@ -1415,6 +1433,123 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
                 ],
                 [self.SITEWIDE, "app/homepage/HomePage.js"],
             )
+
+
+class DevSkimSarifReplayVerificationTests(unittest.TestCase):
+    """The CI replay must fail on a real survivor, not merely print counts."""
+
+    SITEWIDE = DevSkimUtf16OffsetTests.SITEWIDE
+
+    @staticmethod
+    def _offset_fixture():
+        return DevSkimUtf16OffsetTests(
+            "test_utf16_normalization_is_identity_for_ascii_source"
+        )
+
+    def _write_audited_workspace(self, root):
+        """Copy the real audited spec into a scratch workspace."""
+        source_text = (DevSkimUtf16OffsetTests.REPO_ROOT / self.SITEWIDE).read_text(
+            encoding="utf-8"
+        )
+        target = root / self.SITEWIDE
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(source_text, encoding="utf-8")
+        line_number = DevSkimUtf16OffsetTests._timeout_lines(source_text)[0]
+        region = self._offset_fixture()._region_for_line(source_text, line_number)
+        return line_number, region
+
+    @staticmethod
+    def _result(uri, region, rule_id="DS172411"):
+        return {
+            "ruleId": rule_id,
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": uri},
+                        "region": region,
+                    }
+                }
+            ],
+        }
+
+    def _write_sarif(self, root, results):
+        sarif_path = root / "devskim-alerts.sarif"
+        sarif_path.write_text(
+            json.dumps({"runs": [{"results": results}]}), encoding="utf-8"
+        )
+        return sarif_path
+
+    def test_replay_removes_the_audited_timeout_and_preserves_the_raw_sarif(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _line_number, region = self._write_audited_workspace(root)
+            sarif_path = self._write_sarif(
+                root,
+                [
+                    self._result(self.SITEWIDE, region),
+                    # A genuine finding outside the allowlist must survive.
+                    self._result(
+                        "app/api/checkout/route.js",
+                        {"startLine": 1, "startColumn": 1, "endColumn": 12},
+                    ),
+                ],
+            )
+            raw_before = sarif_path.read_bytes()
+
+            report = replay_check.replay(sarif_path, root)
+
+            self.assertEqual(report.raw_results, 2)
+            self.assertEqual(report.suppressed, 1)
+            self.assertEqual(report.removed_results, 1)
+            self.assertEqual(report.filtered_results, 1)
+            self.assertEqual(
+                report.audited_removed,
+                ["Playwright test timeout configuration (1)"],
+            )
+            self.assertEqual(sarif_path.read_bytes(), raw_before)
+
+    def test_replay_fails_when_the_audited_finding_survives_the_filter(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            line_number, _region = self._write_audited_workspace(root)
+            # A scanner region the predicate cannot validate (for example a
+            # changed offset convention) leaves the audited finding in the
+            # upload. That is exactly the regression this gate must catch.
+            region = {"startLine": line_number, "startColumn": 1, "endColumn": 2}
+            sarif_path = self._write_sarif(
+                root, [self._result(self.SITEWIDE, region)]
+            )
+
+            with self.assertRaises(replay_check.ReplayViolation) as raised:
+                replay_check.replay(sarif_path, root)
+            self.assertIn("survived", str(raised.exception))
+
+    def test_replay_fails_when_a_finding_outside_the_allowlist_is_filtered(self):
+        approved_justification = next(
+            item
+            for item in suppressions.VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS
+            if "timer callback" in item
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result = self._result(
+                "app/api/checkout/route.js",
+                {"startLine": 1, "startColumn": 1, "endColumn": 12},
+            )
+            result["suppressions"] = (
+                [{"kind": "external", "justification": approved_justification}]
+            )
+            sarif_path = self._write_sarif(root, [result])
+
+            with self.assertRaises(replay_check.ReplayViolation) as raised:
+                replay_check.replay(sarif_path, root)
+            self.assertIn("outside the verified allowlist", str(raised.exception))
+
+    def test_replay_fails_when_the_scanner_sarif_is_missing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(replay_check.ReplayViolation):
+                replay_check.replay(root / "devskim-alerts.sarif", root)
 
 
 if __name__ == "__main__":
