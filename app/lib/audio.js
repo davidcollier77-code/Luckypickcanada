@@ -303,6 +303,8 @@ export function playRevealApplause(sessionId) {
     .then(startPlayback)
     .catch((error) => {
       console.warn('Reveal applause unavailable', error);
+      // Clear the request guard so the cue can be retried if the session is still active.
+      if (applauseRequestedSessionId === sessionId) applauseRequestedSessionId = null;
       return false;
     });
 }
