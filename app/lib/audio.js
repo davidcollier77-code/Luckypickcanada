@@ -307,8 +307,15 @@ export function preloadRevealGlowPulse() {
 export function startRevealGlowPulse() {
   if (typeof window === 'undefined') return Promise.resolve();
 
+
   const sound = audioCache.revealGlowPulse;
-  if (sound?.state() !== 'loaded') return preloadRevealGlowPulse();
+  if (sound?.state() !== 'loaded') {
+    return preloadRevealGlowPulse().then(() => {
+      // Only retry if the load actually succeeded, to avoid infinite recursion.
+      if (audioCache.revealGlowPulse?.state() !== 'loaded') return undefined;
+      return startRevealGlowPulse();
+    });
+  }
   if (sound?.state() !== 'loaded') {
     return preloadRevealGlowPulse().then(() => startRevealGlowPulse());
   }
