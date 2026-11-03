@@ -11,7 +11,7 @@
   starting at 0 between the reveal and Tip Jar, with neon-gold CSS in `themes/default/homepage.css`;
   `app/lucky-reveal-popup.js` no longer renders the Little Luck Map button or its styles.
 - **Verification:** focused 82 tests PASS; full 399 tests PASS; `tsc --noEmit` 0; `./freebuff-verify.sh`
-  0; production build 334,069,266 B / 318.6 MiB (< 495 MB); Playwright reveal spec 24/24 (desktop, 390,
+  0; clean production build 334,074,324 B / 318.6 MiB (< 495 MB); Playwright reveal spec 24/24 (desktop, 390,
   412) including the popup with no map invitation; counter probe 620x197/368x125, 0 overflow, 0 console
   errors; live endpoint `{"total":0}` with `no-store`.
 - **Not verified:** tally SQL against live Neon, a real Stripe charge, a real Resend gift email, PR-head

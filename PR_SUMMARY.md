@@ -102,9 +102,10 @@ future purpose, and no existing artifact covers a paid-reveal counter. Nothing w
 |---|---|
 | Focused Vitest (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`, `lucky-reveal-persistence`, `stripe-product-alignment`) | **PASS** 6 files / 82 tests |
 | Full `pnpm exec vitest run` | **PASS** 37 files / 399 tests |
+| Post-edit re-check on the committed tree (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`) | **PASS** 4 files / 61 tests |
 | `pnpm exec tsc --noEmit` | **PASS** exit 0 |
 | `./freebuff-verify.sh` (Spec Kit gate, typecheck, production build, refresh-docs 19/19) | **PASS** exit 0 |
-| Production build size (`pnpm build`) | **PASS** `.next` 301,229,223 B + `public` 32,840,043 B = 334,069,266 B / 318.6 MiB, below the 495 MB maximum |
+| Production build size (clean `pnpm build` on the committed tree) | **PASS** `.next` 301,234,281 B + `public` 32,840,043 B = 334,074,324 B / 318.6 MiB, below the 495 MB maximum |
 | Playwright `tests/visual/lucky-reveal-selection.spec.ts` on desktop 1440x900, mobile 390x844 and mobile 412x915 | **PASS** 24/24 in Chromium 153.0.8010.12, including counter placement/formatting and the paid reveal popup with no map invitation, sharing and close still present |
 | Counter visual probe (production build) | **PASS** 2/2: label + "4,321", 620x197 px desktop and 368x125 px mobile, 0 px horizontal overflow, 0 console/page errors |
 | Live `GET /api/lucky-reveals-count` (production build, no database configured) | **PASS** `{"total":0}`, `cache-control: no-store, max-age=0`, `application/json` |
