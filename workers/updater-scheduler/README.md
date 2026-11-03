@@ -31,11 +31,25 @@ Controlled activation sequence:
 
 If an enabled Worker fails after activation, reset repository variable `UPDATER_SCHEDULER_ACTIVE` to `false` (or remove it) so the GitHub scheduled jobs can run again, then redeploy the Worker with dispatch disabled and restore the previous stable setup before the next target slot.
 
+## GitHub API requirements
+
+Every dispatch request sends `User-Agent: luckypickcanada-updater-scheduler`. GitHub rejects REST API requests that carry no `User-Agent` header with HTTP 403 `Request forbidden by administrative rules`, and Cloudflare Workers `fetch` does not add a default one, so the header is required for dispatch to work at all. Do not remove it; a test pins the exact value.
+
+## Failure diagnostics
+
+A rejected dispatch logs one JSON line with the existing context plus `githubStatus`, `githubBody` and `githubHeaders`:
+
+```json
+{"event":"workflow-dispatch","outcome":"failed","error":"GitHub workflow dispatch failed with HTTP 403","githubStatus":403,"githubBody":"Request forbidden by administrative rules. Please make sure your request has a User-Agent header …","githubHeaders":{"content-type":"text/plain; charset=utf-8","x-github-request-id":"…"},"slot":"spec-kit-primary","workflow":"update-spec-kit.yml"}
+```
+
+The body is redacted (the Worker token, `Bearer` values and credential-shaped strings), collapsed to a single line and capped at 500 characters. Only `content-type`, `retry-after`, `x-github-request-id` and the `x-ratelimit-*` headers are recorded, so cookies and unrelated headers never reach the log. Request headers, the token, and the body of a *successful* response are never logged. The three diagnostics distinguish the common rejections: a plain-text body naming the `User-Agent` requirement, a JSON `Resource not accessible by personal access token` body, and rate limiting with `x-ratelimit-remaining: 0`.
+
 ## Security and recovery
 
 - The Worker credential is stored only as Cloudflare secret `GITHUB_TOKEN`; no value is committed or logged.
 - The repository secret is named UPDATER_DISPATCH_TOKEN. For an enabled deployment, the workflow serializes it into a mode-0600 temporary JSON secrets file, passes only the file path to Wrangler, and removes the file on exit. The secret value is not echoed, committed, or included in command arguments. Worker code and secret are deployed together to avoid a secret-only update failing when no latest Worker version is deployed.
-- Logs include the intended workflow/slot and HTTP status, never the token or response body.
+- Logs include the intended workflow/slot and HTTP status, plus the redacted `githubStatus`/`githubBody`/`githubHeaders` diagnostics on failure, never the token or an unsanitized response body.
 - The Worker ignores missing, nonnumeric, or non-finite scheduled timestamps instead of throwing or attempting to dispatch.
 - For an approved slot the Worker calls Cloudflare's documented `controller.noRetry()` before dispatch. An ambiguous network failure can occur after GitHub accepted a dispatch, so automatic replay is avoided and later retry/recovery slots remain available.
 - Both updater workflows retain manual `workflow_dispatch` access.

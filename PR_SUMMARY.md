@@ -1,221 +1,150 @@
-# Turnstile: start the Suggestion Box security-check fetch from the initial homepage document
+# Updater Scheduler: required GitHub `User-Agent` header and sanitized dispatch diagnostics
 
-## Task and task group
+## Task and task groups
 
-**Task group: `troubleshooting`.** The work starts from one reported defect — the homepage Suggestion
-Box Cloudflare Turnstile check taking 40–60 seconds to become usable — and required establishing the
-actual cause (including the history of PR #1568 and its removal in `7ab4b305`) before choosing a fix.
-That is a diagnosis-first repair of existing behaviour, not new functionality, a visual change, a test
-campaign, a security audit, an audio task or an SEO task, so `troubleshooting` is the correct and only
-group.
+**Task groups: `troubleshooting` + `testing`.** `troubleshooting` because the change starts from one
+reported production defect — the Cloudflare updater scheduler receiving HTTP 403 from GitHub for both
+updater workflows — and had to establish the cause before choosing a fix. `testing` because the
+deliverable's core requirement is a regression test that pins the new header and proves the diagnostic
+output stays sanitized.
 
-**Assigned task:** fix the long loading delay affecting Turnstile in the homepage Suggestion Box;
-investigate the previous preload (PR #1568) and its removal in the 2026-10-27 mobile PageSpeed commit;
-implement the smallest effective correction that loads the check promptly without sacrificing the
-mobile PageSpeed gains; preserve every Turnstile security protection; add regression tests; measure
-before and after; distinguish script-loading time from Cloudflare challenge-processing time.
+**Assigned task:** add `User-Agent: luckypickcanada-updater-scheduler` to the Cloudflare updater
+scheduler's GitHub dispatch request, preserve the out-of-band diagnostic logging (`githubStatus`,
+`githubBody`, `githubHeaders`, sanitized body, selected response headers), add a test for the header,
+and document the requirement — repository source only, no deployment.
 
-## Root cause (established, not assumed)
+## Cause (established, not assumed)
 
-The delay chain is `hydration → widget mount → script fetch (2 hops) → Cloudflare challenge`.
-
-1. **The API fetch is gated on widget mount, which is gated on hydration.** In the pinned
-   `@marsidev/react-turnstile@1.6.1` loader
-   (`node_modules/@marsidev/react-turnstile/dist/index.js`) the script tag is appended from a
-   `useEffect` on mount:
-   `script.src = `${SCRIPT_URL}?onload=${onLoadCallbackName}&render=${render}``.
-   `TurnstileField` is statically imported by the `'use client'` homepage
-   (`app/homepage/HomePage.js:20`, rendered at `:522`), so that mount cannot occur until the
-   homepage's client bundle has run and React has hydrated. The loader chunk was already in the
-   initial document, so a missing chunk is *not* the cause — execution order is.
-2. **The homepage advertised no early hint.** The built `.next/server/app/index.html` contained the
-   layout's `<link rel="preconnect" href="https://challenges.cloudflare.com">` and **zero** matching
-   preload hints (measured).
-3. **PR #1568 was removed for render-path competition, not because it was wrong.** Its URL matches the
-   pinned loader byte-for-byte. `7ab4b305` deleted it, and its own artifact
-   (`.specify/features/mobile-pagespeed-optimization/plan.md`) records the intent: "Let
-   `@marsidev/react-turnstile` load it asynchronously to free up the critical render path."
-   `1e2fe117` then inverted the Playwright spec to assert *absence*. The reported latency was never
-   addressed by that commit — only the PageSpeed side was optimised.
-4. **The fetch is two hops but durably cacheable** (measured): configured URL → `302`
-   (`max-age=300, public`) → `/turnstile/v0/g/<build>/api.js` → `200`, `86,732` bytes,
-   `cache-control: max-age=31536000, public`. That one-year lifetime is why an early hint is still
-   worth having when hydration is slow, rather than a wasted download.
+- The Worker sent `Accept`, `Authorization`, `Content-Type` and `X-GitHub-Api-Version` and **no
+  `User-Agent`** (`workers/updater-scheduler/src/index.mjs`). Cloudflare Workers `fetch` adds no default
+  `User-Agent`.
+- GitHub rejects REST requests without one: `403 Request forbidden by administrative rules. Please make
+  sure your request has a User-Agent header…`. Reproduced in this workspace against the real
+  `/actions/workflows/refresh-docs.yml/dispatches` endpoint with the header suppressed — plain-text body,
+  no `x-ratelimit-*` headers, distinct from the JSON bodies GitHub returns for a permission failure
+  (`Resource not accessible by personal access token`) or a rate limit.
+- Proxy evidence that no Cloudflare dispatch ever reached GitHub: across the full 6 Oct–3 Nov history of
+  both workflows (37 and 69 runs), every run is titled `… — schedule` or `… — manual`; zero are
+  `— cloudflare`, although both workflows render `dispatch_source` in `run-name`.
+- Both updaters were healthy throughout via the native GitHub schedules (3 Nov: spec-kit run #37 →
+  commit `b007e8cb`, PR #1693; docs run #69 → commit `6c94bfb5`, PR #1695), and the repository's
+  dispatch credential succeeded five times, most recently the canary in deploy run `41229221334`
+  (31 Oct 18:23Z). That rules out a missing/expired token, absent `Actions: write`, wrong workflow
+  path, or concurrency as the cause.
 
 ## Implementation
 
-`app/page.js` (server component, `dynamic = 'force-static'`) now emits the hint during server
-rendering:
+`workers/updater-scheduler/src/index.mjs`:
 
-```js
-preload(TURNSTILE_SCRIPT_URL, { as: 'script', fetchPriority: 'low' });
-```
+- `GITHUB_USER_AGENT = "luckypickcanada-updater-scheduler"` (exported) is now sent on every dispatch
+  request. Nothing else about the request changed — same endpoint, `ref: "main"`, `dispatch_source` and
+  `scheduler_slot` inputs, same `noRetry()` handling, same 200/204 success path.
+- `GitHubDispatchError` carries `githubStatus`, `githubBody` and `githubHeaders` and keeps the existing
+  message text `GitHub workflow dispatch failed with HTTP <status>`, so existing log searches and the
+  previous `/HTTP 403/` expectation still hold.
+- `sanitizeDiagnosticBody` redacts the configured token, `Bearer` values, `gh[pousr]_…` and
+  `github_pat_…` strings, collapses the body to one line, and caps it at 500 characters with an explicit
+  `…[truncated]` marker.
+- `selectDiagnosticHeaders` records only `content-type`, `retry-after`, `x-github-request-id` and the
+  three `x-ratelimit-*` headers; a `set-cookie` (or anything else) cannot reach the log.
+- The existing `event: "workflow-dispatch"`, `outcome: "failed"` entry gains those three fields; a
+  configuration error still logs only `error`. Successful responses are not read or logged beyond their
+  status.
 
-Three properties make this the smallest correction that fixes the cause without giving PageSpeed back:
-
-- **Earlier by construction.** The hint is in the initial document head, so the browser starts the
-  two-hop fetch while the route's own CSS/JS is still downloading, instead of after hydration.
-- **Low priority is the actual correction over PR #1568.** `fetchPriority: 'low'` schedules the
-  third-party script behind the LCP image and the route's own CSS/JS — precisely the competition that
-  got the eager version removed. React's `preload()` fetches without executing, so
-  `onloadTurnstileCallback` still exists before the wrapper injects the executing tag (an executing
-  early `<script>` would break the widget permanently).
-- **Homepage-scoped.** No other route preloads it.
+Agent Lee's revised implementation is **not** available in this repository or any local branch
+(`git log --all -S'githubHeaders'` finds nothing), and the 3 Nov Cloudflare deployment
+`9112ced69b34420fbfd69efdef7eee23` has no matching canary run, so it was made outside
+`deploy-updater-scheduler.yml`. The diagnostic behaviour was therefore reproduced from the stated
+requirements, in the reviewed source, as the single authoritative version.
 
 ## Files changed
 
-- `app/page.js` — add `preload` import, the exact wrapper URL constant, and the low-priority hint.
-- `tests/visual/turnstile-loading.spec.ts` — rewritten: one matching hint on `/` with the exact `href`
-  and `fetchpriority="low"`, none on `/about` or `/map`.
-- `specs/041-turnstile-early-preload/spec.md`, `plan.md`, `research.md`, `tasks.md` — reused and
-  rewritten in place.
-- `.specify/feature.json` — points at the reused `specs/041-turnstile-early-preload` feature.
-- `PR_SUMMARY.md`, `memory-bank/activeContext.md` — canonical report and context.
+- `workers/updater-scheduler/src/index.mjs` — header constant, `GitHubDispatchError`, body sanitizer,
+  header allowlist, diagnostic logging.
+- `workers/updater-scheduler/test/index.node-test.mjs` — exact `User-Agent` assertion; sanitized
+  body/header diagnostics; token and `ghp_` redaction; cookies excluded; single-line 512-character
+  bound; existing 403/200/204 behaviour retained.
+- `workers/updater-scheduler/README.md` — "GitHub API requirements" and "Failure diagnostics" sections;
+  security bullet updated to describe redacted diagnostics rather than "never a body".
+- `specs/083-updater-scheduler-dispatch-user-agent/{spec,plan,tasks}.md` — new feature cycle (features
+  035/036 cover reliability and cutover, not this defect; nothing duplicated).
+- `.specify/feature.json` — points at the new feature.
 
-No new feature directory was created. `specs/041-turnstile-early-preload/checklists/requirements.md`
-was inspected and left unchanged: its quality statements remain true.
+Not changed: any workflow, cron schedule, token, secret, environment variable, Cloudflare binding or
+`.docs/` file. The deploy workflow still ships code and secret together after its canary.
 
 ## Spec Kit stages and artifacts
 
-Specify → Plan → Tasks → Implement, in order, reusing `specs/041-turnstile-early-preload/`:
-`spec.md` (updated requirements, verified root cause), `plan.md` (design and preserved behaviour),
-`research.md` (method, measurements, alternatives rejected), `tasks.md` (real completion state).
+Specify → Plan → Tasks → Implement, in order, in
+`specs/083-updater-scheduler-dispatch-user-agent/`: `spec.md` (cause, stories, requirements),
+`plan.md` (design, rejected alternatives, risks), `tasks.md` (completion state).
 
 ## Library documents reviewed
 
 | Document | USED | USEFUL | Explanation |
 | --- | --- | --- | --- |
-| `.docs/troubleshooting/_cloudflare_cloudflare-docs_turnstile.md` | YES | YES | Routed troubleshooting reference. Confirms Turnstile runs non-interactive JS challenges (proof-of-work, browser probing) and adapts difficulty per visitor. That is the authority for treating challenge-processing time as external and unmeasurable here, and for not conflating it with script-fetch time. |
-| `.docs/security/_marsidev_react-turnstile.md` | YES | NO | Routed copy of the package README. It advertises "automatic script injection" but documents nothing about script loading, `preload`, priority or the injected URL, so it could not inform the fix. The authoritative behaviour was read from the installed `dist/index.js` instead. |
-| `.docs/troubleshooting/_google-gemini_gemini-skills_gemini-api-dev.md` | NOT USED | NO | Conditional Gemini API specialist guidance; this task does not call, configure or integrate the Gemini API or SDK, so it was correctly not loaded. |
-| `.docs/troubleshooting/_google-gemini_gemini-cli.md` | NOT USED | NO | Conditional Gemini CLI reference; no Gemini CLI command, config or integration is involved. |
-| `.docs/troubleshooting/_google_eng-practices.md` | NOT USED | NO | Optional cross-cutting review guidance; the change is a one-line resource hint whose constraints were already fixed by the measured evidence. |
-| Next.js, React, TypeScript, OpenNext, Cloudflare Pages, Workers SDK, Neon, Upstash, Sentry, React Error Boundary, Chrome, WebKit, Web Audio, GitHub Docs (manifest-routed) | NOT USED | NO | No route, build, database, rate-limit, error-reporting, audio or browser-API behaviour changed. React DOM's `preload` option support was verified directly in the installed `react-dom@19.3.1` instead of a documentation snapshot. |
+| `.docs/manifest.json` | YES | YES | Routed `troubleshooting` and `testing` to the GitHub/Cloudflare references. |
+| `.docs/troubleshooting/_github_docs.md` | YES | NO | 188-line index of GitHub's docs; no dispatch or `User-Agent` content, so the behaviour was proved against the live API instead. |
+| `.docs/deep-dive/_cloudflare_workers-sdk.md` | NO | NO | Indexes the Wrangler SDK, not Workers runtime `fetch` header behaviour. |
+| `.docs/troubleshooting/_cloudflare_cloudflare-docs_turnstile.md` | NO | NO | Turnstile-specific; unrelated to workflow dispatch. |
+| `.docs/troubleshooting/_debian_debian-reference.md` | NO | NO | No Linux/package/process behaviour is involved. |
+| `.docs/troubleshooting/_google_eng-practices.md`, `.docs/testing/_google_eng-practices.md` | NO | NO | Optional review guidance; the constraints were already fixed by the reproduced 403 and the existing suite conventions. |
 
-No Context7 invocation was made (requires per-invocation owner approval and was unnecessary).
-No external MCP was used beyond the connected GitHub integration needed to publish the PR.
+No Context7 invocation (requires per-invocation owner approval) and no external MCP beyond the
+connected GitHub integration used to publish this PR.
 
 ## Verification (commands actually run)
 
-Environment: cloud Linux worktree, `pnpm@10.30.3` installed to `$HOME` because it was absent;
-`pnpm install --frozen-lockfile` used (lockfile preserved, never `npm ci`).
+Environment: cloud Linux worktree, Node v26.13.0, `pnpm@10.30.3` installed to `$HOME/.local` (absent
+from the image), dependencies restored with `pnpm install --frozen-lockfile` (lockfile unchanged).
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Type check | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
-| Unit suite | `pnpm exec vitest run` | **PASS** — 24 files / 224 tests |
-| Production build (baseline, HEAD `app/page.js`) | `pnpm run build` | **PASS** — exit 0 |
-| Production build (with this change) | `pnpm run build` | **PASS** — exit 0 |
-| Repository gate | `./freebuff-verify.sh` | see the gate row below |
-| Build size | `du -sb .next` | **PASS** — 349,945,970 bytes / 333.73 MiB (< 495 MB hard maximum) |
-| Final diff audit | `git diff` / `git status --short` | **PASS** — exactly the files listed above |
-
-### Before/after measurement (controlled: same machine, same lockfile, only `app/page.js` differs)
-
-| Measurement on the built homepage document `/` | BEFORE | AFTER | Delta |
-| --- | --- | --- | --- |
-| Turnstile API hints in the document | **0** | **1** | +1 |
-| Turnstile API preload links | **0** | **1** | +1 |
-| Earliest possible API request | after hydration (mount effect) | at document parse | moved off the post-hydration chain |
-| Initial JS for `/` | 617,006 bytes raw | 617,006 bytes raw | **0** |
-| Initial CSS for `/` | 216,944 bytes raw | 216,944 bytes raw | **0** |
-| Emitted document HTML | 65,854 bytes | 66,174 bytes | +320 bytes |
-
-Emitted tag, verified in the built output:
-
-```html
-<link rel="preload" href="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&amp;render=explicit" as="script" fetchPriority="low"/>
-```
-
-React emits the attribute as `fetchPriority`; HTML attribute names are case-insensitive when parsed,
-so the element property is `fetchpriority` and Chrome honours it for preloads. The `&amp;` is correct
-HTML escaping — the parsed `href` equals the wrapper's URL byte-for-byte.
-
-### Script-loading time vs challenge-processing time
-
-- **Script-loading (in our control, and changed here):** proved by measurement — the fetch previously
-  could not start before hydration and now starts at document parse, at low priority, from a URL that
-  is cacheable for one year after a single 302.
-- **Cloudflare challenge processing (not in our control, NOT measured):** delegated to Cloudflare's
-  frame per the routed Turnstile reference; nothing in this change touches it and no timing is claimed
-  for it.
+| Focused Worker suite | `node --test workers/updater-scheduler/test/index.node-test.mjs` | **PASS** — 17 tests, 0 failures |
+| Repository gate (Spec Kit artifacts, typecheck, production build, refresh-docs tests) | `./freebuff-verify.sh` | **PASS** — exit 0; all three artifacts verified; build compiled; refresh-docs 19/19 |
+| Wrangler dry run (no deploy) | `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml` | **PASS** — exit 0, vars as configured |
+| Build size | `du -sb .next public` | **PASS** — 332,572,886 bytes / 317.17 MiB (< 495 MiB) |
+| Final diff audit | `git status --porcelain`, `git diff` | **PASS** — exactly the files listed above |
 
 ## Outstanding and pending checks (not passed, not claimed)
 
-- **BLOCKED — Playwright spec execution in this workspace.** `chromium-1243` cannot start:
-  `libnspr4.so => not found` (also `libnss3`, `libatk*`, `libcups`, `libxkbcommon`, `libasound`,
-  `libcairo`, `libpango`, `libX*`, `libatspi`). `sudo` is disabled by the `no new privileges` flag and
-  the package manager cannot install as an unprivileged user, so `playwright install-deps` is not
-  possible here. The spec is written for the configured desktop/mobile projects and CI Visual QA is
-  the confirmation path.
-- **PENDING — GitHub Actions on the docs-only follow-up head `01cef650`**, which changes only
-  `PR_SUMMARY.md` and `memory-bank/activeContext.md`.
-- **Browser testing is free-only and needs no purchase.** Every Chromium/Playwright run in this
-  repository happens on GitHub's standard `ubuntu-latest` hosted runners: `.github/workflows/visual-qa.yml`
-  uses `runs-on: ubuntu-latest` (plus `timeout-minutes: 25`) and `pnpm exec playwright install --with-deps chromium`
-  with Playwright's own bundled Chromium, driven by `playwright.config.ts` projects `desktop`, `mobile-390`
-  and `mobile-412` against a local `127.0.0.1:3000` dev server. All 15 jobs across all 11 workflows use
-  `runs-on: ubuntu-latest`; there are no larger runners, no self-hosted runners, no BrowserStack/Sauce
-  Labs/LambdaTest/Percy/Chromatic/Applitools or other paid testing platform, no `wsEndpoint`/`connectOptions`
-  remote browser, and no billing, plan or payment-method change. On a public repository, standard hosted
-  runners consume no paid minutes, so confirming the BLOCKED Playwright check costs nothing.
-- **PENDING — real-device timing.** The 40–60 second figure is not reproducible here. Confirming that
-  the total wait is reduced needs a browser and device/network conditions this environment does not
-  have, and must be reported separately from challenge-processing time.- **PENDING — Visual QA** on PR head `1fdf0fc`: still running when this report was written. It owns the Playwright regression that is BLOCKED locally.
-- **PENDING — Amazon Q Developer** on PR head `1fdf0fc`: still running when this report was written.
-- **PASS — DevSkim scan and Security upload** on PR head `1fdf0fc`.
-- **PASS — Validate OpenNext build artifacts** on PR head `1fdf0fc` (includes the 495 MiB gate and the OpenNext Worker build).
-- **PASS — the configured Gemini PR reviewer** did run and published a review at the PR head; findings recorded below.
-
-## PR and automated review record
-
-- **PR:** [#1670](https://github.com/davidcollier77-code/Luckypickcanada/pull/1670), branch
-  `freebuff/1a7d57e47625ce6441d412f1`, target `main`. Left **open and unmerged**.
-  The implementation commit is `1fdf0fcd98cef01c03dacf3d8c7039cda188a532` — the head every result
-  recorded below refers to. A docs-only follow-up commit `01cef6509f65fc9cd3c20090d9b2b71e663f9831`
-  carries this report and the review record, so CI and the reviewer re-run against that head.
-- **Gemini review — RAN.** Reviewer `github-actions[bot]`, submitted 2026-11-01T18:20:54Z against commit
-  `1fdf0fcd98cef01c03dacf3d8c7039cda188a532`, which is the exact PR head (confirmed from the review's
-  own `Reviewed commit` line and `commit_id`). Model: `gemini-3.5-flash-lite`.
-  **Findings: 0 red (critical) and 0 yellow (suggested).** Status line: `REVIEW INCOMPLETE — NOT
-  VERIFIED`, because the reviewer's own context budget shortened the retrieved source for
-  `app/page.js`, `app/homepage/HomePage.js` and `app/homepage/Hero.js`, and partially examined the
-  documentation files. Two green observations were recorded: the low-priority preload targets the
-  exact loader URL during server rendering, and the rewritten Playwright spec validates both the
-  presence/attributes on `/` and the absence on unrelated routes.
-  **Assessment:** nothing to address. The only non-green item is a reviewer-budget coverage
-  disclosure, not a defect in this change; the review also independently reached the same conclusion
-  this report documents, that the Playwright execution is unverified locally. The Gemini reviewer
-  itself is explicitly out of scope for this task and was not modified.
-- **Amazon Q review — RAN.** Submitted 2026-11-01T18:20:41Z at the same head: "No logic errors,
-  security vulnerabilities, crashes, or regressions were identified" and "No blocking defects
-  found", with the locally-blocked Playwright execution called out as a pending risk — which this
-  report already discloses rather than hides.
+- **PENDING — this PR's `Verify updater scheduler` job** (`deploy-updater-scheduler.yml`, pull_request
+  path): runs the Worker suite, the Spec Kit rebase test, the safe Spec Kit upgrade, `freebuff-verify.sh`,
+  the 495 MiB gate and the Wrangler dry run on the PR head.
+- **PENDING — live dispatch.** No deployment was made and no updater was triggered, per the task
+  boundaries. Confirmation requires an owner-approved deployment and the next approved slot producing
+  `Update Spec Kit — cloudflare` / `Refresh Documentation — cloudflare` runs with a 2xx
+  `outcome: "accepted"` log entry.
+- **BLOCKED — cloud-side evidence.** This workspace's Cloudflare access exposes DNS tools only, so the
+  deployed Worker's code, bindings, secrets and logs cannot be read from here.
+- **KNOWN documentation inconsistency (not changed here).** `memory-bank/activeContext.md` still states
+  that repository variable `UPDATER_SCHEDULER_ACTIVE=true` is set, but the repository variables API
+  returns only `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. Native schedules therefore still run, which is the
+  intended fallback; correcting that note is outside this task's scope.
 
 ## Behaviour preserved, risks, limitations
 
-Preserved: `TurnstileField` callbacks and state machine, site-key lookup, the hidden
-`cf-turnstile-response` field, server-side Siteverify with hostname and action validation, rate
-limiting, duplicate protection, honeypot, form-submit gating and wording, all styling, audio, payments,
-dependencies, environment variables, Cloudflare configuration and API routes. The hint cannot mint a
-token or permit submission.
+Preserved: slot mapping for all five Tuesday/Friday targets in both DST states, non-target silence,
+`controller.noRetry()` before dispatch, disabled mode, request endpoint/ref/inputs, 200 and 204 handling,
+error message text, both updaters' native schedules and manual dispatch, and the deploy workflow with its
+canary-then-`--secrets-file` contract. No token, secret, environment variable, schedule or permission was
+changed, and no credential value appears in the code, tests, docs or logs.
 
-Risks and limits:
+Risks and limits: if the live 403 turns out to be a credential or rate-limit rejection rather than the
+missing header, the header alone will not restore dispatch — the new one-line diagnostics make that
+distinguishable. The 500-character cap could truncate an unusually long GitHub explanation (the marker
+makes it explicit). Live acceptance remains unverified until a deployment is approved and a real slot
+runs.
 
-- A preload removes the *fetch* from the post-hydration chain; it cannot bound Cloudflare's challenge
-  duration and cannot fix a slow hydration caused by the page's own JS. The homepage still ships
-  617,006 bytes of initial JS.
-- The change adds the 86,732-byte third-party download to every homepage visit, which is the
-  bandwidth cost the PageSpeed commit objected to. It is mitigated rather than eliminated by
-  `fetchpriority="low"`; if a future mobile measurement shows the LCP image regressing, /
-  the correct follow-up is to gate the hint (for example by connection type) rather than to remove it
-  and restore the post-hydration stall.
-- No `fetchpriority` regression can be observed here because no browser runs in this workspace.
+## PR record
+
+- **PR:** [#1696](https://github.com/davidcollier77-code/Luckypickcanada/pull/1696), branch
+  `freebuff/78319e5dc4e17636cb62dc2a`, target `main`, left open and unmerged.
+- **Implementation commit:** `55c3e479` — the head every local result above refers to.
 
 ## Merge status
 
-Left **OPEN and UNMERGED** for owner review and the Gemini PR reviewer. No merge, no deployment.
+Left **OPEN and UNMERGED** for owner review. No merge, no deployment, no updater triggered.
 
-**USEFUL RESULT: NO** — the implementation is complete and the repository gates pass, but a mandatory
-check (the Playwright regression spec) is BLOCKED in this environment and the real-device timing is
-PENDING, so verified completion cannot be claimed.
+**USEFUL RESULT: NO** — implementation and local gates pass, but the PR-head CI job and the live
+dispatch confirmation are PENDING, so verified completion is not claimed.

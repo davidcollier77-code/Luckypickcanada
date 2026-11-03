@@ -1,3 +1,12 @@
+# Active Context — Updater Scheduler GitHub User-Agent and Dispatch Diagnostics (2026-11-03)
+
+- **Task groups:** `troubleshooting` + `testing`; branch `freebuff/78319e5dc4e17636cb62dc2a`; PR #1696 open and unmerged; new feature `specs/083-updater-scheduler-dispatch-user-agent` (features 035/036 cover reliability and cutover, so nothing was duplicated).
+- **Cause:** the Worker's dispatch request set every header except `User-Agent`, and Cloudflare Workers `fetch` sends none; GitHub answers that with `403 Request forbidden by administrative rules` (reproduced against the live dispatches endpoint, plain-text body without `x-ratelimit-*`). Across 6 Oct–3 Nov every run of both updaters is `— schedule` or `— manual`; zero are `— cloudflare`, while the same repository credential succeeded in five canary runs (latest 31 Oct 18:23Z).
+- **Implementation:** `GITHUB_USER_AGENT = "luckypickcanada-updater-scheduler"` is now sent; `GitHubDispatchError` plus `sanitizeDiagnosticBody`/`selectDiagnosticHeaders` reproduce the deployed diagnostics as `githubStatus`, `githubBody`, `githubHeaders` with token, `Bearer`, `gh[pousr]_…`/`github_pat_…` redaction, a one-line 500-character cap and a `content-type`/`retry-after`/`x-github-request-id`/`x-ratelimit-*` allowlist. Agent Lee's revised code is absent from the repository and every local branch, so the reviewed source is now the single version.
+- **Verification:** focused Worker suite 17/17 PASS; `./freebuff-verify.sh` exit 0 (Spec Kit artifacts, typecheck, production build, refresh-docs 19/19); Wrangler dry run exit 0; build 332,572,886 B / 317.17 MiB (< 495 MiB); diff limited to the Worker source, its test, its README, the new spec files, `.specify/feature.json`, this note and `PR_SUMMARY.md`.
+- **Pending:** PR-head `Verify updater scheduler` job, owner-approved deployment, and the first real `— cloudflare` run for each workflow. No deployment, token, secret, schedule, workflow or Cloudflare setting was changed.
+- **Known inconsistency (untouched):** an older section of this file still says `UPDATER_SCHEDULER_ACTIVE=true`, but the repository variables API returns only `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+
 # Active Context — Lucky Reveal PR #1692 Review Repair (2026-11-03)
 
 - **Task groups:** `troubleshooting` + `security` + `audio` + `testing`; same branch
