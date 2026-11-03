@@ -235,20 +235,19 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
 
   // End the celebration: drop the instance once the last leaf has expired, then
   // remove the layer so no leaf is left behind the reveal container.
+
   useEffect(() => {
     if (!isCelebrating || prefersReducedMotion) return undefined;
     // Guards against double-settle: both settleTimer and finishTimer call
     // releaseConfetti(); isReleased ensures it runs at most once per lifecycle.
     let isReleased = false;
     // CONFETTI_WINDOW_MS is a compile-time constant — no untrusted data.
-
+    const settleTimer = window.setTimeout(() => {
       if (!isReleased) { isReleased = true; releaseConfetti(); }
-      releaseConfetti();
-    // CELEBRATION_TOTAL_MS is a compile-time constant — no untrusted data.
     }, CONFETTI_WINDOW_MS);
+    // CELEBRATION_TOTAL_MS is a compile-time constant — no untrusted data.
     const finishTimer = window.setTimeout(() => {
       if (!isReleased) { isReleased = true; releaseConfetti(); }
-      releaseConfetti();
       setIsCelebrating(false);
     }, CELEBRATION_TOTAL_MS);
     timersRef.current.push(settleTimer, finishTimer);
