@@ -9,6 +9,16 @@
 
 ---
 
+# Active Context — DevSkim Reveal Timer False-Positive Filtering (2026-11-03)
+
+- **Task groups:** `security` + `deep-dive` + `testing`; branch `freebuff/082-devskim-reveal-timer-findings`; PR #1689 open and unmerged.
+- **Finding review:** GitHub Code Scanning alerts #403–#406 were reviewed against their exact source. Three are inline JavaScript arrow callbacks using internal state or fixed delays; the fourth is a quoted test assertion string and does not execute a timer. These four are false positives for string-based `setTimeout` code execution.
+- **Implementation:** `.github/scripts/suppress_devskim_false_positives.py` now admits only three exact application statements and one exact test assertion for DS172411, retaining absolute source-span and snippet validation. New paths do not widen other rules. Negative tests keep opaque callbacks, other callback statements, altered literals, unreviewed paths, and different rules visible. `.github/scripts/verify_devskim_sarif_replay.py` audits the four exact source patterns.
+- **Verification:** current-head DevSkim workflow run 41608061872 passed Python syntax validation and all 70 suppression unit tests. Real-SARIF replay passed: 151 raw results, 151 reviewed suppressions, 0 remaining, with raw SARIF unchanged; filtered SARIF upload succeeded. PR verification/code-analysis run 41608056892 passed. The dedicated OpenNext and Visual QA checks were still running when this note was written.
+- **Remaining verification:** `./freebuff-verify.sh` has not been run locally because this connected shell could not resolve GitHub for a repository clone. Report this as NOT RUN; do not infer a pass. Review the remaining PR checks before handoff. No app runtime file, workflow, dependency, scan coverage, payment/email behavior, or `.docs/` file was changed.
+
+---
+
 # Active Context — Lucky Reveal Finish Polish + Reusable Media Inspection (2026-11-03)
 
 - **Task groups:** `polishing` + `audio` + `troubleshooting`; branch `freebuff/f42744a86b35d603e40013fd`; PR #1687 open and unmerged (Master Work Request #1).
