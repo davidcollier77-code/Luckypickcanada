@@ -67,13 +67,13 @@ SAFE_REVEAL_TIMER_CALLBACK_FILES = frozenset({
 SAFE_REVEAL_TIMER_CALLBACK_PATTERNS = {
     "app/lucky-reveal-popup.js": (
         re.compile(
-            r"^[ \\t]*const timer = window\\.(?P<call>setTimeout)\\(\\(\\) => "
-            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\);[ \\t]*$"
+            r"^ *const timer = window\.(?P<call>setTimeout)\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\); *$"
         ),
     ),
     "app/lucky-reveal-celebration.jsx": (
-        re.compile(r"^[ \\t]*window\\.(?P<call>setTimeout)\\(\\(\\) => \\{[ \\t]*$"),
-        re.compile(r"^[ \\t]*const startTimer = window\\.(?P<call>setTimeout)\\(\\(\\) => \\{[ \\t]*$"),
+        re.compile(r"^ *window\.(?P<call>setTimeout)\(\(\) => \{ *$"),
+        re.compile(r"^ *const startTimer = window\.(?P<call>setTimeout)\(\(\) => \{ *$"),
     ),
 }
 # This test contains a quoted source assertion, not an executed timer call.
