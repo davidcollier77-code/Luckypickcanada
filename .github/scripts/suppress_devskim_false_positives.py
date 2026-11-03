@@ -56,6 +56,30 @@ DEVSKIM_SELF_TEST_FILES = frozenset({
     ".github/scripts/suppress_devskim_false_positives.py",
     ".github/scripts/test_suppress_devskim_false_positives.py",
 })
+# These reveal sources contain reviewed inline callable timers. Keep this
+# allowlist separate so adding them for DS172411 does not widen other rules.
+SAFE_REVEAL_TIMER_CALLBACK_FILES = frozenset({
+    "app/lucky-reveal-popup.js",
+    "app/lucky-reveal-celebration.jsx",
+})
+# Match only the three reviewed application statements, not every callback
+# that may be added to either file in the future.
+SAFE_REVEAL_TIMER_CALLBACK_PATTERNS = {
+    "app/lucky-reveal-popup.js": (
+        re.compile(
+            r"^ *const timer = window\.(?P<call>setTimeout)\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\); *$"
+        ),
+    ),
+    "app/lucky-reveal-celebration.jsx": (
+        re.compile(r"^ *window\.(?P<call>setTimeout)\(\(\) => \{ *$"),
+        re.compile(r"^ *const startTimer = window\.(?P<call>setTimeout)\(\(\) => \{ *$"),
+    ),
+}
+# This test contains a quoted source assertion, not an executed timer call.
+SAFE_REVEAL_TIMER_ASSERTION_FILES = frozenset({
+    "__tests__/lucky-reveal-finish-phase2.test.js",
+})
 
 KNOWN_LOCALHOST_ORIGINS = {
     "app/api/oracle/route.js": {"http://local" + "host:3000"},
@@ -85,6 +109,8 @@ def is_allowed_relative_path(path: Path) -> bool:
         normalized in {".docs/manifest.json", "pnpm-lock.yaml"}
         or normalized in KNOWN_CONTEXTUAL_SUPPRESSION_FILES
         or normalized in DEVSKIM_SELF_TEST_FILES
+        or normalized in SAFE_REVEAL_TIMER_CALLBACK_FILES
+        or normalized in SAFE_REVEAL_TIMER_ASSERTION_FILES
         or (len(path.parts) >= 2 and path.parts[0] == ".specify")
     )
 
@@ -629,6 +655,26 @@ def should_suppress_safe_contextual_finding(
     )
 
     if rule_id == "DS172411":
+        reveal_callback_patterns = SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
+        if reveal_callback_patterns is not None:
+            return any(
+                _region_starts_at_pattern(
+                    region, line_number, line, pattern, source_text
+                )
+                for pattern in reveal_callback_patterns
+            )
+
+        if relative_path in SAFE_REVEAL_TIMER_ASSERTION_FILES:
+            # This exact test line is a quoted source string in an assertion,
+            # not an executed timer. Do not generalize to other test literals.
+            reveal_assertion_pattern = re.compile(
+                r"^[ \t]*'window\.(?P<call>setTimeout)\(\(\) => "
+                r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\)',[ \t]*$"
+            )
+            return _region_starts_at_pattern(
+                region, line_number, line, reveal_assertion_pattern, source_text
+            )
+
         # The source location must begin at this safe call, not merely share its line.
         # DevSkim's historical SARIF regions point at "setTimeout", not the
         # preceding "test." prefix, so validate that exact reported token.
@@ -754,6 +800,12 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     continue
             elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"}:
                 allowed_contextual_files = KNOWN_CONTEXTUAL_SUPPRESSION_FILES
+                if rule_id == "DS172411":
+                    allowed_contextual_files = (
+                        allowed_contextual_files
+                        | SAFE_REVEAL_TIMER_CALLBACK_FILES
+                        | SAFE_REVEAL_TIMER_ASSERTION_FILES
+                    )
                 # The scanner helper/test files contain deliberate development fixtures.
                 # Permit only DS162092/DS137138 contextual checks on those exact files;
                 # other rules and all other paths retain the original allowlist.

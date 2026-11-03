@@ -55,8 +55,41 @@ AUDITED_FALSE_POSITIVES = (
         ),
         source_line_pattern=AUDITED_TIMEOUT_LINE,
     ),
+    AuditedFinding(
+        name="Lucky Reveal number-finish callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-popup.js",),
+        source_line_pattern=re.compile(
+            r"^ *const timer = window\.setTimeout\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\); *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal confetti-wave callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-celebration.jsx",),
+        source_line_pattern=re.compile(
+            r"^ *window\.setTimeout\(\(\) => \{ *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal canvas-watch callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-celebration.jsx",),
+        source_line_pattern=re.compile(
+            r"^ *const startTimer = window\.setTimeout\(\(\) => \{ *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal test source assertion string",
+        rule_id="DS172411",
+        paths=("__tests__/lucky-reveal-finish-phase2.test.js",),
+        source_line_pattern=re.compile(
+            r"^ *'window\.setTimeout\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\)', *$"
+        ),
+    ),
 )
-
 
 class ReplayViolation(RuntimeError):
     """The replay of real scanner output is unsafe or left a false positive visible."""
