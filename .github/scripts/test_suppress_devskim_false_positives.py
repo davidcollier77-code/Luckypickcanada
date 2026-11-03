@@ -1552,8 +1552,6 @@ class DevSkimSarifReplayVerificationTests(unittest.TestCase):
                 replay_check.replay(root / "devskim-alerts.sarif", root)
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 class LuckyRevealTimerSuppressionTests(unittest.TestCase):
@@ -1723,3 +1721,6 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     self.assertEqual(suppressions.process_sarif(sarif, root), 0)
                     self.assertNotIn("suppressions", sarif["runs"][0]["results"][0])
 
+
+if __name__ == "__main__":
+    unittest.main()
