@@ -105,11 +105,13 @@ describe('Lucky Reveal celebration', () => {
     expect(celebrationSource).not.toMatch(/\.(png|webp|avif)\b/);
   });
 
-  it('keeps the confetti inside the requested three-to-four second window', () => {
+  it('lets the leaves leave the screen before the layer is removed', () => {
     // Phase 1 (feature 080) replaced the fixed 160 ticks with a declared
-    // lifetime and a wave schedule that totals about 3.5 seconds.
-    expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 150;');
+    // lifetime; feature 081 extended it past the fall and made the removal
+    // depend on the painted canvas rather than a fixed window.
+    expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 300;');
     expect(celebrationSource).toContain('ticks: PARTICLE_LIFETIME_TICKS');
+    expect(celebrationSource).toContain('hasPaintedPixels');
     expect(celebrationSource).toContain('lucky-celebration-flash 1s');
   });
 
@@ -130,7 +132,11 @@ describe('Lucky Reveal celebration', () => {
 
   it('is wired into the one shared reveal after the final number', () => {
     expect(popupSource).toContain("from './lucky-reveal-celebration'");
-    expect(popupSource).toContain('<LuckyRevealCelebration startDelayMs={celebrationDelayMs} />');
+    // Feature 081 also hands the celebration the settle callback that starts the
+    // number-ball finish once the confetti has left the screen.
+    expect(popupSource).toContain(
+      '<LuckyRevealCelebration startDelayMs={celebrationDelayMs} onConfettiSettled={startNumberFinish} />',
+    );
     expect(popupSource).toContain(
       'const celebrationDelayMs = (startNumbersDelay + (numItems - 1) * 0.35 + 0.95) * 1000;',
     );

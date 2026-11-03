@@ -166,6 +166,80 @@ export function playRevealSparkle() {
 
 
 /*
+ * Lucky Reveal finishing shimmer.
+ * The confetti pop lands with the final number; this is the softer cue that
+ * closes the reveal, played once when the maple leaves have left the screen and
+ * together with the four golden number-ball pulses. The opening sparkle and the
+ * confetti pop are unchanged.
+ */
+const REVEAL_FINISH_CHIME_URL = '/sounds/reveal-finish-chime.mp3';
+let revealFinishChimeLoadPromise = null;
+
+/**
+ * Load and decode the finishing shimmer before it is needed.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready to play.
+ */
+export function preloadRevealFinishChime() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  if (audioCache.revealFinishChime?.state() === 'loaded') return Promise.resolve();
+  if (revealFinishChimeLoadPromise) return revealFinishChimeLoadPromise;
+
+  revealFinishChimeLoadPromise = import('howler')
+    .then(({ Howl }) => new Promise((resolve, reject) => {
+      const sound = new Howl({
+        src: [REVEAL_FINISH_CHIME_URL],
+        html5: true,
+        // Gentle and quiet: the shimmer closes the reveal, it does not announce it.
+        volume: 0.3,
+        preload: true,
+      });
+      sound.on('playerror', (_id, error) => {
+        // A blocked or unsupported decode must never break the reveal finish.
+        console.warn('Reveal finishing chime playback failed:', error);
+      });
+      audioCache.revealFinishChime = sound;
+
+      if (sound.state() === 'loaded') {
+        resolve();
+        return;
+      }
+
+      sound.once('load', () => resolve());
+      sound.once('loaderror', (_id, error) => {
+        reject(new Error(`Reveal finishing chime failed to load: ${String(error)}`));
+      });
+    }))
+    .catch((error) => {
+      revealFinishChimeLoadPromise = null;
+      audioCache.revealFinishChime = null;
+      throw error;
+    });
+
+  return revealFinishChimeLoadPromise;
+}
+
+/**
+ * Plays the finishing shimmer once for this reveal.
+ *
+ * @returns {Promise<void>} Resolves after requesting playback or preload.
+ */
+export function playRevealFinishChime() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  const sound = audioCache.revealFinishChime;
+  if (sound?.state() === 'loaded') {
+    sound.stop();
+    sound.play();
+    return Promise.resolve();
+  }
+
+  return preloadRevealFinishChime();
+}
+
+
+/*
  * Crystal Ball sound design.
  * Same-origin sounds are preloaded on entry; playback is limited to the
  * question action and reveal transitions. Howler is already a project dependency.

@@ -1,0 +1,21 @@
+Recording: artifacts/media-inspection/reveal-finish-demo.mp4
+
+Streams: video:h264 1440x900, audio:aac 44100Hz/2ch, data:bin_data
+Duration: 4.83s
+
+Frames written: 3
+    1.21s -> artifacts/media-inspection/reveal-finish-demo-frames/frame-01-01.21s.png
+    2.42s -> artifacts/media-inspection/reveal-finish-demo-frames/frame-02-02.42s.png
+    3.62s -> artifacts/media-inspection/reveal-finish-demo-frames/frame-03-03.63s.png
+
+Speech (vosk-model-small-en-us-0.15): (no speech recognised)
+
+Sound events (MIT/ast-finetuned-audioset-10-10-0.4593):
+  0.201  Ding
+  0.129  Clang
+  0.124  Music
+  0.100  Sound effect
+  0.035  Burst, pop
+   0.00- 4.85s: Ding(0.20), Clang(0.13), Music(0.12)
+
+JSON report: artifacts/media-inspection/reveal-finish-demo-review.json

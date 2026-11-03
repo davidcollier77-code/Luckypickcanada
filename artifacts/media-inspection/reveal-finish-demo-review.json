@@ -1,0 +1,122 @@
+{
+  "probe": {
+    "path": "artifacts/media-inspection/reveal-finish-demo.mp4",
+    "duration_seconds": 4.833991,
+    "size_bytes": 487733,
+    "format": "mov,mp4,m4a,3gp,3g2,mj2",
+    "streams": [
+      {
+        "index": 0,
+        "type": "video",
+        "codec": "h264",
+        "width": 1440,
+        "height": 900,
+        "channels": null,
+        "sample_rate": null,
+        "duration": "4.800000",
+        "avg_frame_rate": "10/1"
+      },
+      {
+        "index": 1,
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null,
+        "channels": 2,
+        "sample_rate": "44100",
+        "duration": "4.833991",
+        "avg_frame_rate": "0/0"
+      },
+      {
+        "index": 2,
+        "type": "data",
+        "codec": "bin_data",
+        "width": null,
+        "height": null,
+        "channels": null,
+        "sample_rate": null,
+        "duration": "19.175000",
+        "avg_frame_rate": "0/0"
+      }
+    ],
+    "has_video": true,
+    "has_audio": true
+  },
+  "frames": [
+    {
+      "time_seconds": 1.208,
+      "file": "artifacts/media-inspection/reveal-finish-demo-frames/frame-01-01.21s.png"
+    },
+    {
+      "time_seconds": 2.417,
+      "file": "artifacts/media-inspection/reveal-finish-demo-frames/frame-02-02.42s.png"
+    },
+    {
+      "time_seconds": 3.625,
+      "file": "artifacts/media-inspection/reveal-finish-demo-frames/frame-03-03.63s.png"
+    }
+  ],
+  "audio": {
+    "duration_seconds": 4.853,
+    "speech": {
+      "available": true,
+      "model": "vosk-model-small-en-us-0.15",
+      "text": "",
+      "words": []
+    },
+    "sound_events": {
+      "available": true,
+      "model": "MIT/ast-finetuned-audioset-10-10-0.4593",
+      "windows": [
+        {
+          "start_seconds": 0.0,
+          "end_seconds": 4.85,
+          "top": [
+            {
+              "label": "Ding",
+              "score": 0.2007
+            },
+            {
+              "label": "Clang",
+              "score": 0.1288
+            },
+            {
+              "label": "Music",
+              "score": 0.1239
+            },
+            {
+              "label": "Sound effect",
+              "score": 0.0997
+            },
+            {
+              "label": "Burst, pop",
+              "score": 0.0347
+            }
+          ]
+        }
+      ],
+      "top": [
+        {
+          "label": "Ding",
+          "score": 0.2007
+        },
+        {
+          "label": "Clang",
+          "score": 0.1288
+        },
+        {
+          "label": "Music",
+          "score": 0.1239
+        },
+        {
+          "label": "Sound effect",
+          "score": 0.0997
+        },
+        {
+          "label": "Burst, pop",
+          "score": 0.0347
+        }
+      ]
+    }
+  }
+}

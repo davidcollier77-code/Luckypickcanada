@@ -1,3 +1,18 @@
+# Active Context — Lucky Reveal Finish Polish + Reusable Media Inspection (2026-11-03)
+
+- **Task groups:** `polishing` + `audio` + `troubleshooting`; branch `freebuff/f42744a86b35d603e40013fd`; PR #1687 open and unmerged (Master Work Request #1).
+- **Verified baseline:** `canvas-confetti` deletes a particle when `fetti.tick >= fetti.totalTicks`, and feature 080 set `ticks: 150` with a fixed `CONFETTI_WINDOW_MS` teardown, so leaves could be deleted while painted and the layer left on a timer. `ShareLuckyPickButton` only tried a file share and dropped straight to the custom window. Numbers kept an infinite alternating glow and had no finish. No `ffmpeg`, `ffprobe` or audio model existed in the workspace.
+- **Confetti:** lifetime is now 300 ticks (past the fall) and the layer is removed by sampling the canvas (`getImageData`, every 200 ms from 1400 ms after launch) — never before the canvas paints nothing — with a 12 s fallback. Waves (86 <= 96), leaf artwork, palette and above-panel layering unchanged. Measured in Chromium: painted until 16.2 s (desktop) / 12.8 s (mobile) of probe time, then empty in the same sample the layer left.
+- **Sharing:** image + message + link, then native text/link, then the custom window; both `AbortError`s report cancellation and open nothing. Device share sheet untested.
+- **Finish:** the celebration reports completion once; `app/lucky-reveal-popup.js` then applies `lucky-reveal-numbers--finishing`, which runs four 1.05 s golden ring pulses with a 120 ms per-ball stagger from a `::after` pseudo-element (the ball's own animation untouched) and clears after about 5.1 s. Reduced motion runs none.
+- **Sound:** new `public/sounds/reveal-finish-chime.mp3` (2.77 s, 44,764 B) from "Healing Spell Chime (Fantasy RPG)" by Assetsmith on Freesound, CC0 1.0 (commercial use permitted); provenance in `public/sounds/reveal-finish-chime-sources.md`, page/deed evidence in `artifacts/sound-licence/`. Played once with the first pulse; opening sparkle and confetti pop unchanged.
+- **Media capability:** `scripts/setup-media-tools.sh` provisions FFmpeg/FFprobe 7.0.2 static, a private venv (vosk, torch 2.15.0+cpu, transformers 5.22.1), the Vosk small-en-us model and the AudioSet AST model under `~/.local/media-tools` (1.5 G, durable, no root, no sandbox change); `scripts/inspect-media.py` reports frames, a Vosk transcript with word timings and AudioSet sound labels. Demonstrated on `artifacts/media-inspection/` (speech transcript plus a 4.83 s reveal demo recording: frames, `Ding`/`Clang`/`Burst, pop`).
+- **Artifacts:** `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md` plus `checklists/requirements.md`; `.specify/feature.json` points there.
+- **Verification:** focused 52 tests PASS; full `pnpm exec vitest run` 347 PASS; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; production build 299,540,437 B / 285.6 MiB; Chromium probe (launched with no `--no-sandbox`) recorded the pulses only after the canvas emptied, the chime requested at that moment, and a clean reduced-motion path.
+- **Pending:** real Android share sheet, audible playback, and the "supplied recording" (absent from this workspace).
+
+---
+
 # Active Context — Lucky Reveal Confetti Phase 1 (2026-11-02)
 
 - **Task groups:** `polishing` + `audio`; branch `freebuff/d4bf506e672ecbddc0a33655`; PR left open and unmerged.
