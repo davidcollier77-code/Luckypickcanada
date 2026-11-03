@@ -268,13 +268,33 @@ export default function ShareLuckyPickButton({ reveal }) {
         await navigator.clipboard.writeText(link);
         setStatus(label);
         return;
-      setStatus('Could not copy the link. Please copy it manually.');
-      return;
+      }
     } catch {
-      // Fall through to the manual copy prompt.
-    setStatus('Clipboard not available. Please copy the link manually.');
+      // Try the legacy selection-based copy path below.
+    }
 
-    setStatus(label);
+    const textArea = document.createElement('textarea');
+    textArea.value = link;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch {
+      copied = false;
+    } finally {
+      textArea.remove();
+    }
+
+    setStatus(
+      copied
+        ? label
+        : 'Could not copy the link. Please copy it manually from your browser.',
+    );
   }
 
   return (
