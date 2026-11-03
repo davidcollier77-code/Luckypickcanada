@@ -1,5 +1,22 @@
 const ATLANTIC_ZONE = "America/Halifax";
 const SUPPORTED_CRONS = new Set(["5 * * * *", "21 * * * *"]);
+
+// GitHub rejects REST requests that carry no User-Agent header with HTTP 403
+// "Request forbidden by administrative rules". Cloudflare Workers fetch sends
+// no default User-Agent, so every dispatch request must set one explicitly.
+export const GITHUB_USER_AGENT = "luckypickcanada-updater-scheduler";
+
+// Bounded, allowlisted failure diagnostics: enough to tell a missing User-Agent
+// from a credential or rate-limit rejection without leaking the token.
+const DIAGNOSTIC_BODY_LIMIT = 500;
+const DIAGNOSTIC_HEADERS = [
+  "content-type",
+  "retry-after",
+  "x-github-request-id",
+  "x-ratelimit-limit",
+  "x-ratelimit-remaining",
+  "x-ratelimit-reset"
+];
 const TARGETS = new Map([
   ["Tue 01:05", { workflow: "update-spec-kit.yml", slot: "spec-kit-primary" }],
   ["Fri 01:05", { workflow: "update-spec-kit.yml", slot: "spec-kit-primary" }],
@@ -77,6 +94,51 @@ function validateEnv(env) {
   return { owner, repo, token };
 }
 
+function sanitizeDiagnosticBody(text, token) {
+  let body = String(text == null ? "" : text);
+  if (typeof token === "string" && token.length > 0) {
+    body = body.split(token).join("[redacted]");
+  }
+  const normalized = body
+    .replace(/Bearer\s+[^\s"']+/gi, "Bearer [redacted]")
+    .replace(/\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/g, "[redacted]")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (normalized.length <= DIAGNOSTIC_BODY_LIMIT) return normalized;
+  return normalized.slice(0, DIAGNOSTIC_BODY_LIMIT) + "…[truncated]";
+}
+
+function selectDiagnosticHeaders(headers) {
+  const selected = {};
+  if (!headers || typeof headers.get !== "function") return selected;
+  for (const name of DIAGNOSTIC_HEADERS) {
+    const value = headers.get(name);
+    if (value !== null && value !== undefined && value !== "") {
+      selected[name] = String(value);
+    }
+  }
+  return selected;
+}
+
+async function readDiagnosticBody(response, token) {
+  try {
+    if (!response || typeof response.text !== "function") return "";
+    return sanitizeDiagnosticBody(await response.text(), token);
+  } catch {
+    return "[body unavailable]";
+  }
+}
+
+export class GitHubDispatchError extends Error {
+  constructor(status, body, headers) {
+    super("GitHub workflow dispatch failed with HTTP " + status);
+    this.name = "GitHubDispatchError";
+    this.githubStatus = status;
+    this.githubBody = body;
+    this.githubHeaders = headers;
+  }
+}
+
 export async function dispatchWorkflow(target, env, fetchImpl = fetch) {
   const { owner, repo, token } = validateEnv(env);
   const endpoint = "https://api.github.com/repos/" + owner + "/" + repo +
@@ -87,6 +149,7 @@ export async function dispatchWorkflow(target, env, fetchImpl = fetch) {
       Accept: "application/vnd.github+json",
       Authorization: "Bearer " + token,
       "Content-Type": "application/json",
+      "User-Agent": GITHUB_USER_AGENT,
       "X-GitHub-Api-Version": "2022-11-28"
     },
     body: JSON.stringify({
@@ -95,7 +158,11 @@ export async function dispatchWorkflow(target, env, fetchImpl = fetch) {
     })
   });
   if (!response.ok) {
-    throw new Error("GitHub workflow dispatch failed with HTTP " + response.status);
+    throw new GitHubDispatchError(
+      response.status,
+      await readDiagnosticBody(response, token),
+      selectDiagnosticHeaders(response.headers)
+    );
   }
   return { status: response.status, workflow: target.workflow, slot: target.slot };
 }
@@ -133,10 +200,18 @@ export async function handleScheduled(controller, env, options = {}) {
     }));
     return { outcome: "accepted", target, status: result.status };
   } catch (error) {
+    const diagnostics = error && error.githubStatus !== undefined
+      ? {
+          githubStatus: error.githubStatus,
+          githubBody: error.githubBody,
+          githubHeaders: error.githubHeaders
+        }
+      : {};
     logger.error(JSON.stringify({
       event: "workflow-dispatch",
       outcome: "failed",
       error: error instanceof Error ? error.message : "Unknown dispatch failure",
+      ...diagnostics,
       ...logContext
     }));
     throw error;

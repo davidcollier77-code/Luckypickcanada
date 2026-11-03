@@ -188,6 +188,7 @@ test("posts workflow filename, main ref, source, and slot", async () => {
   assert.equal(request.url, "https://api.github.com/repos/davidcollier77-code/Luckypickcanada/actions/workflows/update-spec-kit.yml/dispatches");
   assert.equal(request.init.method, "POST");
   assert.equal(request.init.headers.Authorization, "Bearer dummy-secret");
+  assert.equal(request.init.headers["User-Agent"], "luckypickcanada-updater-scheduler");
   assert.deepEqual(JSON.parse(request.init.body), { ref: "main", inputs: { dispatch_source: "cloudflare", scheduler_slot: "spec-kit-primary" } });
 });
 
@@ -209,17 +210,64 @@ test("fails safely on missing configuration or non-success HTTP status", async (
   ), /HTTP 403/);
 });
 
-test("failed dispatch logs status without token or response body", async () => {
+test("failed dispatch logs sanitized GitHub status, body, and selected headers", async () => {
+  const lines = [];
+  const logger = { log: (value) => lines.push(value), error: (value) => lines.push(value) };
+  const body = JSON.stringify({
+    message: "Bad credentials",
+    echo: "secret-token",
+    pat: "ghp_abcdefghijklmnopqrstuvwxyz0123456789"
+  });
+  await assert.rejects(() => handleScheduled(
+    { scheduledTime: ts("2026-10-20T04:05:00Z"), cron: "5 * * * *" },
+    { DISPATCH_ENABLED: "true", GITHUB_OWNER: "owner", GITHUB_REPO: "repo", GITHUB_TOKEN: "secret-token" },
+    {
+      logger,
+      fetchImpl: async () => new Response(body, {
+        status: 403,
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "x-ratelimit-remaining": "0",
+          "x-ratelimit-reset": "1793721985",
+          "x-github-request-id": "AAAA:BBBB:CCCC",
+          "set-cookie": "session=must-not-be-logged"
+        }
+      })
+    }
+  ), /HTTP 403/);
+
+  const entry = JSON.parse(lines[lines.length - 1]);
+  assert.equal(entry.event, "workflow-dispatch");
+  assert.equal(entry.outcome, "failed");
+  assert.match(entry.error, /HTTP 403/);
+  assert.equal(entry.githubStatus, 403);
+  assert.equal(
+    entry.githubBody,
+    JSON.stringify({ message: "Bad credentials", echo: "[redacted]", pat: "[redacted]" })
+  );
+  assert.deepEqual(entry.githubHeaders, {
+    "content-type": "text/plain; charset=utf-8",
+    "x-github-request-id": "AAAA:BBBB:CCCC",
+    "x-ratelimit-remaining": "0",
+    "x-ratelimit-reset": "1793721985"
+  });
+  const output = lines.join("\n");
+  assert.doesNotMatch(output, /secret-token|ghp_abcdefghijklmnopqrstuvwxyz0123456789|set-cookie|session=/);
+});
+
+test("failed dispatch collapses and bounds a long diagnostic body", async () => {
   const lines = [];
   const logger = { log: (value) => lines.push(value), error: (value) => lines.push(value) };
   await assert.rejects(() => handleScheduled(
     { scheduledTime: ts("2026-10-20T04:05:00Z"), cron: "5 * * * *" },
     { DISPATCH_ENABLED: "true", GITHUB_OWNER: "owner", GITHUB_REPO: "repo", GITHUB_TOKEN: "secret-token" },
-    { logger, fetchImpl: async () => new Response("private body", { status: 403 }) }
-  ), /HTTP 403/);
-  const output = lines.join("\n");
-  assert.match(output, /HTTP 403/);
-  assert.doesNotMatch(output, /secret-token|private body/);
+    { logger, fetchImpl: async () => new Response("reason one\r\n" + "x".repeat(900), { status: 502 }) }
+  ), /HTTP 502/);
+
+  const entry = JSON.parse(lines[lines.length - 1]);
+  assert.match(entry.githubBody, /^reason one x+…\[truncated\]$/);
+  assert.equal(entry.githubBody.length, 500 + "…[truncated]".length);
+  assert.doesNotMatch(lines.join("\n"), /secret-token/);
 });
 
 test("activation enables Worker while preserving native schedules pending explicit handoff", async () => {
