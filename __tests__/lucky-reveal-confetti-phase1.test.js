@@ -52,7 +52,7 @@ describe('Confetti lifecycle', () => {
     expect(celebrationSource).toContain(
       'const CONFETTI_WATCH_TIMEOUT_MS = 12000;',
     );
-    expect(celebrationSource).toContain('hasPaintedPixels(canvasRef.current)');
+    expect(celebrationSource).toContain('countPaintedPixels(canvasRef.current)');
 
     // 300 ticks is five seconds at 60 fps, longer than the fall the shipped
     // three-to-four second window allowed.
@@ -148,7 +148,9 @@ describe('Both number-selection modes', () => {
 
     // The popup still staggers one number at a time on the existing timeline.
     expect(popupSource).toContain('animationDelay: `${startNumbersDelay + numberIndex * 0.35}s,');
-    expect(popupSource).toContain('animationDuration: \'0.9s, 3s\'');
+    // Phase 2: the glow cycle is the same constant the atmosphere loops on.
+    expect(popupSource).toContain('animationDuration: `0.9s, ${REVEAL_GLOW_PULSE_MS / 1000}s`,');
+    expect(audioSource).toContain('export const REVEAL_GLOW_PULSE_MS = 3000;');
 
     const lastNumberDelay = START_NUMBERS_DELAY + (numbers.length - 1) * NUMBER_STAGGER;
     // The individual number reveal stays inside the requested two-to-three seconds.

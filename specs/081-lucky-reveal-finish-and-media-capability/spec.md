@@ -180,3 +180,54 @@ and ensure the regression test asserts that exactly one declaration exists.
 suites must pass, and the OpenNext Cloudflare production build must compile on the hotfix
 PR head. No runtime behaviour, confetti timing, reveal appearance, audio, sharing,
 number generation, or deployment configuration is to change.
+
+## Phase 2 — Pulsating audio, chime timing and Share to Apps (2026-11-03)
+
+Phase 1 shipped the leaf finish, the four number-ball pulses, the finishing chime and the native
+image-share ladder. Phase 2 is a coordinated polish of that shipped experience, without changing any
+artwork, number, payment or email behaviour.
+
+### Verified baseline
+
+- The number balls run an infinite 3 s alternating `lucky-glow-pulse` (`animationDuration: '0.9s, 3s'`,
+  first glow 2.9 s after the popup opens) and the reveal has no sound underneath it.
+- The finishing chime plays from `startNumberFinish`, which the celebration calls only after the
+  canvas paints nothing, so the cue starts after every maple leaf has gone.
+- Sharing is one **Share My Reveal** button that tries native sharing and opens a custom dialog with
+  three actions (Copy the website link, Copy the image, Download the image) only when native sharing
+  fails; the dialog is the only place those three actions exist.
+- No result link is exposed: the native payload and the copied link are always the site URL.
+
+### User scenarios
+
+- **US6 (P1)** — While the revealed balls breathe with their golden glow, a quiet atmospheric pulse
+  breathes with them. It starts on the first glow frame and stops when the reveal closes, and it is
+  atmosphere rather than a musical chime.
+- **US7 (P1)** — The finishing chime from Phase 1 now begins while the last few maple leaves are
+  still falling, instead of waiting for the canvas to be empty; the four number-ball pulses still
+  wait for the confetti to disappear.
+- **US8 (P1)** — The reveal always offers four clearly visible sharing actions: **Share to Apps**
+  (native Android/desktop share panel, result image + numbers + result-or-site link, including
+  messaging apps), plus the existing Copy the website link, Copy the image and Download the image.
+  If native sharing is unavailable, Share to Apps explains the fallback and the three local actions
+  still work.
+
+### Requirements
+
+- **FR-011**: The atmosphere MUST be a seamless 3 s loop whose period equals
+  `REVEAL_GLOW_PULSE_MS`, starting on the first number ball's glow frame and stopping with the
+  reveal; it MUST be quiet, atmospheric and non-melodic, MUST NOT replace the existing sparkle, pop
+  or finishing chime, and MUST be silent for `prefers-reduced-motion: reduce`.
+- **FR-012**: The finishing chime MUST start while a few leaves are still painted (a measured
+  fraction of the peak painted canvas), exactly once, and MUST NOT be delayed until the canvas is
+  empty; the four number-ball pulses MUST still start only after the confetti has completely gone.
+- **FR-013**: The reveal MUST show four visible sharing actions in one group: Share to Apps with a
+  recognisable share icon and a tap target of at least 44 px, plus the three existing actions with
+  their existing labels and behaviour, never hidden behind a modal.
+- **FR-014**: Share to Apps MUST use `navigator.share` on supported mobile and desktop browsers,
+  first with the result image, message and link and then with text and link, share the stored
+  result, and prefer the reveal's same-site result link when one is available. It MUST report
+  cancellation without an error and MUST fall back gracefully when Web Share is unavailable.
+- **FR-015**: Number generation, artwork, layout, prices, payments, gift email, database, API routes,
+  authentication and deployment configuration MUST NOT change, and the production build MUST stay
+  below the 495 MB hard maximum.

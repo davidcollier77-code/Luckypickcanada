@@ -111,7 +111,7 @@ describe('Lucky Reveal celebration', () => {
     // depend on the painted canvas rather than a fixed window.
     expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 300;');
     expect(celebrationSource).toContain('ticks: PARTICLE_LIFETIME_TICKS');
-    expect(celebrationSource).toContain('hasPaintedPixels');
+    expect(celebrationSource).toContain('countPaintedPixels');
     expect(celebrationSource).toContain('lucky-celebration-flash 1s');
   });
 
@@ -134,9 +134,10 @@ describe('Lucky Reveal celebration', () => {
     expect(popupSource).toContain("from './lucky-reveal-celebration'");
     // Feature 081 also hands the celebration the settle callback that starts the
     // number-ball finish once the confetti has left the screen.
-    expect(popupSource).toContain(
-      '<LuckyRevealCelebration startDelayMs={celebrationDelayMs} onConfettiSettled={startNumberFinish} />',
-    );
+    // Phase 2 adds the earlier finishing-chime cue alongside the settle cue.
+    expect(popupSource).toContain('startDelayMs={celebrationDelayMs}');
+    expect(popupSource).toContain('onConfettiFinishing={startFinishingChime}');
+    expect(popupSource).toContain('onConfettiSettled={startNumberFinish}');
     expect(popupSource).toContain(
       'const celebrationDelayMs = (startNumbersDelay + (numItems - 1) * 0.35 + 0.95) * 1000;',
     );

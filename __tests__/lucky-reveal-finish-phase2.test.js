@@ -31,9 +31,9 @@ describe('Confetti leaves leave the screen before cleanup', () => {
   });
 
   it('removes the layer from a measurement of the painted canvas', () => {
-    expect(celebrationSource).toContain('function hasPaintedPixels(canvas)');
+    expect(celebrationSource).toContain('function countPaintedPixels(canvas)');
     expect(celebrationSource).toContain('getImageData(0, 0, width, height)');
-    expect(celebrationSource).toContain('if (!hasPaintedPixels(canvasRef.current)) settle();');
+    expect(celebrationSource).toContain('if (paintedPixels === 0) {');
     expect(celebrationSource).toContain('onConfettiSettled?.()');
     // The fixed window that used to remove the layer regardless of the screen is
     // gone; a bounded timeout only exists for a canvas that cannot be sampled.
@@ -61,10 +61,10 @@ describe('Android native sharing', () => {
     expect(shareSource).toContain('if (imagePayload && canShareNative(imagePayload))');
   });
 
-  it('tries a native text/link share before the custom window', () => {
+  it('tries a native text/link share before reporting the local fallback', () => {
     const imageIndex = shareSource.indexOf('canShareNative(imagePayload)');
     const textIndex = shareSource.indexOf('const textPayload = { title, text, url: link };');
-    const fallbackIndex = shareSource.indexOf('setIsFallbackOpen(true);');
+    const fallbackIndex = shareSource.indexOf('App sharing was unavailable for this result.');
 
     expect(imageIndex).toBeGreaterThan(0);
     expect(textIndex).toBeGreaterThan(imageIndex);
@@ -72,7 +72,7 @@ describe('Android native sharing', () => {
     expect(shareSource).toContain('canShareNative(textPayload)');
   });
 
-  it('reports cancellation without opening the fallback, and keeps the fallback', () => {
+  it('reports cancellation without a failure, and keeps the three local actions', () => {
     expect(shareSource).toContain(
       "return error?.name === 'AbortError' ? SHARE_CANCELLED : SHARE_REJECTED;",
     );
@@ -135,13 +135,24 @@ describe('Finishing sound', () => {
     expect(statSync(asset).size).toBeLessThan(200 * 1024);
   });
 
-  it('plays the finishing cue with the pulses, after the confetti', () => {
-    const startBlock = popupSource.slice(
+  it('plays the finishing cue while the last few leaves are still falling', () => {
+    // Phase 2 moved the chime onto its own earlier cue; the pulses still wait for
+    // the confetti to clear completely.
+    expect(celebrationSource).toContain('const FINISHING_LEAF_RATIO = 0.08;');
+    expect(celebrationSource).toContain('onConfettiFinishing?.()');
+    expect(popupSource).toContain('onConfettiFinishing={startFinishingChime}');
+
+    const chimeBlock = popupSource.slice(
+      popupSource.indexOf('const startFinishingChime = useCallback'),
+    );
+    expect(chimeBlock).toContain('playRevealFinishChime()');
+
+    const pulseBlock = popupSource.slice(
       popupSource.indexOf('const startNumberFinish = useCallback'),
+      popupSource.indexOf('// Pulsating atmosphere'),
     );
-    expect(startBlock.indexOf('setIsNumberFinishActive(true);')).toBeLessThan(
-      startBlock.indexOf('playRevealFinishChime()'),
-    );
+    expect(pulseBlock).toContain('setIsNumberFinishActive(true);');
+    expect(pulseBlock).not.toContain('playRevealFinishChime()');
   });
 
   it('preserves the opening sparkle and the confetti pop', () => {

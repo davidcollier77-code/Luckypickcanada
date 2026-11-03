@@ -1,10 +1,14 @@
 'use client';
 import {
+  REVEAL_GLOW_PULSE_MS,
   playButtonClick,
   playRevealFinishChime,
   playRevealSparkle,
   preloadRevealFinishChime,
+  preloadRevealGlowPulse,
   preloadRevealSparkle,
+  startRevealGlowPulse,
+  stopRevealGlowPulse,
 } from './lib/audio';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,6 +29,11 @@ const NUMBER_FINISH_STAGGER_MS = 120;
 const NUMBER_FINISH_MAX_DELAY_MS = NUMBER_FINISH_STAGGER_MS * 6;
 const NUMBER_FINISH_TOTAL_MS =
   NUMBER_FINISH_PULSE_MS * NUMBER_FINISH_PULSES + NUMBER_FINISH_MAX_DELAY_MS + 150;
+
+// The first number ball starts its glow 0.9 s after it begins revealing 2.0 s
+// after the popup opens. The atmosphere starts on that exact frame, so its swell
+// peaks with the glow's brightest point, and it stops when the reveal closes.
+const GLOW_START_MS = (2.0 + 0.9) * 1000;
 
 const colorDescriptions = {
   'Aurora Green': 'Vibrant and shifting, like the northern lights dancing over the boreal forest.',
@@ -179,16 +188,24 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     onClose?.();
   }, [onClose]);
 
-  // Starts the finishing flourish: four gentle golden pulses on the number balls
-  // plus one short shimmer, in the same tick, after the confetti has gone.
+  // The finishing chime starts while a few maple leaves are still falling, so the
+  // cue closes the reveal instead of waiting for the last leaf.
+  const startFinishingChime = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    playRevealFinishChime().catch((error) => {
+      console.warn('Reveal finishing chime unavailable', error);
+    });
+  }, []);
+
+  // Starts the finishing flourish: four gentle golden pulses on the number balls,
+  // once the confetti has completely gone.
   const startNumberFinish = useCallback(() => {
     if (typeof window === 'undefined') return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     setIsNumberFinishActive(true);
-    playRevealFinishChime().catch((error) => {
-      console.warn('Reveal finishing chime unavailable', error);
-    });
   }, []);
 
   // Return the balls to their normal appearance once the fourth pulse is done.
@@ -227,13 +244,36 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
         console.warn('Reveal opening sparkle unavailable', error);
       });
 
-    // Prepare the finishing shimmer now so it can play on the exact pulse tick.
+    // Prepare the finishing shimmer now so it can play on its exact leaf cue.
     preloadRevealFinishChime().catch((error) => {
       console.warn('Reveal finishing chime unavailable', error);
     });
 
     return () => {
       isActive = false;
+    };
+  }, [isOpen]);
+
+  // Pulsating atmosphere: started on the same frame as the number-ball glow and
+  // stopped with the reveal, so the sound and the visual pulse share one start
+  // and one end. Reduced-motion visitors keep the silent reveal.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    preloadRevealGlowPulse().catch((error) => {
+      console.warn('Reveal glow pulse unavailable', error);
+    });
+
+    const timer = window.setTimeout(() => {
+      startRevealGlowPulse().catch((error) => {
+        console.warn('Reveal glow pulse playback failed', error);
+      });
+    }, GLOW_START_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      stopRevealGlowPulse();
     };
   }, [isOpen]);
 
@@ -536,7 +576,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
                           opacity: 0,
                           transform: 'translateY(24px) scale(0.5)',
                           animationName: 'lucky-number-reveal, lucky-glow-pulse',
-                          animationDuration: '0.9s, 3s',
+                          // The glow cycle and the atmosphere share REVEAL_GLOW_PULSE_MS.
+                          animationDuration: `0.9s, ${REVEAL_GLOW_PULSE_MS / 1000}s`,
                           animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out',
                           animationDelay: `${startNumbersDelay + numberIndex * 0.35}s, ${startNumbersDelay + numberIndex * 0.35 + 0.9}s`,
                           animationIterationCount: '1, infinite',
@@ -627,7 +668,11 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
 
       {/* Behind the panel (z-index 1 vs 2) so the decorative pile can never cover a
           number, the copy, the share control, or the map button. */}
-      <LuckyRevealCelebration startDelayMs={celebrationDelayMs} onConfettiSettled={startNumberFinish} />
+      <LuckyRevealCelebration
+        startDelayMs={celebrationDelayMs}
+        onConfettiFinishing={startFinishingChime}
+        onConfettiSettled={startNumberFinish}
+      />
     </div>
   );
 }

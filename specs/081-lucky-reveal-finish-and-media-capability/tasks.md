@@ -80,3 +80,49 @@
 - TypeScript — **PENDING**.
 - `./freebuff-verify.sh` — **PENDING**.
 - OpenNext Cloudflare build and measured build size — **PENDING**.
+
+## Phase 9 — Phase 2 polish (2026-11-03)
+
+- [x] T026 Add `REVEAL_GLOW_PULSE_MS`, `preloadRevealGlowPulse`, `startRevealGlowPulse` and
+  `stopRevealGlowPulse` to `app/lib/audio.js`.
+- [x] T027 Generate the seamless 3 s atmospheric loop
+  (`public/sounds/reveal-glow-pulse.wav` + `scripts/generate-reveal-glow-pulse.mjs`) and record its
+  provenance in `public/sounds/reveal-glow-pulse-sources.md`.
+- [x] T028 Start the atmosphere on the first ball's glow frame (`GLOW_START_MS`) and stop it with the
+  reveal, sharing `REVEAL_GLOW_PULSE_MS` with the CSS glow animation.
+- [x] T029 Measure painted pixels in the celebration, fire `onConfettiFinishing` at
+  `FINISHING_LEAF_RATIO` of the peak, and keep the four pulses on the empty-canvas signal.
+- [x] T030 Move the finishing chime to `startFinishingChime` (`onConfettiFinishing`) so it begins
+  while a few leaves are still falling.
+- [x] T031 Replace the single share button and modal with four always-visible actions: Share to Apps
+  (share icon, native Web Share ladder) plus Copy the website link, Copy the image and Download the
+  image, with an explicit graceful fallback.
+- [x] T032 Add `getShareLink(reveal)` for the result's same-site link with a website fallback.
+- [x] T033 Add `__tests__/lucky-reveal-phase2.test.js` and update the Phase 1/081/075 guards.
+- [x] T034 Run focused and full Vitest, `tsc --noEmit`, `./freebuff-verify.sh`, measure the
+  production build, and run the Chromium probe for both games, six and seven numbers, audio timing,
+  all four sharing options, mobile native sharing and the fallback.
+- [x] T035 Audit the final diff and update the single PR summary, leaving the PR open and unmerged.
+
+### Phase 2 verification record
+
+- Focused Vitest (`lucky-reveal-phase2`, `lucky-reveal-finish-phase2`, `lucky-reveal-celebration`,
+  `components/LuckyRevealCelebration`) — **PASS** 4 files / 52 tests.
+- Full `pnpm exec vitest run` — **PASS** 35 files / 366 tests.
+- `pnpm exec tsc --noEmit` — **PASS** exit 0.
+- `./freebuff-verify.sh` — **PASS** exit 0 (Spec Kit gate, typecheck, production build,
+  refresh-docs 19/19).
+- Production build `.next` — **PASS** 339,682,181 bytes / 323.9 MiB, below the 495 MB hard maximum.
+- Chromium probe (`artifacts/reveal-phase2-probe.cjs`, evidence in
+  `artifacts/reveal-phase2/report.json`) against the production build — **PASS** 41/41 checks over
+  four scenarios: desktop 6 Pick Personal, desktop 7 Pick Gift, mobile 7 Pick Personal, mobile 6
+  Pick Gift without Web Share. Six and seven numbers render in range; all four options are visible
+  with 55–58 px (Share to Apps) and 70–75 px (the three preserved actions) tap targets; the native
+  payload carries one 1.76–1.79 MB PNG, the stored numbers, and the site link; the atmosphere starts
+  3.29–3.45 s after opening as a 3 s loop and stops on close; the chime begins with 173–2703 painted
+  pixels still on the canvas (782–2543 ms before the canvas is cleared); the four pulses start only
+  once the canvas is gone; without Web Share the fallback message appears and the three existing
+  actions stay usable; no page errors.
+- **Pending / not verified:** a physical Android device share sheet (the probe stubs
+  `navigator.share`; no device exists in this workspace), audible playback (no audio output device),
+  and a real-device visual check of the atmosphere mix level.
