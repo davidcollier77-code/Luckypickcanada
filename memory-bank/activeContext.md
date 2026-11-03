@@ -1,3 +1,35 @@
+# Active Context — Lucky Reveal PR #1692 Review Repair (2026-11-03)
+
+- **Task groups:** `troubleshooting` + `security` + `audio` + `testing`; same branch
+  `fix/reveal-applause-share-20261103` and same PR #1692, left open and unmerged. Reused `specs/081`
+  (Phase 4 sections); no duplicate feature directory.
+- **Amazon Q finding — real and now tested.** `playRevealApplause` set `applauseRequestedSessionId`
+  before the decode completed, so a rejected preload left the guard set and every later cue for that
+  open reveal was dropped. Commit `f29a544b` (owner `/q` request) clears the guard in the catch. New
+  `__tests__/reveal-applause-retry.test.js` drives the real module with a controllable Howl: first
+  decode fails, retry creates a second Howl, `load` then plays once, a third call stays ignored; a
+  second case ends the session before `load` and asserts no playback.
+- **DevSkim — all 38 annotations classified.** 1 DS137138 warning was the intentional `http://`
+  negative fixture in the share-link test (never fetched); 1 DS172411 notice was the warmup timer's
+  callable arrow with a fixed delay; 36 DS162092 notices were loopback addresses inside the committed
+  generated `artifacts/reveal-phase3/report.json`. The report is no longer committed (the probe still
+  writes it locally), and each genuine false positive now has a one-line `DevSkim: ignore` with a
+  reason. No scanner allowlist, rule, or workflow was widened.
+- **Verification:** focused 2 files / 30 tests PASS; full 36 files / 376 tests PASS; `tsc --noEmit`
+  exit 0; DevSkim suppression unit tests 70 PASS; `./freebuff-verify.sh` PASS; `.next` 342,207,481 B /
+  326.35 MiB (combined with public 375,047,524 B). DevSkim real-SARIF replay is CI-only.
+- **Pending:** DevSkim annotations on the new pushed head, independent re-review, physical
+  Samsung/Android share sheet, and audible playback.
+
+# Active Context — Lucky Reveal Phase 3 (2026-11-03)
+
+- **Task groups:** `audio` + `polishing` + `testing`; branch `fix/reveal-applause-share-20261103`; one PR, open and unmerged. Reused `specs/081-lucky-reveal-finish-and-media-capability` (Phase 3 sections); no duplicate feature directory.
+- **Sound:** removed the generated `reveal-glow-pulse.wav`, its provenance and generator, and the finishing chime, to avoid a continuous bed and a clashing cue. New `public/sounds/reveal-applause.wav` is Mixkit 478 "Small group cheer and applause" (real recording, Mixkit Sound Effects Free License, commercial web use, no attribution required), trimmed to 5.6 s mono 44.1 kHz with fades; provenance in `public/sounds/reveal-applause-sources.md`.
+- **Lifecycle:** `beginRevealAudioSession` / `endRevealAudioSession` own each reveal; `playRevealApplause(sessionId)` plays once per session, ignores stale sessions, and only starts a delayed decode if that session is still current. No fade or stop timers.
+- **Timing:** applause fires on the celebration's 8 % leaf cue (2.5 s lead before the 12 s fallback), after every number; the four golden pulses still wait for an empty canvas.
+- **Sharing:** image is prewarmed 1.2 s after mount, `navigator.share` is called synchronously from the tap with one attempt only; cancel/failure/unsupported each get truthful messages; copy-link no longer claims success on failure; `getShareLink` rejects query/fragment/payment identifiers.
+- **Verification:** focused 5 files / 85 tests PASS; full 35 files / 373 tests PASS; `tsc --noEmit` exit 0; `./freebuff-verify.sh` PASS; build 340,354,762 B / 343 MB; Phase 3 Chromium probe 61/61 (applause once after all numbers with leaves still painted, paused on close, no late play after a delayed decode, tap-to-share 1–3 ms, image 1.76–1.77 MB, cancel/failure/unsupported all truthful).
+- **Pending:** physical Samsung/Android share sheet and audible playback; both unverified here.
 # Active Context — Lucky Reveal Phase 2 (2026-11-03)
 
 - **Task groups:** `polishing` + `audio` + `testing`; branch `freebuff/6dc0e7308e1062abbe03974a`; PR open and unmerged (Master Work Request #1, Phase 2). Reused `specs/081-lucky-reveal-finish-and-media-capability` for the new Spec Kit cycle; no duplicate feature directory.

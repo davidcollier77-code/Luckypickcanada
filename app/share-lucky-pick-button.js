@@ -43,6 +43,12 @@ const optionStyle = {
   touchAction: 'manipulation',
 };
 
+// Android (and other mobile browsers) only open the native share sheet while the
+// tap still holds transient user activation. Drawing the 1200x1500 reveal image
+// takes long enough to lose it, so the image is prepared shortly after the
+// reveal appears and the tap handler shares it without awaiting anything.
+const SHARE_IMAGE_WARMUP_MS = 1200;
+
 // Recognisable share marks: three connected nodes for "Share to Apps" and a
 // simple glyph for each preserved action.
 const shareIcon = (
@@ -88,26 +94,28 @@ const downloadIcon = (
   </svg>
 );
 
-// Result of one native share attempt. A cancelled sheet is a normal outcome, not
-// a failure, so the caller can report it without treating the result as broken.
-const SHARE_SHARED = 'shared';
-const SHARE_CANCELLED = 'cancelled';
-const SHARE_REJECTED = 'rejected';
+const NO_NATIVE_SHARE =
+  'App sharing is not available in this browser. Use Copy link, Copy image, or Download below.';
+const NATIVE_SHARE_FAILED =
+  'Your device could not open the share panel for this result. Use Copy link, Copy image, or Download below.';
 
-async function attemptNativeShare(payload) {
-  try {
-    await navigator.share(payload);
-    return SHARE_SHARED;
-  } catch (error) {
-    return error?.name === 'AbortError' ? SHARE_CANCELLED : SHARE_REJECTED;
-  }
-}
-
+/**
+ * Reports whether the browser accepts a native payload. A throwing `canShare`
+ * is treated as a refusal rather than a reason to try anyway.
+ *
+ * @param {object} payload Native share payload.
+ * @returns {boolean} True when the payload can be handed to `navigator.share`.
+ */
 function canShareNative(payload) {
   if (typeof navigator.share !== 'function') return false;
-  // Browsers without canShare() get the attempt; the share call decides.
+  // Browsers without canShare() get the one attempt; the share call decides.
   if (typeof navigator.canShare !== 'function') return true;
-  return navigator.canShare(payload);
+
+  try {
+    return navigator.canShare(payload);
+  } catch {
+    return false;
+  }
 }
 
 async function copyImageToClipboard(file) {
@@ -128,6 +136,9 @@ export default function ShareLuckyPickButton({ reveal }) {
   const [status, setStatus] = useState('');
   const [canCopyImage, setCanCopyImage] = useState(false);
   const [canUseNativeShare, setCanUseNativeShare] = useState(true);
+  // The prepared image, the message and the link are all ready before the tap,
+  // so the tap handler can call navigator.share synchronously.
+  const fileRef = useRef(null);
   const filePromiseRef = useRef(null);
 
   useEffect(() => {
@@ -135,19 +146,39 @@ export default function ShareLuckyPickButton({ reveal }) {
     setCanUseNativeShare(typeof navigator.share === 'function');
   }, []);
 
-  // One reveal image is drawn on demand and reused by every option, so nothing
-  // is generated unless the visitor actually shares, copies, or downloads it.
+  // One reveal image is drawn once and reused by every option. Preparing it
+  // ahead of the tap is what keeps the native share sheet inside the tap's
+  // transient activation window on Android.
   const prepareShareFile = useCallback(() => {
+    if (fileRef.current) return Promise.resolve(fileRef.current);
     if (!filePromiseRef.current) {
-      filePromiseRef.current = createLuckyRevealShareImage(reveal).catch((error) => {
-        filePromiseRef.current = null;
-        throw error;
-      });
+      filePromiseRef.current = createLuckyRevealShareImage(reveal)
+        .then((file) => {
+          fileRef.current = file;
+          return file;
+        })
+        .catch((error) => {
+          filePromiseRef.current = null;
+          throw error;
+        });
     }
     return filePromiseRef.current;
   }, [reveal]);
 
-  async function shareToApps() {
+  useEffect(() => {
+    if (fileRef.current) return undefined;
+
+    // Callable callback with a fixed delay; no string or request data is evaluated.
+    const timer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
+      prepareShareFile().catch(() => {
+        // The three local actions report their own failure if it is still broken.
+      });
+    }, SHARE_IMAGE_WARMUP_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [prepareShareFile]);
+
+  function shareToApps() {
     if (isSharing) return;
 
     playButtonClick();
@@ -155,67 +186,57 @@ export default function ShareLuckyPickButton({ reveal }) {
 
     if (typeof navigator.share !== 'function') {
       // Graceful fallback: nothing is hidden and the three local options still work.
-      setStatus(
-        'App sharing is not available in this browser. Use Copy link, Copy image, or Download below.',
-      );
+      setStatus(NO_NATIVE_SHARE);
+      return;
+    }
+
+    const title = 'My LuckyPickCanada reveal';
+    const text = buildShareMessage(reveal);
+    const link = getShareLink(reveal);
+    const file = fileRef.current;
+
+    // One payload, chosen synchronously, and exactly one navigator.share call.
+    // No await happens before it, so Android still sees the tap's activation.
+    const imagePayload = file ? { files: [file], title, text, url: link } : null;
+    const payload = imagePayload && canShareNative(imagePayload)
+      ? imagePayload
+      : { title, text, url: link };
+
+    if (!canShareNative(payload)) {
+      setStatus(NATIVE_SHARE_FAILED);
       return;
     }
 
     setIsSharing(true);
 
-    const title = 'My LuckyPickCanada reveal';
-    const text = buildShareMessage(reveal);
-    const link = getShareLink(reveal);
-
+    let shareResult;
     try {
-      // The image is drawn first so the native sheet still opens inside this
-      // click's transient activation window.
-      let file = null;
-      try {
-        file = await prepareShareFile();
-      } catch {
-        file = null;
-      }
-
-      // 1. Image + message + link: the Android share sheet in full.
-      const imagePayload = file ? { files: [file], title, text, url: link } : null;
-      if (imagePayload && canShareNative(imagePayload)) {
-        const outcome = await attemptNativeShare(imagePayload);
-        if (outcome === SHARE_SHARED) {
-          setStatus('Shared. Keep the luck going. 🍀');
-          return;
-        }
-        if (outcome === SHARE_CANCELLED) {
-          setStatus('Sharing cancelled.');
-          return;
-        }
-      }
-
-      // 2. Native text and link sharing, for devices that accept text but not
-      // the image payload.
-      const textPayload = { title, text, url: link };
-      if (canShareNative(textPayload)) {
-        const outcome = await attemptNativeShare(textPayload);
-        if (outcome === SHARE_SHARED) {
-          setStatus('Shared. Keep the luck going. 🍀');
-          return;
-        }
-        if (outcome === SHARE_CANCELLED) {
-          setStatus('Sharing cancelled.');
-          return;
-        }
-      }
-
-      // 3. Computers and browsers without a working Web Share keep the three
-      // local actions, which are always visible below this control.
-      setStatus('App sharing was unavailable for this result. Use Copy link, Copy image, or Download below.');
-    } finally {
+      shareResult = navigator.share(payload);
+    } catch {
+      // A synchronous throw is a failure, not a cancellation, and is not retried.
       setIsSharing(false);
+      setStatus(NATIVE_SHARE_FAILED);
+      return;
     }
+
+    Promise.resolve(shareResult)
+      .then(() => {
+        setIsSharing(false);
+        setStatus('Shared. Keep the luck going. 🍀');
+      })
+      .catch((error) => {
+        setIsSharing(false);
+        setStatus(
+          error?.name === 'AbortError'
+            ? 'Sharing cancelled.'
+            : NATIVE_SHARE_FAILED,
+        );
+      });
   }
 
   async function copyImage() {
     setStatus('');
+
     let file = null;
     try {
       file = await prepareShareFile();
@@ -238,6 +259,7 @@ export default function ShareLuckyPickButton({ reveal }) {
 
   async function downloadImage() {
     setStatus('');
+
     let file = null;
     try {
       file = await prepareShareFile();
@@ -260,41 +282,21 @@ export default function ShareLuckyPickButton({ reveal }) {
   }
 
   async function copyLink() {
+    setStatus('');
     const link = getShareLink(reveal);
-    const label = link === LUCKY_SITE_URL ? 'Website link copied.' : 'Result link copied.';
 
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(link);
-        setStatus(label);
+        setStatus(link === LUCKY_SITE_URL ? 'Website link copied.' : 'Result link copied.');
         return;
       }
     } catch {
-      // Try the legacy selection-based copy path below.
+      // Fall through to the manual fallback; never claim a copy that failed.
     }
 
-    const textArea = document.createElement('textarea');
-    textArea.value = link;
-    textArea.setAttribute('readonly', '');
-    textArea.style.position = 'fixed';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.select();
-
-    let copied = false;
-    try {
-      copied = document.execCommand('copy');
-    } catch {
-      copied = false;
-    } finally {
-      textArea.remove();
-    }
-
-    setStatus(
-      copied
-        ? label
-        : 'Could not copy the link. Please copy it manually from your browser.',
-    );
+    // The link stays visible and selectable so it can still be copied by hand.
+    setStatus(`Automatic copying is unavailable. Your reveal link: ${link}`);
   }
 
   return (
@@ -342,7 +344,7 @@ export default function ShareLuckyPickButton({ reveal }) {
         aria-busy={isSharing}
       >
         {shareIcon}
-        {isSharing ? 'Preparing your reveal…' : 'Share to Apps'}
+        {isSharing ? 'Opening your share panel…' : 'Share to Apps'}
       </button>
       <p style={{ margin: 0, color: 'rgba(255, 245, 203, 0.78)', lineHeight: 1.5 }}>
         {canUseNativeShare

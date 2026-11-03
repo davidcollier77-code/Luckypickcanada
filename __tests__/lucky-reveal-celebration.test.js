@@ -134,9 +134,9 @@ describe('Lucky Reveal celebration', () => {
     expect(popupSource).toContain("from './lucky-reveal-celebration'");
     // Feature 081 also hands the celebration the settle callback that starts the
     // number-ball finish once the confetti has left the screen.
-    // Phase 2 adds the earlier finishing-chime cue alongside the settle cue.
+    // Phase 3 uses that earlier cue to start the recorded applause.
     expect(popupSource).toContain('startDelayMs={celebrationDelayMs}');
-    expect(popupSource).toContain('onConfettiFinishing={startFinishingChime}');
+    expect(popupSource).toContain('onConfettiFinishing={startFinishingApplause}');
     expect(popupSource).toContain('onConfettiSettled={startNumberFinish}');
     expect(popupSource).toContain(
       'const celebrationDelayMs = (startNumbersDelay + (numItems - 1) * 0.35 + 0.95) * 1000;',

@@ -28,13 +28,13 @@ const CONFETTI_WATCH_INTERVAL_MS = 200;
 const CONFETTI_WATCH_START_MS = WAVE_INTERVAL_MS * 2 + 400;
 // Safety net for a canvas that cannot be read; the layer is never left mounted.
 const CONFETTI_WATCH_TIMEOUT_MS = 12000;
-// The finishing chime is a lead-in, never the last thing to happen: it starts at
-// least this long before the safety timeout can end the celebration, so it always
-// begins while the leaves are still on screen.
+// The finishing cue is a lead-in, never the last thing to happen: it starts at
+// least this long before the safety timeout can end the celebration, so the
+// applause always begins while the leaves are still on screen.
 const FINISHING_CUE_LEAD_MS = 2500;
-// The finishing chime should begin while a few leaves are still falling. Once the
+// The applause should begin while a few leaves are still falling. Once the
 // painted canvas has fallen to this fraction of its peak, only a handful of
-// leaves remain, so that sample is the chime's cue.
+// leaves remain, so that sample is the finishing cue.
 const FINISHING_LEAF_RATIO = 0.08;
 // Same shape as the shipped celebration — both edges burst inward, a slower pair
 // follows, then a small centre wave — with fewer leaves per wave: 24 + 24 + 14 +
@@ -125,7 +125,7 @@ const SETTLED_LEAVES = [
  * allowed to cover the reveal content while they fall, so the only reliable
  * signal that they have all left the screen is an empty canvas; the pixel count
  * also reveals when only a few leaves are left, which is when the finishing
- * chime starts.
+ * applause starts.
  *
  * @param {HTMLCanvasElement|null} canvas Particle canvas.
  * @returns {number|null} Painted pixel count, or null when the canvas cannot be read.
@@ -300,7 +300,7 @@ export default function LuckyRevealCelebration({
     const settle = () => {
       if (isSettled) return;
       isSettled = true;
-      // The finishing chime always comes before the pulse finish, even when the
+      // The finishing cue always comes before the pulse finish, even when the
       // canvas could not be sampled and only the fallback timeout ended this.
       signalFinishing();
       clearTimers();
@@ -325,7 +325,7 @@ export default function LuckyRevealCelebration({
           return;
         }
 
-        // Only a few leaves left: start the chime while they are still falling.
+        // Only a few leaves left: start the applause while they are still falling.
         if (peakPaintedPixels > 0 && paintedPixels <= peakPaintedPixels * FINISHING_LEAF_RATIO) {
           signalFinishing();
         }
@@ -334,7 +334,7 @@ export default function LuckyRevealCelebration({
     const timeoutTimer = window.setTimeout(settle, CONFETTI_WATCH_TIMEOUT_MS);
     // A slow or heavily loaded screen can keep leaves painted until the safety
     // timeout, where the ratio cue would only fire on the same tick as the
-    // pulses. This lead guarantees the chime starts while they are still falling.
+    // pulses. This lead guarantees the applause starts while leaves still fall.
     const cueTimer = window.setTimeout(
       signalFinishing,
       CONFETTI_WATCH_TIMEOUT_MS - FINISHING_CUE_LEAD_MS,
