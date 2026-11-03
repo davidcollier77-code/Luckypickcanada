@@ -68,3 +68,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `artifacts/reveal-phase2/report.json:2` — Do not leave debug code in production <!-- devskim-id:9328465eb686353d7b38 -->
 
 - **NOTE — DS172411** — `app/share-lucky-pick-button.js:280` — Review setTimeout for untrusted data <!-- devskim-id:77ef6eef447f789e89ff -->
+
+- **WARNING — DS137138** — `__tests__/gift-email-test-tool.test.js:170` — Insecure URL <!-- devskim-id:c1b1b68a0e3881dce274 -->
