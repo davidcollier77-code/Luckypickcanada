@@ -1665,7 +1665,7 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
             for relative_path, lines in source_lines.items():
                 source = root / relative_path
                 source.parent.mkdir(parents=True, exist_ok=True)
-                source.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+                source.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
             for result in results:
                 result_id = result["properties"]["testId"]
@@ -1717,7 +1717,7 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     root = Path(directory)
                     source = root / relative_path
                     source.parent.mkdir(parents=True, exist_ok=True)
-                    source.write_text(line + "\\n", encoding="utf-8")
+                    source.write_text(line + "\n", encoding="utf-8")
                     result = self._result(relative_path, line, "opaque", 1, 0)
                     sarif = {"runs": [{"results": [result]}]}
                     self.assertEqual(suppressions.process_sarif(sarif, root), 0)
