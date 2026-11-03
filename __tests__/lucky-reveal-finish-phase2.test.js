@@ -39,7 +39,7 @@ describe('Confetti leaves leave the screen before cleanup', () => {
     // gone; a bounded timeout only exists for a canvas that cannot be sampled.
     expect(celebrationSource).not.toContain('CONFETTI_WINDOW_MS');
     expect(celebrationSource).toContain('const CONFETTI_WATCH_TIMEOUT_MS = 12000;');
-    const timeoutDeclarations = celebrationSource.match(/const CONFETTI_WATCH_TIMEOUT_MS = \\d+;/g) ?? [];
+    const timeoutDeclarations = celebrationSource.match(/const CONFETTI_WATCH_TIMEOUT_MS = \d+;/g) ?? [];
     expect(timeoutDeclarations).toEqual(['const CONFETTI_WATCH_TIMEOUT_MS = 12000;']);
   });
 
