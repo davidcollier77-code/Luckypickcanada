@@ -43,7 +43,7 @@
 - [x] T019 Add `__tests__/lucky-reveal-finish-phase2.test.js` and update the 080/076 celebration guards for the new lifetime, completion signal and finish wiring.
 - [x] T020 Run the focused suites, full `pnpm exec vitest run`, `pnpm exec tsc --noEmit`, `./freebuff-verify.sh`, and measure the production build.
 - [x] T021 Browser-verify the finish and the reduced-motion path in Chromium (desktop 1440x900, mobile 390x844); evidence in `artifacts/reveal-finish-phase2/`.
-- [ ] T022 Audit the final diff and record the results in the single PR summary, leaving the PR open and unmerged.
+- [x] T022 Audit the final diff and record the results in the single PR summary ([PR #1687](https://github.com/davidcollier77-code/Luckypickcanada/pull/1687)), leaving the PR open and unmerged.
 
 ## Verification record
 

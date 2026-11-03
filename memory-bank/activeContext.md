@@ -1,6 +1,6 @@
 # Active Context — Lucky Reveal Finish Polish + Reusable Media Inspection (2026-11-03)
 
-- **Task groups:** `polishing` + `audio` + `troubleshooting`; branch `freebuff/f42744a86b35d603e40013fd`; PR left open and unmerged (Master Work Request #1).
+- **Task groups:** `polishing` + `audio` + `troubleshooting`; branch `freebuff/f42744a86b35d603e40013fd`; PR #1687 open and unmerged (Master Work Request #1).
 - **Verified baseline:** `canvas-confetti` deletes a particle when `fetti.tick >= fetti.totalTicks`, and feature 080 set `ticks: 150` with a fixed `CONFETTI_WINDOW_MS` teardown, so leaves could be deleted while painted and the layer left on a timer. `ShareLuckyPickButton` only tried a file share and dropped straight to the custom window. Numbers kept an infinite alternating glow and had no finish. No `ffmpeg`, `ffprobe` or audio model existed in the workspace.
 - **Confetti:** lifetime is now 300 ticks (past the fall) and the layer is removed by sampling the canvas (`getImageData`, every 200 ms from 1400 ms after launch) — never before the canvas paints nothing — with a 12 s fallback. Waves (86 <= 96), leaf artwork, palette and above-panel layering unchanged. Measured in Chromium: painted until 16.2 s (desktop) / 12.8 s (mobile) of probe time, then empty in the same sample the layer left.
 - **Sharing:** image + message + link, then native text/link, then the custom window; both `AbortError`s report cancellation and open nothing. Device share sheet untested.
