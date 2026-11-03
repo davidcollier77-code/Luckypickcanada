@@ -1611,7 +1611,19 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                 source = root / relative_path
                 source.parent.mkdir(parents=True, exist_ok=True)
                 source.write_text(line + "\n", encoding="utf-8")
-                results.append(self._result(relative_path, line, f"reviewed-{index}"))
+                result = self._result(relative_path, line, f"reviewed-{index}")
+                region = result["locations"][0]["physicalLocation"]["region"]
+                self.assertIsNotNone(
+                    suppressions.resolve_safe_artifact_uri(relative_path, root),
+                    f"reviewed path was not admitted: {relative_path}",
+                )
+                self.assertTrue(
+                    suppressions.should_suppress_safe_contextual_finding(
+                        "DS172411", relative_path, line, region
+                    ),
+                    f"reviewed source span was not matched: {relative_path}: {line}",
+                )
+                results.append(result)
 
             # Negative controls: an opaque callback, an altered test string,
             # and a harmless callback in a file not on the reviewed path list.
