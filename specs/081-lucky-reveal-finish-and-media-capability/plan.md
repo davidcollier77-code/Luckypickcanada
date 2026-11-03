@@ -277,3 +277,54 @@ the leaves are still on screen and the timeout remains only a safety net.
 4. **Re-verify on the pushed head.** Focused and full Vitest, `tsc --noEmit`, DevSkim suppression
    unit tests and real-SARIF replay, `./freebuff-verify.sh`, measured build, final diff audit, then
    the DevSkim check annotations for the new head and an independent re-review.
+
+## Phase 5 — Reveal roadmap Phase 3 audit (reliability and performance)
+
+**Decision record:** the owner reviewed the audit and chose to keep the reveal's automatic sound with **no
+in-app mute button**. An interim mute control built earlier in this task was removed; the reveal's sound
+behaviour is the pre-audit behaviour, unchanged.
+
+### 1. Audit the eight Phase 3 requirements (evidence, no change unless a deficiency is confirmed)
+
+- **Mobile 6 and 7 picks (Android):** drive the free Preview Reveal in Chromium with an Android Pixel 7
+  user agent at 412x915 and 390x844, for Personal and Gift delivery, and measure the numbers, layout,
+  overflow, control hit-testing and overlaps.
+- **Sound controls:** search the repository for any sound control. None exists, and the owner's decision is
+  that none should exist: the reveal's sound plays automatically.
+- **Browser audio restrictions and device mute:** reject every media `play()` like an autoplay policy and
+  confirm the reveal logs, never throws and still finishes visually. Device-level mute cannot be tested
+  without hardware and is reported as pending; HTML5 media honours it natively.
+- **Reduced motion:** run with `reducedMotion: 'reduce'` and assert no particle canvas, no reveal cue and a
+  static finish.
+- **Cleanup:** close the reveal and assert the dialog, canvas and celebration layer are gone, no media
+  element is playing and no applause starts afterwards.
+- **Dependencies, assets and overhead:** list the reveal's sound requests with measured bytes and confirm
+  Howler is still the single lazy-loaded audio dependency.
+- **Existing functionality:** full Vitest, `tsc --noEmit`, `./freebuff-verify.sh` and the measured build.
+- **Visual glitches:** page and panel horizontal overflow, ball containment, and sharing-action clipping
+  and overlap.
+
+### 2. Keep the reveal's sound automatic and remove the interim control
+
+- `app/lib/audio.js`, `app/lucky-reveal-popup.js` and `app/lucky-reveal-celebration.jsx` are restored to
+  their pre-audit state: no mute flag, no setter/getter, no toggle, no icon, and no muted branch in the
+  sparkle, the applause or the confetti pop. Automatic playback is the only path.
+- Assets, volumes (sparkle 0.28, pop 0.45, applause 0.55), order (sparkle → pop → applause) and the
+  session-based applause lifecycle are untouched.
+- Nothing else is touched: no asset re-encode, no dependency change, no CSS keyframe change and no change
+  to Crystal Ball, the homepage, payments, email or the map.
+
+### 3. Tests
+
+- `__tests__/reveal-audio-mute.test.js` is deleted; the mute behaviour it covered no longer exists.
+- `__tests__/lucky-reveal-phase3.test.js` replaces its mute guards with checks that the panel ships no
+  sound control, the audio module holds no mute state, every cue is called unconditionally, and the assets
+  and volumes are unchanged.
+- `__tests__/components/LuckyRevealCelebration.test.jsx` drops the mute export from its audio mock; its
+  existing normal-motion test already proves the pop plays automatically.
+
+### 4. Evidence
+
+- `artifacts/reveal-phase3-audit-probe.cjs` measures the eight requirements per scenario, including that
+  the panel contains no mute control and that the sparkle, pop and applause each play once automatically.
+  The generated JSON stays local so no probe origin enters the repository.

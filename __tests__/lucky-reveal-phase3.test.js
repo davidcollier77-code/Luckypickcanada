@@ -357,3 +357,50 @@ describe('Lucky Pick and Lucky Pick Gift from six and seven numbers', () => {
     }
   });
 });
+
+describe('Reveal sound plays automatically with no in-app mute control', () => {
+  it('ships no sound toggle anywhere in the panel', () => {
+    // The owner's decision: the reveal keeps its automatic sound and offers no
+    // in-app mute button, so no control, state or icon may remain.
+    expect(popupSource).not.toContain('lucky-sound-btn');
+    expect(popupSource).not.toContain('SoundIcon');
+    expect(popupSource).not.toContain('toggleSound');
+    expect(popupSource).not.toContain('isSoundMuted');
+    expect(popupSource).not.toContain('setRevealAudioMuted');
+    expect(popupSource).not.toContain('isRevealAudioMuted');
+    expect(celebrationSource).not.toContain('isRevealAudioMuted');
+  });
+
+  it('keeps no mute-specific state in the audio module', () => {
+    expect(audioSource).not.toContain('revealAudioMuted');
+    expect(audioSource).not.toContain('setRevealAudioMuted');
+    expect(audioSource).not.toContain('isRevealAudioMuted');
+  });
+
+  it('starts the opening sparkle, the celebration pop and the applause on its own', () => {
+    // Every cue is called unconditionally at its own step, with no gate in front.
+    expect(popupSource).toContain('playRevealSparkle()');
+    expect(popupSource).toContain('playRevealApplause(sessionId)');
+    expect(celebrationSource).toContain('playConfettiPop()');
+
+    const launchBlock = celebrationSource.slice(
+      celebrationSource.indexOf('const launch = useCallback'),
+      celebrationSource.indexOf('// Create the particle instance'),
+    );
+    expect(launchBlock).toContain('setIsCelebrating(true);');
+    expect(launchBlock).toContain('playConfettiPop().catch(');
+    expect(launchBlock).not.toMatch(/if \(/);
+
+    // The approved recordings, their volumes and the applause timing are unchanged.
+    expect(audioSource).toContain("const REVEAL_SPARKLE_URL = '/sounds/chime-sound.mp3';");
+    expect(audioSource).toContain("const REVEAL_APPLAUSE_URL = '/sounds/reveal-applause.wav';");
+    expect(audioSource).toContain('const REVEAL_APPLAUSE_VOLUME = 0.55;');
+    expect(audioSource).toMatch(/preload: true,\s*\}\);\s*sound\.on\('playerror'/);
+  });
+
+  it('keeps reduced motion silent and the close-session cleanup intact', () => {
+    expect(popupSource).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(popupSource).toContain('endRevealAudioSession()');
+    expect(celebrationSource).toContain('prefersReducedMotion');
+  });
+});
