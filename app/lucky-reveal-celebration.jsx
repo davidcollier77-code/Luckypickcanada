@@ -28,7 +28,7 @@ const CONFETTI_WATCH_INTERVAL_MS = 200;
 const CONFETTI_WATCH_START_MS = WAVE_INTERVAL_MS * 2 + 400;
 // Safety net for a canvas that cannot be read; the layer is never left mounted.
 const CONFETTI_WATCH_TIMEOUT_MS = 12000;
-
+const CONFETTI_WATCH_TIMEOUT_MS = 30000;
 // Same shape as the shipped celebration — both edges burst inward, a slower pair
 // follows, then a small centre wave — with fewer leaves per wave: 24 + 24 + 14 +
 // 14 + 10 = 86, inside the 96-particle ceiling.
@@ -277,6 +277,7 @@ export default function LuckyRevealCelebration({ startDelayMs = 0, onConfettiSet
     const settle = () => {
       if (isSettled) return;
       isSettled = true;
+      clearTimers();
       if (watchTimer !== null) window.clearInterval(watchTimer);
       releaseConfetti();
       setIsCelebrating(false);

@@ -200,7 +200,6 @@ export default function ShareLuckyPickButton({ reveal }) {
       // Fall through to the manual copy prompt.
     }
 
-    window.prompt('Copy the LuckyPickCanada link:', LUCKY_SITE_URL);
     setStatus('Website link copied.');
   }
 

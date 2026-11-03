@@ -147,6 +147,7 @@ else
   mkdir -p "$PREFIX/ffmpeg"
   cp "$src/ffmpeg" "$src/ffprobe" "$PREFIX/ffmpeg/"
   [[ -f "$src/README.txt" ]] && cp "$src/README.txt" "$PREFIX/ffmpeg/"
+  trap - EXIT
 fi
 
 ln -sf "$PREFIX/ffmpeg/ffmpeg" "$BIN_DIR/ffmpeg"

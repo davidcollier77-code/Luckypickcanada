@@ -389,6 +389,14 @@ def main(argv: list[str]) -> int:
         return 0
 
     report: dict = {"probe": probe_report}
+    if args.command == "audio":
+        result = audio_review(path)
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            print(json.dumps(result, indent=2))
+        return 0
+
     if args.command == "review" and probe_report["has_video"]:
         report["frames"] = extract_frames(
             path,
