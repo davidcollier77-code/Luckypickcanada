@@ -107,3 +107,21 @@ number generation stay as they are.
   resting glow plus the requested four-pulse finish, so the reveal's look is preserved.
 - The media stack lives outside the repository and is large; it is provisioned under `$HOME` and
   never enters the build output.
+
+
+## Post-merge Cloudflare build regression repair (2026-11-03)
+
+- **Observed failure:** the Cloudflare/OpenNext production build at main commit
+  `66137dfacd0e3a7ed1cd2bc73b70b702f3ca0184` stopped during Webpack parsing because
+  `CONFETTI_WATCH_TIMEOUT_MS` was declared twice in the same module.
+- **Root cause:** the source retained the specified 12,000 ms fallback and added an
+  unintended second 30,000 ms declaration. The Phase 1 and Phase 2 regression guards
+  establish 12,000 ms as the intended safety timeout.
+- **Minimal repair:** keep the 12,000 ms declaration, remove the 30,000 ms duplicate,
+  and move the accidental top-level 30,000 ms test assertion into the existing
+  lifecycle test as a single-declaration assertion. Do not change the timeout's
+  behaviour or any reveal feature.
+- **Verification:** run the affected component test, Phase 1/Phase 2 reveal tests,
+  full Vitest, `pnpm exec tsc --noEmit`, `./freebuff-verify.sh`, and the exact
+  OpenNext Cloudflare build. Record each result independently; a successful PR-head
+  Cloudflare build is required before calling the deployment repair verified.

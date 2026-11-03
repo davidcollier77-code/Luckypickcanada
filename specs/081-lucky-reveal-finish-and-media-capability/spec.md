@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-03
 
-**Status**: Implemented — verification recorded in tasks.md and the PR summary
+**Status**: Original feature implemented; post-merge build regression hotfix in progress
 
 **Input**: Master Work Request #1 — polish the shipped Lucky Reveal finish (confetti lifecycle, mobile
 sharing, number-ball glow finish, one finishing sound cue) and extend the Freebuff workspace so video
@@ -166,3 +166,17 @@ identified) are demonstrated and recorded; the Chromium setup and its security p
   events, and a video review reports sampled frames — both reproducible after a workspace restart.
 - **SC-006**: The existing reveal, sharing and payment guards and the full Vitest suite pass,
   `tsc --noEmit` and `./freebuff-verify.sh` pass, and the production build is measured below 495 MB.
+
+
+## Post-merge build regression — 2026-11-03
+
+The Cloudflare production build on main stopped during Next.js/Webpack parsing because
+`CONFETTI_WATCH_TIMEOUT_MS` was declared twice in `app/lucky-reveal-celebration.jsx`
+(12,000 ms and 30,000 ms). The established acceptance and regression test specify one
+12,000 ms fallback. The hotfix must retain that value, remove the duplicate declaration,
+and ensure the regression test asserts that exactly one declaration exists.
+
+**Additional acceptance:** the affected component must parse, the focused and full test
+suites must pass, and the OpenNext Cloudflare production build must compile on the hotfix
+PR head. No runtime behaviour, confetti timing, reveal appearance, audio, sharing,
+number generation, or deployment configuration is to change.
