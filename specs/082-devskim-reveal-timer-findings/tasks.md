@@ -31,7 +31,7 @@
 - [X] T010 Python syntax validation passed; the complete suppression unittest suite passed (70 tests, 0 failures) on current head.
 - [X] T011 Current-head DevSkim workflow passed; real-SARIF replay reported 151 results, 151 verified suppressions, 0 remaining, and confirmed the raw SARIF was unchanged; filtered SARIF upload succeeded.
 - [ ] T012 Run `./freebuff-verify.sh` and review all mandatory PR CI/governance checks; report unavailable checks honestly.
-- [ ] T013 Inspect the complete final diff, confirm the only changed source files are the filter/test/replay helpers and feature artifacts, and leave the PR open and unmerged.
+- [X] T013 Reviewed the final nine-file PR diff; only the DevSkim filter/test/replay helpers, Spec Kit records, and active context changed. PR #1689 remains open and unmerged.
 
 ## Acceptance Checklist
 
