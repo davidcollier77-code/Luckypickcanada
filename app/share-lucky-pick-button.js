@@ -268,10 +268,11 @@ export default function ShareLuckyPickButton({ reveal }) {
         await navigator.clipboard.writeText(link);
         setStatus(label);
         return;
-      }
+      setStatus('Could not copy the link. Please copy it manually.');
+      return;
     } catch {
       // Fall through to the manual copy prompt.
-    }
+    setStatus('Clipboard not available. Please copy the link manually.');
 
     setStatus(label);
   }

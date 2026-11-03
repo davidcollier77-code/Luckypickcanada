@@ -309,7 +309,9 @@ export function startRevealGlowPulse() {
 
   const sound = audioCache.revealGlowPulse;
   if (sound?.state() !== 'loaded') return preloadRevealGlowPulse();
-
+  if (sound?.state() !== 'loaded') {
+    return preloadRevealGlowPulse().then(() => startRevealGlowPulse());
+  }
   const activeId = audioCache.revealGlowPulseId;
   if (activeId !== undefined && activeId !== null && sound.playing(activeId)) return Promise.resolve();
 
@@ -336,8 +338,12 @@ export function stopRevealGlowPulse() {
     sound.stop();
     return;
   }
-
-  sound.fade(sound.volume(soundId), 0, 500, soundId);
+  sound.fade(REVEAL_GLOW_PULSE_VOLUME, 0, 500, soundId);
+  const stoppedId = soundId;
+  window.setTimeout(() => {
+    if (audioCache.revealGlowPulseId !== stoppedId) return;
+    sound.stop(stoppedId);
+  }, 520);
   window.setTimeout(() => sound.stop(soundId), 520);
 }
 
