@@ -62,6 +62,20 @@ SAFE_REVEAL_TIMER_CALLBACK_FILES = frozenset({
     "app/lucky-reveal-popup.js",
     "app/lucky-reveal-celebration.jsx",
 })
+# Match only the three reviewed application statements, not every callback
+# that may be added to either file in the future.
+SAFE_REVEAL_TIMER_CALLBACK_PATTERNS = {
+    "app/lucky-reveal-popup.js": (
+        re.compile(
+            r"^[ \\t]*const timer = window\\.(?P<call>setTimeout)\\(\\(\\) => "
+            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\);[ \\t]*$"
+        ),
+    ),
+    "app/lucky-reveal-celebration.jsx": (
+        re.compile(r"^[ \\t]*window\\.(?P<call>setTimeout)\\(\\(\\) => \\{[ \\t]*$"),
+        re.compile(r"^[ \\t]*const startTimer = window\\.(?P<call>setTimeout)\\(\\(\\) => \\{[ \\t]*$"),
+    ),
+}
 # This test contains a quoted source assertion, not an executed timer call.
 SAFE_REVEAL_TIMER_ASSERTION_FILES = frozenset({
     "__tests__/lucky-reveal-finish-phase2.test.js",
@@ -641,6 +655,15 @@ def should_suppress_safe_contextual_finding(
     )
 
     if rule_id == "DS172411":
+        reveal_callback_patterns = SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
+        if reveal_callback_patterns is not None:
+            return any(
+                _region_starts_at_pattern(
+                    region, line_number, line, pattern, source_text
+                )
+                for pattern in reveal_callback_patterns
+            )
+
         if relative_path in SAFE_REVEAL_TIMER_ASSERTION_FILES:
             # This exact test line is a quoted source string in an assertion,
             # not an executed timer. Do not generalize to other test literals.
