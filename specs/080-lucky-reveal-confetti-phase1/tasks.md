@@ -46,3 +46,12 @@
 - Production build `.next` — 299,133,609 bytes / 285.3 MiB (< 495 MB).
 - Browser probe (1440x900 and 390x844, 6 Pick and 7 Pick): particle canvas inside the reveal, `body > canvas` count 0, painted leaf pixels in the reveal area, celebration after the final number, layer and canvas gone afterwards, both sound files requested, no page errors, reduced motion unchanged.
 - Not verified: audible playback (this environment has no audio output device).
+
+
+## Phase 7 — Cloudflare build hotfix (2026-11-03)
+
+- [x] T019 Reproduce the Cloudflare build failure from the supplied log and identify the unclosed `defaults` object in `app/lucky-reveal-celebration.jsx`.
+- [x] T020 Close the options object before the wave loop and remove the obsolete local particle counter; retain the existing ref-based particle budget.
+- [ ] T021 Run the component test, full Vitest suite, `tsc --noEmit`, `./freebuff-verify.sh`, and the OpenNext Cloudflare production build on the repair PR head. Record each result independently; do not claim the deployment is fixed until the Cloudflare build passes.
+
+**Hotfix status:** source repair committed on `fix/reveal-celebration-cloudflare-build-20261103`. Runtime/build verification is pending PR CI. The supplied failed Cloudflare build is evidence of the pre-fix failure, not a result for the repaired source.
