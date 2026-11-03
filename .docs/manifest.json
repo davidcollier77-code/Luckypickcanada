@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-03T10:29:21-04:00",
+  "lastUpdated": "2026-11-03T13:54:39-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -415,21 +415,21 @@
     "/debian/debian-reference"
   ],
   "githubShas": {
-    "/github/docs": "9e46fa10eb2ed55c59bf6770a220477c91e1b3bf",
-    "/vercel/next.js": "4c3f5618ffdcd08e33693a1b25d47a4ef1254d90",
+    "/github/docs": "99441606b889d4131a5416034ce68efb6c081472",
+    "/vercel/next.js": "f745ee2513b8b48f631a5b823357e4b6b6b6948b",
     "/reactjs/react.dev": "0821e7d9428a6c58c922765b891bbffba9ed6249",
-    "/microsoft/typescript": "042e0fb9574980bd67964165df295e629f834fe3",
-    "/lucide-icons/lucide": "aa0b77386c07630e5f1a9f877fd3ba4b2a4a1558",
+    "/microsoft/typescript": "cf567eb6707f8337bac4b57d83b072c307272aa3",
+    "/lucide-icons/lucide": "1980e3d59b0fa1a2aeb566d5902b25ee98204001",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "bdc8005a9e70ab16e38631b882fe6233711ecabe",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "4bc599908663852319724580d81682c2cf5204b3",
     "/google-gemini/gemini-cli": "0ac57c029b848d109eef940afe0db4b5a0c3dad0",
-    "/cloudflare/cloudflare-docs/turnstile": "f10237826f171c2614772bd837fbedf915c0e5da",
-    "/cloudflare/cloudflare-docs/pages": "f10237826f171c2614772bd837fbedf915c0e5da",
-    "/dequelabs/axe-core": "6b52b841461bd23345970b91ec75fdaff6bad31a",
+    "/cloudflare/cloudflare-docs/turnstile": "5eb3f34077c8a25c4bfb62d0a4edfe6ba3e16174",
+    "/cloudflare/cloudflare-docs/pages": "5eb3f34077c8a25c4bfb62d0a4edfe6ba3e16174",
+    "/dequelabs/axe-core": "73b05b710a39693bbe8c0db57479f20ab50db486",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "df99adab7ff784412ebf5d0970a03a788184ba6a",
+    "/microsoft/playwright": "b2f7011c5653c9acb4269eacc617dfce3c7b1545",
     "/vitest-dev/vitest": "289caab9cf9e9440e2a0be2d8783f7bd0f489a8b",
     "/colinhacks/zod": "2554b70c3d4a80273381e61d527d820720626440",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
@@ -437,10 +437,10 @@
     "/coreyhaines31/marketingskills": "88c79f6528a9347420e57ceb1fff9a60de651768",
     "/opennextjs/opennextjs-cloudflare": "0a615e755bf648cae730680243f70c9d1bb14768",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
-    "/cloudflare/workers-sdk": "be4e0879ab95b4406e18dc2ab52b6f6d56558285",
+    "/cloudflare/workers-sdk": "cff43aa3683f40a7244164d5c73ea425116bd281",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
     "/upstash/docs": "554cb9724572454c8f0ffa003bfe4e3177a7e681",
-    "/getsentry/sentry-docs": "6c153cbb2f4f26e1ff475b3c0f959f892f347e72",
+    "/getsentry/sentry-docs": "3d063fcbb80ef1679c192cd5eef85751edaf0751",
     "/pmndrs/react-three-fiber": "d74622ea8ed717f7212d7e19d65ff3e325508389",
     "/magicuidesign/magicui": "43c0915a4e319e1eb037c55f7714f488c9ad238d",
     "/marsidev/react-turnstile": "f49ddae91bd0f884c5fa5c5dbef74c032a92314c",
@@ -449,9 +449,9 @@
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "5265fee892216970ffa1a167fc0b81a61729b5e7",
     "/python-pillow/Pillow": "eca0d47d9c63e40a09ea91ad5c05c9bbe96a8896",
-    "/numpy/numpy": "3a24d8a053d41128b664dec320b70734bd442d6c",
+    "/numpy/numpy": "ba48627541422c1f02fbf00494fb57363eb29e8c",
     "/lovell/sharp": "1ea0375ef20c94e0dc94f790bf1375bb8872642f",
-    "/google-gemini/gemini-skills/gemini-api-dev": "a7210496c32d8b8afd67c2220819f9301e96d1e3",
+    "/google-gemini/gemini-skills/gemini-api-dev": "e1f29deb4d81af6d3e4bf6d22112e640d94015a9",
     "/google/eng-practices": "3bb3ec25b3b0199f4940b1aa75f0ac5c5753301c"
   }
 }
