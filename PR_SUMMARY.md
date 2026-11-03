@@ -136,6 +136,12 @@ distinguishable. The 500-character cap could truncate an unusually long GitHub e
 makes it explicit). Live acceptance remains unverified until a deployment is approved and a real slot
 runs.
 
+## PR record
+
+- **PR:** [#1696](https://github.com/davidcollier77-code/Luckypickcanada/pull/1696), branch
+  `freebuff/78319e5dc4e17636cb62dc2a`, target `main`, left open and unmerged.
+- **Implementation commit:** `55c3e479` — the head every local result above refers to.
+
 ## Merge status
 
 Left **OPEN and UNMERGED** for owner review. No merge, no deployment, no updater triggered.
