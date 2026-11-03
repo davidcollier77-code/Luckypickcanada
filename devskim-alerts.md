@@ -61,3 +61,8 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `__tests__/lucky-reveal-finish-phase2.test.js:102` — Review setTimeout for untrusted data <!-- devskim-id:d41821cdf150cffd38ce -->
 - **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:288` — Review setTimeout for untrusted data <!-- devskim-id:bbe334fcb46d72346412 -->
 - **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:249` — Review setTimeout for untrusted data <!-- devskim-id:1234291bdc0c815cb87c -->
+
+- **WARNING — DS137138** — `__tests__/lucky-reveal-phase2.test.js:254` — Insecure URL <!-- devskim-id:cee7b459915cb6f447cf -->
+- **NOTE — DS172411** — `app/share-lucky-pick-button.js:258` — Review setTimeout for untrusted data <!-- devskim-id:3cb1c599fb627a1fec52 -->
+- **NOTE — DS172411** — `app/lucky-reveal-popup.js:268` — Review setTimeout for untrusted data <!-- devskim-id:e42912667cb0471bbce4 -->
+- **NOTE — DS162092** — `artifacts/reveal-phase2/report.json:2` — Do not leave debug code in production <!-- devskim-id:9328465eb686353d7b38 -->
