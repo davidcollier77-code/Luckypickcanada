@@ -1579,10 +1579,10 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
     )
 
     @staticmethod
-    def _result(relative_path, line, result_id):
+    def _result(relative_path, line, result_id, rule_id="DS172411"):
         offset = line.index("setTimeout")
         return {
-            "ruleId": "DS172411",
+            "ruleId": rule_id,
             "message": {"text": "Review setTimeout for untrusted data"},
             "properties": {"testId": result_id},
             "locations": [{
@@ -1610,7 +1610,7 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
             for index, (relative_path, line) in enumerate(self.CASES):
                 source = root / relative_path
                 source.parent.mkdir(parents=True, exist_ok=True)
-                source.write_text(line + "\\n", encoding="utf-8")
+                source.write_text(line + "\n", encoding="utf-8")
                 results.append(self._result(relative_path, line, f"reviewed-{index}"))
 
             # Negative controls: an opaque callback, an altered test string,
@@ -1620,23 +1620,32 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     "app/lucky-reveal-popup.js",
                     "window.setTimeout(untrustedCallback, 100);",
                     "opaque-callback",
+                    "DS172411",
                 ),
                 (
                     "__tests__/lucky-reveal-finish-phase2.test.js",
                     "      'window.setTimeout(() => attackerControlled(), 100)',",
                     "different-test-literal",
+                    "DS172411",
                 ),
                 (
                     "app/unreviewed-timer.js",
                     "window.setTimeout(() => refresh(), 100);",
                     "unreviewed-path",
+                    "DS172411",
+                ),
+                (
+                    "app/lucky-reveal-popup.js",
+                    "window.setTimeout(() => refresh(), 100);",
+                    "different-rule",
+                    "DS162092",
                 ),
             )
-            for relative_path, line, result_id in negative_cases:
+            for relative_path, line, result_id, rule_id in negative_cases:
                 source = root / relative_path
                 source.parent.mkdir(parents=True, exist_ok=True)
-                source.write_text(line + "\\n", encoding="utf-8")
-                results.append(self._result(relative_path, line, result_id))
+                source.write_text(line + "\n", encoding="utf-8")
+                results.append(self._result(relative_path, line, result_id, rule_id))
 
             sarif = {"runs": [{"results": results}]}
             self.assertEqual(suppressions.process_sarif(sarif, root), 4)
@@ -1644,14 +1653,14 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
             remaining = sarif["runs"][0]["results"]
             self.assertEqual(
                 [result["properties"]["testId"] for result in remaining],
-                ["opaque-callback", "different-test-literal", "unreviewed-path"],
+                ["opaque-callback", "different-test-literal", "unreviewed-path", "different-rule"],
             )
 
     def test_reveal_timeout_rules_do_not_suppress_opaque_function_references(self):
         for relative_path, line in (
             (
                 "app/lucky-reveal-celebration.jsx",
-                "    const timeoutTimer = window.setTimeout(setttle, CONFETTI_WATCH_TIMEOUT_MS);",
+                "    const timeoutTimer = window.setTimeout(settle, CONFETTI_WATCH_TIMEOUT_MS);",
             ),
             (
                 "app/lucky-reveal-celebration.jsx",
@@ -1663,7 +1672,7 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     root = Path(directory)
                     source = root / relative_path
                     source.parent.mkdir(parents=True, exist_ok=True)
-                    source.write_text(line + "\\n", encoding="utf-8")
+                    source.write_text(line + "\n", encoding="utf-8")
                     result = self._result(relative_path, line, "opaque")
                     sarif = {"runs": [{"results": [result]}]}
                     self.assertEqual(suppressions.process_sarif(sarif, root), 0)
