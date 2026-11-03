@@ -28,8 +28,8 @@
 
 ## Phase 4: Validation and Handoff
 
-- [ ] T010 Run Python syntax checks and the complete suppression unittest suite; record actual results.
-- [ ] T011 Verify the current-head DevSkim workflow passes real-SARIF replay and uploads the filtered SARIF.
+- [X] T010 Python syntax validation passed; the complete suppression unittest suite passed (70 tests, 0 failures) on current head.
+- [X] T011 Current-head DevSkim workflow passed; real-SARIF replay reported 151 results, 151 verified suppressions, 0 remaining, and confirmed the raw SARIF was unchanged; filtered SARIF upload succeeded.
 - [ ] T012 Run `./freebuff-verify.sh` and review all mandatory PR CI/governance checks; report unavailable checks honestly.
 - [ ] T013 Inspect the complete final diff, confirm the only changed source files are the filter/test/replay helpers and feature artifacts, and leave the PR open and unmerged.
 
