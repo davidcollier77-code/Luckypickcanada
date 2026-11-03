@@ -164,7 +164,7 @@ describe('Unified Lucky Reveal homepage card', () => {
   const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
   const revealSection = homepageSource.slice(
     homepageSource.indexOf('id="personalized"'),
-    homepageSource.indexOf('id="lucky-map"'),
+    homepageSource.indexOf('<LuckyRevealsCounter'),
   );
 
   it('replaces the two purchase cards with one Lucky Reveal card', () => {
@@ -185,16 +185,16 @@ describe('Unified Lucky Reveal homepage card', () => {
     expect(modalSource).toContain('<input type="hidden" name="checkoutType" value={checkoutType} />');
   });
 
-  it('keeps the future map slot directly below the reveal section and collects nothing', () => {
+  it('renders the paid-reveal counter directly below the reveal section and collects nothing', () => {
     const revealIndex = homepageSource.indexOf('id="personalized"');
-    const mapIndex = homepageSource.indexOf('id="lucky-map"');
+    const counterIndex = homepageSource.indexOf('<LuckyRevealsCounter');
     const tipIndex = homepageSource.indexOf('id="tip-jar-section"');
 
     expect(revealIndex).toBeGreaterThan(-1);
-    expect(mapIndex).toBeGreaterThan(revealIndex);
-    expect(mapIndex).toBeLessThan(tipIndex);
+    expect(counterIndex).toBeGreaterThan(revealIndex);
+    expect(counterIndex).toBeLessThan(tipIndex);
     // No map UI, geolocation, IP lookup, province detection or location storage was added.
     expect(homepageSource).not.toMatch(/geolocation|geoip|ipapi|ip-api|province/i);
-    expect(homepageSource).toContain('<div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />');
+    expect(homepageSource).not.toContain('homepage-map-slot');
   });
 });

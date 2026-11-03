@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { createLuckyReveal } from '../../lucky-reveal';
 import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 import { getSql, initializeDatabase } from '../../lib/db-init';
+import { recordLuckyRevealCreated } from '../../lucky-reveal-tally';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +65,11 @@ export async function GET(request: Request) {
     if (checkoutType !== 'lucky_pick' && checkoutType !== 'gift_package') {
       return NextResponse.json({ error: 'Invalid checkout type' }, { status: 400 });
     }
+
+    // The session is paid and is a paid reveal product, so this purchase counts
+    // exactly once for the homepage counter. The session id is the idempotency
+    // key, so a reload or a retried verification cannot count it again.
+    await recordLuckyRevealCreated({ sessionId, revealType: checkoutType });
 
     let reveal = null;
 

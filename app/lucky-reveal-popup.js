@@ -2,7 +2,6 @@
 import {
   beginRevealAudioSession,
   endRevealAudioSession,
-  playButtonClick,
   playRevealApplause,
   playRevealSparkle,
   preloadRevealApplause,
@@ -467,21 +466,6 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             background: rgba(15, 23, 42, 0.9) !important;
             transform: scale(1.05);
           }
-
-          .lucky-map-button-enhanced {
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            touch-action: manipulation;
-          }
-          .lucky-map-button-enhanced:hover {
-            transform: translateY(-2px) scale(1.03) !important;
-            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.55), 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-            filter: brightness(1.05);
-          }
-          .lucky-map-button-enhanced:active {
-            transform: translateY(1px) scale(0.97) !important;
-            box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3), 0 2px 5px rgba(0, 0, 0, 0.4) !important;
-            filter: brightness(0.95);
-          }
         `}</style>
 
         <div
@@ -637,35 +621,11 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
           </div>
 
           <ShareLuckyPickButton reveal={reveal} />
-
-          <button
-            type="button"
-            onClick={() => { playButtonClick(); closeReveal(); }}
-            className="lucky-map-button-enhanced gold-3d-btn"
-            style={{
-              marginTop: '1.8rem',
-              padding: '1.1rem 2.2rem',
-              border: '1px solid #fff2a8',
-              borderRadius: 999,
-              background: 'linear-gradient(180deg, #fff2a8 0%, #fbe59a 14%, #e8c970 38%, #dcae4e 62%, #c8942c 82%, #b8801f 100%)',
-              color: '#1c1200',
-              boxShadow: '0 3px 0 #8a550c, 0 6px 0 rgba(95, 55, 5, 0.45), 0 10px 25px rgba(138, 85, 12, 0.34), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
-              fontSize: '1.05rem',
-              fontWeight: 900,
-              cursor: 'pointer',
-              width: '100%',
-              maxWidth: '360px',
-              textAlign: 'center',
-              display: 'inline-block'
-            }}
-          >
-            <span className="gold-cta-emoji" aria-hidden="true">📍</span>Add me to the Little Luck Map
-          </button>
         </div>
       </section>
 
       {/* Behind the panel (z-index 1 vs 2) so the decorative pile can never cover a
-          number, the copy, the share control, or the map button. */}
+          number, the copy, or the share control. */}
       <LuckyRevealCelebration
         startDelayMs={celebrationDelayMs}
         onConfettiFinishing={startFinishingApplause}

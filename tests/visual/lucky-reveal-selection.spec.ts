@@ -2,13 +2,13 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Browser-level verification for the customer-facing Lucky Reveal consolidation
- * (`specs/073-unified-lucky-reveal`, Phase 9).
+ * (`specs/073-unified-lucky-reveal`, Phase 9, and `specs/084-lucky-reveal-counter`).
  *
  * These checks prove what a source inspection cannot: the homepage now shows a
- * single purchase card, the one popup captures both choices, the paid form posts
- * the correct type and game for all four combinations, personal purchases send
- * no recipient data, and the reserved future-map slot stays empty directly
- * below the reveal section.
+ * single purchase card, the paid-reveal counter sits between that card and the
+ * Tip Jar, the one popup captures both choices, the paid form posts the correct
+ * type and game for all four combinations, and personal purchases send no
+ * recipient data.
  *
  * The `/api/checkout` request is intercepted so no Stripe session is created and
  * no real charge can occur; the submitted form payload is inspected directly.
@@ -26,6 +26,10 @@ const COMBINATIONS = [
 async function openHomepage(page: Page) {
   await page.route('**/api/visits', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ visits: 12345 }) }),
+  );
+  // A known total proves the formatted counter value without depending on data.
+  await page.route('**/api/lucky-reveals-count', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ total: 4321 }) }),
   );
   await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
@@ -52,7 +56,7 @@ async function openSelectionPopup(page: Page) {
 }
 
 test.describe('Unified Lucky Reveal selection', () => {
-  test('homepage shows one reveal card with the map slot directly below it', async ({ page }) => {
+  test('homepage shows one reveal card with the paid-reveal counter directly below it', async ({ page }) => {
     await openHomepage(page);
 
     const section = page.locator('#personalized');
@@ -61,42 +65,34 @@ test.describe('Unified Lucky Reveal selection', () => {
     await expect(page.getByRole('button', { name: 'Gift the Gift Edition' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Choose Lucky Reveal' })).toHaveCount(0);
 
-    // The reserved map slot renders nothing and sits between the reveal section
-    // and the Tip Jar, so the future map keeps its intended homepage position.
-    const mapSlot = page.locator('#lucky-map');
-    await expect(mapSlot).toHaveCount(1);
-    const slotContent = await mapSlot.evaluate((element) => ({
-      elements: element.childElementCount,
-      text: (element.textContent ?? '').trim().length,
-      height: element.getBoundingClientRect().height,
-    }));
-    expect(slotContent.elements).toBe(0);
-    expect(slotContent.text).toBe(0);
-    expect(slotContent.height).toBeLessThanOrEqual(1);
+    // The paid-reveal counter replaces the previously reserved map slot, so it
+    // sits between the reveal section and the Tip Jar and shows the real total.
+    const counter = page.locator('#lucky-reveals-counter');
+    await expect(counter).toHaveCount(1);
+    await expect(counter).toContainText('LUCKY REVEALS CREATED TO DATE');
+    await expect(counter).toContainText('4,321');
+    await expect(page.locator('#lucky-map')).toHaveCount(0);
 
-    // A zero-height slot shares its top edge with the next section, so the
-    // position is proven from document order plus the reveal section's bottom
-    // edge rather than from a strict less-than between two identical offsets.
     const layout = await page.evaluate(() => {
       const reveal = document.getElementById('personalized')!;
-      const slot = document.getElementById('lucky-map')!;
+      const counterElement = document.getElementById('lucky-reveals-counter')!;
       const tipJar = document.getElementById('tip-jar-section')!;
       const follows = (first: Element, second: Element) =>
         Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 
       return {
-        afterRevealInDom: follows(reveal, slot),
-        beforeTipJarInDom: follows(slot, tipJar),
+        afterRevealInDom: follows(reveal, counterElement),
+        beforeTipJarInDom: follows(counterElement, tipJar),
         revealBottom: reveal.getBoundingClientRect().bottom + window.scrollY,
-        slotTop: slot.getBoundingClientRect().top + window.scrollY,
+        counterTop: counterElement.getBoundingClientRect().top + window.scrollY,
         tipJarTop: tipJar.getBoundingClientRect().top + window.scrollY,
       };
     });
 
     expect(layout.afterRevealInDom).toBe(true);
     expect(layout.beforeTipJarInDom).toBe(true);
-    expect(layout.slotTop).toBeGreaterThanOrEqual(layout.revealBottom - 1);
-    expect(layout.slotTop).toBeLessThanOrEqual(layout.tipJarTop + 0.5);
+    expect(layout.counterTop).toBeGreaterThanOrEqual(layout.revealBottom - 1);
+    expect(layout.counterTop).toBeLessThan(layout.tipJarTop);
   });
 
   for (const combination of COMBINATIONS) {
@@ -208,5 +204,24 @@ test.describe('Unified Lucky Reveal selection', () => {
     const seconds = durations.split(',').map((value) => Number.parseFloat(value));
     expect(seconds.length).toBeGreaterThan(0);
     expect(seconds.every((value) => Number.isFinite(value) && value <= 0.001)).toBe(true);
+  });
+
+  test('paid reveal popup keeps the reveal and drops the Little Luck Map invitation', async ({ page }) => {
+    await openHomepage(page);
+    const selectionDialog = await openSelectionPopup(page);
+
+    // The free preview opens the same reveal popup a paid purchase shows, with
+    // no checkout request and no charge.
+    await selectionDialog.getByRole('button', { name: /Preview Reveal/ }).click();
+    await expect(selectionDialog).toHaveCount(0);
+
+    const reveal = page.getByRole('dialog', { name: 'Your lucky reveal is here' });
+    await expect(reveal).toBeVisible({ timeout: 15_000 });
+    await expect(reveal.getByRole('button', { name: /Little Luck Map/i })).toHaveCount(0);
+    await expect(reveal.getByRole('button', { name: /Close lucky reveal/i })).toBeVisible();
+    await expect(reveal.getByRole('group', { name: 'Share your reveal' })).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(reveal).toHaveCount(0);
   });
 });

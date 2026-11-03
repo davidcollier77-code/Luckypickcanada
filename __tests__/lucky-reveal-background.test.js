@@ -71,19 +71,22 @@ describe('Lucky Reveal background', () => {
       "id=\"lucky-reveal-title\"",
       'Close lucky reveal',
       'ShareLuckyPickButton',
-      'Add me to the Little Luck Map',
       'borderColor: theme.borderColor',
       'boxShadow: theme.boxShadow',
       'lucky-number-reveal',
       'lucky-glow-pulse',
       'lucky-premium-fade-in',
       'lucky-word-rise',
-      'lucky-map-button-enhanced',
     ]) {
       expect(popupSource).toContain(token);
     }
 
     // The colour themes keep their identity even though the background changed.
     expect(popupSource.match(/borderColor: 'rgba\(/g)?.length).toBe(7);
+  });
+
+  it('no longer offers the Little Luck Map call to action', () => {
+    expect(popupSource).not.toContain('Add me to the Little Luck Map');
+    expect(popupSource).not.toContain('lucky-map-button-enhanced');
   });
 });

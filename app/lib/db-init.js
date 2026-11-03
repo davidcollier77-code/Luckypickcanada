@@ -103,6 +103,18 @@ export async function initializeDatabase() {
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
           )
         `;
+
+        // One row per successfully paid Lucky Reveal purchase. The unique
+        // session id is the duplicate-counting guard for the public homepage
+        // counter, and the table starts empty so the counter starts at zero.
+        await sql`
+          CREATE TABLE IF NOT EXISTS lucky_reveal_tally (
+            id BIGSERIAL PRIMARY KEY,
+            session_id TEXT NOT NULL UNIQUE,
+            reveal_type TEXT NOT NULL CHECK (reveal_type IN ('lucky_pick', 'gift_package')),
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          )
+        `;
       } catch (error) {
         console.error('Database initialization failed:', error);
         initPromise = null;

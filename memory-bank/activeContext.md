@@ -1,3 +1,25 @@
+# Active Context — Paid Lucky Reveal Counter and Popup Map CTA Removal (2026-11-03)
+
+- **Task groups:** `creation` + `polishing` + `testing`; branch `freebuff/7b6750b84aced857e5b48588`.
+  New feature `specs/084-lucky-reveal-counter`; feature 073's empty map slot was replaced, not reused.
+- **Implementation:** new `lucky_reveal_tally` table (`session_id` unique, `reveal_type` limited to
+  `lucky_pick`/`gift_package`) gives one row per paid reveal, so the public total starts at zero;
+  `app/lucky-reveal-tally.js` records atomically (`ON CONFLICT DO NOTHING`) and never throws; recording
+  happens in `/api/verify-session`, `/api/gift-delivery` and the paid `checkout.session.completed`
+  webhook, and tips/previews/unpaid sessions never count. `GET /api/lucky-reveals-count` returns
+  `{ total }` with `no-store`. `app/homepage/LuckyRevealsCounter.js` shows "LUCKY REVEALS CREATED TO DATE"
+  starting at 0 between the reveal and Tip Jar, with neon-gold CSS in `themes/default/homepage.css`;
+  `app/lucky-reveal-popup.js` no longer renders the Little Luck Map button or its styles.
+- **Verification:** focused 82 tests PASS; full 399 tests PASS; `tsc --noEmit` 0; `./freebuff-verify.sh`
+  0; production build 334,069,266 B / 318.6 MiB (< 495 MB); Playwright reveal spec 24/24 (desktop, 390,
+  412) including the popup with no map invitation; counter probe 620x197/368x125, 0 overflow, 0 console
+  errors; live endpoint `{"total":0}` with `no-store`.
+- **Not verified:** tally SQL against live Neon, a real Stripe charge, a real Resend gift email, PR-head
+  CI. Historical purchases are not backfilled; a purchase paid while the DB is unreachable is not
+  retried into the tally.
+
+---
+
 # Active Context — Reveal Roadmap Phase 3 Audit: Reliability and Performance (2026-11-03)
 
 - **Task groups:** `testing` + `audio` + `polishing`; branch `freebuff/381c2d3e3c25cd7328d9869f`; PR #1700

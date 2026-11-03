@@ -71,6 +71,7 @@ async function callVerify() {
 /** In-memory stores that simulate the external systems used by the route. */
 let storedMetadata;
 let storedDbReveals;
+let storedRevealTally;
 
 function configureDatabase() {
   mocks.getSql.mockReturnValue(mocks.sql);
@@ -81,6 +82,16 @@ function configureDatabase() {
     if (query.includes('SELECT game, numbers, lucky_color, lucky_day') && query.includes('FROM lucky_reveals')) {
       const sessionId = values[0];
       return storedDbReveals[sessionId] ? [...storedDbReveals[sessionId]] : [];
+    }
+
+    // The paid-reveal counter records the same verified session once. The
+    // unique session id in the real table is mirrored by this store.
+    if (query.includes('INSERT INTO lucky_reveal_tally')) {
+      const [sessionId, revealType] = values;
+      if (!storedRevealTally[sessionId]) {
+        storedRevealTally[sessionId] = revealType;
+      }
+      return [];
     }
 
     if (query.includes('INSERT INTO lucky_reveals')) {
@@ -110,6 +121,7 @@ beforeEach(() => {
 
   storedMetadata = { checkoutType: 'lucky_pick', luckyPickGame: '6' };
   storedDbReveals = {};
+  storedRevealTally = {};
 
   mocks.createLuckyReveal.mockReturnValue(GENERATED);
   mocks.retrieve.mockImplementation(async () => ({ ...paidSession(), metadata: { ...storedMetadata } }));
