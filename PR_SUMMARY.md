@@ -1,5 +1,8 @@
 # Gift Email Test Tool
 
+**PR:** [#1703](https://github.com/davidcollier77-code/Luckypickcanada/pull/1703) — open and unmerged,
+awaiting owner review. Branch `freebuff/e6b5a381045c337886e3bec8` targets `main`.
+
 ## Task and task groups
 
 **Task groups: `creation` + `testing` + `security`.**

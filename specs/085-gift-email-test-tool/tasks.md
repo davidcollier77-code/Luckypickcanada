@@ -49,5 +49,5 @@
 - [x] **T013** Run `pnpm exec vitest run __tests__/gift-email-test-tool.test.js` and record the result.
 - [x] **T014** Run the full `pnpm exec vitest run` and `pnpm exec tsc --noEmit` and record the results.
 - [x] **T015** Run `./freebuff-verify.sh` and measure the production build against the 495 MB maximum.
-- [ ] **T016** Inspect the complete final diff, update `PR_SUMMARY.md` and `memory-bank/activeContext.md`,
-  and leave the PR open and unmerged.
+- [x] **T016** Inspect the complete final diff, update `PR_SUMMARY.md` and `memory-bank/activeContext.md`,
+  and leave the PR open and unmerged. PR #1703 was created open and unmerged.
