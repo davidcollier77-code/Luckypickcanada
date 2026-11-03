@@ -89,3 +89,12 @@ lifecycle repair of the confetti, plus the one missing sound effect.
 - The settled finish now ends with the celebration instead of staying for the whole reveal; that is
   the requested "no leaves accumulating behind the reveal container" behaviour, and the artwork,
   layering and timing of its entrance are unchanged.
+
+
+## Follow-up — Cloudflare production build syntax repair
+
+**Observed failure:** the 2026-11-03 Cloudflare Workers build stopped during Next.js/Webpack compilation at `app/lucky-reveal-celebration.jsx:212`. The `defaults` object opened at line 203 had no closing `};` before the confetti wave loop. The leftover `let firedParticles = 0;` had already been made obsolete by the shared `firedParticlesRef.current` budget.
+
+**Minimal repair:** close the `defaults` object immediately after `scalar: 1.5` and remove the stale local declaration. Do not change particle counts, delays, audio, visuals, or reveal behaviour.
+
+**Verification:** rerun the component test that imports this module, the full required verification gate, and the exact OpenNext Cloudflare build command used by the failed deployment. The repair is not verified until the production build succeeds at the repair PR head.
