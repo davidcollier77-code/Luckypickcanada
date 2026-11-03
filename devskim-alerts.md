@@ -43,3 +43,8 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **ERROR — DS173237** — `.docs/manifest.json:411` — Do not store tokens or keys in source code. <!-- devskim-id:c3d45b69c97b71e1b23b -->
 
 - **NOTE — DS162092** — `playwright.config.ts:31` — Do not leave debug code in production <!-- devskim-id:6f2091e338a4467a0ab7 -->
+
+- **NOTE — DS172411** — `__tests__/lucky-reveal-confetti-phase1.test.js:69` — Review setTimeout for untrusted data <!-- devskim-id:5185a305abd595e9930e -->
+- **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:247` — Review setTimeout for untrusted data <!-- devskim-id:d578fcd6ac6e0cf44597 -->
+- **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:243` — Review setTimeout for untrusted data <!-- devskim-id:e362eb96915362d31f5a -->
+- **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:217` — Review setTimeout for untrusted data <!-- devskim-id:f78afb971b59c86f535b -->
