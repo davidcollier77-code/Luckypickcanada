@@ -55,6 +55,40 @@ AUDITED_FALSE_POSITIVES = (
         ),
         source_line_pattern=AUDITED_TIMEOUT_LINE,
     ),
+    AuditedFinding(
+        name="Lucky Reveal number-finish callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-popup.js",),
+        source_line_pattern=re.compile(
+            r"^[ \\t]*const timer = window\\.setTimeout\\(\\(\\) => "
+            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\);[ \\t]*$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal confetti-wave callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-celebration.jsx",),
+        source_line_pattern=re.compile(
+            r"^[ \\t]*window\\.setTimeout\\(\\(\\) => \\{[ \\t]*$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal canvas-watch callback",
+        rule_id="DS172411",
+        paths=("app/lucky-reveal-celebration.jsx",),
+        source_line_pattern=re.compile(
+            r"^[ \\t]*const startTimer = window\\.setTimeout\\(\\(\\) => \\{[ \\t]*$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Reveal test source assertion string",
+        rule_id="DS172411",
+        paths=("__tests__/lucky-reveal-finish-phase2.test.js",),
+        source_line_pattern=re.compile(
+            r"^[ \\t]*'window\\.setTimeout\\(\\(\\) => "
+            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\)',[ \\t]*$"
+        ),
+    ),
 )
 
 
