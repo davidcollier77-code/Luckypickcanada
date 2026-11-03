@@ -20,7 +20,7 @@
 - [x] CHK007 Existing absolute source-span, snippet, line, and token-start validation remains required.
 - [x] CHK008 String callbacks, opaque callback references, changed assertions, invalid spans, and unreviewed paths remain reportable.
 - [x] CHK009 The real-SARIF replay gate explicitly covers all four source patterns.
-- [ ] CHK010 Current-head CI evidence confirms the replay gate removes only the four reviewed results.
+- [x] CHK010 Current-head CI passed 70 unit tests and the real-SARIF replay gate (151/151 reviewed findings removed; zero remaining; raw SARIF unchanged).
 
 ## Handoff accuracy
 
