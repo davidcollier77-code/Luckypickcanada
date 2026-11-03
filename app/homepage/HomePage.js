@@ -18,6 +18,7 @@ const CheckoutModal = dynamic(() => import('../checkout-modal'), { ssr: false })
 const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'), { ssr: false });
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
+import LuckyRevealsCounter from './LuckyRevealsCounter';
 
 function SectionHeading({ eyebrow, id, title, children }) {
   return (
@@ -474,12 +475,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/*
-        Reserved homepage slot for the future Lucky Map. It deliberately renders
-        nothing: no map, no location lookup, and no location data collection. The
-        map sits directly below the unified reveal section, above the Tip Jar.
-      */}
-      <div id="lucky-map" className="homepage-map-slot" aria-hidden="true" />
+      {/* Paid Lucky Reveal counter: the reserved slot below the reveal section and
+          above the Tip Jar. It shows a public total only; no location lookup or
+          location data is involved. */}
+      <LuckyRevealsCounter />
 
       <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>

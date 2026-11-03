@@ -784,9 +784,98 @@ body:has(.homepage-sky-backdrop)::after {
 @media (min-width: 781px) {
   .homepage-offer:only-child > :not(.homepage-offer-image):not(picture) { max-width: 58%; }
 }
-/* Reserved slot for the future Lucky Map directly below the reveal section.
-   Empty on purpose, so it occupies no visual space and collects no data. */
-.homepage-map-slot { height: 0; }
+/* Paid Lucky Reveal counter — a premium neon-gold plaque between the reveal
+   card and the Tip Jar. It replaces the previously reserved zero-height map
+   slot; no map, location lookup or location data is involved. */
+.homepage-reveals-counter {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 620px);
+  margin: 0 auto clamp(2.5rem, 7vw, 5rem);
+  padding: clamp(1.5rem, 4vw, 2.35rem) clamp(1.25rem, 5vw, 3rem);
+  overflow: hidden;
+  text-align: center;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 214, 102, 0.55);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 214, 102, 0.2), transparent 66%),
+    linear-gradient(150deg, rgba(8, 13, 22, 0.94), rgba(17, 12, 27, 0.9));
+  box-shadow:
+    0 0 22px rgba(255, 199, 64, 0.24),
+    0 0 62px rgba(255, 170, 28, 0.14),
+    0 26px 60px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 34px rgba(255, 199, 64, 0.1);
+}
+
+.homepage-reveals-counter::before {
+  content: '';
+  position: absolute;
+  inset: -55% -20%;
+  z-index: -1;
+  pointer-events: none;
+  background: conic-gradient(from 210deg at 50% 50%, transparent 0deg, rgba(255, 214, 102, 0.26) 46deg, transparent 96deg);
+  animation: lucky-reveal-counter-sheen 11s linear infinite;
+}
+
+.homepage-reveals-counter::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 245, 200, 0.16);
+}
+
+.homepage-reveals-counter-label {
+  margin: 0 0 0.55rem;
+  color: #ffe6a3;
+  font-size: clamp(0.64rem, 1.85vw, 0.82rem);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  text-wrap: balance;
+  text-shadow: 0 0 14px rgba(255, 199, 64, 0.55), 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.homepage-reveals-counter-value {
+  margin: 0;
+  line-height: 1;
+}
+
+.homepage-reveals-counter-number {
+  display: inline-block;
+  font-family: var(--lpc-display, Georgia, 'Times New Roman', serif);
+  font-size: clamp(2.75rem, 9vw, 4.75rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: #ffdf86;
+  background: linear-gradient(180deg, #fffbe6 0%, #ffdf86 34%, #f2ac33 64%, #b8760f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 199, 64, 0.45)) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+}
+
+.homepage-reveals-counter-rule {
+  display: block;
+  width: min(72%, 260px);
+  height: 1px;
+  margin: 0.9rem auto 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 214, 102, 0.75), transparent);
+}
+
+@keyframes lucky-reveal-counter-sheen {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-reveals-counter::before { animation: none !important; }
+}
 
 /* Delivery choice inside the unified Lucky Reveal popup. */
 .checkout-delivery-fieldset { display: grid; grid-template-columns: 1fr; gap: .65rem; border: 0; padding: 0; }

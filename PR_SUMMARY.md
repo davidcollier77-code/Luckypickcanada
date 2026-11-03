@@ -1,124 +1,145 @@
-# Lucky Reveal Phase 3 audit: reliability, mobile and automatic sound without an in-app mute control
+# Paid Lucky Reveal counter and reveal-popup map CTA removal
 
 ## Task and task groups
 
-**Task groups: `testing` + `audio` + `polishing`.**
+**Task groups: `creation` + `polishing` + `testing`.**
 
-- `testing` — Phase 3 is a verification task: each of its eight requirements has to be exercised and
-  recorded with real execution rather than code inspection.
-- `audio` — the sound assets, the automatic cue sequence, the autoplay-failure path, reduced-motion
-  silence and close cleanup are all audio behaviour this task had to keep exactly as shipped.
-- `polishing` — the remaining requirements are the shipped feel: reduced motion, clipping, overlaps and
-  asset weight.
+- `creation` — the task adds a customer-facing feature (a persisted public counter and its read surface)
+  on top of the existing reveal products.
+- `polishing` — the counter is a new homepage visual that must feel like the existing premium neon-gold
+  design language, stay responsive and respect reduced motion.
+- `testing` — the counting rule is money-facing and must be proven by executed unit tests and browser
+  checks, not by source inspection alone.
 
-**Assigned task:** audit Phase 3 (Reliability and Performance) of the reveal roadmap, repair only
-confirmed Phase 3 deficiencies, then — per the owner's decision — remove the interim mute control so the
-reveal keeps its automatic sound with no in-app mute button. Phase 4 was not started and the temporary
-FREE Preview access is untouched.
+**Assigned task:** remove the "Add me to the Little Luck Map" button from the Lucky Reveal popup; replace
+the reserved empty homepage slot below the Lucky Reveal card and above the Tip Jar with a premium
+neon-gold counter reading "LUCKY REVEALS CREATED TO DATE", starting at zero; increase it once per
+successfully completed paid Personal Reveal (CAD $1.00) or Gift Reveal (CAD $1.99) purchase with duplicate
+counting prevented; preserve payment, gift-email, reveal and map functionality.
 
-## Audit result
+## Reference documents reviewed
 
-| # | Requirement | Status | Evidence |
+| Document | USED | USEFUL | Explanation |
 |---|---|---|---|
-| 1 | 6 Pick and 7 Pick on mobile, especially Android | PASS (emulated) | Chromium Pixel 7 UA at 412x915 and 390x844, both games, Personal and Gift: 6 or 7 unique in-range numbers, 0 px horizontal overflow, panel 15..397 / 15..375 |
-| 2 | Reveal sound control | PASS — none shipped, by owner decision | Repository search finds no sound control (`mute`, `soundEnabled`, `audioEnabled`, `aria-pressed` match only the unrelated map filter); all 8 probe runs found 0 pressed-state and 0 mute/sound-named controls in the panel; owner chose automatic sound over an in-app mute button |
-| 3 | Browser audio restrictions and device mute | PASS (browser) / device unverified | Every `play()` rejected like an autoplay policy: 4 rejections, 0 uncaught errors, visual finish complete, close and map usable. Device-level mute untestable here |
-| 4 | `prefers-reduced-motion` respected | PASS | 55 samples, no particle canvas, 0 reveal cue plays, static settled-leaf finish |
-| 5 | Animations and sounds clean up | PASS | After close: no dialog, no canvas, no celebration layer, 0 media elements playing, no late applause |
-| 6 | Dependencies, asset sizes, overhead | PASS | Howler still the only (lazy-loaded) audio dependency; applause 493,964 B, pop 43,244 B, sparkle 20,435 B; no new dependency, no re-encode |
-| 7 | Existing functionality intact | PASS | Full Vitest 36 files / 380 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` passed, numbers/share/close/map verified in-browser |
-| 8 | Visual glitches, clipping, overlaps, loading | PASS | No page or panel horizontal overflow, close control hit-tests to itself, sharing actions 55–75 px and unclipped, no shares or balls overlap, no failed requests |
+| `.docs/manifest.json` | YES | YES | Routed the `creation`, `polishing` and `testing` groups. Used as an index only. |
+| `.docs/creation/_google_eng-practices.md` | NO | NO | The change reuses existing repository patterns; no review-practice guidance was needed. |
+| `.docs/polishing/_google_eng-practices.md` | NO | NO | Styling follows the repository's own theme CSS; not consulted. |
+| `.docs/testing/_google_eng-practices.md` | NO | NO | Tests reuse the repository's Vitest and Playwright conventions; not consulted. |
+| Next.js `/vercel/next.js` snapshot | NO | NO | No new framework API was introduced; the route handler and client component follow existing files. |
+| Tailwind `/websites/tailwindcss` snapshot | NO | NO | The counter uses the existing theme stylesheet rather than new utility classes. |
+| Playwright `/microsoft/playwright` snapshot | NO | NO | The existing `playwright.config.ts` projects and spec patterns were reused unchanged. |
+| Vitest `/vitest-dev/vitest` snapshot | NO | NO | The existing suite and mock patterns were reused. |
+| MDN image types `/websites/mdn_image_types` | NO | NO | No raster asset was added, converted or served, so the image-format rule does not apply. |
 
-The reveal's audio was already well behaved: browser-blocked playback is logged and never thrown, reduced
-motion silences every cue, and the session-owned lifecycle stops sound and releases the canvas on close.
-Nothing in Phase 3 required a change to the reveal's shipped behaviour.
+## What was implemented
 
-## Owner decision and the final change
+- **New tally store** — `lucky_reveal_tally(session_id UNIQUE, reveal_type, created_at)` is created by the
+  existing `initializeDatabase()`. One row per paid reveal, `reveal_type` constrained to `lucky_pick` /
+  `gift_package`, so the total is the row count and a fresh table is the requested zero, with no historical
+  backfill.
+- **New `app/lucky-reveal-tally.js`** — `recordLuckyRevealCreated()` performs one atomic
+  `INSERT … ON CONFLICT (session_id) DO NOTHING RETURNING id`, so a repeated webhook, a reload or a retried
+  verification cannot double count; `getLuckyRevealCount()` returns the count and clamps missing,
+  malformed, negative or failed reads to 0. Neither function throws to its caller.
+- **Recording points** — `/api/verify-session` records a server-verified paid reveal session;
+  `/api/gift-delivery` records a paid gift session before the existing delivery/redirect work;
+  `/api/stripe-webhook` records a paid `checkout.session.completed` for either reveal product before the
+  existing gift-email branch, which is the only signal that also sees a purchase completed in a closed
+  tab. Tips, free previews, unpaid or cancelled sessions never reach a recording call.
+- **Read surface** — new `GET /api/lucky-reveals-count` returns `{ total }` with
+  `Cache-Control: no-store, max-age=0`; it never writes.
+- **Homepage counter** — new `app/homepage/LuckyRevealsCounter.js` starts at 0, shows the exact label
+  "LUCKY REVEALS CREATED TO DATE" and reads the real total once. It replaces the reserved zero-height
+  `#lucky-map` slot in `app/homepage/HomePage.js`, directly between the reveal section and the Tip Jar.
+- **Premium neon-gold styling** — `themes/default/homepage.css` replaces `.homepage-map-slot` with a
+  gold-bordered, layered-glow plaque, a gold-gradient number and a slow sheen, with a
+  `prefers-reduced-motion` guard. No new dependency, font or image.
+- **Popup removal** — `app/lucky-reveal-popup.js` no longer renders the "Add me to the Little Luck Map"
+  button, its unused `playButtonClick` import or its `.lucky-map-button-enhanced` styles. Reveal content,
+  numbers, colour/day cards, sharing, close/Escape, sound, celebration and layout are unchanged.
 
-The audit's one open question was whether the automatic 5.6 s applause needs an in-app mute control
-(WCAG 2.2 SC 1.4.2). The first revision of this PR added a 44 px toggle. **The owner then decided the
-reveal should keep its automatic sound and offer no in-app mute button**, so that control was removed in
-this same PR: the device's own volume and mute remain the way to silence it.
+### Files changed
 
-- `app/lib/audio.js`, `app/lucky-reveal-popup.js`, `app/lucky-reveal-celebration.jsx` — **identical to the
-  task base commit**: no mute flag, setter/getter, toggle, icon, pressed state, CSS rule or gate in the
-  sparkle, applause or pop. Automatic playback is the only path.
-- `__tests__/reveal-audio-mute.test.js` — deleted (the behaviour no longer exists).
-- `__tests__/lucky-reveal-phase3.test.js` — the mute guards are replaced with four checks: the panel ships
-  no toggle/state/icon, the audio module holds no mute state, every cue is called unconditionally, and
-  reduced motion plus the close-session cleanup are intact.
-- `__tests__/components/LuckyRevealCelebration.test.jsx` — the mute export is gone from its audio mock.
-- `artifacts/reveal-phase3-audit-probe.cjs` (new) — eight-scenario audit that also asserts the panel shows
-  no mute control and that the sparkle, pop and applause each play once automatically. Its generated JSON
-  stays local and is not committed.
-- `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`, `.specify/feature.json`,
-  `PR_SUMMARY.md`, `memory-bank/activeContext.md` — Spec Kit, summary and Memory Bank records, updated to
-  the final implementation.
+New:
 
-Not changed: sound assets and their bytes, volumes, mix, cue order or timing; artwork, keyframes, copy,
-number generation, sharing, prices, payments, gift email, API routes, database, Crystal Ball, Little Luck
-Map and deployment configuration.
+- `app/lucky-reveal-tally.js`
+- `app/api/lucky-reveals-count/route.js`
+- `app/homepage/LuckyRevealsCounter.js`
+- `__tests__/lucky-reveal-counter.test.js`
+- `artifacts/lucky-reveal-counter-probe.cjs` (reusable browser probe; generated output not committed)
+- `specs/084-lucky-reveal-counter/{spec,plan,tasks,data-model}.md`,
+  `specs/084-lucky-reveal-counter/checklists/requirements.md`,
+  `specs/084-lucky-reveal-counter/contracts/lucky-reveals-count.md`
+
+Modified:
+
+- `app/lib/db-init.js`, `app/api/verify-session/route.ts`, `app/api/gift-delivery/route.js`,
+  `app/api/stripe-webhook/route.js`
+- `app/homepage/HomePage.js`, `app/lucky-reveal-popup.js`, `themes/default/homepage.css`
+- `__tests__/lucky-reveal-background.test.js`, `__tests__/lucky-reveal-polish.test.js`,
+  `__tests__/security-payment.test.js`, `__tests__/lucky-reveal-persistence.test.js`
+- `tests/visual/lucky-reveal-selection.spec.ts`
+- `.specify/feature.json`, `PR_SUMMARY.md`, `memory-bank/activeContext.md`
+
+No file under `.docs/` was changed. No dependency or lockfile change. No environment, secret, payment
+price, API request/response shape or map file changed.
 
 ## Spec Kit stages
 
 | Stage | Result | Artifact |
 |---|---|---|
-| Specify | Done | `specs/081-lucky-reveal-finish-and-media-capability/spec.md` — Phase 5, FR-030…FR-035, SC-012…SC-016 |
-| Plan | Done | `specs/081-lucky-reveal-finish-and-media-capability/plan.md` — Phase 5 approach and decision record |
-| Tasks | Done | `specs/081-lucky-reveal-finish-and-media-capability/tasks.md` — Phase 12, T053…T061 |
-| Implement | Done | T053…T061 completed and marked `[x]` |
+| Specify | Done | `specs/084-lucky-reveal-counter/spec.md` + `checklists/requirements.md` |
+| Plan | Done | `specs/084-lucky-reveal-counter/plan.md`, `data-model.md`, `contracts/lucky-reveals-count.md` |
+| Tasks | Done | `specs/084-lucky-reveal-counter/tasks.md` (T001…T019) |
+| Implement | Done | T001…T019 completed and marked `[x]` |
 
-## Reference documents
-
-No `.docs/` document materially informed this task: it changes no audio API, asset format, framework or
-Playwright usage, and the work reuses the repository's own audio module, its existing reveal tests and its
-existing probe scripts. The manifest was consulted for routing only.
+A new feature directory was correct here: feature 073 reserved an empty homepage map slot for a different,
+future purpose, and no existing artifact covers a paid-reveal counter. Nothing was duplicated.
 
 ## Verification
 
 | Check | Result |
 |---|---|
-| Focused Vitest (`lucky-reveal-phase3`, `components/LuckyRevealCelebration`, `lucky-reveal-celebration`, `reveal-applause-retry`, `lucky-reveal-finish-phase2`, `lucky-reveal-confetti-phase1`) | **PASS** 6 files / 76 tests |
-| Full `pnpm exec vitest run` | **PASS** 36 files / 380 tests |
+| Focused Vitest (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`, `lucky-reveal-persistence`, `stripe-product-alignment`) | **PASS** 6 files / 82 tests |
+| Full `pnpm exec vitest run` | **PASS** 37 files / 399 tests |
+| Post-edit re-check on the committed tree (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`) | **PASS** 4 files / 61 tests |
 | `pnpm exec tsc --noEmit` | **PASS** exit 0 |
-| `./freebuff-verify.sh` | **PASS** — "All verification steps passed" (Spec Kit gate, typecheck, production build, refresh-docs) |
-| Production build (`pnpm build`, `next build --webpack`) | **PASS** `.next` 317,148,866 B / 302.5 MiB + `public` 32,840,043 B; combined 349,988,909 B / 333.8 MiB, below the 495 MB maximum (a clean `.next` build measured 299,738,399 B / 285.9 MiB) |
-| Chromium audit probe (`artifacts/reveal-phase3-audit-probe.cjs`, production build) | **PASS** 144/144 checks over 8 scenarios |
-| `pnpm install --frozen-lockfile` | PASS (lockfile unchanged) |
+| `./freebuff-verify.sh` (Spec Kit gate, typecheck, production build, refresh-docs 19/19) | **PASS** exit 0 |
+| Production build size (clean `pnpm build` on the committed tree) | **PASS** `.next` 301,234,281 B + `public` 32,840,043 B = 334,074,324 B / 318.6 MiB, below the 495 MB maximum |
+| Playwright `tests/visual/lucky-reveal-selection.spec.ts` on desktop 1440x900, mobile 390x844 and mobile 412x915 | **PASS** 24/24 in Chromium 153.0.8010.12, including counter placement/formatting and the paid reveal popup with no map invitation, sharing and close still present |
+| Counter visual probe (production build) | **PASS** 2/2: label + "4,321", 620x197 px desktop and 368x125 px mobile, 0 px horizontal overflow, 0 console/page errors |
+| Live `GET /api/lucky-reveals-count` (production build, no database configured) | **PASS** `{"total":0}`, `cache-control: no-store, max-age=0`, `application/json` |
+| Live Postgres tally behaviour (insert/conflict/count against Neon) | **NOT RUN** — no database credentials in this workspace |
+| Live Stripe checkout and a real gift email | **NOT RUN** — no Stripe/Resend keys; no charge or email was made |
+| PR-head CI checks | **PENDING** |
 
-The verification gate was run with `SPEC_KIT_BASE_REF=9b43b1da`: this workspace's `origin/main` ref is stale
-at `a2c1222a` (PR #1676) while the branch starts at `9b43b1da` (PR #1699 merge), so the gate saw 133
-unrelated files and many feature directories. With the correct task base it verifies the Phase 5/Phase 12
-artifacts and passes. In CI the base ref resolves normally.
+The Spec Kit gate was run with `SPEC_KIT_BASE_REF=bffde716686d0649545d2518a6f3a50e60c6d027` because this
+workspace's `origin/main` is stale at `a2c1222a`, while the branch starts at `bffde716` (PR #1700 merge).
+CI resolves the base normally.
 
-## Remaining issues / not verified
+## Remaining issues / limitations
 
-- **Physical Android device (Samsung) — NOT VERIFIED.** Mobile evidence is Chromium Android emulation
-  (Pixel 7 UA, 412x915 and 390x844), not a real handset.
-- **Device-level mute and volume — NOT VERIFIED.** HTML5 media honours the OS mute/volume by design; no
-  hardware was available to demonstrate it. With no in-app control this is the only way to silence the
-  reveal, as the owner decided.
-- **Audible playback and loudness — NOT VERIFIED.** The workspace has no audio output device; playback was
-  verified at the media-element level, not by listening.
-- The applause asset stays the approved 493,964 B 16-bit WAV. Re-encoding would shrink it, but it would
-  change an approved recording, so it is reported as measured overhead rather than altered.
-
-## Behaviour preserved
-
-Sound assets and their bytes, volume (sparkle 0.28, pop 0.45, applause 0.55), mix, cue order (sparkle →
-pop → applause) and timing; the session-owned applause lifecycle and its single-play guarantee; blocked
-playback logged and never thrown; `prefers-reduced-motion` silence and static finish; close-session
-cleanup; artwork, layout, copy, number generation, sharing, prices, payments, gift email, API routes,
-database, Crystal Ball, Little Map and deployment configuration.
+- The tally SQL was not executed against a real Neon database here; it is covered by an executed
+  module-level test with a database double, and by `CREATE TABLE IF NOT EXISTS` in the existing
+  initializer. First deployment should confirm the table is created and one paid test purchase increments
+  once.
+- A purchase paid while the database is unreachable is not retried into the tally, by design: counting is
+  best-effort so a payment, gift delivery or webhook never fails because of it. Its total would stay low
+  by that purchase rather than break the flow.
+- Historical purchases are deliberately not backfilled; the counter starts at zero as requested.
+- No live payment was taken and no real gift email was sent. Stripe metadata, prices, callbacks, gift
+  delivery safeguards and the map routes are unchanged and remain covered by the existing suites.
+- CI on the pushed head is pending; local Node is 26.13.0 against the repository's 22.x pin.
 
 ## Final diff audit
 
-The final diff against task base `9b43b1da` holds the new audit probe, two test files, the three Spec Kit
-records, `.specify/feature.json`, `PR_SUMMARY.md` and the Memory Bank note; the three reveal modules are
-byte-identical to the base, and the interim mute test file never reaches the base so it leaves no trace. The
-complete diff was read, and a second error check (`grep` for leftover mute references, full suite,
-`tsc --noEmit`) found none. No unrelated change, no formatting-only churn, no generated probe report, no
-secret.
+The complete diff was read against task base `bffde716`. It contains only the tally module, endpoint,
+counter component and probe, the three additive recording points, the popup removal, the counter styling,
+the Spec Kit/PR/Memory Bank records, and the updated guards and visual spec. Build-generated
+`next-env.d.ts` churn was reverted, generated probe screenshots were removed, a stale map-slot CSS comment
+was removed, and no `.docs/`, dependency, lockfile, environment, secret, price, email, map or unrelated
+file changed. A final `git status`/diff check after those corrections found no leftover generated file or
+unrelated edit.
 
 **USEFUL RESULT: YES** — the requested outcome is implemented and verified to the extent this workspace
-allows, with the three device-level checks listed explicitly as unverified.
+allows, with the live-database and live-payment checks stated explicitly as not run.

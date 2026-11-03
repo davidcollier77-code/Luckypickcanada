@@ -128,17 +128,19 @@ describe('Reveal popup presentation', () => {
       'id="lucky-reveal-title"',
       'Close lucky reveal',
       'ShareLuckyPickButton',
-      'Add me to the Little Luck Map',
       'borderColor: theme.borderColor',
       'boxShadow: theme.boxShadow',
       'lucky-number-reveal',
       'lucky-glow-pulse',
       'lucky-premium-fade-in',
       'lucky-word-rise',
-      'lucky-map-button-enhanced',
     ]) {
       expect(popupSource).toContain(token);
     }
+
+    // The map invitation was removed; the reveal and its remaining controls stay.
+    expect(popupSource).not.toContain('Add me to the Little Luck Map');
+    expect(popupSource).not.toContain('lucky-map-button-enhanced');
 
     expect(popupSource).not.toContain('generateLuckyNumbers');
     expect(popupSource).not.toContain('createLuckyReveal');

@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { deliverGiftEmailForSession } from '../../gift-email';
+import { recordLuckyRevealCreated } from '../../lucky-reveal-tally';
 
 export const runtime = 'nodejs';
 
@@ -59,6 +60,10 @@ export async function GET(request) {
     if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package') {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
+
+    // The paid Gift Reveal counts once for the homepage counter. A repeated visit
+    // to this redirect, or the webhook also seeing the purchase, inserts nothing.
+    await recordLuckyRevealCreated({ sessionId: session.id, revealType: metadata.checkoutType });
 
     // We should strictly rely on webhook or try local fallback but ensure idempotency is respected
     let isDelivered = !!metadata.giftDeliveredAt;
