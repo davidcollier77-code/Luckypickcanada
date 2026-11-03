@@ -24,5 +24,5 @@
 
 ## Handoff accuracy
 
-- [ ] CHK011 The final PR diff and changed-file list have been reviewed.
-- [ ] CHK012 All mandatory verification statuses are recorded accurately, with no pending check described as passed.
+- [x] CHK011 The final nine-file PR diff and changed-file list have been reviewed.
+- [x] CHK012 Verification results and the unrun local `./freebuff-verify.sh` are recorded accurately; pending checks are not described as passed.
