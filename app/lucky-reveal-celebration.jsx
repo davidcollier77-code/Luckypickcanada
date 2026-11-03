@@ -212,15 +212,15 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
         };
 
         let firedParticles = 0;
+
         for (const { delayMs, ...wave } of CONFETTI_WAVES) {
-            // delayMs is a compile-time constant (0, 500 or 1000 ms) — no untrusted data.
+          // delayMs is a compile-time constant (0, 500 or 1000 ms) — no untrusted data.
           timersRef.current.push(
+            window.setTimeout(() => {
               const budget = MAX_ACTIVE_PARTICLES - firedParticlesRef.current;
-              const budget = MAX_ACTIVE_PARTICLES - firedParticles;
               const particleCount = Math.min(wave.particleCount, budget);
               if (particleCount <= 0) return;
               firedParticlesRef.current += particleCount;
-              firedParticles += particleCount;
               confetti({ ...defaults, ...wave, particleCount });
             }, delayMs),
           );
