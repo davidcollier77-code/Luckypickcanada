@@ -2,9 +2,9 @@
 
 > Neon is a complete set of cloud backend primitives built around Lakebase Postgres, for developers, startups, and agent platforms, from Databricks. Services include Lakebase Postgres, Managed Better Auth, Realtime, Data API, Functions, Object Storage, AI Gateway. Lakebase Postgres on Neon includes autoscaling, instant restore, and scale-to-zero, with native branching, realtime and a fully reactive DX and works with any language, framework, or ORM that supports Postgres.
 
-**Get started.** Sign up for Neon or sign into an existing account. If the user cannot create an account right now, follow [Claimable Neon](https://neon.com/auth.md) to provision a Postgres project without signup. A human claims it later.
+**Get started.** The user needs a Neon account. If they cannot create one right now, [Claimable Neon](https://neon.com/auth.md) provisions a Postgres project without signup, and the user claims it later.
 
-If a Neon account is available, set things up locally by installing the Neon CLI and running the project init command to install the agent skills and creating/linking a Neon project:
+With an account, these commands install the Neon CLI, sign in, and run `neon init`, which installs the agent skills and creates or links a Neon project. Check with the user before running them:
 
 ```bash
 npm i -g neon
@@ -13,6 +13,8 @@ neon auth
 # in the project folder init Neon
 neon init
 ```
+
+To add only the agent skills to this project, offer `npx neon@latest skills -y`.
 
 Neon docs are available as markdown. Append `.md` to any doc URL or set `Accept: text/markdown`. This is the primary index. Sections with many pages show key pages and link to full sub-indexes.
 
@@ -215,7 +217,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 170 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 168 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
@@ -338,7 +340,7 @@ Contributor guides, component architecture, and documentation standards.
 
 - [Changelog](https://neon.com/docs/changelog): Latest updates and releases
 - [PostgreSQL Tutorial](https://neon.com/postgresql/tutorial): Comprehensive PostgreSQL tutorial and reference
-- [Community Guides](https://neon.com/guides): Step-by-step tutorials for frameworks and tools
+- [Community Guides](https://neon.com/guides.md): Step-by-step tutorials for frameworks and tools
 - [FAQs](https://neon.com/faqs): Short answers about building on Neon: Postgres, Auth, Object Storage, Functions, AI Gateway, pricing, and comparisons
 - [Glossary](https://neon.com/docs/reference/glossary.md)
 - [Blog](https://neon.com/blog.md): Engineering, product, and community posts from the Neon team
