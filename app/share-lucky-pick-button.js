@@ -169,8 +169,7 @@ export default function ShareLuckyPickButton({ reveal }) {
     if (fileRef.current) return undefined;
 
     // Callable callback with a fixed delay; no string or request data is evaluated.
-    // DevSkim: ignore DS172411
-    const timer = window.setTimeout(() => {
+    const timer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
       prepareShareFile().catch(() => {
         // The three local actions report their own failure if it is still broken.
       });

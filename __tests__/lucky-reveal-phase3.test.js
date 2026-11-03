@@ -296,8 +296,7 @@ describe('Share link safety', () => {
       'https://luckypickcanada.ca/reveal/abc#cs_test_123',
       'https://evil.example/reveal/abc',
       // Negative fixture only: proves an insecure URL is rejected, never fetched.
-      // DevSkim: ignore DS137138
-      'http://luckypickcanada.ca/reveal/abc',
+      /* DevSkim: ignore DS137138 */ 'http://luckypickcanada.ca/reveal/abc',
       'javascript:alert(1)',
       'not a url',
     ]) {
