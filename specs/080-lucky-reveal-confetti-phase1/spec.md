@@ -110,3 +110,11 @@ generation module is unmodified, and existing guards for 6→3+3 and 7→4+3 row
   same-origin assets shorter than 1.5 s.
 - **SC-004**: The existing 076/078 reveal guards and the full Vitest suite pass; `tsc --noEmit` and
   `./freebuff-verify.sh` pass; the production build stays under 495 MB.
+
+
+## Post-merge Cloudflare build hotfix — 2026-11-03
+
+The first production Cloudflare build after PR #1684 failed while parsing
+`app/lucky-reveal-celebration.jsx`: the `defaults` object literal was not closed before the confetti-wave scheduling loop. The fix closes the object immediately after its final `scalar` property and removes the obsolete local particle counter; particle accounting continues to use `firedParticlesRef.current`.
+
+**Additional acceptance:** the component must parse and the OpenNext Cloudflare production build must compile successfully at the repair PR head. The existing component test imports this module and provides a parse-time regression gate when the test suite runs.

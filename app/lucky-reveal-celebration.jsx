@@ -209,7 +209,8 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
           ticks: PARTICLE_LIFETIME_TICKS,
           gravity: 1.05,
           scalar: 1.5,
-        let firedParticles = 0;
+        };
+
 
         for (const { delayMs, ...wave } of CONFETTI_WAVES) {
           // delayMs is a compile-time constant (0, 500 or 1000 ms) — no untrusted data.
