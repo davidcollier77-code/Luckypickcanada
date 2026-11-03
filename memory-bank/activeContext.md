@@ -1,3 +1,37 @@
+# Active Context — Reveal Roadmap Phase 3 Audit: Reliability and Performance (2026-11-03)
+
+- **Task groups:** `testing` + `audio` + `polishing`; branch `freebuff/381c2d3e3c25cd7328d9869f`; one
+  PR open and unmerged. Reused `specs/081-lucky-reveal-finish-and-media-capability` (new Phase 5 spec
+  and plan sections, Phase 12 tasks); no duplicate feature directory. Phase 4 was not started and the
+  FREE Preview switch is untouched.
+- **Audit result:** seven of the eight Phase 3 requirements passed as shipped — Android-emulated 6 and
+  7 pick runs (0 px overflow, 44 px controls, no overlap), browser-blocked playback logged and never
+  thrown, reduced motion with no canvas and no reveal cue, clean close (no dialog, canvas, layer or
+  playing media), Howler the only lazy audio dependency, full suite/typecheck/build green, and no
+  failed requests. **Confirmed deficiency:** no sound mute/unmute control existed anywhere in the
+  product, so a visitor could not silence the automatic 5.6 s applause except by muting the device
+  (Phase 3 requirement 2, WCAG 2.2 SC 1.4.2).
+- **Implementation:** `app/lib/audio.js` owns `setRevealAudioMuted`/`isRevealAudioMuted`; muting stops
+  the sparkle, applause and celebration pop immediately, the sparkle and applause refuse to start, and
+  a muted cue is consumed so a late decode cannot start it. `app/lucky-reveal-popup.js` renders a 44 px
+  `aria-pressed` toggle in the first content row, clear of the pinned close button;
+  `app/lucky-reveal-celebration.jsx` gates only the pop, never the visuals.
+- **Tests:** new `__tests__/reveal-audio-mute.test.js` drives the real module with a controllable Howl
+  (mute state, silence, immediate stop, decode-after-mute, preference surviving a session); four new
+  guards in `__tests__/lucky-reveal-phase3.test.js`; the celebration component test mock now supplies
+  the new export.
+- **Verification:** focused 4 files / 55 tests PASS; full `pnpm exec vitest run` 37 files / 385 tests
+  PASS; `tsc --noEmit` exit 0; `./freebuff-verify.sh` PASS; production build 317,499,221 B / 302.8 MiB
+  (plus public 32,840,043 B; combined 334.1 MiB, below 495 MB); new Chromium probe
+  `artifacts/reveal-phase3-audit-probe.cjs` 156/156 checks over eight scenarios (applause once with
+  197–314 painted leaves at the cue, mute before/during the cue, 4 blocked `play()` attempts with 0
+  uncaught errors, reduced motion, close cleanup, measured sound bytes).
+- **Gate note:** `./freebuff-verify.sh` needs `SPEC_KIT_BASE_REF=9b43b1dae85e3d92e964d74d65bdf43b0e554ef0`
+  in this workspace because `origin/main` is stale at `a2c1222a` (PR #1676) while the branch starts at
+  `9b43b1da` (PR #1699 merge); the stale ref made the Spec Kit gate see 133 unrelated files.
+- **Not verified:** physical Samsung/Android hardware, the device mute/volume path, and audible
+  playback/loudness (no audio output device). Reported as unverified, never as passed.
+
 # Active Context — Updater Scheduler GitHub User-Agent and Dispatch Diagnostics (2026-11-03)
 
 - **Task groups:** `troubleshooting` + `testing`; branch `freebuff/78319e5dc4e17636cb62dc2a`; PR #1696 open and unmerged; new feature `specs/083-updater-scheduler-dispatch-user-agent` (features 035/036 cover reliability and cutover, so nothing was duplicated).

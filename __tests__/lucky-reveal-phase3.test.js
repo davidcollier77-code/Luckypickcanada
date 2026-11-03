@@ -357,3 +357,61 @@ describe('Lucky Pick and Lucky Pick Gift from six and seven numbers', () => {
     }
   });
 });
+
+describe('Reveal sound mute and unmute control', () => {
+  const muteBlock = audioSource.slice(
+    audioSource.indexOf('let revealAudioMuted = false;'),
+    audioSource.indexOf('/*\n * Lucky Reveal applause.'),
+  );
+
+  it('shows an accessible on/off control for the reveal sound', () => {
+    // The control is present from the opening frame, not hidden behind sharing.
+    expect(popupSource).toContain('aria-pressed={isSoundMuted}');
+    expect(popupSource).toContain("'Mute reveal sound'");
+    expect(popupSource).toContain("'Unmute reveal sound'");
+    expect(popupSource).toContain('<SoundIcon muted={isSoundMuted} />');
+    expect(popupSource).toContain('onClick={toggleSound}');
+    expect(popupSource).toMatch(/const soundButtonStyle = \{\s*width: 44,\s*height: 44,/);
+    expect(popupSource).toContain('setRevealAudioMuted(!previousMuted)');
+  });
+
+  it('owns the mute state in the audio module, not in the panel', () => {
+    expect(audioSource).toContain('export function setRevealAudioMuted(muted)');
+    expect(audioSource).toContain('export function isRevealAudioMuted()');
+    expect(popupSource).toContain('useState(() => isRevealAudioMuted())');
+    // Muting stops whatever the reveal is already playing.
+    expect(muteBlock).toContain('audioCache.revealSparkle?.stop();');
+    expect(muteBlock).toContain('audioCache.revealApplause?.stop();');
+    expect(muteBlock).toContain('audioCache.confettiPop?.stop();');
+  });
+
+  it('silences every reveal cue while muted, without changing the visual finish', () => {
+    const sparkleBlock = audioSource.slice(
+      audioSource.indexOf('export function playRevealSparkle()'),
+      audioSource.indexOf('/*\n * Lucky Reveal sound control.'),
+    );
+    expect(sparkleBlock).toContain('if (revealAudioMuted) return Promise.resolve();');
+
+    // The cue is consumed while muted, so unmuting cannot start it late.
+    expect(applauseBlock).toContain('if (revealAudioMuted) return Promise.resolve(false);');
+    expect(applauseBlock).toContain('if (revealAudioMuted) return false;');
+
+    const launchBlock = celebrationSource.slice(
+      celebrationSource.indexOf('const launch = useCallback'),
+      celebrationSource.indexOf('// Create the particle instance'),
+    );
+    expect(launchBlock).toContain('if (!isRevealAudioMuted()) {');
+    expect(launchBlock).toContain('setIsCelebrating(true);');
+    expect(launchBlock.indexOf('setIsCelebrating(true);')).toBeLessThan(
+      launchBlock.indexOf('if (!isRevealAudioMuted()) {'),
+    );
+  });
+
+  it('keeps the mute control out of the paid, sharing and reduced-motion behaviour', () => {
+    // Reduced motion is silent in both states; the control does not add sound there.
+    expect(popupSource).toContain('onClick={toggleSound}');
+    // No payment, generation, or unrelated audio helper is wired to the control.
+    expect(muteBlock).not.toContain('crystalBall');
+    expect(muteBlock).not.toContain('playButtonClick');
+  });
+});

@@ -152,6 +152,8 @@ export function preloadRevealSparkle() {
  */
 export function playRevealSparkle() {
   if (typeof window === 'undefined') return Promise.resolve();
+  // The visitor asked for silence: never start, and never queue a late start.
+  if (revealAudioMuted) return Promise.resolve();
 
   const sound = audioCache.revealSparkle;
   if (sound?.state() === 'loaded') {
@@ -162,6 +164,49 @@ export function playRevealSparkle() {
   }
 
   return preloadRevealSparkle();
+}
+
+
+/*
+ * Lucky Reveal sound control.
+ * The reveal's cues (opening sparkle, celebration pop, finishing applause) start
+ * without a separate sound prompt, and the applause alone runs longer than three
+ * seconds, so it needs a way to be silenced that does not depend on the device
+ * volume. The reveal therefore offers a mute/unmute control; muting stops the
+ * reveal's sound immediately and every later cue is skipped. The preference
+ * belongs to the page session and survives closing and reopening the reveal, and
+ * it never affects Crystal Ball or the homepage's own sounds.
+ */
+let revealAudioMuted = false;
+
+/**
+ * Sets whether the reveal's sounds are muted, stopping anything already playing.
+ *
+ * @param {boolean} muted True to silence the reveal.
+ * @returns {boolean} The mute state that is now in effect.
+ */
+export function setRevealAudioMuted(muted) {
+  revealAudioMuted = Boolean(muted);
+
+  if (revealAudioMuted) {
+    // These are the cues the reveal itself starts; stop them on the spot rather
+    // than letting a one-shot finish after the visitor asked for silence.
+    audioCache.revealSparkle?.stop();
+    audioCache.revealApplause?.stop();
+    audioCache.confettiPop?.stop();
+    applauseSoundId = null;
+  }
+
+  return revealAudioMuted;
+}
+
+/**
+ * Reports the current reveal mute state, for controls that need to render it.
+ *
+ * @returns {boolean} True when the reveal is muted.
+ */
+export function isRevealAudioMuted() {
+  return revealAudioMuted;
 }
 
 
@@ -284,9 +329,13 @@ export function playRevealApplause(sessionId) {
   if (sessionId !== revealAudioSessionId) return Promise.resolve(false);
   if (applauseRequestedSessionId === sessionId) return Promise.resolve(false);
   applauseRequestedSessionId = sessionId;
+  // Muted: consume the cue instead of playing it, so unmuting mid-reveal cannot
+  // make the applause start late from a decode that finished after the cue.
+  if (revealAudioMuted) return Promise.resolve(false);
 
   const startPlayback = () => {
     if (sessionId !== revealAudioSessionId) return false;
+    if (revealAudioMuted) return false;
 
     const sound = audioCache.revealApplause;
     if (sound?.state() !== 'loaded') return false;

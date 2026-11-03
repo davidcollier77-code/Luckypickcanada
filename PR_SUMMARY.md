@@ -1,150 +1,136 @@
-# Updater Scheduler: required GitHub `User-Agent` header and sanitized dispatch diagnostics
+# Lucky Reveal Phase 3 audit: reliability, mobile and the missing sound mute control
 
 ## Task and task groups
 
-**Task groups: `troubleshooting` + `testing`.** `troubleshooting` because the change starts from one
-reported production defect — the Cloudflare updater scheduler receiving HTTP 403 from GitHub for both
-updater workflows — and had to establish the cause before choosing a fix. `testing` because the
-deliverable's core requirement is a regression test that pins the new header and proves the diagnostic
-output stays sanitized.
+**Task groups: `testing` + `audio` + `polishing`.**
 
-**Assigned task:** add `User-Agent: luckypickcanada-updater-scheduler` to the Cloudflare updater
-scheduler's GitHub dispatch request, preserve the out-of-band diagnostic logging (`githubStatus`,
-`githubBody`, `githubHeaders`, sanitized body, selected response headers), add a test for the header,
-and document the requirement — repository source only, no deployment.
+- `testing` — Phase 3 is primarily a verification task: each of its eight requirements had to be
+  exercised and recorded with real execution rather than code inspection.
+- `audio` — the one confirmed deficiency is a sound-control gap, and browser playback restrictions,
+  cleanup and device behaviour are all audio concerns.
+- `polishing` — the remaining requirements are the shipped feel: reduced motion, visual glitches,
+  clipping, overlaps and asset weight.
 
-## Cause (established, not assumed)
+**Assigned task:** audit Phase 3 (Reliability and Performance) of the reveal roadmap, repair only
+confirmed Phase 3 deficiencies, and report evidence per requirement. Phase 4 was not started and the
+temporary FREE Preview access is untouched.
 
-- The Worker sent `Accept`, `Authorization`, `Content-Type` and `X-GitHub-Api-Version` and **no
-  `User-Agent`** (`workers/updater-scheduler/src/index.mjs`). Cloudflare Workers `fetch` adds no default
-  `User-Agent`.
-- GitHub rejects REST requests without one: `403 Request forbidden by administrative rules. Please make
-  sure your request has a User-Agent header…`. Reproduced in this workspace against the real
-  `/actions/workflows/refresh-docs.yml/dispatches` endpoint with the header suppressed — plain-text body,
-  no `x-ratelimit-*` headers, distinct from the JSON bodies GitHub returns for a permission failure
-  (`Resource not accessible by personal access token`) or a rate limit.
-- Proxy evidence that no Cloudflare dispatch ever reached GitHub: across the full 6 Oct–3 Nov history of
-  both workflows (37 and 69 runs), every run is titled `… — schedule` or `… — manual`; zero are
-  `— cloudflare`, although both workflows render `dispatch_source` in `run-name`.
-- Both updaters were healthy throughout via the native GitHub schedules (3 Nov: spec-kit run #37 →
-  commit `b007e8cb`, PR #1693; docs run #69 → commit `6c94bfb5`, PR #1695), and the repository's
-  dispatch credential succeeded five times, most recently the canary in deploy run `41229221334`
-  (31 Oct 18:23Z). That rules out a missing/expired token, absent `Actions: write`, wrong workflow
-  path, or concurrency as the cause.
+## Audit result
 
-## Implementation
+| # | Requirement | Status | Evidence |
+|---|---|---|---|
+| 1 | 6 Pick and 7 Pick on mobile, especially Android | PASS (emulated) | Chromium Pixel 7 UA at 412x915 and 390x844, both games, Personal and Gift: 6 or 7 unique in-range numbers, 0 px horizontal overflow, panel 15..397 / 15..375 |
+| 2 | Sound mute/unmute controls | **FAIL → repaired** | No control existed anywhere in the product (`mute`, `soundEnabled`, `audioEnabled`, `aria-pressed` matched only an unrelated map filter). Added and verified end-to-end |
+| 3 | Browser audio restrictions and device mute | PASS (browser) / device unverified | Every `play()` rejected like an autoplay policy: 4 rejections, 0 uncaught errors, 2 expected playback logs, visual finish complete, close and map usable. Device-level mute untestable here |
+| 4 | `prefers-reduced-motion` respected | PASS | 55 samples, no particle canvas, 0 reveal cue plays, static settled-leaf finish |
+| 5 | Animations and sounds clean up | PASS | After close: no dialog, no canvas, no celebration layer, 0 media elements playing, no late applause |
+| 6 | Dependencies, asset sizes, overhead | PASS | Howler still the only (lazy-loaded) audio dependency; applause 493,964 B, pop 43,244 B, sparkle 20,435 B; no new dependency, no re-encode |
+| 7 | Existing functionality intact | PASS | Full Vitest 37 files / 385 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` passed, numbers/share/close/map verified in-browser |
+| 8 | Visual glitches, clipping, overlaps, loading | PASS | No page or panel horizontal overflow, controls hit-test to themselves, close and sound controls never overlap, sharing actions 55–75 px and unclipped, no failed requests |
 
-`workers/updater-scheduler/src/index.mjs`:
+The reveal's audio was already well behaved: browser-blocked playback is logged and never thrown,
+reduced motion silences every cue, and the session-owned lifecycle stops sound and releases the canvas
+on close. The single Phase 3 gap was requirement 2.
 
-- `GITHUB_USER_AGENT = "luckypickcanada-updater-scheduler"` (exported) is now sent on every dispatch
-  request. Nothing else about the request changed — same endpoint, `ref: "main"`, `dispatch_source` and
-  `scheduler_slot` inputs, same `noRetry()` handling, same 200/204 success path.
-- `GitHubDispatchError` carries `githubStatus`, `githubBody` and `githubHeaders` and keeps the existing
-  message text `GitHub workflow dispatch failed with HTTP <status>`, so existing log searches and the
-  previous `/HTTP 403/` expectation still hold.
-- `sanitizeDiagnosticBody` redacts the configured token, `Bearer` values, `gh[pousr]_…` and
-  `github_pat_…` strings, collapses the body to one line, and caps it at 500 characters with an explicit
-  `…[truncated]` marker.
-- `selectDiagnosticHeaders` records only `content-type`, `retry-after`, `x-github-request-id` and the
-  three `x-ratelimit-*` headers; a `set-cookie` (or anything else) cannot reach the log.
-- The existing `event: "workflow-dispatch"`, `outcome: "failed"` entry gains those three fields; a
-  configuration error still logs only `error`. Successful responses are not read or logged beyond their
-  status.
+## What was implemented
 
-Agent Lee's revised implementation is **not** available in this repository or any local branch
-(`git log --all -S'githubHeaders'` finds nothing), and the 3 Nov Cloudflare deployment
-`9112ced69b34420fbfd69efdef7eee23` has no matching canary run, so it was made outside
-`deploy-updater-scheduler.yml`. The diagnostic behaviour was therefore reproduced from the stated
-requirements, in the reviewed source, as the single authoritative version.
+The applause, the sparkle and the celebration pop all start without a separate sound prompt, and the
+applause alone runs 5.6 s, so Phase 3 requirement 2 and WCAG 2.2 SC 1.4.2 (Audio Control) both need a
+control the visitor can reach. The repair is confined to the reveal's own sound.
 
-## Files changed
+- `app/lib/audio.js` — one module-level reveal mute flag with `setRevealAudioMuted(muted)` /
+  `isRevealAudioMuted()`. Muting stops the reveal sparkle, applause and celebration pop immediately;
+  the sparkle and the applause then refuse to start, and the applause cue is consumed while muted so a
+  decode that finishes after the mute cannot start late. The preference belongs to the page session,
+  survives closing and reopening, and never touches Crystal Ball or the homepage.
+- `app/lucky-reveal-popup.js` — a 44x44 toggle in the first content row, clear of the pinned close
+  button, with `aria-pressed`, an action-naming `aria-label`, a speaker / speaker-off icon, matching
+  hover treatment and no motion under reduced motion.
+- `app/lucky-reveal-celebration.jsx` — consults the same flag before playing the confetti pop. The
+  burst, leaves and golden pulses are never conditional on sound.
+- `__tests__/reveal-audio-mute.test.js` (new) — drives the real module with a controllable Howl: state
+  reporting, silence while muted, immediate stop on mute, a decode completing after the mute, and the
+  preference surviving a new session.
+- `__tests__/lucky-reveal-phase3.test.js` — four source guards for the control, its wiring, the mute
+  path and the celebration gate.
+- `__tests__/components/LuckyRevealCelebration.test.jsx` — supplies the new module export in its audio
+  mock.
+- `artifacts/reveal-phase3-audit-probe.cjs` (new) — the eight-scenario audit probe. Its generated JSON
+  stays local (like the Phase 3 probe) and is not committed.
+- `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`,
+  `.specify/feature.json` — the Spec Kit artifacts for this cycle (reused feature directory, no new
+  one), plus this summary and the Memory Bank note.
 
-- `workers/updater-scheduler/src/index.mjs` — header constant, `GitHubDispatchError`, body sanitizer,
-  header allowlist, diagnostic logging.
-- `workers/updater-scheduler/test/index.node-test.mjs` — exact `User-Agent` assertion; sanitized
-  body/header diagnostics; token and `ghp_` redaction; cookies excluded; single-line 512-character
-  bound; existing 403/200/204 behaviour retained.
-- `workers/updater-scheduler/README.md` — "GitHub API requirements" and "Failure diagnostics" sections;
-  security bullet updated to describe redacted diagnostics rather than "never a body".
-- `specs/083-updater-scheduler-dispatch-user-agent/{spec,plan,tasks}.md` — new feature cycle (features
-  035/036 cover reliability and cutover, not this defect; nothing duplicated).
-- `.specify/feature.json` — points at the new feature.
+Not changed: assets, CSS keyframes, number generation, artwork, copy, prices, payments, gift email,
+API routes, database, Crystal Ball, Little Luck Map and deployment configuration.
 
-Not changed: any workflow, cron schedule, token, secret, environment variable, Cloudflare binding or
-`.docs/` file. The deploy workflow still ships code and secret together after its canary.
+## Spec Kit stages
 
-## Spec Kit stages and artifacts
+| Stage | Result | Artifact |
+|---|---|---|
+| Specify | Done | `specs/081-lucky-reveal-finish-and-media-capability/spec.md` — Phase 5, FR-030…FR-035, SC-012…SC-016 |
+| Plan | Done | `specs/081-lucky-reveal-finish-and-media-capability/plan.md` — Phase 5 approach |
+| Tasks | Done | `specs/081-lucky-reveal-finish-and-media-capability/tasks.md` — Phase 12, T053…T061 |
+| Implement | Done | T053…T061 completed and marked `[x]` |
 
-Specify → Plan → Tasks → Implement, in order, in
-`specs/083-updater-scheduler-dispatch-user-agent/`: `spec.md` (cause, stories, requirements),
-`plan.md` (design, rejected alternatives, risks), `tasks.md` (completion state).
+## Documents consulted (manifest routing)
 
-## Library documents reviewed
+No `.docs/` reference document was materially needed: the change uses the existing Howler patterns in
+`app/lib/audio.js`, existing React/CSS conventions and the repository's own Playwright setup.
 
-| Document | USED | USEFUL | Explanation |
-| --- | --- | --- | --- |
-| `.docs/manifest.json` | YES | YES | Routed `troubleshooting` and `testing` to the GitHub/Cloudflare references. |
-| `.docs/troubleshooting/_github_docs.md` | YES | NO | 188-line index of GitHub's docs; no dispatch or `User-Agent` content, so the behaviour was proved against the live API instead. |
-| `.docs/deep-dive/_cloudflare_workers-sdk.md` | NO | NO | Indexes the Wrangler SDK, not Workers runtime `fetch` header behaviour. |
-| `.docs/troubleshooting/_cloudflare_cloudflare-docs_turnstile.md` | NO | NO | Turnstile-specific; unrelated to workflow dispatch. |
-| `.docs/troubleshooting/_debian_debian-reference.md` | NO | NO | No Linux/package/process behaviour is involved. |
-| `.docs/troubleshooting/_google_eng-practices.md`, `.docs/testing/_google_eng-practices.md` | NO | NO | Optional review guidance; the constraints were already fixed by the reproduced 403 and the existing suite conventions. |
+| Document | USED | USEFUL | Note |
+|---|---|---|---|
+| `/websites/mdn_web_audio` | NO | NO | Howler's HTML5 mode and the existing helpers already define the audio path; no Web Audio API change |
+| `/goldfire/howler.js` | NO | NO | The mute repair reuses the project's existing Howl `stop()`/`play()`/state pattern |
+| `/websites/developer_chrome` | NO | NO | Autoplay behaviour was reproduced by rejecting `play()` in the probe, not from docs |
+| `/websites/developer_apple_webkit` | NO | NO | No iOS-specific behaviour was changed |
+| `/websites/mdn_image_types` | NO | NO | No raster asset or format decision in this task (applause kept as the approved recording) |
+| `/microsoft/playwright` | NO | NO | The probe follows the repository's existing probe scripts |
+| `/vitest-dev/vitest` | NO | NO | New tests copy the existing hoisted Howl harness |
+| `/testing-library/react-testing-library` | NO | NO | Component test change is a one-line mock export |
+| `/dequelabs/axe-core` | NO | NO | Accessibility was checked with ARIA state and hit-testing, not an axe run |
+| `/google/eng-practices` | NO | NO | Governance rules in `AGENTS.md` already cover scope and verification |
+| Other routed sources (Next.js, React, Tailwind, Motion, GSAP, Lucide, Sonner, Magic UI, Sharp, WebP, web.dev images, Pillow, NumPy, GitHub docs, Zod, Sentry) | NO | NO | Unrelated to a reveal audio/layout audit |
 
-No Context7 invocation (requires per-invocation owner approval) and no external MCP beyond the
-connected GitHub integration used to publish this PR.
+## Verification
 
-## Verification (commands actually run)
+| Check | Result |
+|---|---|
+| Focused Vitest (`lucky-reveal-phase3`, `reveal-audio-mute`, `components/LuckyRevealCelebration`, `lucky-reveal-celebration`) | **PASS** 4 files / 55 tests |
+| Full `pnpm exec vitest run` | **PASS** 37 files / 385 tests |
+| `pnpm exec tsc --noEmit` | **PASS** exit 0 |
+| `./freebuff-verify.sh` | **PASS** — "All verification steps passed" (Spec Kit gate, typecheck, production build, refresh-docs 19/19) |
+| Production build size | **PASS** `.next` 317,499,221 B / 302.8 MiB + `public` 32,840,043 B; combined 350,339,264 B / 334.1 MiB, below the 495 MB maximum |
+| Chromium audit probe (`artifacts/reveal-phase3-audit-probe.cjs`, production build) | **PASS** 156/156 checks over 8 scenarios |
+| `pnpm install --frozen-lockfile` | PASS (lockfile unchanged) |
 
-Environment: cloud Linux worktree, Node v26.13.0, `pnpm@10.30.3` installed to `$HOME/.local` (absent
-from the image), dependencies restored with `pnpm install --frozen-lockfile` (lockfile unchanged).
+The verification gate was run with `SPEC_KIT_BASE_REF=9b43b1da`: this workspace's `origin/main` ref was
+stale at `a2c1222a` (PR #1676) while the branch starts at `9b43b1da` (PR #1699 merge), so the gate saw
+133 unrelated files and many feature directories. With the correct task base it verifies
+`specs/081-.../{spec,plan,tasks}.md` and passes. In CI the base ref resolves normally.
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Focused Worker suite | `node --test workers/updater-scheduler/test/index.node-test.mjs` | **PASS** — 17 tests, 0 failures |
-| Repository gate (Spec Kit artifacts, typecheck, production build, refresh-docs tests) | `./freebuff-verify.sh` | **PASS** — exit 0; all three artifacts verified; build compiled; refresh-docs 19/19 |
-| Wrangler dry run (no deploy) | `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml` | **PASS** — exit 0, vars as configured |
-| Build size | `du -sb .next public` | **PASS** — 332,572,886 bytes / 317.17 MiB (< 495 MiB) |
-| Final diff audit | `git status --porcelain`, `git diff` | **PASS** — exactly the files listed above |
+## Remaining issues / not verified
 
-## Outstanding and pending checks (not passed, not claimed)
+- **Physical Android device (Samsung) — NOT VERIFIED.** Mobile evidence is Chromium Android emulation
+  (Pixel 7 UA, 412x915 and 390x844), not a real handset.
+- **Device-level mute and volume — NOT VERIFIED.** HTML5 media honours the OS mute/volume by design;
+  no hardware was available to demonstrate it.
+- **Audible playback and loudness — NOT VERIFIED.** The workspace has no audio output device; playback
+  was verified at the media-element/AudioBufferSource level, not by listening.
+- The applause asset stays the approved 493,964 B 16-bit WAV. Re-encoding it would shrink it, but it
+  would change an approved recording, so it is reported as measured overhead rather than altered.
 
-- **PENDING — this PR's `Verify updater scheduler` job** (`deploy-updater-scheduler.yml`, pull_request
-  path): runs the Worker suite, the Spec Kit rebase test, the safe Spec Kit upgrade, `freebuff-verify.sh`,
-  the 495 MiB gate and the Wrangler dry run on the PR head.
-- **PENDING — live dispatch.** No deployment was made and no updater was triggered, per the task
-  boundaries. Confirmation requires an owner-approved deployment and the next approved slot producing
-  `Update Spec Kit — cloudflare` / `Refresh Documentation — cloudflare` runs with a 2xx
-  `outcome: "accepted"` log entry.
-- **BLOCKED — cloud-side evidence.** This workspace's Cloudflare access exposes DNS tools only, so the
-  deployed Worker's code, bindings, secrets and logs cannot be read from here.
-- **KNOWN documentation inconsistency (not changed here).** `memory-bank/activeContext.md` still states
-  that repository variable `UPDATER_SCHEDULER_ACTIVE=true` is set, but the repository variables API
-  returns only `NEXT_PUBLIC_TURNSTILE_SITE_KEY`. Native schedules therefore still run, which is the
-  intended fallback; correcting that note is outside this task's scope.
+## Behaviour preserved
 
-## Behaviour preserved, risks, limitations
+Sound assets, artwork, layout, copy, keyframes, number generation (6 → 1–49, 7 → 1–50), row layout,
+sharing ladder, close/Escape/autofocus, the gold map CTA, prices, Stripe checkout, gift email, Resend,
+database, API routes, authentication, `.docs/`, and the temporary FREE Preview switch are unchanged.
+The new control adds no sound, no request and no dependency.
 
-Preserved: slot mapping for all five Tuesday/Friday targets in both DST states, non-target silence,
-`controller.noRetry()` before dispatch, disabled mode, request endpoint/ref/inputs, 200 and 204 handling,
-error message text, both updaters' native schedules and manual dispatch, and the deploy workflow with its
-canary-then-`--secrets-file` contract. No token, secret, environment variable, schedule or permission was
-changed, and no credential value appears in the code, tests, docs or logs.
+## Final diff audit
 
-Risks and limits: if the live 403 turns out to be a credential or rate-limit rejection rather than the
-missing header, the header alone will not restore dispatch — the new one-line diagnostics make that
-distinguishable. The 500-character cap could truncate an unusually long GitHub explanation (the marker
-makes it explicit). Live acceptance remains unverified until a deployment is approved and a real slot
-runs.
+Eight files modified and four added, all listed above; the complete diff was read before submission.
+No unrelated change, no formatting-only churn, no generated probe report, no secret.
 
-## PR record
-
-- **PR:** [#1696](https://github.com/davidcollier77-code/Luckypickcanada/pull/1696), branch
-  `freebuff/78319e5dc4e17636cb62dc2a`, target `main`, left open and unmerged.
-- **Implementation commit:** `55c3e479` — the head every local result above refers to.
-
-## Merge status
-
-Left **OPEN and UNMERGED** for owner review. No merge, no deployment, no updater triggered.
-
-**USEFUL RESULT: NO** — implementation and local gates pass, but the PR-head CI job and the live
-dispatch confirmation are PENDING, so verified completion is not claimed.
+**USEFUL RESULT: YES** — Phase 3 is implemented and verified to the extent this workspace allows, with
+the three device-level checks listed explicitly as unverified.

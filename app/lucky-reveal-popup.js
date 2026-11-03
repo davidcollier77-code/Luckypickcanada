@@ -2,11 +2,13 @@
 import {
   beginRevealAudioSession,
   endRevealAudioSession,
+  isRevealAudioMuted,
   playButtonClick,
   playRevealApplause,
   playRevealSparkle,
   preloadRevealApplause,
   preloadRevealSparkle,
+  setRevealAudioMuted,
 } from './lib/audio';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -154,6 +156,57 @@ const closeButtonStyle = {
   transition: 'all 0.2s ease',
 };
 
+// The reveal's sounds start on their own, so the control that silences them is
+// part of the panel from the moment it opens: 44px for a reliable touch target,
+// a pressed state for assistive technology, and a visible icon in both states.
+const soundButtonStyle = {
+  width: 44,
+  height: 44,
+  padding: 0,
+  flex: '0 0 auto',
+  border: '1px solid rgba(255, 235, 160, 0.2)',
+  borderRadius: '50%',
+  background: 'rgba(15, 23, 42, 0.6)',
+  color: '#fff7d6',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  touchAction: 'manipulation',
+  WebkitTapHighlightColor: 'transparent',
+  transition: 'all 0.2s ease',
+};
+
+function SoundIcon({ muted }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" />
+      {muted ? (
+        <>
+          <line x1="16" y1="9" x2="21" y2="15" />
+          <line x1="21" y1="9" x2="16" y2="15" />
+        </>
+      ) : (
+        <>
+          <path d="M15.6 8.6a4.2 4.2 0 0 1 0 6.8" />
+          <path d="M18.4 6.4a8 8 0 0 1 0 11.2" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 function SlowWords({ children, startDelay = 0 }) {
   const words = String(children).split(' ');
 
@@ -183,11 +236,19 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   // Every reveal owns one audio session, so a late decode or a reopened reveal
   // can never play the previous reveal's applause.
   const revealAudioSessionRef = useRef(null);
+  // Mirrors the module-level reveal mute state, which is kept for the page
+  // session so closing and reopening the reveal does not bring the sound back.
+  const [isSoundMuted, setIsSoundMuted] = useState(() => isRevealAudioMuted());
 
   const closeReveal = useCallback(() => {
     setIsOpen(false);
     onClose?.();
   }, [onClose]);
+
+  const toggleSound = useCallback(() => {
+    // The setter stops anything already playing as soon as it is muted.
+    setIsSoundMuted((previousMuted) => setRevealAudioMuted(!previousMuted));
+  }, []);
 
   // The applause is the reveal's finishing celebration. It starts while a few
   // maple leaves are still falling, so its body carries into the four golden
@@ -462,10 +523,19 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             }
           }
 
-          .lucky-close-btn-hover:hover {
+          .lucky-close-btn-hover:hover,
+          .lucky-sound-btn:hover {
             border-color: rgba(255, 235, 160, 0.6) !important;
             background: rgba(15, 23, 42, 0.9) !important;
             transform: scale(1.05);
+          }
+
+          .lucky-sound-btn[aria-pressed='true'] {
+            color: rgba(255, 247, 214, 0.78);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .lucky-sound-btn:hover { transform: none; }
           }
 
           .lucky-map-button-enhanced {
@@ -497,9 +567,34 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             padding: 'clamp(1.5rem, 5vw, 2.5rem)',
           }}
         >
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2.5, color: '#10b981', fontWeight: 900, fontSize: '0.85rem' }}>
-            <SlowWords>Payment complete</SlowWords>
-          </p>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              margin: '0 0 0.25rem',
+              // Keeps the sound control clear of the close button pinned in the
+              // panel's top-right corner.
+              paddingRight: 44,
+            }}
+          >
+            <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2.5, color: '#10b981', fontWeight: 900, fontSize: '0.85rem' }}>
+              <SlowWords>Payment complete</SlowWords>
+            </p>
+            <button
+              type="button"
+              onClick={toggleSound}
+              className="lucky-sound-btn"
+              style={soundButtonStyle}
+              aria-label={isSoundMuted ? 'Unmute reveal sound' : 'Mute reveal sound'}
+              aria-pressed={isSoundMuted}
+              title={isSoundMuted ? 'Sound is off' : 'Sound is on'}
+            >
+              <SoundIcon muted={isSoundMuted} />
+            </button>
+          </div>
           <h2 id="lucky-reveal-title" style={{ margin: '0.6rem 0 1.2rem', fontSize: 'clamp(2.1rem, 7.5vw, 4.2rem)', lineHeight: 1.1, color: '#fff' }}>
             <SlowWords startDelay={0.4}>Your lucky reveal is here</SlowWords>
           </h2>
