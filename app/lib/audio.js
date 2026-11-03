@@ -91,6 +91,81 @@ export function playConfettiPop() {
 
 
 /*
+ * Lucky Reveal opening sparkle.
+ * The reveal used to open in silence; this is a short same-origin chime played
+ * once as the reveal appears, before the finishing confetti pop. Both are brief
+ * and share the existing Howler dependency.
+ */
+const REVEAL_SPARKLE_URL = '/sounds/chime-sound.mp3';
+let revealSparkleLoadPromise = null;
+
+/**
+ * Load and decode the reveal's opening sparkle before the reveal opens.
+ * Sharing the promise prevents duplicate Howl instances.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready to play.
+ */
+export function preloadRevealSparkle() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  if (audioCache.revealSparkle?.state() === 'loaded') return Promise.resolve();
+  if (revealSparkleLoadPromise) return revealSparkleLoadPromise;
+
+  revealSparkleLoadPromise = import('howler')
+    .then(({ Howl }) => new Promise((resolve, reject) => {
+      const sound = new Howl({
+        src: [REVEAL_SPARKLE_URL],
+        html5: true,
+        // Brief and quiet: the sparkle sits under the reveal, not over it.
+        volume: 0.28,
+        preload: true,
+      });
+      sound.on('playerror', (_id, error) => {
+        // Browsers may refuse playback before any user interaction; never throw.
+        console.warn('Reveal sparkle playback failed:', error);
+      });
+      audioCache.revealSparkle = sound;
+
+      if (sound.state() === 'loaded') {
+        resolve();
+        return;
+      }
+
+      sound.once('load', () => resolve());
+      sound.once('loaderror', (_id, error) => {
+        reject(new Error(`Reveal sparkle failed to load: ${String(error)}`));
+      });
+    }))
+    .catch((error) => {
+      revealSparkleLoadPromise = null;
+      audioCache.revealSparkle = null;
+      throw error;
+    });
+
+  return revealSparkleLoadPromise;
+}
+
+/**
+ * Plays the already-loaded opening sparkle once for this reveal.
+ *
+ * @returns {Promise<void>} Resolves after requesting playback or preload.
+ */
+export function playRevealSparkle() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  const sound = audioCache.revealSparkle;
+  if (sound?.state() === 'loaded') {
+    // Restart on every reveal instead of stacking a second overlapping chime.
+    sound.stop();
+    sound.play();
+    return Promise.resolve();
+  }
+
+  return preloadRevealSparkle();
+}
+
+
+/*
  * Crystal Ball sound design.
  * Same-origin sounds are preloaded on entry; playback is limited to the
  * question action and reveal transitions. Howler is already a project dependency.

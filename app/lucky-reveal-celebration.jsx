@@ -10,6 +10,78 @@ import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/maple
 // canvas-confetti's default Blob worker.
 const GOLD_LEAF_COLORS = ['#FBBF24', '#F59E0B', '#D97706'];
 
+// The confetti is bounded so no leaf can pile up behind the reveal container: at
+// most MAX_ACTIVE_PARTICLES leaves exist at once, each leaf has a hard lifetime,
+// and the scheduled waves finish inside a three-to-four second window.
+const MAX_ACTIVE_PARTICLES = 96;
+// 150 ticks is about 2.5 seconds at 60 fps, so the last wave's leaves expire
+// before the celebration ends.
+const PARTICLE_LIFETIME_TICKS = 150;
+const WAVE_INTERVAL_MS = 500;
+// Waves start at 0 ms, 500 ms and 1000 ms; the final leaves expire 2500 ms after
+// that last wave, so the confetti itself lasts about 3.5 seconds.
+const CONFETTI_WINDOW_MS = WAVE_INTERVAL_MS * 2 + (PARTICLE_LIFETIME_TICKS / 60) * 1000;
+// The layer fades out in the last half second and unmounts on this timer, which
+// leaves nothing behind the reveal container.
+const CELEBRATION_TOTAL_MS = CONFETTI_WINDOW_MS + 700;
+const CELEBRATION_FADE_MS = 500;
+
+// Same shape as the shipped celebration — both edges burst inward, a slower pair
+// follows, then a small centre wave — with fewer leaves per wave: 24 + 24 + 14 +
+// 14 + 10 = 86, inside the 96-particle ceiling.
+const CONFETTI_WAVES = [
+  {
+    delayMs: 0,
+    particleCount: 24,
+    angle: 62,
+    spread: 46,
+    startVelocity: 52,
+    origin: { x: 0, y: 0.82 },
+    drift: 0.35,
+    decay: 0.915,
+  },
+  {
+    delayMs: 0,
+    particleCount: 24,
+    angle: 118,
+    spread: 46,
+    startVelocity: 52,
+    origin: { x: 1, y: 0.82 },
+    drift: -0.35,
+    decay: 0.915,
+  },
+  {
+    delayMs: WAVE_INTERVAL_MS,
+    particleCount: 14,
+    angle: 70,
+    spread: 82,
+    startVelocity: 38,
+    origin: { x: 0.02, y: 0.9 },
+    scalar: 1.15,
+    decay: 0.93,
+  },
+  {
+    delayMs: WAVE_INTERVAL_MS,
+    particleCount: 14,
+    angle: 110,
+    spread: 82,
+    startVelocity: 38,
+    origin: { x: 0.98, y: 0.9 },
+    scalar: 1.15,
+    decay: 0.93,
+  },
+  {
+    delayMs: WAVE_INTERVAL_MS * 2,
+    particleCount: 10,
+    angle: 90,
+    spread: 120,
+    startVelocity: 30,
+    origin: { x: 0.5, y: 1.02 },
+    scalar: 1.05,
+    decay: 0.94,
+  },
+];
+
 // The pile of fallen leaves along the bottom edge is the same maple leaf drawn as
 // inline SVG, so the finish stays vector and needs no extra raster asset. The
 // leaves are stacked in three overlapping layers with irregular spacing, sizes
@@ -40,19 +112,28 @@ const SETTLED_LEAVES = [
 
 /**
  * Fires the golden maple-leaf celebration once the final reveal number has
- * settled: leaves burst inward from both sides of the screen, drift and rotate
+ * settled: leaves burst inward from both sides of the reveal, drift and rotate
  * down, and a small glowing pile of the same leaves finishes the moment.
+ *
+ * The particles are capped, each leaf expires on its own lifetime, and the whole
+ * layer is removed when the celebration ends, so nothing accumulates behind the
+ * reveal container.
  *
  * Reduced-motion visitors get the static finish with no burst, sparkle, or sound.
  *
  * @param {{startDelayMs?: number}} props Delay from popup open to the final number settling.
- * @returns {JSX.Element|null} The celebration layer, or null before it starts.
+ * @returns {JSX.Element|null} The celebration layers, or null before or after it runs.
  */
 export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const canvasRef = useRef(null);
   const confettiRef = useRef(null);
+  const timersRef = useRef([]);
+  // Tracks how many particles have been fired across all waves for this celebration.
+  // Stored in a ref so it persists across React strict-mode double-invocations of
+  // the wave-scheduling effect without resetting the budget mid-celebration.
+  const firedParticlesRef = useRef(0);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -75,6 +156,16 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
     return undefined;
   }, [prefersReducedMotion]);
 
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    timersRef.current = [];
+  }, []);
+
+  const releaseConfetti = useCallback(() => {
+    confettiRef.current?.reset();
+    confettiRef.current = null;
+  }, []);
+
   const launch = useCallback(() => {
     setIsCelebrating(true);
 
@@ -82,25 +173,30 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
     playConfettiPop().catch((error) => {
       console.warn('Reveal confetti pop playback failed', error);
     });
+  }, []);
+
+  // Create the particle instance against the canvas that is now inside the reveal
+  // (so it cannot outlive or escape the reveal), then fire the scheduled waves
+  // against a shared particle budget.
+  useEffect(() => {
+    if (!isCelebrating || prefersReducedMotion) return undefined;
+
+    // Reset the budget for this celebration run. Using a ref (not a local `let`) so
+    // a React strict-mode double-invoke of this effect cannot restart it at 0 and
+    // bypass MAX_ACTIVE_PARTICLES mid-celebration.
+    firedParticlesRef.current = 0;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    let isActive = true;
 
     loadConfetti()
       .then((confettiLib) => {
-        if (canvasRef.current) return;
+        if (!isActive || !canvasRef.current) return;
 
-        const canvas = document.createElement('canvas');
-        Object.assign(canvas.style, {
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          width: '100vw',
-          height: '100vh',
-          pointerEvents: 'none',
-          zIndex: '100',
-        });
-        document.body.appendChild(canvas);
-        canvasRef.current = canvas;
-
-        const confetti = confettiLib.create(canvas, { resize: true, useWorker: false });
+        const confetti =
+          confettiRef.current ?? confettiLib.create(canvas, { resize: true, useWorker: false });
         confettiRef.current = confetti;
 
         const leafShape = createMapleLeafShape(confettiLib);
@@ -108,65 +204,57 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
           colors: GOLD_LEAF_COLORS,
           shapes: leafShape ? [leafShape] : ['circle'],
           zIndex: 100,
-          // 160 ticks is about 2.7 seconds at 60fps, inside the requested
-          // two-to-three second celebration window.
-          ticks: 160,
+          // A hard per-leaf lifetime: particles are deleted from the simulation
+          // once these ticks expire, so none can linger on or behind the reveal.
+          ticks: PARTICLE_LIFETIME_TICKS,
           gravity: 1.05,
           scalar: 1.5,
-        };
+        let firedParticles = 0;
 
-        const fire = (options) => confetti({ ...defaults, ...options });
-
-        // Both edges fire inward and upward, then the slower follow-up waves drift
-        // the leaves toward the middle as they fall to the bottom of the reveal.
-        fire({
-          particleCount: 34,
-          angle: 62,
-          spread: 46,
-          startVelocity: 52,
-          origin: { x: 0, y: 0.82 },
-          drift: 0.35,
-          decay: 0.915,
-        });
-        fire({
-          particleCount: 34,
-          angle: 118,
-          spread: 46,
-          startVelocity: 52,
-          origin: { x: 1, y: 0.82 },
-          drift: -0.35,
-          decay: 0.915,
-        });
-        fire({
-          particleCount: 16,
-          angle: 70,
-          spread: 82,
-          startVelocity: 38,
-          origin: { x: 0.02, y: 0.9 },
-          scalar: 1.15,
-          decay: 0.93,
-        });
-        fire({
-          particleCount: 16,
-          angle: 110,
-          spread: 82,
-          startVelocity: 38,
-          origin: { x: 0.98, y: 0.9 },
-          scalar: 1.15,
-          decay: 0.93,
-        });
-        fire({
-          particleCount: 12,
-          angle: 90,
-          spread: 120,
-          startVelocity: 30,
-          origin: { x: 0.5, y: 1.02 },
-          scalar: 1.05,
-          decay: 0.94,
-        });
+        for (const { delayMs, ...wave } of CONFETTI_WAVES) {
+          // delayMs is a compile-time constant (0, 500 or 1000 ms) — no untrusted data.
+          timersRef.current.push(
+            window.setTimeout(() => {
+              const budget = MAX_ACTIVE_PARTICLES - firedParticlesRef.current;
+              const particleCount = Math.min(wave.particleCount, budget);
+              if (particleCount <= 0) return;
+              firedParticlesRef.current += particleCount;
+              confetti({ ...defaults, ...wave, particleCount });
+            }, delayMs),
+          );
+        }
       })
       .catch((error) => console.warn('Reveal confetti effect unavailable', error));
-  }, []);
+
+    return () => {
+      isActive = false;
+    };
+  }, [isCelebrating, prefersReducedMotion]);
+
+  // End the celebration: drop the instance once the last leaf has expired, then
+  // remove the layer so no leaf is left behind the reveal container.
+
+  useEffect(() => {
+    if (!isCelebrating || prefersReducedMotion) return undefined;
+    // Guards against double-settle: both settleTimer and finishTimer call
+    // releaseConfetti(); isReleased ensures it runs at most once per lifecycle.
+    let isReleased = false;
+    // CONFETTI_WINDOW_MS is a compile-time constant — no untrusted data.
+    const settleTimer = window.setTimeout(() => {
+      if (!isReleased) { isReleased = true; releaseConfetti(); }
+    }, CONFETTI_WINDOW_MS);
+    // CELEBRATION_TOTAL_MS is a compile-time constant — no untrusted data.
+    const finishTimer = window.setTimeout(() => {
+      if (!isReleased) { isReleased = true; releaseConfetti(); }
+      setIsCelebrating(false);
+    }, CELEBRATION_TOTAL_MS);
+    timersRef.current.push(settleTimer, finishTimer);
+
+    return () => {
+      window.clearTimeout(settleTimer);
+      window.clearTimeout(finishTimer);
+    };
+  }, [clearTimers, isCelebrating, prefersReducedMotion, releaseConfetti]);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -180,17 +268,25 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
   }, [launch, prefersReducedMotion, startDelayMs]);
 
   useEffect(() => () => {
-    confettiRef.current?.reset();
-    canvasRef.current?.remove();
-    confettiRef.current = null;
-    canvasRef.current = null;
-  }, []);
+    // Release every scheduled wave and the particle instance with the component.
+    clearTimers();
+    releaseConfetti();
+  }, [clearTimers, releaseConfetti]);
 
   if (!isCelebrating) return null;
 
+  // Fade the finish out with the confetti window; reduced motion keeps the static
+  // finish with no animation.
+  const fadeStyle = prefersReducedMotion
+    ? undefined
+    : {
+        animation: `lucky-celebration-out ${CELEBRATION_FADE_MS}ms ease-in ${CONFETTI_WINDOW_MS + 200}ms forwards`,
+      };
+
   return (
-    <div className="lucky-celebration" aria-hidden="true">
-      <style>{`
+    <>
+      <div className="lucky-celebration" aria-hidden="true" style={fadeStyle}>
+        <style>{`
         @keyframes lucky-celebration-flash {
           0% { opacity: 0; transform: translate(-50%, 0) scale(0.82); }
           22% { opacity: 1; }
@@ -200,6 +296,10 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
         @keyframes lucky-celebration-finish-in {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+
+        @keyframes lucky-celebration-out {
+          to { opacity: 0; }
         }
 
         @keyframes lucky-settled-leaf-in {
@@ -215,6 +315,22 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
           z-index: 1;
           pointer-events: none;
           overflow: hidden;
+        }
+
+        /* The falling leaves live above the panel (z-index 2) so they stay visible,
+           but inside the reveal overlay and clipped to its animation area. */
+        .lucky-celebration-particles {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          pointer-events: none;
+          overflow: hidden;
+        }
+
+        .lucky-celebration-particle-canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
         }
 
         .lucky-celebration-flash {
@@ -264,104 +380,39 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
         }
       `}</style>
 
-      <span className="lucky-celebration-flash" />
+        <span className="lucky-celebration-flash" />
 
-      <div className="lucky-celebration-finish">
-        <span className="lucky-celebration-glow" />
-        {SETTLED_LEAVES.map((leaf) => (
-          <svg
-            key={`${leaf.left}-${leaf.size}`}
-            viewBox="-2015 -2000 4030 4030"
-            className="lucky-settled-leaf"
-            focusable="false"
-            style={{
-              left: leaf.left,
-              bottom: leaf.bottom,
-              width: leaf.size,
-              height: leaf.size,
-              zIndex: leaf.layer,
-              color: leaf.color,
-              transform: `translate(-50%, 0) rotate(${leaf.rotate}deg)`,
-              '--leaf-opacity': leaf.opacity,
-              animationDelay: `${leaf.delay}s`,
-            }}
-          >
-            <path d={MAPLE_LEAF_PATH} fill="currentColor" />
-          </svg>
-        ))}
+        <div className="lucky-celebration-finish">
+          <span className="lucky-celebration-glow" />
+          {SETTLED_LEAVES.map((leaf) => (
+            <svg
+              key={`${leaf.left}-${leaf.size}`}
+              viewBox="-2015 -2000 4030 4030"
+              className="lucky-settled-leaf"
+              focusable="false"
+              style={{
+                left: leaf.left,
+                bottom: leaf.bottom,
+                width: leaf.size,
+                height: leaf.size,
+                zIndex: leaf.layer,
+                color: leaf.color,
+                transform: `translate(-50%, 0) rotate(${leaf.rotate}deg)`,
+                '--leaf-opacity': leaf.opacity,
+                animationDelay: `${leaf.delay}s`,
+              }}
+            >
+              <path d={MAPLE_LEAF_PATH} fill="currentColor" />
+            </svg>
+          ))}
+        </div>
       </div>
-    </div>
+
+      {!prefersReducedMotion && (
+        <div className="lucky-celebration-particles" aria-hidden="true">
+          <canvas ref={canvasRef} className="lucky-celebration-particle-canvas" />
+        </div>
+      )}
+    </>
   );
-}
-
-const CELEBRATION_CSS = `
-  @keyframes lucky-celebration-flash {
-    0% { opacity: 0; transform: translate(-50%, 0) scale(0.82); }
-    22% { opacity: 1; }
-    100% { opacity: 0; transform: translate(-50%, 0) scale(1.08); }
-  }
-  @keyframes lucky-celebration-finish-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes lucky-settled-leaf-in {
-    from { opacity: 0; }
-    to { opacity: var(--leaf-opacity, 0.9); }
-  }
-  .lucky-celebration {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    overflow: hidden;
-  }
-  .lucky-celebration-flash {
-    position: absolute;
-    left: 50%;
-    bottom: -8%;
-    width: min(74vw, 640px);
-    aspect-ratio: 1;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(255, 244, 190, 0.5) 0%, rgba(250, 204, 21, 0.26) 34%, rgba(245, 158, 11, 0) 70%);
-    opacity: 0;
-    animation: lucky-celebration-flash 1s ease-out forwards;
-  }
-  .lucky-celebration-finish {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 0;
-    height: clamp(76px, 15vh, 140px);
-    opacity: 0;
-    animation: lucky-celebration-finish-in 0.9s ease-out 1s forwards;
-  }
-  .lucky-celebration-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(62% 130% at 50% 100%, rgba(250, 204, 21, 0.34) 0%, rgba(245, 158, 11, 0.14) 46%, rgba(245, 158, 11, 0) 80%);
-  }
-  .lucky-settled-leaf {
-    position: absolute;
-    opacity: 0;
-    filter: drop-shadow(0 0 10px rgba(250, 204, 21, 0.45));
-    animation: lucky-settled-leaf-in 0.8s ease-out forwards;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .lucky-celebration-flash { display: none; }
-    .lucky-celebration-finish { animation: none !important; opacity: 1; }
-    .lucky-settled-leaf { animation: none !important; opacity: var(--leaf-opacity, 0.9); }
-  }
-`;
-
-/** Injects celebration CSS into <head> once on mount and removes it on unmount. */
-function CelebrationStyles() {
-  useEffect(() => {
-    const el = document.createElement('style');
-    el.setAttribute('data-lucky-celebration', '');
-    el.textContent = CELEBRATION_CSS;
-    document.head.appendChild(el);
-    return () => {
-      el.remove();
-    };
-  }, []);
-  return null;
 }

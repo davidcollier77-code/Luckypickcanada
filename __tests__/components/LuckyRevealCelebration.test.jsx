@@ -25,7 +25,7 @@ vi.mock('../../app/lib/audio', () => ({
   playButtonClick: vi.fn(),
 }));
 
-vi.mock('../../app/lib/mapleLeafConfetti.mjs', () => ({
+vi.mock('../../app/lib/mapleLeafConfetti', () => ({
   MAPLE_LEAF_PATH: 'm-90 2030 45-863z',
   MAPLE_LEAF_MATRIX: [1, 0, 0, 1, 0, 0],
   createMapleLeafShape: vi.fn(() => ({ mapleLeaf: true })),
@@ -94,9 +94,16 @@ describe('LuckyRevealCelebration', () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(4700);
     });
+    // The waves are now scheduled rather than fired in one tick.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
 
     expect(audio.playConfettiPop).toHaveBeenCalledTimes(1);
-    expect(fired.length).toBeGreaterThanOrEqual(4);
+    expect(fired).toHaveLength(5);
+    expect(fired.reduce((total, options) => total + options.particleCount, 0)).toBeLessThanOrEqual(
+      96,
+    );
 
     const origins = fired.map((options) => options.origin?.x);
     expect(origins).toContain(0);
@@ -111,7 +118,9 @@ describe('LuckyRevealCelebration', () => {
     expect(container.querySelector('.lucky-celebration-glow')).not.toBeNull();
     // A layered pile, not an even row.
     expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(18);
-    expect(document.querySelectorAll('body > canvas')).toHaveLength(1);
+    // The canvas lives inside the reveal, not on <body>.
+    expect(container.querySelectorAll('canvas')).toHaveLength(1);
+    expect(document.querySelectorAll('body > canvas')).toHaveLength(0);
   });
 
   it('shows the static finish without burst, sparkle, or sound for reduced motion', async () => {
@@ -125,21 +134,42 @@ describe('LuckyRevealCelebration', () => {
 
     expect(audio.playConfettiPop).not.toHaveBeenCalled();
     expect(fired).toHaveLength(0);
-    expect(document.querySelectorAll('body > canvas')).toHaveLength(0);
+    expect(container.querySelectorAll('canvas')).toHaveLength(0);
     expect(container.querySelectorAll('.lucky-settled-leaf')).toHaveLength(18);
   });
 
   it('removes the particle canvas when the reveal closes', async () => {
     setReducedMotion(false);
 
-    const { unmount } = render(<LuckyRevealCelebration startDelayMs={1000} />);
+    const { container, unmount } = render(<LuckyRevealCelebration startDelayMs={1000} />);
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
-    expect(document.querySelectorAll('body > canvas')).toHaveLength(1);
+    expect(container.querySelectorAll('canvas')).toHaveLength(1);
 
     unmount();
-    expect(document.querySelectorAll('body > canvas')).toHaveLength(0);
+    expect(container.querySelectorAll('canvas')).toHaveLength(0);
+  });
+
+  it('removes the layer and canvas when the celebration finishes', async () => {
+    setReducedMotion(false);
+
+    const { container } = render(<LuckyRevealCelebration startDelayMs={1000} />);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(container.querySelector('.lucky-celebration')).not.toBeNull();
+    expect(container.querySelector('.lucky-celebration-particles')).not.toBeNull();
+
+    // 3500 ms of confetti plus the fade, then the layer unmounts.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4300);
+    });
+
+    expect(container.querySelector('.lucky-celebration')).toBeNull();
+    expect(container.querySelector('.lucky-celebration-particles')).toBeNull();
+    expect(container.querySelectorAll('canvas')).toHaveLength(0);
   });
 });

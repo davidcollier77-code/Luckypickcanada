@@ -1,0 +1,288 @@
+{
+  "desktop.6pick.numbers": {
+    "count": 6,
+    "values": [
+      "10",
+      "14",
+      "26",
+      "32",
+      "35",
+      "47"
+    ],
+    "firstOpacity": 1,
+    "lastOpacity": 0,
+    "firstDelay": "2s",
+    "lastDelay": "3.75s"
+  },
+  "desktop.6pick.celebrationStartMsAfterOpen": 1992,
+  "desktop.6pick.layout": {
+    "panelZ": 2,
+    "finishZ": 1,
+    "particlesZ": 3,
+    "overlayArea": {
+      "width": 1440,
+      "height": 900
+    },
+    "particlesInsideReveal": true,
+    "canvasParentClass": "lucky-celebration-particles",
+    "bodyCanvasCount": 0,
+    "settledLeaves": 18
+  },
+  "desktop.6pick.canvasSampleAtStart": {
+    "present": true,
+    "width": 1440,
+    "height": 900,
+    "painted": 1732,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "desktop.6pick.canvasSampleAt700ms": {
+    "present": true,
+    "width": 1440,
+    "height": 900,
+    "painted": 3005,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "desktop.6pick.celebrationEndMsAfterStart": 2893,
+  "desktop.6pick.totalCelebrationMsAfterOpen": 4885,
+  "desktop.6pick.afterCelebration": {
+    "celebrationLayer": 0,
+    "particleLayer": 0,
+    "canvases": 1,
+    "bodyCanvases": 0,
+    "settledLeaves": 0
+  },
+  "desktop.6pick.soundRequests": [
+    "confetti-pop.wav",
+    "chime-sound.mp3"
+  ],
+  "desktop.6pick.openMs": 9383,
+  "desktop.6pick.pageErrors": [],
+  "desktop.7pick.numbers": {
+    "count": 7,
+    "values": [
+      "11",
+      "17",
+      "24",
+      "26",
+      "28",
+      "34",
+      "49"
+    ],
+    "firstOpacity": 1,
+    "lastOpacity": 0,
+    "firstDelay": "2s",
+    "lastDelay": "4.1s"
+  },
+  "desktop.7pick.celebrationStartMsAfterOpen": 2364,
+  "desktop.7pick.layout": {
+    "panelZ": 2,
+    "finishZ": 1,
+    "particlesZ": 3,
+    "overlayArea": {
+      "width": 1440,
+      "height": 900
+    },
+    "particlesInsideReveal": true,
+    "canvasParentClass": "lucky-celebration-particles",
+    "bodyCanvasCount": 0,
+    "settledLeaves": 18
+  },
+  "desktop.7pick.canvasSampleAtStart": {
+    "present": true,
+    "width": 1440,
+    "height": 900,
+    "painted": 2448,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "desktop.7pick.canvasSampleAt700ms": {
+    "present": true,
+    "width": 1440,
+    "height": 900,
+    "painted": 2948,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "desktop.7pick.celebrationEndMsAfterStart": 2803,
+  "desktop.7pick.totalCelebrationMsAfterOpen": 5167,
+  "desktop.7pick.afterCelebration": {
+    "celebrationLayer": 0,
+    "particleLayer": 0,
+    "canvases": 1,
+    "bodyCanvases": 0,
+    "settledLeaves": 0
+  },
+  "desktop.7pick.soundRequests": [
+    "confetti-pop.wav",
+    "chime-sound.mp3"
+  ],
+  "desktop.7pick.openMs": 9836,
+  "desktop.7pick.pageErrors": [],
+  "desktop.reducedMotion": {
+    "canvases": 1,
+    "particleLayer": 0,
+    "settledLeaves": 18,
+    "flashDisplay": "none"
+  },
+  "mobile.6pick.numbers": {
+    "count": 6,
+    "values": [
+      "7",
+      "15",
+      "24",
+      "25",
+      "38",
+      "44"
+    ],
+    "firstOpacity": 1,
+    "lastOpacity": 0,
+    "firstDelay": "2s",
+    "lastDelay": "3.75s"
+  },
+  "mobile.6pick.celebrationStartMsAfterOpen": 1957,
+  "mobile.6pick.layout": {
+    "panelZ": 2,
+    "finishZ": 1,
+    "particlesZ": 3,
+    "overlayArea": {
+      "width": 390,
+      "height": 844
+    },
+    "particlesInsideReveal": true,
+    "canvasParentClass": "lucky-celebration-particles",
+    "bodyCanvasCount": 0,
+    "settledLeaves": 18
+  },
+  "mobile.6pick.canvasSampleAtStart": {
+    "present": true,
+    "width": 390,
+    "height": 844,
+    "painted": 1891,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 390,
+      "height": 844
+    }
+  },
+  "mobile.6pick.canvasSampleAt700ms": {
+    "present": true,
+    "width": 390,
+    "height": 844,
+    "painted": 2484,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 390,
+      "height": 844
+    }
+  },
+  "mobile.6pick.celebrationEndMsAfterStart": 3301,
+  "mobile.6pick.totalCelebrationMsAfterOpen": 5258,
+  "mobile.6pick.afterCelebration": {
+    "celebrationLayer": 0,
+    "particleLayer": 0,
+    "canvases": 1,
+    "bodyCanvases": 0,
+    "settledLeaves": 0
+  },
+  "mobile.6pick.soundRequests": [
+    "confetti-pop.wav",
+    "chime-sound.mp3"
+  ],
+  "mobile.6pick.openMs": 9321,
+  "mobile.6pick.pageErrors": [],
+  "mobile.7pick.numbers": {
+    "count": 7,
+    "values": [
+      "1",
+      "3",
+      "11",
+      "15",
+      "23",
+      "28",
+      "45"
+    ],
+    "firstOpacity": 1,
+    "lastOpacity": 0,
+    "firstDelay": "2s",
+    "lastDelay": "4.1s"
+  },
+  "mobile.7pick.celebrationStartMsAfterOpen": 2279,
+  "mobile.7pick.layout": {
+    "panelZ": 2,
+    "finishZ": 1,
+    "particlesZ": 3,
+    "overlayArea": {
+      "width": 390,
+      "height": 844
+    },
+    "particlesInsideReveal": true,
+    "canvasParentClass": "lucky-celebration-particles",
+    "bodyCanvasCount": 0,
+    "settledLeaves": 18
+  },
+  "mobile.7pick.canvasSampleAtStart": {
+    "present": true,
+    "width": 390,
+    "height": 844,
+    "painted": 1748,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 390,
+      "height": 844
+    }
+  },
+  "mobile.7pick.canvasSampleAt700ms": {
+    "present": true,
+    "width": 390,
+    "height": 844,
+    "painted": 2776,
+    "rect": {
+      "left": 0,
+      "top": 0,
+      "width": 390,
+      "height": 844
+    }
+  },
+  "mobile.7pick.celebrationEndMsAfterStart": 3344,
+  "mobile.7pick.totalCelebrationMsAfterOpen": 5623,
+  "mobile.7pick.afterCelebration": {
+    "celebrationLayer": 0,
+    "particleLayer": 0,
+    "canvases": 1,
+    "bodyCanvases": 0,
+    "settledLeaves": 0
+  },
+  "mobile.7pick.soundRequests": [
+    "confetti-pop.wav",
+    "chime-sound.mp3"
+  ],
+  "mobile.7pick.openMs": 9676,
+  "mobile.7pick.pageErrors": [],
+  "mobile.reducedMotion": {
+    "canvases": 1,
+    "particleLayer": 0,
+    "settledLeaves": 18,
+    "flashDisplay": "none"
+  }
+}
