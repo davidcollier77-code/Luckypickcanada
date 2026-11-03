@@ -1,0 +1,297 @@
+{
+  "available": true,
+  "model": "vosk-model-small-en-us-0.15",
+  "text": "are you take a pizza jabbar rat race they starbucks you know the little little load the you knew at the big in the again the gi jun you taking couldn't have read i take some cream cheese added the at a afraid you leave it on the counter maybe they like to two minutes tops you are",
+  "words": [
+    {
+      "word": "are",
+      "start": 0.06,
+      "end": 0.3
+    },
+    {
+      "word": "you",
+      "start": 0.308652,
+      "end": 0.45
+    },
+    {
+      "word": "take",
+      "start": 0.45,
+      "end": 0.69
+    },
+    {
+      "word": "a",
+      "start": 0.69,
+      "end": 0.75
+    },
+    {
+      "word": "pizza",
+      "start": 0.75,
+      "end": 1.2
+    },
+    {
+      "word": "jabbar",
+      "start": 1.204053,
+      "end": 1.62
+    },
+    {
+      "word": "rat",
+      "start": 1.68,
+      "end": 1.89
+    },
+    {
+      "word": "race",
+      "start": 1.92,
+      "end": 2.342545
+    },
+    {
+      "word": "they",
+      "start": 2.342545,
+      "end": 2.487765
+    },
+    {
+      "word": "starbucks",
+      "start": 2.487765,
+      "end": 3.15
+    },
+    {
+      "word": "you",
+      "start": 3.18,
+      "end": 3.33
+    },
+    {
+      "word": "know",
+      "start": 3.33,
+      "end": 3.48
+    },
+    {
+      "word": "the",
+      "start": 3.48,
+      "end": 3.66
+    },
+    {
+      "word": "little",
+      "start": 3.66,
+      "end": 4.2
+    },
+    {
+      "word": "little",
+      "start": 4.2,
+      "end": 4.5
+    },
+    {
+      "word": "load",
+      "start": 4.5,
+      "end": 4.8
+    },
+    {
+      "word": "the",
+      "start": 4.8,
+      "end": 4.95
+    },
+    {
+      "word": "you",
+      "start": 4.95,
+      "end": 5.19
+    },
+    {
+      "word": "knew",
+      "start": 5.25,
+      "end": 5.60782
+    },
+    {
+      "word": "at",
+      "start": 5.61,
+      "end": 5.731094
+    },
+    {
+      "word": "the",
+      "start": 5.731094,
+      "end": 5.82
+    },
+    {
+      "word": "big",
+      "start": 5.82,
+      "end": 6.12
+    },
+    {
+      "word": "in",
+      "start": 6.12,
+      "end": 6.24
+    },
+    {
+      "word": "the",
+      "start": 6.242136,
+      "end": 6.36
+    },
+    {
+      "word": "again",
+      "start": 6.361959,
+      "end": 6.721794
+    },
+    {
+      "word": "the",
+      "start": 6.721794,
+      "end": 6.81
+    },
+    {
+      "word": "gi",
+      "start": 6.81,
+      "end": 6.99
+    },
+    {
+      "word": "jun",
+      "start": 6.99,
+      "end": 7.44
+    },
+    {
+      "word": "you",
+      "start": 7.86,
+      "end": 8.1
+    },
+    {
+      "word": "taking",
+      "start": 8.1,
+      "end": 8.49
+    },
+    {
+      "word": "couldn't",
+      "start": 8.58,
+      "end": 8.91
+    },
+    {
+      "word": "have",
+      "start": 8.91,
+      "end": 9.15
+    },
+    {
+      "word": "read",
+      "start": 9.24,
+      "end": 9.51
+    },
+    {
+      "word": "i",
+      "start": 9.99,
+      "end": 10.29
+    },
+    {
+      "word": "take",
+      "start": 10.32,
+      "end": 10.62
+    },
+    {
+      "word": "some",
+      "start": 10.62,
+      "end": 10.8
+    },
+    {
+      "word": "cream",
+      "start": 10.8,
+      "end": 11.07
+    },
+    {
+      "word": "cheese",
+      "start": 11.07,
+      "end": 11.37
+    },
+    {
+      "word": "added",
+      "start": 11.37,
+      "end": 11.64
+    },
+    {
+      "word": "the",
+      "start": 11.64,
+      "end": 12.12
+    },
+    {
+      "word": "at",
+      "start": 12.6,
+      "end": 12.81
+    },
+    {
+      "word": "a",
+      "start": 12.81,
+      "end": 12.87
+    },
+    {
+      "word": "afraid",
+      "start": 12.87,
+      "end": 13.23
+    },
+    {
+      "word": "you",
+      "start": 13.23,
+      "end": 13.38
+    },
+    {
+      "word": "leave",
+      "start": 13.38,
+      "end": 13.65
+    },
+    {
+      "word": "it",
+      "start": 13.65,
+      "end": 13.74
+    },
+    {
+      "word": "on",
+      "start": 13.74,
+      "end": 13.892399
+    },
+    {
+      "word": "the",
+      "start": 13.892399,
+      "end": 13.980001
+    },
+    {
+      "word": "counter",
+      "start": 13.980001,
+      "end": 14.430001
+    },
+    {
+      "word": "maybe",
+      "start": 14.52,
+      "end": 14.91
+    },
+    {
+      "word": "they",
+      "start": 14.91,
+      "end": 15.24
+    },
+    {
+      "word": "like",
+      "start": 15.81,
+      "end": 16.14
+    },
+    {
+      "word": "to",
+      "start": 16.14,
+      "end": 16.56
+    },
+    {
+      "word": "two",
+      "start": 16.68,
+      "end": 16.95
+    },
+    {
+      "word": "minutes",
+      "start": 16.95,
+      "end": 17.31
+    },
+    {
+      "word": "tops",
+      "start": 17.31,
+      "end": 17.73
+    },
+    {
+      "word": "you",
+      "start": 17.73,
+      "end": 17.88
+    },
+    {
+      "word": "are",
+      "start": 17.88,
+      "end": 17.94
+    }
+  ]
+}

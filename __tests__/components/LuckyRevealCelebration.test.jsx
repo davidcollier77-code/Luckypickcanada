@@ -152,6 +152,36 @@ describe('LuckyRevealCelebration', () => {
     expect(container.querySelectorAll('canvas')).toHaveLength(0);
   });
 
+  it('reports completion and removes the layer once the canvas paints nothing', async () => {
+    setReducedMotion(false);
+    const onConfettiSettled = vi.fn();
+
+    const { container } = render(
+      <LuckyRevealCelebration startDelayMs={1000} onConfettiSettled={onConfettiSettled} />,
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(container.querySelector('.lucky-celebration')).not.toBeNull();
+
+    // Before the watcher starts, the layer stays even though jsdom paints nothing.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(onConfettiSettled).not.toHaveBeenCalled();
+    expect(container.querySelector('.lucky-celebration')).not.toBeNull();
+
+    // 1400 ms after the burst plus one sample: the canvas is empty, so the finish
+    // is reported exactly once and the layer leaves with the last leaf.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    expect(onConfettiSettled).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('.lucky-celebration')).toBeNull();
+    expect(container.querySelectorAll('canvas')).toHaveLength(0);
+  });
+
   it('removes the layer and canvas when the celebration finishes', async () => {
     setReducedMotion(false);
 

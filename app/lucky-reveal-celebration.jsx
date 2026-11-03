@@ -11,20 +11,23 @@ import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/maple
 const GOLD_LEAF_COLORS = ['#FBBF24', '#F59E0B', '#D97706'];
 
 // The confetti is bounded so no leaf can pile up behind the reveal container: at
-// most MAX_ACTIVE_PARTICLES leaves exist at once, each leaf has a hard lifetime,
-// and the scheduled waves finish inside a three-to-four second window.
+// most MAX_ACTIVE_PARTICLES leaves exist at once, each leaf has a hard lifetime
+// that outlasts its fall, and the scheduled waves stop adding new leaves after
+// one second.
 const MAX_ACTIVE_PARTICLES = 96;
-// 150 ticks is about 2.5 seconds at 60 fps, so the last wave's leaves expire
-// before the celebration ends.
-const PARTICLE_LIFETIME_TICKS = 150;
+// canvas-confetti deletes a particle as soon as its tick budget runs out
+// (`updateFetti` returns `fetti.tick < fetti.totalTicks`), so the budget has to
+// outlast the fall. 300 ticks is five seconds at 60 fps: with gravity 1.05 the
+// slowest leaf has already dropped past the bottom edge well before that, so no
+// leaf is ever deleted while it is still painted on screen.
+const PARTICLE_LIFETIME_TICKS = 300;
 const WAVE_INTERVAL_MS = 500;
-// Waves start at 0 ms, 500 ms and 1000 ms; the final leaves expire 2500 ms after
-// that last wave, so the confetti itself lasts about 3.5 seconds.
-const CONFETTI_WINDOW_MS = WAVE_INTERVAL_MS * 2 + (PARTICLE_LIFETIME_TICKS / 60) * 1000;
-// The layer fades out in the last half second and unmounts on this timer, which
-// leaves nothing behind the reveal container.
-const CELEBRATION_TOTAL_MS = CONFETTI_WINDOW_MS + 700;
-const CELEBRATION_FADE_MS = 500;
+// The particle layer is removed by watching the canvas instead of by a fixed
+// timer: once the canvas paints nothing, every leaf has left the visible screen.
+const CONFETTI_WATCH_INTERVAL_MS = 200;
+const CONFETTI_WATCH_START_MS = WAVE_INTERVAL_MS * 2 + 400;
+// Safety net for a canvas that cannot be read; the layer is never left mounted.
+const CONFETTI_WATCH_TIMEOUT_MS = 12000;
 
 // Same shape as the shipped celebration — both edges burst inward, a slower pair
 // follows, then a small centre wave — with fewer leaves per wave: 24 + 24 + 14 +
@@ -111,6 +114,34 @@ const SETTLED_LEAVES = [
 ];
 
 /**
+ * Reports whether the confetti canvas still paints anything. The leaves are
+ * allowed to cover the reveal content while they fall, so the only reliable
+ * signal that they have all left the screen is an empty canvas.
+ *
+ * @param {HTMLCanvasElement|null} canvas Particle canvas.
+ * @returns {boolean} True when at least one painted pixel remains.
+ */
+function hasPaintedPixels(canvas) {
+  if (!canvas) return false;
+  const context = canvas.getContext('2d');
+  if (!context) return false;
+
+  try {
+    const { width, height } = canvas;
+    if (!width || !height) return false;
+    const { data } = context.getImageData(0, 0, width, height);
+    for (let index = 3; index < data.length; index += 4) {
+      if (data[index] !== 0) return true;
+    }
+    return false;
+  } catch {
+    // A canvas that cannot be read (for example after a context loss) must not
+    // end the celebration early; the fallback timeout owns that case.
+    return true;
+  }
+}
+
+/**
  * Fires the golden maple-leaf celebration once the final reveal number has
  * settled: leaves burst inward from both sides of the reveal, drift and rotate
  * down, and a small glowing pile of the same leaves finishes the moment.
@@ -121,10 +152,11 @@ const SETTLED_LEAVES = [
  *
  * Reduced-motion visitors get the static finish with no burst, sparkle, or sound.
  *
- * @param {{startDelayMs?: number}} props Delay from popup open to the final number settling.
+ * @param {{startDelayMs?: number, onConfettiSettled?: () => void}} props Delay from popup open
+ * to the final number settling, plus a callback fired once every leaf has left the screen.
  * @returns {JSX.Element|null} The celebration layers, or null before or after it runs.
  */
-export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
+export default function LuckyRevealCelebration({ startDelayMs = 0, onConfettiSettled }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const canvasRef = useRef(null);
@@ -232,30 +264,41 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
     };
   }, [isCelebrating, prefersReducedMotion]);
 
-  // End the celebration: drop the instance once the last leaf has expired, then
-  // remove the layer so no leaf is left behind the reveal container.
-
+  // End the celebration by watching what is actually on screen. The layer is
+  // released and unmounted only once the canvas paints nothing, so no leaf is
+  // cut off mid-fall and nothing is left behind the reveal container. The
+  // timeout is a safety net for a canvas that cannot be sampled.
   useEffect(() => {
     if (!isCelebrating || prefersReducedMotion) return undefined;
-    // Guards against double-settle: both settleTimer and finishTimer call
-    // releaseConfetti(); isReleased ensures it runs at most once per lifecycle.
-    let isReleased = false;
-    // CONFETTI_WINDOW_MS is a compile-time constant — no untrusted data.
-    const settleTimer = window.setTimeout(() => {
-      if (!isReleased) { isReleased = true; releaseConfetti(); }
-    }, CONFETTI_WINDOW_MS);
-    // CELEBRATION_TOTAL_MS is a compile-time constant — no untrusted data.
-    const finishTimer = window.setTimeout(() => {
-      if (!isReleased) { isReleased = true; releaseConfetti(); }
+
+    let isSettled = false;
+    let watchTimer = null;
+
+    const settle = () => {
+      if (isSettled) return;
+      isSettled = true;
+      if (watchTimer !== null) window.clearInterval(watchTimer);
+      releaseConfetti();
       setIsCelebrating(false);
-    }, CELEBRATION_TOTAL_MS);
-    timersRef.current.push(settleTimer, finishTimer);
+      onConfettiSettled?.();
+    };
+
+    // Wait for the last wave to be on screen before trusting an empty canvas.
+    // Both delays are compile-time constants — no untrusted data.
+    const startTimer = window.setTimeout(() => {
+      watchTimer = window.setInterval(() => {
+        if (!hasPaintedPixels(canvasRef.current)) settle();
+      }, CONFETTI_WATCH_INTERVAL_MS);
+    }, CONFETTI_WATCH_START_MS);
+    const timeoutTimer = window.setTimeout(settle, CONFETTI_WATCH_TIMEOUT_MS);
+    timersRef.current.push(startTimer, timeoutTimer);
 
     return () => {
-      window.clearTimeout(settleTimer);
-      window.clearTimeout(finishTimer);
+      window.clearTimeout(startTimer);
+      window.clearTimeout(timeoutTimer);
+      if (watchTimer !== null) window.clearInterval(watchTimer);
     };
-  }, [clearTimers, isCelebrating, prefersReducedMotion, releaseConfetti]);
+  }, [isCelebrating, onConfettiSettled, prefersReducedMotion, releaseConfetti]);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -276,17 +319,11 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
 
   if (!isCelebrating) return null;
 
-  // Fade the finish out with the confetti window; reduced motion keeps the static
-  // finish with no animation.
-  const fadeStyle = prefersReducedMotion
-    ? undefined
-    : {
-        animation: `lucky-celebration-out ${CELEBRATION_FADE_MS}ms ease-in ${CONFETTI_WINDOW_MS + 200}ms forwards`,
-      };
-
+  // Nothing is painted once the celebration ends, so the layer leaves with the
+  // last leaf instead of fading a canvas that is already empty.
   return (
     <>
-      <div className="lucky-celebration" aria-hidden="true" style={fadeStyle}>
+      <div className="lucky-celebration" aria-hidden="true">
         <style>{`
         @keyframes lucky-celebration-flash {
           0% { opacity: 0; transform: translate(-50%, 0) scale(0.82); }
@@ -297,10 +334,6 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
         @keyframes lucky-celebration-finish-in {
           from { opacity: 0; }
           to { opacity: 1; }
-        }
-
-        @keyframes lucky-celebration-out {
-          to { opacity: 0; }
         }
 
         @keyframes lucky-settled-leaf-in {

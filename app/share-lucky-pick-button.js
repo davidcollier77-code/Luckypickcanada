@@ -35,6 +35,28 @@ const optionStyle = {
   transition: 'border-color 0.2s ease, transform 0.2s ease, background 0.2s ease',
 };
 
+// Result of one native share attempt. A cancelled sheet is a normal outcome, not
+// a failure, so the caller can report it without opening the fallback window.
+const SHARE_SHARED = 'shared';
+const SHARE_CANCELLED = 'cancelled';
+const SHARE_REJECTED = 'rejected';
+
+async function attemptNativeShare(payload) {
+  try {
+    await navigator.share(payload);
+    return SHARE_SHARED;
+  } catch (error) {
+    return error?.name === 'AbortError' ? SHARE_CANCELLED : SHARE_REJECTED;
+  }
+}
+
+function canShareNative(payload) {
+  if (typeof navigator.share !== 'function') return false;
+  // Browsers without canShare() get the attempt; the share call decides.
+  if (typeof navigator.canShare !== 'function') return true;
+  return navigator.canShare(payload);
+}
+
 async function copyImageToClipboard(file) {
   if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) {
     return false;
@@ -103,32 +125,55 @@ export default function ShareLuckyPickButton({ reveal }) {
     setIsPreparing(true);
     setStatus('');
 
-    try {
-      const file = await prepareShareFile();
-      const shareData = {
-        files: [file],
-        title: 'My LuckyPickCanada reveal',
-        text: buildShareMessage(reveal),
-      };
+    const title = 'My LuckyPickCanada reveal';
+    const text = buildShareMessage(reveal);
+    const link = LUCKY_SITE_URL;
 
-      if (typeof navigator.share === 'function' && (!navigator.canShare || navigator.canShare(shareData))) {
-        try {
-          await navigator.share(shareData);
+    try {
+      // The image is drawn first so the native sheet still opens inside this
+      // click's transient activation window.
+      let file = null;
+      try {
+        file = await prepareShareFile();
+      } catch {
+        file = null;
+      }
+
+      // 1. Image + message + link: the Android share sheet in full.
+      const imagePayload = file ? { files: [file], title, text, url: link } : null;
+      if (imagePayload && canShareNative(imagePayload)) {
+        const outcome = await attemptNativeShare(imagePayload);
+        if (outcome === SHARE_SHARED) {
           setStatus('Shared. Keep the luck going. 🍀');
           return;
-        } catch (error) {
-          if (error?.name === 'AbortError') {
-            setStatus('Sharing cancelled.');
-            return;
-          }
-          // The device refused the native share, so use the compact fallback.
+        }
+        if (outcome === SHARE_CANCELLED) {
+          setStatus('Sharing cancelled.');
+          return;
         }
       }
 
+      // 2. Native text and link sharing, for devices that accept text but not
+      // the image payload.
+      const textPayload = { title, text, url: link };
+      if (canShareNative(textPayload)) {
+        const outcome = await attemptNativeShare(textPayload);
+        if (outcome === SHARE_SHARED) {
+          setStatus('Shared. Keep the luck going. 🍀');
+          return;
+        }
+        if (outcome === SHARE_CANCELLED) {
+          setStatus('Sharing cancelled.');
+          return;
+        }
+      }
+
+      // 3. Computers and browsers without Web Share keep the custom window.
       setShareFile(file);
       setIsFallbackOpen(true);
-    } catch {
-      setStatus('We could not prepare your reveal image. Please try again.');
+      if (!file) {
+        setStatus('We could not prepare your reveal image. The website link is still ready to copy.');
+      }
     } finally {
       setIsPreparing(false);
     }

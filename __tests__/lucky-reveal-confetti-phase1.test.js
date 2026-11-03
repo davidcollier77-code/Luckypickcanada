@@ -42,18 +42,22 @@ describe('Confetti lifecycle', () => {
     expect(Math.max(...declared)).toBeLessThanOrEqual(96);
   });
 
-  it('gives every particle a bounded lifetime inside a three-to-four second window', () => {
-    expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 150;');
+  it('lets every leaf fall off screen instead of expiring it in mid-air', () => {
+    // Feature 081: the lifetime now outlasts the fall, and the layer is removed
+    // by measuring the painted canvas instead of by a fixed window.
+    expect(celebrationSource).toContain('const PARTICLE_LIFETIME_TICKS = 300;');
     expect(celebrationSource).toContain('ticks: PARTICLE_LIFETIME_TICKS');
+    expect(celebrationSource).not.toContain('CONFETTI_WINDOW_MS');
+    expect(celebrationSource).toContain('const CONFETTI_WATCH_INTERVAL_MS = 200;');
     expect(celebrationSource).toContain(
-      'const CONFETTI_WINDOW_MS = WAVE_INTERVAL_MS * 2 + (PARTICLE_LIFETIME_TICKS / 60) * 1000;',
+      'const CONFETTI_WATCH_TIMEOUT_MS = 12000;',
     );
-    expect(celebrationSource).toContain('const CELEBRATION_TOTAL_MS = CONFETTI_WINDOW_MS + 700;');
+    expect(celebrationSource).toContain('hasPaintedPixels(canvasRef.current)');
 
-    // Waves at 0 / 500 / 1000 ms plus a 2500 ms leaf lifetime = 3500 ms.
-    const confettiWindowMs = 500 * 2 + (150 / 60) * 1000;
-    expect(confettiWindowMs).toBeGreaterThanOrEqual(3000);
-    expect(confettiWindowMs).toBeLessThanOrEqual(4000);
+    // 300 ticks is five seconds at 60 fps, longer than the fall the shipped
+    // three-to-four second window allowed.
+    const lifetimeMs = (300 / 60) * 1000;
+    expect(lifetimeMs).toBeGreaterThanOrEqual(4000);
   });
 
   it('keeps the particles inside the reveal instead of appending a canvas to <body>', () => {
@@ -66,7 +70,9 @@ describe('Confetti lifecycle', () => {
   });
 
   it('ends the celebration and releases every timer and particle', () => {
-    expect(celebrationSource).toContain('const finishTimer = window.setTimeout(');
+    expect(celebrationSource).toContain(
+      'const timeoutTimer = window.setTimeout(settle, CONFETTI_WATCH_TIMEOUT_MS);',
+    );
     expect(celebrationSource).toContain('setIsCelebrating(false);');
     expect(celebrationSource).toContain('clearTimers();');
     expect(celebrationSource).toContain('releaseConfetti();');
