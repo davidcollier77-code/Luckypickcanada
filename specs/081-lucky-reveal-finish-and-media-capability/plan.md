@@ -280,54 +280,51 @@ the leaves are still on screen and the timeout remains only a safety net.
 
 ## Phase 5 — Reveal roadmap Phase 3 audit (reliability and performance)
 
-**Approach:** audit first, repair only the one confirmed deficiency, and keep every other Phase 3
-requirement as measured evidence rather than a rewrite.
+**Decision record:** the owner reviewed the audit and chose to keep the reveal's automatic sound with **no
+in-app mute button**. An interim mute control built earlier in this task was removed; the reveal's sound
+behaviour is the pre-audit behaviour, unchanged.
 
-### 1. Audit the eight Phase 3 requirements (no change unless a deficiency is confirmed)
+### 1. Audit the eight Phase 3 requirements (evidence, no change unless a deficiency is confirmed)
 
 - **Mobile 6 and 7 picks (Android):** drive the free Preview Reveal in Chromium with an Android Pixel 7
   user agent at 412x915 and 390x844, for Personal and Gift delivery, and measure the numbers, layout,
   overflow, control hit-testing and overlaps.
-- **Mute/unmute controls:** search the repository for any sound control. None exists, which is the
-  confirmed deficiency.
-- **Browser audio restrictions and device mute:** reject every media `play()` like an autoplay policy
-  and confirm the reveal logs, never throws, and still finishes visually. Device-level mute cannot be
-  tested without hardware and is reported as pending; HTML5 media honours it natively.
-- **Reduced motion:** run a context with `reducedMotion: 'reduce'` and assert no particle canvas, no
-  media play, no Web Audio stream and a static finish.
+- **Sound controls:** search the repository for any sound control. None exists, and the owner's decision is
+  that none should exist: the reveal's sound plays automatically.
+- **Browser audio restrictions and device mute:** reject every media `play()` like an autoplay policy and
+  confirm the reveal logs, never throws and still finishes visually. Device-level mute cannot be tested
+  without hardware and is reported as pending; HTML5 media honours it natively.
+- **Reduced motion:** run with `reducedMotion: 'reduce'` and assert no particle canvas, no reveal cue and a
+  static finish.
 - **Cleanup:** close the reveal and assert the dialog, canvas and celebration layer are gone, no media
   element is playing and no applause starts afterwards.
-- **Dependencies, assets and overhead:** list the reveal's sound requests with their measured bytes and
-  confirm Howler is still the single lazy-loaded audio dependency.
+- **Dependencies, assets and overhead:** list the reveal's sound requests with measured bytes and confirm
+  Howler is still the single lazy-loaded audio dependency.
 - **Existing functionality:** full Vitest, `tsc --noEmit`, `./freebuff-verify.sh` and the measured build.
-- **Visual glitches:** page and panel horizontal overflow, ball containment, control hit-testing,
-  sharing-action clipping and pairwise overlap checks.
+- **Visual glitches:** page and panel horizontal overflow, ball containment, and sharing-action clipping
+  and overlap.
 
-### 2. Repair the confirmed deficiency: a reveal sound mute/unmute control
+### 2. Keep the reveal's sound automatic and remove the interim control
 
-- `app/lib/audio.js` owns one module-level reveal mute flag with `setRevealAudioMuted(muted)` and
-  `isRevealAudioMuted()`. Muting stops the reveal sparkle, applause and celebration pop at once; the
-  sparkle and the applause then refuse to start, and the applause cue is consumed while muted so a
-  decode that finishes after the mute cannot start it late.
-- `app/lucky-reveal-popup.js` renders a 44 px toggle in the first content row, clear of the pinned
-  close button, with `aria-pressed`, an action-naming `aria-label`, a visible speaker/speaker-off icon
-  and the same hover treatment as the close control. It reads the module state so the preference
-  survives closing and reopening the reveal.
-- `app/lucky-reveal-celebration.jsx` consults the same flag before playing the confetti pop; the
-  visual burst, leaves and pulses are never conditional on sound.
-- Nothing else is touched: no asset re-encode, no dependency change, no CSS keyframe change and no
-  change to Crystal Ball, the homepage, payments, email or the map.
+- `app/lib/audio.js`, `app/lucky-reveal-popup.js` and `app/lucky-reveal-celebration.jsx` are restored to
+  their pre-audit state: no mute flag, no setter/getter, no toggle, no icon, and no muted branch in the
+  sparkle, the applause or the confetti pop. Automatic playback is the only path.
+- Assets, volumes (sparkle 0.28, pop 0.45, applause 0.55), order (sparkle → pop → applause) and the
+  session-based applause lifecycle are untouched.
+- Nothing else is touched: no asset re-encode, no dependency change, no CSS keyframe change and no change
+  to Crystal Ball, the homepage, payments, email or the map.
 
 ### 3. Tests
 
-- `__tests__/reveal-audio-mute.test.js` drives the real module with a controllable Howl: state
-  reporting, silence while muted, immediate stop on mute, a decode completing after the mute, and the
-  preference surviving a new session.
-- `__tests__/lucky-reveal-phase3.test.js` gains source guards for the control, its wiring and the
-  celebration gating; `__tests__/components/LuckyRevealCelebration.test.jsx` now provides the new
-  module export in its audio mock.
+- `__tests__/reveal-audio-mute.test.js` is deleted; the mute behaviour it covered no longer exists.
+- `__tests__/lucky-reveal-phase3.test.js` replaces its mute guards with checks that the panel ships no
+  sound control, the audio module holds no mute state, every cue is called unconditionally, and the assets
+  and volumes are unchanged.
+- `__tests__/components/LuckyRevealCelebration.test.jsx` drops the mute export from its audio mock; its
+  existing normal-motion test already proves the pop plays automatically.
 
 ### 4. Evidence
 
-- `artifacts/reveal-phase3-audit-probe.cjs` (new) records the eight requirements per scenario. The
-  generated JSON stays local, like the Phase 3 probe report, so no probe origin enters the repository.
+- `artifacts/reveal-phase3-audit-probe.cjs` measures the eight requirements per scenario, including that
+  the panel contains no mute control and that the sparkle, pop and applause each play once automatically.
+  The generated JSON stays local so no probe origin enters the repository.

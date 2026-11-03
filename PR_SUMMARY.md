@@ -1,136 +1,124 @@
-# Lucky Reveal Phase 3 audit: reliability, mobile and the missing sound mute control
+# Lucky Reveal Phase 3 audit: reliability, mobile and automatic sound without an in-app mute control
 
 ## Task and task groups
 
 **Task groups: `testing` + `audio` + `polishing`.**
 
-- `testing` — Phase 3 is primarily a verification task: each of its eight requirements had to be
-  exercised and recorded with real execution rather than code inspection.
-- `audio` — the one confirmed deficiency is a sound-control gap, and browser playback restrictions,
-  cleanup and device behaviour are all audio concerns.
-- `polishing` — the remaining requirements are the shipped feel: reduced motion, visual glitches,
-  clipping, overlaps and asset weight.
+- `testing` — Phase 3 is a verification task: each of its eight requirements has to be exercised and
+  recorded with real execution rather than code inspection.
+- `audio` — the sound assets, the automatic cue sequence, the autoplay-failure path, reduced-motion
+  silence and close cleanup are all audio behaviour this task had to keep exactly as shipped.
+- `polishing` — the remaining requirements are the shipped feel: reduced motion, clipping, overlaps and
+  asset weight.
 
 **Assigned task:** audit Phase 3 (Reliability and Performance) of the reveal roadmap, repair only
-confirmed Phase 3 deficiencies, and report evidence per requirement. Phase 4 was not started and the
-temporary FREE Preview access is untouched.
+confirmed Phase 3 deficiencies, then — per the owner's decision — remove the interim mute control so the
+reveal keeps its automatic sound with no in-app mute button. Phase 4 was not started and the temporary
+FREE Preview access is untouched.
 
 ## Audit result
 
 | # | Requirement | Status | Evidence |
 |---|---|---|---|
 | 1 | 6 Pick and 7 Pick on mobile, especially Android | PASS (emulated) | Chromium Pixel 7 UA at 412x915 and 390x844, both games, Personal and Gift: 6 or 7 unique in-range numbers, 0 px horizontal overflow, panel 15..397 / 15..375 |
-| 2 | Sound mute/unmute controls | **FAIL → repaired** | No control existed anywhere in the product (`mute`, `soundEnabled`, `audioEnabled`, `aria-pressed` matched only an unrelated map filter). Added and verified end-to-end |
-| 3 | Browser audio restrictions and device mute | PASS (browser) / device unverified | Every `play()` rejected like an autoplay policy: 4 rejections, 0 uncaught errors, 2 expected playback logs, visual finish complete, close and map usable. Device-level mute untestable here |
+| 2 | Reveal sound control | PASS — none shipped, by owner decision | Repository search finds no sound control (`mute`, `soundEnabled`, `audioEnabled`, `aria-pressed` match only the unrelated map filter); all 8 probe runs found 0 pressed-state and 0 mute/sound-named controls in the panel; owner chose automatic sound over an in-app mute button |
+| 3 | Browser audio restrictions and device mute | PASS (browser) / device unverified | Every `play()` rejected like an autoplay policy: 4 rejections, 0 uncaught errors, visual finish complete, close and map usable. Device-level mute untestable here |
 | 4 | `prefers-reduced-motion` respected | PASS | 55 samples, no particle canvas, 0 reveal cue plays, static settled-leaf finish |
 | 5 | Animations and sounds clean up | PASS | After close: no dialog, no canvas, no celebration layer, 0 media elements playing, no late applause |
 | 6 | Dependencies, asset sizes, overhead | PASS | Howler still the only (lazy-loaded) audio dependency; applause 493,964 B, pop 43,244 B, sparkle 20,435 B; no new dependency, no re-encode |
-| 7 | Existing functionality intact | PASS | Full Vitest 37 files / 385 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` passed, numbers/share/close/map verified in-browser |
-| 8 | Visual glitches, clipping, overlaps, loading | PASS | No page or panel horizontal overflow, controls hit-test to themselves, close and sound controls never overlap, sharing actions 55–75 px and unclipped, no failed requests |
+| 7 | Existing functionality intact | PASS | Full Vitest 36 files / 380 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` passed, numbers/share/close/map verified in-browser |
+| 8 | Visual glitches, clipping, overlaps, loading | PASS | No page or panel horizontal overflow, close control hit-tests to itself, sharing actions 55–75 px and unclipped, no shares or balls overlap, no failed requests |
 
-The reveal's audio was already well behaved: browser-blocked playback is logged and never thrown,
-reduced motion silences every cue, and the session-owned lifecycle stops sound and releases the canvas
-on close. The single Phase 3 gap was requirement 2.
+The reveal's audio was already well behaved: browser-blocked playback is logged and never thrown, reduced
+motion silences every cue, and the session-owned lifecycle stops sound and releases the canvas on close.
+Nothing in Phase 3 required a change to the reveal's shipped behaviour.
 
-## What was implemented
+## Owner decision and the final change
 
-The applause, the sparkle and the celebration pop all start without a separate sound prompt, and the
-applause alone runs 5.6 s, so Phase 3 requirement 2 and WCAG 2.2 SC 1.4.2 (Audio Control) both need a
-control the visitor can reach. The repair is confined to the reveal's own sound.
+The audit's one open question was whether the automatic 5.6 s applause needs an in-app mute control
+(WCAG 2.2 SC 1.4.2). The first revision of this PR added a 44 px toggle. **The owner then decided the
+reveal should keep its automatic sound and offer no in-app mute button**, so that control was removed in
+this same PR: the device's own volume and mute remain the way to silence it.
 
-- `app/lib/audio.js` — one module-level reveal mute flag with `setRevealAudioMuted(muted)` /
-  `isRevealAudioMuted()`. Muting stops the reveal sparkle, applause and celebration pop immediately;
-  the sparkle and the applause then refuse to start, and the applause cue is consumed while muted so a
-  decode that finishes after the mute cannot start late. The preference belongs to the page session,
-  survives closing and reopening, and never touches Crystal Ball or the homepage.
-- `app/lucky-reveal-popup.js` — a 44x44 toggle in the first content row, clear of the pinned close
-  button, with `aria-pressed`, an action-naming `aria-label`, a speaker / speaker-off icon, matching
-  hover treatment and no motion under reduced motion.
-- `app/lucky-reveal-celebration.jsx` — consults the same flag before playing the confetti pop. The
-  burst, leaves and golden pulses are never conditional on sound.
-- `__tests__/reveal-audio-mute.test.js` (new) — drives the real module with a controllable Howl: state
-  reporting, silence while muted, immediate stop on mute, a decode completing after the mute, and the
-  preference surviving a new session.
-- `__tests__/lucky-reveal-phase3.test.js` — four source guards for the control, its wiring, the mute
-  path and the celebration gate.
-- `__tests__/components/LuckyRevealCelebration.test.jsx` — supplies the new module export in its audio
-  mock.
-- `artifacts/reveal-phase3-audit-probe.cjs` (new) — the eight-scenario audit probe. Its generated JSON
-  stays local (like the Phase 3 probe) and is not committed.
-- `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`,
-  `.specify/feature.json` — the Spec Kit artifacts for this cycle (reused feature directory, no new
-  one), plus this summary and the Memory Bank note.
+- `app/lib/audio.js`, `app/lucky-reveal-popup.js`, `app/lucky-reveal-celebration.jsx` — **identical to the
+  task base commit**: no mute flag, setter/getter, toggle, icon, pressed state, CSS rule or gate in the
+  sparkle, applause or pop. Automatic playback is the only path.
+- `__tests__/reveal-audio-mute.test.js` — deleted (the behaviour no longer exists).
+- `__tests__/lucky-reveal-phase3.test.js` — the mute guards are replaced with four checks: the panel ships
+  no toggle/state/icon, the audio module holds no mute state, every cue is called unconditionally, and
+  reduced motion plus the close-session cleanup are intact.
+- `__tests__/components/LuckyRevealCelebration.test.jsx` — the mute export is gone from its audio mock.
+- `artifacts/reveal-phase3-audit-probe.cjs` (new) — eight-scenario audit that also asserts the panel shows
+  no mute control and that the sparkle, pop and applause each play once automatically. Its generated JSON
+  stays local and is not committed.
+- `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`, `.specify/feature.json`,
+  `PR_SUMMARY.md`, `memory-bank/activeContext.md` — Spec Kit, summary and Memory Bank records, updated to
+  the final implementation.
 
-Not changed: assets, CSS keyframes, number generation, artwork, copy, prices, payments, gift email,
-API routes, database, Crystal Ball, Little Luck Map and deployment configuration.
+Not changed: sound assets and their bytes, volumes, mix, cue order or timing; artwork, keyframes, copy,
+number generation, sharing, prices, payments, gift email, API routes, database, Crystal Ball, Little Luck
+Map and deployment configuration.
 
 ## Spec Kit stages
 
 | Stage | Result | Artifact |
 |---|---|---|
 | Specify | Done | `specs/081-lucky-reveal-finish-and-media-capability/spec.md` — Phase 5, FR-030…FR-035, SC-012…SC-016 |
-| Plan | Done | `specs/081-lucky-reveal-finish-and-media-capability/plan.md` — Phase 5 approach |
+| Plan | Done | `specs/081-lucky-reveal-finish-and-media-capability/plan.md` — Phase 5 approach and decision record |
 | Tasks | Done | `specs/081-lucky-reveal-finish-and-media-capability/tasks.md` — Phase 12, T053…T061 |
 | Implement | Done | T053…T061 completed and marked `[x]` |
 
-## Documents consulted (manifest routing)
+## Reference documents
 
-No `.docs/` reference document was materially needed: the change uses the existing Howler patterns in
-`app/lib/audio.js`, existing React/CSS conventions and the repository's own Playwright setup.
-
-| Document | USED | USEFUL | Note |
-|---|---|---|---|
-| `/websites/mdn_web_audio` | NO | NO | Howler's HTML5 mode and the existing helpers already define the audio path; no Web Audio API change |
-| `/goldfire/howler.js` | NO | NO | The mute repair reuses the project's existing Howl `stop()`/`play()`/state pattern |
-| `/websites/developer_chrome` | NO | NO | Autoplay behaviour was reproduced by rejecting `play()` in the probe, not from docs |
-| `/websites/developer_apple_webkit` | NO | NO | No iOS-specific behaviour was changed |
-| `/websites/mdn_image_types` | NO | NO | No raster asset or format decision in this task (applause kept as the approved recording) |
-| `/microsoft/playwright` | NO | NO | The probe follows the repository's existing probe scripts |
-| `/vitest-dev/vitest` | NO | NO | New tests copy the existing hoisted Howl harness |
-| `/testing-library/react-testing-library` | NO | NO | Component test change is a one-line mock export |
-| `/dequelabs/axe-core` | NO | NO | Accessibility was checked with ARIA state and hit-testing, not an axe run |
-| `/google/eng-practices` | NO | NO | Governance rules in `AGENTS.md` already cover scope and verification |
-| Other routed sources (Next.js, React, Tailwind, Motion, GSAP, Lucide, Sonner, Magic UI, Sharp, WebP, web.dev images, Pillow, NumPy, GitHub docs, Zod, Sentry) | NO | NO | Unrelated to a reveal audio/layout audit |
+No `.docs/` document materially informed this task: it changes no audio API, asset format, framework or
+Playwright usage, and the work reuses the repository's own audio module, its existing reveal tests and its
+existing probe scripts. The manifest was consulted for routing only.
 
 ## Verification
 
 | Check | Result |
 |---|---|
-| Focused Vitest (`lucky-reveal-phase3`, `reveal-audio-mute`, `components/LuckyRevealCelebration`, `lucky-reveal-celebration`) | **PASS** 4 files / 55 tests |
-| Full `pnpm exec vitest run` | **PASS** 37 files / 385 tests |
+| Focused Vitest (`lucky-reveal-phase3`, `components/LuckyRevealCelebration`, `lucky-reveal-celebration`, `reveal-applause-retry`, `lucky-reveal-finish-phase2`, `lucky-reveal-confetti-phase1`) | **PASS** 6 files / 76 tests |
+| Full `pnpm exec vitest run` | **PASS** 36 files / 380 tests |
 | `pnpm exec tsc --noEmit` | **PASS** exit 0 |
-| `./freebuff-verify.sh` | **PASS** — "All verification steps passed" (Spec Kit gate, typecheck, production build, refresh-docs 19/19) |
-| Production build size | **PASS** `.next` 317,499,221 B / 302.8 MiB + `public` 32,840,043 B; combined 350,339,264 B / 334.1 MiB, below the 495 MB maximum |
-| Chromium audit probe (`artifacts/reveal-phase3-audit-probe.cjs`, production build) | **PASS** 156/156 checks over 8 scenarios |
+| `./freebuff-verify.sh` | **PASS** — "All verification steps passed" (Spec Kit gate, typecheck, production build, refresh-docs) |
+| Production build (`pnpm build`, `next build --webpack`) | **PASS** `.next` 317,148,866 B / 302.5 MiB + `public` 32,840,043 B; combined 349,988,909 B / 333.8 MiB, below the 495 MB maximum (a clean `.next` build measured 299,738,399 B / 285.9 MiB) |
+| Chromium audit probe (`artifacts/reveal-phase3-audit-probe.cjs`, production build) | **PASS** 144/144 checks over 8 scenarios |
 | `pnpm install --frozen-lockfile` | PASS (lockfile unchanged) |
 
-The verification gate was run with `SPEC_KIT_BASE_REF=9b43b1da`: this workspace's `origin/main` ref was
-stale at `a2c1222a` (PR #1676) while the branch starts at `9b43b1da` (PR #1699 merge), so the gate saw
-133 unrelated files and many feature directories. With the correct task base it verifies
-`specs/081-.../{spec,plan,tasks}.md` and passes. In CI the base ref resolves normally.
+The verification gate was run with `SPEC_KIT_BASE_REF=9b43b1da`: this workspace's `origin/main` ref is stale
+at `a2c1222a` (PR #1676) while the branch starts at `9b43b1da` (PR #1699 merge), so the gate saw 133
+unrelated files and many feature directories. With the correct task base it verifies the Phase 5/Phase 12
+artifacts and passes. In CI the base ref resolves normally.
 
 ## Remaining issues / not verified
 
 - **Physical Android device (Samsung) — NOT VERIFIED.** Mobile evidence is Chromium Android emulation
   (Pixel 7 UA, 412x915 and 390x844), not a real handset.
-- **Device-level mute and volume — NOT VERIFIED.** HTML5 media honours the OS mute/volume by design;
-  no hardware was available to demonstrate it.
-- **Audible playback and loudness — NOT VERIFIED.** The workspace has no audio output device; playback
-  was verified at the media-element/AudioBufferSource level, not by listening.
-- The applause asset stays the approved 493,964 B 16-bit WAV. Re-encoding it would shrink it, but it
-  would change an approved recording, so it is reported as measured overhead rather than altered.
+- **Device-level mute and volume — NOT VERIFIED.** HTML5 media honours the OS mute/volume by design; no
+  hardware was available to demonstrate it. With no in-app control this is the only way to silence the
+  reveal, as the owner decided.
+- **Audible playback and loudness — NOT VERIFIED.** The workspace has no audio output device; playback was
+  verified at the media-element level, not by listening.
+- The applause asset stays the approved 493,964 B 16-bit WAV. Re-encoding would shrink it, but it would
+  change an approved recording, so it is reported as measured overhead rather than altered.
 
 ## Behaviour preserved
 
-Sound assets, artwork, layout, copy, keyframes, number generation (6 → 1–49, 7 → 1–50), row layout,
-sharing ladder, close/Escape/autofocus, the gold map CTA, prices, Stripe checkout, gift email, Resend,
-database, API routes, authentication, `.docs/`, and the temporary FREE Preview switch are unchanged.
-The new control adds no sound, no request and no dependency.
+Sound assets and their bytes, volume (sparkle 0.28, pop 0.45, applause 0.55), mix, cue order (sparkle →
+pop → applause) and timing; the session-owned applause lifecycle and its single-play guarantee; blocked
+playback logged and never thrown; `prefers-reduced-motion` silence and static finish; close-session
+cleanup; artwork, layout, copy, number generation, sharing, prices, payments, gift email, API routes,
+database, Crystal Ball, Little Map and deployment configuration.
 
 ## Final diff audit
 
-Eight files modified and four added, all listed above; the complete diff was read before submission.
-No unrelated change, no formatting-only churn, no generated probe report, no secret.
+The final diff against task base `9b43b1da` holds the new audit probe, two test files, the three Spec Kit
+records, `.specify/feature.json`, `PR_SUMMARY.md` and the Memory Bank note; the three reveal modules are
+byte-identical to the base, and the interim mute test file never reaches the base so it leaves no trace. The
+complete diff was read, and a second error check (`grep` for leftover mute references, full suite,
+`tsc --noEmit`) found none. No unrelated change, no formatting-only churn, no generated probe report, no
+secret.
 
-**USEFUL RESULT: YES** — Phase 3 is implemented and verified to the extent this workspace allows, with
-the three device-level checks listed explicitly as unverified.
+**USEFUL RESULT: YES** — the requested outcome is implemented and verified to the extent this workspace
+allows, with the three device-level checks listed explicitly as unverified.

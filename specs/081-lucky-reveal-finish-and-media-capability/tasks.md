@@ -205,58 +205,57 @@
 
 ## Phase 12 — Reveal roadmap Phase 3 audit: reliability and performance (2026-11-03)
 
-- [x] T053 Establish the audit baseline: `pnpm install --frozen-lockfile`, full Vitest 36 files / 376
-  tests PASS, `pnpm exec tsc --noEmit` exit 0, and search the repository for any existing sound control
-  (none exists — the confirmed deficiency).
+- [x] T053 Establish the audit baseline: `pnpm install --frozen-lockfile`, full Vitest PASS,
+  `pnpm exec tsc --noEmit` exit 0, and search the repository for any existing sound control (none exists).
 - [x] T054 Audit the six and seven pick experiences on an Android-emulated Chromium phone (Pixel 7 UA,
-  412x915 and 390x844, Personal and Gift) with the new `artifacts/reveal-phase3-audit-probe.cjs`.
+  412x915 and 390x844, Personal and Gift) with `artifacts/reveal-phase3-audit-probe.cjs`.
 - [x] T055 Confirm the browser-autoplay path by rejecting every media `play()`, and confirm the
-  `prefers-reduced-motion: reduce` path paints no canvas and requests and plays no sound.
-- [x] T056 Confirm animation and sound cleanup after close: no dialog, canvas or celebration layer,
-  no media element playing, and no applause after the close.
+  `prefers-reduced-motion: reduce` path paints no canvas and plays no reveal cue.
+- [x] T056 Confirm animation and sound cleanup after close: no dialog, canvas or celebration layer, no
+  media element playing, and no applause after the close.
 - [x] T057 Measure the reveal's sound assets and confirm Howler is still one lazy-loaded dependency;
   record the bytes rather than re-encoding the approved applause recording.
-- [x] T058 Implement the confirmed deficiency: `setRevealAudioMuted`/`isRevealAudioMuted` in
-  `app/lib/audio.js`, the 44 px `aria-pressed` toggle in `app/lucky-reveal-popup.js`, and the
-  celebration-pop gate in `app/lucky-reveal-celebration.jsx`.
-- [x] T059 Add `__tests__/reveal-audio-mute.test.js` (module behaviour) and the control guards in
-  `__tests__/lucky-reveal-phase3.test.js`; supply the new export in the celebration component test's
-  audio mock.
-- [x] T060 Run focused and full Vitest, `tsc --noEmit`, `./freebuff-verify.sh`, and measure the
-  production build against the 495 MB hard maximum.
-- [x] T061 Audit the complete final diff, update the single PR summary, and leave the PR open and
-  unmerged.
+- [x] T058 Record the owner's decision that the reveal keeps automatic sound with no in-app mute control,
+  and remove the interim control: `app/lib/audio.js`, `app/lucky-reveal-popup.js` and
+  `app/lucky-reveal-celebration.jsx` are restored to their pre-audit state (no flag, toggle, icon or
+  muted branch).
+- [x] T059 Delete `__tests__/reveal-audio-mute.test.js` and replace its guards in
+  `__tests__/lucky-reveal-phase3.test.js` with checks that no mute control is shipped and every cue plays
+  automatically; drop the mute export from the celebration test's audio mock.
+- [x] T060 Update the audit probe to assert the absence of a mute control and the automatic playback of the
+  sparkle, pop and applause, then run focused and full Vitest, `tsc --noEmit`, `./freebuff-verify.sh` and
+  measure the production build against the 495 MB hard maximum.
+- [x] T061 Audit the complete final diff, update the single PR summary and title, and leave PR #1700 open
+  and unmerged.
 
 ### Phase 3 audit verification record
 
-- Focused Vitest (`lucky-reveal-phase3`, `reveal-audio-mute`, `components/LuckyRevealCelebration`,
-  `lucky-reveal-celebration`) — **PASS** 4 files / 55 tests.
-- Full `pnpm exec vitest run` — **PASS** 37 files / 385 tests.
-- `pnpm exec tsc --noEmit` — **PASS** exit 0 (baseline and post-implementation).
+- Focused Vitest (`lucky-reveal-phase3`, `components/LuckyRevealCelebration`, `lucky-reveal-celebration`,
+  `reveal-applause-retry`, `lucky-reveal-finish-phase2`, `lucky-reveal-confetti-phase1`) — **PASS**
+  6 files / 76 tests.
+- Full `pnpm exec vitest run` — **PASS** 36 files / 380 tests.
+- `pnpm exec tsc --noEmit` — **PASS** exit 0.
 - `./freebuff-verify.sh` — **PASS**, final line "All verification steps passed" (Spec Kit gate, type
-  check, production build, refresh-docs 19/19). Run with `SPEC_KIT_BASE_REF=9b43b1da` because this
-  workspace's `origin/main` ref is stale at `a2c1222a` (PR #1676) while the branch starts at
-  `9b43b1da` (PR #1699 merge); the stale ref made the gate see 133 unrelated files and multiple
-  feature directories.
-- Production build — **PASS** `.next` 317,499,221 bytes / 302.8 MiB, `public` 32,840,043 bytes;
-  combined 350,339,264 bytes / 334.1 MiB, below the 495 MB hard maximum.
+  check, production build, refresh-docs). Run with `SPEC_KIT_BASE_REF=9b43b1da` because this workspace's
+  `origin/main` ref is stale at `a2c1222a` (PR #1676) while the branch starts at `9b43b1da` (PR #1699
+  merge).
+- Production build (`pnpm build`, i.e. `next build --webpack`) — **PASS** `.next` 317,148,866 bytes /
+  302.5 MiB plus `public` 32,840,043 bytes; combined 349,988,909 bytes / 333.8 MiB, below the 495 MB hard
+  maximum. A clean `.next` build of the same tree measured 299,738,399 bytes / 285.9 MiB.
 - Chromium audit probe (`artifacts/reveal-phase3-audit-probe.cjs`) against the production build —
-  **PASS** 156/156 checks over eight scenarios: Android Pixel 7 UA at 412x915 (6 Personal, 7
-  Personal, 6 mute-before-cue, 6 mute-during-applause, 6 audio-blocked), Android 390x844 (7 Gift),
-  390x844 reduced motion, and desktop 1440x900 (7). Measured: 0 px page and panel horizontal
-  overflow in every run; panel 15..397 of 412 and 15..375 of 390; 44x44 sound control with
-  `aria-pressed` and "Mute reveal sound"/"Unmute reveal sound"; close and sound controls never
-  overlap and both hit-test to themselves; sharing actions 55–75 px tall, unclipped, non-overlapping;
-  applause exactly once per reveal with 197–314 painted leaf pixels at the cue; muting before the cue
-  produced 0 reveal cue plays afterwards while the golden pulses still ran; muting during the
-  applause paused it with 0 media elements left playing; four rejected `play()` calls (autoplay
-  blocked) produced 0 uncaught errors, 2 expected playback logs, painted leaves and the pulses, with
-  close and map usable; reduced motion painted no canvas (55 samples) and played 0 reveal cues;
-  closing removed the dialog, canvas and celebration layer with nothing playing and no late applause.
-- Sound assets the reveal requests (measured response bytes): `reveal-applause.wav` 493,964 (range
-  request), `confetti-pop.wav` 43,244, `chime-sound.mp3` 20,435; the UI `button-click.wav` 35,918 is a
-  separate user-initiated click. Howler remains the single lazy-loaded audio dependency; no new
-  dependency was added and no asset was re-encoded.
+  **PASS** 144/144 checks over eight scenarios: Android Pixel 7 UA at 412x915 (6 Personal, 7 Personal),
+  390x844 (7 Gift, 6 Gift), 412x915 with every `play()` blocked, 390x844 reduced motion, and desktop
+  1440x900 (7, 6). Measured: 0 pressed-state and 0 mute/sound-labelled controls in the panel in every run;
+  0 px page and panel horizontal overflow (panel 15..397 of 412, 15..375 of 390, 360..1080 of 1440);
+  sharing actions 55–75 px tall, unclipped and non-overlapping; the opening sparkle, the celebration pop
+  and the applause each played exactly once automatically in normal motion, with the applause on the
+  finishing cue; four rejected `play()` calls (autoplay blocked) produced 0 uncaught errors, no reveal
+  cue, painted leaves and the golden pulses with close and map usable; reduced motion painted no canvas
+  (55 samples) and played 0 reveal cue; closing removed the dialog, canvas and celebration layer with 0
+  media elements playing and no late applause.
+- Sound assets the reveal requests (measured response bytes): `reveal-applause.wav` 493,964,
+  `confetti-pop.wav` 43,244, `chime-sound.mp3` 20,435; the UI `button-click.wav` 35,918 is a separate
+  user-initiated click. Howler remains the single lazy-loaded audio dependency; no new dependency was
+  added and no asset was re-encoded.
 - **Not verified:** a physical Samsung/Android device (the runs use Chromium Android emulation), the
-  device-level mute and volume path, and audible playback/loudness (no audio output device in this
-  workspace). Those are reported as unverified, never as passed.
+  device-level mute and volume path, and audible playback/loudness (no audio output device here).

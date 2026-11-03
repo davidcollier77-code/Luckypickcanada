@@ -23,9 +23,6 @@ vi.mock('../../app/lib/audio', () => ({
   preloadConfettiPop: audio.preloadConfettiPop,
   playConfettiPop: audio.playConfettiPop,
   playButtonClick: vi.fn(),
-  // The reveal's mute control gates the confetti pop; these tests exercise the
-  // unmuted path unless a test overrides it.
-  isRevealAudioMuted: vi.fn(() => false),
 }));
 
 vi.mock('../../app/lib/mapleLeafConfetti', () => ({

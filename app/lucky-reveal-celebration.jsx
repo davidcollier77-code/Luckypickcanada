@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isRevealAudioMuted, playConfettiPop, preloadConfettiPop } from './lib/audio';
+import { playConfettiPop, preloadConfettiPop } from './lib/audio';
 import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/mapleLeafConfetti';
 
 // The reveal celebrates with the homepage's Explore Your Luck moment: the same
@@ -217,13 +217,9 @@ export default function LuckyRevealCelebration({
     setIsCelebrating(true);
 
     // Play in the same tick as the burst so the pop and the leaves start together.
-    // The reveal's mute control silences this cue as well; the visual finish is
-    // never conditional on sound.
-    if (!isRevealAudioMuted()) {
-      playConfettiPop().catch((error) => {
-        console.warn('Reveal confetti pop playback failed', error);
-      });
-    }
+    playConfettiPop().catch((error) => {
+      console.warn('Reveal confetti pop playback failed', error);
+    });
   }, []);
 
   // Create the particle instance against the canvas that is now inside the reveal

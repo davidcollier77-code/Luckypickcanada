@@ -6,7 +6,8 @@
  * through the site's own free Preview Reveal path, so no payment or email
  * happens. It records evidence for:
  *   - the 6 Pick and 7 Pick experiences on an Android-emulated phone,
- *   - the sound mute/unmute control (including muting before and during the cue),
+ *   - the automatic cue sequence (opening sparkle, celebration pop, applause) with no
+ *     in-app sound control,
  *   - a browser that blocks automatic audio playback,
  *   - `prefers-reduced-motion: reduce`,
  *   - animation and sound cleanup after the reveal closes,
@@ -39,11 +40,11 @@ const SCENARIOS = [
   { label: 'android-6-personal', picks: '6', delivery: 'Personal Reveal', android: true, viewport: { width: 412, height: 915 } },
   { label: 'android-7-personal', picks: '7', delivery: 'Personal Reveal', android: true, viewport: { width: 412, height: 915 } },
   { label: 'android-7-gift', picks: '7', delivery: 'Gift Reveal', android: true, viewport: { width: 390, height: 844 } },
-  { label: 'android-6-mute-before-cue', picks: '6', delivery: 'Personal Reveal', android: true, viewport: { width: 412, height: 915 }, mute: 'immediately' },
-  { label: 'android-6-mute-during-applause', picks: '6', delivery: 'Personal Reveal', android: true, viewport: { width: 412, height: 915 }, mute: 'after-cue' },
+  { label: 'android-6-gift', picks: '6', delivery: 'Gift Reveal', android: true, viewport: { width: 390, height: 844 } },
   { label: 'android-6-audio-blocked', picks: '6', delivery: 'Personal Reveal', android: true, viewport: { width: 412, height: 915 }, blockAudio: true },
   { label: 'mobile-6-reduced-motion', picks: '6', delivery: 'Personal Reveal', viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' },
   { label: 'desktop-7-geometry', picks: '7', delivery: 'Personal Reveal', viewport: { width: 1440, height: 900 } },
+  { label: 'desktop-6-geometry', picks: '6', delivery: 'Personal Reveal', viewport: { width: 1440, height: 900 } },
 ];
 
 const checks = [];
@@ -166,8 +167,25 @@ async function geometrySnapshot(page) {
     };
 
     const panel = document.querySelector('[role="dialog"]');
-    const sound = document.querySelector('.lucky-sound-btn');
     const close = document.querySelector('.lucky-close-btn-hover');
+    // The reveal must ship no sound control at all: no toggle class, no pressed
+    // state, and no button named for muting or for sound.
+    const soundControls = panel
+      ? [...panel.querySelectorAll('.lucky-sound-btn, [aria-pressed]')]
+      : [];
+    const soundNamedControls = panel
+      ? [...panel.querySelectorAll('button')].filter((button) =>
+          /mute|unmute|sound/i.test(
+            [
+              button.getAttribute('aria-label'),
+              button.getAttribute('title'),
+              (button.textContent || '').trim(),
+            ]
+              .filter(Boolean)
+              .join(' '),
+          ),
+        )
+      : [];
     const shareButtons = [...document.querySelectorAll('.share-lucky-option, .share-lucky-button-main')];
     const balls = [...document.querySelectorAll('.lucky-reveal-number')];
 
@@ -182,9 +200,9 @@ async function geometrySnapshot(page) {
       documentOverflowX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       panel: box(panel),
       panelScrollOverflowX: panel ? panel.scrollWidth - panel.clientWidth : null,
-      sound: { box: box(sound), hit: hit(sound) },
       close: { box: box(close), hit: hit(close) },
-      controlsOverlap: overlaps(box(sound), box(close)),
+      soundControlCount: soundControls.length,
+      soundNamedControlCount: soundNamedControls.length,
       shareRects,
       shareOverlaps: shareRects.some((entry, index) =>
         shareRects.some((other, otherIndex) => index < otherIndex && overlaps(entry.box, other.box)),
@@ -199,9 +217,6 @@ async function geometrySnapshot(page) {
             return rect.x < panelRect.x || rect.right > panelRect.right;
           })
         : true,
-      soundPressed: sound ? sound.getAttribute('aria-pressed') : null,
-      soundLabel: sound ? sound.getAttribute('aria-label') : null,
-      soundTitle: sound ? sound.getAttribute('title') : null,
     };
   });
 }
@@ -312,29 +327,17 @@ async function runScenario(browser, scenario) {
     `${numbers.length} balls`,
   );
 
-  // The mute control is the Phase 3 gap being verified: present, 44px, tappable,
-  // and semantically a pressed/unpressed toggle.
+  // The owner's decision: the reveal keeps its automatic sound and shows no mute
+  // control, so the panel must not contain one in any form.
   record(
-    `${scenario.label}: the sound control is visible with a 44px tap target`,
-    Boolean(layout.sound.box) && layout.sound.box.width >= 44 && layout.sound.box.height >= 44,
-    layout.sound.box ? `${layout.sound.box.width}x${layout.sound.box.height}px` : 'missing',
+    `${scenario.label}: the panel shows no sound mute control`,
+    layout.soundControlCount === 0 && layout.soundNamedControlCount === 0,
+    `${layout.soundControlCount} pressed-state control(s), ${layout.soundNamedControlCount} mute/sound-labelled button(s)`,
   );
   record(
-    `${scenario.label}: the sound control receives its own taps`,
-    layout.sound.hit.hit,
-    layout.sound.hit.detail,
-  );
-  record(
-    `${scenario.label}: the sound control is an unpressed, labelled toggle`,
-    layout.soundPressed === 'false' &&
-      layout.soundLabel === 'Mute reveal sound' &&
-      typeof layout.soundTitle === 'string',
-    `aria-pressed=${layout.soundPressed}, aria-label="${layout.soundLabel}", title="${layout.soundTitle}"`,
-  );
-  record(
-    `${scenario.label}: the close button is tappable and clear of the sound control`,
-    layout.close.hit.hit && !layout.controlsOverlap,
-    `close hit=${layout.close.hit.detail}, overlap=${layout.controlsOverlap}`,
+    `${scenario.label}: the close button is tappable`,
+    layout.close.hit.hit,
+    layout.close.hit.detail,
   );
 
   const visibleOptions = layout.shareRects.filter((entry) => entry.box);
@@ -348,31 +351,6 @@ async function runScenario(browser, scenario) {
     !layout.shareOverlaps && !layout.ballOverlaps,
     `shareOverlap=${layout.shareOverlaps}, ballOverlap=${layout.ballOverlaps}`,
   );
-
-  let mutedAt = null;
-  if (scenario.mute === 'immediately') {
-    // Mute once the celebration is running, before its finishing cue.
-    await page
-      .waitForFunction(() => Boolean(document.querySelector('.lucky-celebration-particle-canvas')), null, {
-        timeout: 25000,
-      })
-      .catch(() => {});
-    await page.getByRole('button', { name: 'Mute reveal sound' }).click();
-    const muted = await page.evaluate(() => {
-      const sound = document.querySelector('.lucky-sound-btn');
-      return {
-        pressed: sound?.getAttribute('aria-pressed'),
-        label: sound?.getAttribute('aria-label'),
-        at: performance.now(),
-      };
-    });
-    mutedAt = muted.at;
-    record(
-      `${scenario.label}: tapping the control reports the muted state`,
-      muted.pressed === 'true' && muted.label === 'Unmute reveal sound',
-      `aria-pressed=${muted.pressed}, aria-label="${muted.label}"`,
-    );
-  }
 
   const waitForFinishing = () =>
     page
@@ -392,28 +370,7 @@ async function runScenario(browser, scenario) {
       )
       .catch(() => {});
 
-  if (scenario.mute === 'after-cue') {
-    await waitForApplause();
-    const before = await page.evaluate(() => window.__media);
-    const beforeCount = summarise(before).applause.length;
-    await page.getByRole('button', { name: 'Mute reveal sound' }).click();
-    await page.waitForTimeout(700);
-    const after = await page.evaluate(() => ({
-      media: window.__media,
-      playing: [...document.querySelectorAll('audio')].filter((element) => !element.paused).length,
-    }));
-    record(
-      `${scenario.label}: muting during the applause stops it immediately`,
-      beforeCount === 1 &&
-        summarise(after.media).pauses.some((entry) => entry.src.includes('reveal-applause')) &&
-        after.playing === 0,
-      `${beforeCount} applause play(s), ${after.playing} media element(s) still playing`,
-    );
-    await waitForFinishing();
-  } else if (scenario.mute === 'immediately') {
-    await waitForFinishing();
-    await page.waitForTimeout(900);
-  } else if (scenario.reducedMotion) {
+  if (scenario.reducedMotion) {
     // The static finish and the pulses are both suppressed here, so give the
     // timeline the room the celebration would have used before measuring.
     await page.waitForTimeout(4000);
@@ -480,21 +437,14 @@ async function runScenario(browser, scenario) {
         Boolean(await page.getByRole('button', { name: /Little Luck Map/i }).isVisible()),
       'close and map button visible',
     );
-  } else if (scenario.mute === 'immediately') {
-    const playsAfterMute = timeline.revealCues.filter((entry) => entry.at > mutedAt);
-    record(
-      `${scenario.label}: no reveal cue plays after muting`,
-      playsAfterMute.length === 0,
-      `${playsAfterMute.length} reveal cue(s) after the mute (${timeline.revealCues.length} before it)`,
-    );
-    record(
-      `${scenario.label}: the muted reveal still finishes visually`,
-      await page.evaluate(() => Boolean(document.querySelector('.lucky-reveal-numbers--finishing'))),
-      'golden pulses ran while muted',
-    );
   } else {
     record(
-      `${scenario.label}: applause plays exactly once`,
+      `${scenario.label}: the opening sparkle and the celebration pop play automatically`,
+      timeline.sparkle.length === 1 && timeline.pop.length === 1,
+      `${timeline.sparkle.length} sparkle play(s), ${timeline.pop.length} pop play(s)`,
+    );
+    record(
+      `${scenario.label}: applause plays automatically and exactly once`,
       timeline.applause.length === 1,
       `${timeline.applause.length} applause play(s)`,
     );
@@ -560,6 +510,8 @@ async function runScenario(browser, scenario) {
     layout,
     timeline: {
       plays: timeline.plays,
+      sparkle: timeline.sparkle.length,
+      pop: timeline.pop.length,
       applause: timeline.applause.length,
       blocked: timeline.blocked.length,
       streams: captured.streams.length,

@@ -356,53 +356,55 @@ inside the tap handler before `navigator.share()`, so the transient user activat
 ## Phase 5 — Reveal roadmap Phase 3 audit: reliability and performance (2026-11-03)
 
 **Input:** Master Work Request #1, Phase 3 of the reveal roadmap (task groups `testing`, `audio`,
-`polishing`). Audit the shipped reveal against the eight Phase 3 requirements and repair only
-confirmed deficiencies; do not start Phase 4 and do not remove the temporary FREE Preview access.
+`polishing`). Audit the shipped reveal against the eight Phase 3 requirements, repair only confirmed
+deficiencies, and do not start Phase 4 or remove the temporary FREE Preview access.
+
+**Final owner decision (same task):** the reveal keeps its automatic sound and ships **no in-app mute
+button**. An interim mute control added during the audit was removed; the reveal's sound assets, volume,
+mix, timing and sequence are exactly the pre-audit behaviour.
 
 ### Verified baseline and audit findings
 
-- Six and seven picks render correctly in a Chromium Android-emulated phone and on desktop, and the
-  existing reveal behaviour (numbers, colour, day, sharing, close, map call to action) is intact.
-- The reveal's audio is the opening sparkle (`/sounds/chime-sound.mp3`), the celebration pop
-  (`/sounds/confetti-pop.wav`) and the recorded applause (`/sounds/reveal-applause.wav`, 5.6 s). All
-  three start without a separate sound prompt, and the applause alone runs longer than three seconds.
-- **Confirmed deficiency:** no sound mute/unmute control existed anywhere in the product
-  (`grep -rniE "mute|soundEnabled|audioEnabled|aria-pressed" app` matched only an unrelated map
-  filter). A visitor had no way to silence the reveal without muting the device, which fails Phase 3
-  requirement 2 and WCAG 2.2 SC 1.4.2 (Audio Control) for the automatic applause.
-- Everything else in the audit is a check to evidence, not a change: browser audio restrictions are
-  already handled without throwing, `prefers-reduced-motion` already removes the burst, the pulses
-  and every cue, and closing the reveal already ends the audio session and releases the canvas.
+- Six and seven picks render correctly in a Chromium Android-emulated phone, and the existing reveal
+  behaviour (numbers, colour, day, sharing, close, map call to action) is intact.
+- The reveal's audio is the opening sparkle (`/sounds/chime-sound.mp3`, volume 0.28), the celebration pop
+  (`/sounds/confetti-pop.wav`, volume 0.45) and the recorded applause
+  (`/sounds/reveal-applause.wav`, volume 0.55, 5.6 s). All three start automatically, in that order.
+- No sound control exists in the product (`grep -rniE "mute|soundEnabled|audioEnabled|aria-pressed" app`
+  matches only the unrelated Little Luck Map filter). The owner reviewed this and chose automatic reveal
+  sound with no in-app mute button; the device's own volume and mute controls remain the way to silence
+  it.
+- Everything else in the audit is evidence, not a change: browser-blocked playback is logged and never
+  thrown, `prefers-reduced-motion` removes the burst, the pulses and every cue, and closing the reveal
+  ends the audio session and releases the canvas.
 
 ### Requirements
 
-- **FR-030**: The reveal MUST offer a visible sound mute/unmute control from the moment it opens,
-  with a 44 px tap target, an accessible name that states the action, and a pressed state; it MUST
-  NOT cover the close control, the numbers, the copy or the sharing actions.
-- **FR-031**: Muting MUST stop the reveal's cues immediately, MUST prevent every later cue in that
-  reveal (including a decode that completes after the mute), and MUST NOT replay a cue that was
-  consumed while muted. Unmuting MUST restore the cues for the next reveal.
-- **FR-032**: The mute preference MUST belong to the page session, MUST survive closing and reopening
-  the reveal, and MUST NOT change Crystal Ball, the homepage or any payment, email or database path.
-- **FR-033**: The reveal MUST keep working when a browser blocks automatic playback: no thrown error,
-  no broken layout, and the visual finish, close control and map call to action stay usable.
-- **FR-034**: `prefers-reduced-motion: reduce` MUST still render no particle canvas, request and play
-  no reveal sound, and show the static finish; closing MUST remove the reveal, its canvas and its
-  layer, and leave no media element playing.
-- **FR-035**: The existing sound assets, share artwork, number generation, prices, payments, gift
-  email, API routes, database and deployment configuration MUST NOT change, and the production build
-  MUST stay below the 495 MB hard maximum.
+- **FR-030**: The reveal MUST ship no sound mute/unmute control, no mute state and no mute-specific audio
+  branch. Automatic playback MUST be the only reveal sound behaviour.
+- **FR-031**: The opening sparkle, the celebration pop and the finishing applause MUST keep their existing
+  assets, volumes, order and timing, and MUST each start without a user sound prompt in normal-motion
+  mode.
+- **FR-032**: The reveal MUST keep working when a browser blocks automatic playback: no thrown error, no
+  broken layout, and the visual finish, close control and map call to action stay usable.
+- **FR-033**: `prefers-reduced-motion: reduce` MUST still render no particle canvas, request and play no
+  reveal sound, and show the static finish.
+- **FR-034**: Closing MUST remove the reveal, its canvas and its celebration layer, stop every reveal cue
+  and leave no media element playing; a decode that finishes after the close MUST NOT start sound.
+- **FR-035**: Sound assets, share artwork, number generation, prices, payments, gift email, API routes,
+  database and deployment configuration MUST NOT change, and the production build MUST stay below the
+  495 MB hard maximum.
 
 ### Success criteria
 
 - **SC-012**: An Android-emulated Chromium run of both games (six and seven picks) shows the stored
-  numbers in range and unique, with no horizontal overflow, no clipped sharing control and no
-  overlapping controls or number balls.
-- **SC-013**: The mute control reports `aria-pressed` and its label correctly, silences the applause
-  when tapped before the cue, and pauses it when tapped during playback, with no later replay.
-- **SC-014**: With every `play()` rejected by an autoplay policy, the reveal records the rejected
-  attempts, shows no page error, and still completes the visual celebration.
+  numbers in range and unique, with no horizontal overflow, no clipped sharing control and no overlapping
+  number balls.
+- **SC-013**: The panel contains no mute control (no toggle, pressed state or sound-named button), and the
+  sparkle, pop and applause each play exactly once, automatically, in normal motion.
+- **SC-014**: With every `play()` rejected by an autoplay policy, the reveal records the rejected attempts,
+  shows no page error, and still completes the visual celebration.
 - **SC-015**: The full Vitest suite, `tsc --noEmit` and `./freebuff-verify.sh` pass, and the measured
   production build stays below 495 MB.
-- **SC-016**: A physical Android device and audible playback remain reported as pending when no device
-  or audio output is available in the workspace.
+- **SC-016**: A physical Android device and audible playback remain reported as pending when no device or
+  audio output is available in the workspace.

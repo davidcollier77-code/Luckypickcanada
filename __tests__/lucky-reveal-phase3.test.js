@@ -358,60 +358,49 @@ describe('Lucky Pick and Lucky Pick Gift from six and seven numbers', () => {
   });
 });
 
-describe('Reveal sound mute and unmute control', () => {
-  const muteBlock = audioSource.slice(
-    audioSource.indexOf('let revealAudioMuted = false;'),
-    audioSource.indexOf('/*\n * Lucky Reveal applause.'),
-  );
-
-  it('shows an accessible on/off control for the reveal sound', () => {
-    // The control is present from the opening frame, not hidden behind sharing.
-    expect(popupSource).toContain('aria-pressed={isSoundMuted}');
-    expect(popupSource).toContain("'Mute reveal sound'");
-    expect(popupSource).toContain("'Unmute reveal sound'");
-    expect(popupSource).toContain('<SoundIcon muted={isSoundMuted} />');
-    expect(popupSource).toContain('onClick={toggleSound}');
-    expect(popupSource).toMatch(/const soundButtonStyle = \{\s*width: 44,\s*height: 44,/);
-    expect(popupSource).toContain('setRevealAudioMuted(!previousMuted)');
+describe('Reveal sound plays automatically with no in-app mute control', () => {
+  it('ships no sound toggle anywhere in the panel', () => {
+    // The owner's decision: the reveal keeps its automatic sound and offers no
+    // in-app mute button, so no control, state or icon may remain.
+    expect(popupSource).not.toContain('lucky-sound-btn');
+    expect(popupSource).not.toContain('SoundIcon');
+    expect(popupSource).not.toContain('toggleSound');
+    expect(popupSource).not.toContain('isSoundMuted');
+    expect(popupSource).not.toContain('setRevealAudioMuted');
+    expect(popupSource).not.toContain('isRevealAudioMuted');
+    expect(celebrationSource).not.toContain('isRevealAudioMuted');
   });
 
-  it('owns the mute state in the audio module, not in the panel', () => {
-    expect(audioSource).toContain('export function setRevealAudioMuted(muted)');
-    expect(audioSource).toContain('export function isRevealAudioMuted()');
-    expect(popupSource).toContain('useState(() => isRevealAudioMuted())');
-    // Muting stops whatever the reveal is already playing.
-    expect(muteBlock).toContain('audioCache.revealSparkle?.stop();');
-    expect(muteBlock).toContain('audioCache.revealApplause?.stop();');
-    expect(muteBlock).toContain('audioCache.confettiPop?.stop();');
+  it('keeps no mute-specific state in the audio module', () => {
+    expect(audioSource).not.toContain('revealAudioMuted');
+    expect(audioSource).not.toContain('setRevealAudioMuted');
+    expect(audioSource).not.toContain('isRevealAudioMuted');
   });
 
-  it('silences every reveal cue while muted, without changing the visual finish', () => {
-    const sparkleBlock = audioSource.slice(
-      audioSource.indexOf('export function playRevealSparkle()'),
-      audioSource.indexOf('/*\n * Lucky Reveal sound control.'),
-    );
-    expect(sparkleBlock).toContain('if (revealAudioMuted) return Promise.resolve();');
-
-    // The cue is consumed while muted, so unmuting cannot start it late.
-    expect(applauseBlock).toContain('if (revealAudioMuted) return Promise.resolve(false);');
-    expect(applauseBlock).toContain('if (revealAudioMuted) return false;');
+  it('starts the opening sparkle, the celebration pop and the applause on its own', () => {
+    // Every cue is called unconditionally at its own step, with no gate in front.
+    expect(popupSource).toContain('playRevealSparkle()');
+    expect(popupSource).toContain('playRevealApplause(sessionId)');
+    expect(celebrationSource).toContain('playConfettiPop()');
 
     const launchBlock = celebrationSource.slice(
       celebrationSource.indexOf('const launch = useCallback'),
       celebrationSource.indexOf('// Create the particle instance'),
     );
-    expect(launchBlock).toContain('if (!isRevealAudioMuted()) {');
     expect(launchBlock).toContain('setIsCelebrating(true);');
-    expect(launchBlock.indexOf('setIsCelebrating(true);')).toBeLessThan(
-      launchBlock.indexOf('if (!isRevealAudioMuted()) {'),
-    );
+    expect(launchBlock).toContain('playConfettiPop().catch(');
+    expect(launchBlock).not.toMatch(/if \(/);
+
+    // The approved recordings, their volumes and the applause timing are unchanged.
+    expect(audioSource).toContain("const REVEAL_SPARKLE_URL = '/sounds/chime-sound.mp3';");
+    expect(audioSource).toContain("const REVEAL_APPLAUSE_URL = '/sounds/reveal-applause.wav';");
+    expect(audioSource).toContain('const REVEAL_APPLAUSE_VOLUME = 0.55;');
+    expect(audioSource).toMatch(/preload: true,\s*\}\);\s*sound\.on\('playerror'/);
   });
 
-  it('keeps the mute control out of the paid, sharing and reduced-motion behaviour', () => {
-    // Reduced motion is silent in both states; the control does not add sound there.
-    expect(popupSource).toContain('onClick={toggleSound}');
-    // No payment, generation, or unrelated audio helper is wired to the control.
-    expect(muteBlock).not.toContain('crystalBall');
-    expect(muteBlock).not.toContain('playButtonClick');
+  it('keeps reduced motion silent and the close-session cleanup intact', () => {
+    expect(popupSource).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    expect(popupSource).toContain('endRevealAudioSession()');
+    expect(celebrationSource).toContain('prefersReducedMotion');
   });
 });
