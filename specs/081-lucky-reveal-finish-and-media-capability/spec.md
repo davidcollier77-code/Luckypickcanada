@@ -325,3 +325,30 @@ inside the tap handler before `navigator.share()`, so the transient user activat
 - **SC-011**: The full Vitest suite, `tsc --noEmit` and `./freebuff-verify.sh` pass, the production
   build is measured below 495 MB, and a real Android device check is reported as pending if no device
   is available.
+
+## Phase 4 — PR #1692 review repair (2026-11-03)
+
+**Input:** the review findings on PR #1692 at head `a23d975f`, plus the follow-up commit `f29a544b`.
+
+**Verified findings**
+
+- DevSkim reported 38 new annotations on the PR head: one DS137138 warning on
+  `__tests__/lucky-reveal-phase3.test.js:286`, one DS172411 notice on the share-image warmup timer in
+  `app/share-lucky-pick-button.js:171`, and 36 DS162092 notices on loopback addresses inside the
+  committed `artifacts/reveal-phase3/report.json`. All 38 were fetched from the check-run annotations
+  and matched to source; none indicates attacker-controlled input, weak cryptography, or a shipped
+  insecure request.
+- Amazon Q's confirmed finding was real: `playRevealApplause` marked the session as requested before
+  the load completed, so a rejected preload left the guard set and every later call for that open
+  session was dropped. The `/q` commit reset the guard in the catch block, but had no test and had
+  not been exercised locally.
+
+**Requirements**
+
+- FR-025: a failed applause decode must be retryable within the still-open reveal session, and the
+  successful retry must still play exactly once.
+- FR-026: ending the session before a late decode completes must still prevent playback.
+- FR-027: generated local probe output must not be committed when it embeds loopback origins.
+- FR-028: scanner findings that are genuine false positives must be documented at the exact line;
+  scanner rules, allowlists, and workflow coverage must not be widened.
+- FR-029: the recorded applause, lifecycle, sharing, artwork and unrelated behaviour must not change.

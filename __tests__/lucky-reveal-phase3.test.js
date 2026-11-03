@@ -127,6 +127,18 @@ describe('One applause cue, once per reveal session', () => {
     expect(audioSource).toContain('sound.stop();');
   });
 
+  it('lets the same session retry after a load failure, but never replays', () => {
+    const catchBlock = applauseBlock.slice(
+      applauseBlock.indexOf("console.warn('Reveal applause unavailable'"),
+    );
+    expect(catchBlock).toContain(
+      'if (applauseRequestedSessionId === sessionId) applauseRequestedSessionId = null;',
+    );
+    expect(catchBlock.indexOf('applauseRequestedSessionId = null')).toBeLessThan(
+      catchBlock.indexOf('return false;'),
+    );
+  });
+
   it('never leaves a delayed stop timer behind', () => {
     expect(applauseBlock).not.toContain('setTimeout');
     expect(applauseBlock).not.toMatch(/\bfade\(/);
@@ -283,6 +295,8 @@ describe('Share link safety', () => {
       'https://luckypickcanada.ca/reveal/abc?session_id=cs_test_123',
       'https://luckypickcanada.ca/reveal/abc#cs_test_123',
       'https://evil.example/reveal/abc',
+      // Negative fixture only: proves an insecure URL is rejected, never fetched.
+      // DevSkim: ignore DS137138
       'http://luckypickcanada.ca/reveal/abc',
       'javascript:alert(1)',
       'not a url',

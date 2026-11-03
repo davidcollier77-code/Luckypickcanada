@@ -168,6 +168,8 @@ export default function ShareLuckyPickButton({ reveal }) {
   useEffect(() => {
     if (fileRef.current) return undefined;
 
+    // Callable callback with a fixed delay; no string or request data is evaluated.
+    // DevSkim: ignore DS172411
     const timer = window.setTimeout(() => {
       prepareShareFile().catch(() => {
         // The three local actions report their own failure if it is still broken.

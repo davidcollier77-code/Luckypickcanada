@@ -243,7 +243,8 @@ the leaves are still on screen and the timeout remains only a safety net.
   `public/sounds/reveal-glow-pulse*`, `public/sounds/reveal-finish-chime*`,
   `scripts/generate-reveal-glow-pulse.mjs`.
 - `__tests__/lucky-reveal-phase3.test.js` plus updated Phase 1/081/075 guards.
-- `artifacts/reveal-phase3-probe.cjs`, `artifacts/reveal-phase3/report.json`.
+- `artifacts/reveal-phase3-probe.cjs`; its JSON report is generated locally beside the probe and is not
+  committed, so local probe addresses never enter the repository.
 
 ### Risks
 
@@ -256,3 +257,23 @@ the leaves are still on screen and the timeout remains only a safety net.
 - Android's real share sheet still cannot be opened in this workspace; the Web Share contract,
   activation timing and single-attempt behaviour are measured in Chromium with a stubbed panel, and
   physical-device confirmation remains pending.
+
+## Phase 4 — Review repair for PR #1692 (2026-11-03)
+
+1. **Keep the landed retry fix and prove it.** The `/q` commit `f29a544b` clears
+   `applauseRequestedSessionId` when `preloadRevealApplause()` rejects. A new jsdom test drives the
+   real module with a controllable Howl: the first decode fails, the retry in the same session
+   creates a second Howl, receives `load`, plays once, and a third call is still ignored. A second
+   case ends the session before the load completes and asserts nothing plays.
+2. **Stop committing the generated probe report.** `artifacts/reveal-phase3/report.json` was 894 lines
+   of machine output containing the loopback probe origin on 36 lines, which produced 36 DevSkim
+   DS162092 notices. The probe still writes the report locally for evidence; it is removed from the
+   diff. Probe results stay summarised in the task record and PR body.
+3. **Two exact false positives, documented inline instead of suppressed globally.** The DS137138
+   warning points at the intentional `http://` negative fixture in the share-link test (never
+   fetched), and the DS172411 notice points at the warmup timer's callable arrow callback with a
+   fixed delay (no string evaluation). Each receives a one-line `DevSkim: ignore` plus a reason; no
+   allowlist, workflow, or scanner configuration is widened.
+4. **Re-verify on the pushed head.** Focused and full Vitest, `tsc --noEmit`, DevSkim suppression
+   unit tests and real-SARIF replay, `./freebuff-verify.sh`, measured build, final diff audit, then
+   the DevSkim check annotations for the new head and an independent re-review.

@@ -160,8 +160,8 @@
 - `./freebuff-verify.sh` — **PASS** (Spec Kit gate, typecheck, production build, refresh-docs 19/19;
   final line "All verification steps passed").
 - Production build `.next` — **PASS** 340,354,762 bytes / 343 MB, below the 495 MB hard maximum.
-- Phase 3 Chromium probe (`artifacts/reveal-phase3-probe.cjs`, report in
-  `artifacts/reveal-phase3/report.json`) against the production build — **PASS** 61/61 checks over six
+- Phase 3 Chromium probe (`artifacts/reveal-phase3-probe.cjs`; the JSON report it writes is generated
+  locally and is not committed) against the production build — **PASS** 61/61 checks over six
   runs: desktop 6 Personal, desktop 7 Gift, mobile 7 Personal (cancel), mobile 6 Gift without Web
   Share, mobile 7 Personal (share failure), desktop 6 with a 6 s delayed applause load and an early
   close. Measured: applause requested once per reveal, only after all 6 or 7 numbers were visible and
@@ -174,3 +174,31 @@
 - **Not verified:** a physical Samsung/Android device share sheet (no device in this workspace) and
   audible playback/loudness (no audio output device). Both must be confirmed on real hardware before
   the share repair is called device-verified.
+
+## Phase 11 — PR #1692 review repair (2026-11-03)
+
+- [x] T047 Fetch and verify every DevSkim annotation on the PR head; classify each against its source.
+- [x] T048 Recheck and keep the Amazon Q audio retry fix; add a behavioural regression test for a
+  failed decode followed by a successful same-session retry and for a close before a late decode.
+- [x] T049 Remove the generated `artifacts/reveal-phase3/report.json` that produced 36 loopback
+  notices, keeping the probe script and local report generation.
+- [x] T050 Document the DS137138 negative-fixture and DS172411 callable-timer false positives inline
+  at their exact lines without widening any scanner allowlist.
+- [x] T051 Re-run focused and full Vitest, `tsc --noEmit`, the DevSkim suppression tests and
+  real-SARIF replay, `./freebuff-verify.sh`, and measure the production build.
+- [ ] T052 Inspect the complete diff, update the single PR body, request an independent re-review, and
+  leave the PR open and unmerged.
+
+### Phase 4 verification record
+
+- Focused Vitest (`reveal-applause-retry`, `lucky-reveal-phase3`) — **PASS** 2 files / 30 tests.
+- Full `vitest run` — **PASS** 36 files / 376 tests.
+- `tsc --noEmit` — **PASS** exit 0.
+- DevSkim suppression unit tests — **PASS** 70 tests OK.
+- DevSkim real-SARIF replay — **NOT RUN locally**: the replay requires the scanner's
+  `devskim-alerts.sarif`, which only the CI DevSkim job produces; the job runs the same replay.
+- `./freebuff-verify.sh` — **PASS**, final line "All verification steps passed".
+- Production build — **PASS** `.next` 342,207,481 bytes / 326.35 MiB, `public` 32,840,043 bytes;
+  combined 375,047,524 bytes, below the 495 MB hard maximum.
+- DevSkim on the new head, the independent re-review, and the real-device checks remain to be recorded
+  in the PR body.

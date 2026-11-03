@@ -1,3 +1,26 @@
+# Active Context — Lucky Reveal PR #1692 Review Repair (2026-11-03)
+
+- **Task groups:** `troubleshooting` + `security` + `audio` + `testing`; same branch
+  `fix/reveal-applause-share-20261103` and same PR #1692, left open and unmerged. Reused `specs/081`
+  (Phase 4 sections); no duplicate feature directory.
+- **Amazon Q finding — real and now tested.** `playRevealApplause` set `applauseRequestedSessionId`
+  before the decode completed, so a rejected preload left the guard set and every later cue for that
+  open reveal was dropped. Commit `f29a544b` (owner `/q` request) clears the guard in the catch. New
+  `__tests__/reveal-applause-retry.test.js` drives the real module with a controllable Howl: first
+  decode fails, retry creates a second Howl, `load` then plays once, a third call stays ignored; a
+  second case ends the session before `load` and asserts no playback.
+- **DevSkim — all 38 annotations classified.** 1 DS137138 warning was the intentional `http://`
+  negative fixture in the share-link test (never fetched); 1 DS172411 notice was the warmup timer's
+  callable arrow with a fixed delay; 36 DS162092 notices were loopback addresses inside the committed
+  generated `artifacts/reveal-phase3/report.json`. The report is no longer committed (the probe still
+  writes it locally), and each genuine false positive now has a one-line `DevSkim: ignore` with a
+  reason. No scanner allowlist, rule, or workflow was widened.
+- **Verification:** focused 2 files / 30 tests PASS; full 36 files / 376 tests PASS; `tsc --noEmit`
+  exit 0; DevSkim suppression unit tests 70 PASS; `./freebuff-verify.sh` PASS; `.next` 342,207,481 B /
+  326.35 MiB (combined with public 375,047,524 B). DevSkim real-SARIF replay is CI-only.
+- **Pending:** DevSkim annotations on the new pushed head, independent re-review, physical
+  Samsung/Android share sheet, and audible playback.
+
 # Active Context — Lucky Reveal Phase 3 (2026-11-03)
 
 - **Task groups:** `audio` + `polishing` + `testing`; branch `fix/reveal-applause-share-20261103`; one PR, open and unmerged. Reused `specs/081-lucky-reveal-finish-and-media-capability` (Phase 3 sections); no duplicate feature directory.
