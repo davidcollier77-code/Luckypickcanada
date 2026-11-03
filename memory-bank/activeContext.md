@@ -1,3 +1,29 @@
+# Active Context — Gift Email Test Tool (2026-11-03)
+
+- **Task groups:** `creation` + `testing` + `security`; branch `freebuff/e6b5a381045c337886e3bec8`.
+  New feature `specs/085-gift-email-test-tool`; no earlier feature covered gift-email testing, so the
+  existing 072 preview and 084 counter artifacts were not reused for this task.
+- **Implementation:** `/test-tools/gift-email` is a server-rendered page with a client form (recipient
+  email, recipient name, sender name, optional message, 6 Pick / 7 Pick). It posts JSON to
+  `POST /api/test-tools/gift-email`, which bypasses only the Stripe payment step: it reuses
+  `createGiftReveal()` and `sendGiftEmail()` from `app/gift-email.js`, so the generated reveal and the
+  Resend request are the paid Gift Edition's own. `GIFT_EMAIL_TEST_MODE` is the on/off switch; the route
+  rejects cross-site Origins (checking Host, `x-forwarded-host` and the internal URL), is rate-limited
+  to five sends per hour per address, returns no-store JSON, and reads `RESEND_API_KEY` /
+  `GIFT_FROM_EMAIL` only on the server. No secret or provider response body reaches the browser. The
+  existing `/api/admin/test-gift-email` endpoint and its `GIFT_TEST_SECRET` are untouched. No checkout,
+  Stripe, price, webhook, gift-delivery, reveal-paywall or dependency file was changed.
+- **Verification:** focused 10 tests PASS; full `pnpm exec vitest run` 38 files / 409 tests PASS;
+  `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, production
+  build, refresh-docs 19/19); production build 343,097,481 B / 327.2 MiB (< 495 MB); production smoke
+  on port 3100: page HTTP 200 with the form and `robots: noindex, nofollow`, same-origin POST 503 with
+  the expected missing-configuration message, foreign-Origin POST 403. The smoke test caught and fixed
+  an Origin check that compared only the handler's internal URL.
+- **Not verified:** a real Resend delivery — this workspace has no `RESEND_API_KEY` or `GIFT_FROM_EMAIL`
+  and the task forbids entering keys. No test email was sent; PR-head CI is pending.
+
+---
+
 # Active Context — Paid Lucky Reveal Counter and Popup Map CTA Removal (2026-11-03)
 
 - **Task groups:** `creation` + `polishing` + `testing`; branch `freebuff/7b6750b84aced857e5b48588`.

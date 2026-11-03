@@ -1,145 +1,126 @@
-# Paid Lucky Reveal counter and reveal-popup map CTA removal
+# Gift Email Test Tool
 
 ## Task and task groups
 
-**Task groups: `creation` + `polishing` + `testing`.**
+**Task groups: `creation` + `testing` + `security`.**
 
-- `creation` — the task adds a customer-facing feature (a persisted public counter and its read surface)
-  on top of the existing reveal products.
-- `polishing` — the counter is a new homepage visual that must feel like the existing premium neon-gold
-  design language, stay responsive and respect reduced motion.
-- `testing` — the counting rule is money-facing and must be proven by executed unit tests and browser
-  checks, not by source inspection alone.
+- `creation` — the task adds a new page and route that did not exist.
+- `testing` — the purpose is to prove that the gift reveal generates and that the gift email is sent,
+  so the work is backed by executed route tests and a production smoke test.
+- `security` — the tool deliberately skips payment while using live email credentials, so the
+  credential boundary, abuse limits and the untouched paid flow need explicit review.
 
-**Assigned task:** remove the "Add me to the Little Luck Map" button from the Lucky Reveal popup; replace
-the reserved empty homepage slot below the Lucky Reveal card and above the Tip Jar with a premium
-neon-gold counter reading "LUCKY REVEALS CREATED TO DATE", starting at zero; increase it once per
-successfully completed paid Personal Reveal (CAD $1.00) or Gift Reveal (CAD $1.99) purchase with duplicate
-counting prevented; preserve payment, gift-email, reveal and map functionality.
+**Assigned task:** create a simple webpage to test the Lucky Pick Canada gift email system. Allow entry
+of the recipient's email, recipient name, sender name, optional gift message, and selection of a 6- or
+7-number Lucky Pick. Allow the gift reveal test to bypass the payment requirement and send the actual gift
+email using the existing Resend configuration, without entering API keys or a separate test secret. Keep
+the regular Lucky Pick reveal paywall active and do not change the normal paid gift purchase process,
+Stripe products, prices or payment flow. Keep existing Resend credentials server-side.
 
 ## Reference documents reviewed
 
 | Document | USED | USEFUL | Explanation |
 |---|---|---|---|
-| `.docs/manifest.json` | YES | YES | Routed the `creation`, `polishing` and `testing` groups. Used as an index only. |
-| `.docs/creation/_google_eng-practices.md` | NO | NO | The change reuses existing repository patterns; no review-practice guidance was needed. |
-| `.docs/polishing/_google_eng-practices.md` | NO | NO | Styling follows the repository's own theme CSS; not consulted. |
-| `.docs/testing/_google_eng-practices.md` | NO | NO | Tests reuse the repository's Vitest and Playwright conventions; not consulted. |
-| Next.js `/vercel/next.js` snapshot | NO | NO | No new framework API was introduced; the route handler and client component follow existing files. |
-| Tailwind `/websites/tailwindcss` snapshot | NO | NO | The counter uses the existing theme stylesheet rather than new utility classes. |
-| Playwright `/microsoft/playwright` snapshot | NO | NO | The existing `playwright.config.ts` projects and spec patterns were reused unchanged. |
-| Vitest `/vitest-dev/vitest` snapshot | NO | NO | The existing suite and mock patterns were reused. |
-| MDN image types `/websites/mdn_image_types` | NO | NO | No raster asset was added, converted or served, so the image-format rule does not apply. |
+| `.docs/manifest.json` | YES | YES | Routed the `creation`, `testing` and `security` groups and their reference sets. |
+| `.docs/security/_resend_resend-node.md` | YES | NO | Confirmed the existing server-side Resend key and verified-sender model. The repository's `sendGiftEmail()` was reused unchanged, so no implementation decision came from it. |
+| `.docs/security/_google_eng-practices.md` | NO | NO | The change follows existing repository patterns; no review-practice guidance was needed. |
+| `.docs/creation/_google_eng-practices.md` | NO | NO | No new design guidance was needed for a small internal form. |
+| `.docs/testing/_google_eng-practices.md` | NO | NO | Tests reuse the repository's existing Vitest mocking patterns. |
+| Next.js `/vercel/next.js` snapshot | NO | NO | The page and route handler follow existing App Router files already in the repository. |
+| Vitest `/vitest-dev/vitest` snapshot | NO | NO | The focused suite follows the existing `__tests__` conventions. |
+| Playwright `/microsoft/playwright` snapshot | NO | NO | No browser automation was used; the production smoke test used HTTP requests. |
+| Tailwind `/websites/tailwindcss` snapshot | NO | NO | The page uses utility classes already covered by the existing Tailwind configuration. |
+| MDN image types `/websites/mdn_image_types` | NO | NO | No image asset was added or changed. |
 
 ## What was implemented
 
-- **New tally store** — `lucky_reveal_tally(session_id UNIQUE, reveal_type, created_at)` is created by the
-  existing `initializeDatabase()`. One row per paid reveal, `reveal_type` constrained to `lucky_pick` /
-  `gift_package`, so the total is the row count and a fresh table is the requested zero, with no historical
-  backfill.
-- **New `app/lucky-reveal-tally.js`** — `recordLuckyRevealCreated()` performs one atomic
-  `INSERT … ON CONFLICT (session_id) DO NOTHING RETURNING id`, so a repeated webhook, a reload or a retried
-  verification cannot double count; `getLuckyRevealCount()` returns the count and clamps missing,
-  malformed, negative or failed reads to 0. Neither function throws to its caller.
-- **Recording points** — `/api/verify-session` records a server-verified paid reveal session;
-  `/api/gift-delivery` records a paid gift session before the existing delivery/redirect work;
-  `/api/stripe-webhook` records a paid `checkout.session.completed` for either reveal product before the
-  existing gift-email branch, which is the only signal that also sees a purchase completed in a closed
-  tab. Tips, free previews, unpaid or cancelled sessions never reach a recording call.
-- **Read surface** — new `GET /api/lucky-reveals-count` returns `{ total }` with
-  `Cache-Control: no-store, max-age=0`; it never writes.
-- **Homepage counter** — new `app/homepage/LuckyRevealsCounter.js` starts at 0, shows the exact label
-  "LUCKY REVEALS CREATED TO DATE" and reads the real total once. It replaces the reserved zero-height
-  `#lucky-map` slot in `app/homepage/HomePage.js`, directly between the reveal section and the Tip Jar.
-- **Premium neon-gold styling** — `themes/default/homepage.css` replaces `.homepage-map-slot` with a
-  gold-bordered, layered-glow plaque, a gold-gradient number and a slow sheen, with a
-  `prefers-reduced-motion` guard. No new dependency, font or image.
-- **Popup removal** — `app/lucky-reveal-popup.js` no longer renders the "Add me to the Little Luck Map"
-  button, its unused `playButtonClick` import or its `.lucky-map-button-enhanced` styles. Reveal content,
-  numbers, colour/day cards, sharing, close/Escape, sound, celebration and layout are unchanged.
+- **Test page** — `/test-tools/gift-email` renders a simple form for recipient email, recipient name,
+  optional sender name, optional gift message, and a 6 Pick / 7 Pick choice. It is excluded from search
+  indexing, states what is and is not sent, and shows the delivery result plus the generated numbers,
+  game name, lucky colour and lucky day.
+- **Payment-bypassing test route** — `POST /api/test-tools/gift-email` reuses `createGiftReveal()` and
+  `sendGiftEmail()` from `app/gift-email.js`. It creates no Stripe Checkout session and takes no payment;
+  the generated reveal and the Resend request are the paid Gift Edition's own.
+- **No test secret** — the route needs no `GIFT_TEST_SECRET` and no key entered in the browser. The
+  existing `/api/admin/test-gift-email` endpoint and its secret check are untouched.
+- **Server-side credentials** — `RESEND_API_KEY` and `GIFT_FROM_EMAIL` are read only in the route. The
+  browser receives neither credential nor the raw provider response.
+- **Abuse and safety boundary** — a `GIFT_EMAIL_TEST_MODE` switch (default `true`) turns the page and
+  route off; the route rejects foreign-Origin requests, limits sends to five per hour per address with
+  the existing rate limiter, validates the email, and applies the paid checkout's 80/80/500-character
+  limits. Responses are `Cache-Control: no-store`.
+- **Preserved paid flow** — no checkout, Stripe product/price, webhook, paid gift-delivery, reveal
+  paywall, database or dependency file was modified.
 
-### Files changed
+## Files changed
 
-New:
+- Added `app/test-tools/gift-email/page.js`
+- Added `app/test-tools/gift-email/GiftEmailTestForm.jsx`
+- Added `app/test-tools/gift-email/giftEmailTestConfig.js`
+- Added `app/test-tools/gift-email/README.md`
+- Added `app/api/test-tools/gift-email/route.js`
+- Added `__tests__/gift-email-test-tool.test.js`
+- Added `specs/085-gift-email-test-tool/spec.md`, `plan.md`, `tasks.md`
+- Updated `.specify/feature.json`
+- Updated `memory-bank/activeContext.md`
+- Updated `PR_SUMMARY.md`
 
-- `app/lucky-reveal-tally.js`
-- `app/api/lucky-reveals-count/route.js`
-- `app/homepage/LuckyRevealsCounter.js`
-- `__tests__/lucky-reveal-counter.test.js`
-- `artifacts/lucky-reveal-counter-probe.cjs` (reusable browser probe; generated output not committed)
-- `specs/084-lucky-reveal-counter/{spec,plan,tasks,data-model}.md`,
-  `specs/084-lucky-reveal-counter/checklists/requirements.md`,
-  `specs/084-lucky-reveal-counter/contracts/lucky-reveals-count.md`
+## Spec Kit stages and artifacts
 
-Modified:
+Completed in order, with one feature directory and no duplicate:
 
-- `app/lib/db-init.js`, `app/api/verify-session/route.ts`, `app/api/gift-delivery/route.js`,
-  `app/api/stripe-webhook/route.js`
-- `app/homepage/HomePage.js`, `app/lucky-reveal-popup.js`, `themes/default/homepage.css`
-- `__tests__/lucky-reveal-background.test.js`, `__tests__/lucky-reveal-polish.test.js`,
-  `__tests__/security-payment.test.js`, `__tests__/lucky-reveal-persistence.test.js`
-- `tests/visual/lucky-reveal-selection.spec.ts`
-- `.specify/feature.json`, `PR_SUMMARY.md`, `memory-bank/activeContext.md`
+- **Specify** — `specs/085-gift-email-test-tool/spec.md`
+- **Plan** — `specs/085-gift-email-test-tool/plan.md` (no `data-model.md` or `contracts/` was warranted:
+  no persisted entity or external contract is introduced beyond the route described in the plan)
+- **Tasks** — `specs/085-gift-email-test-tool/tasks.md`
+- **Implement** — all implementation tasks complete; the final diff, PR publication and CI task is
+  recorded in `tasks.md`.
 
-No file under `.docs/` was changed. No dependency or lockfile change. No environment, secret, payment
-price, API request/response shape or map file changed.
+`.specify/feature.json` now points at `specs/085-gift-email-test-tool`.
 
-## Spec Kit stages
+## Verification (actual commands and results)
 
-| Stage | Result | Artifact |
+| Check | Result | Evidence |
 |---|---|---|
-| Specify | Done | `specs/084-lucky-reveal-counter/spec.md` + `checklists/requirements.md` |
-| Plan | Done | `specs/084-lucky-reveal-counter/plan.md`, `data-model.md`, `contracts/lucky-reveals-count.md` |
-| Tasks | Done | `specs/084-lucky-reveal-counter/tasks.md` (T001…T019) |
-| Implement | Done | T001…T019 completed and marked `[x]` |
+| Focused suite | **PASS** | `pnpm exec vitest run __tests__/gift-email-test-tool.test.js` — 1 file, 10/10 tests passed. |
+| Full suite | **PASS** | `pnpm exec vitest run` — 38 test files, 409 tests passed, exit 0. |
+| TypeScript | **PASS** | `pnpm exec tsc --noEmit` — exit 0. |
+| Repository gate | **PASS** | `SPEC_KIT_BASE_REF=e6777fcaa1a50f523cc33e34da4288150e4a1485 ./freebuff-verify.sh` — exit 0: Spec Kit artifacts, typecheck, production build, refresh-docs 19/19. The explicit base is required because this workspace has no `origin/main` ref. |
+| Production build size | **PASS** | `.next` measured 343,097,481 B / 327.2 MiB, below the 495 MB hard maximum. |
+| Production page smoke | **PASS** | `next start` on port 3100: `/test-tools/gift-email` returned HTTP 200 with the form and `robots: noindex, nofollow`. |
+| Same-origin route wiring | **PASS** | Same-origin POST reached the handler and returned the expected 503 missing-configuration message (no Resend credentials in this workspace). |
+| Cross-site rejection | **PASS** | POST with `Origin: https://evil.example` returned 403. |
+| Real Resend delivery | **NOT RUN** | This workspace has no `RESEND_API_KEY` or `GIFT_FROM_EMAIL`, and the task forbids entering keys. No test email was sent. |
+| Browser form interaction | **NOT RUN** | No browser session was used; the page was verified by production HTTP smoke plus route tests, not by clicking the form. |
+| PR-head CI | **PENDING** | Not yet available until the branch is pushed. |
+| Owner review / merge | **PENDING** | The PR is intentionally left open and unmerged. |
 
-A new feature directory was correct here: feature 073 reserved an empty homepage map slot for a different,
-future purpose, and no existing artifact covers a paid-reveal counter. Nothing was duplicated.
+## Behavior preserved
 
-## Verification
+- The regular Lucky Pick reveal paywall and the free preview switch are unchanged.
+- Stripe Checkout, products, prices, `mode: 'payment'`, metadata and callbacks are unchanged.
+- The webhook, paid gift delivery, delivery lock/idempotency, database and environment handling are
+  unchanged.
+- The existing admin test endpoint still requires `GIFT_TEST_SECRET`.
+- No dependency, lockfile or deployment configuration was changed.
 
-| Check | Result |
-|---|---|
-| Focused Vitest (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`, `lucky-reveal-persistence`, `stripe-product-alignment`) | **PASS** 6 files / 82 tests |
-| Full `pnpm exec vitest run` | **PASS** 37 files / 399 tests |
-| Post-edit re-check on the committed tree (`lucky-reveal-counter`, `lucky-reveal-background`, `lucky-reveal-polish`, `security-payment`) | **PASS** 4 files / 61 tests |
-| `pnpm exec tsc --noEmit` | **PASS** exit 0 |
-| `./freebuff-verify.sh` (Spec Kit gate, typecheck, production build, refresh-docs 19/19) | **PASS** exit 0 |
-| Production build size (clean `pnpm build` on the committed tree) | **PASS** `.next` 301,234,281 B + `public` 32,840,043 B = 334,074,324 B / 318.6 MiB, below the 495 MB maximum |
-| Playwright `tests/visual/lucky-reveal-selection.spec.ts` on desktop 1440x900, mobile 390x844 and mobile 412x915 | **PASS** 24/24 in Chromium 153.0.8010.12, including counter placement/formatting and the paid reveal popup with no map invitation, sharing and close still present |
-| Counter visual probe (production build) | **PASS** 2/2: label + "4,321", 620x197 px desktop and 368x125 px mobile, 0 px horizontal overflow, 0 console/page errors |
-| Live `GET /api/lucky-reveals-count` (production build, no database configured) | **PASS** `{"total":0}`, `cache-control: no-store, max-age=0`, `application/json` |
-| Live Postgres tally behaviour (insert/conflict/count against Neon) | **NOT RUN** — no database credentials in this workspace |
-| Live Stripe checkout and a real gift email | **NOT RUN** — no Stripe/Resend keys; no charge or email was made |
-| PR-head CI checks | **PENDING** |
+## Remaining issues and limitations
 
-The Spec Kit gate was run with `SPEC_KIT_BASE_REF=bffde716686d0649545d2518a6f3a50e60c6d027` because this
-workspace's `origin/main` is stale at `a2c1222a`, while the branch starts at `bffde716` (PR #1700 merge).
-CI resolves the base normally.
-
-## Remaining issues / limitations
-
-- The tally SQL was not executed against a real Neon database here; it is covered by an executed
-  module-level test with a database double, and by `CREATE TABLE IF NOT EXISTS` in the existing
-  initializer. First deployment should confirm the table is created and one paid test purchase increments
-  once.
-- A purchase paid while the database is unreachable is not retried into the tally, by design: counting is
-  best-effort so a payment, gift delivery or webhook never fails because of it. Its total would stay low
-  by that purchase rather than break the flow.
-- Historical purchases are deliberately not backfilled; the counter starts at zero as requested.
-- No live payment was taken and no real gift email was sent. Stripe metadata, prices, callbacks, gift
-  delivery safeguards and the map routes are unchanged and remain covered by the existing suites.
-- CI on the pushed head is pending; local Node is 26.13.0 against the repository's 22.x pin.
+- **A real email was not sent here.** Delivery must be confirmed by opening the page in an environment
+  that already has the Resend credentials, or by the owner after deployment. This is the key unverified
+  outcome, not a passed check.
+- The tool is intentionally reachable without a secret, so it relies on the switch, the Origin check and
+  the per-address rate limit. When Redis is absent, the existing limiter falls back to per-instance
+  in-memory counters, which are weaker across multiple instances.
+- No browser visual review was performed.
 
 ## Final diff audit
 
-The complete diff was read against task base `bffde716`. It contains only the tally module, endpoint,
-counter component and probe, the three additive recording points, the popup removal, the counter styling,
-the Spec Kit/PR/Memory Bank records, and the updated guards and visual spec. Build-generated
-`next-env.d.ts` churn was reverted, generated probe screenshots were removed, a stale map-slot CSS comment
-was removed, and no `.docs/`, dependency, lockfile, environment, secret, price, email, map or unrelated
-file changed. A final `git status`/diff check after those corrections found no leftover generated file or
-unrelated edit.
+The complete final diff was inspected before submission: only the files listed above changed; no secret,
+key or credential value appears in the diff; no Stripe, checkout, webhook, paid delivery or reveal-paywall
+file is touched.
 
-**USEFUL RESULT: YES** — the requested outcome is implemented and verified to the extent this workspace
-allows, with the live-database and live-payment checks stated explicitly as not run.
+**USEFUL RESULT: NO** — the implementation is complete, but the requested end result ("the gift email is
+successfully sent") could not be verified in this workspace because the existing Resend credentials are
+not available here and the task explicitly forbids entering keys. All executable checks that are possible
+locally passed.
