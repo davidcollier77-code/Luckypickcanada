@@ -1635,6 +1635,12 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     "DS172411",
                 ),
                 (
+                    "app/lucky-reveal-celebration.jsx",
+                    "window.setTimeout(() => refresh(), 100);",
+                    "unreviewed-callback-in-allowed-file",
+                    "DS172411",
+                ),
+                (
                     "app/lucky-reveal-popup.js",
                     "window.setTimeout(() => refresh(), 100);",
                     "different-rule",
@@ -1653,7 +1659,13 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
             remaining = sarif["runs"][0]["results"]
             self.assertEqual(
                 [result["properties"]["testId"] for result in remaining],
-                ["opaque-callback", "different-test-literal", "unreviewed-path", "different-rule"],
+                [
+                    "opaque-callback",
+                    "different-test-literal",
+                    "unreviewed-path",
+                    "unreviewed-callback-in-allowed-file",
+                    "different-rule",
+                ],
             )
 
     def test_reveal_timeout_rules_do_not_suppress_opaque_function_references(self):
