@@ -18,9 +18,9 @@
   `workers/updater-scheduler/README.md`.
 - [x] **T007** Write `spec.md`, `plan.md`, `tasks.md` and point `.specify/feature.json` at this feature.
 - [x] **T008** Run the focused Worker suite — 17/17 PASS.
-- [ ] **T009** Run `./freebuff-verify.sh`, the Wrangler dry run, and measure the production build size.
-- [ ] **T010** Publish the PR (open, unmerged) with the canonical summary and record the PR-head checks.
+- [x] **T009** Run `./freebuff-verify.sh`, the Wrangler dry run, and measure the production build size — exit 0, exit 0, 332,572,886 B / 317.17 MiB.
+- [x] **T010** Publish the PR (open, unmerged) with the canonical summary — PR #1696; PR-head checks recorded as PENDING until they complete.
 - [ ] **T011** After owner-approved deployment: verify the next approved slot produces a
   `… — cloudflare` run for each updater and a 2xx `outcome: "accepted"` log entry.
 
-T009–T011 are environment/owner-gated and are recorded as PENDING, never as passed.
+T011 is owner-gated and is recorded as PENDING, never as passed.
