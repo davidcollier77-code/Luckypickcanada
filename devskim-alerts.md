@@ -57,3 +57,7 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `app/lucky-reveal-popup.js:197` — Review setTimeout for untrusted data <!-- devskim-id:e7892bf56aeb11d6e1be -->
 - **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:289` — Review setTimeout for untrusted data <!-- devskim-id:c18eb5f8dc11fda2d2a3 -->
 - **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:250` — Review setTimeout for untrusted data <!-- devskim-id:c09f9dc814534c3711fc -->
+
+- **NOTE — DS172411** — `__tests__/lucky-reveal-finish-phase2.test.js:102` — Review setTimeout for untrusted data <!-- devskim-id:d41821cdf150cffd38ce -->
+- **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:288` — Review setTimeout for untrusted data <!-- devskim-id:bbe334fcb46d72346412 -->
+- **NOTE — DS172411** — `app/lucky-reveal-celebration.jsx:249` — Review setTimeout for untrusted data <!-- devskim-id:1234291bdc0c815cb87c -->
