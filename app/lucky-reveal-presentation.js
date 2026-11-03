@@ -80,10 +80,16 @@ export function getLuckyColorSwatchGradient(luckyColor) {
   return `radial-gradient(circle at 32% 26%, ${from} 0%, ${to} 100%)`;
 }
 
+// A share link must never carry a payment or API identifier. Stripe session ids
+// (cs_test_/cs_live_), payment intents, customers, secrets and generic session
+// tokens are rejected even on our own host, as are query strings and fragments.
+const UNSAFE_SHARE_LINK_PATTERN = /(^|\/)(cs_(test|live)_|pi_|cus_|sk_|whsec_|session)/i;
+
 /**
  * The link shared with the reveal: the result's own page when the caller supplied
- * one, otherwise the website. Only same-site HTTPS links are accepted, so an
- * unexpected value can never put a third-party URL in a native share payload.
+ * a safe one, otherwise the website. Only same-site HTTPS links without a query,
+ * fragment or payment identifier are accepted, so an unexpected value can never
+ * put a third-party URL or a Stripe session id in a native share payload.
  *
  * @param {{resultUrl?: string}} [reveal] Reveal data.
  * @returns {string} Absolute share link.
@@ -93,7 +99,15 @@ export function getShareLink(reveal) {
 
   try {
     const url = new URL(candidate);
-    if (url.protocol === 'https:' && [LUCKY_SITE_HOST, `www.${LUCKY_SITE_HOST}`].includes(url.hostname)) {
+    const isSameSite =
+      url.protocol === 'https:' &&
+      [LUCKY_SITE_HOST, `www.${LUCKY_SITE_HOST}`].includes(url.hostname);
+    const isSafePath =
+      !url.search &&
+      !url.hash &&
+      !UNSAFE_SHARE_LINK_PATTERN.test(url.pathname);
+
+    if (isSameSite && isSafePath) {
       return url.toString();
     }
   } catch {

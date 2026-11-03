@@ -148,9 +148,9 @@ describe('Both number-selection modes', () => {
 
     // The popup still staggers one number at a time on the existing timeline.
     expect(popupSource).toContain('animationDelay: `${startNumbersDelay + numberIndex * 0.35}s,');
-    // Phase 2: the glow cycle is the same constant the atmosphere loops on.
-    expect(popupSource).toContain('animationDuration: `0.9s, ${REVEAL_GLOW_PULSE_MS / 1000}s`,');
-    expect(audioSource).toContain('export const REVEAL_GLOW_PULSE_MS = 3000;');
+    // The glow keeps its three-second cycle, but no sound runs under it.
+    expect(popupSource).toContain('const NUMBER_GLOW_PULSE_MS = 3000;');
+    expect(popupSource).toContain('animationDuration: `0.9s, ${NUMBER_GLOW_PULSE_MS / 1000}s`,');
 
     const lastNumberDelay = START_NUMBERS_DELAY + (numbers.length - 1) * NUMBER_STAGGER;
     // The individual number reveal stays inside the requested two-to-three seconds.

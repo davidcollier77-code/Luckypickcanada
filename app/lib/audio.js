@@ -166,118 +166,90 @@ export function playRevealSparkle() {
 
 
 /*
- * Lucky Reveal finishing shimmer.
- * The confetti pop lands with the final number; this is the softer cue that
- * closes the reveal, played once when the maple leaves have left the screen and
- * together with the four golden number-ball pulses. The opening sparkle and the
- * confetti pop are unchanged.
+ * Lucky Reveal applause.
+ * The reveal used to carry a synthesised pulse under the number-ball glow and a
+ * musical chime at the finish. Both are gone: a real recording of a small group
+ * applauding and cheering now plays once, as the celebration finishes, and the
+ * reveal has no continuous sound underneath it.
+ *
+ * Every playback belongs to one reveal session. Closing, unmounting, or
+ * reopening the reveal invalidates the session, so a decode that finishes late
+ * can never start the applause after the reveal is gone, and a session can
+ * request it only once.
  */
-const REVEAL_FINISH_CHIME_URL = '/sounds/reveal-finish-chime.mp3';
-let revealFinishChimeLoadPromise = null;
+const REVEAL_APPLAUSE_URL = '/sounds/reveal-applause.wav';
+const REVEAL_APPLAUSE_VOLUME = 0.55;
+let revealApplauseLoadPromise = null;
+// Bumped whenever a reveal opens or closes; callbacks holding an older id stop.
+let revealAudioSessionId = 0;
+let applauseRequestedSessionId = null;
+let applauseSoundId = null;
 
 /**
- * Load and decode the finishing shimmer before it is needed.
+ * Starts a fresh reveal audio session. Any applause still playing or pending
+ * from a previous reveal is stopped first, so reopening never stacks a second
+ * copy.
  *
- * @returns {Promise<void>} Resolves when the sound is ready to play.
+ * @returns {number} The new session id to pass to `playRevealApplause`.
  */
-export function preloadRevealFinishChime() {
-  if (typeof window === 'undefined') return Promise.resolve();
-
-  if (audioCache.revealFinishChime?.state() === 'loaded') return Promise.resolve();
-  if (revealFinishChimeLoadPromise) return revealFinishChimeLoadPromise;
-
-  revealFinishChimeLoadPromise = import('howler')
-    .then(({ Howl }) => new Promise((resolve, reject) => {
-      const sound = new Howl({
-        src: [REVEAL_FINISH_CHIME_URL],
-        html5: true,
-        // Gentle and quiet: the shimmer closes the reveal, it does not announce it.
-        volume: 0.3,
-        preload: true,
-      });
-      sound.on('playerror', (_id, error) => {
-        // A blocked or unsupported decode must never break the reveal finish.
-        console.warn('Reveal finishing chime playback failed:', error);
-      });
-      audioCache.revealFinishChime = sound;
-
-      if (sound.state() === 'loaded') {
-        resolve();
-        return;
-      }
-
-      sound.once('load', () => resolve());
-      sound.once('loaderror', (_id, error) => {
-        reject(new Error(`Reveal finishing chime failed to load: ${String(error)}`));
-      });
-    }))
-    .catch((error) => {
-      revealFinishChimeLoadPromise = null;
-      audioCache.revealFinishChime = null;
-      throw error;
-    });
-
-  return revealFinishChimeLoadPromise;
+export function beginRevealAudioSession() {
+  revealAudioSessionId += 1;
+  applauseRequestedSessionId = null;
+  stopApplausePlayback();
+  return revealAudioSessionId;
 }
 
 /**
- * Plays the finishing shimmer once for this reveal.
- *
- * @returns {Promise<void>} Resolves after requesting playback or preload.
+ * Ends the current reveal audio session and stops the applause immediately.
+ * Safe to call more than once and safe when nothing is playing.
  */
-export function playRevealFinishChime() {
-  if (typeof window === 'undefined') return Promise.resolve();
+export function endRevealAudioSession() {
+  revealAudioSessionId += 1;
+  applauseRequestedSessionId = null;
+  stopApplausePlayback();
+}
 
-  const sound = audioCache.revealFinishChime;
-  if (sound?.state() === 'loaded') {
-    sound.stop();
-    sound.play();
-    return Promise.resolve();
+function stopApplausePlayback() {
+  const sound = audioCache.revealApplause;
+  const soundId = applauseSoundId;
+  applauseSoundId = null;
+  if (!sound) return;
+
+  if (soundId !== null && soundId !== undefined) {
+    sound.stop(soundId);
+    return;
   }
 
-  return preloadRevealFinishChime();
+  sound.stop();
 }
 
-
-/*
- * Lucky Reveal atmosphere.
- * The revealed number balls breathe with a 3-second glow animation that
- * alternates between dim and bright. This is the same 3-second loop: a quiet
- * atmospheric swell, silent at the loop join and at its loudest halfway through
- * the cycle, so it peaks exactly when the glow is brightest. It starts on the
- * first ball's glow frame and stops with the reveal, in sync with the animation.
- */
-export const REVEAL_GLOW_PULSE_MS = 3000;
-const REVEAL_GLOW_PULSE_VOLUME = 0.2;
-const REVEAL_GLOW_PULSE_URL = '/sounds/reveal-glow-pulse.wav';
-let revealGlowPulseLoadPromise = null;
-
 /**
- * Load and decode the reveal's atmosphere before the glow animation starts.
- * Sharing the promise prevents duplicate Howl instances.
+ * Load and decode the applause before the celebration reaches its finish, so
+ * the cue is not delayed by a network request. Sharing the promise prevents
+ * duplicate Howl instances.
  *
  * @returns {Promise<void>} Resolves when the sound is ready to play.
  */
-export function preloadRevealGlowPulse() {
+export function preloadRevealApplause() {
   if (typeof window === 'undefined') return Promise.resolve();
 
-  if (audioCache.revealGlowPulse?.state() === 'loaded') return Promise.resolve();
-  if (revealGlowPulseLoadPromise) return revealGlowPulseLoadPromise;
+  if (audioCache.revealApplause?.state() === 'loaded') return Promise.resolve();
+  if (revealApplauseLoadPromise) return revealApplauseLoadPromise;
 
-  revealGlowPulseLoadPromise = import('howler')
+  revealApplauseLoadPromise = import('howler')
     .then(({ Howl }) => new Promise((resolve, reject) => {
       const sound = new Howl({
-        src: [REVEAL_GLOW_PULSE_URL],
-        // Web Audio playback loops the three-second asset without a seam.
-        loop: true,
-        volume: REVEAL_GLOW_PULSE_VOLUME,
+        src: [REVEAL_APPLAUSE_URL],
+        // A single recorded one-shot, played from the media element.
+        html5: true,
+        volume: REVEAL_APPLAUSE_VOLUME,
         preload: true,
       });
       sound.on('playerror', (_id, error) => {
         // A blocked or unsupported decode must never break the reveal.
-        console.warn('Reveal glow pulse playback failed:', error);
+        console.warn('Reveal applause playback failed:', error);
       });
-      audioCache.revealGlowPulse = sound;
+      audioCache.revealApplause = sound;
 
       if (sound.state() === 'loaded') {
         resolve();
@@ -286,72 +258,53 @@ export function preloadRevealGlowPulse() {
 
       sound.once('load', () => resolve());
       sound.once('loaderror', (_id, error) => {
-        reject(new Error(`Reveal glow pulse failed to load: ${String(error)}`));
+        reject(new Error(`Reveal applause failed to load: ${String(error)}`));
       });
     }))
     .catch((error) => {
-      revealGlowPulseLoadPromise = null;
-      audioCache.revealGlowPulse = null;
+      revealApplauseLoadPromise = null;
+      audioCache.revealApplause = null;
       throw error;
     });
 
-  return revealGlowPulseLoadPromise;
+  return revealApplauseLoadPromise;
 }
 
 /**
- * Starts the atmosphere once, fading in quickly so the first glow breath is not
- * a hard start. Repeating the call while it is playing does nothing.
+ * Plays the applause once for the given reveal session. If the sound is still
+ * loading, playback begins only when the load completes *and* that same reveal
+ * session is still active; a late load after a close does nothing. Repeated
+ * calls for the same session are ignored, so the applause can never play twice.
  *
- * @returns {Promise<void>} Resolves after requesting playback or preload.
+ * @param {number} sessionId Session returned by `beginRevealAudioSession`.
+ * @returns {Promise<boolean>} Resolves true when playback actually started.
  */
-export function startRevealGlowPulse() {
-  if (typeof window === 'undefined') return Promise.resolve();
+export function playRevealApplause(sessionId) {
+  if (typeof window === 'undefined') return Promise.resolve(false);
+  if (sessionId !== revealAudioSessionId) return Promise.resolve(false);
+  if (applauseRequestedSessionId === sessionId) return Promise.resolve(false);
+  applauseRequestedSessionId = sessionId;
 
+  const startPlayback = () => {
+    if (sessionId !== revealAudioSessionId) return false;
 
-  const sound = audioCache.revealGlowPulse;
-  if (sound?.state() !== 'loaded') {
-    return preloadRevealGlowPulse().then(() => {
-      // Only retry if the load actually succeeded, to avoid infinite recursion.
-      if (audioCache.revealGlowPulse?.state() !== 'loaded') return undefined;
-      return startRevealGlowPulse();
-    });
-  }
-  if (sound?.state() !== 'loaded') {
-    return preloadRevealGlowPulse().then(() => startRevealGlowPulse());
-  }
-  const activeId = audioCache.revealGlowPulseId;
-  if (activeId !== undefined && activeId !== null && sound.playing(activeId)) return Promise.resolve();
+    const sound = audioCache.revealApplause;
+    if (sound?.state() !== 'loaded') return false;
 
-  sound.volume(0);
-  const soundId = sound.play();
-  audioCache.revealGlowPulseId = soundId;
-  sound.fade(0, REVEAL_GLOW_PULSE_VOLUME, 400, soundId);
-  return Promise.resolve();
-}
-
-/**
- * Stops the atmosphere with a short fade so closing the reveal does not cut the
- * loop with a click. Safe to call when nothing is playing.
- */
-export function stopRevealGlowPulse() {
-  if (typeof window === 'undefined') return;
-
-  const sound = audioCache.revealGlowPulse;
-  const soundId = audioCache.revealGlowPulseId;
-  if (!sound || soundId === undefined || soundId === null) return;
-
-  audioCache.revealGlowPulseId = null;
-  if (sound.state() !== 'loaded') {
+    // Never stack a second copy: clear anything left before starting this one.
     sound.stop();
-    return;
-  }
-  sound.fade(REVEAL_GLOW_PULSE_VOLUME, 0, 500, soundId);
-  const stoppedId = soundId;
-  window.setTimeout(() => {
-    if (audioCache.revealGlowPulseId !== stoppedId) return;
-    sound.stop(stoppedId);
-  }, 520);
-  window.setTimeout(() => sound.stop(soundId), 520);
+    applauseSoundId = sound.play();
+    return applauseSoundId !== null && applauseSoundId !== undefined;
+  };
+
+  if (startPlayback()) return Promise.resolve(true);
+
+  return preloadRevealApplause()
+    .then(startPlayback)
+    .catch((error) => {
+      console.warn('Reveal applause unavailable', error);
+      return false;
+    });
 }
 
 

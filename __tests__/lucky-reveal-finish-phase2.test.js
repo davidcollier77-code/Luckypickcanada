@@ -58,25 +58,30 @@ describe('Android native sharing', () => {
     expect(shareSource).toContain(
       'const imagePayload = file ? { files: [file], title, text, url: link } : null;',
     );
-    expect(shareSource).toContain('if (imagePayload && canShareNative(imagePayload))');
+    expect(shareSource).toContain('const payload = imagePayload && canShareNative(imagePayload)');
+    expect(shareSource).toContain('const text = buildShareMessage(reveal);');
+    expect(shareSource).toContain('const link = getShareLink(reveal);');
   });
 
-  it('tries a native text/link share before reporting the local fallback', () => {
-    const imageIndex = shareSource.indexOf('canShareNative(imagePayload)');
-    const textIndex = shareSource.indexOf('const textPayload = { title, text, url: link };');
-    const fallbackIndex = shareSource.indexOf('App sharing was unavailable for this result.');
-
-    expect(imageIndex).toBeGreaterThan(0);
-    expect(textIndex).toBeGreaterThan(imageIndex);
-    expect(fallbackIndex).toBeGreaterThan(textIndex);
-    expect(shareSource).toContain('canShareNative(textPayload)');
+  it('prepares the image before the tap and calls share inside the tap', () => {
+    expect(shareSource).toContain('const SHARE_IMAGE_WARMUP_MS = 1200;');
+    expect(shareSource).toContain('const file = fileRef.current;');
+    const codeOnly = shareSource.slice(
+      shareSource.indexOf('function shareToApps()'),
+      shareSource.indexOf('async function copyImage()'),
+    ).replace(/\/\/[^\n]*/g, '');
+    const shareIndex = codeOnly.indexOf('navigator.share(payload)');
+    expect(shareIndex).toBeGreaterThan(-1);
+    expect(codeOnly.slice(0, shareIndex)).not.toContain('await');
+    // Exactly one native attempt: a rejection never retries with a text payload.
+    expect(shareSource.match(/navigator\.share\(/g)).toHaveLength(1);
+    expect(shareSource).not.toContain('textPayload');
   });
 
-  it('reports cancellation without a failure, and keeps the three local actions', () => {
-    expect(shareSource).toContain(
-      "return error?.name === 'AbortError' ? SHARE_CANCELLED : SHARE_REJECTED;",
-    );
-    expect(shareSource).toContain("setStatus('Sharing cancelled.');");
+  it('reports cancellation and failure truthfully, and keeps the three local actions', () => {
+    expect(shareSource).toContain("error?.name === 'AbortError'");
+    expect(shareSource).toContain("'Sharing cancelled.'");
+    expect(shareSource).toContain('Your device could not open the share panel for this result.');
     expect(shareSource).toContain('Download the image');
     expect(shareSource).toContain('copyImage');
     expect(shareSource).toContain('Copy the website link');
@@ -120,54 +125,45 @@ describe('Number-ball finish', () => {
 });
 
 describe('Finishing sound', () => {
-  it('adds one same-origin finishing chime', () => {
-    expect(audioSource).toContain(
-      "const REVEAL_FINISH_CHIME_URL = '/sounds/reveal-finish-chime.mp3';",
-    );
-    expect(audioSource).toContain('export function preloadRevealFinishChime()');
-    expect(audioSource).toContain('export function playRevealFinishChime()');
-    expect(popupSource).toContain('preloadRevealFinishChime()');
-    expect(popupSource).toContain('playRevealFinishChime()');
+  it('uses the recorded applause instead of the removed synthesised cue', () => {
+    expect(audioSource).toContain("const REVEAL_APPLAUSE_URL = '/sounds/reveal-applause.wav';");
+    expect(audioSource).toContain('export function preloadRevealApplause()');
+    expect(audioSource).toContain('export function playRevealApplause(sessionId)');
+    expect(popupSource).toContain('preloadRevealApplause()');
+    expect(popupSource).toContain('playRevealApplause(sessionId)');
 
-    const asset = join(process.cwd(), 'public/sounds/reveal-finish-chime.mp3');
+    const asset = join(process.cwd(), 'public/sounds/reveal-applause.wav');
     expect(existsSync(asset)).toBe(true);
-    // Short and light: a finishing cue, not a track.
-    expect(statSync(asset).size).toBeLessThan(200 * 1024);
+    // Short and light: a finishing celebration, not a track.
+    expect(statSync(asset).size).toBeLessThan(600 * 1024);
+    expect(existsSync(join(process.cwd(), 'public/sounds/reveal-finish-chime.mp3'))).toBe(false);
   });
 
-  it('plays the finishing cue while the last few leaves are still falling', () => {
-    // Phase 2 moved the chime onto its own earlier cue; the pulses still wait for
-    // the confetti to clear completely.
+  it('plays the applause while the last few leaves are still falling', () => {
     expect(celebrationSource).toContain('const FINISHING_LEAF_RATIO = 0.08;');
     expect(celebrationSource).toContain('onConfettiFinishing?.()');
-    expect(popupSource).toContain('onConfettiFinishing={startFinishingChime}');
+    expect(popupSource).toContain('onConfettiFinishing={startFinishingApplause}');
 
-    const chimeBlock = popupSource.slice(
-      popupSource.indexOf('const startFinishingChime = useCallback'),
+    const applauseBlock = popupSource.slice(
+      popupSource.indexOf('const startFinishingApplause = useCallback'),
     );
-    expect(chimeBlock).toContain('playRevealFinishChime()');
+    expect(applauseBlock).toContain('playRevealApplause(sessionId)');
 
     const pulseBlock = popupSource.slice(
       popupSource.indexOf('const startNumberFinish = useCallback'),
-      popupSource.indexOf('// Pulsating atmosphere'),
+      popupSource.indexOf('// Return the balls to their normal appearance'),
     );
     expect(pulseBlock).toContain('setIsNumberFinishActive(true);');
-    expect(pulseBlock).not.toContain('playRevealFinishChime()');
+    expect(pulseBlock).not.toContain('playRevealApplause');
   });
 
-  it('preserves the opening sparkle and the confetti pop', () => {
+  it('keeps the opening sparkle and the confetti pop', () => {
     expect(audioSource).toContain("const REVEAL_SPARKLE_URL = '/sounds/chime-sound.mp3';");
     expect(popupSource).toContain('playRevealSparkle');
     expect(celebrationSource).toContain('playConfettiPop()');
-  });
-
-  it('records the provenance and a commercial-use licence', () => {
-    const provenance = readSource('public/sounds/reveal-finish-chime-sources.md');
-    for (const field of ['Title', 'Creator', 'Source URL', 'Licence', 'Acquisition']) {
-      expect(provenance).toContain(field);
-    }
-    expect(provenance).toContain('CC0');
-    expect(provenance).toContain('commercial');
+    // Nothing continuous runs under the revealed numbers any more.
+    expect(audioSource).not.toContain('loop: true,\n        volume: REVEAL_APPLAUSE_VOLUME');
+    expect(popupSource).not.toContain('startRevealGlowPulse');
   });
 });
 

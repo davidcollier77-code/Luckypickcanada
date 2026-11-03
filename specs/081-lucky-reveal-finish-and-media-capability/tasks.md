@@ -126,3 +126,51 @@
 - **Pending / not verified:** a physical Android device share sheet (the probe stubs
   `navigator.share`; no device exists in this workspace), audible playback (no audio output device),
   and a real-device visual check of the atmosphere mix level.
+
+## Phase 10 — Phase 3 recorded applause and Android share repair (2026-11-03)
+
+- [x] T036 Remove the generated pulse asset, its provenance and `scripts/generate-reveal-glow-pulse.mjs`.
+- [x] T037 Source Mixkit "Small group cheer and applause" (478), verify the Sound Effects Free License
+  for commercial web use and no required attribution, and record all provenance in
+  `public/sounds/reveal-applause-sources.md`.
+- [x] T038 Derive `public/sounds/reveal-applause.wav` (5.6 s, mono 44.1 kHz 16-bit, fades) and remove
+  the finishing chime asset, helpers and provenance so it cannot clash.
+- [x] T039 Replace the atmosphere and chime in `app/lib/audio.js` and `app/lucky-reveal-popup.js` with
+  `preloadRevealApplause` / `playRevealApplause`, keeping the opening sparkle and confetti pop.
+- [x] T040 Add session-owned audio lifecycle (`beginRevealAudioSession` / `endRevealAudioSession`),
+  one request per session, immediate stop on close, and no late start after a close.
+- [x] T041 Play the applause on the measured finishing cue (8 % of peak leaves, 2.5 s lead) after all
+  numbers, while the golden pulses remain on the empty-canvas signal.
+- [x] T042 Prepare the share image before the tap and call `navigator.share` synchronously from the
+  tap, once, with eyes-open fallbacks for cancel, unsupported and failure.
+- [x] T043 Report copying honestly and harden `getShareLink` against query, fragment and payment
+  identifiers.
+- [x] T044 Add `__tests__/lucky-reveal-phase3.test.js` and update the Phase 1/081/075 guards.
+- [x] T045 Run focused and full Vitest, `tsc --noEmit`, `./freebuff-verify.sh`, measure the production
+  build, and run the Phase 3 Chromium probe (both games, six and seven numbers, applause timing,
+  close-during-load, reopen, share success/cancel/failure/unsupported).
+- [x] T046 Audit the final diff and update the single PR summary, leaving the PR open and unmerged.
+
+### Phase 3 verification record
+
+- Focused Vitest (`lucky-reveal-phase3`, `finish-phase2`, `confetti-phase1`, `celebration`, `polish`) —
+  **PASS** 5 files / 85 tests.
+- Full `vitest run` — **PASS** 35 files / 373 tests.
+- `tsc --noEmit` — **PASS** exit 0.
+- `./freebuff-verify.sh` — **PASS** (Spec Kit gate, typecheck, production build, refresh-docs 19/19;
+  final line "All verification steps passed").
+- Production build `.next` — **PASS** 340,354,762 bytes / 343 MB, below the 495 MB hard maximum.
+- Phase 3 Chromium probe (`artifacts/reveal-phase3-probe.cjs`, report in
+  `artifacts/reveal-phase3/report.json`) against the production build — **PASS** 61/61 checks over six
+  runs: desktop 6 Personal, desktop 7 Gift, mobile 7 Personal (cancel), mobile 6 Gift without Web
+  Share, mobile 7 Personal (share failure), desktop 6 with a 6 s delayed applause load and an early
+  close. Measured: applause requested once per reveal, only after all 6 or 7 numbers were visible and
+  with 130–2836 painted leaf pixels still on screen; the media element was paused on close and no
+  reveal played applause more than once; a decode completing after close produced no applause play.
+  `navigator.share` was called 1–3 ms after the tap with a 1.76–1.77 MB PNG, the stored numbers and
+  `https://luckypickcanada.ca`; cancellation reported "Sharing cancelled." with one call; a failing
+  panel reported the explicit fallback with one call; no Web Share showed the fallback and left the
+  three local actions; no page errors.
+- **Not verified:** a physical Samsung/Android device share sheet (no device in this workspace) and
+  audible playback/loudness (no audio output device). Both must be confirmed on real hardware before
+  the share repair is called device-verified.

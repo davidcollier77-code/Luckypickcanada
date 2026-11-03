@@ -184,3 +184,75 @@ safety timeout, where a ratio-only cue would fire on the same tick as the pulse 
 `FINISHING_CUE_LEAD_MS = 2500` timer therefore signals the chime 2.5 s before the timeout is allowed
 to end the celebration. Whichever cue comes first wins exactly once, so the chime always starts while
 the leaves are still on screen and the timeout remains only a safety net.
+
+## Phase 3 — Recorded applause and reliable Android sharing (2026-11-03)
+
+### 1. Replace the synthesised atmosphere with a recorded celebration
+
+- Delete `public/sounds/reveal-glow-pulse.wav`, its provenance file and
+  `scripts/generate-reveal-glow-pulse.mjs`; no generated audio remains.
+- Source Mixkit sound effect 478, "Small group cheer and applause" (24.484 s, stereo 44.1 kHz 16-bit
+  WAV), under the Mixkit Sound Effects Free License. Read the live licence modal: commercial and
+  non-commercial use, public web performance, no attribution required, no redistribution as stock.
+- Derive `public/sounds/reveal-applause.wav`: 5.6 s from 0.55 s, mono 44.1 kHz 16-bit, 30 ms fade-in,
+  1.1 s fade-out (493,918 bytes). Record the source URL, provider, licence URL, commercial-use and
+  attribution terms and the acquisition date in `public/sounds/reveal-applause-sources.md`.
+- Do not loop it, layer anything under it, or add another ambient bed.
+
+### 2. One finishing cue, after the numbers, with no clashing chime
+
+- `app/lib/audio.js`: remove the glow-pulse and finishing-chime helpers; add
+  `preloadRevealApplause()`, `playRevealApplause(sessionId)`, `beginRevealAudioSession()` and
+  `endRevealAudioSession()`.
+- Keep the celebration's measured 8 % leaf cue and its 2.5 s lead; the popup's `startFinishingApplause`
+  now plays the applause there instead of the chime. The four golden pulses stay on the empty-canvas
+  `onConfettiSettled` signal, so the applause body carries into them.
+- Preserve the opening sparkle and confetti pop. Remove the chime asset, helpers and provenance; the
+  chime would otherwise play over the applause.
+
+### 3. Session-owned audio lifecycle
+
+- `revealAudioSessionId` is incremented by `beginRevealAudioSession()` and `endRevealAudioSession()`.
+  The popup opens one session while open and ends it in the effect cleanup, which also runs on
+  unmount, close and React strict-mode remount.
+- `playRevealApplause(sessionId)` ignores stale sessions, records one request per session, stops any
+  previous instance before playing, and when still loading starts only after the load resolves *and*
+  the session is still current. `endRevealAudioSession()` stops playback immediately.
+- No delayed stop timer, no fade timer and no state survives the session, so no stale callback can
+  reach a later reveal.
+
+### 4. Share to Apps inside the tap's activation
+
+- Prepare the PNG 1.2 s after the share component mounts (and on demand for copy/download), caching
+  the `File` in a ref.
+- `shareToApps()` reads the cached file and calls `navigator.share(payload)` synchronously before any
+  await; payload choice uses `canShare` (a throwing `canShare` counts as unsupported). Exactly one
+  native call per tap: cancellation reports "Sharing cancelled.", a failure reports the explicit
+  fallback, and neither retries with a second payload.
+- If the image is not ready at the tap, share text + link instead of delaying the sheet.
+- `copyLink()` reports success only after `clipboard.writeText` resolves; otherwise it shows the link
+  selectable with "Automatic copying is unavailable."
+- `getShareLink()` now also rejects query strings, fragments and `cs_test_`/`cs_live_`/`pi_`/`cus_`
+  style identifiers, so payment state can never enter a share URL.
+
+### Files
+
+- `app/lib/audio.js`, `app/lucky-reveal-popup.js`, `app/lucky-reveal-celebration.jsx`,
+  `app/share-lucky-pick-button.js`, `app/lucky-reveal-presentation.js`.
+- `public/sounds/reveal-applause.wav`, `public/sounds/reveal-applause-sources.md`; removed
+  `public/sounds/reveal-glow-pulse*`, `public/sounds/reveal-finish-chime*`,
+  `scripts/generate-reveal-glow-pulse.mjs`.
+- `__tests__/lucky-reveal-phase3.test.js` plus updated Phase 1/081/075 guards.
+- `artifacts/reveal-phase3-probe.cjs`, `artifacts/reveal-phase3/report.json`.
+
+### Risks
+
+- A real recording carries room tone and a natural decay; the excerpt is trimmed with fades rather
+  than processed, and the mix level (0.55) is chosen to sit under the visual finish.
+- Removing the chime is a deliberate sound-design change required to avoid clashing with the applause;
+  the opening sparkle and confetti pop are untouched.
+- Prewarming the share image costs one canvas draw and one logo decode 1.2 s after the reveal appears;
+  it happens once per reveal and is not repeated during the celebration.
+- Android's real share sheet still cannot be opened in this workspace; the Web Share contract,
+  activation timing and single-attempt behaviour are measured in Chromium with a stubbed panel, and
+  physical-device confirmation remains pending.

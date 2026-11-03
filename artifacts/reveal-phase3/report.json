@@ -1,0 +1,894 @@
+{
+  "baseUrl": "http://127.0.0.1:3011",
+  "ranAt": "2026-11-03T12:36:25.045Z",
+  "checks": [
+    {
+      "name": "desktop-6-personal: renders 6 stored numbers",
+      "pass": true,
+      "detail": "[6,10,22,28,30,36]"
+    },
+    {
+      "name": "desktop-6-personal: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "desktop-6-personal: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:58px, Copy the website link:75px, Copy the image:75px, Download the image:75px"
+    },
+    {
+      "name": "desktop-6-personal: one native share carries the numbers and link",
+      "pass": true,
+      "detail": "{\"files\":[{\"name\":\"lucky-reveal.png\",\"type\":\"image/png\",\"size\":1768714}],\"url\":\"https://luckypickcanada.ca\"}"
+    },
+    {
+      "name": "desktop-6-personal: navigator.share runs inside the tap's activation",
+      "pass": true,
+      "detail": "share called 2 ms after the tap"
+    },
+    {
+      "name": "desktop-6-personal: the prewarmed image is shared with no work in the tap",
+      "pass": true,
+      "detail": "1768714 bytes, delta 2 ms"
+    },
+    {
+      "name": "desktop-6-personal: applause plays exactly once",
+      "pass": true,
+      "detail": "1 applause play(s)"
+    },
+    {
+      "name": "desktop-6-personal: applause waits for every number",
+      "pass": true,
+      "detail": "all 6 numbers at 1346, applause at 15475"
+    },
+    {
+      "name": "desktop-6-personal: applause begins while leaves are still painted",
+      "pass": true,
+      "detail": "painted at applause: 2607"
+    },
+    {
+      "name": "desktop-6-personal: closing the reveal stops the applause",
+      "pass": true,
+      "detail": "2 pause event(s)"
+    },
+    {
+      "name": "desktop-6-personal: nothing starts after the reveal closed",
+      "pass": true,
+      "detail": "1 total applause play(s)"
+    },
+    {
+      "name": "desktop-6-personal: no page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop-7-gift: renders 7 stored numbers",
+      "pass": true,
+      "detail": "[4,7,8,38,43,44,45]"
+    },
+    {
+      "name": "desktop-7-gift: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "desktop-7-gift: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:58px, Copy the website link:75px, Copy the image:75px, Download the image:75px"
+    },
+    {
+      "name": "desktop-7-gift: one native share carries the numbers and link",
+      "pass": true,
+      "detail": "{\"files\":[{\"name\":\"lucky-reveal.png\",\"type\":\"image/png\",\"size\":1773440}],\"url\":\"https://luckypickcanada.ca\"}"
+    },
+    {
+      "name": "desktop-7-gift: navigator.share runs inside the tap's activation",
+      "pass": true,
+      "detail": "share called 2 ms after the tap"
+    },
+    {
+      "name": "desktop-7-gift: the prewarmed image is shared with no work in the tap",
+      "pass": true,
+      "detail": "1773440 bytes, delta 2 ms"
+    },
+    {
+      "name": "desktop-7-gift: applause plays exactly once",
+      "pass": true,
+      "detail": "1 applause play(s)"
+    },
+    {
+      "name": "desktop-7-gift: applause waits for every number",
+      "pass": true,
+      "detail": "all 7 numbers at 2270, applause at 16807"
+    },
+    {
+      "name": "desktop-7-gift: applause begins while leaves are still painted",
+      "pass": true,
+      "detail": "painted at applause: 2836"
+    },
+    {
+      "name": "desktop-7-gift: closing the reveal stops the applause",
+      "pass": true,
+      "detail": "2 pause event(s)"
+    },
+    {
+      "name": "desktop-7-gift: nothing starts after the reveal closed",
+      "pass": true,
+      "detail": "1 total applause play(s)"
+    },
+    {
+      "name": "desktop-7-gift: no page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile-7-personal-cancel: renders 7 stored numbers",
+      "pass": true,
+      "detail": "[9,14,16,31,34,42,44]"
+    },
+    {
+      "name": "mobile-7-personal-cancel: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "mobile-7-personal-cancel: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:55px, Copy the website link:70px, Copy the image:70px, Download the image:70px"
+    },
+    {
+      "name": "mobile-7-personal-cancel: cancellation is reported and never retried",
+      "pass": true,
+      "detail": "calls=1, status=\"Sharing cancelled.\""
+    },
+    {
+      "name": "mobile-7-personal-cancel: applause plays exactly once",
+      "pass": true,
+      "detail": "1 applause play(s)"
+    },
+    {
+      "name": "mobile-7-personal-cancel: applause waits for every number",
+      "pass": true,
+      "detail": "all 7 numbers at 1336, applause at 14002"
+    },
+    {
+      "name": "mobile-7-personal-cancel: applause begins while leaves are still painted",
+      "pass": true,
+      "detail": "painted at applause: 196"
+    },
+    {
+      "name": "mobile-7-personal-cancel: closing the reveal stops the applause",
+      "pass": true,
+      "detail": "2 pause event(s)"
+    },
+    {
+      "name": "mobile-7-personal-cancel: nothing starts after the reveal closed",
+      "pass": true,
+      "detail": "1 total applause play(s)"
+    },
+    {
+      "name": "mobile-7-personal-cancel: no page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: renders 6 stored numbers",
+      "pass": true,
+      "detail": "[11,16,20,24,33,44]"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:55px, Copy the website link:70px, Copy the image:70px, Download the image:70px"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: missing Web Share explains the fallback",
+      "pass": true,
+      "detail": "App sharing is not available in this browser. Use Copy link, Copy image, or Download below."
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: applause plays exactly once",
+      "pass": true,
+      "detail": "1 applause play(s)"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: applause waits for every number",
+      "pass": true,
+      "detail": "all 6 numbers at 2024, applause at 14435"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: applause begins while leaves are still painted",
+      "pass": true,
+      "detail": "painted at applause: 176"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: closing the reveal stops the applause",
+      "pass": true,
+      "detail": "2 pause event(s)"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: nothing starts after the reveal closed",
+      "pass": true,
+      "detail": "1 total applause play(s)"
+    },
+    {
+      "name": "mobile-6-gift-no-web-share: no page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "mobile-7-share-failure: renders 7 stored numbers",
+      "pass": true,
+      "detail": "[4,10,15,22,32,36,45]"
+    },
+    {
+      "name": "mobile-7-share-failure: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "mobile-7-share-failure: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:55px, Copy the website link:70px, Copy the image:70px, Download the image:70px"
+    },
+    {
+      "name": "mobile-7-share-failure: a failed share panel is reported once with the fallback",
+      "pass": true,
+      "detail": "calls=1, status=\"Your device could not open the share panel for this result. Use Copy link, Copy image, or Download below.\""
+    },
+    {
+      "name": "mobile-7-share-failure: applause plays exactly once",
+      "pass": true,
+      "detail": "1 applause play(s)"
+    },
+    {
+      "name": "mobile-7-share-failure: applause waits for every number",
+      "pass": true,
+      "detail": "all 7 numbers at 1472, applause at 13727"
+    },
+    {
+      "name": "mobile-7-share-failure: applause begins while leaves are still painted",
+      "pass": true,
+      "detail": "painted at applause: 130"
+    },
+    {
+      "name": "mobile-7-share-failure: closing the reveal stops the applause",
+      "pass": true,
+      "detail": "2 pause event(s)"
+    },
+    {
+      "name": "mobile-7-share-failure: nothing starts after the reveal closed",
+      "pass": true,
+      "detail": "1 total applause play(s)"
+    },
+    {
+      "name": "mobile-7-share-failure: no page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "desktop-6-late-load-close: renders 6 stored numbers",
+      "pass": true,
+      "detail": "[6,10,13,31,34,41]"
+    },
+    {
+      "name": "desktop-6-late-load-close: four labelled sharing actions",
+      "pass": true,
+      "detail": "Share to Apps=visible, Copy the website link=visible, Copy the image=visible, Download the image=visible"
+    },
+    {
+      "name": "desktop-6-late-load-close: every visible option clears the 44px tap target",
+      "pass": true,
+      "detail": "Share to Apps:58px, Copy the website link:75px, Copy the image:75px, Download the image:75px"
+    },
+    {
+      "name": "desktop-6-late-load-close: one native share carries the numbers and link",
+      "pass": true,
+      "detail": "{\"files\":[{\"name\":\"lucky-reveal.png\",\"type\":\"image/png\",\"size\":1761388}],\"url\":\"https://luckypickcanada.ca\"}"
+    },
+    {
+      "name": "desktop-6-late-load-close: navigator.share runs inside the tap's activation",
+      "pass": true,
+      "detail": "share called 2 ms after the tap"
+    },
+    {
+      "name": "desktop-6-late-load-close: a decode completing after close never plays",
+      "pass": true,
+      "detail": "3 media play(s) after a delayed load"
+    },
+    {
+      "name": "desktop-6-late-load-close: no page errors",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "results": [
+    {
+      "scenario": "desktop-6-personal",
+      "numbers": [
+        6,
+        10,
+        22,
+        28,
+        30,
+        36
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 58
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 75
+        }
+      ],
+      "shareState": {
+        "shares": [
+          {
+            "title": "My LuckyPickCanada reveal",
+            "text": "I just revealed my 6 Pick on LuckyPickCanada.ca: 6, 10, 22, 28, 30, 36. Lucky color: Sky Blue. Lucky day: Saturday. https://luckypickcanada.ca",
+            "url": "https://luckypickcanada.ca",
+            "files": [
+              {
+                "name": "lucky-reveal.png",
+                "type": "image/png",
+                "size": 1768714
+              }
+            ],
+            "at": 3561.800000011921,
+            "tapAt": 3560.400000035763,
+            "activationDelta": 1.5
+          }
+        ],
+        "status": "Shared. Keep the luck going. 🍀"
+      },
+      "timeline": {
+        "applauseCount": 1,
+        "applauseStart": 15475,
+        "paintedAtApplause": 2607,
+        "plays": [
+          {
+            "event": "play",
+            "src": "",
+            "at": 425.9000000357628
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1298.9000000357628
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 5971.600000023842
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 15475
+          }
+        ],
+        "pauses": [
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1298.199999988079
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2597.300000011921
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 6959.600000023842
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 15474.600000023842
+          }
+        ]
+      },
+      "numbersTiming": {
+        "count": 6,
+        "completeAt": 1346.199999988079,
+        "expected": 6
+      },
+      "pageErrors": []
+    },
+    {
+      "scenario": "desktop-7-gift",
+      "numbers": [
+        4,
+        7,
+        8,
+        38,
+        43,
+        44,
+        45
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 58
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 75
+        }
+      ],
+      "shareState": {
+        "shares": [
+          {
+            "title": "My LuckyPickCanada reveal",
+            "text": "I just revealed my 7 Pick on LuckyPickCanada.ca: 4, 7, 8, 38, 43, 44, 45. Lucky color: Star Gold. Lucky day: Wednesday. https://luckypickcanada.ca",
+            "url": "https://luckypickcanada.ca",
+            "files": [
+              {
+                "name": "lucky-reveal.png",
+                "type": "image/png",
+                "size": 1773440
+              }
+            ],
+            "at": 4516.400000035763,
+            "tapAt": 4514.700000047684,
+            "activationDelta": 1.699999988079071
+          }
+        ],
+        "status": "Shared. Keep the luck going. 🍀"
+      },
+      "timeline": {
+        "applauseCount": 1,
+        "applauseStart": 16807.400000035763,
+        "paintedAtApplause": 2836,
+        "plays": [
+          {
+            "event": "play",
+            "src": "",
+            "at": 401.4000000357628
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2255.600000023842
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 7292.300000011921
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 16807.400000035763
+          }
+        ],
+        "pauses": [
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2255.100000023842
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 3554.800000011921
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 8299.900000035763
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 16807
+          }
+        ]
+      },
+      "numbersTiming": {
+        "count": 7,
+        "completeAt": 2270,
+        "expected": 7
+      },
+      "pageErrors": []
+    },
+    {
+      "scenario": "mobile-7-personal-cancel",
+      "numbers": [
+        9,
+        14,
+        16,
+        31,
+        34,
+        42,
+        44
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 55
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 70
+        }
+      ],
+      "shareState": {
+        "shares": [
+          {
+            "title": "My LuckyPickCanada reveal",
+            "text": "I just revealed my 7 Pick on LuckyPickCanada.ca: 9, 14, 16, 31, 34, 42, 44. Lucky color: Northern Purple. Lucky day: Friday. https://luckypickcanada.ca",
+            "url": "https://luckypickcanada.ca",
+            "files": [
+              {
+                "name": "lucky-reveal.png",
+                "type": "image/png",
+                "size": 1781899
+              }
+            ],
+            "at": 3530.100000023842,
+            "tapAt": 3528.199999988079,
+            "activationDelta": 1.9000000357627869
+          }
+        ],
+        "status": "Sharing cancelled."
+      },
+      "timeline": {
+        "applauseCount": 1,
+        "applauseStart": 14002,
+        "paintedAtApplause": 196,
+        "plays": [
+          {
+            "event": "play",
+            "src": "",
+            "at": 436.60000002384186
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1335.199999988079
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 6366.600000023842
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 14002
+          }
+        ],
+        "pauses": [
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1334.8999999761581
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2638.199999988079
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 7383.300000011921
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 14001.600000023842
+          }
+        ]
+      },
+      "numbersTiming": {
+        "count": 7,
+        "completeAt": 1335.800000011921,
+        "expected": 7
+      },
+      "pageErrors": []
+    },
+    {
+      "scenario": "mobile-6-gift-no-web-share",
+      "numbers": [
+        11,
+        16,
+        20,
+        24,
+        33,
+        44
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 55
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 70
+        }
+      ],
+      "shareState": {
+        "shares": [],
+        "status": "App sharing is not available in this browser. Use Copy link, Copy image, or Download below."
+      },
+      "timeline": {
+        "applauseCount": 1,
+        "applauseStart": 14435.300000011921,
+        "paintedAtApplause": 176,
+        "plays": [
+          {
+            "event": "play",
+            "src": "",
+            "at": 549.9000000357628
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2030.9000000357628
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 6624.600000023842
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 14435.300000011921
+          }
+        ],
+        "pauses": [
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2030.5
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 3330.5
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 7609.800000011921
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 14432.900000035763
+          }
+        ]
+      },
+      "numbersTiming": {
+        "count": 6,
+        "completeAt": 2024.300000011921,
+        "expected": 6
+      },
+      "pageErrors": []
+    },
+    {
+      "scenario": "mobile-7-share-failure",
+      "numbers": [
+        4,
+        10,
+        15,
+        22,
+        32,
+        36,
+        45
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 55
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 70
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 70
+        }
+      ],
+      "shareState": {
+        "shares": [
+          {
+            "title": "My LuckyPickCanada reveal",
+            "text": "I just revealed my 7 Pick on LuckyPickCanada.ca: 4, 10, 15, 22, 32, 36, 45. Lucky color: Star Gold. Lucky day: Wednesday. https://luckypickcanada.ca",
+            "url": "https://luckypickcanada.ca",
+            "files": [
+              {
+                "name": "lucky-reveal.png",
+                "type": "image/png",
+                "size": 1785929
+              }
+            ],
+            "at": 3703.300000011921,
+            "tapAt": 3700.800000011921,
+            "activationDelta": 2.599999964237213
+          }
+        ],
+        "status": "Your device could not open the share panel for this result. Use Copy link, Copy image, or Download below."
+      },
+      "timeline": {
+        "applauseCount": 1,
+        "applauseStart": 13726.800000011921,
+        "paintedAtApplause": 130,
+        "plays": [
+          {
+            "event": "play",
+            "src": "",
+            "at": 566.6999999880791
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1497.1000000238419
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 6512.899999976158
+          },
+          {
+            "event": "play",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 13726.800000011921
+          }
+        ],
+        "pauses": [
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 1496.6000000238419
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/chime-sound.mp3",
+            "at": 2797.399999976158
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/confetti-pop.wav",
+            "at": 7506.199999988079
+          },
+          {
+            "event": "pause",
+            "src": "http://127.0.0.1:3011/sounds/reveal-applause.wav",
+            "at": 13720
+          }
+        ]
+      },
+      "numbersTiming": {
+        "count": 7,
+        "completeAt": 1472,
+        "expected": 7
+      },
+      "pageErrors": []
+    },
+    {
+      "scenario": "desktop-6-late-load-close",
+      "numbers": [
+        6,
+        10,
+        13,
+        31,
+        34,
+        41
+      ],
+      "optionRects": [
+        {
+          "label": "Share to Apps",
+          "visible": true,
+          "height": 58
+        },
+        {
+          "label": "Copy the website link",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Copy the image",
+          "visible": true,
+          "height": 75
+        },
+        {
+          "label": "Download the image",
+          "visible": true,
+          "height": 75
+        }
+      ],
+      "shareState": {
+        "shares": [
+          {
+            "title": "My LuckyPickCanada reveal",
+            "text": "I just revealed my 6 Pick on LuckyPickCanada.ca: 6, 10, 13, 31, 34, 41. Lucky color: Star Gold. Lucky day: Thursday. https://luckypickcanada.ca",
+            "url": "https://luckypickcanada.ca",
+            "files": [
+              {
+                "name": "lucky-reveal.png",
+                "type": "image/png",
+                "size": 1761388
+              }
+            ],
+            "at": 3594.300000011921,
+            "tapAt": 3592.699999988079,
+            "activationDelta": 1.600000023841858
+          }
+        ],
+        "status": "Shared. Keep the luck going. 🍀"
+      },
+      "pageErrors": []
+    }
+  ]
+}

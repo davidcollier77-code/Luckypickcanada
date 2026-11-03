@@ -231,3 +231,97 @@ artwork, number, payment or email behaviour.
 - **FR-015**: Number generation, artwork, layout, prices, payments, gift email, database, API routes,
   authentication and deployment configuration MUST NOT change, and the production build MUST stay
   below the 495 MB hard maximum.
+
+## Phase 3 — Recorded applause, reliable audio lifecycle and working Android sharing (2026-11-03)
+
+Phase 2 shipped a procedurally generated 3 s atmosphere under the number-ball glow, a musical
+finishing chime, and a fourth Share to Apps action. Three problems remained: the atmosphere was a
+computer-generated sound rather than a real celebration and it played continuously under the numbers;
+the finishing chime began while the applause moment should be the only finishing sound; and Share to
+Apps did not open the Android share sheet on a Samsung phone because the 1200×1500 PNG was drawn
+inside the tap handler before `navigator.share()`, so the transient user activation had expired.
+
+### Verified baseline
+
+- `app/lib/audio.js` exported `REVEAL_GLOW_PULSE_MS = 3000` with a generated, seamless 3 s WAV played
+  as a gapless loop from `GLOW_START_MS`, stopped only by the popup effect's cleanup.
+- `public/sounds/reveal-glow-pulse.wav` was produced by `scripts/generate-reveal-glow-pulse.mjs`; its
+  provenance recorded the synthesis recipe rather than a recording.
+- The finishing chime (`public/sounds/reveal-finish-chime.mp3`, CC0) played from
+  `startFinishingChime` on the celebration's 8 % leaf cue.
+- `shareToApps()` awaited `prepareShareFile()` (canvas draw + logo decode + `toBlob`) before calling
+  `navigator.share`, then could attempt the text payload after a failed image payload — two awaits
+  and up to two native attempts inside one tap.
+- `copyLink()` set "Website link copied." even when `navigator.clipboard.writeText` was unavailable or
+  rejected, i.e. it could report a success that did not happen.
+- No `resultUrl` producer existed, so the shared link was the website URL; the reveal route accepts a
+  `cs_…` Stripe session id as its `revealId`.
+
+### User scenarios
+
+- **US9 (P1)** — At the finishing celebration the reveal plays one short, warm, real recording of a
+  small group applauding and cheering (with a few natural "yay" cheers). Nothing plays continuously
+  under the revealed numbers, and the applause plays once and ends naturally.
+- **US10 (P1)** — The applause is timed after every number has appeared and had a moment to be read,
+  as the leaves finish and the golden pulses begin. The old chime no longer plays over it.
+- **US11 (P1)** — Closing the reveal, unmounting it, reopening it, or an audio file that finishes
+  loading after the close never leaves sound playing, never starts audio late, and never plays the
+  applause twice.
+- **US12 (P1)** — On a Samsung/Android phone, tapping Share to Apps opens the native share sheet with
+  the reveal image, its numbers and a link, because the image is ready before the tap and
+  `navigator.share()` is called directly from it, once. Cancelling, an unsupported device and a
+  failing panel each produce a truthful message and leave Copy link, Copy image and Download usable.
+
+### Requirements
+
+- **FR-016**: The synthesised pulse, its WAV asset and its generator MUST be removed, and no
+  generated, synthesised or AI-produced replacement may be added.
+- **FR-017**: The finishing sound MUST be a real, professionally recorded applause/cheer clip from a
+  reputable source whose licence permits commercial use in this paid website, with source URL,
+  creator/provider, licence, attribution requirement and acquisition date recorded in the repository.
+- **FR-018**: The applause MUST NOT be layered over the removed pulse, MUST NOT loop, and no other
+  continuous drone, wind, ocean or ambient sound may play during the reveal.
+- **FR-019**: The applause MUST play exactly once per reveal, only after all six or seven numbers
+  have appeared, on the finishing cue coordinated with the maple-leaf confetti and the four golden
+  pulses. The musical finishing chime MUST be removed so it cannot clash with the applause; the
+  opening sparkle and confetti pop MUST be preserved.
+- **FR-020**: Audio MUST be owned by a reveal session: closing/unmounting stops it, invalidates any
+  in-flight load, clears pending requests, and reopening starts a fresh session. No delayed stop
+  timer, stale callback or duplicate playback may survive a reveal.
+- **FR-021**: Share to Apps MUST prepare the share image before the tap, MUST call `navigator.share()`
+  synchronously from the tap without an intervening await, and MUST make at most one native attempt
+  per tap, falling back explicitly when file sharing is unsupported or the call fails.
+- **FR-022**: Every sharing/copying status MUST reflect the real outcome; no success message may be
+  shown for a failed clipboard write or share.
+- **FR-023**: The shared content MUST contain the stored numbers and reveal text, plus a link that is
+  same-site, HTTPS, free of query/fragment and free of any Stripe session, payment, customer or secret
+  identifier. No result page may be invented; without a safe result URL the website URL is shared.
+- **FR-024**: Number generation, artwork, layout, prices, payments, gift email, database, API routes,
+  authentication and deployment configuration MUST NOT change, and the build MUST stay below 495 MB.
+
+### Edge cases
+
+- Reduced motion: no confetti, no pulses, no applause; the static finish and silent reveal remain.
+- Audio load slower than the reveal: playback starts only inside the still-active session; a load that
+  completes after close is discarded.
+- Audio load fails or is blocked by autoplay policy: logged, never thrown; the visual finish runs.
+- Share image not yet prepared at the tap: the single native call shares text + link rather than
+  delaying the sheet.
+- `navigator.canShare` throws or rejects the payload: treated as unsupported, with the explicit
+  fallback; never retried.
+- Share cancelled: "Sharing cancelled." and no fallback dialog or second attempt.
+- Clipboard unavailable: the link is shown selectable with a message that it was not copied.
+
+### Success criteria
+
+- **SC-007**: The shipped applause is a real recording with a commercial-use licence and full
+  provenance; no generated atmosphere asset or generator remains in the repository.
+- **SC-008**: In Chromium, the applause is requested once per reveal, after all numbers are visible,
+  while leaves are still painted, and the media element is paused when the reveal closes.
+- **SC-009**: A reveal closed while the applause file is delayed by 6 s records zero applause plays
+  after the close.
+- **SC-010**: The tap-to-`navigator.share` interval is under 100 ms in the probe, with exactly one
+  native call per tap for success, cancellation and failure.
+- **SC-011**: The full Vitest suite, `tsc --noEmit` and `./freebuff-verify.sh` pass, the production
+  build is measured below 495 MB, and a real Android device check is reported as pending if no device
+  is available.
