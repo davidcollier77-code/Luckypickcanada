@@ -56,3 +56,27 @@
 - Real audio review: Vosk transcript of a CC0 speech recording (words with timings); AudioSet labels on the shipped reveal sounds (`Ding`, `Clang`, `Burst, pop`, `Chime`).
 - Chromium probe (`artifacts/reveal-finish-phase2-probe.cjs`), launched with **no** `--no-sandbox`: desktop painted pixels 4506→16190 ms then empty at the same sample the layer left (`leavesGoneBeforeCleanup: true`); mobile 4266→12761 ms then empty; four-pulse class appeared only after the layer was gone, cleared after 4420 ms (desktop) / 4769 ms (mobile) with resting glow `0`; `reveal-finish-chime.mp3` requested on both; no page errors; reduced motion had no canvas, no pulse class and no chime request.
 - Not verified: a physical Android share sheet (no device in this workspace) — the Web Share ladder is exercised by source guards and was not device-tested; audible playback (no audio output device here); the "supplied recording" was not present in this workspace, so the media capability is demonstrated on recordings built from workspace material.
+
+
+## Phase 8 — Post-merge Cloudflare compile regression (2026-11-03)
+
+- [x] T023 Reproduce the supplied build error against main and trace the duplicate
+  `CONFETTI_WATCH_TIMEOUT_MS` declarations to the reveal component and its Phase 2 test.
+- [x] T024 Keep the specified 12,000 ms fallback, remove the duplicate 30,000 ms
+  declaration, and add a regression assertion that exactly one timeout declaration
+  exists in `app/lucky-reveal-celebration.jsx`.
+- [ ] T025 Run the focused reveal component and lifecycle tests, full
+  `pnpm exec vitest run`, `pnpm exec tsc --noEmit`, `./freebuff-verify.sh`,
+  and `npx @opennextjs/cloudflare build` on the hotfix PR head. Record each result
+  independently and measure the production build against the 495 MB hard maximum.
+
+### Hotfix verification record
+
+- Supplied main build — **FAIL (pre-fix)**: duplicate identifier
+  `CONFETTI_WATCH_TIMEOUT_MS` at `app/lucky-reveal-celebration.jsx:32`.
+- Source and regression-test changes — implementation recorded; final PR diff audit pending.
+- Focused tests — **PENDING**.
+- Full Vitest — **PENDING**.
+- TypeScript — **PENDING**.
+- `./freebuff-verify.sh` — **PENDING**.
+- OpenNext Cloudflare build and measured build size — **PENDING**.
