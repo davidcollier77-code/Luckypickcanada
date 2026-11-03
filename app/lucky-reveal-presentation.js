@@ -81,6 +81,29 @@ export function getLuckyColorSwatchGradient(luckyColor) {
 }
 
 /**
+ * The link shared with the reveal: the result's own page when the caller supplied
+ * one, otherwise the website. Only same-site HTTPS links are accepted, so an
+ * unexpected value can never put a third-party URL in a native share payload.
+ *
+ * @param {{resultUrl?: string}} [reveal] Reveal data.
+ * @returns {string} Absolute share link.
+ */
+export function getShareLink(reveal) {
+  const candidate = typeof reveal?.resultUrl === 'string' ? reveal.resultUrl : '';
+
+  try {
+    const url = new URL(candidate);
+    if (url.protocol === 'https:' && [LUCKY_SITE_HOST, `www.${LUCKY_SITE_HOST}`].includes(url.hostname)) {
+      return url.toString();
+    }
+  } catch {
+    // No usable result link; the website link below is always valid.
+  }
+
+  return LUCKY_SITE_URL;
+}
+
+/**
  * Accompanying text for a native share. Kept to the reveal that was already
  * shown so sharing never implies a new result.
  *

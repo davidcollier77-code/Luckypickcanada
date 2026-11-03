@@ -147,8 +147,12 @@ describe('Reveal popup presentation', () => {
 });
 
 describe('Lucky Reveal sharing', () => {
-  it('exposes one Share My Reveal control', () => {
-    expect(shareButtonSource).toContain('Share My Reveal');
+  it('exposes the Share to Apps control and the three preserved actions', () => {
+    // Phase 2 adds the fourth, clearly visible option; the three existing
+    // actions stay exactly as they were and are never hidden.
+    expect(shareButtonSource).toContain('Share to Apps');
+    expect(shareButtonSource).toContain('role="group"');
+    expect(shareButtonSource).toContain('aria-label="Share your reveal"');
     expect(shareButtonSource.match(/type="button"/g)?.length).toBeGreaterThan(0);
     expect(shareButtonSource).not.toContain('Share Your Luck');
     expect(shareButtonSource).not.toMatch(/Facebook|shareToX|shareToWhatsApp|twitter\.com|facebook\.com/i);
@@ -170,15 +174,15 @@ describe('Lucky Reveal sharing', () => {
     expect(shareButtonSource).toContain('Sharing cancelled.');
   });
 
-  it('offers the compact desktop fallback window', () => {
-    expect(shareButtonSource).toContain('role="dialog"');
+  it('keeps Copy link, Copy image and Download visible as the fallback', () => {
     expect(shareButtonSource).toContain('Download the image');
     expect(shareButtonSource).toContain('Copy the image');
     expect(shareButtonSource).toContain('Copy the website link');
     expect(shareButtonSource).toContain('ClipboardItem');
-    expect(shareButtonSource).toMatch(/URL\.createObjectURL\(shareFile\)/);
+    expect(shareButtonSource).toContain('URL.createObjectURL(file)');
     expect(shareButtonSource).toContain('URL.revokeObjectURL(url)');
-    expect(shareButtonSource).toContain('aria-labelledby="share-reveal-title"');
+    // They are always visible, not gated behind the native share panel.
+    expect(shareButtonSource).not.toContain('setIsFallbackOpen');
   });
 
   it('never generates a new result while sharing', () => {

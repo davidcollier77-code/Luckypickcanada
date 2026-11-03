@@ -240,6 +240,122 @@ export function playRevealFinishChime() {
 
 
 /*
+ * Lucky Reveal atmosphere.
+ * The revealed number balls breathe with a 3-second glow animation that
+ * alternates between dim and bright. This is the same 3-second loop: a quiet
+ * atmospheric swell, silent at the loop join and at its loudest halfway through
+ * the cycle, so it peaks exactly when the glow is brightest. It starts on the
+ * first ball's glow frame and stops with the reveal, in sync with the animation.
+ */
+export const REVEAL_GLOW_PULSE_MS = 3000;
+const REVEAL_GLOW_PULSE_VOLUME = 0.2;
+const REVEAL_GLOW_PULSE_URL = '/sounds/reveal-glow-pulse.wav';
+let revealGlowPulseLoadPromise = null;
+
+/**
+ * Load and decode the reveal's atmosphere before the glow animation starts.
+ * Sharing the promise prevents duplicate Howl instances.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready to play.
+ */
+export function preloadRevealGlowPulse() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  if (audioCache.revealGlowPulse?.state() === 'loaded') return Promise.resolve();
+  if (revealGlowPulseLoadPromise) return revealGlowPulseLoadPromise;
+
+  revealGlowPulseLoadPromise = import('howler')
+    .then(({ Howl }) => new Promise((resolve, reject) => {
+      const sound = new Howl({
+        src: [REVEAL_GLOW_PULSE_URL],
+        // Web Audio playback loops the three-second asset without a seam.
+        loop: true,
+        volume: REVEAL_GLOW_PULSE_VOLUME,
+        preload: true,
+      });
+      sound.on('playerror', (_id, error) => {
+        // A blocked or unsupported decode must never break the reveal.
+        console.warn('Reveal glow pulse playback failed:', error);
+      });
+      audioCache.revealGlowPulse = sound;
+
+      if (sound.state() === 'loaded') {
+        resolve();
+        return;
+      }
+
+      sound.once('load', () => resolve());
+      sound.once('loaderror', (_id, error) => {
+        reject(new Error(`Reveal glow pulse failed to load: ${String(error)}`));
+      });
+    }))
+    .catch((error) => {
+      revealGlowPulseLoadPromise = null;
+      audioCache.revealGlowPulse = null;
+      throw error;
+    });
+
+  return revealGlowPulseLoadPromise;
+}
+
+/**
+ * Starts the atmosphere once, fading in quickly so the first glow breath is not
+ * a hard start. Repeating the call while it is playing does nothing.
+ *
+ * @returns {Promise<void>} Resolves after requesting playback or preload.
+ */
+export function startRevealGlowPulse() {
+  if (typeof window === 'undefined') return Promise.resolve();
+
+
+  const sound = audioCache.revealGlowPulse;
+  if (sound?.state() !== 'loaded') {
+    return preloadRevealGlowPulse().then(() => {
+      // Only retry if the load actually succeeded, to avoid infinite recursion.
+      if (audioCache.revealGlowPulse?.state() !== 'loaded') return undefined;
+      return startRevealGlowPulse();
+    });
+  }
+  if (sound?.state() !== 'loaded') {
+    return preloadRevealGlowPulse().then(() => startRevealGlowPulse());
+  }
+  const activeId = audioCache.revealGlowPulseId;
+  if (activeId !== undefined && activeId !== null && sound.playing(activeId)) return Promise.resolve();
+
+  sound.volume(0);
+  const soundId = sound.play();
+  audioCache.revealGlowPulseId = soundId;
+  sound.fade(0, REVEAL_GLOW_PULSE_VOLUME, 400, soundId);
+  return Promise.resolve();
+}
+
+/**
+ * Stops the atmosphere with a short fade so closing the reveal does not cut the
+ * loop with a click. Safe to call when nothing is playing.
+ */
+export function stopRevealGlowPulse() {
+  if (typeof window === 'undefined') return;
+
+  const sound = audioCache.revealGlowPulse;
+  const soundId = audioCache.revealGlowPulseId;
+  if (!sound || soundId === undefined || soundId === null) return;
+
+  audioCache.revealGlowPulseId = null;
+  if (sound.state() !== 'loaded') {
+    sound.stop();
+    return;
+  }
+  sound.fade(REVEAL_GLOW_PULSE_VOLUME, 0, 500, soundId);
+  const stoppedId = soundId;
+  window.setTimeout(() => {
+    if (audioCache.revealGlowPulseId !== stoppedId) return;
+    sound.stop(stoppedId);
+  }, 520);
+  window.setTimeout(() => sound.stop(soundId), 520);
+}
+
+
+/*
  * Crystal Ball sound design.
  * Same-origin sounds are preloaded on entry; playback is limited to the
  * question action and reveal transitions. Howler is already a project dependency.

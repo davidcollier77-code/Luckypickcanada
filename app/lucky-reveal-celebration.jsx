@@ -28,6 +28,14 @@ const CONFETTI_WATCH_INTERVAL_MS = 200;
 const CONFETTI_WATCH_START_MS = WAVE_INTERVAL_MS * 2 + 400;
 // Safety net for a canvas that cannot be read; the layer is never left mounted.
 const CONFETTI_WATCH_TIMEOUT_MS = 12000;
+// The finishing chime is a lead-in, never the last thing to happen: it starts at
+// least this long before the safety timeout can end the celebration, so it always
+// begins while the leaves are still on screen.
+const FINISHING_CUE_LEAD_MS = 2500;
+// The finishing chime should begin while a few leaves are still falling. Once the
+// painted canvas has fallen to this fraction of its peak, only a handful of
+// leaves remain, so that sample is the chime's cue.
+const FINISHING_LEAF_RATIO = 0.08;
 // Same shape as the shipped celebration — both edges burst inward, a slower pair
 // follows, then a small centre wave — with fewer leaves per wave: 24 + 24 + 14 +
 // 14 + 10 = 86, inside the 96-particle ceiling.
@@ -113,30 +121,33 @@ const SETTLED_LEAVES = [
 ];
 
 /**
- * Reports whether the confetti canvas still paints anything. The leaves are
+ * Measures how much of the confetti canvas is still painted. The leaves are
  * allowed to cover the reveal content while they fall, so the only reliable
- * signal that they have all left the screen is an empty canvas.
+ * signal that they have all left the screen is an empty canvas; the pixel count
+ * also reveals when only a few leaves are left, which is when the finishing
+ * chime starts.
  *
  * @param {HTMLCanvasElement|null} canvas Particle canvas.
- * @returns {boolean} True when at least one painted pixel remains.
+ * @returns {number|null} Painted pixel count, or null when the canvas cannot be read.
  */
-function hasPaintedPixels(canvas) {
-  if (!canvas) return false;
+function countPaintedPixels(canvas) {
+  if (!canvas) return 0;
   const context = canvas.getContext('2d');
-  if (!context) return false;
+  if (!context) return 0;
 
   try {
     const { width, height } = canvas;
-    if (!width || !height) return false;
+    if (!width || !height) return 0;
     const { data } = context.getImageData(0, 0, width, height);
+    let paintedPixels = 0;
     for (let index = 3; index < data.length; index += 4) {
-      if (data[index] !== 0) return true;
+      if (data[index] !== 0) paintedPixels += 1;
     }
-    return false;
+    return paintedPixels;
   } catch {
     // A canvas that cannot be read (for example after a context loss) must not
     // end the celebration early; the fallback timeout owns that case.
-    return true;
+    return null;
   }
 }
 
@@ -151,11 +162,16 @@ function hasPaintedPixels(canvas) {
  *
  * Reduced-motion visitors get the static finish with no burst, sparkle, or sound.
  *
- * @param {{startDelayMs?: number, onConfettiSettled?: () => void}} props Delay from popup open
- * to the final number settling, plus a callback fired once every leaf has left the screen.
+ * @param {{startDelayMs?: number, onConfettiFinishing?: () => void, onConfettiSettled?: () => void}} props
+ * Delay from popup open to the final number settling, a callback fired once only a few leaves are
+ * still falling, and a callback fired once every leaf has left the screen.
  * @returns {JSX.Element|null} The celebration layers, or null before or after it runs.
  */
-export default function LuckyRevealCelebration({ startDelayMs = 0, onConfettiSettled }) {
+export default function LuckyRevealCelebration({
+  startDelayMs = 0,
+  onConfettiFinishing,
+  onConfettiSettled,
+}) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
   const canvasRef = useRef(null);
@@ -272,10 +288,21 @@ export default function LuckyRevealCelebration({ startDelayMs = 0, onConfettiSet
 
     let isSettled = false;
     let watchTimer = null;
+    let peakPaintedPixels = 0;
+    let hasSignalledFinishing = false;
+
+    const signalFinishing = () => {
+      if (hasSignalledFinishing) return;
+      hasSignalledFinishing = true;
+      onConfettiFinishing?.();
+    };
 
     const settle = () => {
       if (isSettled) return;
       isSettled = true;
+      // The finishing chime always comes before the pulse finish, even when the
+      // canvas could not be sampled and only the fallback timeout ended this.
+      signalFinishing();
       clearTimers();
       if (watchTimer !== null) window.clearInterval(watchTimer);
       releaseConfetti();
@@ -283,22 +310,44 @@ export default function LuckyRevealCelebration({ startDelayMs = 0, onConfettiSet
       onConfettiSettled?.();
     };
 
-    // Wait for the last wave to be on screen before trusting an empty canvas.
+    // Wait for the last wave to be on screen before trusting the canvas.
     // Both delays are compile-time constants — no untrusted data.
     const startTimer = window.setTimeout(() => {
       watchTimer = window.setInterval(() => {
-        if (!hasPaintedPixels(canvasRef.current)) settle();
+        const paintedPixels = countPaintedPixels(canvasRef.current);
+        // An unreadable canvas is the fallback timeout's problem, not a finish.
+        if (paintedPixels === null) return;
+
+        if (paintedPixels > peakPaintedPixels) peakPaintedPixels = paintedPixels;
+
+        if (paintedPixels === 0) {
+          settle();
+          return;
+        }
+
+        // Only a few leaves left: start the chime while they are still falling.
+        if (peakPaintedPixels > 0 && paintedPixels <= peakPaintedPixels * FINISHING_LEAF_RATIO) {
+          signalFinishing();
+        }
       }, CONFETTI_WATCH_INTERVAL_MS);
     }, CONFETTI_WATCH_START_MS);
     const timeoutTimer = window.setTimeout(settle, CONFETTI_WATCH_TIMEOUT_MS);
-    timersRef.current.push(startTimer, timeoutTimer);
+    // A slow or heavily loaded screen can keep leaves painted until the safety
+    // timeout, where the ratio cue would only fire on the same tick as the
+    // pulses. This lead guarantees the chime starts while they are still falling.
+    const cueTimer = window.setTimeout(
+      signalFinishing,
+      CONFETTI_WATCH_TIMEOUT_MS - FINISHING_CUE_LEAD_MS,
+    );
+    timersRef.current.push(startTimer, timeoutTimer, cueTimer);
 
     return () => {
       window.clearTimeout(startTimer);
       window.clearTimeout(timeoutTimer);
+      window.clearTimeout(cueTimer);
       if (watchTimer !== null) window.clearInterval(watchTimer);
     };
-  }, [isCelebrating, onConfettiSettled, prefersReducedMotion, releaseConfetti]);
+  }, [isCelebrating, onConfettiFinishing, onConfettiSettled, prefersReducedMotion, releaseConfetti]);
 
   useEffect(() => {
     if (prefersReducedMotion) {
