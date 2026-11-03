@@ -30,7 +30,7 @@ const FINAL_SETTLE = 0.95;
 describe('Confetti lifecycle', () => {
   it('caps the number of simultaneously active particles', () => {
     expect(celebrationSource).toContain('const MAX_ACTIVE_PARTICLES = 96;');
-    expect(celebrationSource).toContain('const budget = MAX_ACTIVE_PARTICLES - firedParticles;');
+    expect(celebrationSource).toContain('const budget = MAX_ACTIVE_PARTICLES - firedParticlesRef.current;');
     expect(celebrationSource).toContain('Math.min(wave.particleCount, budget)');
 
     const declared = [...celebrationSource.matchAll(/particleCount: (\d+)/g)].map((match) =>
