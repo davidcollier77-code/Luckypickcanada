@@ -1554,3 +1554,119 @@ class DevSkimSarifReplayVerificationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LuckyRevealTimerSuppressionTests(unittest.TestCase):
+    """Guard only the four reviewed reveal-related DS172411 false positives."""
+
+    CASES = (
+        (
+            "app/lucky-reveal-popup.js",
+            "    const timer = window.setTimeout(() => setIsNumberFinishActive(false), NUMBER_FINISH_TOTAL_MS);",
+        ),
+        (
+            "app/lucky-reveal-celebration.jsx",
+            "            window.setTimeout(() => {",
+        ),
+        (
+            "app/lucky-reveal-celebration.jsx",
+            "    const startTimer = window.setTimeout(() => {",
+        ),
+        (
+            "__tests__/lucky-reveal-finish-phase2.test.js",
+            "      'window.setTimeout(() => setIsNumberFinishActive(false), NUMBER_FINISH_TOTAL_MS)',",
+        ),
+    )
+
+    @staticmethod
+    def _result(relative_path, line, result_id):
+        offset = line.index("setTimeout")
+        return {
+            "ruleId": "DS172411",
+            "message": {"text": "Review setTimeout for untrusted data"},
+            "properties": {"testId": result_id},
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": relative_path},
+                    "region": {
+                        "startLine": 1,
+                        "endLine": 1,
+                        "startColumn": offset + 1,
+                        "endColumn": offset + len("setTimeout") + 1,
+                        # Real DevSkim uses UTF-16 char offsets. These fixtures
+                        # are intentionally ASCII, so the code-point index is equal.
+                        "charOffset": offset,
+                        "charLength": len("setTimeout"),
+                        "snippet": {"text": "setTimeout"},
+                    },
+                }
+            }],
+        }
+
+    def test_only_the_four_exact_reveal_findings_are_removed_from_sarif(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            results = []
+            for index, (relative_path, line) in enumerate(self.CASES):
+                source = root / relative_path
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text(line + "\\n", encoding="utf-8")
+                results.append(self._result(relative_path, line, f"reviewed-{index}"))
+
+            # Negative controls: an opaque callback, an altered test string,
+            # and a harmless callback in a file not on the reviewed path list.
+            negative_cases = (
+                (
+                    "app/lucky-reveal-popup.js",
+                    "window.setTimeout(untrustedCallback, 100);",
+                    "opaque-callback",
+                ),
+                (
+                    "__tests__/lucky-reveal-finish-phase2.test.js",
+                    "      'window.setTimeout(() => attackerControlled(), 100)',",
+                    "different-test-literal",
+                ),
+                (
+                    "app/unreviewed-timer.js",
+                    "window.setTimeout(() => refresh(), 100);",
+                    "unreviewed-path",
+                ),
+            )
+            for relative_path, line, result_id in negative_cases:
+                source = root / relative_path
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text(line + "\\n", encoding="utf-8")
+                results.append(self._result(relative_path, line, result_id))
+
+            sarif = {"runs": [{"results": results}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 4)
+            self.assertEqual(suppressions.remove_verified_false_positive_results(sarif), 4)
+            remaining = sarif["runs"][0]["results"]
+            self.assertEqual(
+                [result["properties"]["testId"] for result in remaining],
+                ["opaque-callback", "different-test-literal", "unreviewed-path"],
+            )
+
+    def test_reveal_timeout_rules_do_not_suppress_opaque_function_references(self):
+        for relative_path, line in (
+            (
+                "app/lucky-reveal-celebration.jsx",
+                "    const timeoutTimer = window.setTimeout(setttle, CONFETTI_WATCH_TIMEOUT_MS);",
+            ),
+            (
+                "app/lucky-reveal-celebration.jsx",
+                "    const timer = window.setTimeout(launch, Math.max(0, startDelayMs));",
+            ),
+        ):
+            with self.subTest(line=line):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    source = root / relative_path
+                    source.parent.mkdir(parents=True, exist_ok=True)
+                    source.write_text(line + "\\n", encoding="utf-8")
+                    result = self._result(relative_path, line, "opaque")
+                    sarif = {"runs": [{"results": [result]}]}
+                    self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+                    self.assertNotIn("suppressions", sarif["runs"][0]["results"][0])
+
+
