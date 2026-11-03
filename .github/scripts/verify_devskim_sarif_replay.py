@@ -60,8 +60,8 @@ AUDITED_FALSE_POSITIVES = (
         rule_id="DS172411",
         paths=("app/lucky-reveal-popup.js",),
         source_line_pattern=re.compile(
-            r"^[ \\t]*const timer = window\\.setTimeout\\(\\(\\) => "
-            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\);[ \\t]*$"
+            r"^ *const timer = window\.setTimeout\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\); *$"
         ),
     ),
     AuditedFinding(
@@ -69,7 +69,7 @@ AUDITED_FALSE_POSITIVES = (
         rule_id="DS172411",
         paths=("app/lucky-reveal-celebration.jsx",),
         source_line_pattern=re.compile(
-            r"^[ \\t]*window\\.setTimeout\\(\\(\\) => \\{[ \\t]*$"
+            r"^ *window\.setTimeout\(\(\) => \{ *$"
         ),
     ),
     AuditedFinding(
@@ -77,7 +77,7 @@ AUDITED_FALSE_POSITIVES = (
         rule_id="DS172411",
         paths=("app/lucky-reveal-celebration.jsx",),
         source_line_pattern=re.compile(
-            r"^[ \\t]*const startTimer = window\\.setTimeout\\(\\(\\) => \\{[ \\t]*$"
+            r"^ *const startTimer = window\.setTimeout\(\(\) => \{ *$"
         ),
     ),
     AuditedFinding(
@@ -85,12 +85,11 @@ AUDITED_FALSE_POSITIVES = (
         rule_id="DS172411",
         paths=("__tests__/lucky-reveal-finish-phase2.test.js",),
         source_line_pattern=re.compile(
-            r"^[ \\t]*'window\\.setTimeout\\(\\(\\) => "
-            r"setIsNumberFinishActive\\(false\\), NUMBER_FINISH_TOTAL_MS\\)',[ \\t]*$"
+            r"^ *'window\.setTimeout\(\(\) => "
+            r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\)', *$"
         ),
     ),
 )
-
 
 class ReplayViolation(RuntimeError):
     """The replay of real scanner output is unsafe or left a false positive visible."""
