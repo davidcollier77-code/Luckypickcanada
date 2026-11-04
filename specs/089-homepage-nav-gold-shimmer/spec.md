@@ -152,6 +152,14 @@ data, entity, schema or stored value is introduced or modified.
   AVIF first and the WebP fallback intact.
 - **SC-007**: The production build stays within the repository's 495 MB limit.
 
+- **FR-012**: The automated whole-page visual baseline MUST exclude the animated shimmer overlay so the screenshot remains deterministic, while a separate browser test verifies the real animation.
+- **FR-013**: Automated browser coverage MUST verify the single Lucky Stories destination and confirm that all three shimmer regions move and are removed when reduced motion is enabled.
+
+## Additional Visual QA Success Criteria
+
+- **SC-008**: Desktop and both mobile homepage screenshot checks pass with only the animated decorative overlay excluded from the static capture and a narrowly bounded allowance for the intentional navigation text/layout change.
+- **SC-009**: Playwright observes changing computed transforms for the ring, wordmark, and Explore shimmer bands, then confirms each region is hidden under reduced-motion emulation.
+
 ## Assumptions
 
 - "The existing Stories homepage" is read as the Lucky Stories area that already

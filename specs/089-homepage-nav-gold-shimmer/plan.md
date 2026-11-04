@@ -75,3 +75,12 @@ Hero artwork and wording, colours, layout, the Explore Your Luck click/touch/
 keyboard activation with its confetti, sound and eased scroll, AVIF-first
 delivery with the WebP fallback and the single AVIF preload hint, every route
 including `/map`, and all non-hero homepage content.
+
+
+## CI Visual QA repair
+
+The existing approved homepage viewport snapshots predate the intentional hero navigation consolidation, and the new shimmer is time-dependent decoration. Keep the whole-page screenshot comparison deterministic by injecting a test-only style that hides only .hero-gold-shimmer-frame for that screenshot. Do not change the live stylesheet or the production animation.
+
+Keep a strict maxDiffPixelRatio of 0.007 to accommodate the measured, intentional navigation-only difference in the legacy mobile snapshots; this remains below one percent. A separate Playwright browser test must verify the real page: exactly four hero navigation links, the single Lucky Stories destination, no Lucky Map hero entry, visibly changing pseudo-element transforms in the ring/wordmark/Explore regions, and all three regions hidden when prefers-reduced-motion: reduce is emulated.
+
+This is test-only behavior. It must not change homepage rendering, artwork, shimmer timing/appearance, the Explore control, or image delivery.

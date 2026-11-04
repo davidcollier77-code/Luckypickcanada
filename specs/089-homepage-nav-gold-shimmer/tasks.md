@@ -58,3 +58,16 @@ sources, the single AVIF preload hint and no image-file change.
 - [x] T016 Capture browser evidence (desktop and mobile): two hero captures a few seconds apart proving movement in all three regions, no horizontal overflow, zero console errors, and the reduced-motion path — PASS: max consecutive-frame change per region (desktop ring 7.254 / wordmark 9.620 / explore 11.447; mobile ring 6.291 / wordmark 12.596 / explore 14.677), 0 px overflow, 0 console/page errors, reduced motion 0
 - [x] T017 Inspect the complete final diff and confirm it contains only the intended files
 - [x] T018 Write the PR summary and update `memory-bank/activeContext.md`; leave the PR open and unmerged
+
+
+## Phase 7: CI homepage Visual QA repair
+
+**Goal**: Keep the approved whole-page screenshot comparison deterministic while independently testing the intentional navigation and animated shimmer behavior in a real browser.
+
+**Independent test**: The desktop, mobile-390, and mobile-412 homepage screenshot checks pass; a browser test verifies the four-link hero navigation, moving shimmer transforms in all three regions, and reduced-motion removal.
+
+- [ ] T019 [US2] Make the whole-page screenshot deterministic in tests/visual/homepage.spec.ts by hiding only the decorative shimmer frame for that static capture and allowing no more than a 0.7% pixel difference for the intentional nav update
+- [ ] T020 [US1] Add browser assertions in tests/visual/homepage.spec.ts for the single Lucky Stories link, the absent hero Lucky Map link, and the expected four navigation links
+- [ ] T021 [US2] Add browser coverage in tests/visual/homepage.spec.ts proving the ring, wordmark, and Explore shimmer bands move and all three are hidden under reduced-motion emulation
+- [ ] T022 Run the complete configured homepage visual Playwright projects and inspect the resulting screenshots/diffs; report all actual results without loosening the visual threshold further
+- [ ] T023 Run ./freebuff-verify.sh, required repository checks, and a final diff audit; leave PR #1709 open and unmerged
