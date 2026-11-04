@@ -172,6 +172,35 @@ and, where the cause lies outside the repository, to state exactly what must be 
 - By error code alone, a quoted or truncated paste is indistinguishable from the wrong credential type, so
   the report names both possibilities rather than asserting one.
 
+### Revision 2 — header-construction discrimination (2026-11-04)
+
+**Trigger**: the owner reports that the restricted token authenticates as a direct bearer credential and
+returns the `luckypickcanada.ca` zone, so the credential is valid and the first-round credential-shape
+conclusion must be re-tested rather than repeated.
+
+- **FR-015**: The diagnosis MUST read the full provider payload including `error_chain`, because Cloudflare
+  nests the specific reason there instead of emitting a second top-level error.
+- **FR-016**: The investigation MUST distinguish the bearer path from the legacy `X-Auth-Key`/`X-Auth-Email`
+  path by their chain codes (`6111` versus `6103` versus `9106`/`9107`).
+- **FR-017**: Any earlier conclusion contradicted by new evidence MUST be explicitly withdrawn in the
+  artifacts and the PR summary, not silently overwritten.
+- **FR-018**: The correction MUST be attributed to the layer that constructs the header, and a
+  no-new-credential owner check MUST be offered; creating, rotating or revealing a credential remains
+  forbidden under FR-013.
+
+**Withdrawn in revision 2**: the claim that a 37-character Global API Key produces `6003/6111`. Measured
+against the public API, that shape returns `9103` with an email header and `9106` without, and the legacy
+slot returns chain `6103`, not `6111`. A doubled `Bearer ` prefix is also excluded because it parses as
+well-formed and returns `9109`.
+
+**Acceptance scenarios (revision 2)**
+
+5. **Given** the connector's reported `error_chain` code, **When** the same code is reproduced with a
+   placeholder bearer value, **Then** the fault is attributed to header construction rather than to the
+   credential's validity.
+6. **Given** an earlier hypothesis that a different credential shape is at fault, **When** measurement
+   refutes it, **Then** the artifacts and the PR summary record the withdrawal with the counter-evidence.
+
 ## Assumptions
 
 - Skills are an account-level library, and MCP connections are account-level, so the audit reads them

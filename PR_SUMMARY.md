@@ -64,7 +64,7 @@ Tool schemas were discovered for all four apps; every account then received a re
 |---|---|---|---|
 | **GitHub** `github_passen-phenin` (`davidcollier77-code`) | `GET_THE_AUTHENTICATED_USER`, `LIST_REPOSITORIES_FOR_THE_AUTHENTICATED_USER`, `LIST_ORGANIZATIONS_FOR_THE_AUTHENTICATED_USER`, `FIND_REPOSITORIES`, `GET_A_REPOSITORY`, `LIST_REPOSITORIES_FOR_A_USER` | `GITHUB_GET_THE_AUTHENTICATED_USER` | **VERIFIED WORKING** — returned the authenticated profile, login `davidcollier77-code`, 1 public repo, 0 private |
 | **Neon** `neon_wasir-mats` | `RETRIEVE_PROJECTS_LIST`, `GET_USER_ORGANIZATIONS`, `GET_BRANCHES_FOR_PROJECT`, `FETCH_DATABASE_FOR_BRANCH`, `ACCESS_PROJECT_DETAILS_BY_ID`, `RETRIEVE_BRANCH_DATABASE_DETAILS`, `GET_PROJECT_CONNECTION_URI`, `LIST_SHARED_PROJECTS` | `NEON_RETRIEVE_PROJECTS_LIST` | **VERIFIED WORKING** — 3 projects returned (`neon-purple-dog`, `neon-rose-kite`, `neon-fuchsia-tree`), org `org-wild-boat-43871967`, Postgres 17 |
-| **Cloudflare Api Key** `cloudflare_api_key_gange-suzy` (reconnected; replaced `cloudflare_api_key_dop-scenic`) | `LIST_ZONES`, `LIST_DNS_RECORDS`, `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` | `CLOUDFLARE_API_KEY_LIST_ZONES` ×2 (unfiltered, then name-filtered) | **FAILING** — error `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header`. Identical on both calls after reconnection, so the fault is the credential format, not the previous connection |
+| **Cloudflare Api Key** `cloudflare_api_key_gange-suzy` (reconnected; replaced `cloudflare_api_key_dop-scenic`) | `LIST_ZONES`, `LIST_DNS_RECORDS`, `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` | `CLOUDFLARE_API_KEY_LIST_ZONES` ×2 (unfiltered, then name-filtered) | **FAILING** — error `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header`. Identical on both calls after reconnection; the `error_chain` names the **Authorization** header, so the connector's bearer value is at fault (corrected root cause below) |
 | **Google Stitch** `google_stitch_coost-namda` | `LIST_PROJECTS`, `GET_PROJECT`, `LIST_SCREENS` | `GOOGLE_STITCH_LIST_PROJECTS` | **FAILING** — "Google Stitch rejected the connected API key." |No write, delete, overwrite or deploy tool was invoked. Failure text is quoted as provider codes and messages only; no credential value was read, printed or stored.
 
 ### Cloudflare re-verification after reconnection (2026-11-04T09:28Z)
@@ -84,50 +84,57 @@ A read-only re-test produced these results.
 5. **Tools — all five discoverable, none executable:** `LIST_ZONES`, `LIST_DNS_RECORDS` (read-only) and
    `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` (mutating, never invoked).
 
-### Root cause — the saved value is not a well-formed API token (demonstrated)
+### Root cause — corrected 2026-11-04 (second round): the bearer value is not the saved token
 
-Cloudflare classifies a credential's shape before it validates its identity, so the error code itself
-identifies the fault. Deliberately shaped **fake** credentials were sent from the workspace to the public
-`/client/v4/zones` endpoint — no real credential was used, read or transmitted — giving this mapping:
+The first round concluded that the saved value was a 37-character Global API Key. **That conclusion is
+withdrawn.** The owner reports that a direct bearer call with the restricted token returns the
+`luckypickcanada.ca` zone, so the credential is valid and the fault must lie in how the connector builds
+the header. A second differential round tested exactly that, parsing the full payload including
+`error_chain`, because Cloudflare nests the specific reason there instead of emitting a second top-level
+error.
 
-| `Authorization` value shape | Cloudflare response |
+| Request actually sent | Cloudflare response (verbatim codes) |
 |---|---|
-| header absent entirely | `9106 Missing X-Auth-Email` + `9107 Missing X-Auth-Key` |
-| `Bearer` with empty value | `6003 / 6111 Invalid format for Authorization header` |
-| value with no `Bearer` scheme | `6003 / 6111` |
-| `Bearer` + 32, 36, 37, 38 or 39 characters | `6003 / 6111` |
-| `Bearer` + 37-character hex (Global API Key shape) | `6003 / 6111` |
-| `Bearer` + 40 characters containing `!`, an internal space, or wrapping quotes | `6003 / 6111` |
-| `Bearer` + 40 or 41 characters from `[A-Za-z0-9_-]` | **`9109 Invalid access token`** |
+| `Authorization: Bearer <40 clean chars>` (control) | `errors[9109] Invalid access token` |
+| `Authorization: Bearer undefined` | `errors[6003]` + `chain[6111] Invalid format for Authorization header` |
+| `Authorization: Bearer ` (empty value) | `errors[6003]` + `chain[6111]` |
+| `Authorization: Bearer <40 chars with an internal space>` | `errors[6003]` + `chain[6111]` |
+| `Authorization: Bearer` (scheme only) | `errors[6003]` + `chain[6111]` |
+| bare value, or `Api-Key` / `Token` / `Basic` scheme | `errors[6003]` + `chain[6111]` |
+| token placed in `X-Auth-Key` + `X-Auth-Email` | `errors[6003]` + **`chain[6103] Invalid format for X-Auth-Key header`** |
+| genuine 37-hex Global-Key shape + `X-Auth-Email` | `errors[9103] Unknown X-Auth-Key or X-Auth-Email` |
+| 37-hex value in `X-Auth-Key`, no email | `errors[9106] Missing X-Auth-Email header` |
+| no credential headers at all | `errors[9106]` + `errors[9107]` |
+| doubled `Bearer Bearer <40>` | `errors[9109]` (parsed, then rejected as invalid) |
 
-Two conclusions follow directly from that table:
+Three findings, and they are what corrects the first round:
 
-1. **A credential is being sent.** An absent header returns `9106/9107`; an empty, schemeless or malformed
-   value returns `6003/6111`. The MCP returns `6003/6111`, so Freebuff *is* attaching an
-   `Authorization: Bearer …` header, and Cloudflare refuses its **value** — this is not a missing token and
-   not a scope problem.
-2. **The value is not a clean API token.** A syntactically valid 40-character token, even a completely
-   fake one, is parsed and rejected as *invalid* (`9109`). Anything shorter than 40 characters, carrying a
-   quote or an internal space, or shaped like a 37-character Global API Key is rejected as *malformed*
-   (`6111`) — the exact error the MCP reports.
+1. **The connector is sending `Authorization`, and its value is wrong.** The MCP's `error_chain` is `6111`,
+   which names the *Authorization* header specifically. A token in `X-Auth-Key` produces `6103` instead, and
+   an absent header produces `9106/9107` — so the connector is not using the legacy key path and is not
+   omitting the header. It attaches a bearer value Cloudflare cannot parse.
+2. **A genuine Global API Key cannot produce this error.** In the legacy path it returns `9103` (with an
+   email) or `9106` (without). The "37-hex key saved as a token" explanation is therefore not supported.
+3. **A doubled `Bearer ` prefix is excluded.** It parses as a well-formed header and returns `9109`, so the
+   connector is not double-prefixing.
 
-**Root cause: the credential value stored in the Freebuff Cloudflare connection**, not the repository, not
-the tool schema, and not Cloudflare availability. The most likely specific cause is a **Global API Key
-(37 hex characters) saved where an API Token is expected** — the classic confusion for a connector named
-"Cloudflare Api Key" — with a quoted, spaced or truncated paste as the other shape that reproduces the
-identical code.
+**Root cause: the Freebuff Cloudflare connector's credential resolution and `Authorization` construction.**
+Because a clean 40-character value can never yield `6111`, and the saved restricted token works as a direct
+bearer credential, the connector is transmitting an empty, placeholder (the shape of a `Bearer undefined`
+produced by an unresolved secret lookup) or whitespace-mutated value in place of the token. It should send
+`Authorization: Bearer <token>` and fail closed with a configuration error rather than sending a placeholder.
 
-**Exactly what needs correcting** (owner action; not performable from this workspace):
+**What must be corrected, and where:**
 
-1. Use a **scoped API Token**, not a Global API Key, carrying **Zone:Read** and **DNS:Read** for
-   `luckypickcanada.ca`.
-2. Paste it into the Freebuff Cloudflare connection as one unbroken 40-character string — no quotes, no
-   spaces, no trailing newline.
-3. Secret-free self-check the owner can do alone: **37 hex characters means a Global API Key** (wrong
-   credential type); **40 characters means an API Token** (correct). A clean 40-character token cannot
-   produce `6111`, so if `6111` persists after saving one, the connector itself is corrupting the value.
-4. Re-run `CLOUDFLARE_API_KEY_LIST_ZONES`; a successful zone list is the only thing that confirms the
-   repair. Until that call succeeds the repair is **BLOCKED**, not complete.
+1. **In the connector (primary):** resolve the stored token, send it as the bearer value, and refuse the
+   request when the secret is missing instead of emitting `Bearer undefined`. This is outside the
+   repository: `code_search` finds no `api.cloudflare.com` client and no `Authorization` construction
+   anywhere in the workspace, and no MCP configuration file exists, so no repository change can fix it.
+2. **In the connection configuration (owner, no new token required):** confirm the connection is an **API
+   Token** connection rather than an API Key connection, which expects a 37-hex key plus an account email,
+   and re-save the same token without quotes or whitespace.
+3. **Confirmation:** only `CLOUDFLARE_API_KEY_LIST_ZONES` returning the `luckypickcanada.ca` zone proves the
+   repair. None has succeeded, so the repair remains **BLOCKED**.
 
 ### An MCP the repository depends on but which is not connected
 
@@ -204,11 +211,15 @@ relevance stated in the request, and the retrieval was on demand — not a fixed
 
 Presented separately because every item is outside an audit-only scope; nothing below was changed.
 
-1. **Cloudflare — replace the saved credential; reconnecting alone did not help.** The reconnected account
-   reproduced `6003/6111` exactly, and the error-code differential above shows that code means a
-   *malformed* bearer value. Save a scoped **API Token** (40 characters from `[A-Za-z0-9_-]`, Zone:Read +
-   DNS:Read) instead of a 37-character Global API Key, with no quotes or whitespace. Every Cloudflare tool
-   stays unusable until a read-only call succeeds.
+1. **Cloudflare — the connector sends a bearer value that is not the saved token; the fix is in the
+   connector, not the credential.** The `error_chain` names the *Authorization* header (`6111`), which
+   excludes the legacy key path (`6103`) and a missing header (`9106/9107`), and a genuine Global API Key
+   returns `9103` in that path — never `6111`. Since the same restricted token is reported working as a
+   direct bearer credential, the connector must resolve the stored secret, send
+   `Authorization: Bearer <token>`, and fail closed instead of emitting a placeholder. Owner check needing
+   no new token: confirm the connection is an **API Token** (an API Key connection expects a 37-hex key plus
+   an account email) and re-save the same token without quotes or whitespace. Every Cloudflare tool stays
+   unusable until a read-only call succeeds.
 2. **Reconnect the Google Stitch MCP.** The key is rejected outright, so no Stitch project, screen or
    design-system read can succeed.
 3. **Resolve the Context7 governance gap — either connect Context7 or remove the dead references.**
@@ -254,7 +265,8 @@ were reused.
 | Skill resource load | **PASS** | `security-review` → `references/injection.md` returned in full |
 | MCP discovery | **PASS** | Tool schemas retrieved for all 4 accounts |
 | MCP execution | **FAIL (2 of 4 accounts)** | GitHub and Neon returned data; Cloudflare and Stitch returned provider errors. Cloudflare re-tested on the reconnected account at 09:28Z — unchanged `6003/6111` |
-| Cloudflare root-cause differential | **PASS** | 11 deliberately shaped fake credentials to the public API mapped every error class; a clean 40-character value returns `9109`, everything malformed returns `6003/6111`. No real credential used |
+| Cloudflare root-cause differential | **PASS** | 20 deliberately shaped fake credentials sent to the public API, reading `errors[]` **and** `error_chain[]`; a clean 40-character value returns `9109`, placeholder/empty/malformed bearer values return `6003`+`6111`, the legacy key slot returns chain `6103`. No real credential used |
+| Cloudflare credential-shape hypothesis | **RETRACTED** | The first-round "37-character Global API Key" explanation is refuted by measurement: that shape returns `9103` (with an email) or `9106` (without), and the legacy slot returns `6103`, not `6111` |
 | Cloudflare authentication repair | **BLOCKED** | The credential is stored account-side; it cannot be read or replaced from the workspace, so the fix is owner action |
 | Repository gate | **PASS** | `SPEC_KIT_BASE_REF=0320d475… ./freebuff-verify.sh` exit 0 — Spec Kit gate verified all three artifacts, `tsc --noEmit` clean, production build succeeded, refresh-docs 19 passed / 0 failed |
 | Build size | **PASS** | `.next` 301,017,232 B (287.1 MiB) + `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB |
@@ -270,19 +282,22 @@ were reused.
 - Whether a *different* unstated task would trigger a skill was not tested; the conclusion about explicit
   instruction rests on this session, where every invocation traced to the task text plus the measured
   absence of skill guidance in `AGENTS.md`.
-- The Cloudflare root cause is identified (a malformed bearer value — see the differential), but the value
-  itself cannot be inspected, corrected or replaced from this workspace, so the connection still cannot
-  authenticate. The claim rests on Cloudflare's measured error classes, not on knowledge of what the owner's
-  specific string contains. Stitch is still undiagnosed beyond its rejection message.
-- The repair is **BLOCKED** on owner action: a scoped API Token must be saved in Freebuff before any
-  Cloudflare read can succeed, and only a successful read-only call can confirm it.
+- The Cloudflare failure is localised to the connector's bearer value, not to the credential: the same
+  restricted token is reported working as a direct bearer credential. The connector's request construction
+  and secret lookup are not inspectable from this workspace, so the defect cannot be corrected here and no
+  repository change can affect it. Stitch is still undiagnosed beyond its rejection message.
+- The repair is **BLOCKED**: the correction belongs to the Freebuff Cloudflare connector's credential
+  resolution and header construction, and secondarily to its API-Token vs API-Key configuration. Only a
+  successful read-only call can confirm it; none has been made.
 - `web-design-guidelines`, `canvas-design` and `extract-design-system` were read but not executed, so their
   runtime dependencies are reported as unverified rather than broken.
 - GitHub results reflect a free-tier personal account with 1 public repository; no organisation scopes were
   exercised.
 
-**USEFUL RESULT: YES** — every requested question is answered and every claim is backed by a real tool
-call: 14/14 skills loaded, 4/4 MCP accounts exercised, and the two failures are proven with provider error
-text rather than inferred. The two broken connections are **findings about the audited systems**, not unmet
-audit criteria; repairing them needs the owner's credentials and is listed as an approval-gated
-recommendation.
+**USEFUL RESULT (audit): YES** — every requested question is answered and every claim is backed by a real
+tool call: 14/14 skills loaded, 4/4 MCP accounts exercised, and the two failures are proven with provider
+error text rather than inferred.
+
+**USEFUL RESULT (Cloudflare repair follow-up): NO** — the failure is localised with demonstrated evidence and
+the earlier explanation is withdrawn, but Freebuff still cannot authenticate, no read-only Cloudflare call
+has succeeded, and the correction lies outside the repository.

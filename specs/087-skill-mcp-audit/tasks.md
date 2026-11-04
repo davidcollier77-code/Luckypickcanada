@@ -89,3 +89,21 @@
   40 characters means a token) and record the repair as **BLOCKED** until a read-only call succeeds.
 - [x] **T026** Map the boundary precisely — 39 characters still yields `6111`, 40 yields `9109` — so the
   finding rests on a measured threshold rather than a single sample.
+
+## Phase 8 — Header-construction repair investigation (revision 2)
+
+- [x] **T027** Re-read the provider payload with `error_chain` included and confirm `6111` is a chain child
+  of `6003`, not a second top-level error.
+- [x] **T028** Probe the discriminating bearer shapes: `Bearer undefined`, empty bearer, an internal space,
+  scheme-only and non-bearer schemes all return `6003`/`6111`; a clean 40-character value returns `9109`.
+- [x] **T029** Probe the legacy path: a token in `X-Auth-Key` + email returns chain `6103`; a genuine 37-hex
+  Global-Key shape returns `9103`; `X-Auth-Key` alone returns `9106`. This **withdraws** the first-round
+  claim that a Global API Key produces `6111`, and excludes a doubled `Bearer ` prefix (`9109`).
+- [x] **T030** Attribute the fault to the connector's credential resolution and `Authorization`
+  construction: a valid token cannot yield `6111`, so the transmitted value is a placeholder, empty or
+  whitespace-mutated.
+- [x] **T031** Demonstrate that no repository change can fix it: `code_search` finds no `api.cloudflare.com`
+  client and no `Authorization` construction, and no MCP configuration file exists in the workspace.
+- [x] **T032** Prescribe the correction (connector: resolve the secret, send `Authorization: Bearer <token>`,
+  fail closed) plus the owner's no-new-token check (API Token connection, clean re-save), and keep the repair
+  **BLOCKED** until a read-only call succeeds.

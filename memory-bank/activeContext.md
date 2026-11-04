@@ -14,14 +14,18 @@
   `cloudflare_api_key_gange-suzy` and re-tested read-only on 2026-11-04 at 09:28Z; `6003 Invalid request
   headers` / `6111 Invalid format for Authorization header` persists across two calls, so no account,
   `luckypickcanada.ca` zone or DNS record is reachable.
-- **Cloudflare root cause (demonstrated):** shaped fake credentials sent to the public Cloudflare API
-  mapped the error classes — absent header gives `9106/9107`, an empty/schemeless/short (<40 chars) or
-  quoted/spaced value gives `6003/6111`, and a clean 40-character token gives `9109 Invalid access
-  token`. The MCP's `6111` therefore means a **malformed bearer value**, most likely a 37-character
-  Global API Key saved where an API Token is expected. The fix is an owner action (scoped API Token
-  with Zone:Read + DNS:Read, pasted as one unbroken 40-character string); the repair is **BLOCKED**, and
-  no credential was read, created, revoked or changed.
-  **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
+- **Cloudflare root cause (corrected 2026-11-04, round 2):** the connector's bearer value, not the
+  credential. The full payload shows `6111 Invalid format for Authorization header` as an `error_chain` child
+  of `6003`; a token placed in `X-Auth-Key` yields chain `6103` instead, and a genuine 37-hex Global API Key
+  yields `9103` (with an email) or `9106` (without), so the earlier "37-character Global API Key" explanation
+  is **withdrawn**. `Bearer undefined`, empty, internal-space and scheme-only values all reproduce
+  `6003/6111`, while a clean 40-character value returns `9109`; a valid token therefore cannot produce the
+  observed error, so the connector transmits a placeholder or mutated value instead of the token. The
+  correction belongs to the connector's secret resolution and header construction (outside the repository —
+  no Cloudflare client, `Authorization` construction or MCP configuration exists here); the owner's
+  no-new-token check is the connection type plus a clean re-save. Repair remains **BLOCKED**; no credential
+  was read, created, revoked or changed, and no DNS record or permission was touched.
+- ****Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
   credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
   `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration
   exists at all.

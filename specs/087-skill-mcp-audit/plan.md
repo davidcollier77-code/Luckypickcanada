@@ -110,3 +110,49 @@
   `SPEC_KIT_BASE_REF` set to the task base if `origin/main` is stale.
 - Measure the production build against the 495 MB maximum.
 - Inspect the complete final diff and confirm it contains only the artifacts listed above.
+
+## Follow-up round 2 — header construction, not credential shape
+
+### Technical context
+
+- The owner reports the restricted token authenticates as a direct bearer credential, so the credential is
+  treated as valid and the first-round explanation becomes a hypothesis to re-test.
+- Cloudflare nests the specific reason in `error_chain`, so a probe that reads only `errors[]` cannot see
+  `6111` at all. The second round parses both fields.
+
+### Design
+
+1. **Re-read the payload shape** — capture `errors[]` and `error_chain[]` verbatim for every probe.
+2. **Discriminate the paths** — bearer with a token-shaped value (`9109`), bearer with a placeholder or empty
+   value (`6003`+`6111`), token in `X-Auth-Key` with an email (`6003`+`6103`), Global-Key shape with an email
+   (`9103`), `X-Auth-Key` alone (`9106`), and no credential headers (`9106`+`9107`).
+3. **Refute the first round** — the Global-Key and doubled-prefix explanations cannot produce `6111`; record
+   the withdrawal with the counter-evidence instead of deleting the old text.
+4. **Locate the construction** — search the repository for a Cloudflare API client, `Authorization`
+   construction or MCP configuration; a nil result places the defect in the connector runtime.
+5. **Prescribe** — the connector must resolve the stored token, send `Authorization: Bearer <token>` and fail
+   closed instead of emitting a placeholder; the owner's no-new-token check is the connection type plus a
+   clean re-save.
+
+### Measured result
+
+- `Bearer undefined` → `6003`/`6111`; empty bearer → `6003`/`6111`; internal space → `6003`/`6111`;
+  scheme-only and non-bearer schemes → `6003`/`6111`; clean 40 characters → `9109`.
+- Token in `X-Auth-Key` + email → `6003`/**`6103`**; 37-hex key + email → `9103`; `X-Auth-Key` alone →
+  `9106`; doubled `Bearer ` prefix → `9109`.
+- Repository search: no `api.cloudflare.com` client, no `Authorization` header construction, and zero MCP
+  configuration files, so the header cannot be built anywhere in this workspace.
+
+### Alternatives rejected
+
+- **Repeating the first-round credential-shape conclusion** — contradicted by the direct bearer success and
+  by the `9103`/`6103` measurements.
+- **Asking for a new token** — excluded by the request; the working credential already exists.
+- **Editing the connector** — it is platform code outside the workspace; the correction is prescribed, not
+  applied.
+
+### Files
+
+- Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,
+  `memory-bank/activeContext.md`. No application, dependency, workflow, environment, `.docs/` or `AGENTS.md`
+  change.
