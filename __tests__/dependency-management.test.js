@@ -44,10 +44,13 @@ function lockfileOverrides() {
 }
 
 /** Specifier recorded for a direct dependency in the lockfile importer. */
+/** The negative-lookahead (?![-\w]) ensures an exact YAML key match:
+ *  lockfileSpecifier('react') will NOT match a 'react-dom' block. */
 function lockfileSpecifier(name) {
-  const pattern = new RegExp(`\\n      ${name}:\\n        specifier: ([^\\n]+)\\n`);
   const match = lockfile.match(pattern);
   return match ? match[1].trim() : null;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp('\
 }
 
 /** Installed version recorded for a direct dependency in the lockfile importer. */
@@ -55,11 +58,14 @@ function lockfileVersion(name) {
   const pattern = new RegExp(`\\n      ${name}:\\n        specifier: [^\\n]+\\n        version: ([^\\n(]+)`);
   const match = lockfile.match(pattern);
   return match ? match[1].trim() : null;
+/** The negative-lookahead (?![-\w]) ensures an exact YAML key match:
+ *  lockfileVersion('react') will NOT match a 'react-dom' block. */
 }
-
 /** Dependabot update entries, keyed by package ecosystem. */
 function dependabotEntries() {
   const entries = {};
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp('\
   let current = null;
 
   for (const line of dependabot.split('\n')) {

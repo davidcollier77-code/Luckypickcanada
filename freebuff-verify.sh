@@ -11,7 +11,7 @@ cd "$SCRIPT_DIR" || exit 1
 echo -e "\n--- Bootstrapping the pinned package manager ---"
 # Fails closed when package.json stops pinning pnpm, when the pinned version
 # cannot be provisioned, or when node_modules no longer matches the lockfile.
-source "$SCRIPT_DIR/scripts/bootstrap-pnpm.sh" || exit 1
+source "$SCRIPT_DIR/scripts/bootstrap-pnpm.sh" || { echo "Bootstrap failed." >&2; exit 1; }
 if ! pnpm install --frozen-lockfile; then
   echo "❌ pnpm install --frozen-lockfile failed; dependencies do not match pnpm-lock.yaml." >&2
   exit 1
