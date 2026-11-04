@@ -25,7 +25,14 @@
   no Cloudflare client, `Authorization` construction or MCP configuration exists here); the owner's
   no-new-token check is the connection type plus a clean re-save. Repair remains **BLOCKED**; no credential
   was read, created, revoked or changed, and no DNS record or permission was touched.
-- ****Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
+- **Round 3 (2026-11-04):** the supplied zone ID `0af2a3985db329cdb671829cb59a41f1` allowed the DNS endpoint to
+  be called directly: `LIST_DNS_RECORDS` → `9106 Authentication failed (status: 400)`, while `LIST_ZONES`
+  (name filter) → `6003`+`6111`. HTTP **400** accompanies malformed-header cases while **403** accompanies
+  invalid credentials, so the connector's header is structurally invalid before the credential's identity is
+  checked. No accessible connector code, configuration or secret store exists, so a complete engineering
+  escalation was written instead of an invented repository fix. Time used this round ≈15 minutes (cap 30);
+  the repair is **BLOCKED**, not achieved.
+- **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
   credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
   `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration
   exists at all.
