@@ -1,6 +1,7 @@
 # Restore the Lucky Reveal Paywalls
 
-**Branch:** `freebuff/restore-reveal-paywalls` targets `main`.
+**PR:** [#1704](https://github.com/davidcollier77-code/Luckypickcanada/pull/1704) — open and unmerged,
+awaiting owner review. Branch `freebuff/restore-reveal-paywalls` targets `main`.
 
 ## Task and task groups
 

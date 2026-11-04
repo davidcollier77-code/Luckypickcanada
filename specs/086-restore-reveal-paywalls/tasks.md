@@ -46,4 +46,4 @@
 - [x] **T015** Run the production smoke checks (homepage, disabled test page/route, prices) and record
   anything not run.
 - [x] **T016** Inspect the complete final diff, update `PR_SUMMARY.md`, `memory-bank/activeContext.md` and
-  `memory-bank/progress.md`, and leave the PR open and unmerged.
+  `memory-bank/progress.md`, and leave PR #1704 open and unmerged.
