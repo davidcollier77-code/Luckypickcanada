@@ -1,129 +1,133 @@
-# Gift Email Test Tool
+# Restore the Lucky Reveal Paywalls
 
-**PR:** [#1703](https://github.com/davidcollier77-code/Luckypickcanada/pull/1703) — open and unmerged,
-awaiting owner review. Branch `freebuff/e6b5a381045c337886e3bec8` targets `main`.
+**Branch:** `freebuff/restore-reveal-paywalls` targets `main`.
 
 ## Task and task groups
 
-**Task groups: `creation` + `testing` + `security`.**
+**Task groups: `security` + `testing`.**
 
-- `creation` — the task adds a new page and route that did not exist.
-- `testing` — the purpose is to prove that the gift reveal generates and that the gift email is sent,
-  so the work is backed by executed route tests and a production smoke test.
-- `security` — the tool deliberately skips payment while using live email credentials, so the
-  credential boundary, abuse limits and the untouched paid flow need explicit review.
+- `security` — the task removes public payment bypasses and restores Stripe enforcement for both paid
+  reveals, so the access-control and monetization boundary is the core of the change.
+- `testing` — the required outcome is an absence (no preview, no payment-free path), which needs executed
+  guards, a production build inspection, an HTTP smoke test and a browser-level check rather than code
+  inspection alone.
 
-**Assigned task:** create a simple webpage to test the Lucky Pick Canada gift email system. Allow entry
-of the recipient's email, recipient name, sender name, optional gift message, and selection of a 6- or
-7-number Lucky Pick. Allow the gift reveal test to bypass the payment requirement and send the actual gift
-email using the existing Resend configuration, without entering API keys or a separate test secret. Keep
-the regular Lucky Pick reveal paywall active and do not change the normal paid gift purchase process,
-Stripe products, prices or payment flow. Keep existing Resend credentials server-side.
+**Assigned task:** restore the paywalls for Personal Reveal and Gift Reveal. Remove the free-preview
+button and disable all public test-mode or payment-bypass paths that allow either reveal to be accessed
+without completing the normal Stripe payment. Keep the prices at CAD $1.00 for Personal Reveal and CAD
+$1.99 for Gift Reveal. Preserve the existing Stripe payment and gift-email setup.
 
 ## Reference documents reviewed
 
 | Document | USED | USEFUL | Explanation |
 |---|---|---|---|
-| `.docs/manifest.json` | YES | YES | Routed the `creation`, `testing` and `security` groups and their reference sets. |
-| `.docs/security/_resend_resend-node.md` | YES | NO | Confirmed the existing server-side Resend key and verified-sender model. The repository's `sendGiftEmail()` was reused unchanged, so no implementation decision came from it. |
-| `.docs/security/_google_eng-practices.md` | NO | NO | The change follows existing repository patterns; no review-practice guidance was needed. |
-| `.docs/creation/_google_eng-practices.md` | NO | NO | No new design guidance was needed for a small internal form. |
-| `.docs/testing/_google_eng-practices.md` | NO | NO | Tests reuse the repository's existing Vitest mocking patterns. |
-| Next.js `/vercel/next.js` snapshot | NO | NO | The page and route handler follow existing App Router files already in the repository. |
-| Vitest `/vitest-dev/vitest` snapshot | NO | NO | The focused suite follows the existing `__tests__` conventions. |
-| Playwright `/microsoft/playwright` snapshot | NO | NO | No browser automation was used; the production smoke test used HTTP requests. |
-| Tailwind `/websites/tailwindcss` snapshot | NO | NO | The page uses utility classes already covered by the existing Tailwind configuration. |
-| MDN image types `/websites/mdn_image_types` | NO | NO | No image asset was added or changed. |
+| `.docs/manifest.json` | YES | YES | Routed the `security` and `testing` groups and their reference sets. |
+| `.docs/security/_google_eng-practices.md` | NO | NO | The change removes existing code and follows repository patterns; no review guidance was needed. |
+| `.docs/testing/_google_eng-practices.md` | NO | NO | The guards extend the repository's existing Vitest and Playwright suites. |
+| Stripe.js `/stripe/stripe-js` | NO | NO | No Stripe client or checkout code changed; prices were verified from the existing route and tests. |
+| Next.js `/vercel/next.js` | NO | NO | The edits remove an existing client prop and markup; no framework behaviour was in question. |
+| Vitest `/vitest-dev/vitest` | NO | NO | No new mocking or configuration pattern was needed. |
+| Playwright `/microsoft/playwright` | NO | NO | The existing visual spec and a direct Playwright probe were used without new test-generation guidance. |
 
-## What was implemented
+## What was actually implemented
 
-- **Test page** — `/test-tools/gift-email` renders a simple form for recipient email, recipient name,
-  optional sender name, optional gift message, and a 6 Pick / 7 Pick choice. It is excluded from search
-  indexing, states what is and is not sent, and shows the delivery result plus the generated numbers,
-  game name, lucky colour and lucky day.
-- **Payment-bypassing test route** — `POST /api/test-tools/gift-email` reuses `createGiftReveal()` and
-  `sendGiftEmail()` from `app/gift-email.js`. It creates no Stripe Checkout session and takes no payment;
-  the generated reveal and the Resend request are the paid Gift Edition's own.
-- **No test secret** — the route needs no `GIFT_TEST_SECRET` and no key entered in the browser. The
-  existing `/api/admin/test-gift-email` endpoint and its secret check are untouched.
-- **Server-side credentials** — `RESEND_API_KEY` and `GIFT_FROM_EMAIL` are read only in the route. The
-  browser receives neither credential nor the raw provider response.
-- **Abuse and safety boundary** — a `GIFT_EMAIL_TEST_MODE` switch (default `true`) turns the page and
-  route off; the route rejects foreign-Origin requests, limits sends to five per hour per address with
-  the existing rate limiter, validates the email, and applies the paid checkout's 80/80/500-character
-  limits. Responses are `Cache-Control: no-store`.
-- **Preserved paid flow** — no checkout, Stripe product/price, webhook, paid gift-delivery, reveal
-  paywall, database or dependency file was modified.
+- **Free preview removed, not hidden** — deleted `app/test-tools/reveal-testing/` (the
+  `REVEAL_TEST_MODE` / `canPreviewReveal` helper and its README). The `checkout-modal` no longer imports
+  it, accepts no `onPreviewReveal` prop, renders no preview button or note, and `HomePage` no longer wires
+  a preview callback. The preview-only CSS rules were deleted.
+- **Gift test tool disabled** — `GIFT_EMAIL_TEST_MODE` is now the compiled constant `false`, with no
+  environment override. The page renders a "turned off" notice and no form; `POST
+  /api/test-tools/gift-email` returns `404` before reading any configuration or sending email.
+- **Paid paths preserved** — the modal still posts its normal form to `/api/checkout`. `/api/checkout`
+  still charges 100 cents for `lucky_pick` and 199 for `gift_package` in one-time `payment` mode (CAD),
+  with unchanged names, descriptions, metadata, success/cancel URLs and callbacks. `/api/verify-session`,
+  `/api/gift-delivery`, the webhook, `app/gift-email.js` and Resend handling were not modified.
+- **Server-authoritative reveal unchanged** — a `payment=success` URL alone still produces nothing;
+  `verify-session` requires `payment_status === 'paid'`.
+- **Legacy dev-only paths remain gated** — `/api/send-gift` still answers 403 outside `NODE_ENV ===
+  'development'`; the `/reveal/[id]` deterministic fallback is still development-only. Neither is a
+  public bypass; the production smoke confirmed the 403.
 
 ## Files changed
 
-- Added `app/test-tools/gift-email/page.js`
-- Added `app/test-tools/gift-email/GiftEmailTestForm.jsx`
-- Added `app/test-tools/gift-email/giftEmailTestConfig.js`
-- Added `app/test-tools/gift-email/README.md`
-- Added `app/api/test-tools/gift-email/route.js`
-- Added `__tests__/gift-email-test-tool.test.js`
-- Added `specs/085-gift-email-test-tool/spec.md`, `plan.md`, `tasks.md`
-- Updated `.specify/feature.json`
-- Updated `memory-bank/activeContext.md`
-- Updated `PR_SUMMARY.md`
+- Deleted `app/test-tools/reveal-testing/revealTestConfig.js`
+- Deleted `app/test-tools/reveal-testing/README.md`
+- Updated `app/checkout-modal.jsx`
+- Updated `app/homepage/HomePage.js`
+- Updated `themes/default/homepage.css`
+- Updated `app/test-tools/gift-email/giftEmailTestConfig.js`
+- Updated `app/test-tools/gift-email/page.js`
+- Updated `app/test-tools/gift-email/README.md`
+- Updated `__tests__/components/CheckoutModal.test.jsx`
+- Updated `__tests__/security-payment.test.js`
+- Updated `__tests__/gift-email-test-tool.test.js`
+- Updated `tests/visual/lucky-reveal-selection.spec.ts`
+- Added `specs/086-restore-reveal-paywalls/spec.md`, `plan.md`, `tasks.md`
+- Updated `.specify/feature.json`, `memory-bank/activeContext.md`, `memory-bank/progress.md`,
+  `PR_SUMMARY.md`
 
 ## Spec Kit stages and artifacts
 
-Completed in order, with one feature directory and no duplicate:
+Completed in order under one feature directory:
 
-- **Specify** — `specs/085-gift-email-test-tool/spec.md`
-- **Plan** — `specs/085-gift-email-test-tool/plan.md` (no `data-model.md` or `contracts/` was warranted:
-  no persisted entity or external contract is introduced beyond the route described in the plan)
-- **Tasks** — `specs/085-gift-email-test-tool/tasks.md`
-- **Implement** — all implementation tasks complete; the final diff, PR publication and CI task is
-  recorded in `tasks.md`.
+- **Specify** — `specs/086-restore-reveal-paywalls/spec.md`
+- **Plan** — `specs/086-restore-reveal-paywalls/plan.md`
+- **Tasks** — `specs/086-restore-reveal-paywalls/tasks.md`
+- **Implement** — all implementation tasks complete; verification is recorded below and in `tasks.md`.
 
-`.specify/feature.json` now points at `specs/085-gift-email-test-tool`.
+`.specify/feature.json` points at `specs/086-restore-reveal-paywalls`.
 
-## Verification (actual commands and results)
+## Verification (commands actually run and results)
 
 | Check | Result | Evidence |
 |---|---|---|
-| Focused suite | **PASS** | `pnpm exec vitest run __tests__/gift-email-test-tool.test.js` — 1 file, 10/10 tests passed. |
-| Full suite | **PASS** | `pnpm exec vitest run` — 38 test files, 409 tests passed, exit 0. |
+| Focused suites | **PASS** | `pnpm exec vitest run __tests__/components/CheckoutModal.test.jsx __tests__/security-payment.test.js __tests__/gift-email-test-tool.test.js __tests__/stripe-product-alignment.test.js` — 4 files, 42 tests passed, exit 0. |
+| Full suite | **PASS** | `pnpm exec vitest run` — 38 files, 407 tests passed, exit 0. |
 | TypeScript | **PASS** | `pnpm exec tsc --noEmit` — exit 0. |
-| Repository gate | **PASS** | `SPEC_KIT_BASE_REF=e6777fcaa1a50f523cc33e34da4288150e4a1485 ./freebuff-verify.sh` — exit 0: Spec Kit artifacts, typecheck, production build, refresh-docs 19/19. The explicit base is required because this workspace has no `origin/main` ref. |
-| Production build size | **PASS** | `.next` measured 343,097,481 B / 327.2 MiB, below the 495 MB hard maximum. |
-| Production page smoke | **PASS** | `next start` on port 3100: `/test-tools/gift-email` returned HTTP 200 with the form and `robots: noindex, nofollow`. |
-| Same-origin route wiring | **PASS** | Same-origin POST reached the handler and returned the expected 503 missing-configuration message (no Resend credentials in this workspace). |
-| Cross-site rejection | **PASS** | POST with `Origin: https://evil.example` returned 403. |
-| Real Resend delivery | **NOT RUN** | This workspace has no `RESEND_API_KEY` or `GIFT_FROM_EMAIL`, and the task forbids entering keys. No test email was sent. |
-| Browser form interaction | **NOT RUN** | No browser session was used; the page was verified by production HTTP smoke plus route tests, not by clicking the form. |
-| PR-head CI | **PENDING** | Not yet available until the branch is pushed. |
+| Repository gate | **PASS** | `SPEC_KIT_BASE_REF=a635bdccf5b60d4f662a256815845c7cca53abd7 ./freebuff-verify.sh` — exit 0: Spec Kit gate, typecheck, production build, refresh-docs 19/19. |
+| Production build size | **PASS** | `.next` 343,866,056 B / 327.9 MiB; combined with `public` 32,840,043 B = 376,706,099 B / 359.3 MiB, below the 495 MB maximum. |
+| Served output contains no preview | **PASS** | `grep -rl "Preview Reveal\|checkout-modal-preview" .next/static .next/server` returned nothing. Only stale `.next/cache/webpack/*` packs still contain the string from an earlier build; they are not served. |
+| Production homepage | **PASS** | `next start` on port 3100 returned HTTP 200 with 0 occurrences of "Preview Reveal". |
+| Gift test page disabled | **PASS** | `/test-tools/gift-email` returned HTTP 200 with the "turned off" notice and 0 occurrences of the submit form label. |
+| Gift test route disabled | **PASS** | `POST /api/test-tools/gift-email` returned **404** `{"error":"The gift email test tool is turned off."}`. |
+| Legacy send endpoint | **PASS** | `POST /api/send-gift` in production returned **403** `"This endpoint is restricted to development test mode."` |
+| Prices unchanged | **PASS** | `stripe-product-alignment` and `security-payment` tests assert `unitAmount: 100` and `unitAmount: 199`; the checkout route was not modified. |
+| Browser popup check | **PASS** | Playwright Chromium against the production server: `previewButtons: 0`, `previewHooks: 0`, `previewNote: 0`, `paidButtons: 1`, `deliveryChoices: 4`. |
+| Live Stripe payment | **NOT RUN** | No Stripe keys and no charge is permitted in this workspace; no checkout code changed. |
+| Real Resend gift delivery | **NOT RUN** | The bypass is disabled, so no test send was possible or appropriate; the paid delivery code is unchanged and covered by existing mocked tests. |
+| PR-head CI | **PENDING** | Available after the branch is pushed. |
 | Owner review / merge | **PENDING** | The PR is intentionally left open and unmerged. |
 
 ## Behavior preserved
 
-- The regular Lucky Pick reveal paywall and the free preview switch are unchanged.
-- Stripe Checkout, products, prices, `mode: 'payment'`, metadata and callbacks are unchanged.
-- The webhook, paid gift delivery, delivery lock/idempotency, database and environment handling are
-  unchanged.
-- The existing admin test endpoint still requires `GIFT_TEST_SECRET`.
-- No dependency, lockfile or deployment configuration was changed.
+- Personal Reveal remains CAD $1.00 and Gift Reveal CAD $1.99, one-time `payment` in CAD, with the same
+  Stripe product names, descriptions, metadata, success/cancel URLs and webhook behaviour.
+- The paid reveal is still persisted and verified server-side; the success URL alone cannot render one.
+- Gift delivery still requires a paid `gift_package` session, the Redis delivery lock/idempotency and the
+  Resend configuration; `app/gift-email.js` is untouched.
+- The tip jar, the unified popup's delivery/game choices, the reveal presentation and the paid-reveal
+  counter are unchanged.
+- No dependency, lockfile, secret, environment variable, deployment configuration, database or `.docs/`
+  file was changed.
 
 ## Remaining issues and limitations
 
-- **A real email was not sent here.** Delivery must be confirmed by opening the page in an environment
-  that already has the Resend credentials, or by the owner after deployment. This is the key unverified
-  outcome, not a passed check.
-- The tool is intentionally reachable without a secret, so it relies on the switch, the Origin check and
-  the per-address rate limit. When Redis is absent, the existing limiter falls back to per-instance
-  in-memory counters, which are weaker across multiple instances.
-- No browser visual review was performed.
+- A live Stripe checkout and a real Resend gift delivery were not executed here; no keys or charges are
+  available, and the change does not alter those code paths.
+- The gift test tool and its route still exist, deliberately disabled. A future contributor could re-enable
+  it only by editing the compiled constant; the README says not to, and a guard asserts it ships `false`.
+- The legacy `/api/send-gift` endpoint and the `/reveal/[id]` fallback remain development-only; they are not
+  publicly reachable and the production 403 was verified.
+- The stale webpack cache in `.next/cache` still contains the removed preview strings; a clean build removes
+  them, but the served output was verified clean.
 
 ## Final diff audit
 
-The complete final diff was inspected before submission: only the files listed above changed; no secret,
-key or credential value appears in the diff; no Stripe, checkout, webhook, paid delivery or reveal-paywall
-file is touched.
+The complete final diff was reviewed: 13 tracked files changed (2 deleted, 11 modified) plus the new
+`specs/086-restore-reveal-paywalls/` directory, `memory-bank` notes and this summary. No secret, key or
+credential value appears in the diff. No checkout, Stripe product/price, webhook, verification, gift
+delivery, Resend, database, dependency or deployment file is modified.
 
-**USEFUL RESULT: NO** — the implementation is complete, but the requested end result ("the gift email is
-successfully sent") could not be verified in this workspace because the existing Resend credentials are
-not available here and the task explicitly forbids entering keys. All executable checks that are possible
-locally passed.
+**USEFUL RESULT: YES** — the free-preview control is removed from source and served output, both public
+payment-free paths are closed (preview deleted, gift tool 404/form hidden), prices remain 100/199, and the
+paid Stripe/email code is untouched. Live charge and real email are explicitly unverified.

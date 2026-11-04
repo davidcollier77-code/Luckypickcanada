@@ -1,3 +1,33 @@
+# Active Context — Restore the Reveal Paywalls (2026-11-03)
+
+- **Task groups:** `security` + `testing`; branch `freebuff/restore-reveal-paywalls`; new feature
+  `specs/086-restore-reveal-paywalls`. The task reverses feature 072's public preview and disables the
+  gift-email tool merged from PR #1703, so neither existing feature directory is reused.
+- **Verified baseline:** task base `a635bdcc` (merge of PR #1703). Both bypasses were live:
+  `REVEAL_TEST_MODE = true` rendered **Preview Reveal — FREE** in the purchase popup, and
+  `GIFT_EMAIL_TEST_MODE = true` exposed a public page/route that generated a Gift Reveal and sent its
+  Resend email without any Stripe session. Prices were already correct at 100/199, and
+  `/api/verify-session` / `/api/gift-delivery` already require a paid session.
+- **Implementation:** deleted `app/test-tools/reveal-testing/` (switch + README) and removed the preview
+  import, prop, handler, markup, homepage wiring and CSS. Set `GIFT_EMAIL_TEST_MODE = false` (compiled
+  constant, no environment override) so the test page renders no form and the route returns 404; updated
+  its README and copy to describe a disabled local diagnostic. Tests now assert paid-only modal actions,
+  the absent preview module/wiring, the shipped-false gift switch, unchanged prices and the dev-only
+  legacy endpoint.
+- **Verification:** focused 4 files / 42 tests PASS; full `pnpm exec vitest run` 38 files / 407 tests PASS;
+  `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, build,
+  refresh-docs 19/19); production build `.next` 343,866,056 B / 327.9 MiB plus public 32,840,043 B
+  (359.3 MiB combined, < 495 MB). Served output (`.next/static`, `.next/server`) contains no
+  "Preview Reveal"; only stale webpack cache packs do. Production smoke on port 3100: homepage 200 with 0
+  preview strings, test page 200 showing the disabled notice and no form, test route 404,
+  `/api/send-gift` 403. Chromium probe of the live popup: 0 preview buttons / hooks / note, 1 paid
+  checkout button, 4 game+delivery radios.
+- **Not verified:** a live Stripe payment and a real Resend gift delivery (no keys here and no charge is
+  permitted), and PR-head CI. The dev-only `/api/send-gift` endpoint and `/reveal/[id]` fallback remain but
+  are unreachable in production; `/api/send-gift` returned 403 in the production smoke.
+
+---
+
 # Active Context — Gift Email Test Tool (2026-11-03)
 
 - **Task groups:** `creation` + `testing` + `security`; branch `freebuff/e6b5a381045c337886e3bec8`.

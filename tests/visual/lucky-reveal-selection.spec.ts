@@ -206,14 +206,40 @@ test.describe('Unified Lucky Reveal selection', () => {
     expect(seconds.every((value) => Number.isFinite(value) && value <= 0.001)).toBe(true);
   });
 
-  test('paid reveal popup keeps the reveal and drops the Little Luck Map invitation', async ({ page }) => {
+  test('selection popup offers no free preview or payment bypass', async ({ page }) => {
     await openHomepage(page);
-    const selectionDialog = await openSelectionPopup(page);
+    const dialog = await openSelectionPopup(page);
 
-    // The free preview opens the same reveal popup a paid purchase shows, with
-    // no checkout request and no charge.
-    await selectionDialog.getByRole('button', { name: /Preview Reveal/ }).click();
-    await expect(selectionDialog).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: /Preview Reveal/i })).toHaveCount(0);
+    await expect(dialog.getByText(/no payment is taken/i)).toHaveCount(0);
+    await expect(dialog.locator('.checkout-modal-preview')).toHaveCount(0);
+    await expect(dialog.getByRole('button', { name: /Continue to secure checkout/i })).toBeVisible();
+  });
+
+  test('paid reveal popup keeps the reveal and drops the Little Luck Map invitation', async ({ page }) => {
+    await page.route('**/api/verify-session**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          game: '6',
+          metadata: { checkoutType: 'lucky_pick' },
+          reveal: {
+            game: '6',
+            numbers: [3, 9, 14, 22, 31, 45],
+            luckyColor: 'Star Gold',
+            luckyDay: 'Friday',
+          },
+        }),
+      }),
+    );
+
+    await openHomepage(page);
+    await page.goto('/?payment=success&session_id=cs_test_paid_reveal', {
+      waitUntil: 'domcontentloaded',
+      timeout: 60_000,
+    });
 
     const reveal = page.getByRole('dialog', { name: 'Your lucky reveal is here' });
     await expect(reveal).toBeVisible({ timeout: 15_000 });

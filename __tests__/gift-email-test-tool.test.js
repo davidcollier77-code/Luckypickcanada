@@ -209,6 +209,23 @@ describe('Gift email test route', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  it('ships disabled so the public site has no payment-free gift path', async () => {
+    const shippedConfig = await vi.importActual(
+      '../app/test-tools/gift-email/giftEmailTestConfig',
+    );
+    const configSource = fs.readFileSync(
+      path.join(process.cwd(), 'app/test-tools/gift-email/giftEmailTestConfig.js'),
+      'utf8',
+    );
+
+    expect(shippedConfig.GIFT_EMAIL_TEST_MODE).toBe(false);
+    expect(shippedConfig.isGiftEmailTestEnabled()).toBe(false);
+    expect(configSource).toMatch(/export const GIFT_EMAIL_TEST_MODE = false;/);
+    // The switch must be a compiled constant; no environment value can turn the
+    // payment bypass back on in a deployed build.
+    expect(configSource).not.toMatch(/process\.env\./);
+  });
+
   it('keeps the test secret, credentials and payment flow out of the tool', () => {
     const root = process.cwd();
     const routeSource = fs.readFileSync(

@@ -1,3 +1,9 @@
+# Progress — 2026-11-03: Lucky Reveal Paywalls Restored
+
+- Removed the public **Preview Reveal — FREE** control, its `REVEAL_TEST_MODE` helper, homepage wiring and CSS; the purchase popup now offers only the paid Stripe checkout action.
+- Disabled the merged gift email test tool (`GIFT_EMAIL_TEST_MODE = false`): the page shows a disabled notice with no form and `POST /api/test-tools/gift-email` returns 404. No environment value can re-enable it.
+- Added guards for paid-only modal actions, absent preview module/wiring, shipped-false gift switch, unchanged 100/199 prices and the development-only legacy send endpoint; verified in a production build, HTTP smoke and a Chromium popup probe.
+
 # Progress — 2026-11-01: Free Preview Reveal in the Checkout Modals
 
 - Replaced the old `REVEAL_TEST_MODE` paid-form interception (which also posted a test gift to `/api/send-gift`) with a preview-only switch, `canPreviewReveal(type)`, limited to the Lucky Pick and Gift modals.

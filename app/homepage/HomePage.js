@@ -7,7 +7,7 @@ import { playButtonClick } from '../lib/audio';
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { buildLuckyReveal, createLuckyReveal } from '../lucky-reveal';
+import { buildLuckyReveal } from '../lucky-reveal';
 const FAQSection = dynamic(() => import('./FAQSection'));
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
@@ -373,10 +373,6 @@ export default function HomePage() {
     };
   }, []);
 
-  function startLuckyReveal(luckyPickGame) {
-    setLuckyReveal(createLuckyReveal(luckyPickGame));
-  }
-
   /**
    * Opens the single Lucky Reveal selection popup, where the customer chooses
    * 6 Pick or 7 Pick and then the Personal or Gift delivery option.
@@ -552,12 +548,7 @@ export default function HomePage() {
       </section>
 
 
-      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onPreviewReveal={(revealType, luckyPickGame) => {
-        if (revealType === 'lucky_reveal' || revealType === 'lucky_pick' || revealType === 'gift_package') {
-          setCheckoutType(null);
-          startLuckyReveal(luckyPickGame);
-        }
-      }} />}
+      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}
       {luckyReveal && <LuckyRevealPopup reveal={luckyReveal} onClose={closeLuckyReveal} />}
     </div>
   );
