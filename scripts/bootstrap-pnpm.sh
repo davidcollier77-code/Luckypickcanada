@@ -11,12 +11,14 @@
 
 BOOTSTRAP_PNPM_REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 
+
 bootstrap_pnpm_fail() {
   echo "❌ pnpm bootstrap: $1" >&2
-  # When sourced, exit kills the calling shell session instead of returning
-  # an error to the caller. freebuff-verify.sh propagates with || exit 1.
-  # Use return when sourced, exit when executed directly.
-  if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then return 1; else exit 1; fi
+  # Always exit, even when sourced. A `return` here would only leave this
+  # helper and let the sourced script continue (e.g. into an unpinned
+  # `npm install -g "pnpm@"`), which is fail-open. Exiting a sourced file from
+  # a non-interactive caller such as freebuff-verify.sh aborts that script
+  # with a non-zero status before any install can happen.
   exit 1
 }
 
