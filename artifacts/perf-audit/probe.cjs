@@ -44,27 +44,19 @@ const outputFile =
   await page.addInitScript(() => {
     window.__perf = { lcp: 0, lcpElement: null, cls: 0, longTasks: [], fcp: 0 };
 
+
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (entry.name === 'first-contentful-paint') window.__perf.fcp = entry.startTime;
-        if (entry.entryType === 'largest-contentful-paint') {
-          window.__perf.lcp = entry.startTime;
-          const el = entry.element;
-          if (el) {
-            window.__perf.lcpElement = {
-              tag: el.tagName,
-              id: el.id || null,
-              className: typeof el.className === 'string' ? el.className.slice(0, 160) : null,
-              src: el.currentSrc || el.src || null,
-              size: entry.size,
-            };
-          }
-        }
-        if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
-          window.__perf.cls += entry.value;
-        }
-        if (entry.entryType === 'longtask') {
-          window.__perf.longTasks.push({ start: entry.startTime, duration: entry.duration });
+        window.__perf.lcp = entry.startTime;
+        const el = entry.element;
+        if (el) {
+          window.__perf.lcpElement = {
+            tag: el.tagName,
+            id: el.id || null,
+            className: typeof el.className === 'string' ? el.className.slice(0, 160) : null,
+            src: el.currentSrc || el.src || null,
+            size: entry.size,
+          };
         }
       }
     }).observe({ type: 'largest-contentful-paint', buffered: true });
@@ -75,7 +67,7 @@ const outputFile =
     }).observe({ type: 'paint', buffered: true });
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
+        if (!entry.hadRecentInput) {
           window.__perf.cls += entry.value;
         }
       }
