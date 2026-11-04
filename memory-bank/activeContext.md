@@ -1,3 +1,38 @@
+# Active Context — Cloudflare MCP: the saved credential is not transmitted (2026-11-04, revision 5)
+
+- **Task groups:** `troubleshooting` + `deep-dive` + `security` + `testing`; branch
+  `freebuff/470e1a482c31244d064438de`; reused `specs/087-skill-mcp-audit` (revision 5). **Supersedes the
+  revision 4 section below.**
+- **Cause (measured after the token was saved):** the connector does not transmit the credential stored in it.
+  With a saved, independently verified token the connection still returns `6003` + chain `6111` on `/zones`
+  and `9106 Authentication failed (status: 400)` on `/zones/:id/dns_records` — byte-identical to the pre-save
+  calls. A 40-character token-charset bearer can only return provider data, `403`/`9109` or `401`/`10000`, so
+  the transmitted value is not the saved token.
+- **Layer localised:** `LIST_DNS_RECORDS` with an all-zero zone id returns the identical `9106`, so the request
+  is rejected before the zone, account or permission is evaluated. Scope, zone id and `Zone:Read`/`DNS:Read`
+  are not implicated; header construction is.
+- **Withdrawn:** revision 4's "the connection holds a 37-hex Global API Key, and that is the cause". Its
+  prediction was that a valid token would move the signature to `403`/`9109`; nothing moved, so the stored
+  value's identity is not the operative cause. A stale 37-hex binding survives only as a hypothesis.
+- **Still open (indistinguishable here, identical signature):** H1 stale binding at connection creation,
+  H2 field mismatch (a `cloudflare_api_key` connection is the legacy key+email scheme but the transport is
+  `Bearer`), H3 mangling (quoted, truncated below 40 characters, or re-encoded). Separating them needs a
+  request-time binding, the connection's field mapping, or the outgoing header's length/character classes.
+- **Fix:** Freebuff platform work — resolve the saved secret per request, build `Authorization: Bearer <value>`
+  from it, fail closed when it is absent or not bearer-compatible, and log a redacted shape fingerprint
+  (length, character class, `undefined`/`null` equality) rather than the value. No repository change can
+  repair it: no Cloudflare client, no `Authorization` construction, no MCP configuration, and the connection
+  exposes no management tool.
+- **Implemented:** the verifier's context header and `--probe` reading now state the invariance result;
+  runtime behaviour is unchanged. Artifacts updated: `specs/087` spec/plan/tasks, `PR_SUMMARY.md`, this file.
+- **Verification:** live calls recorded above; `--probe` boundary unchanged; `SPEC_KIT_BASE_REF=HEAD
+  ./freebuff-verify.sh` and the build measurement are recorded in `PR_SUMMARY.md`.
+- **Not verified / BLOCKED:** read-only zone and DNS data for `luckypickcanada.ca` — no call has ever returned
+  provider data. No credential, connection, token permission, DNS record or Cloudflare setting was read,
+  created or changed.
+
+---
+
 # Active Context — Cloudflare MCP Authentication: Fresh Investigation (2026-11-04)
 
 - **Task groups:** `troubleshooting` + `deep-dive` + `security` + `testing`; branch

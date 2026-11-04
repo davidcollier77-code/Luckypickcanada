@@ -154,3 +154,27 @@
   summary and the Memory Bank entry; no application, test, dependency, workflow, environment, `.docs/` or
   `AGENTS.md` change; secret scan clean), commit `78d63c60`, push to
   `freebuff/470e1a482c31244d064438de` and open PR #1707, left open and unmerged.
+
+## Phase 11 — Post-save invariance and the connector credential path (revision 5)
+
+- [x] **T049** Re-read `AGENTS.md`, `.freebuff/freebuff.md`, the Memory Bank and the selected group files;
+  groups for this round: `troubleshooting` + `deep-dive` + `security` + `testing`.
+- [x] **T050** Re-test the live connection after the verified token was saved, read-only:
+  `LIST_ZONES(name=luckypickcanada.ca)` → `6003` + chain `6111`; `LIST_DNS_RECORDS(zone
+  0af2a3985db329cdb671829cb59a41f1)` → `9106 Authentication failed (status: 400)`.
+- [x] **T051** Control call: `LIST_DNS_RECORDS(zone_id=00000000000000000000000000000000)` → the identical
+  `9106`, proving the rejection precedes zone, account and permission evaluation.
+- [x] **T052** Replay `node scripts/cloudflare-auth-diagnose.mjs --probe` and confirm the boundary is unchanged
+  (9/31/37/39 characters and 40-with-`!` → `400` + `6003` + `6111`; 40/41 token-charset → `403` + `9109`).
+- [x] **T053** Compare pre-save and post-save signatures exactly: no change. Withdraw revision 4's stored-value
+  attribution, because its prediction (`403`/`9109` after the save) did not occur.
+- [x] **T054** Enumerate the survivable hypotheses H1 stale binding, H2 field mismatch, H3 mangling, each with
+  the measurement that would separate it, and confirm none is reachable from here: `code_search` finds no
+  Cloudflare client, no `Authorization` construction and no MCP configuration, and the connection exposes five
+  Cloudflare tools with no connection-management or connection-status tool.
+- [x] **T055** Correct the verifier's context header and `--probe` reading to the invariance result (no runtime
+  behaviour change); `node --check` and a real `--probe` run confirm the file still works.
+- [x] **T056** Run `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` and measure the production build against the
+  495 MB maximum.
+- [x] **T057** Audit the complete final diff, commit, push, update the PR #1707 body and leave it open and
+  unmerged.

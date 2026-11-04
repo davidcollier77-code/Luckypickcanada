@@ -227,6 +227,61 @@
 - **A vitest unit test for the verifier** — the assertion value would be this script's own constants; running
   it for real against the live read-only endpoint is the stronger evidence the testing group asks for.
 
+## Follow-up round 5 — post-save invariance and the connector's credential path
+
+### Technical context
+
+- A Cloudflare API token now exists, is saved in the existing connection, and was verified independently. The
+  request forbids replacing, re-saving or regenerating it, so the credential is a constant and the only
+  remaining variable is what the connector puts on the wire.
+- Round 4 concluded the connection held a 37-hex Global API Key. That conclusion makes a falsifiable
+  prediction: a format-valid token must move the signature to `403`/`9109`. This round tests that prediction.
+- The connection exposes five Cloudflare tools and no connection-management or connection-status tool;
+  `code_search` finds no `api.cloudflare.com` client, no `Authorization` construction and no MCP
+  configuration in the repository, so the header is constructed entirely on Freebuff's side.
+
+### Design
+
+1. **Re-test after the save** — `LIST_ZONES` (name filter) and `LIST_DNS_RECORDS` (supplied zone id), read-only.
+2. **Compare exactly** with the pre-save signatures recorded in revision 4: HTTP status, top-level code and
+   full `error_chain`.
+3. **Control for the resource layer** — call the DNS endpoint with an all-zero zone id. An identical error
+   proves the rejection happens at the header, before zone lookup and permission evaluation.
+4. **Replay the boundary** — `--probe`, to confirm the invariance argument's premise still holds: no
+   40-character token-charset value can produce this signature.
+5. **Withdraw** revision 4's stored-value attribution, because its prediction failed.
+6. **Report the connector defect** with the redacted fingerprint that would make it diagnosable in one call.
+
+### Defect report for the Freebuff connector (platform, not this repository)
+
+- **Observed**: `Authorization: Bearer <value>` where `<value>` fails Cloudflare's format validation on both
+  endpoints, is unchanged across a credential replacement, and is independent of the zone id.
+- **Expected**: the value saved in the connection, resolved at request time, sent as `Bearer <value>` for a
+  40-character API Token.
+- **Redacted fingerprint to log**: length, character-class membership, and whether the value equals the
+  literals `undefined` / `null` — never the value itself. That single field separates H1, H2 and H3.
+- **Fail closed**: when the credential is absent or not bearer-compatible, refuse the request locally instead
+  of sending it, so the reported error names the real cause.
+
+### Files
+
+- Updated: `scripts/cloudflare-auth-diagnose.mjs` (context header and probe reading corrected to the
+  invariance result; runtime behaviour unchanged), `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`,
+  `PR_SUMMARY.md`, `memory-bank/activeContext.md`.
+- No application, test, dependency, workflow, environment, `.docs/` or `AGENTS.md` change; no credential,
+  connection, token permission, DNS record or account setting touched.
+
+### Alternatives rejected
+
+- **Re-saving or recreating the connection or the token** — explicitly forbidden by the request, and the
+  failure is invariant to the credential, so it cannot be the repair.
+- **Dispatching a workflow with `secrets.CLOUDFLARE_API_TOKEN` to prove the token works** — it would reuse a
+  repository secret for a new purpose without owner authorisation, and it still would not exercise the
+  connector.
+- **Reading the connection's stored secret to compare it with the saved token** — forbidden, and unnecessary:
+  the shape fingerprint is the discriminating datum.
+- **A vitest test for the verifier** — unchanged reasoning from round 4; the live probe is the evidence.
+
 ### Files
 
 - Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,

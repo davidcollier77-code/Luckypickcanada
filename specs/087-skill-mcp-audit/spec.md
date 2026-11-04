@@ -292,3 +292,84 @@ token, so the repository already holds a format-valid, authorised 40-character A
    response is an identity-level rejection, never a header-format rejection.
 10. **Given** the committed verifier, **When** it runs without a credential, **Then** it reports the shape
     classes and performs no authenticated call.
+
+## Revision 5 — the saved credential is not transmitted (2026-11-04)
+
+**Trigger**: the owner has created a Cloudflare API token, saved it in the existing Freebuff connection, and
+verified it independently (Agent Lee). The request therefore forbids replacing, regenerating or re-saving the
+credential and asks for the connector's own credential retrieval and header construction to be investigated,
+rather than more credential-shape probing.
+
+### Requirements
+
+- **FR-031**: The connection MUST be re-tested after the credential was saved and verified, because a
+  save-then-retest is the only measurement that separates "the wrong value is stored" from "the stored value
+  is not transmitted".
+- **FR-032**: The pre-save and post-save signatures MUST be compared exactly — HTTP status, top-level code and
+  the full `error_chain` — and not paraphrased.
+- **FR-033**: The failure MUST be localised by a control call whose only defect is the resource identifier, so
+  a zone id, account or permission defect cannot be mistaken for an authentication defect.
+- **FR-034**: A conclusion whose prediction is contradicted by the post-save measurement MUST be withdrawn
+  explicitly, with the measurement that refutes it.
+- **FR-035**: Surviving hypotheses MUST be enumerated with the measurement that would separate them, and any
+  that cannot be separated from the workspace MUST be labelled as such.
+- **FR-036**: Where the defect lies in Freebuff's connector rather than the repository, the deliverable MUST be
+  a defect report precise enough to implement: the observed value class, the expected value class, the
+  discriminating control, and the redacted fingerprint the connector should log.
+- **FR-037**: No credential, connection or token permission may be created, read, replaced, re-saved, rotated
+  or printed, and no DNS record or account setting may be modified.
+
+### Measured result
+
+| Measurement | Result |
+|---|---|
+| `LIST_ZONES(name=luckypickcanada.ca, per_page=20)`, 12:29Z, **after** the save | `6003 Invalid request headers` + chain `6111 Invalid format for Authorization header` |
+| `LIST_DNS_RECORDS(zone_id=0af2a3985db329cdb671829cb59a41f1, per_page=100)`, 12:29Z, after the save | `9106 Authentication failed (status: 400)` |
+| `LIST_DNS_RECORDS(zone_id=00000000000000000000000000000000, per_page=5)` — **control** | **identical** `9106 Authentication failed (status: 400)` |
+| Pre-save calls, 09:28Z–12:0xZ (four calls) | identical `6003` + `6111` and `9106` |
+| `node scripts/cloudflare-auth-diagnose.mjs --probe`, 12:30Z | boundary unchanged: 9/31/37/39 characters and 40-with-`!` → `400` + `6003` + `6111`; 40/41 token-charset → `403` + `9109` |
+
+Three facts follow directly from those rows:
+
+1. **The error did not change when the credential changed.** A 40-character token-charset bearer never produces
+   `6003`/`6111` on `/zones`, nor `9106` at HTTP 400 on the DNS endpoint; it produces provider data,
+   `403`/`9109`, or `401`/`10000`. The post-save signature is therefore incompatible with the saved token
+   being transmitted.
+2. **The control isolates the layer.** An all-zero zone id returns the same `9106`, so the request is rejected
+   before Cloudflare evaluates the zone, the account or any permission. The zone id and the `Zone:Read` /
+   `DNS:Read` scope are not implicated.
+3. **The invariant is the credential's class.** Every format-rejected value produces this signature and only
+   format-rejected values do, so the transmitted value lies outside the 40-character token charset — absent,
+   empty, truncated, quoted, re-encoded or stale.
+
+**Withdrawn in revision 5**: revision 4's finding that the connection holds a 37-hex Global API Key and that
+this is the cause. Revision 4 made a falsifiable prediction — replacing the stored value with a format-valid
+token should move the signature to `403`/`9109` — and it did not move at all. The identity of the stored value
+is therefore not the operative cause; **the connector does not transmit the credential that is saved in it.**
+A 37-hex value bound at connection creation survives only as one candidate for the *stale* payload, not as the
+conclusion.
+
+**Still open — not separable from this workspace** (all three produce the identical signature):
+
+- **H1 stale binding**: the connector resolved the secret when the connection was created and never re-reads
+  it, so the original value is still sent.
+- **H2 field mismatch**: the header is built from a different field than the one the save wrote — a
+  `cloudflare_api_key` connection is the legacy key + email scheme, yet the transport is `Bearer`.
+- **H3 mangling**: the value is transmitted but altered — quoted, truncated below 40 characters, or
+  percent-encoded.
+
+The separating measurement for H1 is a binding resolved at request time (or a connector log of a redacted
+shape fingerprint); H2 needs the connection's field mapping; H3 needs the outgoing header's length and
+character classes. None is reachable from the repository or through the five Cloudflare tools the connection
+exposes, which include no connection-management or connection-status tool.
+
+### Acceptance scenarios (revision 5)
+
+11. **Given** a saved and independently verified token, **When** the connection is used, **Then** the signature
+    MUST be compared with the pre-save signature and the difference, including its absence, recorded.
+12. **Given** an all-zero zone id, **When** the DNS endpoint is called, **Then** an identical `9106` proves the
+    rejection precedes resource and permission checks.
+13. **Given** the invariance result, **When** the cause is reported, **Then** the stored-value hypothesis is
+    withdrawn and the non-transmission of the saved credential is named as the cause.
+14. **Given** the surviving hypotheses, **When** the report is written, **Then** each carries the measurement
+    that would separate it and is marked unreachable from the workspace.

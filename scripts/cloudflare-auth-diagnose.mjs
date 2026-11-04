@@ -3,11 +3,13 @@
 //
 // Context: the account-level Cloudflare connection used by the coding agent
 // returns `6003 Invalid request headers` with `error_chain[6111] Invalid format
-// for Authorization header` on /zones, and `9106 Authentication failed` on
-// /zones/:id/dns_records. Cloudflare validates the *shape* of the Authorization
-// header before it evaluates the credential's identity, so the error alone does
-// not tell an owner whether the saved value is a 40-character API Token, a
-// 37-character Global API Key, or a placeholder.
+// for Authorization header` on /zones, and `9106 Authentication failed` at HTTP
+// 400 on /zones/:id/dns_records. Cloudflare validates the *shape* of the
+// Authorization header before it evaluates the credential's identity, and the
+// signature did not change when a format-valid token was saved in the
+// connection, so the connector is not transmitting the credential it stores.
+// A control call with an all-zero zone id returns the same `9106`, which places
+// the rejection above the zone, account and permission layers.
 //
 // This script answers that question without ever revealing the value:
 //   * it classifies the credential shape from length and character class only;
@@ -153,7 +155,9 @@ async function probe(zoneId) {
   console.log(
     "\nReading: every value Cloudflare rejects on format returns HTTP 400 / 6003 + 6111. " +
       "Only a 40-or-more character token-charset value reaches identity validation " +
-      "(403/9109 on zones, 401/10000 on dns).",
+      "(403/9109 on zones, 401/10000 on dns). This signature therefore means the " +
+      "transmitted value is not a 40-character token — absent, stale, truncated or " +
+      "re-encoded — not a token with wrong permissions or scope.",
   );
   return 2;
 }
