@@ -136,6 +136,30 @@ produced by an unresolved secret lookup) or whitespace-mutated value in place of
 3. **Confirmation:** only `CLOUDFLARE_API_KEY_LIST_ZONES` returning the `luckypickcanada.ca` zone proves the
    repair. None has succeeded, so the repair remains **BLOCKED**.
 
+### Round 3 — the transport status is 400, not 403 (2026-11-04)
+
+The reported zone ID made a previously impossible call possible: `LIST_DNS_RECORDS` needs a `zone_id`, and
+until now only `LIST_ZONES` could supply one. Both endpoints were then called on the real connection:
+
+| Call | Response |
+|---|---|
+| `CLOUDFLARE_API_KEY_LIST_ZONES` (`name=luckypickcanada.ca`) | `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header` |
+| `CLOUDFLARE_API_KEY_LIST_DNS_RECORDS` (`zone_id=0af2a3985db329cdb671829cb59a41f1`) | `9106 Authentication failed (status: 400)` |
+
+Two facts follow, and the second is decisive:
+
+1. **A known zone ID does not help.** Authentication is evaluated before zone membership, so the DNS call
+   fails identically and the zone ID cannot be used until the header is accepted.
+2. **The transport status is `400`, not `403`.** Every malformed-header case in the probe matrix returns
+   **400** (`6003`/`6111`); every well-formed-but-invalid credential returns **403** (`9109`, `9103`,
+   `9106`). The connector's requests are rejected as *structurally invalid* before Cloudflare evaluates the
+   credential's identity. That excludes an expired, revoked, under-scoped or wrong-type token.
+
+The DNS tool also normalises the provider error to `9106` while preserving `status: 400`, an independent
+second confirmation of the same auth-stage rejection.
+
+**Investigation time used:** approximately 13 minutes for this round, inside the 30-minute cap.
+
 ### An MCP the repository depends on but which is not connected
 
 `AGENTS.md` line 57 and the "Controlled Context7 Libraries" section of every task-group file govern
@@ -207,6 +231,48 @@ relevance stated in the request, and the retrieval was on demand — not a fixed
 | Google Stitch MCP | **Connected, unusable** | Connected API key rejected |
 | Context7 | **Not connected** | Referenced by `AGENTS.md` and every group file, but absent from the account |
 
+### Engineering escalation for Freebuff support
+
+**Subject:** Cloudflare connector sends a structurally invalid `Authorization` value — Cloudflare returns
+HTTP 400 / `6003` / `6111` before credential validation
+
+**Impact:** All five Cloudflare tools are unusable on a connection whose credential is reported valid. No
+zone, DNS record or account can be read; the three mutating tools cannot be used at all.
+
+**Reproduction (read-only; no credential handled or logged):**
+1. `CLOUDFLARE_API_KEY_LIST_ZONES` → `6003` + `error_chain[6111]`.
+2. `CLOUDFLARE_API_KEY_LIST_ZONES` with `name=luckypickcanada.ca` → identical.
+3. `CLOUDFLARE_API_KEY_LIST_DNS_RECORDS` with `zone_id=0af2a3985db329cdb671829cb59a41f1` →
+   `9106 Authentication failed (status: 400)`.
+
+Persistent across two separate connection records (`cloudflare_api_key_dop-scenic`, then
+`cloudflare_api_key_gange-suzy`).
+
+**Proof the credential is not the problem:** against the public `/client/v4/zones` endpoint a clean
+40-character value returns `403 / 9109 Invalid access token`, a 37-hex Global Key returns `403 / 9103`, and a
+missing header returns `403 / 9106`+`9107`. Only empty, placeholder (`Bearer undefined`, `Bearer null`,
+`Bearer [object Object]`), whitespace-bearing, quoted or scheme-only values return the observed
+`400 / 6003 / 6111` pair. A well-formed token cannot produce this error.
+
+**Candidate defects, most likely first:**
+1. The secret lookup resolves to `undefined`, `null` or an object and is interpolated into the header,
+   producing `Bearer undefined` or `Bearer [object Object]`.
+2. The stored value is JSON-quoted or carries a trailing newline/space from the vault read; a wrapping quote
+   or an internal space reproduces `6111` exactly.
+3. A connection typed as API-Key routes the token through the legacy path or reformats it (the legacy slot
+   returns chain `6103`, so the observed `6111` shows the Authorization path with a bad value).
+4. The value is truncated below 40 characters.
+
+**Requested safe diagnostic:** log the outgoing header's **length and character classes only**, never its
+value. Lengths 0, 9 (`undefined`), 14 (`null`), 15 (`[object Object]`), 40/41, 42 (quoted) or 41 with a
+trailing newline identify the defect immediately without exposing the secret.
+
+**Expected behaviour:** send `Authorization: Bearer <token>` from the token field and fail closed with a
+configuration error when the secret is missing, instead of transmitting a placeholder.
+
+**Note:** zone `0af2a3985db329cdb671829cb59a41f1` is known and works with a direct bearer credential, so once
+the header is correct both `LIST_ZONES` and `LIST_DNS_RECORDS` should return data with no other change.
+
 ## Recommended improvements — for owner approval, not applied
 
 Presented separately because every item is outside an audit-only scope; nothing below was changed.
@@ -267,7 +333,9 @@ were reused.
 | MCP execution | **FAIL (2 of 4 accounts)** | GitHub and Neon returned data; Cloudflare and Stitch returned provider errors. Cloudflare re-tested on the reconnected account at 09:28Z — unchanged `6003/6111` |
 | Cloudflare root-cause differential | **PASS** | 20 deliberately shaped fake credentials sent to the public API, reading `errors[]` **and** `error_chain[]`; a clean 40-character value returns `9109`, placeholder/empty/malformed bearer values return `6003`+`6111`, the legacy key slot returns chain `6103`. No real credential used |
 | Cloudflare credential-shape hypothesis | **RETRACTED** | The first-round "37-character Global API Key" explanation is refuted by measurement: that shape returns `9103` (with an email) or `9106` (without), and the legacy slot returns `6103`, not `6111` |
-| Cloudflare authentication repair | **BLOCKED** | The credential is stored account-side; it cannot be read or replaced from the workspace, so the fix is owner action |
+| **Cloudflare authentication (LIST_ZONES)** | **FAIL** | `6003` + chain `6111`, HTTP 400 — on every call |
+| **Cloudflare authentication (LIST_DNS_RECORDS)** | **FAIL** | zone `0af2a3985db329cdb671829cb59a41f1` passed directly → `9106 Authentication failed (status: 400)` |
+| **Cloudflare repair** | **BLOCKED** | defect is in Freebuff's hosted connector; no accessible code or configuration |
 | Repository gate | **PASS** | `SPEC_KIT_BASE_REF=0320d475… ./freebuff-verify.sh` exit 0 — Spec Kit gate verified all three artifacts, `tsc --noEmit` clean, production build succeeded, refresh-docs 19 passed / 0 failed |
 | Build size | **PASS** | `.next` 301,017,232 B (287.1 MiB) + `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB |
 | Full Vitest suite | **NOT RUN** | No test-covered code changed; the gate's type check and build cover a documentation-only diff |

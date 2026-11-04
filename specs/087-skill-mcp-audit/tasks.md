@@ -107,3 +107,18 @@
 - [x] **T032** Prescribe the correction (connector: resolve the secret, send `Authorization: Bearer <token>`,
   fail closed) plus the owner's no-new-token check (API Token connection, clean re-save), and keep the repair
   **BLOCKED** until a read-only call succeeds.
+
+## Phase 9 — Zone-scoped retest and engineering escalation (revision 3)
+
+- [x] **T033** Call `CLOUDFLARE_API_KEY_LIST_ZONES` with a `luckypickcanada.ca` name filter — `6003` with
+  chain `6111`, HTTP 400.
+- [x] **T034** Call `CLOUDFLARE_API_KEY_LIST_DNS_RECORDS` with the supplied zone ID
+  `0af2a3985db329cdb671829cb59a41f1` — `9106 Authentication failed (status: 400)`, so a known zone ID does
+  not bypass authentication.
+- [x] **T035** Classify by transport status: `400` accompanies every malformed-header case and `403` every
+  invalid-credential case, so the request is structurally invalid before identity is evaluated.
+- [x] **T036** Confirm no accessible connector surface exists (no MCP configuration, no Cloudflare client, no
+  secret store) and that the connector must not be disconnected.
+- [x] **T037** Decide that no repository-side fix is possible; the correction is Freebuff platform work.
+- [x] **T038** Write the engineering escalation — reproduction, evidence, four candidate defects, the
+  length/character-class diagnostic to run, and the expected fail-closed behaviour.

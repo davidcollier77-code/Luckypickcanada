@@ -201,6 +201,24 @@ well-formed and returns `9109`.
 6. **Given** an earlier hypothesis that a different credential shape is at fault, **When** measurement
    refutes it, **Then** the artifacts and the PR summary record the withdrawal with the counter-evidence.
 
+### Revision 3 — transport status and escalation (2026-11-04)
+
+- **FR-019**: Success requires both `LIST_ZONES` and `LIST_DNS_RECORDS` to return actual provider data; a
+  connected indicator or a written diagnosis MUST NOT be accepted as verification.
+- **FR-020**: The investigation MUST use a supplied `zone_id` to exercise the DNS endpoint directly, so a
+  zone-listing failure cannot mask a second, independent defect.
+- **FR-021**: The failure MUST be classified by HTTP status as well as error code, because `400` (structurally
+  invalid header) and `403` (well-formed but rejected credential) identify different faults.
+- **FR-022**: Where the fix is inaccessible, a complete engineering escalation MUST be produced: reproduction,
+  evidence, candidate defects, the safe diagnostic to run, and expected behaviour.
+- **FR-023**: The connector MUST NOT be deleted or disconnected, and no complete `Authorization` header may be
+  logged, printed or requested, even for diagnosis.
+
+**Measured in revision 3**: `LIST_ZONES` (name filter) → `6003`+`6111` at HTTP **400**;
+`LIST_DNS_RECORDS(zone_id=0af2a3985db329cdb671829cb59a41f1)` → `9106 Authentication failed (status: 400)`.
+A supplied zone ID does not bypass authentication, and the 400 status confirms structural invalidity rather
+than an invalid credential.
+
 ## Assumptions
 
 - Skills are an account-level library, and MCP connections are account-level, so the audit reads them

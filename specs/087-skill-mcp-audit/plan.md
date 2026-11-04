@@ -156,3 +156,30 @@
 - Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,
   `memory-bank/activeContext.md`. No application, dependency, workflow, environment, `.docs/` or `AGENTS.md`
   change.
+
+## Follow-up round 3 — zone-scoped endpoint and escalation
+
+### Technical context
+
+- A zone ID (`0af2a3985db329cdb671829cb59a41f1`) was supplied, which for the first time allows the DNS
+  endpoint to be called directly instead of being blocked by the zone-list failure.
+- Success criteria require real provider data from both endpoints, so a connected indicator is insufficient.
+
+### Design
+
+1. Call `LIST_ZONES` with a name filter and `LIST_DNS_RECORDS` with the supplied zone ID, read-only.
+2. Classify both failures by HTTP status as well as code: `400` means a structurally invalid header, `403`
+   means a well-formed credential was rejected.
+3. Compare with the established probe matrix to decide whether the credential can be the cause.
+4. Because no connector code or configuration is reachable, produce an engineering escalation instead of
+   inventing a repository fix.
+
+### Measured result
+
+- `LIST_ZONES` → `6003` + chain `6111` (HTTP 400); `LIST_DNS_RECORDS` → `9106 (status: 400)`.
+- No read-only call has returned zone or DNS data, so the repair is not achieved.
+
+### Files
+
+- Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,
+  `memory-bank/activeContext.md`.
