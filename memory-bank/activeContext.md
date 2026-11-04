@@ -10,8 +10,10 @@
   hand-off, missing parent `neon` skill, no `neon` CLI). `shadcn-ui` depends on an unconnected shadcn MCP
   and the repo has no `components.json`. `wrangler`, `workers-best-practices` and `github-actions-docs`
   have satisfied preconditions here.
-- **MCPs:** GitHub and Neon **verified working** by read-only calls. **Cloudflare Api Key failing** —
-  `6003 Invalid request headers` / `6111 Invalid format for Authorization header`, reproduced twice.
+- **MCPs:** GitHub and Neon **verified working** by read-only calls. **Cloudflare still failing after reconnection** — the connection was replaced with
+  `cloudflare_api_key_gange-suzy` and re-tested read-only on 2026-11-04 at 09:28Z; `6003 Invalid request
+  headers` / `6111 Invalid format for Authorization header` persists across two calls, so no account,
+  `luckypickcanada.ca` zone or DNS record is reachable and the credential format itself is the fault.
   **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
   credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
   `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration

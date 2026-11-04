@@ -62,3 +62,12 @@
 - [x] **T020** Inspect the complete final diff (3 modified files plus 4 added artifacts; no application,
   test, workflow, dependency, environment or `.docs/` change; secret scan clean), update `PR_SUMMARY.md`
   and `memory-bank/activeContext.md`, commit `debc7d1e`, push, and open PR #1705 unmerged.
+
+## Phase 6 — Post-reconnection re-verification
+
+- [x] **T021** Re-test the replaced Cloudflare connection (`cloudflare_api_key_gange-suzy`) with read-only
+  calls only: `CLOUDFLARE_API_KEY_LIST_ZONES` twice (unfiltered then name-filtered) both returned
+  `6003 Invalid request headers` / `6111 Invalid format for Authorization header`, so authentication still
+  fails, no account can be identified, the `luckypickcanada.ca` zone cannot be reached, and DNS records
+  cannot be listed. All five Cloudflare tools remain discoverable; the three mutating ones were never
+  invoked. Recorded in `PR_SUMMARY.md` and the PR #1705 body.

@@ -64,11 +64,25 @@ Tool schemas were discovered for all four apps; every account then received a re
 |---|---|---|---|
 | **GitHub** `github_passen-phenin` (`davidcollier77-code`) | `GET_THE_AUTHENTICATED_USER`, `LIST_REPOSITORIES_FOR_THE_AUTHENTICATED_USER`, `LIST_ORGANIZATIONS_FOR_THE_AUTHENTICATED_USER`, `FIND_REPOSITORIES`, `GET_A_REPOSITORY`, `LIST_REPOSITORIES_FOR_A_USER` | `GITHUB_GET_THE_AUTHENTICATED_USER` | **VERIFIED WORKING** — returned the authenticated profile, login `davidcollier77-code`, 1 public repo, 0 private |
 | **Neon** `neon_wasir-mats` | `RETRIEVE_PROJECTS_LIST`, `GET_USER_ORGANIZATIONS`, `GET_BRANCHES_FOR_PROJECT`, `FETCH_DATABASE_FOR_BRANCH`, `ACCESS_PROJECT_DETAILS_BY_ID`, `RETRIEVE_BRANCH_DATABASE_DETAILS`, `GET_PROJECT_CONNECTION_URI`, `LIST_SHARED_PROJECTS` | `NEON_RETRIEVE_PROJECTS_LIST` | **VERIFIED WORKING** — 3 projects returned (`neon-purple-dog`, `neon-rose-kite`, `neon-fuchsia-tree`), org `org-wild-boat-43871967`, Postgres 17 |
-| **Cloudflare Api Key** `cloudflare_api_key_dop-scenic` | `LIST_ZONES`, `LIST_DNS_RECORDS`, `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` | `CLOUDFLARE_API_KEY_LIST_ZONES` (twice) | **FAILING** — error `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header`. Identical on retry, so persistent, not transient |
-| **Google Stitch** `google_stitch_coost-namda` | `LIST_PROJECTS`, `GET_PROJECT`, `LIST_SCREENS` | `GOOGLE_STITCH_LIST_PROJECTS` | **FAILING** — "Google Stitch rejected the connected API key." |
+| **Cloudflare Api Key** `cloudflare_api_key_gange-suzy` (reconnected; replaced `cloudflare_api_key_dop-scenic`) | `LIST_ZONES`, `LIST_DNS_RECORDS`, `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` | `CLOUDFLARE_API_KEY_LIST_ZONES` ×2 (unfiltered, then name-filtered) | **FAILING** — error `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header`. Identical on both calls after reconnection, so the fault is the credential format, not the previous connection |
+| **Google Stitch** `google_stitch_coost-namda` | `LIST_PROJECTS`, `GET_PROJECT`, `LIST_SCREENS` | `GOOGLE_STITCH_LIST_PROJECTS` | **FAILING** — "Google Stitch rejected the connected API key." |No write, delete, overwrite or deploy tool was invoked. Failure text is quoted as provider codes and messages only; no credential value was read, printed or stored.
 
-No write, delete, overwrite or deploy tool was invoked. Failure text is quoted as provider codes and
-messages only; no credential value was read, printed or stored.
+### Cloudflare re-verification after reconnection (2026-11-04T09:28Z)
+
+The owner replaced the Cloudflare connection; the new account handle is `cloudflare_api_key_gange-suzy`.
+A read-only re-test produced these results.
+
+1. **Authentication — FAILED.** `CLOUDFLARE_API_KEY_LIST_ZONES` returned `6003 Invalid request headers`
+   with chain `6111 Invalid format for Authorization header`, twice (unfiltered, then name-filtered).
+   Rejection happens at the header-format stage, before any account or zone is read.
+2. **Account — NOT IDENTIFIED.** No account name or ID can be returned until authentication succeeds.
+3. **Zone `luckypickcanada.ca` — NOT ACCESSIBLE.** The repository confirms the expected zone through the
+   `luckypickcanada.ca` and `www.luckypickcanada.ca` routes in `wrangler.jsonc`, but the zone cannot be
+   listed, matched or confirmed by name.
+4. **DNS records — NOT RETRIEVABLE.** `CLOUDFLARE_API_KEY_LIST_DNS_RECORDS` requires a `zone_id` that only
+   `LIST_ZONES` can supply, so it is blocked by the same failure rather than by a separate problem.
+5. **Tools — all five discoverable, none executable:** `LIST_ZONES`, `LIST_DNS_RECORDS` (read-only) and
+   `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` (mutating, never invoked).
 
 ### An MCP the repository depends on but which is not connected
 
@@ -145,9 +159,11 @@ relevance stated in the request, and the retrieval was on demand — not a fixed
 
 Presented separately because every item is outside an audit-only scope; nothing below was changed.
 
-1. **Reconnect the Cloudflare MCP.** The `Authorization` header is malformed at the connector, so every
-   Cloudflare tool fails. Re-adding the API key (a token with the intended zone/DNS scopes) is the fix;
-   the DNS tools are unusable until then.
+1. **Cloudflare — reconnected once, still rejects the credential.** A replacement connection
+   (`cloudflare_api_key_gange-suzy`) was tested on 2026-11-04 at 09:28Z and returns the identical
+   `6003/6111` malformed-header error, so the earlier token was not the whole problem. Supply a correctly
+   formatted credential instead — a Global API Key paired with the account email, or a scoped API token —
+   carrying at least Zone:Read and DNS:Read. Every Cloudflare tool stays unusable until then.
 2. **Reconnect the Google Stitch MCP.** The key is rejected outright, so no Stitch project, screen or
    design-system read can succeed.
 3. **Resolve the Context7 governance gap — either connect Context7 or remove the dead references.**
@@ -192,7 +208,7 @@ were reused.
 | Skill load coverage | **PASS** | 14/14 declared skills returned instructions |
 | Skill resource load | **PASS** | `security-review` → `references/injection.md` returned in full |
 | MCP discovery | **PASS** | Tool schemas retrieved for all 4 accounts |
-| MCP execution | **FAIL (2 of 4 accounts)** | GitHub and Neon returned data; Cloudflare and Stitch returned provider errors |
+| MCP execution | **FAIL (2 of 4 accounts)** | GitHub and Neon returned data; Cloudflare and Stitch returned provider errors. Cloudflare re-tested on the reconnected account at 09:28Z — unchanged `6003/6111` |
 | Repository gate | **PASS** | `SPEC_KIT_BASE_REF=0320d475… ./freebuff-verify.sh` exit 0 — Spec Kit gate verified all three artifacts, `tsc --noEmit` clean, production build succeeded, refresh-docs 19 passed / 0 failed |
 | Build size | **PASS** | `.next` 301,017,232 B (287.1 MiB) + `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB |
 | Full Vitest suite | **NOT RUN** | No test-covered code changed; the gate's type check and build cover a documentation-only diff |
