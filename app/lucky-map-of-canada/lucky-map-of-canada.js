@@ -418,7 +418,6 @@ export default function LuckyMapOfCanada({ mapData }) {
                 sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"
                 loading="eager"
                 fetchPriority="high"
-                priority
                 className="official-map-image"
               />
               </picture>

@@ -226,3 +226,13 @@ Current PR-head CI exposed defects in the new dependency guard and executable ve
 - **SC-009**: Focused dependency/bootstrap tests and the full unit suite pass on the updated PR head.
 - **SC-010**: Visual QA and updater-scheduler verification pass on the updated PR head; the PR workflow remains verification-only and does not deploy production.
 - **SC-011**: The repository verification script is executable in Git and the full verification gate completes with the production build below 495 MB.
+## Visual QA follow-up — baseline and native image warning
+
+The desktop homepage screenshot comparison on the PR head showed an 8% pixel difference because the committed desktop golden image dates from 2026-10-23 and predates the already-merged 2026-11-04 hero navigation consolidation. The current desktop page correctly renders the approved four-link navigation and centered artwork. The static baseline must be refreshed from the current rendered page; the 0.7% difference threshold must not be loosened. Mobile baselines already pass and remain unchanged.
+
+The same run surfaced a separate React warning: the Lucky Map's native HTML `<img>` had a bare `priority` attribute. Its valid `loading="eager"` and `fetchPriority="high"` attributes already preserve eager/high-priority loading.
+
+- **FR-016**: The desktop homepage golden screenshot MUST represent the current approved hero navigation and artwork layout; refresh only the stale desktop baseline and preserve the strict 0.7% mismatch limit.
+- **FR-017**: The Lucky Map native `<img>` MUST retain `loading="eager"` and `fetchPriority="high"` without the unsupported `priority` attribute.
+- **SC-012**: Current desktop, mobile-390, and mobile-412 homepage screenshot checks pass with the existing 0.7% cap; the approved current navigation/artwork remains visually represented in the baseline.
+- **SC-013**: The invalid React DOM attribute warning is absent while AVIF, WebP and PNG fallback delivery and eager/high fetch priority remain intact.

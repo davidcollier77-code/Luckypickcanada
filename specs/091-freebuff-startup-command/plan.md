@@ -114,3 +114,8 @@ Implementation stays within this existing feature:
 5. Re-run focused tests, the full suite, typecheck, repository verification, and current-head Visual QA/updater-scheduler workflows. Keep the Dependabot weekly npm and GitHub Actions configuration unchanged.
 
 No Bun lockfile, second package manager, dependency upgrade, app change, credential change, scheduler activation, production deployment, or live platform startup-command change is part of this repair.
+## Visual QA follow-up — baseline correctness
+
+The failing desktop capture is not evidence of a new production visual defect. The expected desktop baseline was last updated on 2026-10-23, before PR #1709 consolidated the hero navigation on 2026-11-04. The test report records a stable current capture with the four-link approved navigation; both mobile viewport snapshots already pass. Refresh only `tests/visual/__screenshots__/desktop/homepage-viewport.png` from the current branch's deterministic capture (the test hides only the animated shimmer overlay). Keep `maxDiffPixelRatio: 0.007`; do not raise the threshold, mask the navigation, or mask the hero artwork.
+
+Separately, remove the unsupported bare `priority` prop from the Lucky Map's native `<img>`. Preserve its `loading="eager"`, `fetchPriority="high"`, AVIF and WebP sources, and PNG fallback. Add a focused source guard to prevent the invalid prop from returning.

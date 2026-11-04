@@ -1,3 +1,15 @@
+# Active Context — PR #1711 desktop Visual QA diagnosis (2026-11-04)
+
+- **PR head:** `1db23df4a13a2eda43c84f053a5173e73c60e4db`; PR #1711 remains open and unmerged.
+- **Visual QA run:** GitHub Actions run 41929634018 failed only at `tests/visual/homepage.spec.ts:88` desktop homepage screenshot. 89 visual tests passed and 3 were skipped; targeted tests, full Vitest, TypeScript, Spec Kit governance and committed baseline presence all passed.
+- **Root cause:** the checked-in desktop baseline `tests/visual/__screenshots__/desktop/homepage-viewport.png` was last updated 2026-10-23, before the already-merged 2026-11-04 PR #1709 navigation consolidation. The new approved navigation uses one row instead of the old two-row link list, changing vertical hero placement. CI's actual desktop screenshot is stable and mobile-390/mobile-412 baseline comparisons both pass.
+- **Required repair:** update only the desktop screenshot baseline from the deterministic current-page capture; preserve `maxDiffPixelRatio: 0.007`; do not mask the navigation/artwork or widen the threshold.
+- **Separate warning:** `app/lucky-map-of-canada/lucky-map-of-canada.js` placed a bare `priority` prop on a native HTML `<img>`. Remove only that prop; preserve `loading="eager"`, `fetchPriority="high"`, and AVIF/WebP/PNG source order. Add a source guard.
+- **Other current checks:** updater verification (run 41929633866) passed, including repository gate, 495 MiB cap (320.59 MiB), and Wrangler dry-run. OpenNext validation (41929633617) and DevSkim (41929633665) passed. No production Worker deployment ran.
+- **Status:** implementation follow-up is underway; desktop screenshot baseline refresh and Visual QA rerun remain pending. No passing full Visual QA claim is made.
+
+---
+
 # Active Context — PR #1711 QA and updater-scheduler repair (2026-11-04)
 
 - **Head inspected:** `490ea28bd2912c8042af5e3e09cbdd026b06575a`; PR #1711 was open and unmerged.

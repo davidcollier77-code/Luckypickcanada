@@ -62,10 +62,19 @@
 
 ## Phase 8: PR-head QA and bootstrap repair (follow-up)
 
-- [ ] T031 [US1] Repair the lockfile importer and Dependabot block parsers in `__tests__/dependency-management.test.js`; verify exact `react` and `react-dom` matches.
-- [ ] T032 [US1] Refactor `scripts/bootstrap-pnpm.sh` so sourced failures return to the caller and direct execution exits non-zero; stop every failure path before npm install.
-- [ ] T033 [US1] Add `__tests__/bootstrap-pnpm.test.js` for sourced failure, direct failure, and exact-version bootstrap in an isolated temporary HOME with a fake installer.
-- [ ] T034 [US1] Commit `freebuff-verify.sh` and `scripts/bootstrap-pnpm.sh` as executable files so QA and updater workflows can invoke them directly.
-- [ ] T035 Run the focused dependency/bootstrap tests, the full Vitest suite, and standalone TypeScript check.
-- [ ] T036 Run `./freebuff-verify.sh`, measure `.next + public` against the 495 MB ceiling, and confirm frozen-lockfile stability.
+- [x] T031 [US1] Repair the lockfile importer and Dependabot block parsers in `__tests__/dependency-management.test.js`; verify exact `react` and `react-dom` matches.
+- [x] T032 [US1] Refactor `scripts/bootstrap-pnpm.sh` so sourced failures return to the caller and direct execution exits non-zero; stop every failure path before npm install.
+- [x] T033 [US1] Add `__tests__/bootstrap-pnpm.test.js` for sourced failure, direct failure, and exact-version bootstrap in an isolated temporary HOME with a fake installer.
+- [x] T034 [US1] Commit `freebuff-verify.sh` and `scripts/bootstrap-pnpm.sh` as executable files so QA and updater workflows can invoke them directly.
+- [x] T035 Run the focused dependency/bootstrap tests, the full Vitest suite, and standalone TypeScript check.
+- [x] T036 Run `./freebuff-verify.sh`, measure `.next + public` against the 495 MB ceiling, and confirm frozen-lockfile stability.
 - [ ] T037 Verify current-head Visual QA and updater-scheduler workflow results; audit the full diff and update the PR summary with actual outcomes.
+ 
+## Phase 9: Visual QA baseline and native image warning (follow-up)
+
+- [ ] T038 [US1] Refresh only the stale desktop homepage screenshot from the deterministic current-branch capture; leave mobile snapshots unchanged and keep `maxDiffPixelRatio: 0.007`.
+- [ ] T039 [US1] Remove the unsupported bare `priority` attribute from the Lucky Map native `<img>`, preserving `loading="eager"`, `fetchPriority="high"`, and all AVIF/WebP/PNG sources.
+- [ ] T040 [US1] Add `__tests__/lucky-map-image-loading.test.js` to guard the image source order, fallbacks, eager/high priority, and absence of the invalid native attribute.
+- [ ] T041 Run focused Lucky Map image guard and the full Vitest suite; run `pnpm exec tsc --noEmit`.
+- [ ] T042 Run `./freebuff-verify.sh`, full Playwright Visual QA, and updater verification; retain the 495 MB hard cap and inspect all final screenshots/diffs.
+- [ ] T043 Audit the final diff, update the canonical PR summary with exact CI outcomes, and leave PR #1711 open and unmerged.
