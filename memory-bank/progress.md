@@ -1,3 +1,8 @@
+# Progress — 2026-11-04: Gift Email Test Tool Removed
+
+- Deleted the disabled gift email test tool entirely: page, client form, switch, README, `/api/test-tools/gift-email` route and its 11-test suite. Both the page and the route now return 404, and no string from the tool remains in the production output.
+- Added an absence guard in the security/payment suite. Paid checkout, verification, gift delivery and prices are unchanged; the clean production build is 301,016,019 B / 287.1 MiB (318.4 MiB with public).
+
 # Progress — 2026-11-03: Lucky Reveal Paywalls Restored
 
 - Removed the public **Preview Reveal — FREE** control, its `REVEAL_TEST_MODE` helper, homepage wiring and CSS; the purchase popup now offers only the paid Stripe checkout action.

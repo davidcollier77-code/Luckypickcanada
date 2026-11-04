@@ -33,8 +33,8 @@
 - [x] **T010** [US3] Update `__tests__/security-payment.test.js` to assert the preview module is absent, no
   preview wiring remains, the paid form still posts to `/api/checkout`, prices are 100/199, and the
   dev-only legacy endpoint is blocked outside development.
-- [x] **T011** [US3] Extend `__tests__/gift-email-test-tool.test.js` to assert the shipped switch is
-  `false`, the helper returns false, and no environment override exists.
+- [x] **T011** [US3] (Superseded by T017.) The gift-tool test originally asserted the shipped switch was
+  `false`; the tool and its test are now removed entirely.
 - [x] **T012** [US3] Update `tests/visual/lucky-reveal-selection.spec.ts` to assert no preview control and
   drive the reveal popup from a mocked paid verification response.
 
@@ -47,3 +47,17 @@
   anything not run.
 - [x] **T016** Inspect the complete final diff, update `PR_SUMMARY.md`, `memory-bank/activeContext.md` and
   `memory-bank/progress.md`, and leave PR #1704 open and unmerged.
+
+## Phase 6 — Follow-up: remove the disabled gift tool entirely
+
+- [x] **T017** [US2] Delete `app/test-tools/gift-email/` (page, client form, switch, README),
+  `app/api/test-tools/gift-email/route.js` and `__tests__/gift-email-test-tool.test.js`.
+- [x] **T018** [US3] Add an absence guard in `__tests__/security-payment.test.js` for the removed page and
+  route, and update the spec, plan and this task list for the removal.
+- [x] **T019** Run the focused suites (3 files / 32 tests), the full `pnpm exec vitest run` (37 files /
+  397 tests) and `pnpm exec tsc --noEmit` (exit 0 on a clean build).
+- [x] **T020** Run `./freebuff-verify.sh` (exit 0), measure the build (`.next` 301,016,019 B / 287.1 MiB),
+  confirm the gift test page and route return 404, and confirm no removed strings remain in the served
+  output.
+- [x] **T021** Inspect the final diff, update the report and memory, push to PR #1704 and keep it open and
+  unmerged.

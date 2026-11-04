@@ -71,6 +71,14 @@ describe('Reveal paywall boundaries', () => {
     expect(modalSource).not.toMatch(/Preview Reveal/);
     expect(modalSource).not.toMatch(/type="button"[^>]*Preview/);
   });
+
+  it('removes the gift email test page and its public route', () => {
+    expect(existsSync(join(process.cwd(), 'app/test-tools/gift-email/page.js'))).toBe(false);
+    expect(
+      existsSync(join(process.cwd(), 'app/test-tools/gift-email/giftEmailTestConfig.js'))
+    ).toBe(false);
+    expect(existsSync(join(process.cwd(), 'app/api/test-tools/gift-email/route.js'))).toBe(false);
+  });
 });
 
 describe('Unified Lucky Reveal purchase options', () => {

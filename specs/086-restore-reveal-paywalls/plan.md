@@ -40,9 +40,14 @@
 3. **Regression guards** — rewrite `__tests__/components/CheckoutModal.test.jsx` so every flow asserts the
    paid-only action and the absence of a preview. Update `__tests__/security-payment.test.js` to assert
    the preview module is gone, no preview wiring remains, the paid form still posts to `/api/checkout`,
-   and the dev-only legacy endpoint is still blocked outside development. Add a gift-tool test that the
-   shipped switch is `false`, the helper returns false, and no `process.env` override exists.
-4. **Browser check** — update `tests/visual/lucky-reveal-selection.spec.ts`: assert the selection popup has
+   the gift test page/route are absent, and the dev-only legacy endpoint is still blocked outside
+   development.
+4. **Remove the disabled tool (follow-up, 2026-11-04)** — delete `app/test-tools/gift-email/` (page,
+   client form, switch, README), `app/api/test-tools/gift-email/route.js` and
+   `__tests__/gift-email-test-tool.test.js`. With the switch and route gone, the path cannot be
+   re-enabled by editing a constant; the only gift email code left is the paid delivery in
+   `app/gift-email.js`.
+5. **Browser check** — update `tests/visual/lucky-reveal-selection.spec.ts`: assert the selection popup has
    no preview control, and drive the reveal popup through a mocked paid `verify-session` response instead
    of the removed preview.
 
@@ -50,9 +55,10 @@
 
 - Deleted: `app/test-tools/reveal-testing/revealTestConfig.js`, `app/test-tools/reveal-testing/README.md`
 - Updated: `app/checkout-modal.jsx`, `app/homepage/HomePage.js`, `themes/default/homepage.css`
-- Updated: `app/test-tools/gift-email/giftEmailTestConfig.js`, `page.js`, `README.md`
+- Deleted (follow-up): `app/test-tools/gift-email/{page.js,GiftEmailTestForm.jsx,giftEmailTestConfig.js,README.md}`,
+  `app/api/test-tools/gift-email/route.js`, `__tests__/gift-email-test-tool.test.js`
 - Updated: `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`,
-  `__tests__/gift-email-test-tool.test.js`, `tests/visual/lucky-reveal-selection.spec.ts`
+  `tests/visual/lucky-reveal-selection.spec.ts`
 - Added: `specs/086-restore-reveal-paywalls/{spec,plan,tasks}.md`
 - Updated: `.specify/feature.json`, `memory-bank/activeContext.md`, `memory-bank/progress.md`,
   `PR_SUMMARY.md`
@@ -64,17 +70,17 @@
 - **Hide the gift test page behind a secret** — the task requires disabling public bypasses and keeping
   the existing paid flow; a team secret still leaves a payment-free gift path. Shipping the compiled
   switch as `false` is simpler and fails closed.
-- **Delete the gift test tool entirely** — it was just merged as a diagnostic and the task says disable,
-  not delete. Keeping it disabled preserves local use without a public surface.
+- **Keep the gift test tool disabled** — superseded by the owner's follow-up: a disabled public bypass
+  and its route still invite re-enabling. Removing the page, form, switch, route and test is final.
 - **Change prices or Stripe configuration** — explicitly out of scope and already correct (100/199).
 - **New dependency** — none needed.
 
 ## Verification
 
 - Focused: `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`,
-  `__tests__/gift-email-test-tool.test.js`, `__tests__/stripe-product-alignment.test.js`.
+  `__tests__/stripe-product-alignment.test.js`.
 - Full `pnpm exec vitest run`, `pnpm exec tsc --noEmit`, `./freebuff-verify.sh`.
 - Production build measured against the 495 MB maximum; search the build output for "Preview Reveal".
 - Production smoke with `next start`: homepage 200, no preview string in the served HTML/chunks, gift test
-  route 404, gift test page shows the disabled notice, checkout route still prices 100/199.
+  page and route 404, checkout route still prices 100/199.
 - Optional browser probe of the popup if Chromium is available; otherwise report it as NOT RUN.
