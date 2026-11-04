@@ -64,6 +64,46 @@
 - **Running the full Vitest suite** — no test-covered code changed; the mandatory gate and type check
   cover a documentation-only diff.
 
+## Follow-up investigation — Cloudflare MCP authentication repair
+
+### Technical context
+
+- The failing call is made through the Freebuff connector, whose request construction and credential store
+  are not inspectable from the workspace. The credential cannot be read, replaced or rotated here.
+- Cloudflare's public API is reachable from the workspace, so the *meaning* of the error code can be
+  established independently of the connector by sending deliberately shaped fake credentials.
+- Baseline: pnpm 10.30.3 and `node_modules` are present, so the gate can run without reinstall.
+
+### Design
+
+1. **Reproduce** — call the two read-only Cloudflare tools and record the exact code chain. Repeat after
+   the connection is replaced, so a stale token can be excluded as the sole cause.
+2. **Classify the error** — send fake credentials in five shapes to `/client/v4/zones`: no header, empty
+   bearer, token without the `Bearer` scheme, a Global-API-Key-shaped value, and a token-shaped value.
+   Record which shape produces which code. This separates "credential absent" from "credential malformed"
+   from "credential invalid".
+3. **Locate the boundary** — vary the length and character set of the fake value to find what Cloudflare's
+   parser accepts as well-formed, so the observed code can be mapped to a shape of credential.
+4. **Attribute** — compare the observed MCP error with the differential result. The layer at fault is the
+   one whose behaviour reproduces the observed code.
+5. **Prescribe** — state the owner's exact corrective action and a secret-free confirmation the owner can
+   perform, then record the repair as BLOCKED because it cannot be executed from the workspace.
+
+### Files
+
+- Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,
+  `memory-bank/activeContext.md`.
+- No application, dependency, workflow, environment, `.docs/` or `AGENTS.md` change; no Cloudflare resource
+  or credential changed.
+
+### Alternatives rejected
+
+- **Re-saving the token from here** — the credential is account-side, and reading or handling it is
+  forbidden by the request and by `AGENTS.md` §5.
+- **Testing with the real token** — would expose the secret and cannot be done without reading it.
+- **Asserting a single cause from one error code** — the differential test exists precisely because the
+  code alone is shared by several shapes.
+
 ## Verification
 
 - `./freebuff-verify.sh` (Spec Kit gate, type check, production build, refresh-docs tests) with

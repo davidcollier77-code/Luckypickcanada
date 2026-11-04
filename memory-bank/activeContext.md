@@ -13,7 +13,14 @@
 - **MCPs:** GitHub and Neon **verified working** by read-only calls. **Cloudflare still failing after reconnection** — the connection was replaced with
   `cloudflare_api_key_gange-suzy` and re-tested read-only on 2026-11-04 at 09:28Z; `6003 Invalid request
   headers` / `6111 Invalid format for Authorization header` persists across two calls, so no account,
-  `luckypickcanada.ca` zone or DNS record is reachable and the credential format itself is the fault.
+  `luckypickcanada.ca` zone or DNS record is reachable.
+- **Cloudflare root cause (demonstrated):** shaped fake credentials sent to the public Cloudflare API
+  mapped the error classes — absent header gives `9106/9107`, an empty/schemeless/short (<40 chars) or
+  quoted/spaced value gives `6003/6111`, and a clean 40-character token gives `9109 Invalid access
+  token`. The MCP's `6111` therefore means a **malformed bearer value**, most likely a 37-character
+  Global API Key saved where an API Token is expected. The fix is an owner action (scoped API Token
+  with Zone:Read + DNS:Read, pasted as one unbroken 40-character string); the repair is **BLOCKED**, and
+  no credential was read, created, revoked or changed.
   **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
   credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
   `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration

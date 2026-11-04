@@ -71,3 +71,21 @@
   fails, no account can be identified, the `luckypickcanada.ca` zone cannot be reached, and DNS records
   cannot be listed. All five Cloudflare tools remain discoverable; the three mutating ones were never
   invoked. Recorded in `PR_SUMMARY.md` and the PR #1705 body.
+
+## Phase 7 — Cloudflare root-cause repair (follow-up)
+
+- [x] **T022** Reproduce the failure on the current connection and record the error verbatim
+  (`6003` / chain `6111`) for two differently-parameterised read-only calls.
+- [x] **T023** Classify what the code means by sending deliberately shaped **fake** credentials to the
+  public `api.cloudflare.com/client/v4/zones` endpoint: absent header → `9106/9107`; empty bearer, missing
+  scheme, 32–39 characters, 37-character hex Global-API-Key shape, quoted value, or 40 characters with an
+  internal space or `!` → `6003/6111`; clean 40–41 character token-charset value → `9109 Invalid access
+  token`. No real credential was used or read.
+- [x] **T024** Attribute the fault to the layer whose behaviour reproduces the observed code: the saved
+  credential value in the Freebuff Cloudflare connection, not the repository, the tool schema or Cloudflare
+  availability.
+- [x] **T025** State the exact owner correction (scoped API Token with Zone:Read + DNS:Read, pasted as one
+  unbroken 40-character string) plus a secret-free self-check (37 hex characters means a Global API Key;
+  40 characters means a token) and record the repair as **BLOCKED** until a read-only call succeeds.
+- [x] **T026** Map the boundary precisely — 39 characters still yields `6111`, 40 yields `9109` — so the
+  finding rests on a measured threshold rather than a single sample.

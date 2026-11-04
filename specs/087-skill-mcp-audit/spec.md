@@ -136,6 +136,42 @@ actually happened in the session.
 - **SC-004**: The repository verification gate passes with no application source file changed, and the
   production build stays below the 495 MB maximum.
 
+## Follow-up Scope — Cloudflare MCP authentication repair (2026-11-04)
+
+**Added by**: a follow-up instruction to investigate and repair the Cloudflare MCP authentication failure
+and, where the cause lies outside the repository, to state exactly what must be corrected.
+
+### Requirements
+
+- **FR-010**: The investigation MUST establish whether `6003/6111` means an absent credential, a malformed
+  credential, or a rejected credential, by differential test rather than inference.
+- **FR-011**: The root cause MUST be attributed to a specific layer — repository, Freebuff connector, or
+  the Cloudflare credential itself — and MUST NOT be blamed on the repository without evidence.
+- **FR-012**: Where the cause lies outside the workspace, the exact correction the owner must perform MUST
+  be stated, with a secret-free way for the owner to confirm it.
+- **FR-013**: No token may be created, revoked, revealed, rotated or modified; no DNS record may be
+  changed; no permission may be expanded; no credential value may be read or committed.
+- **FR-014**: The repair MUST NOT be reported as verified unless a read-only Cloudflare call succeeds.
+
+### Acceptance Scenarios
+
+1. **Given** the failing connection, **When** read-only calls are made, **Then** the error is reproduced and
+   recorded verbatim rather than paraphrased.
+2. **Given** Cloudflare's header handling, **When** deliberately shaped fake credentials are sent to the
+   public API, **Then** the error class for absent, malformed and invalid credentials is distinguished.
+3. **Given** that distinction, **When** it is compared with the error the MCP returns, **Then** the layer
+   at fault is identified from evidence.
+4. **Given** a cause outside the repository, **When** the report is written, **Then** the owner's exact
+   corrective step is stated and the repair is recorded as BLOCKED instead of complete.
+
+### Edge Cases
+
+- A credential that is present but empty produces the same error class as an unsupported or missing scheme.
+- A Global API Key is not an API Token and cannot be sent as a bearer credential; sending one is a format
+  fault, not a permissions fault.
+- By error code alone, a quoted or truncated paste is indistinguishable from the wrong credential type, so
+  the report names both possibilities rather than asserting one.
+
 ## Assumptions
 
 - Skills are an account-level library, and MCP connections are account-level, so the audit reads them
