@@ -45,7 +45,7 @@ export default function Hero() {
               href="#community-stories"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
-              Community Stories
+              Lucky Stories
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
@@ -53,13 +53,6 @@ export default function Hero() {
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Consult the Crystal Ball
-            </Link>
-            <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
-            <Link
-              href="/map"
-              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
-            >
-              Lucky Map
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
@@ -87,6 +80,16 @@ export default function Hero() {
                   fetchPriority="high"
                 />
               </picture>
+              {/* Decorative gold shimmer (specs/089-homepage-nav-gold-shimmer):
+                  three masked light bands that drift across the emblem's gold
+                  ring, the gold wordmark and the Explore Your Luck line/arrow.
+                  The frame reproduces the painted artwork box, so no image,
+                  wording, colour or layout changes and no input is captured. */}
+              <span className="hero-gold-shimmer-frame" aria-hidden="true">
+                <span className="hero-gold-shimmer hero-gold-shimmer--ring" />
+                <span className="hero-gold-shimmer hero-gold-shimmer--wordmark" />
+                <span className="hero-gold-shimmer hero-gold-shimmer--explore" />
+              </span>
               <ExploreLuckButton />
             </div>
           </div>

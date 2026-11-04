@@ -74,3 +74,96 @@ html { scroll-behavior: smooth; }
 }
 
 
+/* ---- Hero gold shimmer (specs/089-homepage-nav-gold-shimmer) --------------
+   The gold wordmark, the "EXPLORE YOUR LUCK" line with its arrow, and the gold
+   ring are painted into one AVIF/WebP artwork, so the shimmer is layered above
+   the artwork rather than touching it: three masked light bands drifting across
+   the measured artwork regions. Container query units let the frame reproduce
+   the image's object-contain box exactly, so the light keeps tracking the gold
+   on phones where the artwork is width-limited instead of height-limited. */
+.hero-image-container { container-type: size; }
+
+.hero-gold-shimmer-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  width: auto;
+  height: min(100cqh, 150cqw);
+  aspect-ratio: 1024 / 1536;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hero-gold-shimmer {
+  position: absolute;
+  display: block;
+  overflow: hidden;
+  opacity: .45;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.hero-gold-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(102deg, rgba(255, 232, 168, 0) 0%, rgba(255, 226, 150, .45) 36%, rgba(255, 249, 219, .85) 50%, rgba(255, 226, 150, .45) 64%, rgba(255, 232, 168, 0) 100%);
+  transform: translate3d(-150%, 0, 0);
+  animation: hero-gold-shimmer-sweep 8s cubic-bezier(.45, 0, .55, 1) infinite;
+  will-change: transform;
+}
+
+@keyframes hero-gold-shimmer-sweep {
+  0% { transform: translate3d(-150%, 0, 0); }
+  62%, 100% { transform: translate3d(400%, 0, 0); }
+}
+
+/* Gold ring around the emblem: a soft annulus so the light only catches the
+   ring itself, never the leaf or the clover inside it. */
+.hero-gold-shimmer--ring {
+  top: 0.49%;
+  left: 15.6%;
+  width: 68.4%;
+  aspect-ratio: 1;
+  -webkit-mask-image: radial-gradient(closest-side, transparent 64%, #000 74%, #000 91%, transparent 99%);
+  mask-image: radial-gradient(closest-side, transparent 64%, #000 74%, #000 91%, transparent 99%);
+}
+
+.hero-gold-shimmer--ring::before { animation-duration: 10.5s; }
+
+/* "LUCKY PICK CANADA: YOUR DAILY LUCKY MOMENT" lettering. */
+.hero-gold-shimmer--wordmark {
+  top: 48.6%;
+  left: 2%;
+  width: 96%;
+  height: 22%;
+  -webkit-mask-image: radial-gradient(ellipse 52% 54% at 50% 50%, #000 55%, rgba(0, 0, 0, .45) 85%, transparent 100%);
+  mask-image: radial-gradient(ellipse 52% 54% at 50% 50%, #000 55%, rgba(0, 0, 0, .45) 85%, transparent 100%);
+}
+
+/* "EXPLORE YOUR LUCK" line and its downward arrow. */
+.hero-gold-shimmer--explore {
+  top: 85.2%;
+  left: 16%;
+  width: 68%;
+  height: 11.6%;
+  -webkit-mask-image: radial-gradient(ellipse 48% 56% at 50% 50%, #000 54%, rgba(0, 0, 0, .5) 82%, transparent 100%);
+  mask-image: radial-gradient(ellipse 48% 56% at 50% 50%, #000 54%, rgba(0, 0, 0, .5) 82%, transparent 100%);
+}
+
+.hero-gold-shimmer--wordmark::before { animation-duration: 8.6s; animation-delay: -2.9s; }
+.hero-gold-shimmer--explore::before { animation-duration: 7.4s; animation-delay: -5.2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gold-shimmer { display: none; }
+}
+
+

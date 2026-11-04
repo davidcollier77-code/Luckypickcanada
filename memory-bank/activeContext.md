@@ -1,3 +1,40 @@
+# Active Context — Homepage Navigation Consolidation and Golden Shimmer (2026-11-04)
+
+- **Task groups:** `polishing` + `testing`; branch `freebuff/d1d198f83bbd7f8a37f69b23`; new feature
+  `specs/089-homepage-nav-gold-shimmer` (no earlier feature covered hero navigation or hero shimmer).
+- **Verified baseline:** the hero primary navigation held five entries including both
+  `Community Stories` (#community-stories) and `Lucky Map` (/map); the gold wordmark, the
+  `EXPLORE YOUR LUCK` line/arrow and the emblem's gold ring are painted inside one
+  `homepage-hero-lucky-pick-canada*.{avif,webp}` artwork, so the shimmer could only be a layer above it.
+- **Implementation:** `app/homepage/Hero.js` drops the `Lucky Map` nav entry and its separator, relabels
+  the stories link to `Lucky Stories` (still `#community-stories`), and adds one `aria-hidden` shimmer
+  frame with ring/wordmark/explore layers between the artwork and `ExploreLuckButton`.
+  `themes/default/hero.css` makes `.hero-image-container` a size container and sizes the frame with
+  `height: min(100cqh, 150cqw)` + `aspect-ratio: 1024/1536`, which reproduces the `object-contain`
+  artwork box (desktop 432x648, mobile 360x540) instead of the container box, then paints three masked
+  screen-blended bands with one shared sweep keyframe (10.5 s / 8.6 s / 7.4 s) and hides them under
+  `prefers-reduced-motion: reduce`. Region percentages are measured from the artwork's gold pixels
+  (ring bbox x 177-842 / y 25-690, wordmark rows 755-1075, explore rows 1310-1480).
+- **Verification:** guard `__tests__/homepage-nav-gold-shimmer.test.js` 12/12 PASS; focused with
+  `homepage-hero-preload` 16/16; full `pnpm exec vitest run` 39 files / 413 tests PASS; `tsc --noEmit`
+  exit 0; `./freebuff-verify.sh` exit 0 on the final code; build `.next` 285,913,411 B + `public`
+  32,840,043 B = 318,753,454 B (304.0 MiB) < 495 MB. Served: `/`, `/map` and
+  `/where-luck-has-been-found-in-canada` 200; four hero nav links with one `#community-stories` and no
+  hero `/map` link; one `EXPLORE LUCKY STORIES` link to `/map`; one footer map link; one AVIF preload,
+  AVIF source before WebP, WebP `<img>` fallback. Chromium (`artifacts/hero-shimmer/probe.cjs`, 26 frames
+  @400 ms): max consecutive-frame mean pixel change desktop ring 7.254 / wordmark 9.620 / explore 11.447,
+  mobile ring 6.291 / wordmark 12.596 / explore 14.677; reduced motion all `display: none` with 0 frame
+  difference; Explore click scrolled 0-996 px (desktop) / 0-867 px (mobile) and added the confetti
+  canvas; 0 px overflow, 0 console/page errors.
+- **Tooling note:** this fresh workspace needed `npm i -g pnpm@10.30.3 --prefix "$HOME/.local"` and
+  `scripts/setup-chromium-libs.sh` (Chromium 1243 was present but failed on `libnspr4.so`) before any
+  browser evidence was possible.
+- **Not verified:** PR-head CI (pending), audible confetti sound (no audio device here), physical
+  iOS/Android devices, OS-level reduced motion (emulated only). The unused duplicate
+  `public/themes/default/hero.css` was left untouched.
+
+---
+
 # Active Context — Live-Traffic Performance Readiness: Homepage Hero Image Delivery (2026-11-04)
 
 - **Task groups:** `polishing` + `testing`; branch `freebuff/c1e1aaa103045da1dc1fde0f`; new feature
