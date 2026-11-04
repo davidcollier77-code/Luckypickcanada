@@ -1,111 +1,221 @@
-# Restore the Lucky Reveal Paywalls
+# Skill Library and MCP Connection Audit
 
-**PR:** [#1704](https://github.com/davidcollier77-code/Luckypickcanada/pull/1704) — open and unmerged,
-awaiting owner review. Branch `freebuff/restore-reveal-paywalls` targets `main`.
+**Branch** `freebuff/d39d4997e3eae68c62117cc1` targets `main`. **Audit-only**: no application source,
+dependency, workflow, environment, `.docs/` or `AGENTS.md` file is modified.
 
 ## Task and task groups
 
-**Task groups: `security` + `testing`.**
+**Assigned task:** audit Freebuff's installed skill library and connected MCPs — inventory skills and their
+purposes, inventory connected MCPs and their tools, verify each MCP actually works, determine whether
+skills and MCP tools are used automatically or only on explicit instruction, explain the discovery →
+load → activation → application path, identify anything Freebuff cannot discover or use, and demonstrate
+selection with real examples.
 
-- `security` — removes public payment bypasses and restores Stripe enforcement for both paid reveals.
-- `testing` — the result is an absence, so it needs executed guards, a clean production build, an HTTP
-  smoke test and a browser-level check.
+**Selected task groups:**
 
-**Assigned task:** restore the paywalls for Personal Reveal and Gift Reveal; remove the free-preview
-button; disable all public test-mode or payment-bypass paths; keep CAD $1.00 and CAD $1.99; preserve the
-existing Stripe payment and gift-email setup.
+- **`deep-dive`** — the request is explicitly report-only, and `.freebuff/deep-dive.md` names
+  "explicitly authorized audit-only, investigation-only, or report-only tasks" as permitted scope that
+  must still produce evidence and limitations rather than a forced code change.
+- **`troubleshooting`** — two connections were failing; attributing them required real calls and repeated
+  measurement instead of inspection.
+- **`security`** — the audit touches live third-party accounts and the request forbids exposing any
+  credential, so error text and secret handling needed the strictest review posture.
 
-**Follow-up (2026-11-04):** remove the disabled gift email test tool and its route entirely.
+## Method
 
-## Documents reviewed
+Everything below is read from an interface that was actually called. No claim rests on a listing alone.
+
+- Skill inventory: the 14 skills declared by the `cloud_read_skill` tool were each loaded. All 14 returned
+  their instructions (14/14).
+- MCP inventory: `search_integration_tools` was called for all four app categories to obtain real tool
+  schemas; each account then received at least one **read-only** call.
+- Repository evidence: `AGENTS.md`, `.freebuff/*.md`, `.specify/integration.json`,
+  `.specify/init-options.json`, `wrangler.jsonc`, `.github/workflows/`, plus counts measured with `grep`
+  and `which`.
+
+## Installed skills (14 declared, 14 loaded)
+
+| # | Skill | Purpose | Activation rule | Verified limitation |
+|---|---|---|---|---|
+| 1 | `frontend-design` | Distinctive visual direction for new or reshaped UI | Description-driven; any design task | None |
+| 2 | `web-design-guidelines` | Review UI against the Vercel Web Interface Guidelines | "review my UI", "audit design", "check accessibility" | Fetches the rule set from a live `raw.githubusercontent.com` URL at run time rather than holding it locally |
+| 3 | `image-to-code` | **Relocation stub only** | Frontmatter sets `disable-model-invocation: true` | **Cannot be model-invoked.** Body only points at `github.com/Leonxlnx/imagegen-skills` |
+| 4 | `shadcn-ui` | shadcn/ui component discovery, install, customisation | shadcn work | Declares `mcp_shadcn*` as an allowed tool; **no shadcn MCP is connected**, and the repo has no `components.json` |
+| 5 | `wrangler` | Wrangler CLI dev, preview, deploy and resource operations | Project has `wrangler.jsonc/json/toml` | **Trigger satisfied** — `wrangler.jsonc` exists |
+| 6 | `verification-before-completion` | Evidence before any completion or success claim | Before claiming done, fixed or passing | None; aligns with `AGENTS.md` §4 and §7 |
+| 7 | `executing-plans` | Execute an implementation plan inline without subagents | Plan execution with no subagent tool | **Broken dependencies**: requires `superpowers:test-driven-development`, `superpowers:using-git-worktrees`, `superpowers:finishing-a-development-branch` and `../subagent-driven-development/scripts/*`; **none are installed** |
+| 8 | `security-review` | OWASP-grounded vulnerability review with confidence gating | "security review", "find vulnerabilities", "audit security" | `allowed-tools` lists `Task`, which is not a tool in this environment; 21 reference files load on demand — one was loaded successfully |
+| 9 | `github-actions-docs` | Grounds Actions answers in official GitHub docs | Any GitHub Actions question | **Trigger present** — the repo has 11 workflows in `.github/workflows/` |
+| 10 | `canvas-design` | Poster/art generation as PNG or PDF | "poster", "piece of art", static design | Needs a `./canvas-fonts` directory and image/PDF rendering; **not exercised here** |
+| 11 | `systematic-debugging` | Root-cause-first debugging process | Any bug, test failure or unexpected behaviour | Calls `superpowers:test-driven-development`, **which is not installed** |
+| 12 | `workers-best-practices` | Cloudflare Workers production practices and review | Writing, reviewing or configuring Workers | **Trigger present** — the app deploys through OpenNext to Workers; references `durable-objects` and `cf-cli` skills that are not installed |
+| 13 | `neon-postgres` | Neon/Lakebase Postgres connections, pooling, branching, diagnostics | Existing `DATABASE_URL`, SQL, schema, search | **Parent `neon` skill is not installed**; the documented fallback `neon` CLI is **absent** (`which neon` → not found). The Neon MCP partly covers this |
+| 14 | `extract-design-system` | Extract design tokens from a public site | Design-token extraction request | Runs `npx extract-design-system`, which is **not a project dependency**, plus Playwright Chromium |
+
+Loading mechanism confirmed beyond first-level `SKILL.md`: a declared resource was fetched by path
+(`security-review` → `references/injection.md` returned the full injection reference), so skill resources
+are readable on demand.
+
+## Connected MCPs (4 accounts) and verification
+
+Tool schemas were discovered for all four apps; every account then received a read-only call.
+
+| App / account | Tools discovered | Read-only verification call | Result |
+|---|---|---|---|
+| **GitHub** `github_passen-phenin` (`davidcollier77-code`) | `GET_THE_AUTHENTICATED_USER`, `LIST_REPOSITORIES_FOR_THE_AUTHENTICATED_USER`, `LIST_ORGANIZATIONS_FOR_THE_AUTHENTICATED_USER`, `FIND_REPOSITORIES`, `GET_A_REPOSITORY`, `LIST_REPOSITORIES_FOR_A_USER` | `GITHUB_GET_THE_AUTHENTICATED_USER` | **VERIFIED WORKING** — returned the authenticated profile, login `davidcollier77-code`, 1 public repo, 0 private |
+| **Neon** `neon_wasir-mats` | `RETRIEVE_PROJECTS_LIST`, `GET_USER_ORGANIZATIONS`, `GET_BRANCHES_FOR_PROJECT`, `FETCH_DATABASE_FOR_BRANCH`, `ACCESS_PROJECT_DETAILS_BY_ID`, `RETRIEVE_BRANCH_DATABASE_DETAILS`, `GET_PROJECT_CONNECTION_URI`, `LIST_SHARED_PROJECTS` | `NEON_RETRIEVE_PROJECTS_LIST` | **VERIFIED WORKING** — 3 projects returned (`neon-purple-dog`, `neon-rose-kite`, `neon-fuchsia-tree`), org `org-wild-boat-43871967`, Postgres 17 |
+| **Cloudflare Api Key** `cloudflare_api_key_dop-scenic` | `LIST_ZONES`, `LIST_DNS_RECORDS`, `CREATE_DNS_RECORD`, `OVERWRITE_DNS_RECORD`, `DELETE_DNS_RECORD` | `CLOUDFLARE_API_KEY_LIST_ZONES` (twice) | **FAILING** — error `6003 Invalid request headers`, chain `6111 Invalid format for Authorization header`. Identical on retry, so persistent, not transient |
+| **Google Stitch** `google_stitch_coost-namda` | `LIST_PROJECTS`, `GET_PROJECT`, `LIST_SCREENS` | `GOOGLE_STITCH_LIST_PROJECTS` | **FAILING** — "Google Stitch rejected the connected API key." |
+
+No write, delete, overwrite or deploy tool was invoked. Failure text is quoted as provider codes and
+messages only; no credential value was read, printed or stored.
+
+### An MCP the repository depends on but which is not connected
+
+`AGENTS.md` line 57 and the "Controlled Context7 Libraries" section of every task-group file govern
+Context7 usage ("Context7 requires explicit owner approval before each invocation"). **Context7 is not a
+connected app**, and no Context7 tool is exposed. That approval rule therefore currently gates nothing,
+and every Context7-routed library in the manifest is unreachable through MCP — only the local `.docs/`
+snapshots are available.
+
+### There is no repository-level MCP configuration
+
+`glob **/*mcp*` returns 0 files and no `mcpServers` key exists anywhere in the repository. Connections
+therefore live in the Freebuff account, outside version control. The repository cannot configure, inspect
+or repair them, and its approval rules are enforceable only by an agent following instructions — not by
+configuration.
+
+## How skills are discovered, loaded, activated and applied
+
+1. **Discover** — the 14 skills are declared to the agent as name + description only (progressive
+   disclosure). This is the entire automatic surface: the agent sees *what exists and roughly when it is
+   for*, not the instructions.
+2. **Load** — nothing is preloaded. The agent decides to call `cloud_read_skill <name>`, which returns the
+   full `SKILL.md`; resources named in that file are fetched individually by path. Both levels were
+   exercised here (14/14 skills, 1 resource).
+3. **Activate** — activation is decided by the loaded text, not by a router. Three mechanisms are visible
+   in this library: a free-text `description` used as a trigger hint; hard preconditions in the body
+   (`wrangler` requires a Wrangler config; `github-actions-docs` applies to Actions questions); and the
+   frontmatter flag `disable-model-invocation: true`, which removes a skill from model-driven activation
+   entirely (`image-to-code`).
+4. **Apply** — the instructions become guidance for the current task, and for some skills they are
+   executable: `verification-before-completion` and `systematic-debugging` impose gates, while
+   `executing-plans` and `extract-design-system` require scripts or packages that must already exist.
+
+MCP tools follow the same two-step shape: `search_integration_tools` discloses tool names and input
+schemas for a described intent; `run_integration_tools` executes a chosen tool. Connection status is *not*
+part of that disclosure — the Cloudflare and Stitch accounts were listed as connected and only failed at
+execution.
+
+## Automatic or explicit? — measured
+
+- `AGENTS.md` contains **zero** occurrences of the word "skill" (`grep -ci skill AGENTS.md` → `0`).
+  Repository governance says nothing about the skill library, so no repository rule can trigger or forbid
+  a skill.
+- `AGENTS.md` constrains MCPs only by approval, never by relevance: Neon and Stitch are pre-approved,
+  Context7 and "other MCPs" need approval, and "do not use an external MCP merely because it is available".
+- **Conclusion (verified by this session):** discovery is automatic, selection is *not*. Every one of the
+  14 skill loads and 4 MCP calls in this session happened **because the task text named that subject**. No
+  skill or MCP was invoked spontaneously while the repository work ran. Two skills whose preconditions
+  this repository satisfies (`wrangler` — `wrangler.jsonc` present; `workers-best-practices` — Workers
+  deployment) were still not applied until the audit asked about skills. Explicit instruction is the
+  reliable trigger.
+
+**Practical demonstration of selection.** For "audit the skill library" the agent enumerated names, chose
+`security-review` for secret handling and loaded `references/injection.md` on demand; for "verify MCPs are
+available" it mapped each app to its cheapest read-only endpoint (`GET_THE_AUTHENTICATED_USER`,
+`RETRIEVE_PROJECTS_LIST`, `LIST_ZONES`, `LIST_PROJECTS`) rather than a write. The selection rule was
+relevance stated in the request, and the retrieval was on demand — not a fixed pipeline.
+
+## Skills or MCPs Freebuff cannot discover or use
+
+| Item | Status | Cause |
+|---|---|---|
+| `image-to-code` | **Discovered, cannot be used** | `disable-model-invocation: true` and the body is a relocation stub |
+| `executing-plans` | **Cannot run as written** | `superpowers:*` sub-skills and `subagent-driven-development` scripts are not installed |
+| `systematic-debugging` | **Partially usable** | Core process is self-contained; its `superpowers:test-driven-development` hand-off is absent |
+| `neon-postgres` | **Partially usable** | Parent `neon` skill missing and `neon` CLI absent; guidance still readable, diagnostics path limited |
+| `shadcn-ui` | **Not applicable here** | Its `mcp_shadcn*` dependency is not connected and the repo has no shadcn setup |
+| `web-design-guidelines`, `canvas-design`, `extract-design-system` | **Unverified** | Each needs a live fetch, font/rendering assets or an external package; none was exercised |
+| Cloudflare MCP | **Connected, unusable** | `6003/6111` malformed `Authorization` header |
+| Google Stitch MCP | **Connected, unusable** | Connected API key rejected |
+| Context7 | **Not connected** | Referenced by `AGENTS.md` and every group file, but absent from the account |
+
+## Recommended improvements — for owner approval, not applied
+
+Presented separately because every item is outside an audit-only scope; nothing below was changed.
+
+1. **Reconnect the Cloudflare MCP.** The `Authorization` header is malformed at the connector, so every
+   Cloudflare tool fails. Re-adding the API key (a token with the intended zone/DNS scopes) is the fix;
+   the DNS tools are unusable until then.
+2. **Reconnect the Google Stitch MCP.** The key is rejected outright, so no Stitch project, screen or
+   design-system read can succeed.
+3. **Resolve the Context7 governance gap — either connect Context7 or remove the dead references.**
+   `AGENTS.md` line 57 plus 8 group files instruct approval before Context7 use, but the tool does not
+   exist. Connecting it restores the documented path; removing the sections stops the instructions from
+   describing a capability the environment lacks. Both are governance edits needing approval.
+4. **Add a short capabilities clause to `AGENTS.md` (optional).** One or two sentences — for example that
+   skill selection is not automatic, and that `wrangler`, `workers-best-practices` and `github-actions-docs`
+   apply to this repository — would convert an implicit model judgement into a repository rule. Measured
+   evidence for the gap: `AGENTS.md` mentions skills zero times.
+5. **Prune or replace the unusable skills.** `image-to-code` (relocation stub) and `executing-plans`
+   (missing `superpowers` dependencies) cannot work as installed; removing them keeps the library honest,
+   and `neon-postgres` would benefit from its parent `neon` skill being installed.
+
+## Library documents reviewed
 
 | Document | USED | USEFUL | Explanation |
 |---|---|---|---|
-| `.docs/manifest.json` | YES | YES | Routed the `security` and `testing` groups. |
-| `.docs/security/_google_eng-practices.md` | NO | NO | The change removes existing code; no review guidance was needed. |
-| `.docs/testing/_google_eng-practices.md` | NO | NO | Guards extend the existing Vitest/Playwright suites. |
-| Stripe.js `/stripe/stripe-js` | NO | NO | No Stripe code changed; prices were verified from the route and tests. |
-| Next.js `/vercel/next.js` | NO | NO | No framework behaviour was in question. |
-| Vitest `/vitest-dev/vitest` | NO | NO | No new mocking or configuration pattern was needed. |
-| Playwright `/microsoft/playwright` | NO | NO | Existing spec and a direct probe were used without new guidance. |
-
-## Implemented
-
-- **Preview removed, not hidden** — deleted `app/test-tools/reveal-testing/` (`REVEAL_TEST_MODE`,
-  `canPreviewReveal`, README). The modal no longer imports it, accepts `onPreviewReveal`, renders the
-  button/note or carries preview CSS; `HomePage` no longer wires the callback.
-- **Gift email test tool removed entirely** — deleted `app/test-tools/gift-email/` (page, client form,
-  `GIFT_EMAIL_TEST_MODE` switch, README), `app/api/test-tools/gift-email/route.js` and
-  `__tests__/gift-email-test-tool.test.js`. `/test-tools/gift-email` and
-  `POST /api/test-tools/gift-email` now return 404; no switch or route remains to re-enable the bypass.
-  `__tests__/security-payment.test.js` guards the absent page and route.
-- **Paid paths preserved** — the form still posts to `/api/checkout`; prices remain 100/199 cents in
-  one-time `payment` mode (CAD), with unchanged names, descriptions, metadata, callbacks and URLs.
-  `/api/verify-session`, `/api/gift-delivery`, the webhook, `app/gift-email.js` and Resend are untouched.
-- **Server-authoritative reveal unchanged** — a `payment=success` URL alone still renders nothing;
-  verification requires `payment_status === 'paid'`.
-- **Dev-only paths stay gated** — `/api/send-gift` returns 403 outside development; the `/reveal/[id]`
-  fallback remains development-only. Neither is publicly reachable.
+| `.docs/manifest.json` | YES | YES | Enumerated the routed documents per group and showed the Context7 source URLs, which is how the Context7 gap was identified |
+| `.docs/deep-dive/_google_eng-practices.md` | NO | NO | No code review guidance was needed for a report-only audit |
+| `.docs/troubleshooting/_google_eng-practices.md` | NO | NO | Diagnosis came from live provider error codes, not review guidance |
+| `.docs/security/_google_eng-practices.md` | NO | NO | Secret handling was governed by `AGENTS.md` and the `security-review` skill already loaded |
+| Context7-routed library entries (`/github/docs`, `/neondatabase/neon`, …) | NO | NO | Unreachable — Context7 is not connected; only local `.docs/` snapshots exist and none was needed |
 
 ## Files changed
 
-- Deleted (preview): `app/test-tools/reveal-testing/{revealTestConfig.js,README.md}`
-- Deleted (follow-up): `app/test-tools/gift-email/{page.js,GiftEmailTestForm.jsx,giftEmailTestConfig.js,README.md}`,
-  `app/api/test-tools/gift-email/route.js`, `__tests__/gift-email-test-tool.test.js`
-- Added: `specs/086-restore-reveal-paywalls/{spec,plan,tasks}.md`
-- Modified: `app/checkout-modal.jsx`, `app/homepage/HomePage.js`, `themes/default/homepage.css`,
-  `__tests__/components/CheckoutModal.test.jsx`, `__tests__/security-payment.test.js`,
-  `tests/visual/lucky-reveal-selection.spec.ts`, `.specify/feature.json`,
-  `memory-bank/activeContext.md`, `memory-bank/progress.md`, `PR_SUMMARY.md`
+- Added: `specs/087-skill-mcp-audit/spec.md`, `plan.md`, `tasks.md`, `checklists/requirements.md`
+- Modified: `.specify/feature.json`, `PR_SUMMARY.md`, `memory-bank/activeContext.md`
+- **No application, test, workflow, dependency, environment, `.docs/` or `AGENTS.md` change.**
 
 ## Spec Kit
 
-Specify → Plan → Tasks → Implement, one directory: `specs/086-restore-reveal-paywalls/`
-(`spec.md`, `plan.md`, `tasks.md`). `.specify/feature.json` points there. The follow-up is recorded in the
-same artifacts (Phase 6) rather than a duplicate feature directory.
+Specify → Plan → Tasks → Implement, one directory: `specs/087-skill-mcp-audit/`. `087` was the next free
+number and no prior feature covered a capability audit, so nothing was duplicated and no earlier artifacts
+were reused.
 
 ## Verification
 
 | Check | Result | Evidence |
 |---|---|---|
-| Focused suites | **PASS** | 3 files / 32 tests, exit 0 (`CheckoutModal`, `security-payment`, `stripe-product-alignment`). |
-| Full suite | **PASS** | `pnpm exec vitest run` — 37 files / 397 tests, exit 0. |
-| TypeScript | **PASS** | `pnpm exec tsc --noEmit` — exit 0 on a clean build. |
-| Repository gate | **PASS** | `SPEC_KIT_BASE_REF=a635bdcc… ./freebuff-verify.sh` — exit 0 (Spec Kit, typecheck, build, refresh-docs 19/19). A first run failed only because stale `.next/types` referenced the deleted routes; clearing `.next` and rebuilding passed. |
-| Build size | **PASS** | `.next` 301,016,019 B (287.1 MiB) + `public` 32,840,043 B = 333,856,062 B (318.4 MiB) < 495 MB. |
-| Served output | **PASS** | No `GIFT_EMAIL_TEST_MODE`, `GiftEmailTestForm`, `test-tools/gift-email` or "Gift email test" in `.next/static`/`.next/server`; no such routes in `app-paths-manifest.json`. |
-| Homepage smoke | **PASS** | `next start` port 3100: HTTP 200. |
-| Gift test page | **PASS** | `/test-tools/gift-email` → **404**. |
-| Gift test route | **PASS** | `POST /api/test-tools/gift-email` → **404**. |
-| Legacy send route | **PASS** | `POST /api/send-gift` in production → **403** development-only. |
-| Prices | **PASS** | Tests assert `unitAmount: 100` and `unitAmount: 199`; checkout route unmodified. |
-| Browser popup | **PASS** | Chromium on this build: `previewButtons: 0`, `previewHooks: 0`, `previewNote: 0`, `paidButtons: 1`, `deliveryChoices: 4`. |
-| Live Stripe charge | **NOT RUN** | No keys and no charge permitted; no checkout code changed. |
-| Real Resend email | **NOT RUN** | Paid delivery code unchanged and covered by mocked tests; no send attempted. |
-| PR-head CI | **PENDING** | Pushed; CI not observed in this session. |
-| Owner review/merge | **PENDING** | PR left open and unmerged. |
-
-## Preserved
-
-Prices 100/199, one-time CAD payment, product names/descriptions/metadata, success/cancel callbacks,
-server-side verification and persistence, paid gift delivery (session check, Redis lock, Resend), tip jar,
-reveal presentation and paid-reveal counter. No dependency, lockfile, secret, environment, deployment,
-database or `.docs/` change.
+| Toolchain restore | **PASS** | pnpm 10.30.3 installed to `$HOME/.local`; `pnpm install --frozen-lockfile` exit 0 (21.3 s) |
+| Skill load coverage | **PASS** | 14/14 declared skills returned instructions |
+| Skill resource load | **PASS** | `security-review` → `references/injection.md` returned in full |
+| MCP discovery | **PASS** | Tool schemas retrieved for all 4 accounts |
+| MCP execution | **FAIL (2 of 4 accounts)** | GitHub and Neon returned data; Cloudflare and Stitch returned provider errors |
+| Repository gate | **PASS** | `SPEC_KIT_BASE_REF=0320d475… ./freebuff-verify.sh` exit 0 — Spec Kit gate verified all three artifacts, `tsc --noEmit` clean, production build succeeded, refresh-docs 19 passed / 0 failed |
+| Build size | **PASS** | `.next` 301,017,232 B (287.1 MiB) + `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB |
+| Full Vitest suite | **NOT RUN** | No test-covered code changed; the gate's type check and build cover a documentation-only diff |
+| PR-head CI | **PENDING** | Not observed in this session |
+| Owner review/merge | **PENDING** | PR left open and unmerged |
 
 ## Remaining issues and limitations
 
-- No live Stripe checkout or real Resend send was executed here.
-- `/api/send-gift` and `/reveal/[id]` remain development-only (403 verified); they are not public.
-- A stale `.next` directory must be cleared when deleting routes, or generated route types fail the type
-  check; the committed code builds cleanly from scratch.
+- The Freebuff client's internal skill router and connection storage are not inspectable from the
+  workspace. All mechanism findings are derived from the interfaces that are exposed, and no claim is made
+  about the client's internals.
+- Whether a *different* unstated task would trigger a skill was not tested; the conclusion about explicit
+  instruction rests on this session, where every invocation traced to the task text plus the measured
+  absence of skill guidance in `AGENTS.md`.
+- Cloudflare and Stitch could not be diagnosed beyond the provider error text; repairing them needs the
+  owner's credentials and is out of scope.
+- `web-design-guidelines`, `canvas-design` and `extract-design-system` were read but not executed, so their
+  runtime dependencies are reported as unverified rather than broken.
+- GitHub results reflect a free-tier personal account with 1 public repository; no organisation scopes were
+  exercised.
 
-## Final diff audit
-
-Complete diff against `main` reviewed: **21 files — 10 modified, 3 added Spec Kit artifacts, 8 deleted**
-(2 preview files and 6 gift-tool files). No secret, key or credential value appears. No checkout, Stripe
-product/price, webhook, verification, gift delivery, Resend, database, dependency or deployment file is
-modified.
-
-**USEFUL RESULT: YES** — the preview and the gift email test tool are gone from source and served output,
-both removed URLs return 404, prices remain 100/199, and the paid Stripe/email flow is untouched. Live
-charge and real email remain unverified.
+**USEFUL RESULT: YES** — every requested question is answered and every claim is backed by a real tool
+call: 14/14 skills loaded, 4/4 MCP accounts exercised, and the two failures are proven with provider error
+text rather than inferred. The two broken connections are **findings about the audited systems**, not unmet
+audit criteria; repairing them needs the owner's credentials and is listed as an approval-gated
+recommendation.

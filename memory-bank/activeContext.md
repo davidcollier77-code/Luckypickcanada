@@ -1,3 +1,34 @@
+# Active Context — Skill Library and MCP Connection Audit (2026-11-04)
+
+- **Task groups:** `deep-dive` + `troubleshooting` + `security`; branch
+  `freebuff/d39d4997e3eae68c62117cc1`; new feature `specs/087-skill-mcp-audit`. **Audit-only:** no
+  application, dependency, workflow, environment, `.docs/` or `AGENTS.md` file changed.
+- **Skills:** all 14 declared skills loaded (14/14), and a declared skill resource was fetched by path to
+  confirm the resource mechanism. Unusable as installed: `image-to-code` (relocation stub,
+  `disable-model-invocation: true`), `executing-plans` (missing `superpowers:*` sub-skills and scripts),
+  and partly `systematic-debugging` / `neon-postgres` (missing `superpowers:test-driven-development`
+  hand-off, missing parent `neon` skill, no `neon` CLI). `shadcn-ui` depends on an unconnected shadcn MCP
+  and the repo has no `components.json`. `wrangler`, `workers-best-practices` and `github-actions-docs`
+  have satisfied preconditions here.
+- **MCPs:** GitHub and Neon **verified working** by read-only calls. **Cloudflare Api Key failing** —
+  `6003 Invalid request headers` / `6111 Invalid format for Authorization header`, reproduced twice.
+  **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
+  credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
+  `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration
+  exists at all.
+- **Activation:** discovery is automatic (name + description), loading and selection are not.
+  `grep -ci skill AGENTS.md` returns `0`, so no repository rule triggers a skill; every skill load and MCP
+  call in this session traced to the task text naming the subject. Recommendations (reconnect Cloudflare
+  and Stitch, resolve the Context7 gap, optional capabilities clause in `AGENTS.md`) are recorded for
+  owner approval only and were not applied.
+- **Verification:** pnpm 10.30.3 installed to `$HOME/.local` and `pnpm install --frozen-lockfile` exit 0;
+  `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, production build, refresh-docs 19/19); build
+  `.next` 301,017,232 B (287.1 MiB) plus `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB.
+- **Not verified:** Freebuff client internals, whether an unstated task would trigger a skill,
+  `web-design-guidelines` / `canvas-design` / `extract-design-system` runtime dependencies, and PR-head CI.
+
+---
+
 # Active Context — Restore the Reveal Paywalls (2026-11-03; follow-up 2026-11-04)
 
 - **Task groups:** `security` + `testing`; branch `freebuff/restore-reveal-paywalls`; feature
