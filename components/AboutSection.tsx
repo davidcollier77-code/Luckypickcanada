@@ -22,7 +22,7 @@ export default function AboutSection() {
         Want to see how others across the country are sharing good energy? Explore
         real user posts on our{' '}
         <Link
-          href="/stories"
+          href="/#community-stories"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
           Community Lucky Stories section
