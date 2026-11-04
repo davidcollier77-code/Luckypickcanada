@@ -1,3 +1,37 @@
+# Active Context — Freebuff Startup Command and pnpm Dependency Management (2026-11-04)
+
+- **Task groups:** `troubleshooting` + `testing` + `security`; branch `freebuff/e1fafb4e1fc110d0b8a4c277`;
+  new feature `specs/091-freebuff-startup-command`. The worktree was clean at `037395d8`, so the request's
+  "pre-existing" `bun.lock`, `package.json` change and `specs/091-*` were absent here; nothing unrelated was
+  overwritten.
+- **Verified baseline:** pnpm 10.30.3 with `pnpm install --frozen-lockfile` exit 0 (a global pnpm in this image
+  needs `--prefix "$HOME/.local"`); `react`/`react-dom` were `latest` while the lockfile resolved 19.3.1; the
+  lockfile `overrides:` block listed only the 13 `pnpm.overrides` entries and no `postcss`, proving the
+  top-level `overrides.postcss ^8.5.10` was ignored; `.github/dependabot.yml` had only weekly
+  `github-actions`; the gate ran `pnpm tsc` (binary fallback) and assumed pnpm plus node_modules existed.
+- **Implementation:** `scripts/bootstrap-pnpm.sh` provisions the `packageManager` pin (PATH, `$HOME/.local/bin`,
+  then `npm i -g pnpm@10.30.3 --prefix "$HOME/.local"`) and fails closed on a missing or non-exact pin;
+  `freebuff-verify.sh` sources it, runs `pnpm install --frozen-lockfile`, `cd`s to the repo root and calls
+  `pnpm exec tsc --noEmit`. React/React DOM are pinned to the installed 19.3.1, `postcss ^8.5.10` moved into
+  `pnpm.overrides` (no top-level list remains), Dependabot gained a weekly `npm` entry beside `github-actions`,
+  and `__tests__/dependency-management.test.js` guards all four properties. A fail-closed bug found by test:
+  `return 1` in the helper only ended the function and let an unpinned `npm install -g "pnpm@"` run; it now
+  `exit`s and a strict `x.y.z` pin check precedes any install.
+- **Lockfile:** a full `pnpm install` regeneration rewrote ~30 curated peer ranges (`postcss ^8.5.26`→
+  `^8.5.10`, `next >=16.4.3`→`>=16.4.1`, from `a3f42c86`), so only the intended entries were kept: the
+  `overrides:` block gains `postcss: ^8.5.10` and the react/react-dom importer specifiers become `19.3.1`
+  (5-line diff). `pnpm install --frozen-lockfile` passes and the file stays byte-identical afterwards.
+- **Verification:** guard 8/8 PASS and 3/8 fail on a deliberately broken manifest; full `pnpm exec vitest run`
+  422/422 PASS; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (bootstrap, frozen install, Spec
+  Kit gate, typecheck, production build, refresh-docs 19/19); build `.next` 301,050,895 B + `public`
+  32,840,043 B = 333,890,938 B (318.4 MiB) < 495 MB; `pnpm list react react-dom --depth 0` → 19.3.1;
+  bootstrap verified on a fresh `$HOME` with no pnpm on PATH and exits 1 for a missing manifest, a missing pin
+  and a non-exact pin.
+- **Not verified:** PR-head CI (pending). `package.json` and `pnpm-lock.yaml` are protected files, so the PR
+  needs the owner's authorization gate at merge.
+
+---
+
 # Active Context — Homepage Navigation Consolidation and Golden Shimmer (2026-11-04)
 
 - **Task groups:** `polishing` + `testing`; branch `freebuff/d1d198f83bbd7f8a37f69b23`; new feature
