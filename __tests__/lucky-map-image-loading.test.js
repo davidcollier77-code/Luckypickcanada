@@ -9,14 +9,18 @@ const mapSource = readFileSync(
 
 describe('Lucky Map artwork image hints', () => {
   it('keeps eager/high-priority loading on the native picture fallback without a Next Image-only prop', () => {
-    const picture = mapSource.match(/<picture className="w-full">[\\s\\S]*?<\\/picture>/)?.[0];
+    const pictureStart = mapSource.indexOf('<picture className="w-full">');
+    const pictureEnd = mapSource.indexOf('</picture>', pictureStart);
+    const picture = pictureStart >= 0 && pictureEnd > pictureStart
+      ? mapSource.slice(pictureStart, pictureEnd)
+      : '';
 
-    expect(picture).toBeTruthy();
+    expect(picture).not.toBe('');
     expect(picture).toContain('type="image/avif"');
     expect(picture).toContain('type="image/webp"');
     expect(picture).toContain('src="/IMG_20260731_055452_187611.png"');
     expect(picture).toContain('loading="eager"');
     expect(picture).toContain('fetchPriority="high"');
-    expect(picture).not.toMatch(/^\\s*priority\\s*$/m);
+    expect(picture.split('\n').map((line) => line.trim())).not.toContain('priority');
   });
 });
