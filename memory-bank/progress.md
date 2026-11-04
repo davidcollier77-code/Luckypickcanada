@@ -1,3 +1,14 @@
+# Progress — 2026-11-04: Gift Email Test Tool Removed
+
+- Deleted the disabled gift email test tool entirely: page, client form, switch, README, `/api/test-tools/gift-email` route and its 11-test suite. Both the page and the route now return 404, and no string from the tool remains in the production output.
+- Added an absence guard in the security/payment suite. Paid checkout, verification, gift delivery and prices are unchanged; the clean production build is 301,016,019 B / 287.1 MiB (318.4 MiB with public).
+
+# Progress — 2026-11-03: Lucky Reveal Paywalls Restored
+
+- Removed the public **Preview Reveal — FREE** control, its `REVEAL_TEST_MODE` helper, homepage wiring and CSS; the purchase popup now offers only the paid Stripe checkout action.
+- Disabled the merged gift email test tool (`GIFT_EMAIL_TEST_MODE = false`): the page shows a disabled notice with no form and `POST /api/test-tools/gift-email` returns 404. No environment value can re-enable it.
+- Added guards for paid-only modal actions, absent preview module/wiring, shipped-false gift switch, unchanged 100/199 prices and the development-only legacy send endpoint; verified in a production build, HTTP smoke and a Chromium popup probe.
+
 # Progress — 2026-11-01: Free Preview Reveal in the Checkout Modals
 
 - Replaced the old `REVEAL_TEST_MODE` paid-form interception (which also posted a test gift to `/api/send-gift`) with a preview-only switch, `canPreviewReveal(type)`, limited to the Lucky Pick and Gift modals.

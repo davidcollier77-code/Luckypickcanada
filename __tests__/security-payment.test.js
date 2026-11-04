@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, parse } from 'node:path';
-import * as securityTestTools from '../app/test-tools/reveal-testing/revealTestConfig';
 import { POST as sendGift } from '../app/api/send-gift/route';
 // Instead of importing verify-session, we just trust the integration testing as it was hard to mock it here cleanly
 
@@ -17,22 +16,20 @@ describe('Security Hardening: Payment & Authorization', () => {
     process.env = originalEnv;
   });
 
-  it('keeps the public preview enabled independently of production mode', () => {
-    const mode = securityTestTools.REVEAL_TEST_MODE;
-    const configSource = readFileSync(
-      join(process.cwd(), 'app/test-tools/reveal-testing/revealTestConfig.js'),
-      'utf8'
-    );
+  it('has no public preview switch or payment-bypass helper', () => {
+    expect(
+      existsSync(join(process.cwd(), 'app/test-tools/reveal-testing/revealTestConfig.js'))
+    ).toBe(false);
 
-    // The temporary public preview must be explicitly enabled in production too.
-    expect(configSource).toMatch(/export const REVEAL_TEST_MODE = true;/);
-    expect(configSource).not.toMatch(/process\.env\.NODE_ENV/);
-    expect(mode).toBe(true);
-    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(true);
-    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(true);
-    expect(securityTestTools.canPreviewReveal('tip')).toBe(false);
-    // The old form-submission bypass helper is gone, so nothing can skip /api/checkout.
-    expect(securityTestTools.canBypassRevealPayment).toBeUndefined();
+    const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
+    const homepageSource = readFileSync(join(process.cwd(), 'app/homepage/HomePage.js'), 'utf8');
+
+    // The temporary public preview and every helper that could launch a reveal
+    // without a paid checkout session are gone from the purchase surfaces.
+    expect(modalSource).not.toContain('canPreviewReveal');
+    expect(modalSource).not.toContain('onPreviewReveal');
+    expect(modalSource).not.toContain('Preview Reveal');
+    expect(homepageSource).not.toContain('onPreviewReveal');
   });
 
   describe('Legacy /api/send-gift endpoint', () => {
@@ -59,20 +56,28 @@ describe('Security Hardening: Payment & Authorization', () => {
   });
 });
 
-describe('Free preview reveal boundaries', () => {
+describe('Reveal paywall boundaries', () => {
   const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
 
-  it('never routes previews through the gift email or checkout APIs', () => {
+  it('keeps the paid form as the only way to start a reveal', () => {
+    expect(modalSource).toContain('action="/api/checkout"');
     expect(modalSource).not.toContain('/api/send-gift');
     expect(modalSource).not.toContain("fetch('/api/checkout'");
-    // The paid path is still the plain form post it was before.
-    expect(modalSource).toContain('action="/api/checkout"');
     expect(modalSource).not.toContain('noValidate');
   });
 
-  it('renders the preview as a non-submitting button outside the form', () => {
-    expect(modalSource).toMatch(/<button type="button"[^>]*checkout-modal-preview-button/);
-    expect(modalSource).toMatch(/Preview Reveal — FREE/);
+  it('renders no free preview control or preview styling hook', () => {
+    expect(modalSource).not.toMatch(/checkout-modal-preview/);
+    expect(modalSource).not.toMatch(/Preview Reveal/);
+    expect(modalSource).not.toMatch(/type="button"[^>]*Preview/);
+  });
+
+  it('removes the gift email test page and its public route', () => {
+    expect(existsSync(join(process.cwd(), 'app/test-tools/gift-email/page.js'))).toBe(false);
+    expect(
+      existsSync(join(process.cwd(), 'app/test-tools/gift-email/giftEmailTestConfig.js'))
+    ).toBe(false);
+    expect(existsSync(join(process.cwd(), 'app/api/test-tools/gift-email/route.js'))).toBe(false);
   });
 });
 

@@ -1,3 +1,29 @@
+# Active Context — Restore the Reveal Paywalls (2026-11-03; follow-up 2026-11-04)
+
+- **Task groups:** `security` + `testing`; branch `freebuff/restore-reveal-paywalls`; feature
+  `specs/086-restore-reveal-paywalls`. Reverses feature 072's public preview and removes the gift-email
+  test tool that was merged from PR #1703.
+- **Verified baseline:** base `a635bdcc` shipped `REVEAL_TEST_MODE = true` (a public **Preview Reveal —
+  FREE** button) and `GIFT_EMAIL_TEST_MODE = true` (a public payment-free gift email page/route). Prices
+  were already 100/199, and `/api/verify-session` / `/api/gift-delivery` already required a paid session.
+- **Implementation:** deleted `app/test-tools/reveal-testing/` and removed the preview import, prop,
+  handler, markup, homepage wiring and CSS. Then, per the 2026-11-04 follow-up, deleted
+  `app/test-tools/gift-email/` (page, client form, switch, README),
+  `app/api/test-tools/gift-email/route.js` and `__tests__/gift-email-test-tool.test.js`, so the bypass
+  cannot be re-enabled by editing a constant. `__tests__/security-payment.test.js` guards the absent page
+  and route. Paid checkout, verification, delivery and `app/gift-email.js` are untouched.
+- **Verification:** focused 3 files / 32 tests PASS; full `pnpm exec vitest run` 37 files / 397 tests PASS;
+  `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 on a clean `.next` build (stale generated
+  route types referenced the deleted files until the build directory was cleared). Build `.next`
+  301,016,019 B / 287.1 MiB plus public 32,840,043 B = 333,856,062 B / 318.4 MiB (< 495 MB). Served output
+  contains no removed tool strings or routes; homepage 200; `/test-tools/gift-email` 404;
+  `POST /api/test-tools/gift-email` 404; `/api/send-gift` 403; Chromium popup 0 preview / 1 paid button /
+  4 game+delivery radios.
+- **Not verified:** live Stripe payment, real Resend gift delivery, PR-head CI. The legacy `/api/send-gift`
+  endpoint and `/reveal/[id]` fallback remain development-only and are not publicly reachable.
+
+---
+
 # Active Context — Gift Email Test Tool (2026-11-03)
 
 - **Task groups:** `creation` + `testing` + `security`; branch `freebuff/e6b5a381045c337886e3bec8`.

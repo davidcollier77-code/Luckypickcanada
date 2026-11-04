@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { canPreviewReveal } from './test-tools/reveal-testing/revealTestConfig';
 
 const COPY = {
   lucky_reveal: {
@@ -41,7 +40,7 @@ const DELIVERY_OPTIONS = [
   },
 ];
 
-export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
+export default function CheckoutModal({ type, onClose }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const [deliveryType, setDeliveryType] = useState('lucky_pick');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +55,6 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
   const checkoutType = isUnified ? deliveryType : type;
   const isRevealFlow = checkoutType === 'lucky_pick' || checkoutType === 'gift_package';
   const chosenDelivery = DELIVERY_OPTIONS.find((option) => option.value === checkoutType);
-  const isPreviewEnabled = canPreviewReveal(type);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -80,7 +78,7 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
 
   /**
    * Guards against duplicate paid submissions only. The form always posts to
-   * /api/checkout exactly as before; previews never pass through here.
+   * /api/checkout exactly as before.
    *
    * @param {import('react').FormEvent<HTMLFormElement>} event The submit event.
    */
@@ -93,14 +91,6 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
     // Reset the submit guard after a fixed delay; the callback is a static function reference, not user data.
     const resetSubmitting = () => setIsSubmitting(false);
     setTimeout(resetSubmitting, 8000);
-  }
-
-  /**
-   * Opens the existing reveal animation without submitting the form, contacting
-   * Stripe, taking payment, or sending any email.
-   */
-  function startPreviewReveal() {
-    onPreviewReveal?.(checkoutType, luckyPickGame);
   }
 
   return (
@@ -147,12 +137,6 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
           )}
           <button type="submit" disabled={isSubmitting} className="gold-3d-btn checkout-modal-submit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔒</span>{isSubmitting ? 'Please wait...' : 'Continue to secure checkout'}</button>
         </form>
-        {isPreviewEnabled && (
-          <div className="checkout-modal-preview">
-            <button type="button" className="checkout-modal-preview-button focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={startPreviewReveal}>Preview Reveal — FREE</button>
-            <p className="checkout-modal-preview-note">Preview only — no payment is taken and no emails are sent.</p>
-          </div>
-        )}
       </section>
     </div>
   );
