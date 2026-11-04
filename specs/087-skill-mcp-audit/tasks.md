@@ -150,5 +150,7 @@
 - [x] **T047** `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` exit 0 (Spec Kit gate verified spec/plan/tasks;
   type check clean; production build succeeded; refresh-docs 19 passed). Build `.next` 301,019,497 B plus
   `public` 32,840,043 B = 333,859,540 B (318.4 MiB), below the 495 MB maximum.
-- [ ] **T048** Audit the complete final diff, update `PR_SUMMARY.md` and `memory-bank/activeContext.md`,
-  commit, push and leave one PR open and unmerged.
+- [x] **T048** Audit the complete final diff (6 files: the verifier, three Spec Kit artifacts, the PR
+  summary and the Memory Bank entry; no application, test, dependency, workflow, environment, `.docs/` or
+  `AGENTS.md` change; secret scan clean), commit `78d63c60`, push to
+  `freebuff/470e1a482c31244d064438de` and open PR #1707, left open and unmerged.

@@ -1,6 +1,6 @@
 # Cloudflare MCP Authentication — Fresh Investigation and Credential-Shape Fix
 
-**Branch** `freebuff/470e1a482c31244d064438de` → `main`. Feature artifacts reused in place:
+**PR** #1707 (open, unmerged). **Branch** `freebuff/470e1a482c31244d064438de` → `main`. Feature artifacts reused in place:
 `specs/087-skill-mcp-audit` (revision 4). No duplicate feature directory was created.
 
 ## Assigned task and selected task groups
