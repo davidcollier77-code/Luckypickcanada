@@ -23,7 +23,7 @@ function lockfileOverrides() {
   if (!block) return {};
 
   const entries = {};
-  for (const line of block1[].trimEnd().split('\n')) {
+  for (const line of block[1].trimEnd().split('\n')) {
     const separator = line.indexOf(': ');
     if (separator === -1) continue;
     const key = line.slice(0, separator).trim().replace(/^'(.*)'$/, '$1');
@@ -35,17 +35,25 @@ function lockfileOverrides() {
 
 /** Read one exact direct-dependency key from the root lockfile importer. */
 function lockfileDependency(name) {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(
-    '^      (?:' + escaped + "|'" + escaped + "'):\\n        specifier: ([^\\n]+)\\n        version: ([^(\\n]+)",
-    'm'
-  );
-  const match = lockfile.match(pattern);
-  return match
-    ? { specifier: match[1].trim(), version: match[2].trim() }
-    : null;
-}
+  const lines = lockfile.split(/\r?\n/);
+  const keyLine = '      ' + name + ':';
+  const quotedKeyLine = "      '" + name + "':";
+  const index = lines.findIndex((line) => line === keyLine || line === quotedKeyLine);
+  if (index === -1) return null;
 
+  const specifierLine = lines[index + 1] || '';
+  const versionLine = lines[index + 2] || '';
+  const specifierPrefix = '        specifier: ';
+  const versionPrefix = '        version: ';
+  if (!specifierLine.startsWith(specifierPrefix) || !versionLine.startsWith(versionPrefix)) {
+    return null;
+  }
+
+  return {
+    specifier: specifierLine.slice(specifierPrefix.length).trim(),
+    version: versionLine.slice(versionPrefix.length).trim().split('(')[0],
+  };
+}
 /** Dependabot update entries, keyed by package ecosystem. */
 function dependabotEntries() {
   const entries = {};
