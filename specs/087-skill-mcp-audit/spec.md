@@ -1,0 +1,230 @@
+# Feature Specification: Skill Library and MCP Connection Audit
+
+**Feature Branch**: `freebuff/d39d4997e3eae68c62117cc1`
+**Created**: 2026-11-04
+**Status**: Draft
+
+**Input**: Audit Freebuff's installed skill library and connected MCPs. List every installed skill and its
+purpose; list every connected MCP with its available tools; verify each MCP is reachable and functioning
+and identify disconnected, unavailable or misconfigured connections; determine whether Freebuff
+auto-discovers and applies relevant skills and MCP tools or needs explicit instruction; explain how skills
+are discovered, loaded, activated and applied; identify any skill or MCP Freebuff cannot discover or use;
+provide examples of selection and use. Audit and report only.
+
+## Scope and Boundaries
+
+- **Audit-only.** No change to `AGENTS.md`, global configuration, MCP connections, permissions, installed
+  skills, or application source. The only files written are the Spec Kit artifacts this repository's
+  governance requires, the canonical PR summary, and the Memory Bank entry.
+- **Verified versus unverified must stay separate.** A connection is reported as working only after a real
+  tool call succeeded; a skill is reported as installed only after its instructions were actually read.
+- **No secret exposure.** Failure messages are quoted only as provider error codes and text; no
+  credential, token or key value is printed, stored or committed.
+
+## User Scenarios & Testing
+
+### User Story 1 — A trustworthy inventory of what is installed (Priority: P1)
+
+The owner can read one list of every installed skill and every connected MCP, each with the purpose it
+serves, so the capability surface is known rather than assumed.
+
+**Why this priority**: Every later conclusion depends on the inventory being complete and read from the
+real discovery surface rather than remembered.
+
+**Independent Test**: The inventory enumerates all 14 skills declared by the skill tool, each confirmed by
+a successful instruction read, and all 4 connected MCP accounts, each confirmed by a discovery call.
+
+**Acceptance Scenarios**:
+
+1. **Given** the skill discovery surface, **When** the audit runs, **Then** every declared skill is
+   listed with its name, purpose and activation rule.
+2. **Given** the connected-app surface, **When** the audit runs, **Then** every account is listed with its
+   discoverable tools.
+3. **Given** a skill or app that appears in a listing, **When** the audit reports it, **Then** listing
+   alone is not treated as proof of use.
+
+---
+
+### User Story 2 — Broken connections are proven broken, not assumed (Priority: P1)
+
+Each MCP is exercised with a read-only call, and a failure is reported with the provider's own error so the
+owner can act on it.
+
+**Why this priority**: The request explicitly forbids assuming a connection works because it appears in a
+list; the value of the audit is separating the four accounts into working and failing.
+
+**Independent Test**: Every account receives at least one read-only call; a failing account is called twice
+to distinguish a persistent credential fault from a transient one; results are recorded per account.
+
+**Acceptance Scenarios**:
+
+1. **Given** a connected account, **When** a read-only tool call returns data, **Then** it is recorded as
+   VERIFIED WORKING with the evidence summarised.
+2. **Given** an account whose call returns a provider error, **When** the call is repeated and fails
+   again, **Then** it is recorded as FAILING with the exact error code and message.
+3. **Given** a write-capable tool, **When** the audit runs, **Then** no write, delete or deploy is
+   performed.
+
+---
+
+### User Story 3 — The activation gap is stated plainly (Priority: P2)
+
+The owner learns whether relevant skills and MCP tools are used automatically, and what — if anything —
+in repository instructions or global configuration would make that reliable.
+
+**Why this priority**: The inventory is only actionable once the owner knows whether capability is being
+used by default or only when explicitly requested.
+
+**Independent Test**: The audit compares the repository's instruction files against the skill surface and
+shows whether any instruction causes skill or MCP invocation; the answer is backed by counts and by what
+actually happened in the session.
+
+**Acceptance Scenarios**:
+
+1. **Given** `AGENTS.md`, **When** searched for skill guidance, **Then** the number of matches is reported
+   as a measured fact.
+2. **Given** the session transcript, **When** skill and MCP use is reviewed, **Then** each invocation is
+   attributed to the explicit task instruction that caused it.
+
+### Edge Cases
+
+- A skill whose file is only a relocation stub, or that carries `disable-model-invocation`, cannot be
+  model-invoked however relevant it is.
+- A skill may declare sub-skills or helper scripts that are not installed; that is a broken dependency,
+  not a working skill.
+- A skill may depend on an MCP that is not connected.
+- A repository instruction may gate a tool that is not connected at all, in which case the rule currently
+  constrains nothing.
+- Account-level connections are invisible to repository configuration; the repo cannot verify or repair
+  them.
+
+## Requirements
+
+### Functional Requirements
+
+- **FR-001**: The audit MUST list every installed skill with a brief purpose statement.
+- **FR-002**: The audit MUST list every connected MCP account with its available tools and capabilities.
+- **FR-003**: The audit MUST verify each MCP with at least one real read-only call and MUST label each
+  account VERIFIED WORKING or FAILING.
+- **FR-004**: The audit MUST identify skills or MCPs that Freebuff cannot discover, load or use, with the
+  evidence for each.
+- **FR-005**: The audit MUST explain how skills are discovered, loaded, activated and applied.
+- **FR-006**: The audit MUST determine whether automatic selection occurs or explicit instruction is
+  required.
+- **FR-007**: The audit MUST identify whether additional `AGENTS.md` or global configuration would help,
+  and MUST present recommendations separately for approval rather than applying them.
+- **FR-008**: The audit MUST classify every finding as VERIFIED or UNVERIFIED and MUST NOT present an
+  unverified claim as a result.
+- **FR-009**: The audit MUST NOT expose any credential value.
+
+### Key Entities
+
+- **Skill**: a named instruction set in the account's skill library, discovered by name and description
+  and loaded on demand.
+- **MCP account**: an app connected to the Freebuff account, exposing named tools through a discovery
+  tool and an execution tool.
+- **Verification result**: the outcome of one real tool call, recorded per account.
+
+## Success Criteria
+
+### Measurable Outcomes
+
+- **SC-001**: 100% of declared skills are listed and 100% have their instructions successfully read.
+- **SC-002**: 100% of connected MCP accounts receive a real call and are labelled working or failing.
+- **SC-003**: Every skill or MCP limitation names the exact missing dependency, disabled flag or provider
+  error that causes it.
+- **SC-004**: The repository verification gate passes with no application source file changed, and the
+  production build stays below the 495 MB maximum.
+
+## Follow-up Scope — Cloudflare MCP authentication repair (2026-11-04)
+
+**Added by**: a follow-up instruction to investigate and repair the Cloudflare MCP authentication failure
+and, where the cause lies outside the repository, to state exactly what must be corrected.
+
+### Requirements
+
+- **FR-010**: The investigation MUST establish whether `6003/6111` means an absent credential, a malformed
+  credential, or a rejected credential, by differential test rather than inference.
+- **FR-011**: The root cause MUST be attributed to a specific layer — repository, Freebuff connector, or
+  the Cloudflare credential itself — and MUST NOT be blamed on the repository without evidence.
+- **FR-012**: Where the cause lies outside the workspace, the exact correction the owner must perform MUST
+  be stated, with a secret-free way for the owner to confirm it.
+- **FR-013**: No token may be created, revoked, revealed, rotated or modified; no DNS record may be
+  changed; no permission may be expanded; no credential value may be read or committed.
+- **FR-014**: The repair MUST NOT be reported as verified unless a read-only Cloudflare call succeeds.
+
+### Acceptance Scenarios
+
+1. **Given** the failing connection, **When** read-only calls are made, **Then** the error is reproduced and
+   recorded verbatim rather than paraphrased.
+2. **Given** Cloudflare's header handling, **When** deliberately shaped fake credentials are sent to the
+   public API, **Then** the error class for absent, malformed and invalid credentials is distinguished.
+3. **Given** that distinction, **When** it is compared with the error the MCP returns, **Then** the layer
+   at fault is identified from evidence.
+4. **Given** a cause outside the repository, **When** the report is written, **Then** the owner's exact
+   corrective step is stated and the repair is recorded as BLOCKED instead of complete.
+
+### Edge Cases
+
+- A credential that is present but empty produces the same error class as an unsupported or missing scheme.
+- A Global API Key is not an API Token and cannot be sent as a bearer credential; sending one is a format
+  fault, not a permissions fault.
+- By error code alone, a quoted or truncated paste is indistinguishable from the wrong credential type, so
+  the report names both possibilities rather than asserting one.
+
+### Revision 2 — header-construction discrimination (2026-11-04)
+
+**Trigger**: the owner reports that the restricted token authenticates as a direct bearer credential and
+returns the `luckypickcanada.ca` zone, so the credential is valid and the first-round credential-shape
+conclusion must be re-tested rather than repeated.
+
+- **FR-015**: The diagnosis MUST read the full provider payload including `error_chain`, because Cloudflare
+  nests the specific reason there instead of emitting a second top-level error.
+- **FR-016**: The investigation MUST distinguish the bearer path from the legacy `X-Auth-Key`/`X-Auth-Email`
+  path by their chain codes (`6111` versus `6103` versus `9106`/`9107`).
+- **FR-017**: Any earlier conclusion contradicted by new evidence MUST be explicitly withdrawn in the
+  artifacts and the PR summary, not silently overwritten.
+- **FR-018**: The correction MUST be attributed to the layer that constructs the header, and a
+  no-new-credential owner check MUST be offered; creating, rotating or revealing a credential remains
+  forbidden under FR-013.
+
+**Withdrawn in revision 2**: the claim that a 37-character Global API Key produces `6003/6111`. Measured
+against the public API, that shape returns `9103` with an email header and `9106` without, and the legacy
+slot returns chain `6103`, not `6111`. A doubled `Bearer ` prefix is also excluded because it parses as
+well-formed and returns `9109`.
+
+**Acceptance scenarios (revision 2)**
+
+5. **Given** the connector's reported `error_chain` code, **When** the same code is reproduced with a
+   placeholder bearer value, **Then** the fault is attributed to header construction rather than to the
+   credential's validity.
+6. **Given** an earlier hypothesis that a different credential shape is at fault, **When** measurement
+   refutes it, **Then** the artifacts and the PR summary record the withdrawal with the counter-evidence.
+
+### Revision 3 — transport status and escalation (2026-11-04)
+
+- **FR-019**: Success requires both `LIST_ZONES` and `LIST_DNS_RECORDS` to return actual provider data; a
+  connected indicator or a written diagnosis MUST NOT be accepted as verification.
+- **FR-020**: The investigation MUST use a supplied `zone_id` to exercise the DNS endpoint directly, so a
+  zone-listing failure cannot mask a second, independent defect.
+- **FR-021**: The failure MUST be classified by HTTP status as well as error code, because `400` (structurally
+  invalid header) and `403` (well-formed but rejected credential) identify different faults.
+- **FR-022**: Where the fix is inaccessible, a complete engineering escalation MUST be produced: reproduction,
+  evidence, candidate defects, the safe diagnostic to run, and expected behaviour.
+- **FR-023**: The connector MUST NOT be deleted or disconnected, and no complete `Authorization` header may be
+  logged, printed or requested, even for diagnosis.
+
+**Measured in revision 3**: `LIST_ZONES` (name filter) → `6003`+`6111` at HTTP **400**;
+`LIST_DNS_RECORDS(zone_id=0af2a3985db329cdb671829cb59a41f1)` → `9106 Authentication failed (status: 400)`.
+A supplied zone ID does not bypass authentication, and the 400 status confirms structural invalidity rather
+than an invalid credential.
+
+## Assumptions
+
+- Skills are an account-level library, and MCP connections are account-level, so the audit reads them
+  through the agent's own tool surface. The Freebuff client's internal router and file layout are not
+  inspectable from the workspace, and no claim is made about them.
+- Read-only MCP verification is within the owner's request to "verify the MCPs are accessible"; the
+  repository's approval rule for other MCPs is satisfied by that explicit instruction for reads only.
+- Context7 is referenced by repository governance but is not a connected app here; that gap is reported,
+  not worked around.

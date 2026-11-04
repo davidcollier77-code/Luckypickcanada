@@ -1,3 +1,54 @@
+# Active Context — Skill Library and MCP Connection Audit (2026-11-04)
+
+- **Task groups:** `deep-dive` + `troubleshooting` + `security`; branch
+  `freebuff/d39d4997e3eae68c62117cc1`; new feature `specs/087-skill-mcp-audit`. **Audit-only:** no
+  application, dependency, workflow, environment, `.docs/` or `AGENTS.md` file changed.
+- **Skills:** all 14 declared skills loaded (14/14), and a declared skill resource was fetched by path to
+  confirm the resource mechanism. Unusable as installed: `image-to-code` (relocation stub,
+  `disable-model-invocation: true`), `executing-plans` (missing `superpowers:*` sub-skills and scripts),
+  and partly `systematic-debugging` / `neon-postgres` (missing `superpowers:test-driven-development`
+  hand-off, missing parent `neon` skill, no `neon` CLI). `shadcn-ui` depends on an unconnected shadcn MCP
+  and the repo has no `components.json`. `wrangler`, `workers-best-practices` and `github-actions-docs`
+  have satisfied preconditions here.
+- **MCPs:** GitHub and Neon **verified working** by read-only calls. **Cloudflare still failing after reconnection** — the connection was replaced with
+  `cloudflare_api_key_gange-suzy` and re-tested read-only on 2026-11-04 at 09:28Z; `6003 Invalid request
+  headers` / `6111 Invalid format for Authorization header` persists across two calls, so no account,
+  `luckypickcanada.ca` zone or DNS record is reachable.
+- **Cloudflare root cause (corrected 2026-11-04, round 2):** the connector's bearer value, not the
+  credential. The full payload shows `6111 Invalid format for Authorization header` as an `error_chain` child
+  of `6003`; a token placed in `X-Auth-Key` yields chain `6103` instead, and a genuine 37-hex Global API Key
+  yields `9103` (with an email) or `9106` (without), so the earlier "37-character Global API Key" explanation
+  is **withdrawn**. `Bearer undefined`, empty, internal-space and scheme-only values all reproduce
+  `6003/6111`, while a clean 40-character value returns `9109`; a valid token therefore cannot produce the
+  observed error, so the connector transmits a placeholder or mutated value instead of the token. The
+  correction belongs to the connector's secret resolution and header construction (outside the repository —
+  no Cloudflare client, `Authorization` construction or MCP configuration exists here); the owner's
+  no-new-token check is the connection type plus a clean re-save. Repair remains **BLOCKED**; no credential
+  was read, created, revoked or changed, and no DNS record or permission was touched.
+- **Round 3 (2026-11-04):** the supplied zone ID `0af2a3985db329cdb671829cb59a41f1` allowed the DNS endpoint to
+  be called directly: `LIST_DNS_RECORDS` → `9106 Authentication failed (status: 400)`, while `LIST_ZONES`
+  (name filter) → `6003`+`6111`. HTTP **400** accompanies malformed-header cases while **403** accompanies
+  invalid credentials, so the connector's header is structurally invalid before the credential's identity is
+  checked. No accessible connector code, configuration or secret store exists, so a complete engineering
+  escalation was written instead of an invented repository fix. Time used this round ≈15 minutes (cap 30);
+  the repair is **BLOCKED**, not achieved.
+- **Google Stitch failing** — connected API key rejected. No write or deploy tool was called and no
+  credential value was read or printed. **Context7 is not connected**, so the Context7 approval rule in
+  `AGENTS.md` line 57 and every group file currently gates nothing; no repository-level MCP configuration
+  exists at all.
+- **Activation:** discovery is automatic (name + description), loading and selection are not.
+  `grep -ci skill AGENTS.md` returns `0`, so no repository rule triggers a skill; every skill load and MCP
+  call in this session traced to the task text naming the subject. Recommendations (reconnect Cloudflare
+  and Stitch, resolve the Context7 gap, optional capabilities clause in `AGENTS.md`) are recorded for
+  owner approval only and were not applied.
+- **Verification:** pnpm 10.30.3 installed to `$HOME/.local` and `pnpm install --frozen-lockfile` exit 0;
+  `./freebuff-verify.sh` exit 0 (Spec Kit gate, typecheck, production build, refresh-docs 19/19); build
+  `.next` 301,017,232 B (287.1 MiB) plus `public` 32,840,043 B = 333,857,275 B (318.4 MiB) < 495 MB.
+- **Not verified:** Freebuff client internals, whether an unstated task would trigger a skill,
+  `web-design-guidelines` / `canvas-design` / `extract-design-system` runtime dependencies, and PR-head CI.
+
+---
+
 # Active Context — Restore the Reveal Paywalls (2026-11-03; follow-up 2026-11-04)
 
 - **Task groups:** `security` + `testing`; branch `freebuff/restore-reveal-paywalls`; feature
