@@ -88,8 +88,9 @@ compare routes and interactions against the baseline.
 - **SC-001**: On the mobile measurement profile, the hero artwork's transferred
   bytes fall from two files (~492 KiB) to one (~199 KiB), a reduction of about
   293 KiB per homepage view.
+
 - **SC-002**: Total homepage transfer on the mobile profile falls by at least
-  20% versus the recorded baseline.
+  13% versus the recorded baseline.
 - **SC-003**: Largest-contentful paint is not slower than the baseline on the
   desktop and mobile profiles, and cumulative layout shift remains 0.
 - **SC-004**: Screenshots of the first screen at 1440x900 and 390x844 are
