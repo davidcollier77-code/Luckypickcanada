@@ -1,0 +1,86 @@
+{
+  "desktop": {
+    "screenshot": "/workspace/chats/c1e1aaa103045da1dc1fde0f/artifacts/perf-audit/live-before/homepage-desktop.png",
+    "heroHints": [
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+        "type": "image/avif",
+        "fetchpriority": "high"
+      },
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w",
+        "type": "image/webp",
+        "fetchpriority": "high"
+      },
+      {
+        "href": "/community-stars-bg.webp",
+        "imagesrcset": null,
+        "type": null,
+        "fetchpriority": null
+      }
+    ],
+    "heroPicture": {
+      "currentSrc": "https://luckypickcanada.ca/homepage-hero-lucky-pick-canada.avif",
+      "naturalWidth": 1024,
+      "naturalHeight": 1536,
+      "clientWidth": 1052,
+      "clientHeight": 648,
+      "complete": true
+    },
+    "overflowX": 0,
+    "heroText": "Lucky Pick Canada",
+    "consoleErrors": [
+      "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+      "%c%d font-size:0;color:transparent NaN",
+      "%c%d font-size:0;color:transparent NaN",
+      "%c%o font-size:0;color:transparent {}",
+      "%c%o font-size:0;color:transparent {}"
+    ]
+  },
+  "mobile": {
+    "screenshot": "/workspace/chats/c1e1aaa103045da1dc1fde0f/artifacts/perf-audit/live-before/homepage-mobile.png",
+    "heroHints": [
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+        "type": "image/avif",
+        "fetchpriority": "high"
+      },
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w",
+        "type": "image/webp",
+        "fetchpriority": "high"
+      },
+      {
+        "href": "/community-stars-bg.webp",
+        "imagesrcset": null,
+        "type": null,
+        "fetchpriority": null
+      }
+    ],
+    "heroPicture": {
+      "currentSrc": "https://luckypickcanada.ca/homepage-hero-lucky-pick-canada.avif",
+      "naturalWidth": 390,
+      "naturalHeight": 585,
+      "clientWidth": 360,
+      "clientHeight": 608,
+      "complete": true
+    },
+    "overflowX": 0,
+    "heroText": "Lucky Pick Canada",
+    "consoleErrors": [
+      "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+      "%c%d font-size:0;color:transparent NaN",
+      "%c%d font-size:0;color:transparent NaN",
+      "%c%o font-size:0;color:transparent {}",
+      "%c%o font-size:0;color:transparent {}",
+      "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstest.dev https://ca2.cloudflarecaptcha.com https://ca1.cloudflarecaptcha.com\". The action has been blocked.",
+      "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstest.dev https://ca2.cloudflarecaptcha.com https://ca1.cloudflarecaptcha.com\". The action has been blocked.",
+      "Connecting to 'data:,' violates the following Content Security Policy directive: \"connect-src 'self' https://hagen.challenges.cloudflare.com https://brunhild.challenges.cloudflare.com https://*.alg13.dnstest.challenges.cloudflare.com https://*.mldsa44.dnstest.challenges.cloudflare.com https://dnstest.dev https://ca2.cloudflarecaptcha.com https://ca1.cloudflarecaptcha.com\". The action has been blocked.",
+      "Fetch API cannot load data:,. Refused to connect because it violates the document's Content Security Policy."
+    ]
+  }
+}
