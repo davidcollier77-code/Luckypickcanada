@@ -59,5 +59,6 @@
 - [x] **T019** Run `./freebuff-verify.sh` (exit 0: Spec Kit gate verified spec/plan/tasks, type check
   clean, production build succeeded, refresh-docs 19 passed) and measure the build — `.next` 301,017,232 B
   (287.1 MiB) plus `public` 32,840,043 B = 333,857,275 B (318.4 MiB), below the 495 MB maximum.
-- [ ] **T020** Inspect the complete final diff, confirm only audit artifacts changed, update
-  `PR_SUMMARY.md` and `memory-bank/activeContext.md`, commit, push and open the PR unmerged.
+- [x] **T020** Inspect the complete final diff (3 modified files plus 4 added artifacts; no application,
+  test, workflow, dependency, environment or `.docs/` change; secret scan clean), update `PR_SUMMARY.md`
+  and `memory-bank/activeContext.md`, commit `debc7d1e`, push, and open PR #1705 unmerged.
