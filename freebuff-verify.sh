@@ -6,6 +6,16 @@
 echo "Starting verification..."
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR" || exit 1
+
+echo -e "\n--- Bootstrapping the pinned package manager ---"
+# Fails closed when package.json stops pinning pnpm, when the pinned version
+# cannot be provisioned, or when node_modules no longer matches the lockfile.
+source "$SCRIPT_DIR/scripts/bootstrap-pnpm.sh" || exit 1
+if ! pnpm install --frozen-lockfile; then
+  echo "❌ pnpm install --frozen-lockfile failed; dependencies do not match pnpm-lock.yaml." >&2
+  exit 1
+fi
 
 echo -e "\n--- Testing Spec Kit Governance Gate ---"
 if ! bash "$SCRIPT_DIR/scripts/test-verify-speckit-task.sh"; then
@@ -28,7 +38,7 @@ fi
 # Type Check (TypeScript)
 echo -e "
 --- Running Type Check ---"
-pnpm tsc --noEmit
+pnpm exec tsc --noEmit
 if [ $? -ne 0 ]; then
   echo "❌ Type check failed."
   return 1 2>/dev/null || builtin exit 1

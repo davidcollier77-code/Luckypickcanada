@@ -4,3 +4,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+  # JavaScript dependencies are installed with pnpm (packageManager: pnpm@10.30.3)
+  # from the committed pnpm-lock.yaml. Dependabot reads the npm ecosystem for
+  # pnpm projects, so pnpm-lock.yaml stays the single authoritative lockfile.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
