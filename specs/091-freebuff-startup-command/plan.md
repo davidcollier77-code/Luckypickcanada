@@ -100,3 +100,17 @@ interface or manual scenario in this change beyond the executed commands recorde
 ## Complexity Tracking
 
 No constitution violations; no complexity justification required.
+
+## Follow-up plan — PR-head QA repair
+
+The first live PR-head CI run supplied concrete evidence of two failures: Visual QA stopped on an unterminated string in the dependency guard, and updater-scheduler verification stopped with exit 126 because `freebuff-verify.sh` was committed as mode `100644` despite being invoked directly. The bootstrap failure helper also used `exit 1` while sourced, which does not meet the requested caller-safe behaviour.
+
+Implementation stays within this existing feature:
+
+1. Replace the malformed lockfile and Dependabot helpers with exact-key and bounded-block parsers.
+2. Refactor bootstrap work into a function, capture its status, then return when sourced or exit when directly executed. Every failure path stops before npm can be called.
+3. Add isolated shell regression tests with temporary manifests and a fake npm installer; these tests need no network or real package installation.
+4. Commit `freebuff-verify.sh` and `scripts/bootstrap-pnpm.sh` with executable mode so QA and updater workflows can invoke them from a clean checkout.
+5. Re-run focused tests, the full suite, typecheck, repository verification, and current-head Visual QA/updater-scheduler workflows. Keep the Dependabot weekly npm and GitHub Actions configuration unchanged.
+
+No Bun lockfile, second package manager, dependency upgrade, app change, credential change, scheduler activation, production deployment, or live platform startup-command change is part of this repair.

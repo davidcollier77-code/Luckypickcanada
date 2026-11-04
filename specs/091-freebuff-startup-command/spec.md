@@ -209,3 +209,20 @@ floor and all 13 pre-existing entries, and the lockfile's `overrides:` block equ
   preserved in the list pnpm actually reads rather than deleted.
 - `package.json` and `pnpm-lock.yaml` being protected files means this PR needs the owner's authorization gate at
   merge, which is expected rather than a blocker to opening it.
+
+## Follow-up acceptance criteria — PR-head QA repair
+
+Current PR-head CI exposed defects in the new dependency guard and executable verification entry point. The bootstrap failure path also needs to honour sourced-call semantics.
+
+- **FR-011**: When sourced, `scripts/bootstrap-pnpm.sh` MUST return a non-zero status on failure without exiting the caller; when executed directly, it MUST exit non-zero.
+- **FR-012**: A missing or invalid package-manager pin MUST stop before any npm install command is attempted.
+- **FR-013**: The lockfile guard MUST match direct dependency keys exactly so `react` and `react-dom` are independently validated; the Dependabot guard MUST parse both ecosystem blocks without malformed patterns or undefined variables.
+- **FR-014**: `freebuff-verify.sh` MUST be committed as executable because CI workflows invoke it directly.
+- **FR-015**: Visual QA and updater-scheduler verification MUST retain their full required checks; no test, governance check, build-size gate, or Wrangler dry run may be skipped.
+
+### Follow-up success criteria
+
+- **SC-008**: Automated shell tests prove sourced failures return non-zero while the caller survives, direct failures exit non-zero, and fresh environments install only the exact pinned version.
+- **SC-009**: Focused dependency/bootstrap tests and the full unit suite pass on the updated PR head.
+- **SC-010**: Visual QA and updater-scheduler verification pass on the updated PR head; the PR workflow remains verification-only and does not deploy production.
+- **SC-011**: The repository verification script is executable in Git and the full verification gate completes with the production build below 495 MB.

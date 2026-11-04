@@ -7,17 +7,7 @@ import { join } from 'node:path';
  *
  * pnpm 10.30.3 and the committed `pnpm-lock.yaml` are the single authoritative
  * package manager and lockfile. This guard fails when the dependency metadata
- * drifts from that policy:
- *
- * - React and React DOM must be exact versions, not a moving `latest` tag, and
- *   must match what the lockfile actually installs.
- * - Overrides must live in exactly one place (`pnpm.overrides`, the field pnpm
- *   reads). A second top-level `overrides` list silently does nothing and can
- *   diverge from the one that is applied.
- * - The lockfile's recorded overrides must equal `pnpm.overrides`, so neither
- *   file can drift from the other.
- * - Dependabot must keep the weekly GitHub Actions updates and add weekly npm
- *   (pnpm) updates for the JavaScript dependencies.
+ * drifts from that policy.
  */
 
 const root = process.cwd();
@@ -33,7 +23,7 @@ function lockfileOverrides() {
   if (!block) return {};
 
   const entries = {};
-  for (const line of block[1].trimEnd().split('\n')) {
+  for (const line of block1[].trimEnd().split('\n')) {
     const separator = line.indexOf(': ');
     if (separator === -1) continue;
     const key = line.slice(0, separator).trim().replace(/^'(.*)'$/, '$1');
@@ -43,42 +33,32 @@ function lockfileOverrides() {
   return entries;
 }
 
-/** Specifier recorded for a direct dependency in the lockfile importer. */
-/** The negative-lookahead (?![-\w]) ensures an exact YAML key match:
- *  lockfileSpecifier('react') will NOT match a 'react-dom' block. */
-
-function lockfileSpecifier(name) {
+/** Read one exact direct-dependency key from the root lockfile importer. */
+function lockfileDependency(name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const pattern = new RegExp(
-    '^\\s+[\'"]?' + escaped + '[\'"]?:\\s*\\n\\s+specifier:\\s*(.+)$',
+    '^      (?:' + escaped + "|'" + escaped + "'):\\n        specifier: ([^\\n]+)\\n        version: ([^(\\n]+)",
     'm'
   );
   const match = lockfile.match(pattern);
-  return match ? match[1].trim() : null;
+  return match
+    ? { specifier: match[1].trim(), version: match[2].trim() }
+    : null;
 }
 
-/** Installed version recorded for a direct dependency in the lockfile importer. */
-function lockfileVersion(name) {
-  const pattern = new RegExp(`\\n      ${name}:\\n        specifier: [^\\n]+\\n        version: ([^\\n(]+)`);
-  const match = lockfile.match(pattern);
-  return match ? match[1].trim() : null;
-/** The negative-lookahead (?![-\w]) ensures an exact YAML key match:
- *  lockfileVersion('react') will NOT match a 'react-dom' block. */
-}
 /** Dependabot update entries, keyed by package ecosystem. */
 function dependabotEntries() {
   const entries = {};
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp('\
   let current = null;
 
-  for (const line of dependabot.split('\n')) {
-    const start = line.match(/^ {2}- package-ecosystem: (\S+)\s*$/);
+  for (const line of dependabot.split(/\r?\n/)) {
+    const start = line.match(/^ {2}- package-ecosystem:\s*["']?([^"'\s#]+)["']?\s*$/);
     if (start) {
       current = { body: '' };
       entries[start[1]] = current;
       continue;
     }
+
     if (current) current.body += `${line}\n`;
   }
 
@@ -102,11 +82,15 @@ describe('Dependency management policy', () => {
     expect(pkg.dependencies['react-dom']).toBe(pkg.dependencies.react);
   });
 
-  it('pins React and React DOM to the versions the lockfile already installs', () => {
-    for (const name of ['react', 'react-dom']) {
-      expect(lockfileSpecifier(name)).toBe(pkg.dependencies[name]);
-      expect(lockfileVersion(name)).toBe(pkg.dependencies[name]);
-    }
+  it('reads react and react-dom as separate exact lockfile importer keys', () => {
+    expect(lockfileDependency('react')).toEqual({
+      specifier: pkg.dependencies.react,
+      version: pkg.dependencies.react,
+    });
+    expect(lockfileDependency('react-dom')).toEqual({
+      specifier: pkg.dependencies['react-dom'],
+      version: pkg.dependencies['react-dom'],
+    });
   });
 
   it('keeps dependency overrides in pnpm.overrides only', () => {

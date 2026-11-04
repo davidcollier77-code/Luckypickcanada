@@ -59,3 +59,13 @@
 - T015–T021 are independent of each other but all feed T021's guard.
 - T022–T029 depend on T009–T021.
 - T030 depends on the pushed branch.
+
+## Phase 8: PR-head QA and bootstrap repair (follow-up)
+
+- [ ] T031 [US1] Repair the lockfile importer and Dependabot block parsers in `__tests__/dependency-management.test.js`; verify exact `react` and `react-dom` matches.
+- [ ] T032 [US1] Refactor `scripts/bootstrap-pnpm.sh` so sourced failures return to the caller and direct execution exits non-zero; stop every failure path before npm install.
+- [ ] T033 [US1] Add `__tests__/bootstrap-pnpm.test.js` for sourced failure, direct failure, and exact-version bootstrap in an isolated temporary HOME with a fake installer.
+- [ ] T034 [US1] Commit `freebuff-verify.sh` and `scripts/bootstrap-pnpm.sh` as executable files so QA and updater workflows can invoke them directly.
+- [ ] T035 Run the focused dependency/bootstrap tests, the full Vitest suite, and standalone TypeScript check.
+- [ ] T036 Run `./freebuff-verify.sh`, measure `.next + public` against the 495 MB ceiling, and confirm frozen-lockfile stability.
+- [ ] T037 Verify current-head Visual QA and updater-scheduler workflow results; audit the full diff and update the PR summary with actual outcomes.

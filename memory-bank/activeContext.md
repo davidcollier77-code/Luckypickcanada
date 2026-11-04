@@ -1,3 +1,13 @@
+# Active Context — PR #1711 QA and updater-scheduler repair (2026-11-04)
+
+- **Head inspected:** `490ea28bd2912c8042af5e3e09cbdd026b06575a`; PR #1711 was open and unmerged.
+- **Live CI evidence:** Visual QA failed because `__tests__/dependency-management.test.js` could not parse (unterminated string at line 72); 39 other test files and 414 tests passed before suite termination. Updater-scheduler verification passed its 17 scheduler tests and Spec Kit customization rebase tests, then failed because `./freebuff-verify.sh` was not executable (exit 126). The scheduler deploy job was skipped on the PR event as intended.
+- **Dependabot configuration:** `.github/dependabot.yml` already contains weekly `npm` and `github-actions` entries at `/`; it is intentionally unchanged by this repair. Future Dependabot PR creation is not proven by static configuration alone.
+- **Repair scope:** fix the malformed dependency guard, match lockfile importer keys exactly, parse Dependabot blocks using the existing text source, return bootstrap failures safely when sourced (exit when executed), add isolated shell regression tests, and set both directly-run shell scripts executable in Git.
+- **Preserve:** pnpm 10.30.3 and `pnpm-lock.yaml` as the sole package-manager/lockfile policy. Do not add `bun.lock`, alter the Freebuff platform startup command, change dependency versions, update scheduler activation/secrets, deploy the Worker, or touch application visuals/functionality.
+- **Verification before repair:** the focused tests, full suite, typecheck, repository gate, Visual QA, and updater-scheduler workflow were not all passing on the inspected head. Previous reported passes predate this broken head and are not evidence for this repair.
+
+---
 # Active Context — Freebuff Startup Command and pnpm Dependency Management (2026-11-04)
 
 - **Task groups:** `troubleshooting` + `testing` + `security`; branch `freebuff/e1fafb4e1fc110d0b8a4c277`;
