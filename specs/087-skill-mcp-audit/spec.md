@@ -228,3 +228,67 @@ than an invalid credential.
   repository's approval rule for other MCPs is satisfied by that explicit instruction for reads only.
 - Context7 is referenced by repository governance but is not a connected app here; that gap is reported,
   not worked around.
+
+## Revision 4 — fresh re-test, credential-shape boundary and an implementable check (2026-11-04)
+
+**Trigger**: a fresh work request asks for a new investigation and, where possible, an implemented fix.
+Revision 3 attributed the failure to "the connector's header construction" and left the repair BLOCKED.
+That attribution is re-tested from the provider side, and revision 2's withdrawal of the credential-shape
+cause is itself refuted by measurement.
+
+### Requirements
+
+- **FR-024**: The failure MUST be reproduced on the live connection at least three times in separate calls
+  before a conclusion is drawn, because the connector's own documentation claims a failing authentication
+  can resolve on retry.
+- **FR-025**: The probe MUST cover both endpoints the connector exposes, because they emit different codes
+  for the same malformed header.
+- **FR-026**: The probe MUST sweep the `Authorization` bearer value across lengths and character classes to
+  locate the exact boundary between format rejection and identity rejection.
+- **FR-027**: A conclusion contradicted by new measurement MUST be recorded as a withdrawal together with
+  the measurement that refutes it, and it MUST NOT be silently overwritten.
+- **FR-028**: The prescribed remedy MUST hold under every hypothesis the measurements still leave open.
+- **FR-029**: A reproducible, secret-free verifier MAY be added so the owner can confirm the repair
+  themselves; it MUST be read-only, MUST NOT print or store the credential, and MUST send it only to
+  `api.cloudflare.com`.
+- **FR-030**: No token, key, connection, repository secret, workflow, DNS record or account setting may be
+  created, changed, deleted or revealed while performing this investigation.
+
+### Measured result
+
+- Live connection, four separate calls: `LIST_ZONES` ×3 → `6003` + chain `6111`; `LIST_DNS_RECORDS` ×1 →
+  `9106 Authentication failed (status: 400)`. No retry succeeded, so the transient-failure hypothesis in
+  the connector's documentation does not apply.
+- `/zones` bearer sweep: 1–39 characters, or any character outside the token charset, → HTTP `400` +
+  `6003`/`6111`; 40, 41 and 64 token-charset characters → HTTP `403` + `9109 Invalid access token`. The
+  boundary is exactly 40 characters.
+- `/zones/:id/dns_records` with the same 37-hex bearer value → HTTP `400` + `9106 Authentication failed`,
+  three repeats; with 40 token-charset characters → HTTP `401` + `10000 Authentication error`.
+- Therefore one 37-hex bearer value reproduces **both** errors the connector returns, and no 40-character
+  value can produce either of them.
+
+**Withdrawn in revision 4**: revision 2's withdrawal. It measured a Global-API-Key-shaped value only in
+`X-Auth-Key` (`6103` with 40 characters, `9103` with 37), never in `Authorization`, and never noticed that
+37 characters cannot satisfy Cloudflare's 40-character bearer format. A Global API Key sent as a bearer
+token is therefore fully consistent with `6111`, and the revision 2 conclusion ("the connector must be
+sending a placeholder, not the credential") is not established by its evidence.
+
+**Still open**: the codes cannot separate "37-hex Global API Key" from "short placeholder"; both produce
+identical codes on both endpoints. The remedy chosen in the report works for either, because a genuine
+40-character API Token travels through the same header the connector already constructs.
+
+**Corroboration outside the workspace**: GitHub Actions run `41822284071` ("Deploy OpenNext to
+Cloudflare", `main` `86ace203`) completed `success` at 2026-11-04T11:39Z setting only
+`secrets.CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Wrangler sends that variable as a bearer
+token, so the repository already holds a format-valid, authorised 40-character API Token for this account.
+
+### Acceptance scenarios (revision 4)
+
+7. **Given** the live connection, **When** four read-only calls are made in separate requests, **Then**
+   every call fails with the same code chain and no call returns provider data.
+8. **Given** a 37-hex bearer value, **When** it is sent to both endpoints the connector uses, **Then** the
+   responses match the connector's two errors exactly.
+9. **Given** a 40-character token-charset value, **When** it is sent to the same endpoints, **Then** the
+   response is an identity-level rejection, never a header-format rejection.
+10. **Given** the committed verifier, **When** it runs without a credential, **Then** it reports the shape
+    classes and performs no authenticated call.

@@ -1,3 +1,36 @@
+# Active Context — Cloudflare MCP Authentication: Fresh Investigation (2026-11-04)
+
+- **Task groups:** `troubleshooting` + `deep-dive` + `security` + `testing`; branch
+  `freebuff/470e1a482c31244d064438de`; reused `specs/087-skill-mcp-audit` (revision 4), no duplicate
+  feature directory.
+- **Cause (measured this round; replaces the round-2/3 attribution):** the connection sends a credential
+  inside `Authorization: Bearer` that is **not** a 40-character API Token. Cloudflare validates the header
+  format before credential identity, so a 1–39-character or off-charset value always returns `6003`+`6111`,
+  while a 40+ token-charset value reaches identity (`403/9109` on `/zones`, `401/10000` on `/dns_records`).
+  A 37-hex Global-API-Key-shaped bearer reproduces **both** MCP errors exactly (`6111` on `/zones`,
+  `9106 Authentication failed (status: 400)` on `/dns_records`), which no 40-character value can. Round 2's
+  withdrawal is therefore withdrawn: it tested the Global Key only in `X-Auth-Key` (`6103`/`9103`), never as
+  a bearer.
+- **Still open:** provider codes cannot separate a 37-hex Global API Key from a short placeholder. The
+  connection is registered as `cloudflare_api_key` (legacy key scheme), which points to the former; that
+  remains an inference.
+- **Fix:** supply a 40-character scoped API Token (Zone:Read, DNS:Read) to the existing connection — its
+  bearer path then reaches identity validation and works under either hypothesis. Keeping the Global Key
+  would instead require the connector to send `X-Auth-Key` + `X-Auth-Email`, which is platform work.
+  GitHub Actions run `41822284071` succeeded 2026-11-04T11:39Z using only `secrets.CLOUDFLARE_API_TOKEN`, so
+  a format-valid API Token for this account already exists; that secret was not read, copied or reused.
+- **Implemented:** `scripts/cloudflare-auth-diagnose.mjs` — read-only, dependency-free, never prints the
+  credential, classifies its shape, refuses bearer-incompatible shapes, verifies `/user/tokens/verify`,
+  `/zones` and `/zones/:id/dns_records`, and replays the synthetic matrix with `--probe`.
+- **Verification:** `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` exit 0 (Spec Kit gate, type check, build,
+  refresh-docs 19); build `.next` 301,019,497 B + `public` 32,840,043 B = 333,859,540 B (318.4 MiB) < 495 MB;
+  the verifier was executed for real on every path.
+- **Not verified / BLOCKED:** no live MCP read-only call has returned zone or DNS data; the credential change
+  is owner-side and pending; PR-head CI pending. No credential, secret, connection, DNS record, workflow or
+  Cloudflare setting was read, created or changed.
+
+---
+
 # Active Context — Skill Library and MCP Connection Audit (2026-11-04)
 
 - **Task groups:** `deep-dive` + `troubleshooting` + `security`; branch

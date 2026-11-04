@@ -179,6 +179,54 @@
 - `LIST_ZONES` → `6003` + chain `6111` (HTTP 400); `LIST_DNS_RECORDS` → `9106 (status: 400)`.
 - No read-only call has returned zone or DNS data, so the repair is not achieved.
 
+## Follow-up round 4 — credential-shape boundary and a committed verifier
+
+### Technical context
+
+- Revision 2 and revision 3 disagreed with revision 1 about the credential shape, and both used `/zones`
+  only. The connector actually calls two endpoints, and in the same session they returned two different
+  codes, which no single-endpoint probe can explain.
+- Cloudflare validates the `Authorization` header's format before the credential's identity, so the code
+  class identifies the *shape* of the transmitted value but not the value itself.
+- The repository has no Cloudflare client and no MCP configuration, so no application change can repair the
+  connection. A verifier is the only artifact that can be usefully implemented here.
+
+### Design
+
+1. **Reproduce, repeatedly** — four read-only connector calls in separate requests (three zone listings, one
+   DNS listing), which also tests the connector's documented "retry resolves the failure" claim.
+2. **Sweep the boundary** — send synthetic bearer values of length 1, 8, 9, 31, 32, 36, 37, 38, 39, 40, 41
+   and 64, plus a 40-character value containing an off-charset character, to both endpoints, and record HTTP
+   status plus the full `error_chain`.
+3. **Match the signature** — compare the connector's two errors with the sweep. A shape that reproduces
+   both, and only that shape, is the transmitted value's shape.
+4. **Re-test the legacy path correctly** — verify whether a 37-hex value works as a bearer (it does not) as
+   well as in `X-Auth-Key` (it does), because revision 2 conflated the two transports.
+5. **Implement the check** — `scripts/cloudflare-auth-diagnose.mjs`, read-only and dependency-free, classifies
+   a credential by shape without printing it and, when given one, performs the two read-only calls the
+   connector needs. `--probe` replays the synthetic matrix so the evidence is reproducible.
+6. **Prescribe a remedy that is robust** — supply a 40-character scoped API Token through the connector's
+   existing bearer path; if the Global API Key must be kept, the connector has to send `X-Auth-Key` plus
+   `X-Auth-Email` instead, which is platform work outside this repository.
+
+### Files
+
+- Added: `scripts/cloudflare-auth-diagnose.mjs`
+- Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,
+  `memory-bank/activeContext.md`
+- No application, test, dependency, workflow, environment, `.docs/` or `AGENTS.md` change; no credential,
+  connection, DNS record or account setting touched.
+
+### Alternatives rejected
+
+- **Changing the connection or supplying a new token from here** — the credential is account-side; reading,
+  handling or rotating it is forbidden by the request and by `AGENTS.md` §5.
+- **Dispatching a workflow with `secrets.CLOUDFLARE_API_TOKEN` to prove read access** — using the repository
+  secret for a new purpose is a Cloudflare/secret change requiring owner authorisation, so the successful
+  deploy run is cited as evidence instead of being re-used.
+- **A vitest unit test for the verifier** — the assertion value would be this script's own constants; running
+  it for real against the live read-only endpoint is the stronger evidence the testing group asks for.
+
 ### Files
 
 - Updated: `specs/087-skill-mcp-audit/{spec,plan,tasks}.md`, `PR_SUMMARY.md`,

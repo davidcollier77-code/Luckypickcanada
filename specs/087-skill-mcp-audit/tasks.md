@@ -122,3 +122,33 @@
 - [x] **T037** Decide that no repository-side fix is possible; the correction is Freebuff platform work.
 - [x] **T038** Write the engineering escalation — reproduction, evidence, four candidate defects, the
   length/character-class diagnostic to run, and the expected fail-closed behaviour.
+
+## Phase 10 — Fresh re-test, boundary measurement and committed verifier (revision 4)
+
+- [x] **T039** Re-read `AGENTS.md`, `.freebuff/freebuff.md`, the Memory Bank and the selected group files;
+  groups for this round: `troubleshooting` + `deep-dive` + `security` + `testing`.
+- [x] **T040** Reproduce on the live connection in four separate calls: `LIST_ZONES` ×3 (unfiltered,
+  name-filtered, unfiltered again) and `LIST_DNS_RECORDS` ×1 — all failed, no retry succeeded, so the
+  connector's documented "failing auth resolves on retry" claim does not apply.
+- [x] **T041** Sweep synthetic bearer values (length 1, 8, 9, 31, 32, 36, 37, 38, 39, 40, 41, 64, plus a
+  40-character off-charset value) against `/zones` and `/zones/{id}/dns_records`, recording HTTP status and
+  the full `error_chain`.
+- [x] **T042** Match the signature: a 37-hex bearer reproduces `6003`+`6111` on `/zones` and
+  `9106 Authentication failed (status: 400)` on the DNS endpoint — both connector errors from one value.
+- [x] **T043** Withdraw revision 2's withdrawal with the refuting measurement (it tested the Global-API-Key
+  shape only in `X-Auth-Key`, never as a bearer, and 37 characters cannot satisfy the 40-character bearer
+  format); record that both the 37-hex and short-placeholder hypotheses remain open.
+- [x] **T044** Confirm the repository still offers no Cloudflare client or MCP configuration, so no
+  application change can repair the connection; corroborate the account's working token path with GitHub
+  Actions run `41822284071` (`success`, `CLOUDFLARE_API_TOKEN` only).
+- [x] **T045** Implement `scripts/cloudflare-auth-diagnose.mjs` — read-only, dependency-free, never prints
+  the credential, classifies its shape and verifies the two read-only calls; `--probe` replays the matrix.
+- [x] **T046** Execute the verifier for real: `node --check` passed; no-credential path reports `absent` and
+  exits 2; a synthetic 37-hex value is refused without a network call (exit 2); a synthetic 40-character
+  value reaches identity validation (`/user/tokens/verify` 401/`1000`, `/zones` 403/`9109`,
+  `/dns_records` 401/`10000`) and exits 2; `--probe` replayed the full matrix on both endpoints.
+- [x] **T047** `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` exit 0 (Spec Kit gate verified spec/plan/tasks;
+  type check clean; production build succeeded; refresh-docs 19 passed). Build `.next` 301,019,497 B plus
+  `public` 32,840,043 B = 333,859,540 B (318.4 MiB), below the 495 MB maximum.
+- [ ] **T048** Audit the complete final diff, update `PR_SUMMARY.md` and `memory-bank/activeContext.md`,
+  commit, push and leave one PR open and unmerged.
