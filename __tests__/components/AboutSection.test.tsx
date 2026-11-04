@@ -24,11 +24,17 @@ describe('AboutSection', () => {
     expect(link).toHaveAttribute('href', '/lucky-meter');
   });
 
-  it('renders the Community Lucky Stories section link', () => {
+  it('renders the Community Lucky Stories section link to the homepage stories section', () => {
     render(<AboutSection />);
     const link = screen.getByRole('link', { name: /Community Lucky Stories section/i });
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/stories');
+    expect(link).toHaveAttribute('href', '/#community-stories');
+  });
+
+  it('does not send the stories link through the /stories redirect', () => {
+    render(<AboutSection />);
+    const hrefs = screen.getAllByRole('link').map((link) => link.getAttribute('href'));
+    expect(hrefs).not.toContain('/stories');
   });
 
   it('renders the Canadian Lucky Map link', () => {
