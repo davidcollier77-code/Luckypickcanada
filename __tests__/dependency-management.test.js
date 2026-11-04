@@ -46,11 +46,15 @@ function lockfileOverrides() {
 /** Specifier recorded for a direct dependency in the lockfile importer. */
 /** The negative-lookahead (?![-\w]) ensures an exact YAML key match:
  *  lockfileSpecifier('react') will NOT match a 'react-dom' block. */
+
 function lockfileSpecifier(name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(
+    '^\\s+[\'"]?' + escaped + '[\'"]?:\\s*\\n\\s+specifier:\\s*(.+)$',
+    'm'
+  );
   const match = lockfile.match(pattern);
   return match ? match[1].trim() : null;
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp('\
 }
 
 /** Installed version recorded for a direct dependency in the lockfile importer. */
