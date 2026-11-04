@@ -1,3 +1,29 @@
+# Active Context — Live-Traffic Performance Readiness: Homepage Hero Image Delivery (2026-11-04)
+
+- **Task groups:** `polishing` + `testing`; branch `freebuff/c1e1aaa103045da1dc1fde0f`; new feature
+  `specs/088-live-performance-readiness` (no earlier feature covered this; 009/011/017 are AVIF conversions
+  and `specs/perf-fixes` / `specs/homepage-perf` are different passes).
+- **Measured baseline:** the homepage downloaded the hero artwork twice in every AVIF-capable browser —
+  `homepage-hero-lucky-pick-canada.avif` 198.6 KiB **and** `homepage-hero-lucky-pick-canada.webp`
+  293.1 KiB (491.7 KiB for one painted image). Cause: `app/homepage/Hero.js` emitted two React `preload()`
+  image hints; a hint's `type` only filters undecodable formats, so both matched and both were fetched.
+- **Implementation:** removed the WebP preload hint, kept the AVIF hint (high priority, responsive
+  `imageSrcSet`), kept the AVIF → WebP `<source>` order and the WebP `<img>` fallback. New guard
+  `__tests__/homepage-hero-preload.test.js`; harness `artifacts/perf-audit/{probe,screenshots}.cjs`.
+- **Verification:** guard 4/4 PASS; full `pnpm exec vitest run` 38 files / 401 tests PASS; `tsc --noEmit`
+  and `./freebuff-verify.sh` exit 0; clean build `.next` 301,017,190 B + public 32,840,043 B = 333,857,233 B
+  (318.4 MiB), and 351,263,909 B (335.0 MiB) measured after the full verify run — both < 495 MB. Chromium
+  probe, mobile 390x844 @3x: hero 491.7 → 198.6 KiB, total 1,982.6 → 1,688.7 KiB (-14.8%), FCP/LCP
+  492 → 416 ms, CLS 0, TBT 24 → 0 ms. Desktop 1440x900: hero 491.7 → 198.6 KiB, total 2,142.3 → 1,848.4 KiB
+  (-13.7%), LCP 308 → 304 ms, CLS 0. LCP element is still the AVIF hero, `currentSrc` identical to the live
+  site, rendered box 1052x648 desktop / 360x608 mobile, 0 px overflow, 0 console errors locally.
+- **Not verified:** field Core Web Vitals on real devices/live edge, and PR-head CI. Browsers without AVIF
+  (Safari < 16.4, Firefox < 93) lose the early hint for the WebP fallback but still receive it from the
+  unchanged `<picture>` source. Untouched by design: artwork/encoding, CSS, fonts, routes, payments, email,
+  database, dependencies, deployment configuration.
+
+---
+
 # Active Context — Skill Library and MCP Connection Audit (2026-11-04)
 
 - **Task groups:** `deep-dive` + `troubleshooting` + `security`; branch

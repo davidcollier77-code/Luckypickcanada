@@ -1,3 +1,106 @@
+# Live-Traffic Performance Readiness — Homepage Hero Image Delivery
+
+**Branch** `freebuff/c1e1aaa103045da1dc1fde0f` targets `main`. **Status: open and unmerged for review.**
+
+## Task and selected task groups
+
+**Assigned task:** LuckyPickCanada.ca is going live shortly; improve the site's performance as needed to be
+ready for public traffic, preserving AVIF-first image delivery and WebP fallback and leaving visual quality
+and functionality unchanged.
+
+**Selected task groups:**
+
+- **`polishing`** — the change is a delivery-level performance polish of existing artwork
+  (browser resource hints and image format fallback), not a new feature. `.freebuff/polishing.md` also makes
+  the MDN image-format reference mandatory for raster-format work, and it was consulted.
+- **`testing`** — the change can only be justified with measured evidence, so it is verified with a new
+  source guard, the existing Vitest suite, and a repeatable Playwright measurement harness.
+
+## Library / routed documents reviewed
+
+| Document (`.docs/...`) | USED | USEFUL | Contribution |
+| --- | --- | --- | --- |
+| `polishing/_websites_mdn_image_types.md` | **USED** | **YES** | Confirms AVIF is supported in Chrome, Edge, Opera, Safari and Firefox but must ship a fallback through `<picture>`. That is exactly the structure kept: AVIF `<source>`, WebP `<source>`, WebP `<img>` fallback. It also informed the decision to keep the AVIF hint, because AVIF is the format those browsers paint. |
+| `polishing/_websites_developer_chrome.md` | NOT USED | NO | Would document preload/`type` matching, but the duplicate-download behaviour was established by direct measurement (two hero responses in a cold browser context) instead of documentation. |
+| `polishing/_websites_web_dev_images.md` | NOT USED | NO | General responsive-image guidance; the responsive `srcSet`/`sizes` handling was already correct and unchanged. |
+| `polishing/_vercel_next_js.md` | NOT USED | NO | The change is a React `preload()` call removal in a client-free server component; no Next.js API behaviour needed confirmation. |
+| `polishing/_google_eng-practices.md` | NOT USED | NO | Cross-cutting review guidance only; not needed for a one-hint deletion with measured verification. |
+| `testing/_microsoft_playwright.md` | NOT USED | NO | The probe uses the API patterns already present in the repository's Playwright suite (`tests/visual/*.spec.ts`). |
+| `testing/_vitest-dev_vitest.md` | NOT USED | NO | The new guard follows the existing `__tests__/*.test.js` conventions. |
+
+No other routed document was opened. `.docs/` was not modified.
+
+## What was implemented
+
+The homepage transferred the hero artwork **twice** — 198.6 KiB AVIF plus 293.1 KiB WebP — on every load in
+any browser that supports both formats. Cause: `app/homepage/Hero.js` emitted two React `preload()` image
+hints, one per format. A preload hint's `type` only filters formats the browser cannot decode; it cannot
+express "whichever `<picture>` source wins", so Chromium fetched both and painted the AVIF.
+
+The change removes the WebP preload hint and keeps everything else: the AVIF hint (high priority, responsive
+`imageSrcSet`), the AVIF → WebP `<source>` order, and the WebP `<img>` fallback for browsers without AVIF.
+
+**Files changed**
+
+- `app/homepage/Hero.js` — removed the redundant WebP `preload()` hint and documented why only one format is
+  hinted.
+- `__tests__/homepage-hero-preload.test.js` — new guard: exactly one hero hint, it is AVIF with
+  `fetchPriority: "high"` and the responsive `imageSrcSet`; the WebP hint is absent; the AVIF/WebP `<source>`
+  order, the WebP `src`, the alt text and both 669w/1024w files are unchanged.
+- `specs/088-live-performance-readiness/spec.md`, `plan.md`, `tasks.md`, `checklists/requirements.md` and
+  `.specify/feature.json` — Spec Kit artifacts.
+- `artifacts/perf-audit/` — probe, screenshot harness, README, baseline and post-change reports and
+  screenshots.
+- `memory-bank/activeContext.md`, `PR_SUMMARY.md` — task record and this report.
+
+Not changed: artwork files or encoding, CSS, layout, fonts, scripts, routes, APIs, payments, email, database,
+dependencies, workflows, deployment configuration.
+
+## Spec Kit stages
+
+| Stage | Artifact |
+| --- | --- |
+| Specify | `specs/088-live-performance-readiness/spec.md` (+ `checklists/requirements.md`) |
+| Plan | `specs/088-live-performance-readiness/plan.md` |
+| Tasks | `specs/088-live-performance-readiness/tasks.md` |
+| Implement | Tasks T001–T011 executed and marked complete |
+
+No existing feature directory covered this task, so none was duplicated or reused; prior perf features
+(`specs/perf-fixes`, `specs/homepage-perf`) describe different work.
+
+## Verification
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| New guard test `__tests__/homepage-hero-preload.test.js` | **PASS** | 4/4 tests |
+| Full `pnpm exec vitest run` | **PASS** | 38 files / 401 tests |
+| `./freebuff-verify.sh` | **PASS** | exit 0 — Spec Kit gate, `tsc --noEmit`, production build, refresh-docs 38/38 |
+| Production build size | **PASS** | clean build `.next` 301,017,190 B + `public` 32,840,043 B = 333,857,233 B (318.4 MiB); after the full verify run (incremental cache) `.next` 318,423,866 B + `public` = 351,263,909 B (335.0 MiB). Both far below the 495 MB hard maximum. |
+| Cold mobile-emulated load (390x844 @3x) | **PASS** | hero requests 2 → 1; hero bytes 491.7 → 198.6 KiB; total transfer 1,982.6 → 1,688.7 KiB (-14.8%); FCP/LCP 492 → 416 ms; CLS 0 → 0; TBT 24 → 0 ms |
+| Cold desktop load (1440x900) | **PASS** | hero requests 2 → 1; hero bytes 491.7 → 198.6 KiB; total transfer 2,142.3 → 1,848.4 KiB (-13.7%); FCP 308 → 304 ms; LCP 308 → 304 ms; CLS 0 → 0 |
+| LCP element unchanged | **PASS** | still `/homepage-hero-lucky-pick-canada.avif`, natural 1024x1536, identical `currentSrc` to the live site |
+| Delivered image hints | **PASS** | served `<head>` now carries only the AVIF hero hint; the deployed site carried AVIF + WebP |
+| Visual parity | **PASS** | 1440x900 and 390x844 first-screen screenshots (`artifacts/perf-audit/after/`, compared with `artifacts/perf-audit/live-before/`); hero `currentSrc`, natural size, rendered box (1052x648 desktop, 360x608 mobile), 0 px horizontal overflow |
+| Real device / live network Core Web Vitals | **PENDING** | measurements are Chromium-emulated against a local production build, not field data |
+| PR-head CI checks | **PENDING** | not yet run on this head |
+
+## Remaining issues and limitations
+
+- Browsers that cannot decode AVIF (older than Safari 16.4 / Firefox 93) no longer receive an early hint for
+  the WebP fallback. They still download and display the WebP from the unchanged `<picture>` source; only the
+  start of that download moves from the resource hint to HTML parsing.
+- The mobile profile still downloads 174.5 KiB of `crystal-ball-bg-mobile.webp` and 84.7 KiB of third-party
+  Turnstile JavaScript. Both are deliberate and unchanged: the backdrop is the visual treatment of the first
+  screen (its WebP is smaller than its AVIF), and the Turnstile hint is an intentional low-priority
+  homepage-only hint covered by `tests/visual/turnstile-loading.spec.ts`.
+- Numbers come from a local `next start` production build; the deployed edge also caches HTML
+  (`x-nextjs-cache: HIT`), which this harness does not model.
+
+**USEFUL RESULT: YES** — the requested performance improvement is implemented and measured, and every
+mandatory local gate passed.
+
+---
+
 # Skill Library and MCP Connection Audit
 
 **Branch** `freebuff/d39d4997e3eae68c62117cc1` targets `main`. **Audit-only**: no application source,

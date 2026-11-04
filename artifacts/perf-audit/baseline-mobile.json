@@ -1,0 +1,184 @@
+{
+  "url": "http://127.0.0.1:3011/",
+  "profile": "mobile-390x844-dpr3",
+  "measuredAt": "2026-11-04T15:09:40.675Z",
+  "wallClockMs": 7485,
+  "metrics": {
+    "fcpMs": 492,
+    "lcpMs": 492,
+    "lcpElement": {
+      "tag": "IMG",
+      "id": null,
+      "className": "pointer-events-none object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] w-full h-full",
+      "src": "http://127.0.0.1:3011/homepage-hero-lucky-pick-canada.avif",
+      "size": 266760
+    },
+    "cls": 0,
+    "ttfbMs": 17,
+    "domContentLoadedMs": 464,
+    "loadMs": 465,
+    "longTaskCount": 3,
+    "totalBlockingTimeMs": 24
+  },
+  "network": {
+    "requestCount": 48,
+    "totalTransferBytes": 2030170,
+    "byType": {
+      "font": {
+        "count": 4,
+        "bytes": 137216
+      },
+      "image": {
+        "count": 6,
+        "bytes": 818064
+      },
+      "stylesheet": {
+        "count": 5,
+        "bytes": 220502
+      },
+      "script": {
+        "count": 17,
+        "bytes": 710756
+      },
+      "document": {
+        "count": 1,
+        "bytes": 65885
+      },
+      "fetch": {
+        "count": 14,
+        "bytes": 34503
+      },
+      "media": {
+        "count": 1,
+        "bytes": 43244
+      }
+    },
+    "heaviest": [
+      {
+        "size": 300138,
+        "type": "image",
+        "url": "http://127.0.0.1:3011/homepage-hero-lucky-pick-canada.webp"
+      },
+      {
+        "size": 242576,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/6218-4cb2489292c093a7.js"
+      },
+      {
+        "size": 203722,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/87c6cacc-689cf71de074a6da.js"
+      },
+      {
+        "size": 203327,
+        "type": "image",
+        "url": "http://127.0.0.1:3011/homepage-hero-lucky-pick-canada.avif"
+      },
+      {
+        "size": 178720,
+        "type": "image",
+        "url": "http://127.0.0.1:3011/assets/crystal-ball-bg-mobile.webp"
+      },
+      {
+        "size": 103745,
+        "type": "stylesheet",
+        "url": "http://127.0.0.1:3011/_next/static/css/aea576239ed54843.css"
+      },
+      {
+        "size": 86756,
+        "type": "script",
+        "url": "https://challenges.cloudflare.com/turnstile/v0/g/5c2e6b612edd/api.js"
+      },
+      {
+        "size": 85810,
+        "type": "image",
+        "url": "http://127.0.0.1:3011/FB_IMG_1785107325979.avif"
+      },
+      {
+        "size": 65885,
+        "type": "document",
+        "url": "http://127.0.0.1:3011/"
+      },
+      {
+        "size": 53482,
+        "type": "stylesheet",
+        "url": "http://127.0.0.1:3011/_next/static/css/7a54c9f323d19668.css"
+      },
+      {
+        "size": 48432,
+        "type": "font",
+        "url": "http://127.0.0.1:3011/_next/static/media/e4af272ccee01ff0-s.p.woff2"
+      },
+      {
+        "size": 44421,
+        "type": "image",
+        "url": "http://127.0.0.1:3011/1784889264858.avif"
+      },
+      {
+        "size": 43244,
+        "type": "media",
+        "url": "http://127.0.0.1:3011/sounds/confetti-pop.wav"
+      },
+      {
+        "size": 38460,
+        "type": "font",
+        "url": "http://127.0.0.1:3011/_next/static/media/eaead17c7dbfcd5d-s.p.woff2"
+      },
+      {
+        "size": 36396,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/6398-3c61d05dfa24b12d.js"
+      },
+      {
+        "size": 35813,
+        "type": "stylesheet",
+        "url": "http://127.0.0.1:3011/_next/static/css/39c8595ef153d1ec.css"
+      },
+      {
+        "size": 31769,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/app/page-fb4d4a5881b5d1c7.js"
+      },
+      {
+        "size": 30590,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/5316-9c11c35a1f9b93fb.js"
+      },
+      {
+        "size": 25888,
+        "type": "font",
+        "url": "http://127.0.0.1:3011/_next/static/media/a273567b21a7c318-s.p.woff2"
+      },
+      {
+        "size": 24436,
+        "type": "font",
+        "url": "http://127.0.0.1:3011/_next/static/media/8760c4774489e4ba-s.p.woff2"
+      },
+      {
+        "size": 23066,
+        "type": "stylesheet",
+        "url": "http://127.0.0.1:3011/_next/static/css/6de352dbfbe60d6b.css"
+      },
+      {
+        "size": 19667,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/app/crystal-ball/page-5acf07d1f27c4e9c.js"
+      },
+      {
+        "size": 14745,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/338-71e5e7fd00a7b579.js"
+      },
+      {
+        "size": 12256,
+        "type": "fetch",
+        "url": "http://127.0.0.1:3011/?_rsc=8nTjltbQWvg6NcbE"
+      },
+      {
+        "size": 10429,
+        "type": "script",
+        "url": "http://127.0.0.1:3011/_next/static/chunks/2992.af9d7c02579b0e30.js"
+      }
+    ]
+  }
+}

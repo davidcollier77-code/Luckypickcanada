@@ -9,20 +9,17 @@ import ExploreLuckButton from './ExploreLuckButton';
  * @returns {import('react').ReactElement} The homepage hero header.
  */
 export default function Hero() {
-  // Preload both AVIF and WebP so each browser matches exactly one hint.
-  // AVIF-capable browsers will use the AVIF source; all others fall back to WebP.
+  // PERFORMANCE (specs/088-live-performance-readiness): hint only the AVIF
+  // artwork. A preload hint's `type` only filters formats the browser cannot
+  // decode, so hinting AVIF *and* WebP made every AVIF-capable browser download
+  // both files (~492 KiB instead of ~199 KiB) for one painted image. AVIF is
+  // what those browsers paint; browsers without AVIF support ignore this hint
+  // and take the WebP <source> below, which is unchanged.
   preload("/homepage-hero-lucky-pick-canada.avif", {
     as: "image",
     fetchPriority: "high",
     type: "image/avif",
     imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
-    imageSizes: "(max-width: 768px) 100vw, 1024px"
-  });
-  preload("/homepage-hero-lucky-pick-canada.webp", {
-    as: "image",
-    fetchPriority: "high",
-    type: "image/webp",
-    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w",
     imageSizes: "(max-width: 768px) 100vw, 1024px"
   });
 

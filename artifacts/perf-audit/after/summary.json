@@ -1,0 +1,58 @@
+{
+  "desktop": {
+    "screenshot": "/workspace/chats/c1e1aaa103045da1dc1fde0f/artifacts/perf-audit/after/homepage-desktop.png",
+    "heroHints": [
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+        "type": "image/avif",
+        "fetchpriority": "high"
+      },
+      {
+        "href": "/community-stars-bg.webp",
+        "imagesrcset": null,
+        "type": null,
+        "fetchpriority": null
+      }
+    ],
+    "heroPicture": {
+      "currentSrc": "http://127.0.0.1:3011/homepage-hero-lucky-pick-canada.avif",
+      "naturalWidth": 1024,
+      "naturalHeight": 1536,
+      "clientWidth": 1052,
+      "clientHeight": 648,
+      "complete": true
+    },
+    "overflowX": 0,
+    "heroText": "Lucky Pick Canada",
+    "consoleErrors": []
+  },
+  "mobile": {
+    "screenshot": "/workspace/chats/c1e1aaa103045da1dc1fde0f/artifacts/perf-audit/after/homepage-mobile.png",
+    "heroHints": [
+      {
+        "href": null,
+        "imagesrcset": "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+        "type": "image/avif",
+        "fetchpriority": "high"
+      },
+      {
+        "href": "/community-stars-bg.webp",
+        "imagesrcset": null,
+        "type": null,
+        "fetchpriority": null
+      }
+    ],
+    "heroPicture": {
+      "currentSrc": "http://127.0.0.1:3011/homepage-hero-lucky-pick-canada.avif",
+      "naturalWidth": 390,
+      "naturalHeight": 585,
+      "clientWidth": 360,
+      "clientHeight": 608,
+      "complete": true
+    },
+    "overflowX": 0,
+    "heroText": "Lucky Pick Canada",
+    "consoleErrors": []
+  }
+}
