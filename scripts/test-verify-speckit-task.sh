@@ -280,9 +280,8 @@ GIT_COMMITTER_NAME="GitHub" \
 GIT_COMMITTER_EMAIL="noreply@github.com" \
   git -C "$root" commit -m "chore: synthetic commit without an author email" >/dev/null
 expect_failure "dependency scope with a commit that has no author email" "$root" "$DEPENDABOT_AUTHOR"
-env SPEC_KIT_BASE_REF="$(git -C "$root" rev-parse HEAD^)" \
-  GITHUB_BASE_REF= GITHUB_ACTIONS= "$DEPENDABOT_AUTHOR" \
-  bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/empty-author.log" 2>&1 || true
+run_verify "$root" SPEC_KIT_BASE_REF="$(git -C "$root" rev-parse HEAD^)" "$DEPENDABOT_AUTHOR" \
+  >"$TEST_ROOT/empty-author.log" 2>&1 || true
 if ! grep -Fq "empty author email" "$TEST_ROOT/empty-author.log"; then
   cat "$TEST_ROOT/empty-author.log" >&2
   fail "an empty author email should be reported as the exemption blocker"
