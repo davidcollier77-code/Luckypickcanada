@@ -1,3 +1,13 @@
+# Active Context — About Page Return to Home Gold CTA (2026-11-05)
+
+- **Task groups:** `polishing` + `testing`; branch `polish/about-home-gold-cta-20261105`; feature `specs/093-about-home-gold-cta`.
+- **Scope:** Update only the existing Return to Home link on `/about` to reuse the global `.gold-3d-btn` and `.gold-cta-emoji` treatment. Preserve its `href="/"`, visible label, wrapper, width, and placement. Update the existing sitewide gold CTA browser assertion to verify the gold gradient/raised edge and unchanged accessible navigation.
+- **Spec Kit:** Specify → Plan → Tasks → Implement; artifacts are in `specs/093-about-home-gold-cta/`, with `.specify/feature.json` pointing to the feature.
+- **Verification:** Code and test changes are prepared on this branch. Local Playwright and `./freebuff-verify.sh` execution are pending; this connected session could not clone the repository because its shell environment could not resolve `github.com`. No local test, build, or build-size pass is claimed. PR CI is the remaining verification path.
+- **Preserved:** No global styles, other buttons, page copy, routes, application behavior, dependencies, payments, data, authentication, deployment settings, or secrets were changed.
+
+---
+
 # Active Context — Dependabot CI fixture isolation follow-up (2026-11-05)
 
 - **Trigger:** PR #1716 Visual QA run 42016557516 passed install, unit tests and TypeScript, then failed the Spec Kit verifier regression suite. The workflow correctly exported `SPEC_KIT_PR_AUTHOR=dependabot[bot]`; the test helper did not clear that inherited trusted value, so the synthetic no-author fixture accidentally qualified for the exemption.

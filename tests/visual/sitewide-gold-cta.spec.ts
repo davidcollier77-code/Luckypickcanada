@@ -203,13 +203,27 @@ test.describe('Site-wide gold CTA', () => {
     await capture(page, 'sitewide-gold-crystal-ball', testInfo);
   });
 
-  test('secondary About CTA and non-primary controls are unchanged', async ({ page }) => {
+  test('About page Return to Home uses the shared gold CTA and preserves navigation', async ({ page }) => {
     test.setTimeout(180_000);
     await page.goto('/about', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     const backHome = page.locator('a:has-text("Return to Home")').last();
     await expect(backHome).toBeVisible({ timeout: 30_000 });
-    await expect(backHome).not.toHaveClass(/gold-3d-btn/);
-    const bg = await backHome.evaluate((el) => getComputedStyle(el).backgroundImage);
-    expect(bg).toBe('none');
+    await expect(backHome).toHaveAttribute('href', '/');
+    await expect(backHome).toHaveClass(/gold-3d-btn/);
+    await expect(backHome).toHaveAccessibleName('Return to Home');
+    await expect(backHome.locator('.gold-cta-emoji')).toHaveText('🏠');
+    await expect(backHome.locator('.gold-cta-emoji')).toHaveAttribute('aria-hidden', 'true');
+
+    const style = await backHome.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return {
+        backgroundImage: computed.backgroundImage,
+        boxShadow: computed.boxShadow,
+        color: computed.color,
+      };
+    });
+    expect(style.backgroundImage).toContain(MAIN_GOLD);
+    expect(style.boxShadow).toContain(`${EDGE} 0px 3px 0px`);
+    expect(style.color).toBe('rgb(28, 18, 0)');
   });
 });
