@@ -16,7 +16,7 @@
     "@stripe/stripe-js": "^9.13.0",
     "@upstash/redis": "^1.38.3",
     "canvas-confetti": "^1.9.4",
-    "eslint": "^10.8.1",
+    "eslint": "^10.14.0",
     "framer-motion": "^13.1.0",
     "howler": "^2.2.4",
     "html2canvas": "^1.4.1",
