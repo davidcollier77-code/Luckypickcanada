@@ -70,9 +70,20 @@ expect_success() {
   fi
   echo "PASS: $name"
 }
+# Usage: run_verify ROOT [KEY=VALUE ...]
+# Extra arguments must be KEY=VALUE environment assignments; anything else is
+# rejected loudly, because `env` would otherwise treat it as the command to run.
 run_verify() {
   local root="$1"
   shift
+  local arg
+  local env_assignment='^[A-Za-z_][A-Za-z0-9_]*='
+  for arg in "$@"; do
+    if [[ ! "$arg" =~ $env_assignment ]]; then
+      echo "run_verify: expected KEY=VALUE environment assignments, got: $arg" >&2
+      return 2
+    fi
+  done
   env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= "$@" bash "$VERIFY_SCRIPT" "$root"
 }
 
@@ -254,6 +265,29 @@ dependabot_commit "$root" "chore(deps): bump fixture from 1.0.0 to 1.0.1"
 printf 'lockfileVersion: "9.0"\n' > "$root/pnpm-lock.yaml"
 human_commit "$root" "chore: reconcile lockfile by hand"
 expect_failure "dependency scope with a hand-authored commit" "$root" "$DEPENDABOT_AUTHOR"
+
+# A commit with no author identity must disqualify the exemption, not be skipped.
+root="$TEST_ROOT/dependabot-empty-author-email"
+setup_repo "$root"
+git -C "$root" checkout -b dependabot/npm_and_yarn/empty-author-1.0.1 >/dev/null
+printf '{"dependencies":{"fixture":"1.0.1"}}\n' > "$root/package.json"
+dependabot_commit "$root" "chore(deps): bump fixture from 1.0.0 to 1.0.1"
+printf 'lockfileVersion: "9.0"\n' > "$root/pnpm-lock.yaml"
+git -C "$root" add -A
+GIT_AUTHOR_NAME="Unknown" \
+GIT_AUTHOR_EMAIL="" \
+GIT_COMMITTER_NAME="GitHub" \
+GIT_COMMITTER_EMAIL="noreply@github.com" \
+  git -C "$root" commit -m "chore: synthetic commit without an author email" >/dev/null
+expect_failure "dependency scope with a commit that has no author email" "$root" "$DEPENDABOT_AUTHOR"
+env SPEC_KIT_BASE_REF="$(git -C "$root" rev-parse HEAD^)" \
+  GITHUB_BASE_REF= GITHUB_ACTIONS= "$DEPENDABOT_AUTHOR" \
+  bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/empty-author.log" 2>&1 || true
+if ! grep -Fq "empty author email" "$TEST_ROOT/empty-author.log"; then
+  cat "$TEST_ROOT/empty-author.log" >&2
+  fail "an empty author email should be reported as the exemption blocker"
+fi
+echo "PASS: an empty author email is reported as the exemption blocker"
 
 # Without a comparison base the change set cannot be proven and stays fail-closed.
 root="$TEST_ROOT/dependabot-no-base"

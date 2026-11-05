@@ -209,7 +209,12 @@ dependabot_maintenance_exemption() {
   fi
   local author_email committer_email
   while IFS='|' read -r author_email committer_email; do
-    [[ -n "$author_email" ]] || continue
+    # Fail closed on unexpected input. Skipping a commit with a missing author
+    # identity would let an unverifiable commit satisfy the provenance check.
+    if [[ -z "$author_email" ]]; then
+      DEPENDABOT_EXEMPTION_BLOCKER="a commit has an empty author email; provenance cannot be verified"
+      return 1
+    fi
     if ! is_dependabot_author_email "$author_email"; then
       DEPENDABOT_EXEMPTION_BLOCKER="commit author is not Dependabot: $author_email"
       return 1
