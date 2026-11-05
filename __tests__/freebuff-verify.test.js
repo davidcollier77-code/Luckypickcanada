@@ -20,11 +20,24 @@ describe('Freebuff verification gate control flow', () => {
     );
   });
 
-  it('fails closed on each required verification command', () => {
-    expect(verificationScript).toContain('if ! pnpm install --frozen-lockfile; then');
-    expect(verificationScript).toContain('if ! pnpm exec tsc --noEmit; then');
-    expect(verificationScript).toContain('if ! pnpm run build; then');
-    expect(verificationScript).toContain('if ! node scripts/test-refresh-docs.js; then');
-    expect(verificationScript).not.toContain('return 1 2>/dev/null');
+  it('fails closed with an explicit exit in every required verification branch', () => {
+    const requiredBranches = [
+      ['pnpm install --frozen-lockfile', 'pnpm install --frozen-lockfile failed'],
+      ['pnpm exec tsc --noEmit', 'Type check failed'],
+      ['pnpm run build', 'Build failed'],
+      ['node scripts/test-refresh-docs.js', 'Refresh Docs Tests failed'],
+    ];
+
+    for (const [command, errorMessage] of requiredBranches) {
+      expect(countOccurrences(verificationScript, command)).toBe(1);
+      const start = verificationScript.indexOf(`if ! ${command}; then`);
+      expect(start).toBeGreaterThanOrEqual(0);
+
+      const end = verificationScript.indexOf('\nfi', start);
+      expect(end).toBeGreaterThan(start);
+      const branch = verificationScript.slice(start, end);
+      expect(branch).toContain(errorMessage);
+      expect(branch).toContain('exit 1');
+    }
   });
 });

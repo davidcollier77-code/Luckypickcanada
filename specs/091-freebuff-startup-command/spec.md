@@ -254,3 +254,6 @@ The verification entry point and package-manager bootstrap must remain determini
 - **SC-015**: A fresh temporary home installs the exact package-manager pin read from the fixture manifest; the installed binary is callable in the same sourced shell.
 - **SC-016**: Failed sourced bootstrap calls leave the caller alive, return non-zero, and do not leak helper functions or temporary variables; failed direct invocation exits non-zero.
 - **SC-017**: Focused regression tests and the full PR-head CI pass without changing dependency versions, lockfiles, application behavior, artwork, AVIF/WebP delivery, or the 495 MiB build-size ceiling.
+
+- **FR-024**: Re-sourcing the bootstrap in the same shell MUST remain idempotent and MUST NOT add a duplicate pnpm directory entry to PATH.
+- **SC-018**: A regression test sources the bootstrap twice in one shell and confirms PATH remains byte-identical after the second successful source.

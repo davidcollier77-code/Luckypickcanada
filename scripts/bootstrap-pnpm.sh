@@ -74,10 +74,13 @@ _bootstrap_pnpm_entry() {
     return 1
   fi
 
-  if [[ -n "$PATH" ]]; then
-    export PATH="$bootstrap_bin_dir:$PATH"
-  else
+  if [[ -z "$PATH" ]]; then
     export PATH="$bootstrap_bin_dir"
+  else
+    case ":$PATH:" in
+      *":$bootstrap_bin_dir:"*) ;;
+      *) export PATH="$bootstrap_bin_dir:$PATH" ;;
+    esac
   fi
   printf '✅ Using pnpm %s (%s)\n' "$pnpm_version" "$pnpm_bin"
   return 0

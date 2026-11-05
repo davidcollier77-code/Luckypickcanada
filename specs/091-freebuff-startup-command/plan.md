@@ -131,3 +131,5 @@ The latest reviewer pass exposed defects in the previous correction commit itsel
 5. Run focused and full unit tests, TypeScript, the full repository verification gate, measured build size, full Visual QA, and updater-scheduler CI on the resulting PR head. Do not claim those checks pass until their results are observed.
 
 No dependency, lockfile, application, payment, email, database, image, artwork, deployment, or scheduler behavior change is required. No new package is required.
+
+6. Make the PATH update idempotent: if the canonical pnpm binary directory already appears as a complete PATH element, leave PATH unchanged. Add an isolated same-shell test that sources the bootstrap twice and compares PATH byte-for-byte.

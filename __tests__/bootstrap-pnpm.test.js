@@ -54,7 +54,7 @@ while (($#)); do
 done
 [[ -n "$prefix" ]] || exit 87
 mkdir -p "$prefix/bin"
-cat > "$prefix/bin/pnpm" <<'PNPM'
+cat > "$prefix/bin/pnpm" <<PNPM
 #!/usr/bin/env bash
 if [[ "\${1:-}" == "--version" ]]; then
   printf '%s\\n' "$EXPECTED_PNPM_VERSION"
@@ -127,6 +127,8 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
         'source "$BOOTSTRAP_SCRIPT" || exit $?; ' +
           'printf "PNPM_PATH:%s\\n" "$(command -v pnpm)"; ' +
           'printf "PNPM_VERSION:%s\\n" "$(pnpm --version)"; ' +
+          'original_path="$PATH"; source "$BOOTSTRAP_SCRIPT" || exit $?; ' +
+          '[[ "$PATH" == "$original_path" ]] && echo "PATH_STABLE:yes" || echo "PATH_STABLE:no"; ' +
           'declare -F _bootstrap_pnpm_entry >/dev/null && exit 91; ' +
           'declare -F bootstrap_pnpm_main >/dev/null && exit 92; ' +
           'declare -p BOOTSTRAP_PNPM_STATUS >/dev/null 2>&1 && exit 93',
@@ -137,6 +139,7 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(`PNPM_PATH:${join(fixture.home, '.local', 'bin', 'pnpm')}`);
     expect(result.stdout).toContain('PNPM_VERSION:10.31.4');
+    expect(result.stdout).toContain('PATH_STABLE:yes');
     expect(existsSync(join(fixture.home, '.local', 'bin', 'pnpm'))).toBe(true);
     expect(readFileSync(fixture.npmLog, 'utf8')).toContain(
       'install -g pnpm@10.31.4 --prefix'
