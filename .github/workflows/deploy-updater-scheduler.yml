@@ -71,6 +71,11 @@ jobs:
         run: bash scripts/update-spec-kit-safely.sh
 
       - name: Run repository governance verification
+        env:
+          # GitHub-reported pull request author. This is the only trusted input for
+          # the narrow Dependabot maintenance exemption; it is never derived from
+          # the pull request title or branch name.
+          SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: ./freebuff-verify.sh
 
       - name: Enforce 495 MiB build-size ceiling
