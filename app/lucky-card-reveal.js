@@ -7,6 +7,7 @@ import CollectionBinder from './collection-binder';
 import { Howl } from 'howler';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
+import { getLuckyCardTierPresentation } from './lucky-card-presentation';
 import LuckyCardShare from './lucky-card-share';
 import { playButtonClick } from './lib/audio';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -1727,6 +1728,10 @@ export default function LuckyCardReveal() {
 
   const preserveCoastToCoastPolish = selectedCard?.id === 'coast-to-coast-tale';
 
+  // Tier presentation for the revealed card: chip, name caption, halo and frame.
+  // Values come from the shared tier module so all three tiers stay in one place.
+  const tierPresentation = getLuckyCardTierPresentation(selectedCard?.tier);
+
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-2 md:py-4 space-y-3 md:space-y-6 select-none relative z-10">
 
@@ -1771,15 +1776,22 @@ export default function LuckyCardReveal() {
         )}
 
         {isReady && !isRevealed && !selectedCard && (
+          <div className="flex w-full flex-col items-center gap-2.5">
           <button
             type="button"
             onClick={triggerCardDraw}
             disabled={isGenerating}
             aria-disabled={isGenerating}
-            className="gold-3d-btn mt-4 px-8 py-3.5 rounded-full font-extrabold text-lg transition-all disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 relative overflow-hidden group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+            aria-describedby="lucky-card-reveal-hint"
+            className="gold-3d-btn mt-4 flex w-full cursor-pointer touch-manipulation select-none items-center justify-center px-10 py-4 rounded-full font-extrabold text-lg tracking-wide transition-all disabled:cursor-not-allowed disabled:opacity-75 disabled:hover:scale-100 disabled:active:scale-100 relative overflow-hidden group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
+            style={{ minHeight: 56 }}
           >
             <span className="relative z-10 flex items-center justify-center">{!isGenerating && <span className="gold-cta-emoji" aria-hidden="true">♠</span>}{isGenerating && <svg aria-hidden="true" className="animate-spin -ml-1 mr-2 h-5 w-5 text-current inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>}{isGenerating ? 'Revealing...' : "Reveal Today's Luck"}</span>
           </button>
+          <p id="lucky-card-reveal-hint" className="max-w-[19rem] text-sm font-medium text-white/70">
+            {isGenerating ? 'Drawing your Lucky Card…' : 'Tap to reveal today’s Lucky Card'}
+          </p>
+          </div>
         )}
       </div>
 
@@ -1788,6 +1800,48 @@ export default function LuckyCardReveal() {
         className="w-full flex justify-center pt-6 pb-2 md:pt-16 md:pb-4 flex-shrink-0 relative"
         style={{ perspective: '1200px' }}
       >
+        {/* Tier-coloured halo and rim that complete the reveal moment. Decorative
+            only: hidden from assistive tech and never intercepts pointer events. */}
+        {isRevealed && selectedCard && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
+            <motion.div
+              data-card-halo={tierPresentation.id}
+              className="absolute"
+              style={{
+                width: 430,
+                height: 560,
+                left: '50%',
+                top: '50%',
+                marginLeft: -215,
+                marginTop: -280,
+                borderRadius: '50%',
+                background: `radial-gradient(50% 50% at 50% 50%, rgba(${tierPresentation.accentRgb}, ${tierPresentation.haloOpacity}) 0%, rgba(${tierPresentation.accentRgb}, 0.16) 44%, rgba(${tierPresentation.accentRgb}, 0) 76%)`,
+                filter: `blur(${tierPresentation.haloBlur}px)`,
+                willChange: 'opacity',
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : tierPresentation.revealDuration, ease: 'easeOut' }}
+            />
+            <motion.div
+              className="absolute"
+              style={{
+                width: 296,
+                height: 421,
+                left: '50%',
+                top: '50%',
+                marginLeft: -148,
+                marginTop: -210.5,
+                borderRadius: 24,
+                boxShadow: `0 0 0 1px rgba(${tierPresentation.accentRgb}, ${tierPresentation.rimOpacity}), 0 0 ${tierPresentation.rimBlur}px rgba(${tierPresentation.accentRgb}, ${Number((tierPresentation.rimOpacity * 0.8).toFixed(3))})`,
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : tierPresentation.revealDuration, ease: 'easeOut' }}
+            />
+          </div>
+        )}
+
         <motion.div
           ref={cardRef}
           className="card-container relative z-20 w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
@@ -1845,6 +1899,17 @@ export default function LuckyCardReveal() {
                     <>
                       <div className="absolute inset-0" style={cardPolishSheenStyle} />
                       <div className="absolute inset-0" style={cardPolishEdgeStyle} />
+                      {isRevealed && (
+                        <div
+                          aria-hidden="true"
+                          data-tier={tierPresentation.id}
+                          className="pointer-events-none absolute inset-0"
+                          style={{
+                            borderRadius: 'inherit',
+                            boxShadow: `inset 0 0 0 2px rgba(${tierPresentation.accentRgb}, ${tierPresentation.frameOpacity}), inset 0 0 26px rgba(${tierPresentation.accentRgb}, ${tierPresentation.innerGlow})`,
+                          }}
+                        />
+                      )}
                     </>
                   )}
                 </div>
@@ -1866,7 +1931,25 @@ export default function LuckyCardReveal() {
 
       {isReady && isRevealed && selectedCard && (
         <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
-          <div className="w-full p-6 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 text-center relative overflow-hidden">
+          <div data-tier={tierPresentation.id} className="flex flex-col items-center gap-1.5 text-center">
+            <span
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em]"
+              style={{
+                color: tierPresentation.chipText,
+                backgroundColor: `rgba(${tierPresentation.accentRgb}, 0.12)`,
+                boxShadow: `inset 0 0 0 1px rgba(${tierPresentation.accentRgb}, 0.45)`,
+              }}
+            >
+              <span style={{ color: tierPresentation.accent }} aria-hidden="true">{tierPresentation.glyph}</span>
+              {tierPresentation.label} Tier
+            </span>
+            <h2 className="text-2xl font-black tracking-tight text-white drop-shadow-lg">{selectedCard.title}</h2>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50">Series 1 · Added to your collection</p>
+          </div>
+          <div
+            className="w-full p-6 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 text-center relative overflow-hidden"
+            style={{ borderColor: `rgba(${tierPresentation.accentRgb}, 0.3)` }}
+          >
             <p className="text-lg italic text-amber-50/90 font-serif leading-relaxed drop-shadow-md">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
             </p>

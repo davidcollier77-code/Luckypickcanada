@@ -1,3 +1,34 @@
+# Active Context — Daily Lucky Card Reveal Tier Presentation (2026-11-05)
+
+- **Task groups:** `polishing` + `testing`; branch `polish/reveal-card-tier-experience-20261105`; feature
+  `specs/094-lucky-card-reveal-polish` (no earlier feature covers the daily card reveal page: 075/078/081
+  are the paid reveal popup, 064/069 are sitewide CTA and page polish).
+- **Verified baseline:** `/reveal` renders `app/lucky-card-reveal.js`, whose single entry button had no
+  explicit touch height, no `cursor-pointer`, no instruction, and whose revealed result never named the
+  tier or the card. `themes/default/default.css` sets `html { font-size: 15px }` on mobile, so rem-based
+  minimum heights resolve to 52.5 px.
+- **Implementation:** new `app/lucky-card-presentation.js` holds the three tier palettes (bronze
+  `#e09440`, pewter `#c8ccd0`, gold `#daa520` — the colours the reveal canvas already paints) with
+  escalating halo/rim/frame values and a Standard fallback. The component gains a 56 px
+  (`style={{ minHeight: 56 }}`) full-width/phone and content-width/desktop entry button with
+  `cursor-pointer`, `touch-manipulation` and an `aria-describedby` tap instruction; after the reveal it
+  shows a tier chip, the card title and a collection caption, adds an `aria-hidden`
+  `pointer-events-none` tier halo/rim, and a tier-tinted inner ring outside the `coast-to-coast-tale`
+  frame exception. Artwork, data, weighting, localStorage, `TIER_HITS`, flip timings, audio cues, share,
+  collection binder and Return to Home are unchanged.
+- **Verification:** focused 3 files / 10 tests PASS; full `pnpm exec vitest run` 45 files / 439 tests PASS;
+  `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; production build 372,013,466 B
+  (354.8 MiB, earlier build 331,568,750 B / 316.2 MiB) < 495 MB; Chromium probe
+  `artifacts/reveal-card-polish/probe.cjs` against `next start` 51/51 PASS (56 px entry target, hover
+  −2 px / press +2 px, exact accessible name, three tier chips/accents/halos, unchanged WebP fallback,
+  0 px overflow, 0 console errors, reduced-motion halo static).
+- **Not verified:** PR-head CI, physical iOS/Android, audible playback, and a full re-audit of the
+  cinematic sequence. A component render test is impossible in Vitest because the component is JSX in a
+  `.js` file; the tier values are executed in a unit test, the markup contract is a structural guard plus
+  the browser probe.
+
+---
+
 # Active Context — About Page Return to Home Gold CTA (2026-11-05)
 
 - **Task groups:** `polishing` + `testing`; branch `polish/about-home-gold-cta-20261105`; feature `specs/093-about-home-gold-cta`.

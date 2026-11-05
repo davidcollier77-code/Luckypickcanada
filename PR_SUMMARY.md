@@ -1,132 +1,153 @@
-# Homepage Navigation Consolidation and Golden Shimmer
+# Daily Lucky Card Reveal — tappable entry control and tier presentation
 
-**Branch** `freebuff/d1d198f83bbd7f8a37f69b23` targets `main`. **Status: open and unmerged for review.**
+**Branch** `polish/reveal-card-tier-experience-20261105` targets `main`. **Status: open and unmerged for review.**
 
-Implementation **COMPLETE**; verified completion is **pending PR-head CI** (see Verification).
+Implementation **COMPLETE**. All local mandatory checks and the browser probe pass; **PR-head CI is pending**.
 
 ## Task and selected task groups
 
-**Assigned task (Master Work Request #1):**
-
-1. Remove the redundant Lucky Map navigation link and retain one Lucky Stories link pointing to the
-   existing Stories homepage. Do not remove the underlying map functionality.
-2. Add a subtle, visibly moving golden-light shimmer to the prominent homepage gold lettering, the
-   Explore Your Luck text and downward arrow, and the gold ring around the emblem, preserving the
-   existing artwork, wording, colours and layout.
-3. Preserve the downward arrow's functionality completely — click behaviour, confetti, sound effect
-   and scrolling — adding only the decorative shimmer.
-4. Preserve the existing AVIF-first image delivery and WebP fallback exactly: no format, quality,
-   fallback, preload or image-delivery configuration change.
+**Assigned task (Master Work Request #1):** Polish and enhance the daily collectible Lucky Card reveal
+experience at `/reveal`. Make the entry button clearly look and feel tappable, and improve the
+presentation and reveal experience across all three card tiers (Standard, Premium, Flagship), while
+preserving the existing artwork and functionality.
 
 **Selected task groups:**
 
-- **`polishing`** — both halves are presentation polish on existing artwork and navigation: a
-  decorative effect over untouched art and a duplicate-entry cleanup, with no new feature surface.
-- **`testing`** — the request is about rendered behaviour ("subtle, visibly moving", "preserve the
-  click behaviour"), so it is verified by executing: source guards, the full suite, and measured
-  Chromium captures rather than code inspection alone.
+- **`polishing`** — the whole request is presentation polish on an existing experience: entry-control
+  affordance and the visual framing/naming of the revealed card, with no new feature surface.
+- **`testing`** — the request is about rendered behaviour ("clearly look and feel tappable", three
+  distinct tiers), so it is verified by execution: unit tests for the tier contract, the full suite,
+  the repository gate and a measured Chromium probe.
 
 ## Library / routed documents reviewed
 
 | Document | USED | USEFUL | Contribution |
 | --- | --- | --- | --- |
-| `.docs/manifest.json` | **USED** | **YES** | Routing index: identified the `polishing` and `testing` reference sets before deciding which documents could materially help. |
-| `.docs/polishing/_websites_mdn_image_types.md` | NOT USED | NO | The task forbids any raster format, quality or fallback decision, so no format strategy was chosen; delivery was explicitly preserved rather than re-decided. |
-| `.docs/polishing/_vercel_next_js.md` | NOT USED | NO | No Next.js API behaviour needed confirming — the change is plain CSS in an already-imported stylesheet plus JSX in a server component. |
-| `.docs/polishing/_websites_developer_chrome.md` | NOT USED | NO | Container-query sizing, `mix-blend-mode` and mask behaviour were verified directly in Chromium by measurement instead. |
-| `.docs/polishing/_websites_tailwindcss.md` | NOT USED | NO | New rules are plain CSS in `themes/default/hero.css`, not Tailwind utilities. |
-| `.docs/polishing/_google_eng-practices.md` | NOT USED | NO | Cross-cutting review guidance only; not needed for a scoped, measured change. |
-| `.docs/testing/_vitest-dev_vitest.md` | NOT USED | NO | The guard follows the repository's existing `__tests__/*.test.js` conventions. |
-| `.docs/testing/_microsoft_playwright.md` | NOT USED | NO | The probe uses the repository's already-pinned `playwright-chromium` with the API patterns used by earlier probes here. |
-| `.docs/testing/_google_eng-practices.md` | NOT USED | NO | Same as the polishing snapshot: no design decision depended on it. |
+| `.docs/manifest.json` | **USED** | **YES** | Routing index; identified the `polishing` and `testing` reference sets and confirmed no document was mandatory. |
+| `.docs/polishing/_websites_mdn_image_types.md` | NOT USED | NO | No raster format, quality or fallback decision was made — artwork delivery is explicitly preserved. |
+| `.docs/polishing/_vercel_next_js.md` | NOT USED | NO | No Next.js API question arose; the change is JSX plus existing utilities in an already-rendered client component. |
+| `.docs/polishing/_websites_tailwindcss.md` | NOT USED | NO | Only existing utility conventions were reused; the one measurement that mattered (root `font-size: 15px` on mobile) was read from `themes/default/default.css` and measured in the browser. |
+| `.docs/polishing/_websites_motion_dev.md` | NOT USED | NO | Reused the `motion` / `useReducedMotion` imports the component already had; no new motion API was consulted. |
+| `.docs/polishing/_websites_developer_chrome.md` | NOT USED | NO | Behaviour (hover lift, press depth, halos, accents) was measured directly in Chromium instead. |
+| `.docs/polishing/_dequelabs_axe-core.md` | NOT USED | NO | Accessibility was handled structurally (real `<button>`, unchanged accessible name, `aria-describedby`, `aria-hidden` decorative layers) rather than by an axe run. |
+| `.docs/polishing/_google_eng-practices.md` | NOT USED | NO | Cross-cutting review guidance only; not needed for this scoped change. |
+| `.docs/testing/_vitest-dev_vitest.md` | NOT USED | NO | Followed the repository's existing `__tests__/*.test.js` conventions. |
+| `.docs/testing/_microsoft_playwright.md` | NOT USED | NO | The probe uses the already-pinned Playwright with the API patterns earlier probes in this repository use. |
+| `.docs/testing/_google_eng-practices.md` | NOT USED | NO | Optional review guidance; not needed. |
 
-Governance and process files read and applied: `AGENTS.md`, `.freebuff/freebuff.md`,
+Repository documents that did materially inform the work: `AGENTS.md`, `.freebuff/freebuff.md`,
 `.freebuff/polishing.md`, `.freebuff/testing.md`, `memory-bank/projectBrief.md`,
-`memory-bank/activeContext.md`, `.specify/memory/constitution.md`. `.docs/` was not modified.
+`memory-bank/activeContext.md`, `specs/064-sitewide-gold-cta/spec.md` (authoritative gold CTA
+treatment), `specs/069-sitewide-visual-polish/spec.md` and `specs/075-lucky-reveal-polish/spec.md`
+(protected reveal behaviour), and `app/globals.css` (the `.gold-3d-btn` states).
 
-## What was actually implemented
+## Spec Kit stages (in order)
 
-The gold wordmark, the "EXPLORE YOUR LUCK" line with its arrow, and the gold ring are painted inside
-**one** hero artwork (`public/homepage-hero-lucky-pick-canada*.{avif,webp}`). The shimmer is therefore
-a decorative layer above the untouched artwork, not an artwork change.
+| Stage | Artifact |
+| --- | --- |
+| Specify | `specs/094-lucky-card-reveal-polish/spec.md` |
+| Plan | `specs/094-lucky-card-reveal-polish/plan.md` |
+| Tasks | `specs/094-lucky-card-reveal-polish/tasks.md` |
+| Implement | the changes below, with verification recorded here and in `tasks.md` |
 
-- **`app/homepage/Hero.js`**
-  - Hero primary navigation: removed the `Lucky Map` → `/map` entry and its separator, and relabelled
-    the remaining stories link to **Lucky Stories**, keeping its existing `#community-stories`
-    destination. Navigation is now `Lucky Meter · Lucky Stories · Consult the Crystal Ball · Daily Card Reveal`.
-  - Added one `aria-hidden` shimmer frame with three region layers between the artwork `<picture>` and
-    `ExploreLuckButton`, so the decoration sits above the art and below the existing hit target.
-  - `preload()`, both `<source>` elements, the `<img>` fallback and every image URL are byte-identical.
-- **`themes/default/hero.css`** — the alignment rule and the decorative effect: `.hero-image-container`
-  becomes a size container and the frame uses `height: min(100cqh, 150cqw)` with `aspect-ratio: 1024 / 1536`,
-  which reproduces the `object-contain` artwork box at any viewport instead of the container box (this
-  matters on phones, where the art is width-limited). Three masked layers — a soft annulus for the gold
-  ring, an ellipse over the wordmark, an ellipse over the Explore line/arrow — each carry a
-  screen-blended gradient band animated by one shared keyframe sweep with per-region durations/offsets.
-  `pointer-events: none` throughout, and `prefers-reduced-motion: reduce` sets `display: none`.
-- **`__tests__/homepage-nav-gold-shimmer.test.js`** (new) — guards the single "Lucky Stories" link, the
-  absent "Lucky Map" link, the preserved `/map` route + "EXPLORE LUCKY STORIES" call to action + footer
-  map link, the order of the decoration relative to the artwork and the Explore control, the three
-  regions and their animation, the artwork-box alignment, non-interactivity, the reduced-motion rule,
-  the untouched Explore control behaviour, and the unchanged image delivery.
-- **`specs/089-homepage-nav-gold-shimmer/`** (new) — `spec.md`, `plan.md`, `tasks.md`,
-  `checklists/requirements.md`; `.specify/feature.json` points at it.
-- **`artifacts/hero-shimmer/probe.cjs`** (new) — the repeatable Chromium probe that produced the
-  measurements below.
+`.specify/feature.json` points at the new feature. No earlier feature directory covered the daily
+card reveal page (075/078/081 cover the paid reveal popup, 064/069 cover sitewide CTA and page
+polish), and no existing branch or PR covered this task, so nothing was duplicated.
 
-**Assumption recorded for task item 1:** "the existing Stories homepage" is read as the homepage's
-existing Lucky Stories area (`#community-stories`, the section already headed "Lucky Stories"), which
-is exactly where the previous "Community Stories" link pointed. The map keeps its own route, its
-homepage CTA and its footer link, so no map functionality was removed. The footer's "Lucky Map" entry
-is a different navigation surface and was left untouched.
+## What was implemented
 
-**Not changed:** artwork and image files, image delivery/quality/preloads, `next.config.mjs`,
-`ExploreLuckButton.js`, `HomePage.js`, `app/layout.js`, `app/map/page.js`, routes, APIs, Stripe,
-Resend, database, Turnstile, dependencies and deployment configuration. `package.json` and `bun.lock`
-were already modified/untracked in this workspace before the task started and are **excluded** from
-this branch.
+1. **Entry control reads and behaves as a tappable primary action** (`app/lucky-card-reveal.js`):
+   a guaranteed **56 px** minimum height (`style={{ minHeight: 56 }}` — a rem-based utility resolves to
+   52.5 px because the theme sets `html { font-size: 15px }` on mobile), full-width on phones and
+   content-width from `sm`, `cursor-pointer`, `touch-manipulation`, `select-none`, larger padding, and
+   a visible instruction (`Tap to reveal today’s Lucky Card`, switching to `Drawing your Lucky Card…`
+   while the draw runs) wired with `aria-describedby` so the accessible name stays
+   "Reveal Today's Luck". The shared `.gold-3d-btn` gradient, raised edge, hover lift, 2 px press and
+   focus ring are unchanged.
+2. **Tier presentation module** (`app/lucky-card-presentation.js`, new): `standard` / `premium` /
+   `flagship` palettes using the colours the reveal canvas already paints (bronze `#e09440`, pewter
+   `#c8ccd0`, gold `#daa520`), with halo/rim/frame strengths that escalate by tier, plus
+   `getLuckyCardTierPresentation()` using an own-property lookup and a Standard fallback.
+3. **Revealed card now states its tier and name**: a tier chip (`★ Standard Tier` / `◆ Premium Tier` /
+   `♛ Flagship Tier`), an `h2` with the card title, a `Series 1 · Added to your collection` caption,
+   and a tier-tinted quote-panel border.
+4. **Tier-aware reveal moment**: an `aria-hidden`, `pointer-events-none` radial halo plus a card-sized
+   rim that fade in once the card is revealed (no fade under `prefers-reduced-motion`), and a
+   tier-tinted inner ring on the revealed card front. The `coast-to-coast-tale` authored frame
+   exception is preserved.
+5. **Evidence tooling**: `artifacts/reveal-card-polish/probe.cjs` and its captured screenshots/report.
 
-## Verification
+## Files changed
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Spec Kit artifacts + gate | `./freebuff-verify.sh` (runs `scripts/verify-speckit-task.sh`) | **PASS** — spec/plan/tasks verified and current |
-| Focused guard + hero delivery suite | `pnpm exec vitest run __tests__/homepage-nav-gold-shimmer.test.js __tests__/homepage-hero-preload.test.js` | **PASS** — 16/16 (guard re-run alone on final code: 12/12) |
-| Full unit suite | `pnpm exec vitest run` | **PASS** — 39 files / 413 tests |
-| Type check | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
-| Repository gate + production build | `./freebuff-verify.sh` | **PASS** — exit 0 (Spec Kit gate, typecheck, build, refresh-docs 19/19) |
-| Build size (495 MB limit) | `du -sb .next public` | **PASS** — `.next` 285,913,411 B + `public` 32,840,043 B = **318,753,454 B (304.0 MiB)** |
-| Served routes | `curl` against `next start` on :3100 | **PASS** — `/` 200, `/map` 200, `/where-luck-has-been-found-in-canada` 200 |
-| Served hero navigation | served HTML | **PASS** — 4 links `/lucky-meter`, `#community-stories`, `/crystal-ball`, `/reveal`; one `href="#community-stories"`; no hero `/map` link |
-| Map preserved | served HTML | **PASS** — one `EXPLORE LUCKY STORIES →` link to `/map`, one footer "Lucky Map" link, map routes 200 |
-| Image delivery | served HTML + Chromium network | **PASS** — one hero preload hint (AVIF), AVIF source before WebP source, WebP `<img>` fallback; exactly one hero response per profile (`…-lucky-pick-canada.avif` desktop, `…-669w.avif` mobile) |
-| Shimmer alignment | Chromium (probe `artifacts/hero-shimmer/report.json`) | **PASS** — frame equals the painted artwork box: desktop 432x648 = 432x648, mobile 360x540 = 360x540 |
-| Visibly moving shimmer | Chromium, 26 frames @400 ms per profile | **PASS** — max consecutive-frame mean pixel change: desktop ring 7.254 / wordmark 9.620 / explore 11.447; mobile ring 6.291 / wordmark 12.596 / explore 14.677; up to 39 % (desktop) and 52 % (mobile) of a region's pixels changed between frames |
-| Reduced motion | Chromium `reducedMotion: 'reduce'` | **PASS** — all three layers `display: none`, whole-hero frame difference 0 |
-| Explore Your Luck preserved | Chromium click | **PASS** — scroll 0 → 996 px (desktop) / 0 → 867 px (mobile), confetti canvas added, `data-confetti-pop-ready="true"`, no console or page errors, 0 px horizontal overflow |
-| Final diff audit | `git diff`, `git status` | **PASS** — only the intended files below |
-| PR-head CI | GitHub checks on the pushed head | **PENDING** |
-| Audible confetti sound | — | **NOT RUN** — no audio output device in this workspace; the sound path is unchanged and is not intercepted by the decoration |
+- `app/lucky-card-reveal.js` (entry affordance, tier chip/name/caption, halo/rim, revealed frame)
+- `app/lucky-card-presentation.js` (new)
+- `__tests__/lucky-card-tier-presentation.test.js` (new, executed)
+- `__tests__/lucky-card-reveal-presentation.test.js` (new, structural guard)
+- `specs/094-lucky-card-reveal-polish/{spec,plan,tasks}.md` (new)
+- `.specify/feature.json`
+- `artifacts/reveal-card-polish/` (new: probe + screenshots + `out/report.json`)
+- `memory-bank/activeContext.md`, `memory-bank/progress.md`
+- `PR_SUMMARY.md`
 
-## Remaining issues and limitations
+## Verification (commands actually run)
 
-- **PR-head CI is PENDING.** No CI result is claimed.
-- **Audible sound is NOT RUN** here (no audio device); the click path was exercised and `playConfettiPop()`
-  is unchanged, but loudness/audibility is unverified.
-- Reduced-motion verification used Chromium's `reducedMotion` emulation, not an OS-level setting.
-- Physical iOS/Android devices were not tested; the headless desktop and 390x844 mobile profiles plus
-  the existing Playwright suite are the evidence available in this workspace.
-- If a future change alters the hero artwork's internal composition, the three measured region
-  percentages in `themes/default/hero.css` must be re-measured; they are tied to this artwork.
-- Engines without container-query units would drop the decoration rather than misplace it (no layout
-  or content change); the AVIF-capable browser set already supports them.
-- The skill-copy duplicate at `public/themes/default/hero.css` is unused by the app and was left as-is
-  (out of scope).
+| Check | Result |
+| --- | --- |
+| `pnpm exec vitest run __tests__/lucky-card-tier-presentation.test.js __tests__/lucky-card-reveal-presentation.test.js __tests__/lucky-card-collection.test.js` | **PASS** — 3 files / 10 tests |
+| `pnpm exec vitest run` | **PASS** — 45 files / 439 tests |
+| `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
+| `./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit artifacts gate, typecheck, production build, refresh-docs 19/19) |
+| Production build size | **PASS** — final `.next` 339,173,423 B + `public` 32,840,043 B = **372,013,466 B (354.8 MiB)**; an earlier build in the same session measured 331,568,750 B (316.2 MiB). Both are below the 495 MB maximum. |
+| Chromium probe (`node artifacts/reveal-card-polish/probe.cjs` against `next start` on the production build) | **PASS** — 51/51 checks |
 
----
+Probe evidence (mobile 390×844 and desktop 1440×900, production server):
 
-**USEFUL RESULT: YES** — all four requested outcomes are implemented and demonstrated: one Lucky
-Stories navigation link with the map functionality intact, a measurably moving golden shimmer on the
-wordmark, the Explore Your Luck line/arrow and the gold ring, the Explore control's click/confetti/
-scroll behaviour preserved, and image delivery byte-identical. Every claim above is backed by a
-recorded command or measurement; PR-head CI remains **PENDING** and is not reported as passing.
+- entry button: 56 px tall (mobile) / 58 px (desktop), 330 px wide on mobile, 256 px content width on
+  desktop, `cursor: pointer`, `touch-action: manipulation`, gold gradient and raised edge present,
+  accessible name exactly "Reveal Today's Luck", `aria-describedby` → `lucky-card-reveal-hint`,
+  instruction copy exact, hover lift `translateY(-2px)`, press `translateY(2px)`, and pressing the
+  control mounts both canvases and removes the entry control (the draw actually starts);
+- each tier: chip label (`… TIER`), card name (`h2`), collection caption, and the stored quote render;
+  one `data-card-halo` layer per tier inside an `aria-hidden`, `pointer-events:none` wrapper with
+  settled opacity `1`; halo and revealed-frame shadows carry that tier's accent; artwork still
+  resolves to the original `.webp` fallback from the unchanged AVIF-first markup; 0 px horizontal
+  overflow;
+- reduced motion: halo present with opacity `1` and no fade;
+- 0 console/page errors across all runs.
+
+The probe caught two real issues during the work, both fixed before this report: a rem-based minimum
+height resolved to 52.5 px because `themes/default/default.css` sets `html { font-size: 15px }` on
+mobile (now an explicit 56 px), and three probe assertions were wrong (innerText instead of the
+accessible name, case-sensitive caption, mismatched `rgb()`/`rgba()` accents) — corrected, not worked
+around in the app.
+
+### Not verified / pending
+
+- **PR-head CI (`Visual QA`, updater, DevSkim, OpenNext validation): PENDING.** No CI run exists yet for this head.
+- **Component render test not possible in this harness**: Vitest's Vite/oxc pipeline refuses JSX inside
+  `.js`, and `app/lucky-card-reveal.js` is a JSX component (renaming it would be an unrelated change).
+  The tier values are covered by an executed unit test; the markup contract is covered by a structural
+  guard plus the browser probe.
+- **Physical iOS/Android devices: NOT RUN.** The probe uses Chromium device emulation only.
+- **Audible playback: NOT RUN** (no audio device); audio cue scheduling and assets are untouched.
+- A real draw (which triggers the canvas/audio choreography) was started by the probe to prove the
+  press works, but the full ~7 s cinematic sequence was not re-timed or re-audited here.
+
+## Behaviour preserved
+
+`LUCKY_CARDS`, `selectWeightedLuckyCard` weighting/anti-repeat, `selectRandomQuote`, the daily
+localStorage lock and `unlockedCards` write, `TIER_HITS` (3/4/5), flip timings, canvas beam code, all
+eight authored audio cues, AVIF-first with WebP fallback artwork and the card-back/backdrop artwork,
+the `coast-to-coast-tale` frame exception, the share control, the collection binder and the Return to
+Home link are unchanged. No dependency, route, API, payment, email, database, authentication,
+deployment or secret change.
+
+## Remaining issues / limitations
+
+- The tier block sits in the existing result section below the card controls, so on a 390 px phone it
+  begins near the fold; this keeps the existing layout rather than re-ordering protected elements.
+- The reveal-content fade (`animate-fade-in`) means a screenshot taken within ~0.5 s of the reveal
+  shows it partially transparent; the probe waits for it to settle.
+
+**USEFUL RESULT: YES** — the requested behaviour is demonstrated by measured browser evidence and every
+local mandatory gate passes. **Verified completion is still pending PR-head CI.**

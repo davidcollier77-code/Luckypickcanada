@@ -1,0 +1,21 @@
+{
+  "chipText": "★ STANDARD TIER The Number Seeker SERIES 1 · ADDED TO YOUR COLLECTION",
+  "chipStyle": {
+    "color": "rgb(255, 226, 189)",
+    "backgroundColor": "rgba(224, 148, 64, 0.12)",
+    "boxShadow": "rgba(224, 148, 64, 0.45) 0px 0px 0px 1px inset"
+  },
+  "headingText": "The Number Seeker",
+  "caption": "SERIES 1 · ADDED TO YOUR COLLECTION",
+  "quote": "\"Probe quote for the revealed presentation.\"",
+  "haloDetail": {
+    "ariaHiddenWrapper": true,
+    "pointerEvents": "none",
+    "opacity": "1",
+    "filter": "blur(44px)",
+    "background": "radial-gradient(50% 50%, rgba(224, 148, 64, 0.26) 0%, rgba(224, 148, 64, 0.16) 44%, rgba(224, 148, 64, 0) 76%)"
+  },
+  "ringShadow": "rgba(224, 148, 64, 0.4) 0px 0px 0px 2px inset, rgba(224, 148, 64, 0.16) 0px 0px 26px 0px inset",
+  "artworkSrc": "/standard-card-number-seeker.webp",
+  "overflow": 0
+}
