@@ -3,9 +3,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Source guard for \`specs/091-freebuff-startup-command\`.
+ * Source guard for `specs/091-freebuff-startup-command`.
  *
- * pnpm 10.30.3 and the committed \`pnpm-lock.yaml\` are the single authoritative
+ * pnpm 10.30.3 and the committed `pnpm-lock.yaml` are the single authoritative
  * package manager and lockfile. This guard fails when the dependency metadata
  * drifts from that policy.
  */
@@ -18,7 +18,7 @@ function readGuardInput(relativePath) {
     return readFileSync(filePath, 'utf8');
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
-    throw new Error(\`Dependency-management guard could not read "${relativePath}": ${detail}\`, {
+    throw new Error(`Dependency-management guard could not read "${relativePath}": ${detail}`, {
       cause: error,
     });
   }
@@ -29,7 +29,7 @@ try {
   pkg = JSON.parse(readGuardInput('package.json'));
 } catch (error) {
   if (error instanceof SyntaxError) {
-    throw new Error(\`Dependency-management guard found invalid package.json: ${error.message}\`, {
+    throw new Error(`Dependency-management guard found invalid package.json: ${error.message}`, {
       cause: error,
     });
   }
@@ -49,7 +49,7 @@ function unquoteYamlScalar(value) {
   return scalar;
 }
 
-/** Read the root lockfile's top-level \`overrides:\` block, including quoted scalars. */
+/** Read the root lockfile's top-level `overrides:` block, including quoted scalars. */
 function lockfileOverrides(source = lockfile) {
   const lines = source.split(/\r?\n/);
   const sectionStart = lines.findIndex((line) => line === 'overrides:');
@@ -64,7 +64,7 @@ function lockfileOverrides(source = lockfile) {
 
     const separator = line.indexOf(': ');
     if (separator < 3) {
-      throw new Error(\`Unable to parse pnpm-lock.yaml override entry: ${line}\`);
+      throw new Error(`Unable to parse pnpm-lock.yaml override entry: ${line}`);
     }
     const key = unquoteYamlScalar(line.slice(2, separator));
     const value = unquoteYamlScalar(line.slice(separator + 2));
@@ -80,8 +80,8 @@ function lockfileOverrides(source = lockfile) {
 /** Read one exact direct-dependency key from the root lockfile importer. */
 function lockfileDependency(name, source = lockfile) {
   const lines = source.split(/\r?\n/);
-  const keyLine = \`      ${name}:\`;
-  const quotedKeyLine = \`      '${name}':\`;
+  const keyLine = `      ${name}:`;
+  const quotedKeyLine = `      '${name}':`;
   const index = lines.findIndex((line) => line === keyLine || line === quotedKeyLine);
   if (index === -1) return null;
 
@@ -112,7 +112,7 @@ function dependabotEntries() {
       continue;
     }
 
-    if (current) current.body += \`${line}\\n\`;
+    if (current) current.body += `${line}\n`;
   }
 
   return entries;

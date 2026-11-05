@@ -34,20 +34,20 @@ function createFixture(packageManager, { failNpmInstall = false } = {}) {
     : '';
   const npmLog = join(root, 'npm.log');
   const fakeNpm = join(fakeBin, 'npm');
-  writeFileSync(fakeNpm, \`#!/usr/bin/env bash
+  writeFileSync(fakeNpm, `#!/usr/bin/env bash
 set -euo pipefail
-printf '%s\\\\n' "$*" >> "$BOOTSTRAP_NPM_LOG"
+printf '%s\\n' "$*" >> "$BOOTSTRAP_NPM_LOG"
 if [[ "$1" != "install" || "$2" != "-g" || "$3" != "pnpm@${expectedVersion}" ]]; then
   exit 86
 fi
-if [[ "${FAIL_NPM_INSTALL:-0}" == "1" ]]; then
+if [[ "\${FAIL_NPM_INSTALL:-0}" == "1" ]]; then
   exit 89
 fi
 prefix=""
 while (($#)); do
   if [[ "$1" == "--prefix" ]]; then
     shift
-    prefix="${1:-}"
+    prefix="\${1:-}"
     break
   fi
   shift
@@ -56,14 +56,14 @@ done
 mkdir -p "$prefix/bin"
 cat > "$prefix/bin/pnpm" <<'PNPM'
 #!/usr/bin/env bash
-if [[ "${1:-}" == "--version" ]]; then
-  printf '%s\\\\n' "$EXPECTED_PNPM_VERSION"
+if [[ "\${1:-}" == "--version" ]]; then
+  printf '%s\\n' "$EXPECTED_PNPM_VERSION"
   exit 0
 fi
 exit 0
 PNPM
 chmod +x "$prefix/bin/pnpm"
-\`);
+`);
   chmodSync(fakeNpm, 0o755);
 
   const env = {
@@ -94,7 +94,7 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
           'declare -F _bootstrap_pnpm_entry >/dev/null && exit 91; ' +
           'declare -F bootstrap_pnpm_main >/dev/null && exit 92; ' +
           'declare -p BOOTSTRAP_PNPM_STATUS >/dev/null 2>&1 && exit 93; ' +
-          'printf "CALLER_SURVIVED:%s\\\\n" "$status"',
+          'printf "CALLER_SURVIVED:%s\\n" "$status"',
       ],
       { cwd: fixture.root, env: fixture.env, encoding: 'utf8' }
     );
@@ -125,8 +125,8 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
       [
         '-c',
         'source "$BOOTSTRAP_SCRIPT" || exit $?; ' +
-          'printf "PNPM_PATH:%s\\\\n" "$(command -v pnpm)"; ' +
-          'printf "PNPM_VERSION:%s\\\\n" "$(pnpm --version)"; ' +
+          'printf "PNPM_PATH:%s\\n" "$(command -v pnpm)"; ' +
+          'printf "PNPM_VERSION:%s\\n" "$(pnpm --version)"; ' +
           'declare -F _bootstrap_pnpm_entry >/dev/null && exit 91; ' +
           'declare -F bootstrap_pnpm_main >/dev/null && exit 92; ' +
           'declare -p BOOTSTRAP_PNPM_STATUS >/dev/null 2>&1 && exit 93',
@@ -135,7 +135,7 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
     );
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain(\`PNPM_PATH:${join(fixture.home, '.local', 'bin', 'pnpm')}\`);
+    expect(result.stdout).toContain(`PNPM_PATH:${join(fixture.home, '.local', 'bin', 'pnpm')}`);
     expect(result.stdout).toContain('PNPM_VERSION:10.31.4');
     expect(existsSync(join(fixture.home, '.local', 'bin', 'pnpm'))).toBe(true);
     expect(readFileSync(fixture.npmLog, 'utf8')).toContain(
@@ -150,8 +150,8 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
       [
         '-c',
         'source "$BOOTSTRAP_SCRIPT"; status=$?; ' +
-          'printf "CALLER_SURVIVED:%s\\\\n" "$status"; ' +
-          'printf "PNPM_PATH:%s\\\\n" "$(command -v pnpm || true)"',
+          'printf "CALLER_SURVIVED:%s\\n" "$status"; ' +
+          'printf "PNPM_PATH:%s\\n" "$(command -v pnpm || true)"',
       ],
       { cwd: fixture.root, env: fixture.env, encoding: 'utf8' }
     );
