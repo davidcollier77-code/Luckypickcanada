@@ -73,8 +73,19 @@
 ## Phase 9: Visual QA baseline and native image warning (follow-up)
 
 - [x] T038 [US1] Refresh only the stale desktop homepage screenshot from the deterministic current-branch capture; leave mobile snapshots unchanged and keep `maxDiffPixelRatio: 0.007`.
-- [ ] T039 [US1] Remove the unsupported bare `priority` attribute from the Lucky Map native `<img>`, preserving `loading="eager"`, `fetchPriority="high"`, and all AVIF/WebP/PNG sources.
-- [ ] T040 [US1] Add `__tests__/lucky-map-image-loading.test.js` to guard the image source order, fallbacks, eager/high priority, and absence of the invalid native attribute.
+- [x] T039 [US1] Remove the unsupported bare `priority` attribute from the Lucky Map native `<img>`, preserving `loading="eager"`, `fetchPriority="high"`, and all AVIF/WebP/PNG sources.
+- [x] T040 [US1] Add `__tests__/lucky-map-image-loading.test.js` to guard the image source order, fallbacks, eager/high priority, and absence of the invalid native attribute.
 - [ ] T041 Run focused Lucky Map image guard and the full Vitest suite; run `pnpm exec tsc --noEmit`.
 - [ ] T042 Run `./freebuff-verify.sh`, full Playwright Visual QA, and updater verification; retain the 495 MB hard cap and inspect all final screenshots/diffs.
 - [ ] T043 Audit the final diff, update the canonical PR summary with exact CI outcomes, and leave PR #1711 open and unmerged.
+
+## Phase 10: Final review-driven verification gate repair
+
+- [x] T044 [US1] Add isolated bootstrap regression coverage in `__tests__/bootstrap-pnpm.test.js` for manifest-derived version pins, same-shell PATH availability, sourced/direct failures, installer failures, and cleanup of temporary shell helpers.
+- [x] T045 [US1] Repair `scripts/bootstrap-pnpm.sh` so all temporary state is function-local, no helper function or status variable leaks into a sourced caller, and only a validated absolute pnpm directory is prepended to PATH.
+- [x] T046 [US1] Repair `freebuff-verify.sh` so TypeScript, build, and refresh-docs checks each execute once and every failure stops the gate with a clear non-zero result.
+- [x] T047 [US1] Add `__tests__/freebuff-verify.test.js` and strengthen `__tests__/dependency-management.test.js` with exact-key, quoted-scalar, malformed-block, and descriptive-input-read regression coverage.
+- [ ] T048 Run focused Vitest tests, full `pnpm exec vitest run`, `pnpm exec tsc --noEmit`, Bash syntax checks, and the repository's documented isolated bootstrap smoke tests on the final head.
+- [ ] T049 Run `./freebuff-verify.sh`, inspect the production build-size measurement against the 495 MiB hard maximum, and confirm the frozen lockfile remains unchanged.
+- [ ] T050 Verify current-head full Playwright Visual QA and updater-scheduler workflows, including the three homepage viewport baselines and all required updater checks.
+- [ ] T051 Audit the complete final diff, confirm all reviewer findings are resolved or explicitly classified, update the canonical PR summary with observed outcomes, and leave PR #1711 open and unmerged.

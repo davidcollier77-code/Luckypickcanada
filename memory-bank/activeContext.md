@@ -1,28 +1,12 @@
-# Active Context — PR #1711 T038 desktop visual baseline refresh (2026-11-05)
+# Active Context — PR #1711 final review-driven verification repair (2026-11-05)
 
-- **PR head:** `4d68abc7a234f099f401900af2bb37f0edacabba`; PR #1711 open and unmerged. The branch was
-  fast-forwarded from `98b53f16`, so no remote history was rewritten or discarded.
-- **Baseline evidence:** the committed desktop baseline dated from 2026-10-23 and still showed the
-  pre-consolidation two-row hero navigation; the current deterministic capture shows the approved four-link
-  navigation with identical artwork. Measured difference: 371,223 / 1,296,000 px (28.64%), far above the
-  `maxDiffPixelRatio: 0.007` cap.
-- **Determinism check:** mobile-390 and mobile-412 baselines pass locally at 0.007 before any change, so this
-  workspace reproduces the rendering environment of the approved baselines.
-- **Change:** refreshed only `tests/visual/__screenshots__/desktop/homepage-viewport.png` from the deterministic
-  current-branch capture (desktop project only, `--update-snapshots`). Mobile SHA-256 values are unchanged
-  (`4df3b9d3…`, `cabc5cc4…`), the 0.007 threshold is untouched, and no component, CSS or artwork file changed.
-- **Verification:** full `CI=1 pnpm exec playwright test` -> 90 passed, 3 skipped (7.2 min), all three viewport
-  baselines included; scheduler `node --test` 17/17; Spec Kit customization rebase tests PASS; safe Spec Kit
-  upgrade smoke PASS; refresh-docs 19/19; `wrangler deploy --dry-run` PASS (7.87 KiB, no deployment);
-  `./freebuff-verify.sh` PASS; build below the 495 MiB cap.
-- **Gate note:** `scripts/verify-speckit-task.sh` resolves its base from `origin/main`; this workspace had no
-  `main`/`origin/main` ref, so it compared against the wrong base and failed closed. Fetching `origin/main`
-  (`037395d8`) restores the CI-equivalent base and the gate passes.
-- **Tooling note:** this runner needed `scripts/setup-chromium-libs.sh` and `pnpm exec playwright install
-  chromium` before Playwright could launch. `scripts/update-spec-kit-safely.sh` rewrites tracked `.specify/*`
-  files and deletes `.freebuff/cmds/speckit.taskstoissues.md`; those smoke-test byproducts were reverted.
-- **Not verified:** PR-head CI for the new commit (pending); `package.json`/`pnpm-lock.yaml` protected-file
-  authorization is still required at merge.
+- **PR / branch:** #1711 remains open and unmerged on `freebuff/e1fafb4e1fc110d0b8a4c277`. The pre-repair head was `02ccb20c19b437645de8d4a04400799f49e9cceb`.
+- **Confirmed defects:** duplicate TypeScript and build invocations in `freebuff-verify.sh`; an empty refresh-docs failure handler; an unsafe duplicate PATH export; and bootstrap helper/status namespace leakage. Review comments also identified inadequate tests for dynamic manifest pins and PATH availability.
+- **Repair scope:** `freebuff-verify.sh`, `scripts/bootstrap-pnpm.sh`, `__tests__/bootstrap-pnpm.test.js`, `__tests__/dependency-management.test.js`, a new `__tests__/freebuff-verify.test.js`, and the existing `specs/091-freebuff-startup-command/` plus memory records.
+- **Implementation choices:** execute each required gate step once and stop on failure; use one local-state bootstrap function that is removed before returning/exiting; reject relative pnpm paths; derive test installer expectations from each fixture manifest; prove same-shell PATH availability and cleanup; give lockfile parse failures explicit errors.
+- **Local checks performed in this connected session:** `bash -n` on both modified shell scripts; `node --check` on all three changed/new test files; isolated fake-npm shell smoke tests for a non-default version pin, same-shell pnpm invocation, invalid-pin rejection, direct failure, sourced caller survival, and installer failure. These checks passed.
+- **Not yet verified:** repository Vitest suites, TypeScript, `./freebuff-verify.sh`, measured production build size, full Playwright Visual QA, updater-scheduler CI, and current-head review status. A local clone could not be obtained because this runtime could not resolve `github.com`; push-triggered PR CI is the authoritative next verification.
+- **Preserved:** no package or lockfile changes, app/runtime behavior, homepage artwork, AVIF/WebP delivery, payments, email, database, secrets, deployment, or scheduler configuration were changed. The 495 MiB build-size cap remains mandatory.
 
 ---
 

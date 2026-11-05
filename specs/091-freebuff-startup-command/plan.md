@@ -119,3 +119,15 @@ No Bun lockfile, second package manager, dependency upgrade, app change, credent
 The failing desktop capture is not evidence of a new production visual defect. The expected desktop baseline was last updated on 2026-10-23, before PR #1709 consolidated the hero navigation on 2026-11-04. The test report records a stable current capture with the four-link approved navigation; both mobile viewport snapshots already pass. Refresh only `tests/visual/__screenshots__/desktop/homepage-viewport.png` from the current branch's deterministic capture (the test hides only the animated shimmer overlay). Keep `maxDiffPixelRatio: 0.007`; do not raise the threshold, mask the navigation, or mask the hero artwork.
 
 Separately, remove the unsupported bare `priority` prop from the Lucky Map's native `<img>`. Preserve its `loading="eager"`, `fetchPriority="high"`, AVIF and WebP sources, and PNG fallback. Add a focused source guard to prevent the invalid prop from returning.
+
+## Final review-driven verification gate repair
+
+The latest reviewer pass exposed defects in the previous correction commit itself. Keep this follow-up confined to the verification entry point, pnpm bootstrap, their regression tests, and this feature's existing records.
+
+1. In `freebuff-verify.sh`, use one guarded invocation for each required command. Remove the duplicate TypeScript/build invocations and make the refresh-docs branch emit an error and exit non-zero on failure. The script is invoked directly by repository workflows, so its failure paths use `exit 1`.
+2. In `scripts/bootstrap-pnpm.sh`, keep all temporary values local to one short-lived function. Remove the function before returning or exiting so sourcing the file does not pollute the caller. Avoid a global status variable. Validate that the resolved pnpm executable comes from an absolute directory before prepending that directory to PATH; do not add the current working directory or an empty PATH segment.
+3. Extend the isolated fake-installer tests so the expected version is derived from each fixture's `packageManager` value. Verify the exact installed version and that `command -v pnpm` plus `pnpm --version` work in the same shell after sourcing. Cover invalid pins, installer failure, caller survival, and helper cleanup.
+4. Add focused regression checks for exactly-once verification commands and refresh-docs fail-closed control flow. Make lockfile override parsing explicit about malformed/missing blocks and test quoted scalars and prefix-colliding dependency keys.
+5. Run focused and full unit tests, TypeScript, the full repository verification gate, measured build size, full Visual QA, and updater-scheduler CI on the resulting PR head. Do not claim those checks pass until their results are observed.
+
+No dependency, lockfile, application, payment, email, database, image, artwork, deployment, or scheduler behavior change is required. No new package is required.

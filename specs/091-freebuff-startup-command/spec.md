@@ -236,3 +236,21 @@ The same run surfaced a separate React warning: the Lucky Map's native HTML `<im
 - **FR-017**: The Lucky Map native `<img>` MUST retain `loading="eager"` and `fetchPriority="high"` without the unsupported `priority` attribute.
 - **SC-012**: Current desktop, mobile-390, and mobile-412 homepage screenshot checks pass with the existing 0.7% cap; the approved current navigation/artwork remains visually represented in the baseline.
 - **SC-013**: The invalid React DOM attribute warning is absent while AVIF, WebP and PNG fallback delivery and eager/high fetch priority remain intact.
+
+## Final review-driven acceptance criteria — verification gate integrity
+
+The verification entry point and package-manager bootstrap must remain deterministic and fail closed when a required operation fails. Sourcing the bootstrap must not leave helper functions or temporary status variables in the caller's shell.
+
+- **FR-018**: Each required verification command (frozen install, TypeScript check, production build, and refresh-docs tests) MUST execute exactly once per gate invocation.
+- **FR-019**: A non-zero result from any required verification command MUST stop the gate immediately with a clear failure message; a failed refresh-docs test MUST NOT be reported as success.
+- **FR-020**: The package-manager bootstrap MUST read the exact pnpm version from `package.json#packageManager`, reject missing, non-pnpm, or non-exact pins before installation, and MUST install only that version.
+- **FR-021**: A successful sourced bootstrap MUST expose the validated absolute pnpm binary directory on the caller's PATH for the remainder of that shell session.
+- **FR-022**: A sourced bootstrap MUST return a non-zero status on failure without terminating the caller and MUST leave no bootstrap helper functions or temporary global status variables behind; direct execution MUST exit non-zero on failure.
+- **FR-023**: Automated regression tests MUST cover dynamic package-manager pins, sourced and direct failure behavior, installer failure, same-shell PATH availability, namespace cleanup, exactly-once verification commands, and fail-closed refresh-docs handling.
+
+### Follow-up success criteria
+
+- **SC-014**: The gate invokes TypeScript, production build, and refresh-docs tests once each and exits non-zero at the first failed required step.
+- **SC-015**: A fresh temporary home installs the exact package-manager pin read from the fixture manifest; the installed binary is callable in the same sourced shell.
+- **SC-016**: Failed sourced bootstrap calls leave the caller alive, return non-zero, and do not leak helper functions or temporary variables; failed direct invocation exits non-zero.
+- **SC-017**: Focused regression tests and the full PR-head CI pass without changing dependency versions, lockfiles, application behavior, artwork, AVIF/WebP delivery, or the 495 MiB build-size ceiling.

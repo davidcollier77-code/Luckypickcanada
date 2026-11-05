@@ -3,41 +3,85 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Source guard for `specs/091-freebuff-startup-command`.
+ * Source guard for \`specs/091-freebuff-startup-command\`.
  *
- * pnpm 10.30.3 and the committed `pnpm-lock.yaml` are the single authoritative
+ * pnpm 10.30.3 and the committed \`pnpm-lock.yaml\` are the single authoritative
  * package manager and lockfile. This guard fails when the dependency metadata
  * drifts from that policy.
  */
 
 const root = process.cwd();
-const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const lockfile = readFileSync(join(root, 'pnpm-lock.yaml'), 'utf8');
-const dependabot = readFileSync(join(root, '.github', 'dependabot.yml'), 'utf8');
 
+function readGuardInput(relativePath) {
+  const filePath = join(root, relativePath);
+  try {
+    return readFileSync(filePath, 'utf8');
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(\`Dependency-management guard could not read "${relativePath}": ${detail}\`, {
+      cause: error,
+    });
+  }
+}
+
+let pkg;
+try {
+  pkg = JSON.parse(readGuardInput('package.json'));
+} catch (error) {
+  if (error instanceof SyntaxError) {
+    throw new Error(\`Dependency-management guard found invalid package.json: ${error.message}\`, {
+      cause: error,
+    });
+  }
+  throw error;
+}
+
+const lockfile = readGuardInput('pnpm-lock.yaml');
+const dependabot = readGuardInput('.github/dependabot.yml');
 const EXACT_SEMVER = /^\d+\.\d+\.\d+$/;
 
-/** Overrides recorded in the lockfile's top-level `overrides:` block. */
-function lockfileOverrides() {
-  const block = lockfile.match(/^overrides:\n((?: {2}[^\n]*\n)+)/m);
-  if (!block) return {};
+function unquoteYamlScalar(value) {
+  const scalar = value.trim();
+  if (scalar.startsWith('"') && scalar.endsWith('"')) return JSON.parse(scalar);
+  if (scalar.startsWith("'") && scalar.endsWith("'")) {
+    return scalar.slice(1, -1).replace(/''/g, "'");
+  }
+  return scalar;
+}
+
+/** Read the root lockfile's top-level \`overrides:\` block, including quoted scalars. */
+function lockfileOverrides(source = lockfile) {
+  const lines = source.split(/\r?\n/);
+  const sectionStart = lines.findIndex((line) => line === 'overrides:');
+  if (sectionStart === -1) {
+    throw new Error('pnpm-lock.yaml is missing its top-level overrides: block');
+  }
 
   const entries = {};
-  for (const line of block[1].trimEnd().split('\n')) {
+  for (let index = sectionStart + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trim() === '' || !line.startsWith('  ') || line.startsWith('    ')) break;
+
     const separator = line.indexOf(': ');
-    if (separator === -1) continue;
-    const key = line.slice(0, separator).trim().replace(/^'(.*)'$/, '$1');
-    const value = line.slice(separator + 2).trim().replace(/^'(.*)'$/, '$1');
+    if (separator < 3) {
+      throw new Error(\`Unable to parse pnpm-lock.yaml override entry: ${line}\`);
+    }
+    const key = unquoteYamlScalar(line.slice(2, separator));
+    const value = unquoteYamlScalar(line.slice(separator + 2));
     entries[key] = value;
+  }
+
+  if (Object.keys(entries).length === 0) {
+    throw new Error('pnpm-lock.yaml top-level overrides: block is empty or malformed');
   }
   return entries;
 }
 
 /** Read one exact direct-dependency key from the root lockfile importer. */
-function lockfileDependency(name) {
-  const lines = lockfile.split(/\r?\n/);
-  const keyLine = '      ' + name + ':';
-  const quotedKeyLine = "      '" + name + "':";
+function lockfileDependency(name, source = lockfile) {
+  const lines = source.split(/\r?\n/);
+  const keyLine = \`      ${name}:\`;
+  const quotedKeyLine = \`      '${name}':\`;
   const index = lines.findIndex((line) => line === keyLine || line === quotedKeyLine);
   if (index === -1) return null;
 
@@ -54,6 +98,7 @@ function lockfileDependency(name) {
     version: versionLine.slice(versionPrefix.length).trim().split('(')[0],
   };
 }
+
 /** Dependabot update entries, keyed by package ecosystem. */
 function dependabotEntries() {
   const entries = {};
@@ -67,7 +112,7 @@ function dependabotEntries() {
       continue;
     }
 
-    if (current) current.body += `${line}\n`;
+    if (current) current.body += \`${line}\\n\`;
   }
 
   return entries;
@@ -88,6 +133,24 @@ describe('Dependency management policy', () => {
     expect(pkg.dependencies.react).toMatch(EXACT_SEMVER);
     expect(pkg.dependencies['react-dom']).toMatch(EXACT_SEMVER);
     expect(pkg.dependencies['react-dom']).toBe(pkg.dependencies.react);
+  });
+
+  it('matches direct dependency keys exactly even when a prefix sibling appears first', () => {
+    const fixture = [
+      '  importers:',
+      '    .:',
+      '      react-dom:',
+      '        specifier: 18.0.0',
+      '        version: 18.0.0',
+      '      react:',
+      '        specifier: 19.3.1',
+      '        version: 19.3.1',
+    ].join('\n');
+
+    expect(lockfileDependency('react', fixture)).toEqual({
+      specifier: '19.3.1',
+      version: '19.3.1',
+    });
   });
 
   it('reads react and react-dom as separate exact lockfile importer keys', () => {
@@ -119,6 +182,26 @@ describe('Dependency management policy', () => {
     for (const [name, version] of Object.entries(pkg.pnpm.overrides)) {
       expect(fromLockfile[name]).toBe(String(version));
     }
+  });
+
+  it('parses quoted override scalars and stops before the next top-level lockfile section', () => {
+    const fixture = [
+      'overrides:',
+      '  plain: 1.0.0',
+      '  "quoted-key": "2.0.0"',
+      "  'single-key': '3.0.0'",
+      'importers:',
+      '  .:',
+    ].join('\n');
+
+    expect(lockfileOverrides(fixture)).toEqual({
+      plain: '1.0.0',
+      'quoted-key': '2.0.0',
+      'single-key': '3.0.0',
+    });
+    expect(() => lockfileOverrides('importers:\n  .:')).toThrow(
+      'missing its top-level overrides: block'
+    );
   });
 
   it('keeps the pre-existing security overrides that must not be dropped', () => {

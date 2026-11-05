@@ -14,7 +14,7 @@ echo -e "\n--- Bootstrapping the pinned package manager ---"
 source "$SCRIPT_DIR/scripts/bootstrap-pnpm.sh" || { echo "Bootstrap failed." >&2; exit 1; }
 if ! pnpm install --frozen-lockfile; then
   echo "❌ pnpm install --frozen-lockfile failed; dependencies do not match pnpm-lock.yaml." >&2
-  return 1 2>/dev/null || builtin exit 1
+  exit 1
 fi
 
 echo -e "\n--- Testing Spec Kit Governance Gate ---"
@@ -36,25 +36,23 @@ else
 fi
 
 # Type Check (TypeScript)
-echo -e "
---- Running Type Check ---"
-pnpm exec tsc --noEmit
+echo -e "\n--- Running Type Check ---"
 if ! pnpm exec tsc --noEmit; then
-  return 1 2>/dev/null || builtin exit 1
+  echo "❌ Type check failed; remaining verification was not run." >&2
+  exit 1
 fi
 
 # Build Check (Next.js)
-echo -e "
---- Running Build Check ---"
-pnpm run build
+echo -e "\n--- Running Build Check ---"
 if ! pnpm run build; then
-  return 1 2>/dev/null || builtin exit 1
+  echo "❌ Build failed; remaining verification was not run." >&2
+  exit 1
 fi
 
 echo -e "\n--- Running Refresh Docs Tests ---"
-node scripts/test-refresh-docs.js
 if ! node scripts/test-refresh-docs.js; then
+  echo "❌ Refresh Docs Tests failed; remaining verification was not run." >&2
+  exit 1
 fi
 
-echo -e "
-✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!"
+echo -e "\n✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!"

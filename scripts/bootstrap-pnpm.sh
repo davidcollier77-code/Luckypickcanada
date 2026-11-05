@@ -1,101 +1,99 @@
 #!/usr/bin/env bash
-# Ensure the pnpm version pinned by `packageManager` in package.json is available.
-#
-# Source this file (or run it) before installing or verifying dependencies in a
-# fresh Freebuff workspace. The image's global npm prefix is not writable by the
-# sandbox user, so a bare `npm install -g pnpm@<version>` fails; the pinned pnpm
-# is installed into `$HOME/.local` instead and prepended to PATH.
-#
-# The pinned pnpm only ever installs from the committed pnpm-lock.yaml, so this
-# script never introduces a second lockfile.
+# Ensure the exact pnpm version pinned by package.json is available.
+# Source this file to add the validated pnpm binary directory to the caller's PATH.
+# A fresh Freebuff workspace installs the pin into $HOME/.local when necessary.
 
-bootstrap_pnpm_fail() {
-  printf '❌ pnpm bootstrap: %s\n' "$1" >&2
-  return 1
-}
+_bootstrap_pnpm_entry() {
+  local script_dir repo_root package_manager pnpm_version path_pnpm candidate candidate_version pnpm_bin="" bootstrap_bin_dir
 
-bootstrap_pnpm_matches() {
-  local candidate="$1"
-  [[ -n "$candidate" && -x "$candidate" ]] || return 1
-  [[ "$("$candidate" --version 2>/dev/null | tr -d '[:space:]')" == "$BOOTSTRAP_PNPM_VERSION" ]]
-}
-
-bootstrap_pnpm_main() {
-  local BOOTSTRAP_PNPM_REPO_ROOT
-  local BOOTSTRAP_PNPM_PIN
-  local BOOTSTRAP_PNPM_VERSION
-  local BOOTSTRAP_PNPM_BIN=""
-  local path_pnpm
-  local candidate
-
-  BOOTSTRAP_PNPM_REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-  if [[ ! -f "$BOOTSTRAP_PNPM_REPO_ROOT/package.json" ]]; then
-    bootstrap_pnpm_fail "no package.json found in $BOOTSTRAP_PNPM_REPO_ROOT"
+  script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)" || {
+    printf '❌ pnpm bootstrap: could not resolve the script directory\n' >&2
+    return 1
+  }
+  repo_root="$(cd -- "$script_dir/.." && pwd -P)" || {
+    printf '❌ pnpm bootstrap: could not resolve the repository root\n' >&2
+    return 1
+  }
+  if [[ ! -f "$repo_root/package.json" ]]; then
+    printf '❌ pnpm bootstrap: no package.json found in %s\n' "$repo_root" >&2
     return 1
   fi
 
-  if ! BOOTSTRAP_PNPM_PIN="$(
-    cd "$BOOTSTRAP_PNPM_REPO_ROOT" &&
-      node -p "require('./package.json').packageManager || ''" 2>/dev/null
-  )"; then
-    bootstrap_pnpm_fail "could not read package.json#packageManager"
+  if ! package_manager="$(cd -- "$repo_root" && node -p "require('./package.json').packageManager || ''" 2>/dev/null)"; then
+    printf '❌ pnpm bootstrap: could not read package.json#packageManager\n' >&2
+    return 1
+  fi
+  if [[ "$package_manager" != pnpm@* ]]; then
+    printf '❌ pnpm bootstrap: package.json must pin the package manager, e.g. "packageManager": "pnpm@10.30.3" (found: %s)\n' "$package_manager" >&2
     return 1
   fi
 
-  if [[ "$BOOTSTRAP_PNPM_PIN" != pnpm@* ]]; then
-    bootstrap_pnpm_fail "package.json must pin the package manager, e.g. \"packageManager\": \"pnpm@10.30.3\" (found: '$BOOTSTRAP_PNPM_PIN')"
+  pnpm_version="${package_manager#pnpm@}"
+  if [[ ! "$pnpm_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    printf '❌ pnpm bootstrap: packageManager must pin an exact pnpm version, e.g. "pnpm@10.30.3" (found: %s)\n' "$package_manager" >&2
     return 1
   fi
 
-  BOOTSTRAP_PNPM_VERSION="${BOOTSTRAP_PNPM_PIN#pnpm@}"
-  if [[ ! "$BOOTSTRAP_PNPM_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    bootstrap_pnpm_fail "packageManager must pin an exact pnpm version, e.g. \"pnpm@10.30.3\" (found: '$BOOTSTRAP_PNPM_PIN')"
-    return 1
-  fi
-
-  path_pnpm="$(command -v pnpm 2>/dev/null || true)"
+  path_pnpm="$(type -P pnpm 2>/dev/null || true)"
   for candidate in "$path_pnpm" "$HOME/.local/bin/pnpm"; do
-    if bootstrap_pnpm_matches "$candidate"; then
-      BOOTSTRAP_PNPM_BIN="$candidate"
+    # Ignore relative PATH results: they can resolve through the working directory.
+    [[ "$candidate" == /* && -x "$candidate" ]] || continue
+    if candidate_version="$("$candidate" --version 2>/dev/null)" && [[ "$candidate_version" == "$pnpm_version" ]]; then
+      pnpm_bin="$candidate"
       break
     fi
   done
 
-  if [[ -z "$BOOTSTRAP_PNPM_BIN" ]]; then
-    echo "Installing pnpm $BOOTSTRAP_PNPM_VERSION into $HOME/.local ..."
-    if ! npm install -g "pnpm@$BOOTSTRAP_PNPM_VERSION" --prefix "$HOME/.local"; then
-      bootstrap_pnpm_fail "could not install pnpm $BOOTSTRAP_PNPM_VERSION into $HOME/.local"
+  if [[ -z "$pnpm_bin" ]]; then
+    printf 'Installing pnpm %s into %s/.local ...\n' "$pnpm_version" "$HOME" >&2
+    if ! npm install -g "pnpm@$pnpm_version" --prefix "$HOME/.local" >&2; then
+      printf '❌ pnpm bootstrap: could not install pnpm %s into %s/.local\n' "$pnpm_version" "$HOME" >&2
       return 1
     fi
-    BOOTSTRAP_PNPM_BIN="$HOME/.local/bin/pnpm"
-    if ! bootstrap_pnpm_matches "$BOOTSTRAP_PNPM_BIN"; then
-      bootstrap_pnpm_fail "installed pnpm does not report version $BOOTSTRAP_PNPM_VERSION"
+    pnpm_bin="$HOME/.local/bin/pnpm"
+    if [[ ! -x "$pnpm_bin" ]] || ! candidate_version="$("$pnpm_bin" --version 2>/dev/null)" || [[ "$candidate_version" != "$pnpm_version" ]]; then
+      printf '❌ pnpm bootstrap: installed pnpm does not report version %s\n' "$pnpm_version" >&2
       return 1
     fi
   fi
-  local bootstrap_bin_dir
-  bootstrap_bin_dir="$(dirname -- "$BOOTSTRAP_PNPM_BIN")" || return 1
-  if [[ -z "$bootstrap_bin_dir" || "$bootstrap_bin_dir" == "." ]]; then
-    bootstrap_pnpm_fail "could not determine directory of pnpm binary ('$BOOTSTRAP_PNPM_BIN')"
+
+  bootstrap_bin_dir="$(dirname -- "$pnpm_bin")" || {
+    printf '❌ pnpm bootstrap: could not determine directory of pnpm binary (%s)\n' "$pnpm_bin" >&2
+    return 1
+  }
+  if [[ -z "$bootstrap_bin_dir" || "$bootstrap_bin_dir" == "." || "$bootstrap_bin_dir" != /* ]]; then
+    printf '❌ pnpm bootstrap: refusing unsafe pnpm binary directory (%s)\n' "$bootstrap_bin_dir" >&2
     return 1
   fi
-  export PATH="$bootstrap_bin_dir:$PATH"
-  export PATH="$(dirname -- "$BOOTSTRAP_PNPM_BIN"):$PATH"
-  echo "✅ Using pnpm $BOOTSTRAP_PNPM_VERSION ($BOOTSTRAP_PNPM_BIN)"
+  bootstrap_bin_dir="$(cd -- "$bootstrap_bin_dir" && pwd -P)" || {
+    printf '❌ pnpm bootstrap: could not resolve pnpm binary directory (%s)\n' "$bootstrap_bin_dir" >&2
+    return 1
+  }
+  if [[ -z "$bootstrap_bin_dir" || "$bootstrap_bin_dir" != /* ]]; then
+    printf '❌ pnpm bootstrap: refusing unsafe pnpm binary directory (%s)\n' "$bootstrap_bin_dir" >&2
+    return 1
+  fi
+
+  if [[ -n "$PATH" ]]; then
+    export PATH="$bootstrap_bin_dir:$PATH"
+  else
+    export PATH="$bootstrap_bin_dir"
+  fi
+  printf '✅ Using pnpm %s (%s)\n' "$pnpm_version" "$pnpm_bin"
   return 0
 }
 
-# Capture the function status explicitly: sourced callers receive a non-zero
-# return without the bootstrap terminating their interactive shell, while
-# direct execution exits with the same status.
-if bootstrap_pnpm_main; then
-  BOOTSTRAP_PNPM_STATUS=0
+# Keep helper state private to the function; remove it before returning to a sourced caller.
+if _bootstrap_pnpm_entry; then
+  unset -f _bootstrap_pnpm_entry
+  if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    return 0
+  fi
+  exit 0
 else
-  BOOTSTRAP_PNPM_STATUS=$?
+  unset -f _bootstrap_pnpm_entry
+  if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+    return 1
+  fi
+  exit 1
 fi
-
-if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
-  return "$BOOTSTRAP_PNPM_STATUS"
-fi
-
-exit "$BOOTSTRAP_PNPM_STATUS"
