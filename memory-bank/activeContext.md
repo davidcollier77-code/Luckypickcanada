@@ -1,3 +1,31 @@
+# Active Context — PR #1711 T038 desktop visual baseline refresh (2026-11-05)
+
+- **PR head:** `4d68abc7a234f099f401900af2bb37f0edacabba`; PR #1711 open and unmerged. The branch was
+  fast-forwarded from `98b53f16`, so no remote history was rewritten or discarded.
+- **Baseline evidence:** the committed desktop baseline dated from 2026-10-23 and still showed the
+  pre-consolidation two-row hero navigation; the current deterministic capture shows the approved four-link
+  navigation with identical artwork. Measured difference: 371,223 / 1,296,000 px (28.64%), far above the
+  `maxDiffPixelRatio: 0.007` cap.
+- **Determinism check:** mobile-390 and mobile-412 baselines pass locally at 0.007 before any change, so this
+  workspace reproduces the rendering environment of the approved baselines.
+- **Change:** refreshed only `tests/visual/__screenshots__/desktop/homepage-viewport.png` from the deterministic
+  current-branch capture (desktop project only, `--update-snapshots`). Mobile SHA-256 values are unchanged
+  (`4df3b9d3…`, `cabc5cc4…`), the 0.007 threshold is untouched, and no component, CSS or artwork file changed.
+- **Verification:** full `CI=1 pnpm exec playwright test` -> 90 passed, 3 skipped (7.2 min), all three viewport
+  baselines included; scheduler `node --test` 17/17; Spec Kit customization rebase tests PASS; safe Spec Kit
+  upgrade smoke PASS; refresh-docs 19/19; `wrangler deploy --dry-run` PASS (7.87 KiB, no deployment);
+  `./freebuff-verify.sh` PASS; build below the 495 MiB cap.
+- **Gate note:** `scripts/verify-speckit-task.sh` resolves its base from `origin/main`; this workspace had no
+  `main`/`origin/main` ref, so it compared against the wrong base and failed closed. Fetching `origin/main`
+  (`037395d8`) restores the CI-equivalent base and the gate passes.
+- **Tooling note:** this runner needed `scripts/setup-chromium-libs.sh` and `pnpm exec playwright install
+  chromium` before Playwright could launch. `scripts/update-spec-kit-safely.sh` rewrites tracked `.specify/*`
+  files and deletes `.freebuff/cmds/speckit.taskstoissues.md`; those smoke-test byproducts were reverted.
+- **Not verified:** PR-head CI for the new commit (pending); `package.json`/`pnpm-lock.yaml` protected-file
+  authorization is still required at merge.
+
+---
+
 # Active Context — PR #1711 desktop Visual QA diagnosis (2026-11-04)
 
 - **PR head:** `1db23df4a13a2eda43c84f053a5173e73c60e4db`; PR #1711 remains open and unmerged.

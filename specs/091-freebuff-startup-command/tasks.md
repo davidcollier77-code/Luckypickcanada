@@ -72,7 +72,7 @@
  
 ## Phase 9: Visual QA baseline and native image warning (follow-up)
 
-- [ ] T038 [US1] Refresh only the stale desktop homepage screenshot from the deterministic current-branch capture; leave mobile snapshots unchanged and keep `maxDiffPixelRatio: 0.007`.
+- [x] T038 [US1] Refresh only the stale desktop homepage screenshot from the deterministic current-branch capture; leave mobile snapshots unchanged and keep `maxDiffPixelRatio: 0.007`.
 - [ ] T039 [US1] Remove the unsupported bare `priority` attribute from the Lucky Map native `<img>`, preserving `loading="eager"`, `fetchPriority="high"`, and all AVIF/WebP/PNG sources.
 - [ ] T040 [US1] Add `__tests__/lucky-map-image-loading.test.js` to guard the image source order, fallbacks, eager/high priority, and absence of the invalid native attribute.
 - [ ] T041 Run focused Lucky Map image guard and the full Vitest suite; run `pnpm exec tsc --noEmit`.
