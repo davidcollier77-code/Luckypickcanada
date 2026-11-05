@@ -73,7 +73,13 @@ bootstrap_pnpm_main() {
       return 1
     fi
   fi
-
+  local bootstrap_bin_dir
+  bootstrap_bin_dir="$(dirname -- "$BOOTSTRAP_PNPM_BIN")" || return 1
+  if [[ -z "$bootstrap_bin_dir" || "$bootstrap_bin_dir" == "." ]]; then
+    bootstrap_pnpm_fail "could not determine directory of pnpm binary ('$BOOTSTRAP_PNPM_BIN')"
+    return 1
+  fi
+  export PATH="$bootstrap_bin_dir:$PATH"
   export PATH="$(dirname -- "$BOOTSTRAP_PNPM_BIN"):$PATH"
   echo "✅ Using pnpm $BOOTSTRAP_PNPM_VERSION ($BOOTSTRAP_PNPM_BIN)"
   return 0

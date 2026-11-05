@@ -14,7 +14,7 @@ echo -e "\n--- Bootstrapping the pinned package manager ---"
 source "$SCRIPT_DIR/scripts/bootstrap-pnpm.sh" || { echo "Bootstrap failed." >&2; exit 1; }
 if ! pnpm install --frozen-lockfile; then
   echo "❌ pnpm install --frozen-lockfile failed; dependencies do not match pnpm-lock.yaml." >&2
-  exit 1
+  return 1 2>/dev/null || builtin exit 1
 fi
 
 echo -e "\n--- Testing Spec Kit Governance Gate ---"
@@ -39,8 +39,7 @@ fi
 echo -e "
 --- Running Type Check ---"
 pnpm exec tsc --noEmit
-if [ $? -ne 0 ]; then
-  echo "❌ Type check failed."
+if ! pnpm exec tsc --noEmit; then
   return 1 2>/dev/null || builtin exit 1
 fi
 
@@ -48,16 +47,13 @@ fi
 echo -e "
 --- Running Build Check ---"
 pnpm run build
-if [ $? -ne 0 ]; then
-  echo "❌ Build failed."
+if ! pnpm run build; then
   return 1 2>/dev/null || builtin exit 1
 fi
 
 echo -e "\n--- Running Refresh Docs Tests ---"
 node scripts/test-refresh-docs.js
-if [ $? -ne 0 ]; then
-  echo "❌ Refresh Docs Tests failed."
-  return 1 2>/dev/null || builtin exit 1
+if ! node scripts/test-refresh-docs.js; then
 fi
 
 echo -e "
