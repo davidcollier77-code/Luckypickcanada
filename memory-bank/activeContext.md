@@ -1,3 +1,72 @@
+# Active Context — PR #1711 final review-driven verification repair (2026-11-05)
+
+- **PR / branch:** #1711 remains open and unmerged on `freebuff/e1fafb4e1fc110d0b8a4c277`. The pre-repair head was `02ccb20c19b437645de8d4a04400799f49e9cceb`.
+- **Confirmed defects:** duplicate TypeScript and build invocations in `freebuff-verify.sh`; an empty refresh-docs failure handler; an unsafe duplicate PATH export; and bootstrap helper/status namespace leakage. Review comments also identified inadequate tests for dynamic manifest pins and PATH availability, plus idempotent repeated sourcing and a missing assertion that failure branches contain explicit exits.
+- **Repair scope:** `freebuff-verify.sh`, `scripts/bootstrap-pnpm.sh`, `__tests__/bootstrap-pnpm.test.js`, `__tests__/dependency-management.test.js`, a new `__tests__/freebuff-verify.test.js`, and the existing `specs/091-freebuff-startup-command/` plus memory records.
+- **Implementation choices:** execute each required gate step once and stop on failure; use one local-state bootstrap function that is removed before returning/exiting; reject relative pnpm paths; make PATH insertion idempotent; derive test installer expectations from each fixture manifest; prove same-shell PATH availability and cleanup; give lockfile parse failures explicit errors.
+- **Local checks performed in this connected session:** `bash -n` on both modified shell scripts; isolated fake-npm shell smoke tests for a non-default version pin, same-shell pnpm invocation, invalid-pin rejection, direct failure, sourced caller survival, and installer failure. The exact test-module sources were subsequently parsed successfully after correcting escaped template literals in the bootstrap/dependency guard test files. The actual Vitest suites remain pending.
+- **First full current-head CI run:** the full unit suite completed with 430 passed / 2 failed / 432 total. One failure was the bootstrap fixture's unquoted heredoc expanding `${1:-}` while it generated the fake pnpm executable, so `pnpm --version` returned empty; the other was a broad invocation count that also matched the echoed install error text. The invocation-count assertion is corrected; the bootstrap test now escapes the positional parameter through the heredoc. Current-head rerun is pending.
+- **Not yet verified after latest correction:** repository Vitest suites, TypeScript, `./freebuff-verify.sh`, measured production build size, full Playwright Visual QA, updater-scheduler CI, and current-head review status. A local clone could not be obtained because this runtime could not resolve `github.com`; push-triggered PR CI is the authoritative next verification.
+- **Preserved:** no package or lockfile changes, app/runtime behavior, homepage artwork, AVIF/WebP delivery, payments, email, database, secrets, deployment, or scheduler configuration were changed. The 495 MiB build-size cap remains mandatory.
+
+---
+
+# Active Context — PR #1711 desktop Visual QA diagnosis (2026-11-04)
+
+- **PR head:** `1db23df4a13a2eda43c84f053a5173e73c60e4db`; PR #1711 remains open and unmerged.
+- **Visual QA run:** GitHub Actions run 41929634018 failed only at `tests/visual/homepage.spec.ts:88` desktop homepage screenshot. 89 visual tests passed and 3 were skipped; targeted tests, full Vitest, TypeScript, Spec Kit governance and committed baseline presence all passed.
+- **Root cause:** the checked-in desktop baseline `tests/visual/__screenshots__/desktop/homepage-viewport.png` was last updated 2026-10-23, before the already-merged 2026-11-04 PR #1709 navigation consolidation. The new approved navigation uses one row instead of the old two-row link list, changing vertical hero placement. CI's actual desktop screenshot is stable and mobile-390/mobile-412 baseline comparisons both pass.
+- **Required repair:** update only the desktop screenshot baseline from the deterministic current-page capture; preserve `maxDiffPixelRatio: 0.007`; do not mask the navigation/artwork or widen the threshold.
+- **Separate warning:** `app/lucky-map-of-canada/lucky-map-of-canada.js` placed a bare `priority` prop on a native HTML `<img>`. Remove only that prop; preserve `loading="eager"`, `fetchPriority="high"`, and AVIF/WebP/PNG source order. Add a source guard.
+- **Other current checks:** updater verification (run 41929633866) passed, including repository gate, 495 MiB cap (320.59 MiB), and Wrangler dry-run. OpenNext validation (41929633617) and DevSkim (41929633665) passed. No production Worker deployment ran.
+- **Status:** implementation follow-up is underway; desktop screenshot baseline refresh and Visual QA rerun remain pending. No passing full Visual QA claim is made.
+
+---
+
+# Active Context — PR #1711 QA and updater-scheduler repair (2026-11-04)
+
+- **Head inspected:** `490ea28bd2912c8042af5e3e09cbdd026b06575a`; PR #1711 was open and unmerged.
+- **Live CI evidence:** Visual QA failed because `__tests__/dependency-management.test.js` could not parse (unterminated string at line 72); 39 other test files and 414 tests passed before suite termination. Updater-scheduler verification passed its 17 scheduler tests and Spec Kit customization rebase tests, then failed because `./freebuff-verify.sh` was not executable (exit 126). The scheduler deploy job was skipped on the PR event as intended.
+- **Dependabot configuration:** `.github/dependabot.yml` already contains weekly `npm` and `github-actions` entries at `/`; it is intentionally unchanged by this repair. Future Dependabot PR creation is not proven by static configuration alone.
+- **Repair scope:** fix the malformed dependency guard, match lockfile importer keys exactly, parse Dependabot blocks using the existing text source, return bootstrap failures safely when sourced (exit when executed), add isolated shell regression tests, and set both directly-run shell scripts executable in Git.
+- **Preserve:** pnpm 10.30.3 and `pnpm-lock.yaml` as the sole package-manager/lockfile policy. Do not add `bun.lock`, alter the Freebuff platform startup command, change dependency versions, update scheduler activation/secrets, deploy the Worker, or touch application visuals/functionality.
+- **Verification before repair:** the focused tests, full suite, typecheck, repository gate, Visual QA, and updater-scheduler workflow were not all passing on the inspected head. Previous reported passes predate this broken head and are not evidence for this repair.
+
+---
+# Active Context — Freebuff Startup Command and pnpm Dependency Management (2026-11-04)
+
+- **Task groups:** `troubleshooting` + `testing` + `security`; branch `freebuff/e1fafb4e1fc110d0b8a4c277`;
+  new feature `specs/091-freebuff-startup-command`. The worktree was clean at `037395d8`, so the request's
+  "pre-existing" `bun.lock`, `package.json` change and `specs/091-*` were absent here; nothing unrelated was
+  overwritten.
+- **Verified baseline:** pnpm 10.30.3 with `pnpm install --frozen-lockfile` exit 0 (a global pnpm in this image
+  needs `--prefix "$HOME/.local"`); `react`/`react-dom` were `latest` while the lockfile resolved 19.3.1; the
+  lockfile `overrides:` block listed only the 13 `pnpm.overrides` entries and no `postcss`, proving the
+  top-level `overrides.postcss ^8.5.10` was ignored; `.github/dependabot.yml` had only weekly
+  `github-actions`; the gate ran `pnpm tsc` (binary fallback) and assumed pnpm plus node_modules existed.
+- **Implementation:** `scripts/bootstrap-pnpm.sh` provisions the `packageManager` pin (PATH, `$HOME/.local/bin`,
+  then `npm i -g pnpm@10.30.3 --prefix "$HOME/.local"`) and fails closed on a missing or non-exact pin;
+  `freebuff-verify.sh` sources it, runs `pnpm install --frozen-lockfile`, `cd`s to the repo root and calls
+  `pnpm exec tsc --noEmit`. React/React DOM are pinned to the installed 19.3.1, `postcss ^8.5.10` moved into
+  `pnpm.overrides` (no top-level list remains), Dependabot gained a weekly `npm` entry beside `github-actions`,
+  and `__tests__/dependency-management.test.js` guards all four properties. A fail-closed bug found by test:
+  `return 1` in the helper only ended the function and let an unpinned `npm install -g "pnpm@"` run; it now
+  `exit`s and a strict `x.y.z` pin check precedes any install.
+- **Lockfile:** a full `pnpm install` regeneration rewrote ~30 curated peer ranges (`postcss ^8.5.26`→
+  `^8.5.10`, `next >=16.4.3`→`>=16.4.1`, from `a3f42c86`), so only the intended entries were kept: the
+  `overrides:` block gains `postcss: ^8.5.10` and the react/react-dom importer specifiers become `19.3.1`
+  (5-line diff). `pnpm install --frozen-lockfile` passes and the file stays byte-identical afterwards.
+- **Verification:** guard 8/8 PASS and 3/8 fail on a deliberately broken manifest; full `pnpm exec vitest run`
+  422/422 PASS; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0 (bootstrap, frozen install, Spec
+  Kit gate, typecheck, production build, refresh-docs 19/19); build `.next` 301,050,895 B + `public`
+  32,840,043 B = 333,890,938 B (318.4 MiB) < 495 MB; `pnpm list react react-dom --depth 0` → 19.3.1;
+  bootstrap verified on a fresh `$HOME` with no pnpm on PATH and exits 1 for a missing manifest, a missing pin
+  and a non-exact pin.
+- **Not verified:** PR-head CI (pending). `package.json` and `pnpm-lock.yaml` are protected files, so the PR
+  needs the owner's authorization gate at merge.
+
+---
+
 # Active Context — Homepage Navigation Consolidation and Golden Shimmer (2026-11-04)
 
 - **Task groups:** `polishing` + `testing`; branch `freebuff/d1d198f83bbd7f8a37f69b23`; new feature

@@ -1,3 +1,11 @@
+# Progress — 2026-11-05: PR #1711 final verification gate repair
+
+- Removed duplicate TypeScript/build invocations from `freebuff-verify.sh` and restored explicit fail-fast handling for refresh-docs tests.
+- Refactored `scripts/bootstrap-pnpm.sh` to keep temporary state local, remove its helper before returning/exiting, derive the package-manager pin from `package.json`, and prepend only a validated absolute pnpm directory.
+- Expanded bootstrap regression coverage for dynamic version pins, same-shell PATH availability, idempotent repeated sourcing, sourced/direct failure behavior, installer failure, and shell namespace cleanup. Added explicit verification-gate failure-branch assertions and strengthened dependency-lockfile parser tests.
+- Local Bash syntax checks and isolated fake-installer bootstrap smoke tests passed. The exact GitHub test-module sources were parsed after correcting escaped template literals in the new regression tests. Full repository Vitest tests, TypeScript, production build/size, Visual QA, updater CI, and current-head review remain pending until the pushed PR head reports results.
+- The first current-head Visual QA CI exposed two regression-test failures. The gate test's command count matched the echoed install error string and was corrected to count invocation lines. The bootstrap test's unquoted heredoc expanded `${1:-}` while generating the fake pnpm script; the positional expansion is now escaped so the stub reports the fixture version. Rerun is pending.
+
 # Progress — 2026-11-04: Gift Email Test Tool Removed
 
 - Deleted the disabled gift email test tool entirely: page, client form, switch, README, `/api/test-tools/gift-email` route and its 11-test suite. Both the page and the route now return 404, and no string from the tool remains in the production output.
