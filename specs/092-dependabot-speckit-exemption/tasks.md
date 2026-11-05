@@ -43,11 +43,12 @@
 
 - [x] T023 `bash -n` on both modified shell scripts.
 - [x] T024 `bash scripts/test-verify-speckit-task.sh` — 23/23 cases pass (10 pre-existing, 13 new).
-- [ ] T025 `./freebuff-verify.sh` on the final tree.
-- [ ] T026 Measure `.next + public` against the 495 MiB hard maximum and record the number.
-- [ ] T027 Full `pnpm exec vitest run` and `pnpm exec tsc --noEmit`.
-- [ ] T028 Final diff audit: only the verifier, its regression suite, the two workflow wiring edits, this feature's artifacts and the memory-bank context entry.
-- [ ] T029 PR-head CI: PENDING (reported as pending, never as passing). Confirm the six Dependabot PRs pass governance and that Playwright visual regression and the updater-scheduler steps actually execute.
+- [x] T025 `./freebuff-verify.sh` on the final tree → PASS (exit 0: governance gate, TypeScript, production build, refresh-docs 19/19). The local workspace cache of `origin/main` predates the #1711 merge, so the run used `SPEC_KIT_BASE_REF=f36927c` (the real base commit); CI resolves its own base.
+- [x] T026 Measured `.next + public` = 301,046,044 + 32,840,043 = 333,886,087 bytes (318.42 MiB), below the 495 MiB hard maximum.
+- [x] T027 Full `pnpm exec vitest run` → 43 files / 432 tests PASS; `pnpm exec tsc --noEmit` runs inside the gate and exited 0.
+- [x] T028 Final diff audit: 10 files — `scripts/verify-speckit-task.sh`, `scripts/test-verify-speckit-task.sh`, the two workflow wiring edits, `.specify/feature.json`, `memory-bank/activeContext.md` and the four `specs/092-*` artifacts. Nothing outside that list; no dependency, lockfile or application change.
+- [x] T028a Reproduced against the real PR heads in a throwaway clone: #1712–#1717 each exit 1 with the reported message without the author signal and exit 0 with the exemption message using the corrected verifier.
+- [ ] T029 PR-head CI of this PR and the post-fix re-run of #1712–#1717: PENDING (reported as pending, never as passing). Their workflows execute the gate from the base branch, so the remaining Playwright and updater-scheduler steps can only be observed after this correction reaches `main` and the runs are re-triggered.
 
 ## Dependencies
 
