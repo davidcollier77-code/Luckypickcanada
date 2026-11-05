@@ -41,6 +41,18 @@ add_changed_path() {
   fi
 }
 
+# The committed change set of the pull request, kept separate from local
+# worktree state. Automation such as the Spec Kit updater may leave local
+# modifications in a checkout; only what the PR itself commits defines scope.
+COMMITTED_PATHS=()
+add_committed_path() {
+  local candidate="$1"
+  [[ -n "$candidate" ]] || return 0
+  if ! contains "$candidate" "${COMMITTED_PATHS[@]}"; then
+    COMMITTED_PATHS[${#COMMITTED_PATHS[@]}]="$candidate"
+  fi
+}
+
 # Resolve a comparison base. GitHub pull_request checkouts are often shallow,
 # so fetch the declared base when its remote-tracking ref is not present.
 BASE_REF="${SPEC_KIT_BASE_REF:-}"
@@ -84,6 +96,7 @@ if [[ -n "$BASE_REF" ]]; then
   fi
   while IFS= read -r path; do
     add_changed_path "$path"
+    add_committed_path "$path"
   done <<< "$branch_changes"
 fi
 
@@ -117,8 +130,108 @@ if [[ ${#CANDIDATE_DIRS[@]} -gt 1 ]]; then
   exit 1
 fi
 
+# Dependabot maintenance exemption. Legitimate dependency-maintenance pull
+# requests (npm/pnpm version bumps and GitHub Actions version bumps) carry no
+# feature-development Spec Kit artifacts, so the task-artifact requirement must
+# not reject them. The exemption is deliberately narrow and needs every one of
+# these independent signals to agree:
+#   1. GitHub reports the pull request author as dependabot[bot] (forwarded as
+#      SPEC_KIT_PR_AUTHOR by the workflow, never the title or branch name);
+#   2. a comparison base exists, so the change set is provable;
+#   3. the committed change set is non-empty and every path is a dependency
+#      manifest, the lockfile, or a GitHub Actions workflow file;
+#   4. every commit in the change set is authored by Dependabot and committed by
+#      GitHub (web-flow), which a hand-written commit cannot claim.
+# Anything else - a mixed-scope change, an ordinary feature PR, a partial
+# artifact set (rejected earlier), or a run without the trusted author - falls
+# through to the normal fail-closed checks, and every remaining verification
+# step still runs.
+DEPENDABOT_PR_AUTHOR="dependabot[bot]"
+DEPENDABOT_AUTHOR_EMAILS=(
+  "49699333+dependabot[bot]@users.noreply.github.com"
+  "support@dependabot.com"
+)
+GITHUB_WEB_FLOW_EMAIL="noreply@github.com"
+DEPENDABOT_EXEMPTION_BLOCKER=""
+
+is_dependency_maintenance_path() {
+  local path="$1"
+  case "$path" in
+    package.json|pnpm-lock.yaml) return 0 ;;
+  esac
+  # One level only: a nested workflow path is not a Dependabot version bump.
+  if [[ "$path" =~ ^\.github/workflows/[^/]+\.ya?ml$ ]]; then
+    return 0
+  fi
+  return 1
+}
+
+is_dependabot_author_email() {
+  local email="$1"
+  local allowed
+  for allowed in "${DEPENDABOT_AUTHOR_EMAILS[@]}"; do
+    if [[ "$email" == "$allowed" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+dependabot_maintenance_exemption() {
+  DEPENDABOT_EXEMPTION_BLOCKER=""
+  if [[ "${SPEC_KIT_PR_AUTHOR:-}" != "$DEPENDABOT_PR_AUTHOR" ]]; then
+    DEPENDABOT_EXEMPTION_BLOCKER="the pull request author is not $DEPENDABOT_PR_AUTHOR"
+    return 1
+  fi
+  if [[ -z "$BASE_REF" ]]; then
+    DEPENDABOT_EXEMPTION_BLOCKER="no comparison base is available for the change set"
+    return 1
+  fi
+  if [[ ${#COMMITTED_PATHS[@]} -eq 0 ]]; then
+    DEPENDABOT_EXEMPTION_BLOCKER="the committed change set is empty"
+    return 1
+  fi
+  local path
+  for path in "${COMMITTED_PATHS[@]}"; do
+    if ! is_dependency_maintenance_path "$path"; then
+      DEPENDABOT_EXEMPTION_BLOCKER="changed path is outside dependency-maintenance scope: $path"
+      return 1
+    fi
+  done
+  local commit_identities
+  if ! commit_identities="$(git -C "$REPO_ROOT" log --format='%ae|%ce' "${BASE_REF}..HEAD")"; then
+    DEPENDABOT_EXEMPTION_BLOCKER="the commit history could not be read"
+    return 1
+  fi
+  if [[ -z "$commit_identities" ]]; then
+    DEPENDABOT_EXEMPTION_BLOCKER="no commits were found in the change set"
+    return 1
+  fi
+  local author_email committer_email
+  while IFS='|' read -r author_email committer_email; do
+    [[ -n "$author_email" ]] || continue
+    if ! is_dependabot_author_email "$author_email"; then
+      DEPENDABOT_EXEMPTION_BLOCKER="commit author is not Dependabot: $author_email"
+      return 1
+    fi
+    if [[ "$committer_email" != "$GITHUB_WEB_FLOW_EMAIL" ]]; then
+      DEPENDABOT_EXEMPTION_BLOCKER="commit committer is not GitHub: $committer_email"
+      return 1
+    fi
+  done <<< "$commit_identities"
+  return 0
+}
+
 if [[ ${#CANDIDATE_DIRS[@]} -eq 0 ]]; then
+  if dependabot_maintenance_exemption; then
+    echo "✅ Spec Kit governance check: approved Dependabot maintenance change; feature-development artifacts are not required."
+    printf '   Dependency-maintenance scope: %s\n' "${COMMITTED_PATHS[@]}"
+    exit 0
+  fi
   echo "❌ Spec Kit governance check: no changed task feature artifacts were found." >&2
+  if [[ "${SPEC_KIT_PR_AUTHOR:-}" == "$DEPENDABOT_PR_AUTHOR" ]]; then
+    echo "Dependabot maintenance exemption not applied: $DEPENDABOT_EXEMPTION_BLOCKER" >&2
+  fi
   if [[ -z "$BASE_REF" ]]; then
     echo "No comparison base was found, so committed artifacts cannot be proven current." >&2
     echo "Fetch the base branch or set SPEC_KIT_BASE_REF. The gate fails closed." >&2

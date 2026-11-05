@@ -1,3 +1,37 @@
+# Active Context — Dependabot Spec Kit governance exemption (2026-11-05)
+
+- **Task groups:** `troubleshooting` + `testing` + `security`; branch
+  `fix/dependabot-speckit-governance-exemption`; feature `specs/092-dependabot-speckit-exemption`.
+- **Verified failure:** six Dependabot PRs (#1712–#1717) stopped in `scripts/verify-speckit-task.sh` with
+  "no changed task feature artifacts were found", so `freebuff-verify.sh` ended the job before Playwright
+  installation, committed-baseline verification, visual regression, the build-size ceiling and the Wrangler
+  dry run. Visual regression is **not** passing on those PRs; it never ran.
+- **Verified change sets:** #1712 (github_actions) changes only `.github/workflows/deploy-updater-scheduler.yml`
+  and `.github/workflows/update-spec-kit.yml`; #1713–#1717 (npm) change only `package.json` and
+  `pnpm-lock.yaml`. Each is one commit authored by
+  `dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>` and committed by
+  `GitHub <noreply@github.com>`.
+- **Root cause:** the gate treats "no `specs/<feature>/` artifact directory changed" as a task-governance
+  failure, with no concept of dependency-maintenance scope.
+- **Implementation:** one predicate (`dependabot_maintenance_exemption`) inside the existing verifier, consulted
+  only where the artifact requirement would fail. It requires all of: the workflow-supplied
+  `SPEC_KIT_PR_AUTHOR` equals `dependabot[bot]`; a comparison base resolves; the committed `BASE...HEAD` change
+  set is non-empty and every path is `package.json`, `pnpm-lock.yaml` or a one-level
+  `.github/workflows/*.yml|yaml`; and every commit is Dependabot-authored and GitHub-committed. Scope uses the
+  committed diff, not worktree state, because the updater workflow dirties the checkout before the gate.
+  `visual-qa.yml` and the updater-scheduler `verify` job now forward
+  `github.event.pull_request.user.login` as `SPEC_KIT_PR_AUTHOR`. No check was removed, skipped or weakened.
+- **Tests:** `bash scripts/test-verify-speckit-task.sh` → 23/23 PASS, including npm and Actions maintenance
+  fixtures plus rejections for a human author, missing author signal, application/script/documentation mixes,
+  nested workflow path, incomplete artifacts, a hand-authored commit and a missing base; it also asserts both
+  workflows forward the author.
+- **Preserved:** no dependency version, lockfile, application, visual, payment, email, database, secret,
+  scheduler or deployment change. `AGENTS.md`, `.docs/` and PRs #1712–#1717 are untouched.
+- **Pending:** `./freebuff-verify.sh`, full Vitest, the measured build size against the 495 MiB cap, and
+  PR-head CI evidence that the six PRs now pass governance and execute their remaining steps.
+
+---
+
 # Active Context — PR #1711 final review-driven verification repair (2026-11-05)
 
 - **PR / branch:** #1711 remains open and unmerged on `freebuff/e1fafb4e1fc110d0b8a4c277`. The pre-repair head was `02ccb20c19b437645de8d4a04400799f49e9cceb`.
