@@ -64,3 +64,14 @@
 - T012–T013 are independent of the verifier change but are required for the exemption to apply in CI.
 - T023–T028 depend on T007–T022.
 - T029 depends on a pushed branch and observed GitHub Actions results.
+
+
+## Phase 8: Isolate workflow metadata in regression fixtures
+
+- [ ] T034 Set `SPEC_KIT_PR_AUTHOR=dependabot[bot]` in the regression suite before fixture execution to reproduce the actual Dependabot GitHub Actions environment in `scripts/test-verify-speckit-task.sh`.
+- [ ] T035 Clear inherited `SPEC_KIT_PR_AUTHOR` inside `run_verify` while preserving explicit per-fixture author assignments in `scripts/test-verify-speckit-task.sh`.
+- [ ] T036 Run `bash -n scripts/test-verify-speckit-task.sh` and `SPEC_KIT_PR_AUTHOR=dependabot[bot] bash scripts/test-verify-speckit-task.sh`; verify the no-author fixture fails closed and both authorized fixtures still pass.
+- [ ] T037 Run `./freebuff-verify.sh`, full Vitest and build-size measurement when the complete repository environment is available; report unavailable steps honestly.
+- [ ] T038 Inspect the exact diff and observe PR-head CI; leave both pull requests open and unmerged for owner review.
+
+**Dependencies**: T034 reproduces the failure before the helper fix. T035 fixes the isolation defect. T036 verifies the targeted repair; T037–T038 are final verification and reporting.
