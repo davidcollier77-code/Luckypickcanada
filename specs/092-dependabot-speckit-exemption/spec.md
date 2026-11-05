@@ -162,3 +162,12 @@ every one is rejected.
 - `dependabot[bot]` is the only maintenance bot in scope; other bots are not exempt.
 - The six Dependabot PRs re-run automatically when the correction lands on `main` (or on re-run), so their
   remaining checks are verified from GitHub Actions rather than from this workspace.
+
+
+## Follow-up: Keep trusted CI author context out of synthetic fixtures
+
+A later Dependabot-triggered Visual QA run exposed a test-isolation defect in the governance regression suite. The workflow correctly exports `SPEC_KIT_PR_AUTHOR=dependabot[bot]`, but the fixture runner inherited that value when it was supposed to test a missing author signal. The synthetic case therefore received trusted metadata it had not explicitly requested and incorrectly passed the exemption. The production exemption decision itself remains unchanged.
+
+- **FR-011**: Each synthetic verifier invocation MUST begin with an empty `SPEC_KIT_PR_AUTHOR` value; a fixture may opt in only by explicitly supplying the value as a test argument.
+- **FR-012**: The regression suite MUST simulate execution inside a Dependabot-authored workflow so the missing-author case proves that inherited workflow metadata cannot leak into fixtures.
+- **SC-007**: `SPEC_KIT_PR_AUTHOR=dependabot[bot] bash scripts/test-verify-speckit-task.sh` MUST pass the full fixture suite, including rejection of the dependency-only fixture that supplies no trusted author argument.
