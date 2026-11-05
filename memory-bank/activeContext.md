@@ -1,3 +1,13 @@
+# Active Context — Dependabot CI fixture isolation follow-up (2026-11-05)
+
+- **Trigger:** PR #1716 Visual QA run 42016557516 passed install, unit tests and TypeScript, then failed the Spec Kit verifier regression suite. The workflow correctly exported `SPEC_KIT_PR_AUTHOR=dependabot[bot]`; the test helper did not clear that inherited trusted value, so the synthetic no-author fixture accidentally qualified for the exemption.
+- **Repair branch:** `fix/spec-kit-dependabot-test-isolation-20261105`; feature reused: `specs/092-dependabot-speckit-exemption`.
+- **Planned scope:** isolate `SPEC_KIT_PR_AUTHOR` in `scripts/test-verify-speckit-task.sh`, and simulate the Dependabot workflow environment in that suite. Keep the production verifier, workflow author forwarding, allowed dependency paths, commit provenance rules, package versions, lockfile, and app unchanged.
+- **Verification:** target the exact failure with `SPEC_KIT_PR_AUTHOR=dependabot[bot] bash scripts/test-verify-speckit-task.sh`; then run the repository gate and current-head CI where available. PR #1716 stays on its original Dependabot-only branch so its provenance remains valid. No PR is merged by this workflow.
+- **Status:** Spec, plan and tasks follow-up recorded; implementation and verification pending.
+
+---
+
 # Active Context — Dependabot Spec Kit governance exemption (2026-11-05)
 
 - **Task groups:** `troubleshooting` + `testing` + `security`; branch

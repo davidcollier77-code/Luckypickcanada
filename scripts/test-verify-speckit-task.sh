@@ -84,8 +84,13 @@ run_verify() {
       return 2
     fi
   done
-  env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= "$@" bash "$VERIFY_SCRIPT" "$root"
+  # Clear trusted workflow metadata; fixtures must opt in explicitly via KEY=VALUE arguments.
+  env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= SPEC_KIT_PR_AUTHOR= "$@" bash "$VERIFY_SCRIPT" "$root"
 }
+
+# Reproduce the parent environment of a Dependabot-triggered GitHub Actions run.
+# run_verify must prevent this trusted value from leaking into fixtures that omit it.
+export SPEC_KIT_PR_AUTHOR=dependabot[bot]
 
 # No task artifacts must fail closed.
 root="$TEST_ROOT/no-artifacts"

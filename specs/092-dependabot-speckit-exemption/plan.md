@@ -147,3 +147,20 @@ No constitution violations; no complexity justification required.
 - Measured `.next + public` size recorded against the 495 MiB hard maximum.
 - Full `pnpm exec vitest run` for regression safety.
 - PR-head CI observed on GitHub for the six Dependabot PRs; never claimed before it is observed.
+
+
+## Follow-up Plan: Isolate workflow author metadata in test fixtures
+
+### Verified trigger
+
+Visual QA run `42016557516` for PR #1716 completed the dependency install, targeted tests, full unit suite and TypeScript check. It failed in `scripts/test-verify-speckit-task.sh`: the synthetic "dependency-only change without the trusted author signal" was unexpectedly exempted. The job environment correctly contained `SPEC_KIT_PR_AUTHOR=dependabot[bot]`. The fixture helper cleared other CI variables but not this one, so it leaked into the synthetic repository test.
+
+### Minimal implementation
+
+1. Make `run_verify` set `SPEC_KIT_PR_AUTHOR=` in its controlled `env` invocation before applying any explicit fixture arguments. Explicit `SPEC_KIT_PR_AUTHOR=dependabot[bot]` and human-author fixture arguments remain authoritative because they follow the default assignment.
+2. Have the regression suite itself export `SPEC_KIT_PR_AUTHOR=dependabot[bot]` before fixture execution, reproducing the triggering CI context on every run. The missing-signal fixture then proves that the helper isolates inherited metadata.
+3. Keep `scripts/verify-speckit-task.sh`, workflow author forwarding, allowlisted paths, commit provenance rules, dependency manifests and all downstream checks unchanged.
+
+### Scope and verification
+
+Only the existing regression test script and the existing feature-092 specification, plan, tasks, checklist and active-context record are in scope. Run `bash -n scripts/test-verify-speckit-task.sh`, the full suite under the simulated Dependabot environment, and `./freebuff-verify.sh` where the complete repository toolchain is available. Record any unavailable full-build or PR-head checks as pending; never treat the focused suite as proof that Playwright ran.
