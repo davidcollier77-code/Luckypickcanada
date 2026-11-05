@@ -56,7 +56,7 @@ done
 mkdir -p "$prefix/bin"
 cat > "$prefix/bin/pnpm" <<PNPM
 #!/usr/bin/env bash
-if [[ "\${1:-}" == "--version" ]]; then
+if [[ "\\\${1:-}" == "--version" ]]; then
   printf '%s\\n' "$EXPECTED_PNPM_VERSION"
   exit 0
 fi
@@ -136,7 +136,7 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
       { cwd: fixture.root, env: fixture.env, encoding: 'utf8' }
     );
 
-    expect(result.status).toBe(0);
+    expect(result.status, `bootstrap failed\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`).toBe(0);
     expect(result.stdout).toContain(`PNPM_PATH:${join(fixture.home, '.local', 'bin', 'pnpm')}`);
     expect(result.stdout).toContain('PNPM_VERSION:10.31.4');
     expect(result.stdout).toContain('PATH_STABLE:yes');
