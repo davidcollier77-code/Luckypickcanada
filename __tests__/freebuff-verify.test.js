@@ -29,7 +29,11 @@ describe('Freebuff verification gate control flow', () => {
     ];
 
     for (const [command, errorMessage] of requiredBranches) {
-      expect(countOccurrences(verificationScript, command)).toBe(1);
+      const invocation = `if ! ${command}; then`;
+      const invocationCount = verificationScript
+        .split(/\r?\n/)
+        .filter((line) => line.trim() === invocation).length;
+      expect(invocationCount).toBe(1);
       const start = verificationScript.indexOf(`if ! ${command}; then`);
       expect(start).toBeGreaterThanOrEqual(0);
 

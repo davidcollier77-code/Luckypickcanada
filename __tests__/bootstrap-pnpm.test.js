@@ -131,7 +131,7 @@ describe('pnpm bootstrap failure handling and caller isolation', () => {
           '[[ "$PATH" == "$original_path" ]] && echo "PATH_STABLE:yes" || echo "PATH_STABLE:no"; ' +
           'declare -F _bootstrap_pnpm_entry >/dev/null && exit 91; ' +
           'declare -F bootstrap_pnpm_main >/dev/null && exit 92; ' +
-          'declare -p BOOTSTRAP_PNPM_STATUS >/dev/null 2>&1 && exit 93',
+          'declare -p BOOTSTRAP_PNPM_STATUS >/dev/null 2>&1 && exit 93; true',
       ],
       { cwd: fixture.root, env: fixture.env, encoding: 'utf8' }
     );

@@ -4,6 +4,7 @@
 - Refactored `scripts/bootstrap-pnpm.sh` to keep temporary state local, remove its helper before returning/exiting, derive the package-manager pin from `package.json`, and prepend only a validated absolute pnpm directory.
 - Expanded bootstrap regression coverage for dynamic version pins, same-shell PATH availability, idempotent repeated sourcing, sourced/direct failure behavior, installer failure, and shell namespace cleanup. Added explicit verification-gate failure-branch assertions and strengthened dependency-lockfile parser tests.
 - Local Bash syntax checks and isolated fake-installer bootstrap smoke tests passed. The exact GitHub test-module sources were parsed after correcting escaped template literals in the new regression tests. Full repository Vitest tests, TypeScript, production build/size, Visual QA, updater CI, and current-head review remain pending until the pushed PR head reports results.
+- The first current-head Visual QA CI exposed two false-negative regression-test assertions (successful bootstrap test leaked a non-zero final probe status; command counting included an echoed error string). Both assertions were corrected; rerun is pending.
 
 # Progress — 2026-11-04: Gift Email Test Tool Removed
 
