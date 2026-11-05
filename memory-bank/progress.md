@@ -1,3 +1,9 @@
+# Progress — 2026-11-05: Daily Lucky Card Reveal tier presentation
+
+- `/reveal` entry button is now a guaranteed 56 px target with `cursor-pointer`, `touch-manipulation` and an `aria-describedby` tap instruction; the shared gold gradient, hover lift and press depth are unchanged.
+- New `app/lucky-card-presentation.js` gives Standard/Premium/Flagship distinct accents with escalating halo/rim/frame strength; the revealed card now names its tier and card title, with a tier halo and frame while the artwork, animation, audio and storage behaviour stay untouched.
+- Verification: focused 10 tests, full 439 tests, `tsc`, `./freebuff-verify.sh` and a 51/51 Chromium probe on a production build; build 372,013,466 B (354.8 MiB). The probe found a real 52.5 px mobile touch target caused by the theme's 15 px mobile root font size, now fixed with an explicit 56 px minimum.
+
 # Progress — 2026-11-05: PR #1711 final verification gate repair
 
 - Removed duplicate TypeScript/build invocations from `freebuff-verify.sh` and restored explicit fail-fast handling for refresh-docs tests.

@@ -1,0 +1,21 @@
+{
+  "chipText": "♛ FLAGSHIP TIER The Flagship Card SERIES 1 · ADDED TO YOUR COLLECTION",
+  "chipStyle": {
+    "color": "rgb(255, 239, 184)",
+    "backgroundColor": "rgba(218, 165, 32, 0.12)",
+    "boxShadow": "rgba(218, 165, 32, 0.45) 0px 0px 0px 1px inset"
+  },
+  "headingText": "The Flagship Card",
+  "caption": "SERIES 1 · ADDED TO YOUR COLLECTION",
+  "quote": "\"Probe quote for the revealed presentation.\"",
+  "haloDetail": {
+    "ariaHiddenWrapper": true,
+    "pointerEvents": "none",
+    "opacity": "1",
+    "filter": "blur(52px)",
+    "background": "radial-gradient(50% 50%, rgba(218, 165, 32, 0.38) 0%, rgba(218, 165, 32, 0.16) 44%, rgba(218, 165, 32, 0) 76%)"
+  },
+  "ringShadow": "rgba(218, 165, 32, 0.62) 0px 0px 0px 2px inset, rgba(218, 165, 32, 0.26) 0px 0px 26px 0px inset",
+  "artworkSrc": "/flagship-card-golden-maple-clover.webp",
+  "overflow": 0
+}

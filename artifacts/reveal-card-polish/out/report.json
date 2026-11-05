@@ -1,0 +1,263 @@
+{
+  "results": [
+    {
+      "name": "mobile entry height >= 56px",
+      "pass": true,
+      "detail": 56
+    },
+    {
+      "name": "mobile entry fills the column (>= 320px)",
+      "pass": true,
+      "detail": 330
+    },
+    {
+      "name": "pointer cursor",
+      "pass": true,
+      "detail": "pointer"
+    },
+    {
+      "name": "gold gradient kept",
+      "pass": true,
+      "detail": "linear-gradient(rgb(255, 242, 168), rgb(251, 229, 154) 14%, "
+    },
+    {
+      "name": "raised edge kept",
+      "pass": true,
+      "detail": "rgba(255, 255, 255, 0.72) 0px 1px 0px 0px inset, rgba(95, 55"
+    },
+    {
+      "name": "touch-manipulation kept",
+      "pass": true,
+      "detail": "manipulation"
+    },
+    {
+      "name": "accessible name unchanged",
+      "pass": true,
+      "detail": {
+        "exactNameCount": 1,
+        "innerText": "♠\nReveal Today's Luck"
+      }
+    },
+    {
+      "name": "aria-describedby wired",
+      "pass": true,
+      "detail": "lucky-card-reveal-hint"
+    },
+    {
+      "name": "hint copy",
+      "pass": true,
+      "detail": "\"Tap to reveal today’s Lucky Card\""
+    },
+    {
+      "name": "hover lift",
+      "pass": true,
+      "detail": "matrix(1, 0, 0, 1, 0, 0) -> matrix(1, 0, 0, 1, 0, -2)"
+    },
+    {
+      "name": "press down",
+      "pass": true,
+      "detail": "matrix(1, 0, 0, 1, 0, -2) -> matrix(1, 0, 0, 1, 0, 2)"
+    },
+    {
+      "name": "press starts the draw",
+      "pass": true,
+      "detail": 2
+    },
+    {
+      "name": "entry control leaves the screen while drawing",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "desktop entry height >= 56px",
+      "pass": true,
+      "detail": 58
+    },
+    {
+      "name": "desktop entry is content-width",
+      "pass": true,
+      "detail": 256
+    },
+    {
+      "name": "desktop hint visible",
+      "pass": true,
+      "detail": "\"Tap to reveal today’s Lucky Card\""
+    },
+    {
+      "name": "standard: chip label",
+      "pass": true,
+      "detail": "★ STANDARD TIER The Number Seeker SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "standard: card name",
+      "pass": true,
+      "detail": "The Number Seeker"
+    },
+    {
+      "name": "standard: collection caption",
+      "pass": true,
+      "detail": "SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "standard: stored quote",
+      "pass": true,
+      "detail": "\"Probe quote for the revealed presentation.\""
+    },
+    {
+      "name": "standard: halo rendered",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "standard: halo decorative",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "standard: halo settled",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "standard: halo accent",
+      "pass": true,
+      "detail": "radial-gradient(50% 50%, rgba(224, 148, 64, 0.26) 0%, rgba(224, 148, 64, 0.16) 44%, rgba(2"
+    },
+    {
+      "name": "standard: frame accent",
+      "pass": true,
+      "detail": "rgba(224, 148, 64, 0.4) 0px 0px 0px 2px inset, rgba(224, 148, 64, 0.16) 0px 0px 26px 0px i"
+    },
+    {
+      "name": "standard: artwork unchanged",
+      "pass": true,
+      "detail": "/standard-card-number-seeker.webp"
+    },
+    {
+      "name": "standard: no horizontal overflow",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "premium: chip label",
+      "pass": true,
+      "detail": "◆ PREMIUM TIER The Northern Lights SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "premium: card name",
+      "pass": true,
+      "detail": "The Northern Lights"
+    },
+    {
+      "name": "premium: collection caption",
+      "pass": true,
+      "detail": "SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "premium: stored quote",
+      "pass": true,
+      "detail": "\"Probe quote for the revealed presentation.\""
+    },
+    {
+      "name": "premium: halo rendered",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "premium: halo decorative",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "premium: halo settled",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "premium: halo accent",
+      "pass": true,
+      "detail": "radial-gradient(50% 50%, rgba(200, 204, 208, 0.3) 0%, rgba(200, 204, 208, 0.16) 44%, rgba("
+    },
+    {
+      "name": "premium: frame accent",
+      "pass": true,
+      "detail": "rgba(200, 204, 208, 0.5) 0px 0px 0px 2px inset, rgba(200, 204, 208, 0.2) 0px 0px 26px 0px "
+    },
+    {
+      "name": "premium: artwork unchanged",
+      "pass": true,
+      "detail": "/premium-card-northern-lights.webp"
+    },
+    {
+      "name": "premium: no horizontal overflow",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "flagship: chip label",
+      "pass": true,
+      "detail": "♛ FLAGSHIP TIER The Flagship Card SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "flagship: card name",
+      "pass": true,
+      "detail": "The Flagship Card"
+    },
+    {
+      "name": "flagship: collection caption",
+      "pass": true,
+      "detail": "SERIES 1 · ADDED TO YOUR COLLECTION"
+    },
+    {
+      "name": "flagship: stored quote",
+      "pass": true,
+      "detail": "\"Probe quote for the revealed presentation.\""
+    },
+    {
+      "name": "flagship: halo rendered",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "flagship: halo decorative",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "flagship: halo settled",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "flagship: halo accent",
+      "pass": true,
+      "detail": "radial-gradient(50% 50%, rgba(218, 165, 32, 0.38) 0%, rgba(218, 165, 32, 0.16) 44%, rgba(2"
+    },
+    {
+      "name": "flagship: frame accent",
+      "pass": true,
+      "detail": "rgba(218, 165, 32, 0.62) 0px 0px 0px 2px inset, rgba(218, 165, 32, 0.26) 0px 0px 26px 0px "
+    },
+    {
+      "name": "flagship: artwork unchanged",
+      "pass": true,
+      "detail": "/flagship-card-golden-maple-clover.webp"
+    },
+    {
+      "name": "flagship: no horizontal overflow",
+      "pass": true,
+      "detail": 0
+    },
+    {
+      "name": "reduced motion: halo visible without a fade",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "no console or page errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "failed": 0
+}

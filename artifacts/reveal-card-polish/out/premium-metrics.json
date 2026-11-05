@@ -1,0 +1,21 @@
+{
+  "chipText": "◆ PREMIUM TIER The Northern Lights SERIES 1 · ADDED TO YOUR COLLECTION",
+  "chipStyle": {
+    "color": "rgb(244, 247, 250)",
+    "backgroundColor": "rgba(200, 204, 208, 0.12)",
+    "boxShadow": "rgba(200, 204, 208, 0.45) 0px 0px 0px 1px inset"
+  },
+  "headingText": "The Northern Lights",
+  "caption": "SERIES 1 · ADDED TO YOUR COLLECTION",
+  "quote": "\"Probe quote for the revealed presentation.\"",
+  "haloDetail": {
+    "ariaHiddenWrapper": true,
+    "pointerEvents": "none",
+    "opacity": "1",
+    "filter": "blur(46px)",
+    "background": "radial-gradient(50% 50%, rgba(200, 204, 208, 0.3) 0%, rgba(200, 204, 208, 0.16) 44%, rgba(200, 204, 208, 0) 76%)"
+  },
+  "ringShadow": "rgba(200, 204, 208, 0.5) 0px 0px 0px 2px inset, rgba(200, 204, 208, 0.2) 0px 0px 26px 0px inset",
+  "artworkSrc": "/premium-card-northern-lights.webp",
+  "overflow": 0
+}
