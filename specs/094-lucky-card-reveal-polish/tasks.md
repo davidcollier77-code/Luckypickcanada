@@ -45,7 +45,7 @@ present and `aria-hidden`, and that it still renders under reduced motion.
 
 - [X] T010 Focused suites PASS: `pnpm exec vitest run __tests__/lucky-card-tier-presentation.test.js __tests__/lucky-card-reveal-presentation.test.js __tests__/lucky-card-collection.test.js` → 3 files / 10 tests passed. (The component render test named in the plan was replaced by the source guard: Vitest's Vite/oxc pipeline refuses JSX inside `.js`, so `app/lucky-card-reveal.js` cannot be rendered in jsdom; browser evidence comes from `artifacts/reveal-card-polish/probe.cjs`.)
 - [X] T011 Full suite `pnpm exec vitest run` → 45 files / 439 tests passed; `pnpm exec tsc --noEmit` exit 0.
-- [X] T012 `./freebuff-verify.sh` exit 0; production build `.next` 298,728,707 B + `public` 32,840,043 B = 331,568,750 B (316.2 MiB), below the 495 MB maximum.
+- [X] T012 `./freebuff-verify.sh` exit 0; production build measured `.next` 298,728,707 B + `public` 32,840,043 B = 331,568,750 B (316.2 MiB) on the first run and `.next` 339,173,423 B + `public` 32,840,043 B = 372,013,466 B (354.8 MiB) on the final run, both below the 495 MB maximum.
 - [X] T012b Browser probe PASS: `node artifacts/reveal-card-polish/probe.cjs` against `next start` on the production build — 51/51 checks (56 px entry target, hover/press states, exact accessible name, instruction copy, draw starts on press, three tier chips/names/captions/accents/halos, unchanged WebP fallback, 0 px overflow, 0 console errors, reduced-motion halo static). Screenshots and `out/report.json` are committed under `artifacts/reveal-card-polish/`.
 - [X] T013 Final diff reviewed; `memory-bank/activeContext.md`, `memory-bank/progress.md` and the single PR summary updated; PR left open and unmerged.
 
