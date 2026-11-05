@@ -13,3 +13,13 @@
 - [x] No dependency version, lockfile, application, visual, payment, email, database, secret or deployment change.
 - [x] `.docs/` and `AGENTS.md` remain untouched.
 - [ ] PR-head CI observation of the six Dependabot PRs (pending; never reported as passed before it is observed).
+
+
+## Follow-up regression checklist
+
+- [ ] The test suite simulates an inherited `SPEC_KIT_PR_AUTHOR=dependabot[bot]` workflow environment.
+- [ ] Every synthetic verifier invocation clears inherited author metadata unless a fixture explicitly supplies it.
+- [ ] The missing-author fixture fails closed under the simulated Dependabot environment.
+- [ ] Explicit Dependabot and human author fixtures retain their intended pass/fail behavior.
+- [ ] The verifier implementation, workflow forwarding, dependency versions and application files remain unchanged.
+- [ ] Targeted regression and required repository verification results are recorded accurately.
