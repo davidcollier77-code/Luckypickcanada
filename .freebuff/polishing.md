@@ -18,7 +18,6 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
 - axe-core "/dequelabs/axe-core"
-- Magic UI "/magicuidesign/magicui"
 - Google WebP "/websites/google_webp"
 - Sharp "/lovell/sharp"
 - web.dev Images "/websites/web_dev_images"
