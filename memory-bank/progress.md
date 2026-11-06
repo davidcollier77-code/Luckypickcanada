@@ -1,3 +1,13 @@
+# Progress — 2026-11-06: Custom Gemini PR Reviewer Retirement
+
+- Retired the separate custom Gemini API-driven PR reviewer: its GitHub Actions workflow, review script, optional autofix/suggestion script, root instruction file, and four exclusive regression suites.
+- Added `__tests__/reviewer-retirement.test.ts` to assert the active entrypoints are absent, no remaining workflow invokes the scripts, and Pullfrog / Oracle / historical reference files remain present.
+- Preserved `.github/workflows/pullfrog.yml` byte-for-byte, including its existing `GEMINI_API_KEY` reference, and preserved `functions/api/oracle.js` byte-for-byte, including `env.GEMINI_API_KEY`. No secret was inspected or changed.
+- Historical Gemini reviewer and earlier PR-Agent Spec Kit records, Gemini CLI snapshots, `.docs/manifest.json`, all other reviewer files, application code, dependencies, and deployment configuration remain outside the change set.
+- Verification: repository test suite, `./freebuff-verify.sh`, production build-size measurement, and PR-head checks are pending until actual execution / CI evidence is available.
+
+---
+
 # Progress — 2026-11-05: Daily Lucky Card Reveal tier presentation
 
 - `/reveal` entry button is now a guaranteed 56 px target with `cursor-pointer`, `touch-manipulation` and an `aria-describedby` tap instruction; the shared gold gradient, hover lift and press depth are unchanged.
