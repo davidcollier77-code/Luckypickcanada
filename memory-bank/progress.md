@@ -1,3 +1,9 @@
+## 2026-11-06 — PR #1746 routing-test coverage correction
+
+- Expanded `__tests__/docs-library-retirement.test.ts` to assert that each of the four retired IDs is absent from every one of the eight manifest group routing files, closing the Amazon Q review finding.
+- Updated Spec Kit task T007 to record the all-groups coverage requirement. No runtime, manifest, snapshot, dependency, updater, workflow, schedule, or deployment files changed.
+- Post-fix PR-head Vitest, `./freebuff-verify.sh`, and 495 MiB build-size results are pending the newly triggered GitHub checks.
+
 ## 2026-11-06 — Retire four unused documentation references
 
 - Removed PostHog JS, Magic UI, React Three Fiber, and Upstash Ratelimit from their specialist routes, all manifest indexes, and their canonical documentation snapshots.

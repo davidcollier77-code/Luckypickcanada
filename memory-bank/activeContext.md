@@ -1,3 +1,14 @@
+# Active Context — PR #1746 Review-Finding Correction (2026-11-06)
+
+- **Task groups:** `testing` (close the Amazon Q routing-coverage gap) + `deep-dive` (verify the review finding against the test and all eight manifest groups).
+- **Feature/branch/PR:** Reuse `specs/102-unused-reference-retirement`, `docs/retire-unused-library-references-20261106`, and PR #1746; no duplicate feature or PR.
+- **Correction:** `__tests__/docs-library-retirement.test.ts` now checks every retired ID against all eight `.freebuff/<group>.md` files derived from `manifest.groups`, not only the source's original group file.
+- **Scope:** No manifest, snapshot, application, dependency, updater, workflow, schedule, Cloudflare, or deployment changes.
+- **Verification:** The updated PR-head Visual QA workflow is expected to run all Vitest tests, TypeScript, `./freebuff-verify.sh`; OpenNext validation measures `.next + public` against the 495 MiB cap. Results remain pending until the new head checks complete. The connected container cannot reach GitHub to clone the branch, so no local shell/test result is claimed.
+- **Delivery:** Update PR #1746 in place; leave it open and unmerged.
+
+---
+
 # Active Context — Unused Documentation Reference Retirement (2026-11-06)
 
 - **Task groups:** `deep-dive` (evidence-based audit of the four source references) + `testing` (manifest, specialist routing, snapshot, and preservation regression checks).

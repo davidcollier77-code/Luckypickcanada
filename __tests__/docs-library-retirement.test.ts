@@ -20,7 +20,10 @@ describe("documentation library retirement", () => {
       expect(manifest.sources).not.toHaveProperty(reference.id);
       expect(manifest.inventory).not.toContain(reference.id);
       expect(manifest.githubShas ?? {}).not.toHaveProperty(reference.id);
-      expect(readFileSync(`.freebuff/${reference.group}.md`, "utf8")).not.toContain(reference.id);
+      for (const group of Object.keys(manifest.groups)) {
+        const routingFile = `.freebuff/${group}.md`;
+        expect(readFileSync(routingFile, "utf8"), `${reference.id} must not appear in ${routingFile}`).not.toContain(reference.id);
+      }
       expect(existsSync(reference.snapshot), `${reference.snapshot} must be deleted`).toBe(false);
     }
   });

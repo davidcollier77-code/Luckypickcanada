@@ -15,7 +15,7 @@
 - [x] T004 [US1] Remove the four identifiers from every `groups` array, `sources`, `inventory`, and `githubShas` entry in `.docs/manifest.json`.
 - [x] T005 [US1] Remove the PostHog, Magic UI, React Three Fiber, and Upstash Ratelimit route lines from `.freebuff/deep-dive.md`, `.freebuff/polishing.md`, `.freebuff/creation.md`, and `.freebuff/security.md`.
 - [x] T006 [US1] Delete the four canonical snapshots under `.docs/deep-dive/`, `.docs/polishing/`, `.docs/creation/`, and `.docs/security/`.
-- [x] T007 [US1] Add `__tests__/docs-library-retirement.test.ts` covering the four removals, previous PR #1740 retirements, and NumPy's Audio-only route.
+- [x] T007 [US1] Add `__tests__/docs-library-retirement.test.ts` covering the four removals across every manifest group routing file, previous PR #1740 retirements, and NumPy's Audio-only route.
 
 ## Phase 3: Spec Kit and Memory
 
