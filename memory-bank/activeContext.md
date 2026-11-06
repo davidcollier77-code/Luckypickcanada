@@ -1,3 +1,37 @@
+# Active Context — Lucky Card Reveal Cinematic Enhancement (2026-11-06)
+
+- **Task groups:** `polishing` (a protected visual surface was enhanced without changing its
+  behaviour) + `testing` (executed tier contract, structural guard, full suite and rendered browser
+  evidence). Branch `freebuff/4818369485c7528fe69e661a`; feature
+  `specs/101-lucky-card-reveal-cinematics`.
+- **Verified baseline:** the previous attempt, `specs/094-lucky-card-reveal-polish`, shipped a static
+  tier halo/rim and one flat 118° sheen, excluded `coast-to-coast-tale` from the finish
+  (`preserveCoastToCoastPolish`), never finished the card back, and had no light event or staged
+  arrival at the flip.
+- **Implementation:** `app/lucky-card-presentation.js` gains six tier stage values (spotlight,
+  shockwave opacity/scale, gloss, sweep duration, ember opacity), all escalating Standard < Premium <
+  Flagship. `app/lucky-card-reveal.js` gains one module-scope `CardFinish` component applied to both
+  card faces (gloss, specular, bevel; tier bloom and one glint on the revealed front only), a
+  tier-tinted charging aura during the draw, and a reveal stage of light shaft, spotlight, halo, rim,
+  two shockwave rings, six one-shot embers and a floor shadow — all `aria-hidden` and
+  `pointer-events-none`. Coast-to-Coast Tale now takes the shared finish and tier ring while keeping
+  its authored frame. The tier block, quote panel and share control settle in with 0.12 / 0.24 /
+  0.34 s delays. One-shot layers are mounted only when motion is allowed.
+- **Preserved:** card data, weighting/anti-repeat, quote selection, daily lock, collection write,
+  audio cues, all timing constants, canvas choreography, flip timings, artwork delivery, share,
+  binder, countdown and Return to Home. No dependency, asset or route added.
+- **Verification PASS:** focused 2 files / 12 tests; full `pnpm exec vitest run` 44 files / 351
+  tests; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; production build
+  349,904,547 B (333.7 MiB) < 495 MB.
+- **Verification PARTIAL:** rendered checks ran in the managed cloud browser (local Chromium is
+  unusable here — missing system libraries and no root; managed Playwright bridge returned an
+  internal error). Three tiers, both card faces, all stage layers, staged arrival and
+  Coast-to-Coast Tale passed. Reduced motion was NOT RUN in a browser and remains covered only by
+  the structural guard. Recorded in
+  `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
+
+---
+
 # Active Context — Playwright Version Alignment (2026-11-06)
 
 - **Task groups:** `troubleshooting` (the reported Visual QA discovery failure) + `testing` (Playwright

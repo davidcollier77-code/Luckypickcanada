@@ -41,6 +41,107 @@ const FINAL_FLIP_END = FINAL_FLIP_TIME + FINAL_FLIP_DURATION;
 const POST_FLIP_DISSIPATION = 4.2;
 const FINAL_HIT_DISSIPATE = FINAL_FLIP_END + POST_FLIP_DISSIPATION;
 
+// ---------------------------------------------------------------------------
+// Premium card finish and cinematic stage (specs/101-lucky-card-reveal-cinematics)
+//
+// Presentation only: these layers sit above the authored artwork and below the
+// interaction layer. They never repaint, re-encode or replace a card image, and
+// every card — including `coast-to-coast-tale` — receives the same finish on
+// both faces. Only the tier strengths come from `lucky-card-presentation`.
+// ---------------------------------------------------------------------------
+
+const CARD_GLOSS_STYLE = {
+  pointerEvents: 'none',
+  borderRadius: 'inherit',
+  background:
+    'linear-gradient(158deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.10) 17%, rgba(255, 255, 255, 0) 40%, rgba(0, 0, 0, 0.02) 58%, rgba(0, 0, 0, 0.26) 100%)',
+};
+
+const CARD_SPECULAR_STYLE = {
+  pointerEvents: 'none',
+  borderRadius: 'inherit',
+  background:
+    'radial-gradient(120% 78% at 20% 3%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.12) 24%, rgba(255, 255, 255, 0) 56%)',
+};
+
+const CARD_BEVEL_STYLE = {
+  pointerEvents: 'none',
+  borderRadius: 'inherit',
+  boxShadow:
+    'inset 0 1px 0 rgba(255, 255, 255, 0.26), inset 0 -1px 0 rgba(0, 0, 0, 0.34), inset 0 0 24px rgba(0, 0, 0, 0.18)',
+};
+
+// Deterministic ember offsets around the card centre. They rise once as the
+// card settles, then stay gone; a re-render cannot restart or duplicate them.
+const REVEAL_EMBERS = [
+  { x: -108, y: 86, rise: 138, delay: 0.04, size: 3 },
+  { x: -64, y: 150, rise: 184, delay: 0.16, size: 2 },
+  { x: -22, y: 118, rise: 158, delay: 0.3, size: 2.5 },
+  { x: 26, y: 154, rise: 192, delay: 0.1, size: 2 },
+  { x: 72, y: 108, rise: 146, delay: 0.24, size: 3 },
+  { x: 110, y: 70, rise: 124, delay: 0.38, size: 2 },
+];
+
+/**
+ * The one glossy finish shared by every card face.
+ *
+ * Gloss, specular highlight and bevel are always present and identical for all
+ * cards. The tier bloom and the single glint pass are added only on the revealed
+ * front, so the back never gives the pull away. Under reduced motion the static
+ * layers still read as gloss and no one-shot animation is mounted.
+ */
+function CardFinish({ tierPresentation, revealed, shouldReduceMotion }) {
+  const accent = tierPresentation.accentRgb;
+
+  return (
+    <div
+      aria-hidden="true"
+      data-card-finish={tierPresentation.id}
+      data-card-finish-state={revealed ? 'revealed' : 'idle'}
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ borderRadius: 'inherit' }}
+    >
+      <div data-card-finish-layer="gloss" className="absolute inset-0" style={CARD_GLOSS_STYLE} />
+      <div data-card-finish-layer="specular" className="absolute inset-0" style={CARD_SPECULAR_STYLE} />
+      <div data-card-finish-layer="bevel" className="absolute inset-0" style={CARD_BEVEL_STYLE} />
+
+      {revealed && (
+        <motion.div
+          data-card-finish-layer="tier-bloom"
+          className="absolute inset-0"
+          style={{
+            borderRadius: 'inherit',
+            background: `radial-gradient(92% 128% at 50% 106%, rgba(${accent}, ${tierPresentation.glossOpacity}) 0%, rgba(${accent}, ${Number((tierPresentation.glossOpacity * 0.4).toFixed(3))}) 44%, rgba(${accent}, 0) 68%)`,
+          }}
+          initial={shouldReduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : Number((tierPresentation.revealDuration * 1.2).toFixed(2)),
+            ease: 'easeOut',
+          }}
+        />
+      )}
+
+      {revealed && !shouldReduceMotion && (
+        <motion.div
+          data-card-finish-layer="glint"
+          className="absolute -inset-y-6 w-1/2"
+          style={{
+            left: '-40%',
+            background:
+              'linear-gradient(104deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.32) 44%, rgba(255, 255, 255, 0.08) 58%, rgba(255, 255, 255, 0) 100%)',
+            filter: 'blur(1px)',
+            willChange: 'transform, opacity',
+          }}
+          initial={{ x: '-20%', opacity: 0 }}
+          animate={{ x: '280%', opacity: [0, 0.9, 0.85, 0] }}
+          transition={{ duration: tierPresentation.sweepDuration, delay: 0.1, ease: 'easeInOut' }}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [previousCardId, setPreviousCardId] = useState(null);
@@ -1712,20 +1813,6 @@ export default function LuckyCardReveal() {
       '0 24px 48px rgba(0, 0, 0, 0.48), 0 8px 18px rgba(0, 0, 0, 0.30), inset 0 0 0 1px rgba(255, 255, 255, 0.08)',
   };
 
-  const cardPolishEdgeStyle = {
-    pointerEvents: 'none',
-    borderRadius: 'inherit',
-    boxShadow:
-      'inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.20), inset 0 0 18px rgba(0, 0, 0, 0.12)',
-  };
-
-  const cardPolishSheenStyle = {
-    pointerEvents: 'none',
-    borderRadius: 'inherit',
-    background:
-      'linear-gradient(118deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 22%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.045) 100%)',
-  };
-
   const preserveCoastToCoastPolish = selectedCard?.id === 'coast-to-coast-tale';
 
   // Tier presentation for the revealed card: chip, name caption, halo and frame.
@@ -1800,10 +1887,78 @@ export default function LuckyCardReveal() {
         className="w-full flex justify-center pt-6 pb-2 md:pt-16 md:pb-4 flex-shrink-0 relative"
         style={{ perspective: '1200px' }}
       >
-        {/* Tier-coloured halo and rim that complete the reveal moment. Decorative
-            only: hidden from assistive tech and never intercepts pointer events. */}
+        {/* Tier-tinted charging aura while the beams strike. Decorative only. */}
+        {isGenerating && selectedCard && (
+          <div
+            aria-hidden="true"
+            data-reveal-charge={tierPresentation.id}
+            className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+          >
+            <motion.div
+              className="absolute"
+              style={{
+                width: 340,
+                height: 470,
+                left: '50%',
+                top: '50%',
+                marginLeft: -170,
+                marginTop: -235,
+                borderRadius: 30,
+                background: `radial-gradient(50% 50% at 50% 50%, rgba(${tierPresentation.accentRgb}, 0.34) 0%, rgba(${tierPresentation.accentRgb}, 0.12) 52%, rgba(${tierPresentation.accentRgb}, 0) 80%)`,
+                filter: 'blur(20px)',
+                willChange: 'opacity, transform',
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0.16, scale: 0.94 }}
+              animate={shouldReduceMotion ? { opacity: 0.32, scale: 1 } : { opacity: 0.6, scale: 1.05 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 4.2, ease: 'easeIn' }}
+            />
+          </div>
+        )}
+
+        {/* Cinematic reveal stage: light shaft, spotlight, tier halo and rim,
+            shockwave, embers and floor shadow. Decorative only: hidden from
+            assistive tech and never intercepting pointer events. */}
         {isRevealed && selectedCard && (
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
+          <div
+            aria-hidden="true"
+            data-reveal-stage={tierPresentation.id}
+            className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+          >
+            <motion.div
+              data-reveal-shaft={tierPresentation.id}
+              className="absolute"
+              style={{
+                width: 360,
+                height: 620,
+                left: '50%',
+                top: '50%',
+                marginLeft: -180,
+                marginTop: -374,
+                background: `linear-gradient(180deg, rgba(${tierPresentation.accentRgb}, ${Number((tierPresentation.spotlightOpacity * 0.8).toFixed(3))}) 0%, rgba(${tierPresentation.accentRgb}, 0.1) 46%, rgba(${tierPresentation.accentRgb}, 0) 78%)`,
+                clipPath: 'polygon(41% 0%, 59% 0%, 100% 100%, 0% 100%)',
+                filter: 'blur(10px)',
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.8, ease: 'easeOut' }}
+            />
+            <motion.div
+              data-reveal-spotlight={tierPresentation.id}
+              className="absolute rounded-full"
+              style={{
+                width: 520,
+                height: 520,
+                left: '50%',
+                top: '50%',
+                marginLeft: -260,
+                marginTop: -260,
+                background: `radial-gradient(circle at 50% 46%, rgba(${tierPresentation.accentRgb}, ${tierPresentation.spotlightOpacity}) 0%, rgba(${tierPresentation.accentRgb}, ${Number((tierPresentation.spotlightOpacity * 0.35).toFixed(3))}) 44%, rgba(${tierPresentation.accentRgb}, 0) 74%)`,
+                filter: 'blur(6px)',
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.9, ease: 'easeOut' }}
+            />
             <motion.div
               data-card-halo={tierPresentation.id}
               className="absolute"
@@ -1839,6 +1994,89 @@ export default function LuckyCardReveal() {
               animate={{ opacity: 1 }}
               transition={{ duration: shouldReduceMotion ? 0 : tierPresentation.revealDuration, ease: 'easeOut' }}
             />
+
+            {!shouldReduceMotion && (
+              <>
+                <motion.div
+                  data-reveal-shockwave="primary"
+                  className="absolute rounded-2xl"
+                  style={{
+                    width: 288,
+                    height: 413,
+                    left: '50%',
+                    top: '50%',
+                    marginLeft: -144,
+                    marginTop: -206.5,
+                    boxShadow: `0 0 0 1.5px rgba(${tierPresentation.accentRgb}, 0.9), 0 0 34px rgba(${tierPresentation.accentRgb}, 0.5)`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.86 }}
+                  animate={{
+                    opacity: [0, tierPresentation.shockwaveOpacity, 0],
+                    scale: [0.86, tierPresentation.shockwaveScale, Number((tierPresentation.shockwaveScale * 1.06).toFixed(2))],
+                  }}
+                  transition={{ duration: 1.05, delay: 0.04, ease: 'easeOut' }}
+                />
+                <motion.div
+                  data-reveal-shockwave="echo"
+                  className="absolute rounded-2xl"
+                  style={{
+                    width: 288,
+                    height: 413,
+                    left: '50%',
+                    top: '50%',
+                    marginLeft: -144,
+                    marginTop: -206.5,
+                    boxShadow: `0 0 0 1px rgba(${tierPresentation.accentRgb}, 0.55)`,
+                  }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{
+                    opacity: [0, Number((tierPresentation.shockwaveOpacity * 0.6).toFixed(3)), 0],
+                    scale: [0.9, Number((tierPresentation.shockwaveScale * 0.92).toFixed(2)), tierPresentation.shockwaveScale],
+                  }}
+                  transition={{ duration: 1.25, delay: 0.16, ease: 'easeOut' }}
+                />
+                {REVEAL_EMBERS.map((ember, index) => (
+                  <motion.span
+                    key={`ember-${index}`}
+                    data-reveal-ember=""
+                    className="absolute rounded-full"
+                    style={{
+                      left: '50%',
+                      top: '50%',
+                      width: ember.size,
+                      height: ember.size,
+                      marginLeft: ember.x,
+                      marginTop: ember.y,
+                      backgroundColor: `rgba(${tierPresentation.accentRgb}, 0.95)`,
+                      boxShadow: `0 0 8px rgba(${tierPresentation.accentRgb}, 0.8)`,
+                    }}
+                    initial={{ opacity: 0, y: 0, scale: 0.6 }}
+                    animate={{
+                      opacity: [0, tierPresentation.emberOpacity, 0],
+                      y: -ember.rise,
+                      scale: [0.6, 1, 0.35],
+                    }}
+                    transition={{ duration: 2.1 + index * 0.12, delay: ember.delay, ease: 'easeOut' }}
+                  />
+                ))}
+              </>
+            )}
+            <motion.div
+              data-reveal-floor={tierPresentation.id}
+              className="absolute rounded-[50%]"
+              style={{
+                width: 300,
+                height: 54,
+                left: '50%',
+                bottom: -14,
+                marginLeft: -150,
+                background: 'radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.26) 48%, rgba(0, 0, 0, 0) 80%)',
+                filter: 'blur(6px)',
+              }}
+              initial={shouldReduceMotion ? false : { opacity: 0, scaleX: 0.82 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.7, ease: 'easeOut' }}
+            />
           </div>
         )}
 
@@ -1867,8 +2105,7 @@ export default function LuckyCardReveal() {
                     <source type="image/webp" srcSet="/IMG_20260728_220305_112042.webp" />
                     <img alt="Card Back Face" className="w-full h-full object-cover rounded-2xl" src="/IMG_20260728_220305_112042.webp" />
                   </picture>
-                  <div className="absolute inset-0" style={cardPolishSheenStyle} />
-                  <div className="absolute inset-0" style={cardPolishEdgeStyle} />
+                  <CardFinish tierPresentation={tierPresentation} revealed={false} shouldReduceMotion={shouldReduceMotion} />
                 </div>
               </div>
 
@@ -1881,6 +2118,7 @@ export default function LuckyCardReveal() {
                 }}
               >
                 <div
+                  data-card-frame={preserveCoastToCoastPolish ? 'authored' : 'polish'}
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
                   style={preserveCoastToCoastPolish ? undefined : cardPolishFrameStyle}
                 >
@@ -1895,22 +2133,17 @@ export default function LuckyCardReveal() {
                       Lucky Pick 🍁 Canada.ca
                     </div>
                   )}
-                  {!preserveCoastToCoastPolish && (
-                    <>
-                      <div className="absolute inset-0" style={cardPolishSheenStyle} />
-                      <div className="absolute inset-0" style={cardPolishEdgeStyle} />
-                      {isRevealed && (
-                        <div
-                          aria-hidden="true"
-                          data-tier={tierPresentation.id}
-                          className="pointer-events-none absolute inset-0"
-                          style={{
-                            borderRadius: 'inherit',
-                            boxShadow: `inset 0 0 0 2px rgba(${tierPresentation.accentRgb}, ${tierPresentation.frameOpacity}), inset 0 0 26px rgba(${tierPresentation.accentRgb}, ${tierPresentation.innerGlow})`,
-                          }}
-                        />
-                      )}
-                    </>
+                  <CardFinish tierPresentation={tierPresentation} revealed={isRevealed} shouldReduceMotion={shouldReduceMotion} />
+                  {isRevealed && (
+                    <div
+                      aria-hidden="true"
+                      data-tier={tierPresentation.id}
+                      className="pointer-events-none absolute inset-0"
+                      style={{
+                        borderRadius: 'inherit',
+                        boxShadow: `inset 0 0 0 2px rgba(${tierPresentation.accentRgb}, ${tierPresentation.frameOpacity}), inset 0 0 26px rgba(${tierPresentation.accentRgb}, ${tierPresentation.innerGlow})`,
+                      }}
+                    />
                   )}
                 </div>
               </div>
@@ -1931,7 +2164,13 @@ export default function LuckyCardReveal() {
 
       {isReady && isRevealed && selectedCard && (
         <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
-          <div data-tier={tierPresentation.id} className="flex flex-col items-center gap-1.5 text-center">
+          <motion.div
+            data-tier={tierPresentation.id}
+            className="flex flex-col items-center gap-1.5 text-center"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.12, ease: 'easeOut' }}
+          >
             <span
               className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em]"
               style={{
@@ -1945,18 +2184,26 @@ export default function LuckyCardReveal() {
             </span>
             <h2 className="text-2xl font-black tracking-tight text-white drop-shadow-lg">{selectedCard.title}</h2>
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50">Series 1 · Added to your collection</p>
-          </div>
-          <div
+          </motion.div>
+          <motion.div
             className="w-full p-6 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 text-center relative overflow-hidden"
             style={{ borderColor: `rgba(${tierPresentation.accentRgb}, 0.3)` }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.5, delay: shouldReduceMotion ? 0 : 0.24, ease: 'easeOut' }}
           >
             <p className="text-lg italic text-amber-50/90 font-serif leading-relaxed drop-shadow-md">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
             </p>
-          </div>
-          <div className="w-full flex justify-center pb-4">
+          </motion.div>
+          <motion.div
+            className="w-full flex justify-center pb-4"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 0.34, ease: 'easeOut' }}
+          >
             <LuckyCardShare card={selectedCard}/>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
