@@ -25,7 +25,7 @@
 
 - [ ] T009 Run `pnpm exec vitest run __tests__/docs-library-retirement.test.ts` and the manifest/snapshot consistency audit; record actual results.
 - [ ] T010 Run `./freebuff-verify.sh`, record the measured build size against 495 MB, and inspect the final complete diff.
-- [ ] T011 Review all PR comments and check runs after opening the PR; update its single canonical summary with actual outcomes and leave it open/unmerged.
+- [x] T011 Review all PR comments and current check runs after opening PR #1746; record the two informational conversation comments, zero formal reviews, zero inline threads, and current in-progress check state in the single canonical PR summary. The PR remains open and unmerged.
 
 ## Dependencies
 
