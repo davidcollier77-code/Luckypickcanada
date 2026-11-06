@@ -1,3 +1,25 @@
+# Active Context — DevSkim Alerts Report Resolution (2026-11-06)
+
+- **Task groups:** `security` + `testing`; branch `freebuff/c9e5ec63a91aa6449065899b`; feature
+  `specs/095-devskim-alerts-resolution` (broader than 037/082, which covered one alert batch and one
+  DS172411 family).
+- **Verified baseline:** `devskim-alerts.md` held 164 entries: 37 DS173237 `.docs/manifest.json`
+  `githubShas`, 107 DS162092 loopback URLs in `artifacts/` probe JSON, 1 DS162092
+  `playwright.config.ts:31`, 17 DS172411 timer notices, and 2 DS137138 test URLs whose files no longer
+  exist. A local DevSkim CLI 1.0.100 scan of the current tree (dependency/build dirs excluded because CI
+  has no `node_modules`) left 109 results after the existing production filter: the 108 loopback notices
+  plus `app/share-lucky-pick-button.js:280`.
+- **Implementation:** the audited SARIF filter gains one DS162092 predicate for reviewed local origins
+  (exact Playwright `webServer.command`/`url` lines; `artifacts/**/*.json` only when the file parses as
+  JSON and the reported span sits inside a JSON string URL whose host is loopback) and one exact
+  DS172411 statement (`window.setTimeout(() => URL.revokeObjectURL(url), 1000)`). Positive and negative
+  tests were added, the replay gate lists the new reviewed families, and `devskim-alerts.md` is now
+  header plus append marker with no entries.
+- **Verification:** full results are recorded in the PR report; no application source, `.docs/`,
+  workflow, dependency, secret, or scan-glob change.
+
+---
+
 # Active Context — Daily Lucky Card Reveal Tier Presentation (2026-11-05)
 
 - **Task groups:** `polishing` + `testing`; branch `polish/reveal-card-tier-experience-20261105`; feature

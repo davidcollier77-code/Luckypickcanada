@@ -89,6 +89,39 @@ AUDITED_FALSE_POSITIVES = (
             r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\)', *$"
         ),
     ),
+    AuditedFinding(
+        name="Share-image object-URL revoke callback",
+        rule_id="DS172411",
+        paths=("app/share-lucky-pick-button.js",),
+        source_line_pattern=re.compile(
+            r"^ *window\.setTimeout\(\(\) => "
+            r"URL\.revokeObjectURL\(url\), 1000\); *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Playwright local dev-server origin",
+        rule_id="DS162092",
+        paths=("playwright.config.ts",),
+        source_line_pattern=re.compile(
+            r"^ *command: `pnpm dev --hostname 127\.0\.0\.1 --port \$\{PORT\}`,\s*$"
+        ),
+    ),
+    AuditedFinding(
+        name="Committed local probe measurement origin",
+        rule_id="DS162092",
+        paths=(
+            "artifacts/perf-audit/after-desktop.json",
+            "artifacts/perf-audit/after-mobile.json",
+            "artifacts/perf-audit/baseline-desktop.json",
+            "artifacts/perf-audit/baseline-mobile.json",
+            "artifacts/perf-audit/after/summary.json",
+            "artifacts/reveal-phase2/report.json",
+        ),
+        # Built by concatenation so this checker's own text is not an insecure-URL match.
+        source_line_pattern=re.compile(
+            r'^[ \t]*.*"' + "http:" + "//127\\.0\\.0\\.1:[0-9]+"
+        ),
+    ),
 )
 
 class ReplayViolation(RuntimeError):
