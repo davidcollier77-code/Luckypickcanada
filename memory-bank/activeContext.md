@@ -22,6 +22,7 @@
   full `pnpm exec vitest run` 43 files / 343 tests; `tsc --noEmit` exit 0; refresh-docs 19/19;
   `SPEC_KIT_BASE_REF=743a1ce8 ./freebuff-verify.sh` exit 0; build `.next` 299,056,298 B + `public`
   32,840,043 B = 331,896,341 B (316.52 MiB) < 495 MB; no protected path in the diff.
+- **PR:** **#1740** open and unmerged, with `PR_SUMMARY.md` published as its body.
 - **Verification PENDING:** PR-head CI. Browser/visual checks NOT RUN (no UI change). `lastUpdated`
   intentionally left to the updater.
 
