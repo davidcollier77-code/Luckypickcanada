@@ -15,8 +15,12 @@
   DS172411 statement (`window.setTimeout(() => URL.revokeObjectURL(url), 1000)`). Positive and negative
   tests were added, the replay gate lists the new reviewed families, and `devskim-alerts.md` is now
   header plus append marker with no entries.
-- **Verification:** full results are recorded in the PR report; no application source, `.docs/`,
-  workflow, dependency, secret, or scan-glob change.
+- **Verification:** 78 suppression unit tests PASS; the real-SARIF replay removes all eight audited
+  families and leaves no suppressible result; the filtered local scan leaves **0** results; the append
+  script adds `new_count=0` to the cleared report; `pnpm exec vitest run` 439 tests PASS;
+  `./freebuff-verify.sh` exit 0; production build `.next` 298,718,394 B + `public` 32,840,043 B =
+  331,558,437 B (316.20 MiB) < 495 MB. PR #1726 is open and unmerged; PR-head CI is PENDING. No
+  application source, `.docs/`, workflow, dependency, secret, or scan-glob change.
 
 ---
 

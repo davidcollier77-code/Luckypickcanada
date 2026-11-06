@@ -39,4 +39,4 @@
 
 - [X] T017 Measure the production build size and confirm it stays below the 495 MB hard maximum.
 - [X] T018 Run `./freebuff-verify.sh` (exit 0) and measure the production build at 331,558,437 B (316.20 MiB), below the 495 MB maximum.
-- [ ] T019 Review the complete final diff, publish one PR report, and leave the PR open and unmerged.
+- [X] T019 Review the complete final diff, publish one PR report (PR #1726), and leave the PR open and unmerged.
