@@ -315,11 +315,11 @@
     },
     "/upstash/ratelimit": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/upstash/ratelimit/main/README.md"
+      "url": "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview"
     },
     "/pmndrs/react-three-fiber": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/readme.md"
+      "url": "https://r3f.docs.pmnd.rs/getting-started/introduction"
     },
     "/websites/neon": {
       "type": "url",
@@ -327,15 +327,15 @@
     },
     "/magicuidesign/magicui": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/magicuidesign/magicui/main/README.md"
+      "url": "https://magicui.design/docs/components"
     },
     "/posthog/posthog-js": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/PostHog/posthog-js/main/README.md"
+      "url": "https://posthog.com/docs/libraries/js"
     },
     "/goldfire/howler.js": {
       "type": "url",
-      "url": "https://context7.com/goldfire/howler.js/llms.txt"
+      "url": "https://raw.githubusercontent.com/goldfire/howler.js/master/README.md"
     },
     "/websites/mdn_web_audio": {
       "type": "url",
@@ -343,7 +343,7 @@
     },
     "/numpy/numpy": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/numpy/numpy/main/doc/source/reference/arrays.ndarray.rst"
+      "url": "https://numpy.org/doc/stable/reference/arrays.ndarray.html"
     },
     "/websites/google_webp": {
       "type": "url",
@@ -351,7 +351,7 @@
     },
     "/lovell/sharp": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/lovell/sharp/main/README.md"
+      "url": "https://sharp.pixelplumbing.com/"
     },
     "/websites/web_dev_images": {
       "type": "url",
