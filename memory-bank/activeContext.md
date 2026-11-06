@@ -29,6 +29,8 @@
   Coast-to-Coast Tale passed. Reduced motion was NOT RUN in a browser and remains covered only by
   the structural guard. Recorded in
   `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
+- **Delivery:** pull request #1743 is open against `main` and unmerged; the final diff audit covered the
+  fourteen changed files and no protected path.
 
 ---
 

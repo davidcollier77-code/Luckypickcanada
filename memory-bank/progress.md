@@ -391,4 +391,4 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Added the cinematic stage: a tier-tinted charging aura during the draw, then a light shaft, spotlight, halo, rim, two shockwave rings, six one-shot embers and a floor shadow on reveal. All decorative and non-interactive; one-shot layers only mount when motion is allowed.
 - Staged the post-flip arrival of the tier block, quote panel and share control with 0.12 / 0.24 / 0.34 s delays; copy, order and layout unchanged. No dependency, asset, route or reveal behaviour changed.
 - Verification: focused 2 files / 12 tests, full suite 44 files / 351 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, production build 349,904,547 B (333.7 MiB). Rendered evidence collected in the managed cloud browser; local Playwright BLOCKED (missing Chromium system libraries, no root) and reduced-motion browser emulation NOT RUN.
-- PR summary updated; branch pushed. PR creation requires owner GitHub auth (no `gh` session here).
+- PR summary updated; branch pushed and pull request #1743 opened (open, unmerged).

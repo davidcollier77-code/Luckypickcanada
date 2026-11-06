@@ -127,7 +127,7 @@ could not be read; they are recorded honestly rather than claimed.
 | Local Playwright probe | **BLOCKED** | `node artifacts/reveal-card-cinematics/probe.cjs` exits 2: Chromium cannot launch (`libnspr4.so`, `libnss3.so`, `libatspi.so.0`, `libatk*`, `libX*`, `libasound`, `libxkbcommon` absent), the sandbox package lists are empty and there is no root to install them. The managed Playwright bridge also returned an internal `options.mode` error. |
 | Reduced motion, rendered | **NOT RUN** | `prefers-reduced-motion` emulation was unavailable in the browser path used. Covered only by the structural guard, which pins the `!shouldReduceMotion` gates and zero-duration static layers. |
 | Console/page errors | **NOT RUN** | The evaluation harness attached no console listener. The pages rendered without a visible error state. |
-| PR-head CI | PENDING | No pull request exists yet (no GitHub credentials in this environment). |
+| PR-head CI | PENDING | Pull request #1743 is open; its checks were not observed from this environment. |
 
 Two harness defects were found and corrected during the rendered checks, not product defects: the
 first pass clicked the CollectionBinder "View Collection" button instead of the reveal control (6
@@ -157,8 +157,8 @@ recorded in `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
 - The rendered evidence came from an in-page harness in the managed cloud browser rather than the
   repository's Playwright runner; automation/console assertions are therefore not equivalent to the
   visual QA suite.
-- No pull request was opened: `gh` is present but unauthenticated here, and the branch had no remote
-  counterpart. The branch is pushed for review through the managed Git integration.
+- The pull request is [#1743](https://github.com/davidcollier77-code/Luckypickcanada/pull/1743),
+  open against `main` and unmerged; the branch is `freebuff/4818369485c7528fe69e661a` at `4098ab84`.
 
 **Implementation status:** COMPLETE (in-scope changes and artifacts in place, final diff reviewed).
 
