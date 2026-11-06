@@ -60,7 +60,6 @@ First-time setup: org/project creation, connection strings, driver installation,
 - [Built to scale](https://neon.com/docs/get-started/production-readiness.md): Neon supports you from prototype to scale-up
 - [Connecting Neon to your stack](https://neon.com/docs/get-started/connect-neon.md): Learn how to integrate Neon into your application
 - [Database branching workflow primer](https://neon.com/docs/get-started/workflow-primer.md): An introduction to integrating Postgres branching into your development workflow
-- [Get started with your AI agent](https://neon.com/docs/get-started/with-an-agent.md): Set up Neon in your project using your AI coding assistant
 - [Getting ready for production](https://neon.com/docs/get-started/production-checklist.md): Guidelines to optimize price, performance, and reliability
 - [How a Neon backend fits together](https://neon.com/docs/get-started/backend-overview.md): Postgres, Object Storage, Functions, the AI Gateway, Auth, and the Data API, declared in one neon.ts and branched together
 - [Neon framework guides](https://neon.com/docs/get-started/frameworks.md): Find detailed instructions for connecting to Neon from various frameworks
@@ -88,7 +87,7 @@ Drivers, connection strings, pooling, local dev tooling, and troubleshooting.
 
 Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI/CD automation with `neon`.
 
-- [All 49 Neon CLI pages](https://neon.com/docs/cli/llms.txt) — key pages below
+- [All 50 Neon CLI pages](https://neon.com/docs/cli/llms.txt) — key pages below
 
 - [Neon CLI](https://neon.com/docs/cli.md): The Neon command-line interface: every command, with options and examples
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
@@ -103,12 +102,12 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 
 Agent Skills, MCP integrations, vector search, and tools for building AI-powered applications with Neon.
 
-- [All 22 AI & Agents pages](https://neon.com/docs/ai/llms.txt) — key pages below
+- [All 24 AI & Agents pages](https://neon.com/docs/ai/llms.txt) — key pages below
 
 - [Neon MCP Server overview](https://neon.com/docs/ai/neon-mcp-server.md): Connect your AI assistant to Neon to manage projects, run queries, and make schema changes
-- [Connect MCP clients to Neon](https://neon.com/docs/ai/connect-mcp-clients-to-neon.md): Connect MCP clients like Cursor, Claude Code, VS Code, and ChatGPT to your Lakebase Postgres database on Neon.
+- [Set up other agents and MCP clients](https://neon.com/docs/ai/connect-mcp-clients-to-neon.md): Install Neon's agent skills and the Neon MCP Server in Devin Desktop, Cline, Zed, Gemini CLI, Kiro, Kimi Code, and other agents
 - [Agent Skills](https://neon.com/docs/ai/agent-skills.md): Teach your AI coding assistant how to work with Neon
-- [Claude Code plugin for Neon](https://neon.com/docs/ai/ai-claude-code-plugin.md)
+- [Set up your AI agent for Neon](https://neon.com/docs/ai/agent-setup.md): Connect Neon to your coding agent or chat app
 - [Lakebase Search](https://neon.com/docs/ai/lakebase-search.md): Scalable vector and full-text search for Postgres
 - [Database versioning with snapshots](https://neon.com/docs/ai/ai-database-versioning.md): How AI agents and codegen platforms implement database version control using snapshots and preview branches
 
