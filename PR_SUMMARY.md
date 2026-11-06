@@ -148,8 +148,8 @@ recorded in `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
 ## Independent review of PR #1743 feedback (2026-11-06)
 
 Audit only — this review changed no application code, test, dependency, workflow or visual baseline,
-and did not reply to, resolve, approve or merge anything. Reviewed head `18731264`. Sources: three
-conversation comments, four inline threads on one `COMMENTED` review, and 13 check runs (seven
+and did not reply to, resolve, approve or merge anything. Reviewed head `18731264`. Sources: five
+conversation comments (two bot failures, three PR-Tagger analyses), four inline threads on one `COMMENTED` review, and 13 check runs (seven
 identified individually). Full evidence, method and limitations:
 `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`.
 
@@ -160,11 +160,20 @@ identified individually). Full evidence, method and limitations:
 | 3 | The reduced-motion test slice depends on JSX source order (`__tests__/lucky-card-reveal-presentation.test.js:127–133`) | **Partially valid** — real fragility, stated mechanism wrong | The searched literal `{!shouldReduceMotion && (` matches only `:1998` (line 125 reads `{revealed && !shouldReduceMotion && (`), and the end anchor sits after the ember block, so the assertions are meaningful today. An inverted order yields an empty slice and fails loudly, not silently. The true weakness is that range containment does not prove gating: JSX moved outside the conditional but before the floor shadow would still pass | Optional test hardening (brace-matched block or rendered assertion). Not a blocker |
 | 4 | Reduced motion is covered only by a source-text guard and should be a merge blocker (`PR_SUMMARY.md:130`) | **Valid — the only genuine merge blocker** | `playwright.config.ts` targets `tests/visual/`, whose 8 specs cover the crystal ball, gold CTAs, homepage, paid reveal selection and Turnstile — **none exercises `/reveal`**. The passing Visual QA run therefore cannot cover this surface, and the acceptance criterion remains unproven in a browser | Required follow-up: a Playwright test with `page.emulateMedia({ reducedMotion: 'reduce' })` asserting zero shockwave/ember/glint nodes after reveal while the static shaft, spotlight and halo stay visible. Test changes are outside this audit's scope |
 
-Bot and CI feedback: **Pullfrog FAIL** is an external Google AI Studio free-tier quota error
-(`gemini-3.8-flash`), not a code defect, and was not topped up; **PR-Tagger** posted two duplicate
-informational analyses whose "ensure adequate test coverage" remark matches finding 4; **Visual QA**
-and **DevSkim** pass, but the former has no `/reveal` coverage (see finding 4); the updater-scheduler
-checks pass or skip by path filter.
+Bot and CI feedback:
+
+| Item | Evidence | Assessment |
+| --- | --- | --- |
+| Pullfrog | Google AI Studio free-tier quota exhausted for `gemini-3.8-flash`; a top-up notice was posted and no review was produced | **FAIL, external, non-code.** Not topped up (cost boundary). No code action |
+| Amazon Q Developer | Comment `6695202273` (20:51:21): "Review Failed — the pull request head or merge base was modified since I began my review" | **FAIL, tooling race, non-code.** It started before the documentation commit landed and produced no findings; a retry needs a fresh run |
+| PR Insights Tagger (3 comments) | `6695147376`, `6695153557`, and `6697703692` after the docs commit: 12 files, +1,408/−155 then +1,538/−158, complexity 4.92/10, risk low; recommends smaller PRs and adequate test coverage | Informational duplicates that re-post on every push. The coverage remark matches thread 4; splitting the PR is not actionable under review |
+| Graphite / AI Reviews | Check `128147449633` success, "AI review ran and left 4 comments" | Green only means the review ran; the four threads above are the substance |
+| **Visual QA** | Check `128145862084` success (3 annotations) | **PASS, but not evidence for this change** — no `/reveal` spec exists in the suite |
+| DevSkim | Check `128146212628` success: "No new alerts in code changed by this pull request" | PASS |
+| Updater scheduler checks | Verify `128146861496` success; Deploy `128146863502` and Append alerts `128146291195` skipped | Unrelated to the reveal code |
+| Remaining check runs | 13 runs exist on the reviewed head; 7 identified individually | **NOT ENUMERATED** — integration payload truncation plus a rate-limited unauthenticated REST API. Their conclusions are not claimed |
+
+No new inline thread exists beyond these four: the review-comment list is exhausted and its fifth page is empty.
 
 **Merge blockers:** exactly one — finding 4 (unproven reduced-motion behaviour on `/reveal`). Findings
 1 and 3 are optional hardening; finding 2 needs no change.
