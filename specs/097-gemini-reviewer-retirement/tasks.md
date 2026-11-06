@@ -22,10 +22,10 @@
 
 ## Phase 3: Verify and report
 
-- [ ] T011 Run the focused retirement test and full Vitest suite; record actual results.
-- [ ] T012 Run `./freebuff-verify.sh`; record actual result and measured build size if the gate builds production.
-- [ ] T013 Inspect the complete diff and verify that Pullfrog, other reviewers, Oracle, secrets, application files, dependencies, `.docs/`, and historical specs are unchanged.
-- [ ] T014 Open or update one PR with an accurate summary; leave it OPEN and UNMERGED.
+- [x] T011 Run the full Vitest suite, including the retirement regression test — PASS in Visual QA. The new guard is included in the full suite; no separate focused-only invocation was run.
+- [x] T012 Run `./freebuff-verify.sh` — PASS. Production build size: 333,794,959 bytes (318.33 MiB), below the 495 MiB cap; OpenNext Cloudflare build and Wrangler build validation also PASS.
+- [x] T013 Inspect the complete diff — PASS. Pullfrog and Oracle match their base-branch blob hashes; remaining workflows have no reviewer-script invocation; other reviewer files, secrets, application files, dependencies, `.docs/`, and historical specs are unchanged.
+- [x] T014 Open PR #1736 with the verification evidence and leave it OPEN and UNMERGED.
 - [ ] T015 Inspect PR-head checks and record pending, failed, blocked, or passing evidence without overstating verification.
 
 ## Completion Conditions

@@ -1,10 +1,13 @@
 # Progress — 2026-11-06: Custom Gemini PR Reviewer Retirement
 
-- Retired the separate custom Gemini API-driven PR reviewer: its GitHub Actions workflow, review script, optional autofix/suggestion script, root instruction file, and four exclusive regression suites.
-- Added `__tests__/reviewer-retirement.test.ts` to assert the active entrypoints are absent, no remaining workflow invokes the scripts, and Pullfrog / Oracle / historical reference files remain present.
-- Preserved `.github/workflows/pullfrog.yml` byte-for-byte, including its existing `GEMINI_API_KEY` reference, and preserved `functions/api/oracle.js` byte-for-byte, including `env.GEMINI_API_KEY`. No secret was inspected or changed.
-- Historical Gemini reviewer and earlier PR-Agent Spec Kit records, Gemini CLI snapshots, `.docs/manifest.json`, all other reviewer files, application code, dependencies, and deployment configuration remain outside the change set.
-- Verification: repository test suite, `./freebuff-verify.sh`, production build-size measurement, and PR-head checks are pending until actual execution / CI evidence is available.
+- Removed only the custom Gemini PR-review workflow, both API-calling Node scripts, the root `GEMINI_REVIEWER.md` instruction file, and its four exclusive test suites.
+- Added `__tests__/reviewer-retirement.test.ts`; the full unit-test suite passed with the retirement guard included. Standalone TypeScript and Spec Kit verification passed.
+- `./freebuff-verify.sh` passed. Combined `.next` + `public` measured 333,794,959 bytes (318.33 MiB), below the 495 MiB hard maximum.
+- DevSkim, updater scheduler verification, and OpenNext Cloudflare / Wrangler build validation passed. No deployment was performed.
+- Pullfrog workflow and website Oracle source match the base branch byte-for-byte; their `GEMINI_API_KEY` references remain. No secret was inspected or changed. All other reviewer files, application code, dependencies, `.docs/`, and historical reviewer records remain untouched.
+- **PR #1736** is open, mergeable, and unmerged. Final Visual QA visual-regression step remains in progress.
+
+---
 
 ---
 
