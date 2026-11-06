@@ -13,7 +13,7 @@ This is the repository's authoritative workflow and safety policy. The user's ta
 - Use applicable enabled Freebuff skills when relevant: `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
-The manifest is an index, not an instruction to read every listed source. Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
+The manifest is an index, not an instruction to read every listed source. Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
 
 ## 2. SPEC KIT AND EXECUTION
 
@@ -55,7 +55,7 @@ Explicit owner authorization is required before changing:
 - accessibility/responsive behavior or approved visual/product behavior;
 - the documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
+Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
 
 ## 6. BUILD AND EXECUTION SAFETY
 
