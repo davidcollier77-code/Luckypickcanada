@@ -114,3 +114,25 @@ reveal. No new stylesheet, component file, dependency or route.
 No constitution violations. The only structural addition is one module-scope presentational
 component inside the existing reveal file, which removes duplicated finish markup from the two card
 faces rather than adding architecture.
+
+## Review addendum — method (PR #1743, 2026-11-06)
+
+1. **Enumerate.** Read conversation comments, inline review threads, formal reviews and check runs for
+   PR #1743 at head `18731264`. The unauthenticated REST API returned 403 (rate limit) from this VM, so
+   the GitHub integration was used as the documented alternative; its payloads truncate, so inline
+   threads were paged one at a time and check runs were filtered by name.
+2. **Verify each point against the code.** Open the exact cited location at HEAD and reason about the
+   real behaviour: `app/lucky-card-reveal.js:125–140` (glint gating), `:76–83` and `:2038–2061`
+   (ember list and keys), `__tests__/lucky-card-reveal-presentation.test.js:127–133` (slice anchors),
+   `PR_SUMMARY.md:130` and `playwright.config.ts` + `tests/visual/` (reduced-motion coverage).
+3. **Classify.** Valid / partially valid / invalid / already addressed, then separate merge blockers
+   from optional hardening and from items this review could not verify.
+4. **Record.** Findings and limitations in `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`;
+   the canonical PR summary carries the same conclusions.
+
+**Constraints honoured:** read-only. No code, test, dependency, workflow or baseline edit; no reply,
+resolution, approval or merge; no paid service subscribed (the Pullfrog quota failure is reported, not
+topped up).
+
+**Unaffected by design:** the review adds no runtime path, so the production build size and the tier /
+finish behaviour are unchanged from the reviewed head.

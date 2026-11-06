@@ -73,3 +73,13 @@ the tier bloom and single glint on the revealed front, a neutral back, and uncha
 Deliver the three user stories inside the one component that owns the reveal, driven by the existing
 tier module. Do not re-time the flip, the canvas beams or the audio, do not regenerate or re-encode
 artwork, and do not touch payments, API routes, data or deployment configuration.
+
+## Phase 8: Independent review of PR #1743 feedback (2026-11-06, audit only)
+
+- [X] T017 Enumerate PR #1743 feedback: 3 conversation comments, 4 inline Graphite threads, 1 formal review (COMMENTED, empty body), 13 check runs (7 identified individually). REST API 403 rate-limited; integration paged to avoid truncation.
+- [X] T018 Assess thread 1 (ember array-index keys, `app/lucky-card-reveal.js:2061`): **partially valid** — `REVEAL_EMBERS` is a fixed module literal (`:76–83`), keys are stable, no current defect; hardening/comment-accuracy nit, optional.
+- [X] T019 Assess thread 2 (glint one-pass guarantee, `:127–140`): **invalid** — the glint mounts once at the flip inside `{revealed && !shouldReduceMotion && (` and re-renders preserve the finished state, which is the required single pass; a key/AnimatePresence would risk a second pass.
+- [X] T020 Assess thread 3 (reduced-motion test slice, `__tests__/lucky-card-reveal-presentation.test.js:127–133`): **partially valid** — the literal start anchor matches only `:1998`, the end anchor is after the ember block, and an inverted order fails loudly; the real weakness is that range containment does not prove gating. Test hardening, not a product defect.
+- [X] T021 Assess thread 4 (reduced-motion unverified, `PR_SUMMARY.md:130`): **valid, merge blocker** — `/reveal` has no spec in `tests/visual/` at all, so green Visual QA cannot cover it; required follow-up is a Playwright test with `reducedMotion: 'reduce'` (out of scope here, tests must not change).
+- [X] T022 Assess bot/CI feedback: Pullfrog FAIL (external Gemini quota, non-code), PR-Tagger informational duplicates (test-coverage remark matches T021), Graphite check success, Visual QA success but not covering `/reveal`, DevSkim success, updater-scheduler checks success/skipped; ~6 of 13 check runs not individually enumerated (limitation recorded).
+- [X] T023 Record findings in `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`, update the single PR summary, keep PR #1743 open and unmerged. No code, test, dependency or workflow change.

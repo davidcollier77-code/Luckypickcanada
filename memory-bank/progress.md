@@ -392,3 +392,12 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Staged the post-flip arrival of the tier block, quote panel and share control with 0.12 / 0.24 / 0.34 s delays; copy, order and layout unchanged. No dependency, asset, route or reveal behaviour changed.
 - Verification: focused 2 files / 12 tests, full suite 44 files / 351 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, production build 349,904,547 B (333.7 MiB). Rendered evidence collected in the managed cloud browser; local Playwright BLOCKED (missing Chromium system libraries, no root) and reduced-motion browser emulation NOT RUN.
 - PR summary updated; branch pushed and pull request #1743 opened (open, unmerged).
+
+## 2026-11-06 — Independent review of PR #1743 feedback
+
+- Audited every comment on PR #1743 at head `18731264`: three conversation comments, four Graphite inline threads, one formal review, and 13 check runs (7 identified individually; REST API was rate-limited, so the integration was paged to avoid truncation).
+- Verdicts: ember array-index keys are a hardening nit, not a defect (fixed module literal, stable keys); the glint "replay" concern is invalid (the element mounts once at the flip and re-renders preserve the single finished pass); the reduced-motion test slice is genuinely fragile but fails loudly and does not prove gating; the reduced-motion verification gap is valid and is the only merge blocker.
+- Confirmed the blocker's root cause: `tests/visual/` contains no `/reveal` spec, so the passing Visual QA run cannot cover the new surface. Required follow-up is a Playwright test using `prefers-reduced-motion: reduce` (test changes are outside this audit's scope).
+- Pullfrog's failed run is an external Google AI Studio free-tier quota error, not a code defect; no paid top-up was made.
+- Findings recorded in `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md` and the single PR summary. No application code, test, dependency or workflow was changed; PR #1743 remains open and unmerged.
+- Verification for the review task: `./freebuff-verify.sh` exit 0 (Spec Kit gate, `tsc --noEmit`, production build, refresh-docs 19/19); `pnpm exec vitest run` 44 files / 351 tests passed; build `.next` 317,067,315 B + `public` 32,840,043 B = 349,907,358 B (333.7 MiB), below the 495 MB maximum.

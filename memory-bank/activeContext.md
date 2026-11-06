@@ -1,3 +1,25 @@
+# Active Context — Independent Review of PR #1743 Feedback (2026-11-06)
+
+- **Task groups:** `deep-dive` (evidence-driven audit of review feedback) + `testing` (verification
+  claims, coverage gaps, CI evidence). Audit only: no code, test, dependency, workflow or baseline
+  change; PR #1743 stays open and unmerged.
+- **Reviewed head:** `18731264126a0af4c5b91962392582040c2cc839`.
+- **Feedback set:** 3 conversation comments (Pullfrog quota failure, 2 PR-Tagger analyses), 4 Graphite
+  inline threads on one `COMMENTED` review, 13 check runs (7 identified individually).
+- **Verdicts:** ember index keys — partially valid, no current defect (fixed module literal, stable
+  keys); glint one-pass — invalid (re-renders preserve the finished pass; a key would risk a second);
+  reduced-motion test slice — partially valid (fragile range containment, fails loudly, does not prove
+  gating); reduced-motion unverified — **valid and the only merge blocker**, because `tests/visual/`
+  has no `/reveal` spec at all and green Visual QA cannot cover it.
+- **Bot/CI:** Pullfrog FAIL is an external Gemini free-tier quota error, not a code defect; Visual QA
+  and DevSkim pass; updater-scheduler checks pass/skip; ~6 check runs not individually enumerated.
+- **Evidence:** `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`; raw comment/review
+  JSON walkthrough summarised there.
+- **Outcome:** review recorded in the PR report; implementation status unchanged (COMPLETE), PR
+  verification still PARTIAL with `USEFUL RESULT: NO` until reduced motion is proven in a browser.
+
+---
+
 # Active Context — Lucky Card Reveal Cinematic Enhancement (2026-11-06)
 
 - **Task groups:** `polishing` (a protected visual surface was enhanced without changing its

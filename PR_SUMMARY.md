@@ -77,6 +77,7 @@ artifacts/reveal-card-cinematics/out/cloud-browser-report.json
 artifacts/reveal-card-cinematics/out/revealed-flagship-cloud.png
 specs/101-lucky-card-reveal-cinematics/{spec,plan,tasks}.md
 .specify/feature.json
+artifacts/reveal-card-cinematics/out/pr1743-review-findings.md
 memory-bank/activeContext.md
 memory-bank/progress.md
 PR_SUMMARY.md
@@ -92,7 +93,8 @@ PR_SUMMARY.md
 | Implement | the code and test changes above, recorded in `tasks.md` |
 
 One feature directory, no duplicates; `.specify/feature.json` points at it. No `.docs/` file was
-modified.
+modified. The PR-review addendum is recorded in the same three artifacts (spec and plan addenda,
+Phase 8 / T017–T023), so this task created no duplicate feature directory.
 
 ## Reference documents reviewed
 
@@ -120,6 +122,9 @@ could not be read; they are recorded honestly rather than claimed.
 | Type check | PASS | `pnpm exec tsc --noEmit` → exit 0. |
 | Build + repository gate | PASS | `./freebuff-verify.sh` → exit 0 (Spec Kit artifact gate, type check, production build, refresh-docs 19/19). |
 | Build size | PASS | `.next` 317,064,504 B + `public` 32,840,043 B = **349,904,547 B (333.7 MiB)**, below the 495 MB maximum. |
+| Build + gate (this review run) | PASS | `./freebuff-verify.sh` → exit 0 (frozen install, Spec Kit governance gate, `tsc --noEmit`, production build, refresh-docs 19/19). |
+| Build size (this review run) | PASS | `.next` 317,067,315 B + `public` 32,840,043 B = **349,907,358 B (333.7 MiB)**, below the 495 MB maximum. |
+| Unit suites (this review run) | PASS | `pnpm exec vitest run` → 44 files / 351 tests passed, exit 0. |
 | Rendered reveal, three tiers | PASS | Managed cloud browser against the production build: chip/name/caption/quote, tier-accent spotlight, shaft, halo, two shockwaves, six embers, floor shadow, 0 px overflow, artwork URLs unchanged; tier block and quote settled at opacity 1. |
 | Both card faces / all cards | PASS | Each tier: back `[gloss, specular, bevel]`, front `[gloss, specular, bevel, tier-bloom, glint]`. Coast-to-Coast Tale: shared finish plus premium ring, authored frame preserved (`data-card-frame="authored"`, border width 0 px). |
 | Charging aura during the draw | PASS | Aura rendered with the drawn tier's accent, `aria-hidden`, `pointer-events: none`; two beam canvases still running; entry control removed while drawing. |
@@ -127,13 +132,42 @@ could not be read; they are recorded honestly rather than claimed.
 | Local Playwright probe | **BLOCKED** | `node artifacts/reveal-card-cinematics/probe.cjs` exits 2: Chromium cannot launch (`libnspr4.so`, `libnss3.so`, `libatspi.so.0`, `libatk*`, `libX*`, `libasound`, `libxkbcommon` absent), the sandbox package lists are empty and there is no root to install them. The managed Playwright bridge also returned an internal `options.mode` error. |
 | Reduced motion, rendered | **NOT RUN** | `prefers-reduced-motion` emulation was unavailable in the browser path used. Covered only by the structural guard, which pins the `!shouldReduceMotion` gates and zero-duration static layers. |
 | Console/page errors | **NOT RUN** | The evaluation harness attached no console listener. The pages rendered without a visible error state. |
-| PR-head CI | PENDING | Pull request #1743 is open; its checks were not observed from this environment. |
+| Graphite AI Reviews (CI) | PASS | Check run `128147449633` success, "AI review ran and left 4 comments"; all four threads are assessed in the review section. |
+| Visual QA (CI) | PASS, but not covering this surface | Check run `128145862084` success (3 annotations). `tests/visual/` has no `/reveal` spec, so this pass is not evidence for the reveal. |
+| DevSkim (CI) | PASS | Check run `128146212628`: "No new alerts in code changed by this pull request". |
+| Updater scheduler checks (CI) | PASS / SKIPPED | Verify `128146861496` success; Deploy `128146863502` and Append alerts `128146291195` skipped by path filter. |
+| Pullfrog (CI) | **FAIL (external)** | Google AI Studio free-tier quota exhausted for `gemini-3.8-flash`; the bot produced no review. Not a code defect. |
+| Remaining check runs | **NOT ENUMERATED** | 13 runs exist on the reviewed head; ~6 could not be retrieved individually (integration payload truncation and a rate-limited REST API). Their conclusions are not claimed. |
 
 Two harness defects were found and corrected during the rendered checks, not product defects: the
 first pass clicked the CollectionBinder "View Collection" button instead of the reveal control (6
 failed checks re-run and passing), and one comparison used raw `textContent`, which includes the
 decorative aria-hidden ♠ glyph (the accessible name was then verified separately as exact). Both are
 recorded in `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
+
+## Independent review of PR #1743 feedback (2026-11-06)
+
+Audit only — this review changed no application code, test, dependency, workflow or visual baseline,
+and did not reply to, resolve, approve or merge anything. Reviewed head `18731264`. Sources: three
+conversation comments, four inline threads on one `COMMENTED` review, and 13 check runs (seven
+identified individually). Full evidence, method and limitations:
+`artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`.
+
+| # | Feedback | Verdict | Evidence at the reviewed head | Recommended action |
+| --- | --- | --- | --- | --- |
+| 1 | Ember elements use the array index as a React key (`app/lucky-card-reveal.js:2061`) | **Partially valid** — no current defect | `REVEAL_EMBERS` is a fixed module-scope literal of six entries (`:76–83`), never reordered or filtered, and its length does not vary by tier; `ember-0…5` are therefore stable keys and a re-render does not remount the nodes, so the documented no-restart guarantee holds | Optional: derive a content key (for example from `x`/`y`) so the guarantee survives a future dynamic list. Not a blocker |
+| 2 | The glint has no `key`/`AnimatePresence`, so the single-pass guarantee "only holds if there are zero re-renders" (`:127–140`) | **Invalid** — inverts the required behaviour | The glint is mounted only inside `{revealed && !shouldReduceMotion && (` (`:125`), i.e. once at the flip. Framer Motion runs the keyframe array on mount and does not replay a finished animation on re-render; "completed at opacity 0" **is** exactly one pass. A key change or remount is what would risk a second pass | None |
+| 3 | The reduced-motion test slice depends on JSX source order (`__tests__/lucky-card-reveal-presentation.test.js:127–133`) | **Partially valid** — real fragility, stated mechanism wrong | The searched literal `{!shouldReduceMotion && (` matches only `:1998` (line 125 reads `{revealed && !shouldReduceMotion && (`), and the end anchor sits after the ember block, so the assertions are meaningful today. An inverted order yields an empty slice and fails loudly, not silently. The true weakness is that range containment does not prove gating: JSX moved outside the conditional but before the floor shadow would still pass | Optional test hardening (brace-matched block or rendered assertion). Not a blocker |
+| 4 | Reduced motion is covered only by a source-text guard and should be a merge blocker (`PR_SUMMARY.md:130`) | **Valid — the only genuine merge blocker** | `playwright.config.ts` targets `tests/visual/`, whose 8 specs cover the crystal ball, gold CTAs, homepage, paid reveal selection and Turnstile — **none exercises `/reveal`**. The passing Visual QA run therefore cannot cover this surface, and the acceptance criterion remains unproven in a browser | Required follow-up: a Playwright test with `page.emulateMedia({ reducedMotion: 'reduce' })` asserting zero shockwave/ember/glint nodes after reveal while the static shaft, spotlight and halo stay visible. Test changes are outside this audit's scope |
+
+Bot and CI feedback: **Pullfrog FAIL** is an external Google AI Studio free-tier quota error
+(`gemini-3.8-flash`), not a code defect, and was not topped up; **PR-Tagger** posted two duplicate
+informational analyses whose "ensure adequate test coverage" remark matches finding 4; **Visual QA**
+and **DevSkim** pass, but the former has no `/reveal` coverage (see finding 4); the updater-scheduler
+checks pass or skip by path filter.
+
+**Merge blockers:** exactly one — finding 4 (unproven reduced-motion behaviour on `/reveal`). Findings
+1 and 3 are optional hardening; finding 2 needs no change.
 
 ## Behavior preserved
 
@@ -158,13 +192,23 @@ recorded in `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
   repository's Playwright runner; automation/console assertions are therefore not equivalent to the
   visual QA suite.
 - The pull request is [#1743](https://github.com/davidcollier77-code/Luckypickcanada/pull/1743),
-  open against `main` and unmerged; the branch is `freebuff/4818369485c7528fe69e661a` at `4098ab84`.
+  open against `main` and unmerged; the review was performed at `18731264` and this report update adds
+  a documentation-only commit on the same branch.
+- The independent review confirms that reduced motion on `/reveal` is the only genuine merge blocker
+  and that `/reveal` has no automated browser coverage at all; that is a coverage gap in the
+  repository's visual suite, not a regression introduced here.
 
-**Implementation status:** COMPLETE (in-scope changes and artifacts in place, final diff reviewed).
+**Implementation status:** COMPLETE — unchanged by this review; no application code, test, dependency
+or workflow file was touched, and the final diff for this task is documentation and evidence only.
+
+**Review status:** COMPLETE — all four Graphite threads, the conversation comments and the identifiable
+CI results are assessed with cited code and API evidence; the four verdicts are 1 partially valid,
+1 invalid, 1 partially valid, 1 valid-and-blocking.
 
 **Verification status:** PARTIAL — build, type check, unit suites and rendered tier/finish/stage
-checks pass; the local Playwright probe is BLOCKED and rendered reduced-motion is NOT RUN.
+checks pass; the local Playwright probe is BLOCKED and rendered reduced-motion is NOT RUN. The review
+found no new defect and did not change that status.
 
-**USEFUL RESULT: NO** — a mandatory visual check (reduced motion in a browser) is unverified, so
-verified completion cannot be claimed. The implemented behaviour and every other executed check are
+**USEFUL RESULT: NO** — a mandatory visual check (reduced motion in a browser) remains unverified, so
+verified completion cannot be claimed. The review itself is complete and every other executed check is
 reported above.

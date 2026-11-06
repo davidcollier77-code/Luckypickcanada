@@ -220,3 +220,21 @@ is mounted.
 - Existing artwork is the authored identity of each card and is used exactly as shipped.
 - `coast-to-coast-tale`'s authored frame is its identity; consistency is achieved by adding the
   shared finish around it rather than replacing its frame.
+
+## Review addendum — PR #1743 feedback (2026-11-06)
+
+**Task:** audit-only independent review of every comment on PR #1743 — conversation comments, inline
+review threads, formal reviews, and bot/CI results — assessed against the code at the reviewed head
+`18731264`. No application code, test, dependency, workflow or visual baseline may change; no thread
+may be replied to or resolved; the PR stays open and unmerged.
+
+**Acceptance criteria**
+
+- **AC-R1** Every feedback item on PR #1743 is enumerated, or is explicitly recorded as not
+  retrievable together with the reason (unauthenticated API quota, truncated payload, rate limits).
+- **AC-R2** Every item receives one verdict — valid, partially valid, invalid, or already addressed —
+  and each verdict cites the inspected code (`file:line`) or the API evidence behind it.
+- **AC-R3** Genuine merge blockers are separated from optional improvements and from checks that
+  remain unverified.
+- **AC-R4** The single PR report records the findings, the four Graphite threads are each assessed, and
+  the PR remains open and unmerged.
