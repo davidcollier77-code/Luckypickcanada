@@ -23,3 +23,7 @@ When materially necessary, consult the following approved libraries. (Requires C
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
 Testing must require real execution/verification where practical, not code inspection alone.
+
+## Conditional Security Patch Validation Reference — Trail of Bits
+
+For testing a security remediation after a patch exists, consult `.docs/testing/_trailofbits_skills_post-patch-validation.md` and `.docs/testing/_trailofbits_skills_post-patch-validation-evidence-model.md`. Adapt validation ideas to the repository's actual test harness and authorized local scope. The upstream runner is not installed by this reference alone. Do not run its examples against production. A passing test set is evidence only for the behavior it actually exercises; preserve outstanding coverage gaps in the PR summary.
