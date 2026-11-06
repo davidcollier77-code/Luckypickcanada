@@ -15,7 +15,7 @@
 # or any application, theme, asset or test path requests visual QA. A change this
 # script cannot positively classify is therefore never silently skipped.
 
-set -uo pipefail
+set -euo pipefail
 
 documentation_only() {
   case "$1" in
