@@ -18,7 +18,7 @@ describe("custom Gemini reviewer retirement", () => {
       expect(existsSync(path), `${path} must be removed`).toBe(false);
     }
 
-    const workflows = readdirSync(".github/workflows").filter((name) => /\\.ya?ml$/i.test(name));
+    const workflows = readdirSync(".github/workflows").filter((name) => /\.ya?ml$/i.test(name));
     const staleInvocations = workflows.filter((name) => {
       const content = readFileSync(`.github/workflows/${name}`, "utf8");
       return content.includes(".github/scripts/gemini-reviewer.cjs") ||
