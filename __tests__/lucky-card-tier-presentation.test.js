@@ -6,12 +6,23 @@ import {
 import { LUCKY_CARDS } from '../app/lucky-card-data';
 
 /**
- * Contract guard for `specs/094-lucky-card-reveal-polish`.
+ * Contract guard for `specs/094-lucky-card-reveal-polish` (base tier palette)
+ * and `specs/101-lucky-card-reveal-cinematics` (cinematic stage + shared finish).
  *
  * The revealed card presentation is driven entirely by this module, so the tier
  * vocabulary the collection actually ships must have one complete, distinct and
- * escalating treatment per tier.
+ * escalating treatment per tier, and every shipped card must resolve the same
+ * complete finish palette.
  */
+
+const CINEMATIC_KEYS = [
+  'spotlightOpacity',
+  'shockwaveOpacity',
+  'shockwaveScale',
+  'glossOpacity',
+  'sweepDuration',
+  'emberOpacity',
+];
 
 function hexToRgbTriple(hex) {
   const value = hex.replace('#', '');
@@ -69,6 +80,53 @@ describe('Lucky Card tier presentation', () => {
 
     expect(flagship.revealDuration).toBeGreaterThanOrEqual(premium.revealDuration);
     expect(premium.revealDuration).toBeGreaterThanOrEqual(standard.revealDuration);
+  });
+
+  it('gives every shipped card the same complete cinematic finish palette', () => {
+    expect(LUCKY_CARDS.length).toBeGreaterThan(0);
+
+    for (const card of LUCKY_CARDS) {
+      const presentation = getLuckyCardTierPresentation(card.tier);
+
+      for (const key of CINEMATIC_KEYS) {
+        expect(typeof presentation[key], `${card.id} ${key}`).toBe('number');
+        expect(presentation[key], `${card.id} ${key}`).toBeGreaterThan(0);
+      }
+
+      // The finish must stay a finish: strong enough to read, never opaque
+      // enough to hide the authored artwork underneath it.
+      expect(presentation.glossOpacity, `${card.id} glossOpacity`).toBeLessThanOrEqual(0.4);
+      expect(presentation.spotlightOpacity, `${card.id} spotlightOpacity`).toBeLessThanOrEqual(0.6);
+      expect(presentation.shockwaveOpacity, `${card.id} shockwaveOpacity`).toBeLessThanOrEqual(1);
+      expect(presentation.emberOpacity, `${card.id} emberOpacity`).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('escalates the cinematic stage from standard to premium to flagship', () => {
+    const standard = getLuckyCardTierPresentation('standard');
+    const premium = getLuckyCardTierPresentation('premium');
+    const flagship = getLuckyCardTierPresentation('flagship');
+
+    expect(premium.spotlightOpacity).toBeGreaterThan(standard.spotlightOpacity);
+    expect(flagship.spotlightOpacity).toBeGreaterThan(premium.spotlightOpacity);
+
+    expect(premium.shockwaveOpacity).toBeGreaterThan(standard.shockwaveOpacity);
+    expect(flagship.shockwaveOpacity).toBeGreaterThan(premium.shockwaveOpacity);
+
+    expect(premium.shockwaveScale).toBeGreaterThan(standard.shockwaveScale);
+    expect(flagship.shockwaveScale).toBeGreaterThan(premium.shockwaveScale);
+
+    expect(premium.glossOpacity).toBeGreaterThan(standard.glossOpacity);
+    expect(flagship.glossOpacity).toBeGreaterThan(premium.glossOpacity);
+
+    expect(premium.sweepDuration).toBeGreaterThan(standard.sweepDuration);
+    expect(flagship.sweepDuration).toBeGreaterThan(premium.sweepDuration);
+
+    expect(premium.emberOpacity).toBeGreaterThan(standard.emberOpacity);
+    expect(flagship.emberOpacity).toBeGreaterThan(premium.emberOpacity);
+
+    // The shockwave stays a card-scaled event rather than filling the viewport.
+    expect(flagship.shockwaveScale).toBeLessThanOrEqual(2);
   });
 
   it('falls back to the standard presentation for unknown or missing tiers', () => {

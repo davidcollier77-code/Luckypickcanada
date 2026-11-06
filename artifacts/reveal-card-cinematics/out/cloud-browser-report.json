@@ -1,0 +1,59 @@
+{
+  "executor": "Managed cloud browser (Chromium) driven through an in-page harness against the locally served production build (next start, 0.0.0.0:3000) at the preview origin.",
+  "why_not_local_playwright": "artifacts/reveal-card-cinematics/probe.cjs cannot launch here: the bundled Chromium exits 127 because libnspr4.so, libnss3.so, libXcomposite.so.1, libXdamage.so.1, libXfixes.so.3, libXrandr.so.2, libasound.so.2, libatk-1.0.so.0, libatk-bridge-2.0.so.0, libatspi.so.0 and libxkbcommon.so.0 are absent, the Ubuntu package lists in this sandbox are empty, and there is no root to install them. The managed Playwright bridge also failed with an internal 'options.mode' error for every script, so the harness ran through the cloud browser's page evaluation instead.",
+  "build_under_test": "next build (webpack) + next start, production output",
+  "run_a": {
+    "scope": "entry state, card-back finish, charging aura, three revealed tiers, Coast-to-Coast Tale, staged arrival",
+    "total": 72,
+    "passed": 66,
+    "failed": 6,
+    "failed_names": [
+      "entry control unchanged",
+      "entry described by hint",
+      "charging aura renders during the draw",
+      "charging aura is tier-tinted",
+      "charging aura is decorative",
+      "beam canvas still runs"
+    ],
+    "failure_cause": "Harness defect, not a product defect: the harness used the first <button> on the page, which is the CollectionBinder 'View Collection' control, and clicked it. Those six checks were re-run with a text-matched reveal selector (run_b) and pass.",
+    "passing_evidence_of_note": {
+      "per_tier_finish": "back [gloss, specular, bevel]; front [gloss, specular, bevel, tier-bloom, glint] for standard, premium and flagship",
+      "stage_per_tier": "spotlight (tier accent), light shaft, 2 shockwave rings, 6 embers, 1 floor shadow, 1 halo; stage wrapper aria-hidden and pointer-events none",
+      "spotlight_accents": ["rgba(224, 148, 64, 0.24)", "rgba(200, 204, 208, 0.32)", "rgba(218, 165, 32, 0.42)"],
+      "artwork_unchanged": ["/standard-card-number-seeker.webp", "/premium-card-northern-lights.webp", "/flagship-card-golden-maple-clover.webp"],
+      "overflow_px": 0,
+      "coast_to_coast": "data-card-frame='authored', borderTopWidth 0px, finish layers include tier-bloom, premium tier ring applied",
+      "settled_opacity": "tier block and quote panel both 1 after the staged arrival"
+    }
+  },
+  "run_b": {
+    "scope": "entry control and the live draw, with the reveal button matched by text",
+    "total": 10,
+    "passed": 9,
+    "failed": 1,
+    "failed_names": ["entry accessible name unchanged"],
+    "failure_cause": "Measurement defect, not a product defect: the check compared raw textContent, which includes the decorative aria-hidden spade glyph ('♠Reveal Today's Luck'). Run_c measures the name with aria-hidden nodes removed.",
+    "passing_evidence_of_note": {
+      "entry_found": ["♠Reveal Today's Luck", "View Collection"],
+      "described_by": "lucky-card-reveal-hint",
+      "tap_hint": "Tap to reveal today’s Lucky Card",
+      "entry_target_px": 58,
+      "charging_aura": "rendered, tier standard, opacity 0.218, aria-hidden, pointer-events none, radial gradient rgba(224, 148, 64, 0.34)",
+      "canvases_during_draw": 2,
+      "entry_removed_while_drawing": true
+    }
+  },
+  "run_c": {
+    "scope": "accessible name of the entry control",
+    "accessible_name": "Reveal Today's Luck",
+    "exact_match": true,
+    "aria_label": null,
+    "described_by": "lucky-card-reveal-hint"
+  },
+  "reduced_motion": {
+    "status": "NOT RUN in a browser",
+    "reason": "Reduced motion requires prefers-reduced-motion emulation. The local Playwright browser cannot launch and the managed Playwright bridge failed; page-level emulation was not available through page evaluation.",
+    "static_evidence": "The structural guard (__tests__/lucky-card-reveal-presentation.test.js) pins that the shockwave rings, embers and glint sweep are mounted only under !shouldReduceMotion and that the spotlight, light shaft, halo, floor shadow and tier bloom use initial={shouldReduceMotion ? false : ...} with duration 0."
+  },
+  "console_errors": "not captured (the harness ran inside an iframe and attached no console listener); the page rendered without a visible error state and the build/type checks pass"
+}

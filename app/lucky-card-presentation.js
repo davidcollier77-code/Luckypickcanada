@@ -8,6 +8,10 @@
  *
  * These values are presentation-only: card artwork, weighting, quotes and the
  * reveal animation timings live elsewhere and are not derived from this file.
+ *
+ * The second group controls the cinematic stage and the shared glossy card
+ * finish added by `specs/101-lucky-card-reveal-cinematics`: every card face uses
+ * the same finish layers, and only these strengths change with the tier.
  */
 export const LUCKY_CARD_TIER_PRESENTATION = {
   standard: {
@@ -24,6 +28,12 @@ export const LUCKY_CARD_TIER_PRESENTATION = {
     revealDuration: 0.5,
     frameOpacity: 0.4,
     innerGlow: 0.16,
+    spotlightOpacity: 0.24,
+    shockwaveOpacity: 0.42,
+    shockwaveScale: 1.45,
+    glossOpacity: 0.16,
+    sweepDuration: 1.15,
+    emberOpacity: 0.5,
   },
   premium: {
     id: 'premium',
@@ -39,6 +49,12 @@ export const LUCKY_CARD_TIER_PRESENTATION = {
     revealDuration: 0.55,
     frameOpacity: 0.5,
     innerGlow: 0.2,
+    spotlightOpacity: 0.32,
+    shockwaveOpacity: 0.56,
+    shockwaveScale: 1.6,
+    glossOpacity: 0.22,
+    sweepDuration: 1.3,
+    emberOpacity: 0.66,
   },
   flagship: {
     id: 'flagship',
@@ -54,6 +70,12 @@ export const LUCKY_CARD_TIER_PRESENTATION = {
     revealDuration: 0.6,
     frameOpacity: 0.62,
     innerGlow: 0.26,
+    spotlightOpacity: 0.42,
+    shockwaveOpacity: 0.7,
+    shockwaveScale: 1.8,
+    glossOpacity: 0.3,
+    sweepDuration: 1.45,
+    emberOpacity: 0.82,
   },
 };
 

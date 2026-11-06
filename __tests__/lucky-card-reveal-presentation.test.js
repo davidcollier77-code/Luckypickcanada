@@ -3,18 +3,21 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Structural guard for `specs/094-lucky-card-reveal-polish`.
+ * Structural guard for `specs/094-lucky-card-reveal-polish` (entry affordance,
+ * tier chip, halo/rim) and `specs/101-lucky-card-reveal-cinematics` (cinematic
+ * stage, shared two-face finish, staged arrival).
  *
  * `app/lucky-card-reveal.js` is a JSX-in-`.js` Next.js component: the Vitest
  * pipeline refuses to parse JSX in `.js` files, so the component itself cannot
  * be rendered in jsdom the way `app/lucky-reveal-celebration.jsx` is. This guard
- * therefore pins the exact markup contract the browser probe measured (see the
- * PR summary), while `__tests__/lucky-card-tier-presentation.test.js` executes
- * the real tier values that drive it.
+ * therefore pins the exact markup contract, the executed tier values that drive
+ * it live in `__tests__/lucky-card-tier-presentation.test.js`, and the rendered
+ * behaviour is measured by `artifacts/reveal-card-cinematics/probe.cjs`.
  */
 
 const componentPath = resolve(process.cwd(), 'app/lucky-card-reveal.js');
 const source = readFileSync(componentPath, 'utf8');
+const cardFinishUsages = source.match(/<CardFinish[^>]*\/>/g) || [];
 
 describe('Lucky Card reveal presentation markup', () => {
   it('renders the entry control as a large, described, tappable button', () => {
@@ -57,16 +60,96 @@ describe('Lucky Card reveal presentation markup', () => {
     expect(source).toContain('style={{ borderColor: `rgba(${tierPresentation.accentRgb}, 0.3)` }}');
   });
 
-  it('adds a decorative, reduced-motion-aware tier halo behind the revealed card', () => {
+  it('paints one glossy finish on both faces of every card', () => {
+    expect(cardFinishUsages).toHaveLength(2);
+    expect(cardFinishUsages[0]).toContain('revealed={false}');
+    expect(cardFinishUsages[1]).toContain('revealed={isRevealed}');
+
+    // Both faces receive the same three always-on layers, plus the revealed-only
+    // tier bloom and single glint pass, all from the one finish component.
+    expect(source).toContain("data-card-finish={tierPresentation.id}");
+    expect(source).toContain('data-card-finish-state={revealed ? \'revealed\' : \'idle\'}');
+    for (const layer of ['gloss', 'specular', 'bevel', 'tier-bloom', 'glint']) {
+      expect(source.match(new RegExp(`data-card-finish-layer="${layer}"`, 'g')) || []).toHaveLength(1);
+    }
+    expect(source).toContain('CARD_GLOSS_STYLE');
+    expect(source).toContain('CARD_SPECULAR_STYLE');
+    expect(source).toContain('CARD_BEVEL_STYLE');
+
+    // The old single flat sheen is gone, so no card can fall back to it.
+    expect(source).not.toContain('cardPolishSheenStyle');
+    expect(source).not.toContain('{!preserveCoastToCoastPolish && (');
+
+    // Coast-to-Coast Tale keeps its authored frame and still gets the finish and
+    // the tier ring, so all eleven cards share one presentation.
+    expect(source).toContain("const preserveCoastToCoastPolish = selectedCard?.id === 'coast-to-coast-tale';");
+    expect(source).toContain('style={preserveCoastToCoastPolish ? undefined : cardPolishFrameStyle}');
+  });
+
+  it('adds a cinematic, tier-scaled stage behind the revealed card', () => {
+    expect(source).toContain('data-reveal-stage={tierPresentation.id}');
+    expect(source).toContain('data-reveal-charge={tierPresentation.id}');
+    expect(source).toContain('data-reveal-spotlight={tierPresentation.id}');
+    expect(source).toContain('data-reveal-shaft={tierPresentation.id}');
+    expect(source).toContain('data-reveal-shockwave="primary"');
+    expect(source).toContain('data-reveal-shockwave="echo"');
+    expect(source).toContain('data-reveal-ember=""');
+    expect(source).toContain('data-reveal-floor={tierPresentation.id}');
+    expect(source).toContain('const REVEAL_EMBERS = [');
+
+    // Every stage value comes from the tier module, not from local magic numbers.
+    for (const value of [
+      'tierPresentation.spotlightOpacity',
+      'tierPresentation.shockwaveOpacity',
+      'tierPresentation.shockwaveScale',
+      'tierPresentation.glossOpacity',
+      'tierPresentation.sweepDuration',
+      'tierPresentation.emberOpacity',
+    ]) {
+      expect(source).toContain(value);
+    }
+
+    // Decorative only: never announced, never interactive.
+    expect(source).toContain('aria-hidden="true"');
+    expect(source).toContain('className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"');
+  });
+
+  it('keeps the reveal moment accessible under reduced motion', () => {
+    // The static lighting stays visible without a fade...
     expect(source).toContain('data-card-halo={tierPresentation.id}');
-    expect(source).toContain('{isRevealed && selectedCard && (');
-    expect(source).toContain('<div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">');
     expect(source).toContain('initial={shouldReduceMotion ? false : { opacity: 0 }}');
     expect(source).toContain('duration: shouldReduceMotion ? 0 : tierPresentation.revealDuration');
     expect(source).toContain('filter: `blur(${tierPresentation.haloBlur}px)`');
+    expect(source).toContain('initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9 }}');
+    expect(source).toContain('initial={shouldReduceMotion ? false : { opacity: 0, scaleX: 0.82 }}');
 
-    // Tier-accented inner ring on the revealed card front.
+    // ...while every one-shot layer is not mounted at all.
+    const oneShotSection = source.slice(
+      source.indexOf('{!shouldReduceMotion && ('),
+      source.indexOf('data-reveal-floor'),
+    );
+    expect(oneShotSection).toContain('data-reveal-shockwave="primary"');
+    expect(oneShotSection).toContain('data-reveal-ember=""');
+    expect(source).toContain('{revealed && !shouldReduceMotion && (');
+
+    // The tier accent ring on the revealed front is unchanged.
     expect(source).toContain('boxShadow: `inset 0 0 0 2px rgba(${tierPresentation.accentRgb}, ${tierPresentation.frameOpacity}), inset 0 0 26px rgba(${tierPresentation.accentRgb}, ${tierPresentation.innerGlow})`');
+  });
+
+  it('settles the revealed presentation in sequence', () => {
+    expect(source).toContain('delay: shouldReduceMotion ? 0 : 0.12');
+    expect(source).toContain('delay: shouldReduceMotion ? 0 : 0.24');
+    expect(source).toContain('delay: shouldReduceMotion ? 0 : 0.34');
+
+    // Copy, order and layout of the revealed blocks are unchanged.
+    const chipIndex = source.indexOf('{tierPresentation.label} Tier');
+    const titleIndex = source.indexOf('{selectedCard.title}');
+    const quoteIndex = source.indexOf('{selectedCard.quote');
+    const shareIndex = source.indexOf('<LuckyCardShare card={selectedCard}/>');
+    expect(chipIndex).toBeGreaterThan(0);
+    expect(titleIndex).toBeGreaterThan(chipIndex);
+    expect(quoteIndex).toBeGreaterThan(titleIndex);
+    expect(shareIndex).toBeGreaterThan(quoteIndex);
   });
 
   it('preserves the existing reveal functionality and artwork delivery', () => {
@@ -101,13 +184,27 @@ describe('Lucky Card reveal presentation markup', () => {
     expect(source).toContain('srcSet="/IMG_20260728_220305_112042.avif"');
     expect(source).toContain('srcSet="/NGC4216_crawford.avif"');
 
-    // The coast-to-coast artwork keeps its authored frame exception.
-    expect(source).toContain("const preserveCoastToCoastPolish = selectedCard?.id === 'coast-to-coast-tale';");
-    expect(source).toContain('{!preserveCoastToCoastPolish && (');
-
     // Sharing, the collection binder and the return-home link still render.
     expect(source).toContain('<LuckyCardShare card={selectedCard}/>');
     expect(source).toContain('<CollectionBinder />');
     expect(source).toContain('Return to Home');
+
+    // No dependency, module or asset was added to the reveal.
+    const imports = source
+      .split('\n')
+      .filter(line => line.startsWith('import '))
+      .map(line => line.trim());
+    expect(imports).toEqual([
+      "import { useEffect, useRef, useState, useCallback } from 'react';",
+      "import Link from 'next/link';",
+      "import CollectionBinder from './collection-binder';",
+      "import { Howl } from 'howler';",
+      "import { motion, useAnimate, useReducedMotion } from 'framer-motion';",
+      "import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';",
+      "import { getLuckyCardTierPresentation } from './lucky-card-presentation';",
+      "import LuckyCardShare from './lucky-card-share';",
+      "import { playButtonClick } from './lib/audio';",
+      "import MidnightCountdown from '../components/midnight-countdown';",
+    ]);
   });
 });
