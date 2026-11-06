@@ -187,15 +187,15 @@
     },
     "/vercel/next.js": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/vercel/next.js/canary/skills/.claude-plugin/plugin.json"
+      "url": "https://nextjs.org/docs/app"
     },
     "/reactjs/react.dev": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/reactjs/react.dev/main/src/content/reference/react-dom/static/prerender.md"
+      "url": "https://react.dev/reference/react"
     },
     "/microsoft/typescript": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/microsoft/typescript/main/tsc/testdata/tests/cases/conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts"
+      "url": "https://www.typescriptlang.org/docs/handbook/"
     },
     "/websites/tailwindcss": {
       "type": "url",
@@ -211,7 +211,7 @@
     },
     "/react-hook-form/documentation": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/react-hook-form/documentation/master/contentlayer.config.ts"
+      "url": "https://react-hook-form.com/docs"
     },
     "/react-hook-form/resolvers": {
       "type": "url",
@@ -223,19 +223,19 @@
     },
     "/bvaughn/react-error-boundary": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/bvaughn/react-error-boundary/main/lib/index.ts"
+      "url": "https://raw.githubusercontent.com/bvaughn/react-error-boundary/main/README.md"
     },
     "/opennextjs/opennextjs-cloudflare": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/opennextjs/opennextjs-cloudflare/main/AGENTS.md"
+      "url": "https://raw.githubusercontent.com/opennextjs/opennextjs-cloudflare/main/README.md"
     },
     "/opennextjs/docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/opennextjs/docs/main/pages/aws/config.mdx"
+      "url": "https://opennext.js.org/cloudflare/get-started"
     },
     "/cloudflare/workers-sdk": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/STYLEGUIDE.md"
+      "url": "https://developers.cloudflare.com/workers/wrangler/"
     },
     "/neondatabase/neon": {
       "type": "url",
@@ -243,11 +243,11 @@
     },
     "/upstash/docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/upstash/docs/main/search/sdks/ts/commands/fetch.mdx"
+      "url": "https://upstash.com/docs/redis/overall/getstarted"
     },
     "/getsentry/sentry-docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/getsentry/sentry-docs/master/scripts/generate-llms-txt.mjs"
+      "url": "https://docs.sentry.io/platforms/javascript/guides/nextjs/"
     },
     "/websites/developer_chrome": {
       "type": "url",
@@ -271,11 +271,11 @@
     },
     "/vitest-dev/vitest": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/vitest-dev/vitest/main/AGENTS.md"
+      "url": "https://vitest.dev/guide/"
     },
     "/colinhacks/zod": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/colinhacks/zod/main/packages/docs/app/llms-full.txt/route.ts"
+      "url": "https://zod.dev/"
     },
     "/cure53/dompurify": {
       "type": "url",
@@ -283,7 +283,7 @@
     },
     "/stripe/stripe-js": {
       "type": "url",
-      "url": "https://docs.stripe.com/js/react_stripe_js/elements/other/payment_request_button_element.md"
+      "url": "https://docs.stripe.com/js"
     },
     "/resend/resend-node": {
       "type": "url",
