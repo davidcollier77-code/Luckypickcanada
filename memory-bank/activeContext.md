@@ -1,3 +1,30 @@
+# Active Context — Conditional Visual QA with Cached Chromium (2026-11-06)
+
+- **Task groups:** `troubleshooting` (CI workflow behaviour that wasted runner time on every pull request)
+  + `testing` (the visual QA workflow, its preserved checks, and the new executed classifier guard).
+  Branch `freebuff/474320d3cde04a21a6a32a0f`; feature `specs/098-visual-qa-chromium-cache`.
+- **Verified baseline:** `.github/workflows/visual-qa.yml` installed Chromium unconditionally
+  (`pnpm exec playwright install --with-deps chromium`) on every pull request, including documentation-only
+  ones, and had no browser cache. Installed Playwright is 1.63.0 (`playwright` and `@playwright/test`), and
+  all three Playwright projects use Chromium.
+- **Implementation:** new `.github/scripts/classify-visual-changes.sh` turns a changed-path list into
+  `visual_required=true|false` and fails closed (empty input, unknown file types and mixed sets all request
+  visual QA). The workflow gains a `changes` job that lists pull request files with `gh api` and writes
+  `visual_required=true` on any listing, classification or value error, plus a cache keyed
+  `playwright-chromium-${runner.os}-${playwright version}` over `~/.cache/ms-playwright` with no
+  `restore-keys`. A cache miss installs `--with-deps chromium`; a cache hit installs only
+  `install-deps chromium`. Baseline verification and the visual regression run are gated on the classifier.
+  Unit tests, TypeScript, the Spec Kit gate and the report upload remain ungated.
+- **Preserved:** `playwright.config.ts`, `tests/visual/**`, committed baselines, diff thresholds, the three
+  Chromium projects, concurrency, `fetch-depth: 0`, and the forwarded `SPEC_KIT_PR_AUTHOR`.
+- **Verification PASS:** focused classifier/wiring guard 1 file / 11 tests; full `pnpm exec vitest run`
+  43 files / 343 tests; `pnpm exec tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; production build
+  `.next` 298,726,713 B + `public` 32,840,043 B = 331,566,756 B (316.2 MiB) < 495 MB.
+- **Verification NOT RUN:** GitHub Actions runtime behaviour for the skip, cache-hit, cache-miss and
+  Playwright version-change paths. No runner or pull request context exists in this workspace, so the
+  workflow cannot be executed here; those paths are static-wiring plus executed-classifier evidence only.
+
+---
 # Active Context — Custom Gemini PR Reviewer Retirement (2026-11-06)
 
 - **Task groups:** `troubleshooting` + `testing`; branch `chore/retire-custom-gemini-reviewer-20261106`; feature `specs/097-gemini-reviewer-retirement`.

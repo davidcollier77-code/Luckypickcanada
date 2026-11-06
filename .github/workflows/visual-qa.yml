@@ -14,8 +14,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Visual QA is only meaningful when a pull request can change rendered output.
+  # This job classifies the changed paths and fails closed: a failed file listing,
+  # an empty list, or any path that is not documentation-only requires visual QA.
+  changes:
+    name: Detect visual changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      visual_required: ${{ steps.classify.outputs.visual_required }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Classify pull request change set
+        id: classify
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          files="$(mktemp)"
+          trap 'rm -f "$files"' EXIT
+
+          if ! gh api --paginate \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            --jq '.[].filename' >"$files"; then
+            echo "::warning::The pull request file list could not be read; requesting visual QA (fail closed)."
+            echo "visual_required=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! classification="$(bash .github/scripts/classify-visual-changes.sh <"$files")"; then
+            echo "::warning::Change classification failed; requesting visual QA (fail closed)."
+            classification="visual_required=true"
+          fi
+
+          case "$classification" in
+            visual_required=true | visual_required=false) ;;
+            *)
+              echo "::warning::Change classification returned an unexpected value; requesting visual QA (fail closed)."
+              classification="visual_required=true"
+              ;;
+          esac
+
+          printf '%s\n' "$classification" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$classification" >> "$GITHUB_STEP_SUMMARY"
+
   visual:
     name: Visual QA
+    needs: changes
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -55,10 +106,43 @@ jobs:
           SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: ./freebuff-verify.sh
 
-      - name: Install Playwright Chromium
+      # The Chromium build Playwright downloads is a function of the Playwright
+      # version, so the cache key is the runner OS plus that exact version. A
+      # version change misses the cache and downloads a matching browser instead
+      # of reusing a stale one. Only Chromium is installed; the three Playwright
+      # projects in playwright.config.ts all use Chromium.
+      - name: Resolve installed Playwright version
+        id: playwright-version
+        if: needs.changes.outputs.visual_required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(pnpm exec playwright --version | awk '{print $2}')"
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Could not resolve the installed Playwright version (got '$version')."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Playwright version: $version"
+
+      - name: Restore cached Playwright Chromium
+        id: playwright-cache
+        if: needs.changes.outputs.visual_required == 'true'
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Chromium (cache miss)
+        if: needs.changes.outputs.visual_required == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Install Playwright system dependencies (cache hit)
+        if: needs.changes.outputs.visual_required == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
       - name: Verify committed visual baselines
+        if: needs.changes.outputs.visual_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -73,6 +157,7 @@ jobs:
           echo "Committed visual baselines: $snapshot_count PNG files."
 
       - name: Run visual regression tests
+        if: needs.changes.outputs.visual_required == 'true'
         run: pnpm exec playwright test
 
       - name: Upload Playwright report
