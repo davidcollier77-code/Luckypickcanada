@@ -1,3 +1,15 @@
+# Active Context — Unused Documentation Reference Retirement (2026-11-06)
+
+- **Task groups:** `deep-dive` (evidence-based audit of the four source references) + `testing` (manifest, specialist routing, snapshot, and preservation regression checks).
+- **Feature:** `specs/102-unused-reference-retirement`; branch `docs/retire-unused-library-references-20261106`.
+- **Task:** retire PostHog JS, Magic UI, React Three Fiber, and Upstash Ratelimit from the documentation library. Current source searches found no project integration; matches were limited to the documentation snapshots, manifest, and specialist routing.
+- **Preserved:** PR #1740's earlier removals (Pillow, Android Developers, Gemini CLI), general Chrome web-platform source, and NumPy routed only to Audio.
+- **Scope:** no application code, dependencies, updater script/tests, refresh workflow, schedule, Cloudflare configuration, or deployment settings changed.
+- **Status:** implementation edits committed to the task branch. Focused tests, full repository verification, final diff review, and PR-head CI remain pending.
+- **PR:** to be opened against current `main`; leave open and unmerged.
+
+---
+
 # Active Context — Independent Review of PR #1743 Feedback (2026-11-06)
 
 - **Task groups:** `deep-dive` (evidence-driven audit of review feedback) + `testing` (verification
