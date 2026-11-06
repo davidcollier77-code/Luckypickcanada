@@ -19,7 +19,7 @@
 
 ## Phase 3: Spec Kit and Memory
 
-- [ ] T008 Update `.specify/feature.json` to `specs/102-unused-reference-retirement` and record the task in `memory-bank/activeContext.md` and `memory-bank/progress.md`.
+- [x] T008 Update `.specify/feature.json` to `specs/102-unused-reference-retirement` and record the task in `memory-bank/activeContext.md` and `memory-bank/progress.md`.
 
 ## Phase 4: Verification
 
