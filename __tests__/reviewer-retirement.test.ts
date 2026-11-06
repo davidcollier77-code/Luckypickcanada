@@ -39,13 +39,13 @@ describe("custom Gemini reviewer retirement", () => {
     expect(readFileSync(path, "utf8")).toContain("env.GEMINI_API_KEY");
   });
 
-  it("preserves historical reviewer records and shared Gemini CLI references", () => {
+  it("preserves historical reviewer records and shared Gemini API references", () => {
     const historicalPaths = [
       "specs/050-gemini-pr-review-retirement/spec.md",
       "specs/051-gemini-reviewer-replacement/spec.md",
       "specs/071-gemini-reviewer-reliability/spec.md",
       ".specify/features/gemini-review-context/spec.md",
-      ".docs/deep-dive/_google-gemini_gemini-cli.md",
+      ".docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md",
       ".docs/manifest.json"
     ];
 

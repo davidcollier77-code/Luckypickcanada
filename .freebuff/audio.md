@@ -11,6 +11,7 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
 - MDN Web Audio "/websites/mdn_web_audio"
+- NumPy "/numpy/numpy"
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 

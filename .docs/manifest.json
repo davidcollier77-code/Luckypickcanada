@@ -13,7 +13,6 @@
       "/react-hook-form/resolvers",
       "/emilkowalski/sonner",
       "/bvaughn/react-error-boundary",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/google-gemini/gemini-skills/gemini-api-dev",
       "/dropbox/zxcvbn",
@@ -43,7 +42,6 @@
       "/bvaughn/react-error-boundary",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/google-gemini/gemini-cli",
       "/google-gemini/gemini-skills/gemini-api-dev",
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
@@ -65,8 +63,6 @@
       "/dequelabs/axe-core",
       "/magicuidesign/magicui",
       "/goldfire/howler.js",
-      "/python-pillow/Pillow",
-      "/numpy/numpy",
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
@@ -131,6 +127,7 @@
       "/websites/developer_apple_webkit",
       "/goldfire/howler.js",
       "/websites/mdn_web_audio",
+      "/numpy/numpy",
       "/google/eng-practices"
     ],
     "deep-dive": [
@@ -145,7 +142,6 @@
       "/upstash/docs",
       "/stripe/stripe-js",
       "/resend/resend-node",
-      "/google-gemini/gemini-cli",
       "/google-gemini/gemini-skills/gemini-api-dev",
       "/getsentry/sentry-docs",
       "/bvaughn/react-error-boundary",
@@ -153,7 +149,6 @@
       "/vitest-dev/vitest",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/android/developers",
       "/dequelabs/axe-core",
       "/cloudflare/cloudflare-docs/pages",
       "/posthog/posthog-js",
@@ -185,10 +180,6 @@
     "/github/docs": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/github/docs/main/data/llms-txt/docs.md"
-    },
-    "/google-gemini/gemini-cli": {
-      "type": "url",
-      "url": "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/packages/cli/src/ui/constants/tips.ts"
     },
     "/websites/ai_google_dev_gemini-api": {
       "type": "url",
@@ -260,7 +251,7 @@
     },
     "/websites/developer_chrome": {
       "type": "url",
-      "url": "https://developer.chrome.com/docs/extensions/reference/api/offscreen"
+      "url": "https://developer.chrome.com/docs/web-platform"
     },
     "/websites/developer_apple_webkit": {
       "type": "url",
@@ -318,10 +309,6 @@
       "type": "url",
       "url": "https://raw.githubusercontent.com/cloudflare/cloudflare-docs/production/src/content/docs/pages/index.mdx"
     },
-    "/android/developers": {
-      "type": "url",
-      "url": "https://developer.android.com/develop"
-    },
     "/marsidev/react-turnstile": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/marsidev/react-turnstile/main/README.md"
@@ -353,10 +340,6 @@
     "/websites/mdn_web_audio": {
       "type": "url",
       "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
-    },
-    "/python-pillow/Pillow": {
-      "type": "url",
-      "url": "https://raw.githubusercontent.com/python-pillow/Pillow/main/docs/handbook/concepts.rst"
     },
     "/numpy/numpy": {
       "type": "url",
@@ -469,7 +452,6 @@
   },
   "inventory": [
     "/github/docs",
-    "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
     "/vercel/next.js",
     "/reactjs/react.dev",
@@ -498,7 +480,6 @@
     "/stripe/stripe-js",
     "/resend/resend-node",
     "/coreyhaines31/marketingskills",
-    "/android/developers",
     "/dequelabs/axe-core",
     "/dropbox/zxcvbn",
     "/cloudflare/cloudflare-docs/turnstile",
@@ -511,7 +492,6 @@
     "/posthog/posthog-js",
     "/goldfire/howler.js",
     "/websites/mdn_web_audio",
-    "/python-pillow/Pillow",
     "/numpy/numpy",
     "/websites/google_webp",
     "/lovell/sharp",
@@ -550,7 +530,6 @@
     "/react-hook-form/resolvers": "c28ca830f259e4e599211da1916e74f4ea2e39a7",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "4bc599908663852319724580d81682c2cf5204b3",
-    "/google-gemini/gemini-cli": "3fd7d263466b9e5d30b2da1ebf85dae956a0fb86",
     "/cloudflare/cloudflare-docs/turnstile": "cc3bea66de1d5dffa2f3842856f047d0372bc9b6",
     "/cloudflare/cloudflare-docs/pages": "cc3bea66de1d5dffa2f3842856f047d0372bc9b6",
     "/dequelabs/axe-core": "c50bf8e8933eba8cdb7a0d8e744a6c0ec691cdd6",
@@ -574,7 +553,6 @@
     "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "3576a65b8d63bc61becf6ace238f56e3543290ca",
-    "/python-pillow/Pillow": "e0869308687cd6a73b81bf9207eb64037cc91cea",
     "/numpy/numpy": "c60f172b3330f76d6592362137f34c4a3030a001",
     "/lovell/sharp": "249971a743ebf1044a1a7b0d709e610e8b74fa02",
     "/google-gemini/gemini-skills/gemini-api-dev": "7cfc690ba9c8efe36a5316e6d4000e2b6aa25dbf",

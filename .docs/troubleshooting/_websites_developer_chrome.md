@@ -29,60 +29,61 @@
       
         <link rel="stylesheet" href="https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/css/dark-theme.css" disabled>
       <link rel="shortcut icon" href="https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/favicon.png">
-    <link rel="apple-touch-icon" href="https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/touchicon-180.png"><link rel="canonical" href="https://developer.chrome.com/docs/extensions/reference/api/offscreen"><link rel="search" type="application/opensearchdescription+xml"
+    <link rel="apple-touch-icon" href="https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/touchicon-180.png"><link rel="canonical" href="https://developer.chrome.com/docs/web-platform"><link rel="search" type="application/opensearchdescription+xml"
             title="Chrome for Developers" href="https://developer.chrome.com/s/opensearch.xml">
       <link rel="alternate" hreflang="en"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen" /><link rel="alternate" hreflang="x-default" href="https://developer.chrome.com/docs/extensions/reference/api/offscreen" /><link rel="alternate" hreflang="ar"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=ar" /><link rel="alternate" hreflang="bn"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=bn" /><link rel="alternate" hreflang="zh-Hans"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=zh-cn" /><link rel="alternate" hreflang="zh-Hant"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=zh-tw" /><link rel="alternate" hreflang="nl"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=nl" /><link rel="alternate" hreflang="fa"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=fa" /><link rel="alternate" hreflang="fr"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=fr" /><link rel="alternate" hreflang="de"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=de" /><link rel="alternate" hreflang="he"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=he" /><link rel="alternate" hreflang="hi"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=hi" /><link rel="alternate" hreflang="id"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=id" /><link rel="alternate" hreflang="it"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=it" /><link rel="alternate" hreflang="ja"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=ja" /><link rel="alternate" hreflang="ko"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=ko" /><link rel="alternate" hreflang="pl"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=pl" /><link rel="alternate" hreflang="pt-BR"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=pt-br" /><link rel="alternate" hreflang="ru"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=ru" /><link rel="alternate" hreflang="es-419"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=es-419" /><link rel="alternate" hreflang="th"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=th" /><link rel="alternate" hreflang="tr"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=tr" /><link rel="alternate" hreflang="vi"
-          href="https://developer.chrome.com/docs/extensions/reference/api/offscreen?hl=vi" /><link rel="alternate" hreflang="en-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen" /><link rel="alternate" hreflang="x-default" href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen" /><link rel="alternate" hreflang="ar-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=ar" /><link rel="alternate" hreflang="bn-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=bn" /><link rel="alternate" hreflang="zh-Hans-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=zh-cn" /><link rel="alternate" hreflang="zh-Hant-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=zh-tw" /><link rel="alternate" hreflang="nl-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=nl" /><link rel="alternate" hreflang="fa-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=fa" /><link rel="alternate" hreflang="fr-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=fr" /><link rel="alternate" hreflang="de-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=de" /><link rel="alternate" hreflang="he-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=he" /><link rel="alternate" hreflang="hi-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=hi" /><link rel="alternate" hreflang="id-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=id" /><link rel="alternate" hreflang="it-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=it" /><link rel="alternate" hreflang="ja-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=ja" /><link rel="alternate" hreflang="ko-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=ko" /><link rel="alternate" hreflang="pl-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=pl" /><link rel="alternate" hreflang="pt-BR-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=pt-br" /><link rel="alternate" hreflang="ru-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=ru" /><link rel="alternate" hreflang="es-419-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=es-419" /><link rel="alternate" hreflang="th-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=th" /><link rel="alternate" hreflang="tr-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=tr" /><link rel="alternate" hreflang="vi-cn"
-          href="https://developer.chrome.google.cn/docs/extensions/reference/api/offscreen?hl=vi" /><title>browser.offscreen &nbsp;|&nbsp; API &nbsp;|&nbsp; Chrome for Developers</title>
+          href="https://developer.chrome.com/docs/web-platform" /><link rel="alternate" hreflang="x-default" href="https://developer.chrome.com/docs/web-platform" /><link rel="alternate" hreflang="ar"
+          href="https://developer.chrome.com/docs/web-platform?hl=ar" /><link rel="alternate" hreflang="bn"
+          href="https://developer.chrome.com/docs/web-platform?hl=bn" /><link rel="alternate" hreflang="zh-Hans"
+          href="https://developer.chrome.com/docs/web-platform?hl=zh-cn" /><link rel="alternate" hreflang="zh-Hant"
+          href="https://developer.chrome.com/docs/web-platform?hl=zh-tw" /><link rel="alternate" hreflang="nl"
+          href="https://developer.chrome.com/docs/web-platform?hl=nl" /><link rel="alternate" hreflang="fa"
+          href="https://developer.chrome.com/docs/web-platform?hl=fa" /><link rel="alternate" hreflang="fr"
+          href="https://developer.chrome.com/docs/web-platform?hl=fr" /><link rel="alternate" hreflang="de"
+          href="https://developer.chrome.com/docs/web-platform?hl=de" /><link rel="alternate" hreflang="he"
+          href="https://developer.chrome.com/docs/web-platform?hl=he" /><link rel="alternate" hreflang="hi"
+          href="https://developer.chrome.com/docs/web-platform?hl=hi" /><link rel="alternate" hreflang="id"
+          href="https://developer.chrome.com/docs/web-platform?hl=id" /><link rel="alternate" hreflang="it"
+          href="https://developer.chrome.com/docs/web-platform?hl=it" /><link rel="alternate" hreflang="ja"
+          href="https://developer.chrome.com/docs/web-platform?hl=ja" /><link rel="alternate" hreflang="ko"
+          href="https://developer.chrome.com/docs/web-platform?hl=ko" /><link rel="alternate" hreflang="pl"
+          href="https://developer.chrome.com/docs/web-platform?hl=pl" /><link rel="alternate" hreflang="pt-BR"
+          href="https://developer.chrome.com/docs/web-platform?hl=pt-br" /><link rel="alternate" hreflang="ru"
+          href="https://developer.chrome.com/docs/web-platform?hl=ru" /><link rel="alternate" hreflang="es-419"
+          href="https://developer.chrome.com/docs/web-platform?hl=es-419" /><link rel="alternate" hreflang="th"
+          href="https://developer.chrome.com/docs/web-platform?hl=th" /><link rel="alternate" hreflang="tr"
+          href="https://developer.chrome.com/docs/web-platform?hl=tr" /><link rel="alternate" hreflang="vi"
+          href="https://developer.chrome.com/docs/web-platform?hl=vi" /><link rel="alternate" hreflang="en-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform" /><link rel="alternate" hreflang="x-default" href="https://developer.chrome.google.cn/docs/web-platform" /><link rel="alternate" hreflang="ar-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=ar" /><link rel="alternate" hreflang="bn-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=bn" /><link rel="alternate" hreflang="zh-Hans-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=zh-cn" /><link rel="alternate" hreflang="zh-Hant-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=zh-tw" /><link rel="alternate" hreflang="nl-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=nl" /><link rel="alternate" hreflang="fa-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=fa" /><link rel="alternate" hreflang="fr-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=fr" /><link rel="alternate" hreflang="de-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=de" /><link rel="alternate" hreflang="he-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=he" /><link rel="alternate" hreflang="hi-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=hi" /><link rel="alternate" hreflang="id-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=id" /><link rel="alternate" hreflang="it-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=it" /><link rel="alternate" hreflang="ja-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=ja" /><link rel="alternate" hreflang="ko-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=ko" /><link rel="alternate" hreflang="pl-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=pl" /><link rel="alternate" hreflang="pt-BR-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=pt-br" /><link rel="alternate" hreflang="ru-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=ru" /><link rel="alternate" hreflang="es-419-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=es-419" /><link rel="alternate" hreflang="th-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=th" /><link rel="alternate" hreflang="tr-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=tr" /><link rel="alternate" hreflang="vi-cn"
+          href="https://developer.chrome.google.cn/docs/web-platform?hl=vi" /><title>Web Platform &nbsp;|&nbsp; Chrome for Developers</title>
 
-<meta property="og:title" content="browser.offscreen &nbsp;|&nbsp; API &nbsp;|&nbsp; Chrome for Developers"><meta property="og:url" content="https://developer.chrome.com/docs/extensions/reference/api/offscreen"><meta property="og:locale" content="en"><script type="application/ld+json">
+<meta property="og:title" content="Web Platform &nbsp;|&nbsp; Chrome for Developers"><meta name="description" content="Learn how Chrome works, participate in origin trials, and build with Chrome everywhere.">
+  <meta property="og:description" content="Learn how Chrome works, participate in origin trials, and build with Chrome everywhere."><meta property="og:url" content="https://developer.chrome.com/docs/web-platform"><meta property="og:locale" content="en"><script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
     
-    "headline": "browser.offscreen"
+    "headline": "Web Platform"
   }
 </script><script type="application/ld+json">
   {
@@ -96,48 +97,26 @@
     },{
       "@type": "ListItem",
       "position": 2,
-      "name": "Chrome Extensions",
-      "item": "https://developer.chrome.com/docs/extensions"
-    },{
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Reference",
-      "item": "https://developer.chrome.com/docs/extensions/reference"
-    },{
-      "@type": "ListItem",
-      "position": 4,
-      "name": "API",
-      "item": "https://developer.chrome.com/docs/extensions/reference/api"
-    },{
-      "@type": "ListItem",
-      "position": 5,
-      "name": "browser.offscreen",
-      "item": "https://developer.chrome.com/docs/extensions/reference/api/offscreen"
+      "name": "Web Platform",
+      "item": "https://developer.chrome.com/docs/web-platform"
     }]
   }
   </script>
-  
-
-  
-
-  
-
-
     </head>
-  <body class="color-scheme--light"
-        template="page"
+  <body class="dcc-landing color-scheme--light"
+        template="landing"
         theme="chrome-theme"
         type="article"
         
         appearance
         
-        layout="docs"
+        layout="full"
         
         
         
         
         
-        display-toc
+        
         pending>
   
     <devsite-progress type="indeterminate" id="app-progress"></devsite-progress>
@@ -1027,7 +1006,7 @@
       enable-query-completion
     
     enable-search-summaries
-    project-name="API"
+    project-name="Web Platform"
     tenant-name="Chrome for Developers"
     
     
@@ -1247,180 +1226,6 @@
     ">
     <div class="devsite-header-background">
       
-        
-          <div class="devsite-product-id-row"
-           >
-            <div class="devsite-product-description-row">
-              
-                
-                <div class="devsite-product-id">
-                  
-                  
-                  
-                    <ul class="devsite-breadcrumb-list"
-  
-    aria-label="Lower header breadcrumb">
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Lower Header"
-      
-        data-value="1"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="1"
-      
-        track-metadata-eventdetail="Docs"
-      
-    >
-    
-          Docs
-        
-  </a>
-  
-      
-    
-  </li>
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-      
-      <div class="devsite-breadcrumb-guillemet material-icons" aria-hidden="true"></div>
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs/extensions"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Lower Header"
-      
-        data-value="2"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="2"
-      
-        track-metadata-eventdetail="Chrome Extensions"
-      
-    >
-    
-          Chrome Extensions
-        
-  </a>
-  
-      
-    
-  </li>
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-      
-      <div class="devsite-breadcrumb-guillemet material-icons" aria-hidden="true"></div>
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs/extensions/reference"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Lower Header"
-      
-        data-value="3"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="3"
-      
-        track-metadata-eventdetail="Reference"
-      
-    >
-    
-          Reference
-        
-  </a>
-  
-      
-    
-  </li>
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-      
-      <div class="devsite-breadcrumb-guillemet material-icons" aria-hidden="true"></div>
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs/extensions/reference/api"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Lower Header"
-      
-        data-value="4"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="4"
-      
-        track-metadata-eventdetail="API"
-      
-    >
-    
-          API
-        
-  </a>
-  
-      
-    
-  </li>
-  
-</ul>
-                </div>
-                
-              
-              
-            </div>
-            
-          </div>
-          
-        
-      
       
         <div class="devsite-doc-set-nav-row">
           
@@ -1432,26 +1237,26 @@
     <nav class="devsite-tabs-wrapper" aria-label="Lower tabs">
       
         
-          <tab  >
+          <tab  class="devsite-active">
             
-    <a href="https://developer.chrome.com/docs/extensions"
+    <a href="https://developer.chrome.com/docs/web-platform"
     class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions"
+      track-metadata-eventdetail="https://developer.chrome.com/docs/web-platform"
     
        track-type="nav"
-       track-metadata-position="nav - overview"
+       track-metadata-position="nav - web platform"
        track-metadata-module="primary nav"
-       
+       aria-label="Web Platform, selected" 
        
          
            data-category="Site-Wide Custom Events"
          
-           data-label="Tab: Overview"
+           data-label="Tab: Web Platform"
          
-           track-name="overview"
+           track-name="web platform"
          
        >
-    Overview
+    Web Platform
   
     </a>
     
@@ -1462,24 +1267,24 @@
         
           <tab  >
             
-    <a href="https://developer.chrome.com/docs/extensions/get-started"
+    <a href="https://developer.chrome.com/docs/web-platform/new-in-chrome"
     class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/get-started"
+      track-metadata-eventdetail="https://developer.chrome.com/docs/web-platform/new-in-chrome"
     
        track-type="nav"
-       track-metadata-position="nav - get started"
+       track-metadata-position="nav - new releases"
        track-metadata-module="primary nav"
        
        
          
            data-category="Site-Wide Custom Events"
          
-           data-label="Tab: Get Started"
+           data-label="Tab: New releases"
          
-           track-name="get started"
+           track-name="new releases"
          
        >
-    Get Started
+    New releases
   
     </a>
     
@@ -1490,359 +1295,29 @@
         
           <tab  >
             
-    <a href="https://developer.chrome.com/docs/extensions/develop"
+    <a href="https://developer.chrome.com/docs/web-platform/webgpu"
     class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/develop"
+      track-metadata-eventdetail="https://developer.chrome.com/docs/web-platform/webgpu"
     
        track-type="nav"
-       track-metadata-position="nav - develop"
+       track-metadata-position="nav - webgpu"
        track-metadata-module="primary nav"
        
        
          
            data-category="Site-Wide Custom Events"
          
-           data-label="Tab: Develop"
+           data-label="Tab: WebGPU"
          
-           track-name="develop"
+           track-name="webgpu"
          
        >
-    Develop
+    WebGPU
   
     </a>
     
   
           </tab>
-        
-      
-        
-          <tab  >
-            
-    <a href="https://developer.chrome.com/docs/extensions/how-to"
-    class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/how-to"
-    
-       track-type="nav"
-       track-metadata-position="nav - how to"
-       track-metadata-module="primary nav"
-       
-       
-         
-           data-category="Site-Wide Custom Events"
-         
-           data-label="Tab: How To"
-         
-           track-name="how to"
-         
-       >
-    How To
-  
-    </a>
-    
-  
-          </tab>
-        
-      
-        
-          <tab  >
-            
-    <a href="https://developer.chrome.com/docs/extensions/ai"
-    class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/ai"
-    
-       track-type="nav"
-       track-metadata-position="nav - ai"
-       track-metadata-module="primary nav"
-       
-       
-         
-           data-category="Site-Wide Custom Events"
-         
-           data-label="Tab: AI"
-         
-           track-name="ai"
-         
-       >
-    AI
-  
-    </a>
-    
-  
-          </tab>
-        
-      
-        
-          <tab class="devsite-dropdown
-    
-    devsite-active
-    
-    ">
-  
-    <a href="https://developer.chrome.com/docs/extensions/reference"
-    class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/reference"
-    
-       track-type="nav"
-       track-metadata-position="nav - reference"
-       track-metadata-module="primary nav"
-       aria-label="Reference, selected" 
-       
-         
-           data-category="Site-Wide Custom Events"
-         
-           data-label="Tab: Reference"
-         
-           track-name="reference"
-         
-       >
-    Reference
-  
-    </a>
-    
-      <button
-         aria-haspopup="menu"
-         aria-expanded="false"
-         aria-label="Dropdown menu for Reference"
-         track-type="nav"
-         track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/reference"
-         track-metadata-position="nav - reference"
-         track-metadata-module="primary nav"
-         
-          
-            data-category="Site-Wide Custom Events"
-          
-            data-label="Tab: Reference"
-          
-            track-name="reference"
-          
-        
-         class="devsite-tabs-dropdown-toggle devsite-icon devsite-icon-arrow-drop-down"></button>
-    
-  
-  <div class="devsite-tabs-dropdown" role="menu" aria-label="submenu" hidden>
-    <div class="devsite-tabs-dropdown-content">
-      
-      
-        <div class="devsite-tabs-dropdown-column
-                    ">
-          
-            <ul class="devsite-tabs-dropdown-section
-                       ">
-              
-              
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/extensions/reference/api"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/reference/api"
-                     track-metadata-position="nav - reference"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      API
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/extensions/reference/permissions-list"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/reference/permissions-list"
-                     track-metadata-position="nav - reference"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Permissions
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/extensions/reference/manifest"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/reference/manifest"
-                     track-metadata-position="nav - reference"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Manifest
-                    </div>
-                    
-                  </a>
-                </li>
-              
-            </ul>
-          
-        </div>
-      
-    </div>
-  </div>
-</tab>
-        
-      
-        
-          <tab  >
-            
-    <a href="https://developer.chrome.com/docs/extensions/samples"
-    class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/extensions/samples"
-    
-       track-type="nav"
-       track-metadata-position="nav - samples"
-       track-metadata-module="primary nav"
-       
-       
-         
-           data-category="Site-Wide Custom Events"
-         
-           data-label="Tab: Samples"
-         
-           track-name="samples"
-         
-       >
-    Samples
-  
-    </a>
-    
-  
-          </tab>
-        
-      
-        
-          <tab class="devsite-dropdown
-    
-    
-    
-    ">
-  
-    <a href="https://developer.chrome.com/docs/webstore"
-    class="devsite-tabs-content gc-analytics-event "
-      track-metadata-eventdetail="https://developer.chrome.com/docs/webstore"
-    
-       track-type="nav"
-       track-metadata-position="nav - chrome web store"
-       track-metadata-module="primary nav"
-       
-       
-         
-           data-category="Site-Wide Custom Events"
-         
-           data-label="Tab: Chrome Web Store"
-         
-           track-name="chrome web store"
-         
-       >
-    Chrome Web Store
-  
-    </a>
-    
-      <button
-         aria-haspopup="menu"
-         aria-expanded="false"
-         aria-label="Dropdown menu for Chrome Web Store"
-         track-type="nav"
-         track-metadata-eventdetail="https://developer.chrome.com/docs/webstore"
-         track-metadata-position="nav - chrome web store"
-         track-metadata-module="primary nav"
-         
-          
-            data-category="Site-Wide Custom Events"
-          
-            data-label="Tab: Chrome Web Store"
-          
-            track-name="chrome web store"
-          
-        
-         class="devsite-tabs-dropdown-toggle devsite-icon devsite-icon-arrow-drop-down"></button>
-    
-  
-  <div class="devsite-tabs-dropdown" role="menu" aria-label="submenu" hidden>
-    <div class="devsite-tabs-dropdown-content">
-      
-      
-        <div class="devsite-tabs-dropdown-column
-                    ">
-          
-            <ul class="devsite-tabs-dropdown-section
-                       ">
-              
-              
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/webstore/prepare"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/webstore/prepare"
-                     track-metadata-position="nav - chrome web store"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Prepare your Extension
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/webstore/publish"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/webstore/publish"
-                     track-metadata-position="nav - chrome web store"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Publish in the Chrome Web Store
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
-                  <a href="https://developer.chrome.com/docs/webstore/program-policies"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.chrome.com/docs/webstore/program-policies"
-                     track-metadata-position="nav - chrome web store"
-                     track-metadata-module="tertiary nav"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Program Policies
-                    </div>
-                    
-                  </a>
-                </li>
-              
-            </ul>
-          
-        </div>
-      
-    </div>
-  </div>
-</tab>
         
       
     </nav>
@@ -1864,7 +1339,7 @@
 
   
 </devsite-header>
-        <devsite-book-nav scrollbars >
+        <devsite-book-nav scrollbars hidden>
           
             
 
@@ -1889,7 +1364,7 @@
 
 
 <div class="devsite-book-nav-filter"
-     >
+     hidden>
   <span class="filter-list-icon material-icons" aria-hidden="true"></span>
   <input type="text"
          placeholder="Filter"
@@ -2021,205 +1496,10 @@
                     <li class="devsite-nav-item">
                       
   
-  <a href="/docs/extensions"
+  <a href="/docs/web-platform"
     
        class="devsite-nav-title gc-analytics-event
               
-              "
-    
-
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: Overview"
-      
-        track-name="overview"
-      
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Overview"
-     track-type="globalNav"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Overview
-   </span>
-    
-  
-  </a>
-  
-
-  
-                    </li>
-                  
-                    
-                    
-                    
-                    <li class="devsite-nav-item">
-                      
-  
-  <a href="/docs/extensions/get-started"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: Get Started"
-      
-        track-name="get started"
-      
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Get Started"
-     track-type="globalNav"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Get Started
-   </span>
-    
-  
-  </a>
-  
-
-  
-                    </li>
-                  
-                    
-                    
-                    
-                    <li class="devsite-nav-item">
-                      
-  
-  <a href="/docs/extensions/develop"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: Develop"
-      
-        track-name="develop"
-      
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Develop"
-     track-type="globalNav"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Develop
-   </span>
-    
-  
-  </a>
-  
-
-  
-                    </li>
-                  
-                    
-                    
-                    
-                    <li class="devsite-nav-item">
-                      
-  
-  <a href="/docs/extensions/how-to"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: How To"
-      
-        track-name="how to"
-      
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: How To"
-     track-type="globalNav"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      How To
-   </span>
-    
-  
-  </a>
-  
-
-  
-                    </li>
-                  
-                    
-                    
-                    
-                    <li class="devsite-nav-item">
-                      
-  
-  <a href="/docs/extensions/ai"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: AI"
-      
-        track-name="ai"
-      
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: AI"
-     track-type="globalNav"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      AI
-   </span>
-    
-  
-  </a>
-  
-
-  
-                    </li>
-                  
-                    
-                    
-                    
-                    <li class="devsite-nav-item">
-                      
-  
-  <a href="/docs/extensions/reference"
-    
-       class="devsite-nav-title gc-analytics-event
-              devsite-nav-has-children
               devsite-nav-active"
     
 
@@ -2227,66 +1507,25 @@
       
         data-category="Site-Wide Custom Events"
       
-        data-label="Tab: Reference"
+        data-label="Tab: Web Platform"
       
-        track-name="reference"
+        track-name="web platform"
       
     
      data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Reference"
+     data-label="Responsive Tab: Web Platform"
      track-type="globalNav"
      track-metadata-eventDetail="globalMenu"
      track-metadata-position="nav">
   
     <span class="devsite-nav-text" tooltip menu="_book">
-      Reference
+      Web Platform
    </span>
-    
-    <span class="devsite-nav-icon material-icons" data-icon="forward"
-          menu="_book">
-    </span>
     
   
   </a>
   
 
-  
-    <ul class="devsite-nav-responsive-tabs devsite-nav-has-menu
-                devsite-lower-tab-item">
-      
-<li class="devsite-nav-item">
-
-  
-  <span
-    
-       class="devsite-nav-title"
-       tooltip
-    
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: Reference"
-      
-        track-name="reference"
-      
-    >
-  
-    <span class="devsite-nav-text" tooltip menu="Reference">
-      More
-   </span>
-    
-    <span class="devsite-nav-icon material-icons" data-icon="forward"
-          menu="Reference">
-    </span>
-    
-  
-  </span>
-  
-
-</li>
-
-    </ul>
   
                     </li>
                   
@@ -2296,7 +1535,7 @@
                     <li class="devsite-nav-item">
                       
   
-  <a href="/docs/extensions/samples"
+  <a href="/docs/web-platform/new-in-chrome"
     
        class="devsite-nav-title gc-analytics-event
               
@@ -2307,19 +1546,19 @@
       
         data-category="Site-Wide Custom Events"
       
-        data-label="Tab: Samples"
+        data-label="Tab: New releases"
       
-        track-name="samples"
+        track-name="new releases"
       
     
      data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Samples"
+     data-label="Responsive Tab: New releases"
      track-type="globalNav"
      track-metadata-eventDetail="globalMenu"
      track-metadata-position="nav">
   
     <span class="devsite-nav-text" tooltip >
-      Samples
+      New releases
    </span>
     
   
@@ -2335,10 +1574,10 @@
                     <li class="devsite-nav-item">
                       
   
-  <a href="/docs/webstore"
+  <a href="/docs/web-platform/webgpu"
     
        class="devsite-nav-title gc-analytics-event
-              devsite-nav-has-children
+              
               "
     
 
@@ -2346,66 +1585,25 @@
       
         data-category="Site-Wide Custom Events"
       
-        data-label="Tab: Chrome Web Store"
+        data-label="Tab: WebGPU"
       
-        track-name="chrome web store"
+        track-name="webgpu"
       
     
      data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Chrome Web Store"
+     data-label="Responsive Tab: WebGPU"
      track-type="globalNav"
      track-metadata-eventDetail="globalMenu"
      track-metadata-position="nav">
   
     <span class="devsite-nav-text" tooltip >
-      Chrome Web Store
+      WebGPU
    </span>
-    
-    <span class="devsite-nav-icon material-icons" data-icon="forward"
-          >
-    </span>
     
   
   </a>
   
 
-  
-    <ul class="devsite-nav-responsive-tabs devsite-nav-has-menu
-                devsite-lower-tab-item">
-      
-<li class="devsite-nav-item">
-
-  
-  <span
-    
-       class="devsite-nav-title"
-       tooltip
-    
-    
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Tab: Chrome Web Store"
-      
-        track-name="chrome web store"
-      
-    >
-  
-    <span class="devsite-nav-text" tooltip menu="Chrome Web Store">
-      More
-   </span>
-    
-    <span class="devsite-nav-icon material-icons" data-icon="forward"
-          menu="Chrome Web Store">
-    </span>
-    
-  
-  </span>
-  
-
-</li>
-
-    </ul>
   
                     </li>
                   
@@ -2531,372 +1729,6 @@
     </div>
     
       <div class="devsite-mobile-nav-bottom">
-        
-          
-          <ul class="devsite-nav-list" menu="_book">
-            <li class="devsite-nav-item
-           devsite-nav-heading"><div class="devsite-nav-title devsite-nav-title-no-path">
-        <span class="devsite-nav-text" tooltip>Manifest V3</span>
-      </div></li>
-
-  <li class="devsite-nav-item
-           devsite-nav-deprecated"><a href="/docs/extensions/mv2/reference"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>➡ Manifest V2</span><span class="devsite-nav-icon material-icons"
-        data-icon="deprecated"
-        data-title="Deprecated"
-        aria-hidden="true"></span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/accessibilityFeatures"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>accessibilityFeatures</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/action"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>action</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/alarms"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>alarms</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/audio"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>audio</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/bookmarks"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>bookmarks</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/browsingData"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>browsingData</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/certificateProvider"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>certificateProvider</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/commands"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>commands</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/contentSettings"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>contentSettings</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/contextMenus"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>contextMenus</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/cookies"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>cookies</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/debugger"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>debugger</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/declarativeContent"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>declarativeContent</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/declarativeNetRequest"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>declarativeNetRequest</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/desktopCapture"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>desktopCapture</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/devtools/inspectedWindow"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>devtools.inspectedWindow</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/devtools/network"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>devtools.network</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/devtools/panels"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>devtools.panels</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/devtools/performance"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>devtools.performance</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/devtools/recorder"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>devtools.recorder</span></a></li>
-
-  <li class="devsite-nav-item
-           devsite-nav-nightly"><a href="/docs/extensions/reference/api/dns"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>dns</span><span class="devsite-nav-icon material-icons"
-        data-icon="nightly"
-        data-title="Nightly build only"
-        aria-hidden="true"></span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/documentScan"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>documentScan</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/dom"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>dom</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/downloads"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>downloads</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/enterprise/deviceAttributes"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>enterprise.deviceAttributes</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/enterprise/hardwarePlatform"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>enterprise.hardwarePlatform</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/enterprise/login"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>enterprise.login</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/enterprise/networkingAttributes"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>enterprise.networkingAttributes</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/enterprise/platformKeys"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>enterprise.platformKeys</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/events"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>events</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/extension"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>extension</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/extensionTypes"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>extensionTypes</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/fileBrowserHandler"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>fileBrowserHandler</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/fileSystemProvider"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>fileSystemProvider</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/fontSettings"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>fontSettings</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/gcm"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>gcm</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/history"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>history</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/i18n"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>i18n</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/identity"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>identity</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/idle"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>idle</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/input/ime"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>input.ime</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/instanceID"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>instanceID</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/loginState"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>loginState</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/management"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>management</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/mimeHandler"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>mimeHandler</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/notifications"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>notifications</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/offscreen"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>offscreen</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/omnibox"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>omnibox</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/pageCapture"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>pageCapture</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/permissions"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>permissions</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/platformKeys"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>platformKeys</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/power"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>power</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/printerProvider"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>printerProvider</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/printing"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>printing</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/printingMetrics"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>printingMetrics</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/privacy"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>privacy</span></a></li>
-
-  <li class="devsite-nav-item
-           devsite-nav-nightly"><a href="/docs/extensions/reference/api/processes"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>processes</span><span class="devsite-nav-icon material-icons"
-        data-icon="nightly"
-        data-title="Nightly build only"
-        aria-hidden="true"></span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/proxy"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>proxy</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/publicSuffix"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>publicSuffix</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/readingList"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>readingList</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/runtime"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>runtime</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/scripting"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>scripting</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/search"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>search</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/sessions"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>sessions</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/sidePanel"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>sidePanel</span></a></li>
-
-  <li class="devsite-nav-item
-           devsite-nav-expandable"><div class="devsite-expandable-nav">
-      <a class="devsite-nav-toggle" aria-hidden="true"></a><div class="devsite-nav-title devsite-nav-title-no-path" tabindex="0" role="button">
-        <span class="devsite-nav-text" tooltip>storage</span>
-      </div><ul class="devsite-nav-section"><li class="devsite-nav-item"><a href="/docs/extensions/reference/api/storage"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>Overview</span></a></li><li class="devsite-nav-item"><a href="/docs/extensions/reference/api/storage/StorageArea"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>StorageArea</span></a></li></ul></div></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/system/cpu"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>system.cpu</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/system/display"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>system.display</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/system/memory"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>system.memory</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/system/storage"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>system.storage</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/systemLog"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>systemLog</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/tabCapture"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>tabCapture</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/tabGroups"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>tabGroups</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/tabs"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>tabs</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/topSites"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>topSites</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/tts"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>tts</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/ttsEngine"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>ttsEngine</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/types"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>types</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/userScripts"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>userScripts</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/vpnProvider"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>vpnProvider</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/webAuthenticationProxy"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>webAuthenticationProxy</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/webNavigation"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>webNavigation</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/webRequest"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>webRequest</span></a></li>
-
-  <li class="devsite-nav-item"><a href="/docs/extensions/reference/api/windows"
-        class="devsite-nav-title"
-      ><span class="devsite-nav-text" tooltip>windows</span></a></li>
-          </ul>
         
         
           
@@ -3875,212 +2707,6 @@
   
     
   
-    
-  
-    
-  
-    
-      
-      <ul class="devsite-nav-list" menu="Reference"
-          aria-label="Side menu" hidden>
-        
-          
-            
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/extensions/reference/api"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: API"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      API
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/extensions/reference/permissions-list"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Permissions"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Permissions
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/extensions/reference/manifest"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Manifest"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Manifest
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-          
-        
-      </ul>
-    
-  
-    
-  
-    
-      
-      <ul class="devsite-nav-list" menu="Chrome Web Store"
-          aria-label="Side menu" hidden>
-        
-          
-            
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/webstore/prepare"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Prepare your Extension"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Prepare your Extension
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/webstore/publish"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Publish in the Chrome Web Store"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Publish in the Chrome Web Store
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
-  <a href="/docs/webstore/program-policies"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Program Policies"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Program Policies
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-          
-        
-      </ul>
-    
-  
         
       </div>
     
@@ -4092,8 +2718,8 @@
       <section id="gc-wrapper">
         <main role="main" id="main-content" class="devsite-main-content"
             
-              has-book-nav
-              has-sidebar
+              
+              
             >
           <div class="devsite-sidebar">
             <div class="devsite-sidebar-content">
@@ -4104,7 +2730,7 @@
                             depth="2"
                             scrollbars
                             data-nosnippet
-                  ></devsite-toc>
+                  disabled></devsite-toc>
                 <devsite-recommendations-sidebar class="nocontent devsite-nav" data-nosnippet>
                 </devsite-recommendations-sidebar>
             </div>
@@ -4125,17 +2751,6 @@
 <article class="devsite-article">
   
   
-  
-    <div class="devsite-banner devsite-banner-announcement nocontent" data-nosnippet
-      
-        
-      >
-      <div class="devsite-banner-message">
-        <div class="devsite-banner-message-text">
-          Chrome now supports the standardized <code translate="no" dir="ltr">browser.*</code> namespace (available from Chrome 148). We are gradually updating the documentation. Read more in our <a href="https://developer.chrome.com/docs/extensions/develop/concepts/browser-namespace">transition guide</a>.
-        </div>
-      </div>
-    </div>
   
   
   
@@ -4230,7 +2845,7 @@
     
       
         
-  <a href="https://developer.chrome.com/docs/extensions"
+  <a href="https://developer.chrome.com/docs/web-platform"
       
         class="devsite-breadcrumb-link gc-analytics-event"
       
@@ -4246,87 +2861,11 @@
       
         track-metadata-position="3"
       
-        track-metadata-eventdetail="Chrome Extensions"
+        track-metadata-eventdetail="Web Platform"
       
     >
     
-          Chrome Extensions
-        
-  </a>
-  
-      
-    
-  </li>
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-      
-      <div class="devsite-breadcrumb-guillemet material-icons" aria-hidden="true"></div>
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs/extensions/reference"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Breadcrumbs"
-      
-        data-value="4"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="4"
-      
-        track-metadata-eventdetail="Reference"
-      
-    >
-    
-          Reference
-        
-  </a>
-  
-      
-    
-  </li>
-  
-  <li class="devsite-breadcrumb-item
-             ">
-    
-      
-      <div class="devsite-breadcrumb-guillemet material-icons" aria-hidden="true"></div>
-    
-    
-    
-      
-        
-  <a href="https://developer.chrome.com/docs/extensions/reference/api"
-      
-        class="devsite-breadcrumb-link gc-analytics-event"
-      
-        data-category="Site-Wide Custom Events"
-      
-        data-label="Breadcrumbs"
-      
-        data-value="5"
-      
-        track-type="globalNav"
-      
-        track-name="breadcrumb"
-      
-        track-metadata-position="5"
-      
-        track-metadata-eventdetail="API"
-      
-    >
-    
-          API
+          Web Platform
         
   </a>
   
@@ -4336,15 +2875,8 @@
   
 </ul>
     
-      
-    <devsite-thumb-rating position="header">
-    </devsite-thumb-rating>
-  
-    
   </div>
-  
-    <h1 class="devsite-page-title" tabindex="-1">
-      browser.offscreen<devsite-actions hidden data-nosnippet><devsite-feature-tooltip
+  <devsite-actions hidden data-nosnippet><devsite-feature-tooltip
       ack-key="AckCollectionsBookmarkTooltipDismiss"
       analytics-category="Site-Wide Custom Events"
       analytics-action-show="Callout Profile displayed"
@@ -4373,18 +2905,15 @@
       
       Save and categorize content based on your preferences.
     </span>
-  </devsite-feature-tooltip>
-    <devsite-llm-tools></devsite-llm-tools></devsite-actions>
+  </devsite-feature-tooltip></devsite-actions>
   
-      
-    </h1>
-  <div class="devsite-page-title-meta"><devsite-view-release-notes></devsite-view-release-notes></div>
+    
   
 
   <devsite-toc class="devsite-nav"
     depth="2"
     devsite-toc-embedded
-    >
+    disabled>
   </devsite-toc>
   
     
@@ -4393,227 +2922,2521 @@
 
   
     
+  <section class="devsite-landing-row devsite-landing-row-1-up devsite-landing-row-50 devsite-landing-row-hero"
+           
+    background="google-blue"
+  
+           
+           
+    header-position="top"
+  >
+    <div class="devsite-landing-row-inner">
+
     
-<style>.dcc-reference{--color-hairline: #dadce0;--color-blue-lightest: rgba(232, 240, 254, 0.4);--color-blue-lighter: #d2e3fc;--color-blue-medium: #1967d2;--color-blue-darkest: #174ea6;--rgb-blue-darkest: 23, 78, 166;--color-yellow-lightest: rgba(254, 247, 224, 0.3);--color-yellow-lighter: #feefc3;--color-yellow-medium: #f29900;--color-yellow-darkest: #de7100;--rgb-yellow-darkest: 227, 117, 0;--color-red-lightest: rgba(252, 232, 230, 0.4);--color-red-lighter: rgba(252, 232, 230, 0.5);--color-red-medium: #c5221f;--color-red-darkest: #9f0e0e;--rgb-red-darkest: 165, 14, 14;--color-green-lightest: rgba(230, 244, 234, 0.4);--color-green-lighter: #ceead6;--color-green-medium: #188038;--color-green-darkest: #0d652d;--rgb-green-darkest: 13, 101, 45;--color-purple-lightest: rgba(243, 232, 253, 0.4);--color-purple-lighter: rgba(243, 232, 253, 0.5);--color-purple-medium: #8430ce;--color-purple-darkest: #681da8;--rgb-purple-darkest: 104, 29, 168;--color-pink-lightest: rgba(253, 231, 243, 0.4);--color-pink-lighter: rgba(253, 231, 243, 0.5);--color-pink-medium: #d01884;--color-pink-darkest: #9c166b;--rgb-pink-darkest: 156, 22, 107}.dcc-type--label{font-weight:500;font-size:.75rem;line-height:1.3333333333}.dcc-type--xsmall{font-size:.75rem;line-height:1.6666666667}h2.dcc-api-title{display:none}.dcc-code-sections ul{padding-left:0}.dcc-code-sections .dcc-code-sections{border:1px solid var(--color-hairline);padding:calc(1rem - 1px)}.dcc-code-sections .dcc-code-sections ul>li:first-child{border-top:0;padding-top:0}.dcc-code-sections .dcc-code-sections devsite-code{margin-left:calc(-1rem + 1px);margin-right:calc(-1rem + 1px)}.dcc-code-sections .dcc-type--small{font-size:.875em;line-height:2em}.dcc-code-sections__label{font-size:.875rem;line-height:2}.dcc-code-sections__type>:not(:last-child){margin-right:.5ch}.dcc-code-sections__enum{margin-bottom:1rem}.dcc-code-sections__icon::before{background:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTcuNzc2MzkgMS41NTI3OUM3LjkxNzE2IDEuNDgyNCA4LjA4Mjg0IDEuNDgyNCA4LjIyMzYxIDEuNTUyNzlMMTQuMjIzNiA0LjU1Mjc5QzE0LjM5MyA0LjYzNzQ4IDE0LjUgNC44MTA2MSAxNC41IDVWMTFDMTQuNSAxMS4xODk0IDE0LjM5MyAxMS4zNjI1IDE0LjIyMzYgMTEuNDQ3Mkw4LjIyMzYxIDE0LjQ0NzJDOC4wODI4NCAxNC41MTc2IDcuOTE3MTYgMTQuNTE3NiA3Ljc3NjM5IDE0LjQ0NzJMMS43NzYzOSAxMS40NDcyQzEuNjA3IDExLjM2MjUgMS41IDExLjE4OTQgMS41IDExVjVDMS41IDQuODEwNjEgMS42MDcgNC42Mzc0OCAxLjc3NjM5IDQuNTUyNzlMNy43NzYzOSAxLjU1Mjc5Wk0yLjUgNS44MDkwMlYxMC42OTFMNy41IDEzLjE5MVY4LjMwOTAyTDIuNSA1LjgwOTAyWk04LjUgOC4zMDkwMlYxMy4xOTFMMTMuNSAxMC42OTFWNS44MDkwMkw4LjUgOC4zMDkwMlpNMTIuODgyIDVMOCA3LjQ0MDk4TDMuMTE4MDMgNUw4IDIuNTU5MDJMMTIuODgyIDVaIiBmaWxsPSIjNUY2MzY4Ii8+Cjwvc3ZnPgo=") center/contain no-repeat;content:"";display:inline-block;height:1.25em;margin-right:.5ch;vertical-align:middle;width:1.25em}.dcc-code-sections__icon.dcc-code-sections__icon--number::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNiAyLjVINFY0LjVINlYyLjVaIiBmaWxsPSIjNUY2MzY4Ii8+CjxwYXRoIGQ9Ik02IDUuNUg0VjcuNUg2VjUuNVoiIGZpbGw9IiM1RjYzNjgiLz4KPHBhdGggZD0iTTQgOC41SDZWMTAuNUg0VjguNVoiIGZpbGw9IiM1RjYzNjgiLz4KPHBhdGggZD0iTTkgMi41SDdWNC41SDlWMi41WiIgZmlsbD0iIzVGNjM2OCIvPgo8cGF0aCBkPSJNNyA1LjVIOVY3LjVIN1Y1LjVaIiBmaWxsPSIjNUY2MzY4Ii8+CjxwYXRoIGQ9Ik05IDguNUg3VjEwLjVIOVY4LjVaIiBmaWxsPSIjNUY2MzY4Ii8+CjxwYXRoIGQ9Ik03IDExLjVIOVYxMy41SDdWMTEuNVoiIGZpbGw9IiM1RjYzNjgiLz4KPHBhdGggZD0iTTEyIDIuNUgxMFY0LjVIMTJWMi41WiIgZmlsbD0iIzVGNjM2OCIvPgo8cGF0aCBkPSJNMTAgNS41SDEyVjcuNUgxMFY1LjVaIiBmaWxsPSIjNUY2MzY4Ii8+CjxwYXRoIGQ9Ik0xMiA4LjVIMTBWMTAuNUgxMlY4LjVaIiBmaWxsPSIjNUY2MzY4Ii8+Cjwvc3ZnPgo=")}.dcc-code-sections__icon.dcc-code-sections__icon--string::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNC43MTQyOSAxMkg1Ljg1NzE0TDcuMjg1NzEgOC4yODU3MVY0LjVDNy4yODU3MSA0LjIyMzg2IDcuMDYxODYgNCA2Ljc4NTcxIDRIMy41QzMuMjIzODYgNCAzIDQuMjIzODYgMyA0LjVWNy43ODU3MUMzIDguMDYxODYgMy4yMjM4NiA4LjI4NTcxIDMuNSA4LjI4NTcxSDYuMTQyODZMNC43MTQyOSAxMlpNMTAuNDI4NiAxMkgxMS41NzE0TDEzIDguMjg1NzFWNC41QzEzIDQuMjIzODYgMTIuNzc2MSA0IDEyLjUgNEg5LjIxNDI5QzguOTM4MTQgNCA4LjcxNDI5IDQuMjIzODYgOC43MTQyOSA0LjVWNy43ODU3MUM4LjcxNDI5IDguMDYxODYgOC45MzgxNCA4LjI4NTcxIDkuMjE0MjkgOC4yODU3MUgxMS44NTcxTDEwLjQyODYgMTJaIiBmaWxsPSIjNUY2MzY4Ii8+Cjwvc3ZnPgo=")}.dcc-code-sections__icon.dcc-code-sections__icon--boolean::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIuMzUzNiA1Ljg1MzU1TDExLjY0NjQgNS4xNDY0NUw3IDkuNzkyODlMNC44NTM1NSA3LjY0NjQ1TDQuMTQ2NDUgOC4zNTM1NUw3IDExLjIwNzFMMTIuMzUzNiA1Ljg1MzU1WiIgZmlsbD0iIzVGNjM2OCIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTIgM0MyIDIuNDQ3NzIgMi40NDc3MiAyIDMgMkgxM0MxMy41NTIzIDIgMTQgMi40NDc3MiAxNCAzVjEzQzE0IDEzLjU1MjMgMTMuNTUyMyAxNCAxMyAxNEgzQzIuNDQ3NzIgMTQgMiAxMy41NTIzIDIgMTNWM1pNMyAzSDEzVjEzSDNMMyAzWiIgZmlsbD0iIzVGNjM2OCIvPgo8L3N2Zz4K")}.dcc-code-sections__icon.dcc-code-sections__icon--function::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTMuNSA0QzMuNSAyLjYxOTI5IDQuNjE5MjkgMS41IDYgMS41SDYuNVYyLjVINkM1LjE3MTU3IDIuNSA0LjUgMy4xNzE1NyA0LjUgNFY1Ljc2MzkzQzQuNSA2LjcxMDg2IDMuOTY0OTkgNy41NzY1MiAzLjExODAzIDhDMy45NjQ5OSA4LjQyMzQ4IDQuNSA5LjI4OTE0IDQuNSAxMC4yMzYxVjEyQzQuNSAxMi44Mjg0IDUuMTcxNTcgMTMuNSA2IDEzLjVINi41VjE0LjVINkM0LjYxOTI5IDE0LjUgMy41IDEzLjM4MDcgMy41IDEyVjEwLjIzNjFDMy41IDkuNjY3OTEgMy4xNzkgOS4xNDg1MiAyLjY3MDgyIDguODk0NDNMMS43NzYzOSA4LjQ0NzIxQzEuNjA3IDguMzYyNTIgMS41IDguMTg5MzkgMS41IDhDMS41IDcuODEwNjEgMS42MDcgNy42Mzc0OCAxLjc3NjM5IDcuNTUyNzlMMi42NzA4MiA3LjEwNTU3QzMuMTc5IDYuODUxNDggMy41IDYuMzMyMDkgMy41IDUuNzYzOTNWNFpNMTAgMi41SDkuNVYxLjVIMTBDMTEuMzgwNyAxLjUgMTIuNSAyLjYxOTI5IDEyLjUgNFY1Ljc2MzkzQzEyLjUgNi4zMzIwOSAxMi44MjEgNi44NTE0OCAxMy4zMjkyIDcuMTA1NTdMMTQuMjIzNiA3LjU1Mjc5QzE0LjM5MyA3LjYzNzQ4IDE0LjUgNy44MTA2MSAxNC41IDhDMTQuNSA4LjE4OTM5IDE0LjM5MyA4LjM2MjUyIDE0LjIyMzYgOC40NDcyMUwxMy4zMjkyIDguODk0NDNDMTIuODIxIDkuMTQ4NTIgMTIuNSA5LjY2NzkxIDEyLjUgMTAuMjM2MVYxMkMxMi41IDEzLjM4MDcgMTEuMzgwNyAxNC41IDEwIDE0LjVIOS41VjEzLjVIMTBDMTAuODI4NCAxMy41IDExLjUgMTIuODI4NCAxMS41IDEyVjEwLjIzNjFDMTEuNSA5LjI4OTE0IDEyLjAzNSA4LjQyMzQ4IDEyLjg4MiA4QzEyLjAzNSA3LjU3NjUyIDExLjUgNi43MTA4NiAxMS41IDUuNzYzOTNWNEMxMS41IDMuMTcxNTcgMTAuODI4NCAyLjUgMTAgMi41WiIgZmlsbD0iIzVGNjM2OCIvPgo8L3N2Zz4K")}.dcc-code-sections__icon.dcc-code-sections__icon--array::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTEyIDYuNUg0VjkuNUgxMlY2LjVaTTEyIDUuNUg0VjNIMTJWNS41Wk0xMyAzQzEzIDIuNDQ3NzIgMTIuNTUyMyAyIDEyIDJINEMzLjQ0NzcyIDIgMyAyLjQ0NzcyIDMgM1YxM0MzIDEzLjU1MjMgMy40NDc3MiAxNCA0IDE0SDEyQzEyLjU1MjMgMTQgMTMgMTMuNTUyMyAxMyAxM1YzWk0xMiAxMC41SDRWMTNIMTJWMTAuNVoiIGZpbGw9IiM1RjYzNjgiLz4KPC9zdmc+Cg==")}.dcc-code-sections__icon.dcc-code-sections__icon--reference::before{background-image:url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMyAySDhWM0gzTDMgMTNIMTNWOEgxNFYxM0MxNCAxMy41NTIzIDEzLjU1MjMgMTQgMTMgMTRIM0MyLjQ0NzcyIDE0IDIgMTMuNTUyMyAyIDEzVjNDMiAyLjQ0NzcyIDIuNDQ3NzIgMiAzIDJaIiBmaWxsPSIjNUY2MzY4Ii8+CjxwYXRoIGQ9Ik05LjUgM0gxMi4yOTI5TDUuNjQ2NDUgOS42NDY0NUw2LjM1MzU1IDEwLjM1MzZMMTMgMy43MDcxMVY2LjVIMTRWMkg5LjVWM1oiIGZpbGw9IiM1RjYzNjgiLz4KPC9zdmc+Cg==")}.dcc-code-sections__optional{color:var(--color-pink-medium)}.dcc-code-sections__value{color:var(--color-code-number)}.dcc-code-sections__deprecated{color:var(--color-red-medium)}.dcc-code-sections__callback{display:block}p>.dcc-code-sections__callback{margin-top:.5em}.dcc-code-sections__overline{border-top:1px solid var(--color-hairline);margin:1em 0;padding-top:get-size(300)}.dcc-code-sections__mode{color:var(--color-code-comment);text-transform:uppercase}.dcc-code-sections li{border-top:1px solid var(--color-hairline);display:flex;flex-direction:column;padding-top:get-size(300);position:relative}.dcc-code-sections li>:first-child{font-weight:500;flex:0 0 auto;flex-shrink:1;min-width:9rem;padding-right:1rem}.dcc-code-sections li>:not(:first-child){flex-grow:1}.dcc-code-sections--summary{padding-left:0}.dcc-code-sections--summary>li:first-child{border-top:0;padding-top:0}@media(min-width: 992px){.dcc-code-sections--summary>li{flex-direction:row}}.dcc-code-sections--summary>li>:first-child{min-width:6.5rem}.dcc-tag-pill{--flow-space: 0.25rem;box-sizing:border-box;border-radius:.75rem;font-weight:500;font-size:.75rem;line-height:1.3333333333;margin:calc(var(--flow-space)/2);background-color:var(--color-blue-lightest);color:var(--color-blue-darkest);margin-bottom:.5rem;padding:.25rem .75rem;cursor:help}.dcc-tag-pill--blue{background-color:var(--color-blue-lightest);color:var(--color-blue-darkest)}.dcc-tag-pill--yellow{background-color:var(--color-yellow-lightest);color:var(--color-yellow-darkest)}.dcc-tag-pill--red{background-color:var(--color-red-lightest);color:var(--color-red-darkest)}.dcc-tag-pill--green{background-color:var(--color-green-lightest);color:var(--color-green-darkest)}.dcc-tag-pill--pink{background-color:var(--color-pink-lightest);color:var(--color-pink-darkest)}.dcc-tag-pill--purple{background-color:var(--color-purple-lightest);color:var(--color-purple-darkest)}a>.dcc-tag-pill{cursor:pointer}</style>
+      
 
+      
+      
 
+      
 
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
 
-<p></p>
+  
+    
 
-<p><h2 class="dcc-api-title" data-text="Description" id="description" tabindex="-1">Description</h2>
-<div class="dcc-reference"><p>Use the <code translate="no" dir="ltr">offscreen</code> API to create and manage offscreen documents.</p></div></p>
+    
+    <div class="devsite-landing-row-item-description"
+         >
 
-<p><h2 id="permissions" data-text="Permissions" tabindex="-1">Permissions</h2>
-<div class="dcc-reference"><code translate="no" dir="ltr">offscreen</code><br /></div></p>
+      
 
-<p>To use the Offscreen API, declare the <code translate="no" dir="ltr">&quot;offscreen&quot;</code> permission in the <a href="/docs/extensions/reference/manifest">extension manifest</a>. For example:</p>
-<div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="JSON"><code translate="no" dir="ltr"><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nt">"name"</span><span class="devsite-syntax-p">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s2">"My extension"</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-err">...</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nt">"permissions"</span><span class="devsite-syntax-p">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-s2">"offscreen"</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">],</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-err">...</span>
-<span class="devsite-syntax-p">}</span>
-</code></pre></devsite-code>
-<p><h2 id="availability" data-text="Availability" tabindex="-1">Availability</h2>
-<div class="dcc-reference"><div class="">
-      <div><span class="dcc-tag-pill--blue dcc-tag-pill" title="Available as chrome.offscreen in Chrome 109+">Chrome 109+
-      </span><span class="dcc-tag-pill--purple dcc-tag-pill" title="Available as browser.offscreen in Chrome 148+">
-        browser.* since Chrome 148
-      </span><span class="dcc-tag-pill--purple dcc-tag-pill" title="Minimum manifest version">MV3+
-      </span></div>
-    </div></div></p>
+      <div class="devsite-landing-row-item-body">
+        
 
-<p></p>
+        
+    <h3 id="web-platform"
+        data-text="Web Platform"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+    
+        Web Platform
+      
+  
+    </h3>
+  
 
-<h2 id="concepts_and_usage" data-text="Concepts and usage" tabindex="-1">Concepts and usage</h2>
+        
+          <div class="devsite-landing-row-item-description-content">
+            Read the documentation for Web Platform APIs, some of which are experimental in Chrome. For example, origin and developer trials, or features only found in Canary.
 
-<p>Service workers don&#39;t have DOM access, and many websites have content security policies that
-limit the functionality of content scripts. The Offscreen API allows the extension to use DOM
-APIs in a hidden document without interrupting the user experience by opening new windows or
-tabs. The <a href="/docs/extensions/reference/runtime"><code translate="no" dir="ltr">runtime</code></a> API is the only extensions API
-supported by offscreen documents.</p>
+          </div>
+        
 
-<p>Pages loaded as offscreen documents are handled differently from other types of extension pages.
-The extension&#39;s permissions carry over to offscreen documents, but with limits on extension API
-access. For example, because the <a href="/docs/extensions/reference/api/runtime"><code translate="no" dir="ltr">browser.runtime</code></a> API is the only
-extensions API supported by offscreen documents, messaging must be handled
-using members of that API.</p>
+        
 
-<p>The following are other ways offscreen documents behave differently from normal pages:</p>
+        
+          <div class="devsite-landing-row-item-buttons">
+  
 
-<ul>
-<li>An offscreen document&#39;s URL must be a static HTML file bundled with the extension.</li>
-<li>Offscreen documents can&#39;t be focused.</li>
-<li>An offscreen document is an instance of <a href="https://developer.mozilla.org/docs/Web/API/Window"><code translate="no" dir="ltr">window</code></a>, but the value of its <code translate="no" dir="ltr">opener</code> property is always <code translate="no" dir="ltr">null</code>.</li>
-<li>Though an extension package can contain multiple offscreen documents, an installed extension can only
-have one open at a time. If the extension is running
-in split mode with an active incognito profile, the normal and incognito profiles can each
-have one offscreen document.</li>
-</ul>
+  
+  <a href="https://developer.chrome.com/origintrials"
+  
+    class="button button-primary
+      "
+    
+    
+      
+        target="_blank"
+      
+    
+    >Available Origin Trials</a>
 
-<p>Use <a href="#method-createDocument"><code translate="no" dir="ltr">browser.offscreen.createDocument()</code></a> and
-<a href="#method-closeDocument"><code translate="no" dir="ltr">browser.offscreen.closeDocument()</code></a> to create and close an offscreen
-document. <code translate="no" dir="ltr">createDocument()</code> requires the document&#39;s <code translate="no" dir="ltr">url</code>, a reason, and a justification:</p>
-<div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="JavaScript"><code translate="no" dir="ltr"><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">offscreen</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">createDocument</span><span class="devsite-syntax-p">({</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nx">url</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'off_screen.html'</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nx">reasons</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-s1">'CLIPBOARD'</span><span class="devsite-syntax-p">],</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nx">justification</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'reason for needing the document'</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-p">});</span>
-</code></pre></devsite-code>
-<h3 id="reasons" data-text="Reasons" tabindex="-1">Reasons</h3>
+  
+  <a href="https://chromestatus.com/features"
+  
+    class="button button-primary
+      "
+    
+    
+    >Chrome Platform status <span class="material-icons icon-after" aria-hidden="true" translate="no">open_in_new</span></a>
 
-<p>For a list of valid reasons, see the <a href="/docs/extensions/reference/api/offscreen#type-Reason">Reasons</a> section. Reasons are set during
-document creation to determine the document&#39;s lifespan. The <code translate="no" dir="ltr">AUDIO_PLAYBACK</code> reason sets the
-document to close after 30 seconds without audio playing. All other reasons don&#39;t set lifetime limits.</p>
-
-<h2 id="examples" data-text="Examples" tabindex="-1">Examples</h2>
-
-<h3 id="maintain_the_lifecycle_of_an_offscreen_document" data-text="Maintain the lifecycle of an offscreen document" tabindex="-1">Maintain the lifecycle of an offscreen document</h3>
-
-<p>The following example shows how to ensure that an offscreen document exists. The
-<code translate="no" dir="ltr">setupOffscreenDocument()</code> function calls <a href="/docs/extensions/reference/api/runtime#method-getContexts"><code translate="no" dir="ltr">runtime.getContexts()</code></a> to find
-an existing offscreen document, or creates the document if it doesn&#39;t already exist.</p>
-<div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="JavaScript"><code translate="no" dir="ltr"><span class="devsite-syntax-kd">let</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-p">;</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-c1">// A global promise to avoid concurrency issues</span>
-<span class="devsite-syntax-k">async</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-kd">function</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">setupOffscreenDocument</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">path</span><span class="devsite-syntax-p">)</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-c1">// Check all windows controlled by the service worker to see if one</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-c1">// of them is the offscreen document with the given path</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-kd">const</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">offscreenUrl</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">getURL</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">path</span><span class="devsite-syntax-p">);</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-kd">const</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">existingContexts</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">getContexts</span><span class="devsite-syntax-p">({</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">contextTypes</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-s1">'OFFSCREEN_DOCUMENT'</span><span class="devsite-syntax-p">],</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">documentUrls</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-nx">offscreenUrl</span><span class="devsite-syntax-p">]</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">});</span>
-
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-k">if</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">existingContexts</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">length</span><span class="devsite-syntax-w"> &gt; </span><span class="devsite-syntax-mf">0</span><span class="devsite-syntax-p">)</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-k">return</span><span class="devsite-syntax-p">;</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">}</span>
-
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-c1">// create offscreen document</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-k">if</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-p">)</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-p">;</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">}</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-k">else</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">offscreen</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">createDocument</span><span class="devsite-syntax-p">({</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-nx">url</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">path</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-nx">reasons</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-s1">'CLIPBOARD'</span><span class="devsite-syntax-p">],</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-nx">justification</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'reason for needing the document'</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-p">});</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-p">;</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">creating</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-kc">null</span><span class="devsite-syntax-p">;</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">}</span>
-<span class="devsite-syntax-p">}</span>
-</code></pre></devsite-code>
-<p>Before sending a message to an offscreen document, call <code translate="no" dir="ltr">setupOffscreenDocument()</code> to make sure
-the document exists, as demonstrated in the following example.</p>
-<div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="JavaScript"><code translate="no" dir="ltr"><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">action</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">onClicked</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">addListener</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-k">async</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">()</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span>&gt;<span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">setupOffscreenDocument</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-s1">'off_screen.html'</span><span class="devsite-syntax-p">);</span>
-
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-c1">// Send message to offscreen document</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">sendMessage</span><span class="devsite-syntax-p">({</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">type</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'...'</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">target</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'offscreen'</span><span class="devsite-syntax-p">,</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-nx">data</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-s1">'...'</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">});</span>
-<span class="devsite-syntax-p">});</span>
-</code></pre></devsite-code>
-<p>For complete examples, see the <a href="https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/cookbook.offscreen-clipboard-write">offscreen-clipboard</a> and
-<a href="https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/cookbook.offscreen-dom">offscreen-dom</a> demos on GitHub.</p>
-
-<h3 id="before_chrome_116_check_if_an_offscreen_document_is_open" data-text="Before Chrome 116: check if an offscreen document is open" tabindex="-1">Before Chrome 116: check if an offscreen document is open</h3>
-
-<p><a href="/docs/extensions/reference/api/runtime#method-getContexts"><code translate="no" dir="ltr">runtime.getContexts()</code></a> was added in Chrome 116. In earlier versions of
-Chrome, use <a href="https://developer.mozilla.org/docs/Web/API/Clients/matchAll"><code translate="no" dir="ltr">clients.matchAll()</code></a>
-to check for an existing offscreen document:</p>
-<div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="JavaScript"><code translate="no" dir="ltr"><span class="devsite-syntax-k">async</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-kd">function</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">hasOffscreenDocument</span><span class="devsite-syntax-p">()</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-k">if</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-s1">'getContexts'</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-ow">in</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">)</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-kd">const</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">contexts</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">getContexts</span><span class="devsite-syntax-p">({</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-nx">contextTypes</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-s1">'OFFSCREEN_DOCUMENT'</span><span class="devsite-syntax-p">],</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-nx">documentUrls</span><span class="devsite-syntax-o">:</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">[</span><span class="devsite-syntax-nx">OFFSCREEN_DOCUMENT_PATH</span><span class="devsite-syntax-p">]</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-p">});</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-k">return</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nb">Boolean</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">contexts</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">length</span><span class="devsite-syntax-p">);</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">}</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-k">else</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-kd">const</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">matchedClients</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-k">await</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">clients</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">matchAll</span><span class="devsite-syntax-p">();</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-k">return</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">matchedClients</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">some</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">client</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-o">=</span>&gt;<span class="devsite-syntax-w"> </span><span class="devsite-syntax-p">{</span>
-<span class="devsite-syntax-w">      </span><span class="devsite-syntax-k">return</span><span class="devsite-syntax-w"> </span><span class="devsite-syntax-nx">client</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">url</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">includes</span><span class="devsite-syntax-p">(</span><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">runtime</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">id</span><span class="devsite-syntax-p">);</span>
-<span class="devsite-syntax-w">    </span><span class="devsite-syntax-p">});</span>
-<span class="devsite-syntax-w">  </span><span class="devsite-syntax-p">}</span>
-<span class="devsite-syntax-p">}</span>
-</code></pre></devsite-code>
-<p><div class="dcc-reference"><h2 id="type" data-text="Types" tabindex="-1">Types</h2>
-  <div><div>
-    <div class="notranslate">
-      <h3 id="type-CreateParameters" data-text="CreateParameters" tabindex="-1">CreateParameters</h3>
-    </div></div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="properties" data-text="Properties" tabindex="-1">Properties</h4><ul class="stack"><li class="stack">
-    <div>
-      <div class="dcc-code-sections__label" id="property-CreateParameters-justification">justification</div>
-      <div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--string">string</p></div>
-    </div><p>A developer-provided string that explains, in more detail, the need for the background context. The user agent _may_ use this in display to the user.</p>
-</li><li class="stack">
-    <div>
-      <div class="dcc-code-sections__label" id="property-CreateParameters-reasons">reasons</div>
-      <div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--array"><a href="#type-Reason">Reason</a>[]</p></div>
-    </div><p>The reason(s) the extension is creating the offscreen document.</p>
-</li><li class="stack">
-    <div>
-      <div class="dcc-code-sections__label" id="property-CreateParameters-url">url</div>
-      <div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--string">string</p></div>
-    </div><p>The (relative) URL to load in the document.</p>
-</li></ul>
-    </div><div>
-    <div class="notranslate">
-      <h3 id="type-Reason" data-text="Reason" tabindex="-1">Reason</h3>
-    </div></div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="enum" data-text="Enum" tabindex="-1">Enum</h4><div class="dcc-code-sections__overline dcc-code-sections__label">
-      <p><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;TESTING&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">A reason used for testing purposes only.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;AUDIO_PLAYBACK&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document is responsible for playing audio.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;IFRAME_SCRIPTING&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to embed and script an iframe in order to modify the iframe's content.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;DOM_SCRAPING&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to embed an iframe and scrape its DOM to extract information.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;BLOBS&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to interact with Blob objects (including <code translate="no" dir="ltr">URL.createObjectURL()</code>).</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;DOM_PARSER&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to use the <a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMParser">DOMParser API</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;USER_MEDIA&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to interact with media streams from user media (e.g. <code translate="no" dir="ltr">getUserMedia()</code>).</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;DISPLAY_MEDIA&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to interact with media streams from display media (e.g. <code translate="no" dir="ltr">getDisplayMedia()</code>).</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;WEB_RTC&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to use <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API">WebRTC APIs</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;CLIPBOARD&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to interact with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API">Clipboard API</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;LOCAL_STORAGE&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs access to <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;WORKERS&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to spawn workers.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;BATTERY_STATUS&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to use <a href="https://developer.mozilla.org/en-US/docs/Web/API/Battery_Status_API">navigator.getBattery</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;MATCH_MEDIA&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to use <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia">window.matchMedia</a>.</span></p></span><span style="white-space: nowrap;"><p class="dcc-code-sections__icon dcc-code-sections__icon--stringdcc-code-sections__enum"><span class="dcc-code-sections__value">&quot;GEOLOCATION&quot;</span> <br> <span class="dcc-type--xsmall" style="white-space: initial">Specifies that the offscreen document needs to use <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/geolocation">navigator.geolocation</a>.</span></p></span></p>
+</div>
+        
+      </div>
     </div>
-  </div></div><h2 id="method" data-text="Methods" tabindex="-1">Methods</h2>
-  <div><div>
-    <div class="notranslate">
-      <h3 id="method-closeDocument" data-text="closeDocument()" tabindex="-1">closeDocument()</h3>
-    </div><span class="dcc-code-sections__callback dcc-type--xsmall">
-        <div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="TypeScript"><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">offscreen</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">closeDocument</span><span class="devsite-syntax-p">()</span><span class="devsite-syntax-o">:</span>&nbsp;<span class="devsite-syntax-nx">Promise&lt;void&gt;</span></pre></devsite-code>
-      </span><p>Closes the currently-open offscreen document for the extension.</p>
-</div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="returns" data-text="Returns" tabindex="-1">Returns</h4><ul class="stack">
-          <li class="stack">
-            <div><div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--object">Promise&lt;void&gt;</p></div>
-            </div><p>Promise that resolves when the offscreen document has been closed.</p>
-</li>
-        </ul>
-      </div><div>
-    <div class="notranslate">
-      <h3 id="method-createDocument" data-text="createDocument()" tabindex="-1">createDocument()</h3>
-    </div><span class="dcc-code-sections__callback dcc-type--xsmall">
-        <div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="TypeScript"><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">offscreen</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">createDocument</span><span class="devsite-syntax-p">(</span><br />&nbsp;&nbsp;<span class="devsite-syntax-nx">parameters</span><span class="devsite-syntax-o">:</span>&nbsp;<a href="#type-CreateParameters"><span class="devsite-syntax-kt">CreateParameters</span></a><span class="devsite-syntax-p">,<br />)</span><span class="devsite-syntax-o">:</span>&nbsp;<span class="devsite-syntax-nx">Promise&lt;void&gt;</span></pre></devsite-code>
-      </span><p>Creates a new offscreen document for the extension.</p>
-</div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="parameters" data-text="Parameters" tabindex="-1">Parameters</h4><ul class="stack"><li class="stack">
-    <div>
-      <div class="dcc-code-sections__label" id="type-createDocument-parameters">parameters</div>
-      <div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--object"><a href="#type-CreateParameters">CreateParameters</a></p></div>
-    </div><p>The parameters describing the offscreen document to create.</p>
-</li></ul>
-    </div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="returns_1" data-text="Returns" tabindex="-1">Returns</h4><ul class="stack">
-          <li class="stack">
-            <div><div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--object">Promise&lt;void&gt;</p></div>
-            </div><p>Promise that resolves when the offscreen document is created and has completed its initial page load.</p>
-</li>
-        </ul>
-      </div><div>
-    <div class="notranslate">
-      <h3 id="method-hasDocument" data-text="hasDocument()" tabindex="-1">hasDocument()</h3>
-    </div><div class="">
-      <div><span class="dcc-tag-pill--blue dcc-tag-pill" title="Available as chrome.offscreen.hasDocument in Chrome 150+">Chrome 150+
-      </span></div>
-    </div><span class="dcc-code-sections__callback dcc-type--xsmall">
-        <div></div><devsite-code><pre class="devsite-click-to-copy" translate="no" dir="ltr" is-upgraded syntax="TypeScript"><span class="devsite-syntax-nx">browser</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">offscreen</span><span class="devsite-syntax-p">.</span><span class="devsite-syntax-nx">hasDocument</span><span class="devsite-syntax-p">()</span><span class="devsite-syntax-o">:</span>&nbsp;<span class="devsite-syntax-nx">Promise&lt;boolean&gt;</span></pre></devsite-code>
-      </span><p>Determines whether the extension has an active document.</p>
-</div><div class="dcc-code-sections"><h4 class="dcc-type--label dcc-code-sections__mode" id="returns_2" data-text="Returns" tabindex="-1">Returns</h4><ul class="stack">
-          <li class="stack">
-            <div><div class="dcc-type--xsmall"><p class="dcc-code-sections__icon dcc-code-sections__icon--object">Promise&lt;boolean&gt;</p></div>
-            </div><p>Promise that resolves with the result of whether the extension has an active offscreen document.</p>
-</li>
-        </ul>
-      </div></div></div>
-</p>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-3-up devsite-landing-row-cards devsite-landing-row-padding-medium"
+           
+    background="grey"
+  
+           
+           
+    header-position="top"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-release-channels">
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      web
+    </div>
+  
+  </div>
+  
+  </a>
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="what-are-chrome-release-channels"
+        data-text="What are Chrome release channels?"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-release-channels">
+    
+        What are Chrome release channels?
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Learn how Chrome uses Canary, Dev, Beta, and Stable release channels to test new features, and roll out updates.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-release-channels"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-flags">
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      flag
+    </div>
+  
+  </div>
+  
+  </a>
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="what-are-chrome-flags"
+        data-text="What are Chrome flags?"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-flags">
+    
+        What are Chrome flags?
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Activate additional debugging tools, or try out new or experimental features.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-flags"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-finch">
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      construction
+    </div>
+  
+  </div>
+  
+  </a>
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="what-is-a-chrome-finch-experiment"
+        data-text="What is a Chrome Finch experiment?"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-finch">
+    
+        What is a Chrome Finch experiment?
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Learn how we safely roll out new features and changes to Chrome.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/chrome-finch"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-3-up devsite-landing-row-padding-medium"
+           
+           
+           
+    header-position="left"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+      <header class="devsite-landing-row-header"
+              
+    icon-position="left"
+  >
+
+        
+  
+    
+  <div class="devsite-landing-row-header-icon-container"
+       
+       
+    foreground="grey"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-header-icon material-icons" aria-hidden="true">
+      web_asset
+    </div>
+  
+  </div>
+  
+  
+
+
+        
+        <div class="devsite-landing-row-header-text">
+
+          
+    <h2 id="shipped-apis"
+        data-text="Shipped APIs"
+        
+        tabindex="0">
+      
+    
+        Shipped APIs
+      
+  
+    </h2>
+  
+
+          
+        </div>
+        
+
+        
+      </header>
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="backforward-cache-notrestoredreasons-api"
+        data-text="Back/forward cache notRestoredReasons API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/bfcache-notrestoredreasons">
+    
+        Back/forward cache notRestoredReasons API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Report information on whether a page was blocked from using the back/forward cache on navigation.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="early-hints"
+        data-text="Early Hints"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/early-hints">
+    
+        Early Hints
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Early Hints is an HTTP status code (103 Early Hints) used to send a preliminary HTTP response ahead of a final response.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="better-screen-sharing-with-conditional-focus"
+        data-text="Better screen sharing with Conditional Focus"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/conditional-focus">
+    
+        Better screen sharing with Conditional Focus
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Conditionally focus a tab or window when screen sharing on the web.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="better-tab-sharing-with-capture-handle"
+        data-text="Better tab sharing with Capture Handle"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/capture-handle">
+    
+        Better tab sharing with Capture Handle
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The web platform now ships with Capture Handle, a mechanism that allows a capturing web app to ergonomically and confidently identify the captured web app, if the captured web app has opted-in.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="better-tab-sharing-with-region-capture"
+        data-text="Better tab sharing with Region Capture"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/region-capture">
+    
+        Better tab sharing with Region Capture
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The web platform now ships with Region Capture, a performant and robust way for cropping a video track.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="capture-a-video-stream-from-any-element"
+        data-text="Capture a video stream from any element"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/element-capture">
+    
+        Capture a video stream from any element
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The Element Capture API is a performant and robust way for transforming a capture of the current tab into a capture of a DOM subtree.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="compute-pressure-api"
+        data-text="Compute Pressure API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/compute-pressure">
+    
+        Compute Pressure API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Allow your implementation to use the right underlying hardware metrics to ensure that users can take advantage of all the processing power available to them
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="declarative-partial-updates"
+        data-text="Declarative Partial Updates"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/declarative-partial-updates">
+    
+        Declarative Partial Updates
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The Declarative Partial Updates API enables out-of-order streaming of HTML content.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="device-bound-session-credentials"
+        data-text="Device Bound Session Credentials"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/device-bound-session-credentials">
+    
+        Device Bound Session Credentials
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Enhance your web application's security by integrating Device Bound Session Credentials (DBSC) to protect against session hijacking.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="html-in-canvas-api"
+        data-text="HTML-in-Canvas API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/html-in-canvas">
+    
+        HTML-in-Canvas API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Draw live, interactive, and accessible DOM content into 2D, WebGL, and WebGPU canvases.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="launch-handler-api"
+        data-text="Launch Handler API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/launch-Handler">
+    
+        Launch Handler API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Control how your app is launched, for example, whether it uses an existing or a new window and whether the chosen window is navigated to the launch URL.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="long-animation-frames-loaf"
+        data-text="Long Animation Frames (LoAF)"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/long-animation-frames">
+    
+        Long Animation Frames (LoAF)
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Use the Long Animation Frames API to identify slow animation frames which are likely to affect the Interaction to Next Paint (INP) Core Web Vital metric which measures responsiveness.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="measure-soft-navigations"
+        data-text="Measure soft navigations"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/soft-navigations">
+    
+        Measure soft navigations
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Measure performance of JavaScript-driven same-document navigations such as Single Page Applications (SPAs).
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="navigation-api"
+        data-text="Navigation API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/navigation-api">
+    
+        Navigation API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Discover modern client-side routing with the Navigation API, which adds improved functionality to build single-page applications.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="page-lifecycle-api"
+        data-text="Page Lifecycle API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/page-lifecycle-api">
+    
+        Page Lifecycle API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The Page Lifecycle API provides lifecycle hooks so your pages can safely handle these browser interventions without affecting the user experience.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="picture-in-picture-for-any-element"
+        data-text="Picture-in-Picture for any Element"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/document-picture-in-picture">
+    
+        Picture-in-Picture for any Element
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Display arbitrary HTML content in an always-on-top window.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="prefetch-and-prerender-pages-with-the-speculation-rules-api"
+        data-text="Prefetch and prerender pages with the Speculation Rules API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/prerender-pages">
+    
+        Prefetch and prerender pages with the Speculation Rules API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Use the Speculation Rules API to achieve near-instant page navigations
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="privacy-preserving-screen-sharing-controls"
+        data-text="Privacy-preserving screen sharing controls"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/screen-sharing-controls">
+    
+        Privacy-preserving screen sharing controls
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Guide the user away from oversharing thanks to privacy-preserving screen sharing controls on the web.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="recognize-your-users-handwriting"
+        data-text="Recognize your users' handwriting"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/handwriting-recognition">
+    
+        Recognize your users' handwriting
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The Handwriting Recognition API allows web applications to use advanced handwriting recognition services to recognize text from handwritten input in real time.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="scroll-and-zoom-a-captured-tab"
+        data-text="Scroll and zoom a captured tab"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/captured-surface-control">
+    
+        Scroll and zoom a captured tab
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The Captured Surface Control API lets web apps scroll and zoom captured tabs.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="full-control-with-the-virtualkeyboard-api"
+        data-text="Full control with the VirtualKeyboard API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/virtual-keyboard">
+    
+        Full control with the VirtualKeyboard API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Manage yourself the browser deals with content occlusion when a touch device's virtual keyboard appears.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="smooth-and-simple-transitions-with-the-view-transition-api"
+        data-text="Smooth and simple transitions with the View Transition API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/view-transitions">
+    
+        Smooth and simple transitions with the View Transition API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The View Transition API lets you create seamless visual transitions between different views on your website.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-3-up devsite-landing-row-cards devsite-landing-row-padding-medium"
+           
+    background="grey"
+  
+           
+           
+    header-position="top"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      science
+    </div>
+  
+  </div>
+  
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="get-started-with-origin-trials"
+        data-text="Get started with origin trials"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+    
+        Get started with origin trials
+      
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Test a new or experimental web platform feature.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/origin-trials"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      3p
+    </div>
+  
+  </div>
+  
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="third-party-origin-trials"
+        data-text="Third-party origin trials"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+    
+        Third-party origin trials
+      
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Providers of embedded content can test new or experimental web platform features.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/third-party-origin-trials"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         
+    icon-position="left"
+  >
+
+      
+  
+    
+  <div class="devsite-landing-row-item-icon-container"
+       
+       
+    foreground="theme"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-item-icon material-icons" aria-hidden="true">
+      troubleshoot
+    </div>
+  
+  </div>
+  
+  
+
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="troubleshoot-origin-trials"
+        data-text="Troubleshoot origin trials"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+    
+        Troubleshoot origin trials
+      
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Address common problems with Chrome trial tokens in meta tags, headers, and scripts.
+
+          </div>
+        
+
+        
+
+        
+          <div class="devsite-landing-row-item-buttons">
+  
+
+  
+  <a href="https://developer.chrome.com/docs/web-platform/origin-trial-troubleshooting"
+  
+    class="button
+      "
+    
+    
+    >Read the doc</a>
+
+</div>
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-2-up devsite-landing-row-padding-medium"
+           
+    background="grey"
+  
+           
+           
+    header-position="left"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+      <header class="devsite-landing-row-header"
+              
+    icon-position="left"
+  >
+
+        
+  
+    
+  <div class="devsite-landing-row-header-icon-container"
+       
+       
+    foreground="google-yellow"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-header-icon material-icons" aria-hidden="true">
+      warning
+    </div>
+  
+  </div>
+  
+  
+
+
+        
+        <div class="devsite-landing-row-header-text">
+
+          
+    <h2 id="deprecating"
+        data-text="Deprecating"
+        
+        tabindex="0">
+      
+    
+        Deprecating
+      
+  
+    </h2>
+  
+
+          
+            <div class="devsite-landing-row-description">
+              These features were part of the web platform but are now in the process of being deprecated and removed.
+
+            </div>
+          
+        </div>
+        
+
+        
+      </header>
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="deprecating-the-unload-handler"
+        data-text="Deprecating the unload handler"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/deprecating-unload">
+    
+        Deprecating the unload handler
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            The unload event will be gradually deprecated starting from Chrome 117. Learn what this means and how sites and enterprises can prepare for this
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="deprecating-xslt"
+        data-text="Deprecating XSLT"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/deprecating-xslt">
+    
+        Deprecating XSLT
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            XSLT is no longer supported. Learn what this means and how sites and enterprises can prepare for this.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-4-up devsite-landing-row-padding-medium"
+           
+           
+           
+    header-position="left"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+      <header class="devsite-landing-row-header"
+              
+    icon-position="left"
+  >
+
+        
+  
+    
+  <div class="devsite-landing-row-header-icon-container"
+       
+       
+    foreground="google-red"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-header-icon material-icons" aria-hidden="true">
+      block
+    </div>
+  
+  </div>
+  
+  
+
+
+        
+        <div class="devsite-landing-row-header-text">
+
+          
+    <h2 id="no-longer-pursuing"
+        data-text="No longer pursuing"
+        
+        tabindex="0">
+      
+    
+        No longer pursuing
+      
+  
+    </h2>
+  
+
+          
+            <div class="devsite-landing-row-description">
+              These features are no longer supported nor in experiment.
+
+            </div>
+          
+        </div>
+        
+
+        
+      </header>
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="declarative-link-capturing"
+        data-text="Declarative Link Capturing"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/declarative-link-capturing">
+    
+        Declarative Link Capturing
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Determine declaratively what happens when the browser is asked to navigate to a URL.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="storage-foundation-api"
+        data-text="Storage Foundation API"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/storage-foundation">
+    
+        Storage Foundation API
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Gain direct access to stored data through buffers and offsets.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="notification-triggers"
+        data-text="Notification triggers"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/notification-triggers">
+    
+        Notification triggers
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Schedule local notifications that don't require a network connection
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="web-bundles"
+        data-text="Web Bundles"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/web-bundles">
+    
+        Web Bundles
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Share websites as a single file over Bluetooth.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
+
+  <section class="devsite-landing-row devsite-landing-row-2-up devsite-landing-row-padding-medium"
+           
+           
+           
+    header-position="left"
+  >
+    <div class="devsite-landing-row-inner">
+
+    
+      
+      <header class="devsite-landing-row-header"
+              
+    icon-position="left"
+  >
+
+        
+  
+    
+  <div class="devsite-landing-row-header-icon-container"
+       
+       
+    foreground="google-green"
+  
+       
+    size="medium"
+  >
+  
+    <div class="devsite-landing-row-header-icon material-icons" aria-hidden="true">
+      check
+    </div>
+  
+  </div>
+  
+  
+
+
+        
+        <div class="devsite-landing-row-header-text">
+
+          
+    <h2 id="best-practices"
+        data-text="Best Practices"
+        
+        tabindex="0">
+      
+    
+        Best Practices
+      
+  
+    </h2>
+  
+
+          
+            <div class="devsite-landing-row-description">
+              Learn how to make the most of certain web platform features.
+
+            </div>
+          
+        </div>
+        
+
+        
+      </header>
+      
+
+      
+      
+
+      
+
+        <div class="devsite-landing-row-group">
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="url-protocol-handler-registration-for-pwas"
+        data-text="URL protocol handler registration for PWAs"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/best-practices/url-protocol-handler">
+    
+        URL protocol handler registration for PWAs
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            After registering a PWA as a protocol handler, when a user clicks on a hyperlink with a specific scheme such as mailto, bitcoin, or web+music from a browser or a platform-specific app, the registered PWA will open and receive the URL.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+          <div class="devsite-landing-row-item devsite-landing-row-item-no-media"
+     
+     
+     
+    description-position="bottom"
+  >
+
+  
+    
+
+    
+    <div class="devsite-landing-row-item-description"
+         >
+
+      
+
+      <div class="devsite-landing-row-item-body">
+        
+
+        
+    <h3 id="video-processing-with-webcodecs"
+        data-text="Video processing with WebCodecs"
+        class="hide-from-toc no-link"
+        tabindex="0">
+      
+  <a href="https://developer.chrome.com/docs/web-platform/best-practices/webcodecs">
+    
+        Video processing with WebCodecs
+      
+  </a>
+  
+    </h3>
+  
+
+        
+          <div class="devsite-landing-row-item-description-content">
+            Work with components of a video stream, such as frames and unmixed chunks of encoded video or audio.
+
+          </div>
+        
+
+        
+
+        
+      </div>
+    </div>
+    
+  
+
+</div>
+        
+        </div>
+      
+
+    
+    </div>
+  </section>
 
   
 
@@ -4621,24 +5444,9 @@ to check for an existing offscreen document:</p>
 </div>
 
   
-    
-    
-      
-    <devsite-thumb-rating position="footer">
-    </devsite-thumb-rating>
-  
-       
-    
-    
-  
 
   <div class="devsite-floating-action-buttons"></div></article>
 
-
-<devsite-content-footer class="nocontent" data-nosnippet>
-  <p>Except as otherwise noted, the content of this page is licensed under the <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 License</a>, and code samples are licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. For details, see the <a href="https://developers.google.com/site-policies">Google Developers Site Policies</a>. Java is a registered trademark of Oracle and/or its affiliates.</p>
-  <p>Last updated 2026-10-29 UTC.</p>
-</devsite-content-footer>
 
 
 <devsite-notification
@@ -4651,7 +5459,7 @@ to check for an existing offscreen document:</p>
   
   
     <template class="devsite-content-data-template">
-      [[["Easy to understand","easyToUnderstand","thumb-up"],["Solved my problem","solvedMyProblem","thumb-up"],["Other","otherUp","thumb-up"]],[["Missing the information I need","missingTheInformationINeed","thumb-down"],["Too complicated / too many steps","tooComplicatedTooManySteps","thumb-down"],["Out of date","outOfDate","thumb-down"],["Samples / code issue","samplesCodeIssue","thumb-down"],["Other","otherDown","thumb-down"]],["Last updated 2026-10-29 UTC."],[],[]]
+      [[["Easy to understand","easyToUnderstand","thumb-up"],["Solved my problem","solvedMyProblem","thumb-up"],["Other","otherUp","thumb-up"]],[["Missing the information I need","missingTheInformationINeed","thumb-down"],["Too complicated / too many steps","tooComplicatedTooManySteps","thumb-down"],["Out of date","outOfDate","thumb-down"],["Samples / code issue","samplesCodeIssue","thumb-down"],["Other","otherDown","thumb-down"]],[],[],[]]
     </template>
   
 </div>
@@ -5070,7 +5878,7 @@ to check for an existing offscreen document:</p>
     <devsite-analytics>
       
         <script type="application/json" analytics>[]</script>
-<script type="application/json" tag-management>{&#34;at&#34;: &#34;True&#34;, &#34;ga4&#34;: [], &#34;ga4p&#34;: [], &#34;gtm&#34;: [{&#34;id&#34;: &#34;GTM-5QF3RT2&#34;, &#34;purpose&#34;: 0}], &#34;parameters&#34;: {&#34;internalUser&#34;: &#34;False&#34;, &#34;language&#34;: {&#34;machineTranslated&#34;: &#34;False&#34;, &#34;requested&#34;: &#34;en&#34;, &#34;served&#34;: &#34;en&#34;}, &#34;pageType&#34;: &#34;article&#34;, &#34;projectName&#34;: &#34;API&#34;, &#34;signedIn&#34;: &#34;False&#34;, &#34;tenant&#34;: &#34;chrome&#34;, &#34;recommendations&#34;: {&#34;sourcePage&#34;: &#34;&#34;, &#34;sourceType&#34;: 0, &#34;sourceRank&#34;: 0, &#34;sourceIdenticalDescriptions&#34;: 0, &#34;sourceTitleWords&#34;: 0, &#34;sourceDescriptionWords&#34;: 0, &#34;experiment&#34;: &#34;&#34;}, &#34;experiment&#34;: {&#34;ids&#34;: &#34;&#34;}}}</script>
+<script type="application/json" tag-management>{&#34;at&#34;: &#34;True&#34;, &#34;ga4&#34;: [], &#34;ga4p&#34;: [], &#34;gtm&#34;: [{&#34;id&#34;: &#34;GTM-5QF3RT2&#34;, &#34;purpose&#34;: 0}], &#34;parameters&#34;: {&#34;internalUser&#34;: &#34;False&#34;, &#34;language&#34;: {&#34;machineTranslated&#34;: &#34;False&#34;, &#34;requested&#34;: &#34;en&#34;, &#34;served&#34;: &#34;en&#34;}, &#34;pageType&#34;: &#34;article&#34;, &#34;projectName&#34;: &#34;Web Platform&#34;, &#34;signedIn&#34;: &#34;False&#34;, &#34;tenant&#34;: &#34;chrome&#34;, &#34;recommendations&#34;: {&#34;sourcePage&#34;: &#34;&#34;, &#34;sourceType&#34;: 0, &#34;sourceRank&#34;: 0, &#34;sourceIdenticalDescriptions&#34;: 0, &#34;sourceTitleWords&#34;: 0, &#34;sourceDescriptionWords&#34;: 0, &#34;experiment&#34;: &#34;&#34;}, &#34;experiment&#34;: {&#34;ids&#34;: &#34;&#34;}}}</script>
       
     </devsite-analytics>
     
@@ -5080,12 +5888,12 @@ to check for an existing offscreen document:</p>
     
     
     
-<script nonce="977QUvSS0mNIHI4Qgso4I/mpPNLhcF">
+<script nonce="ZvyAz+jIhy1v8voD4pYloHL9p4Lrgi">
   
   (function(d,e,v,s,i,t,E){d['GoogleDevelopersObject']=i;
     t=e.createElement(v);t.async=1;t.src=s;E=e.getElementsByTagName(v)[0];
     E.parentNode.insertBefore(t,E);})(window, document, 'script',
-    'https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/js/app_loader.js', '[53,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome","https://chrome-dot-devsite-v2-prod-3p.appspot.com",null,null,["/_pwa/chrome/manifest.json","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/favicon.png","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/lockup.svg","https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyCNm9YxQumEXwGJgTDjxoxXK6m1F-9720Q","AIzaSyCc76DZePGtoyUjqKrLdsMGk_ry7sljLbY","developer.chrome.com","AIzaSyB9bqgQ2t11WJsOX8qNsCQ6U-w91mmqF-I","AIzaSyAdYnStPdzjcJJtQ0mvIaeaMKj7_t6J_Fg",null,null,null,["Cloud__fast_free_trial","AIStudioInteractionsToggle__interactions_are_default","MiscFeatureFlags__enable_explain_this_code","MiscFeatureFlags__enable_view_transitions","Experiments__reqs_query_experiments","BookNav__enable_tenant_cache_key","Cloud__enable_cloud_shell_fte_user_flow","ProgramGroups__enable_auto_enroll","DevPro__enable_free_benefits","Profiles__enable_purchase_prompts","DevPro__enable_g1_integration","DevPro__enable_nvidia_credits_card","Profiles__enable_complete_playlist_endpoint","MiscFeatureFlags__remove_cross_domain_tracking_params","Cloud__enable_cloud_shell","Concierge__enable_remove_info_panel_tags","DevPro__enable_g1_ineligible_redirect","MiscFeatureFlags__gdp_dashboard_reskin_enabled","TpcFeatures__proxy_prod_host","Cloud__enable_free_trial_server_call","DevPro__enable_devpro_offers","MiscFeatureFlags__enable_llms_txt","MiscFeatureFlags__enable_firebase_utm","Analytics__enable_devpro_interaction_logging","DevPro__remove_eu_tax_intake_form","CloudShell__cloud_shell_button","Concierge__enable_devsite_llm_tools","Search__enable_ai_eligibility_checks","TpcFeatures__enable_unmirrored_page_left_nav","Profiles__enable_release_notes_notifications","Cloud__enable_cloudx_experiment_ids","DevPro__enable_embed_profile_creation","Profiles__enable_join_program_group_endpoint","Profiles__enable_developer_profile_pages_as_content","Cloud__cache_serialized_dynamic_content","MiscFeatureFlags__enable_framebox_badge_methods","DevPro__enable_credits_banner","Search__enable_ai_search_summaries_for_all","Profiles__enable_completequiz_endpoint","Search__enable_suggestions_from_borg","DevPro__enable_developer_subscriptions","DevPro__enable_cloud_innovators_plus","Home__enable_chatbot","Profiles__enable_public_developer_profiles","MiscFeatureFlags__enable_variable_operator","Profiles__enable_playlist_community_acl","Profiles__require_profile_eligibility_for_signin","Cloud__enable_legacy_calculator_redirect","Profiles__enable_user_type","Profiles__enable_recognition_badges","Profiles__enable_developer_profile_benefits_ui_redesign","DevPro__enable_devsite_captcha","Profiles__enable_targeted_hero","Profiles__enable_callout_notifications","DevPro__enable_code_assist","DevPro__enable_google_payments","MiscFeatureFlags__enable_project_variables","Concierge__enable_pushui","MiscFeatureFlags__developers_footer_image","Cloud__enable_cloud_dlp_service","MiscFeatureFlags__enable_explicit_template_dependencies","Concierge__enable_actions_menu","Profiles__enable_developer_profiles_callout","Analytics__enable_clearcut_logging","DevPro__enable_google_payments_buyflow","Profiles__enable_dashboard_curated_recommendations","Profiles__enable_page_saving","Profiles__enable_stripe_subscription_management","DevPro__enable_enterprise","MiscFeatureFlags__enable_markdown_accept_header","EngEduTelemetry__enable_engedu_telemetry","DevPro__enable_firebase_workspaces_card","Profiles__enable_auto_apply_credits","OnSwitch__enable","DevPro__enable_google_one_card","MiscFeatureFlags__developers_footer_dark_image","DevPro__enable_vertex_credit_card","MiscFeatureFlags__fix_lower_breadcrumbs","MiscFeatureFlags__enable_variable_operator_index_yaml","CloudShell__cloud_code_overflow_menu","SignIn__enable_l1_signup_flow","Profiles__enable_completecodelab_endpoint","Search__enable_dynamic_content_confidential_banner","Profiles__enable_awarding_url","MiscFeatureFlags__enable_appearance_cookies","Profiles__enable_profile_collections","Search__enable_page_map"],null,null,"AIzaSyA58TaKli1DculwmAmbpzLVGuWc8eCQgQc","https://developerscontentserving-pa.googleapis.com","AIzaSyDWBU60w0P9hEkr29kkksYs8Z7gvZ8u_wc","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[53,"chrome","Chrome for Developers","developer.chrome.com",null,"chrome-dot-devsite-v2-prod-3p.appspot.com",null,null,[null,null,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],null,null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,null,[1]],null,[69,null,null,null,null,null,"/images/lockup.svg","/images/touchicon-180.png",null,null,null,1,1,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.svg",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[[],[1,1]],[[null,null,null,null,null,["GTM-5QF3RT2"],null,null,null,null,null,[["GTM-5QF3RT2",1]],1]],null,4],null,null,1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyC11xEGtFhkmSh_iF6l_itbxnFz2GrIBOg","AIzaSyAXJ10nRF73mmdSDINgkCNX5bbd2KPcWm8","https://developers.googleapis.com",null,null,"AIzaSyCjP0KOnHfv8mwe38sfzZJMOnqE3HvrD4A",null,null,"https://developers.googleapis.com"]')
+    'https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/js/app_loader.js', '[53,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome","https://chrome-dot-devsite-v2-prod-3p.appspot.com",1,null,["/_pwa/chrome/manifest.json","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/favicon.png","https://www.gstatic.com/devrel-devsite/prod/vab328caf183ea693bb389a1701d6be5b2db91193de097b9f38bbe8a87dd02cd9/chrome/images/lockup.svg","https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyCNm9YxQumEXwGJgTDjxoxXK6m1F-9720Q","AIzaSyCc76DZePGtoyUjqKrLdsMGk_ry7sljLbY","developer.chrome.com","AIzaSyB9bqgQ2t11WJsOX8qNsCQ6U-w91mmqF-I","AIzaSyAdYnStPdzjcJJtQ0mvIaeaMKj7_t6J_Fg",null,null,null,["DevPro__enable_credits_banner","MiscFeatureFlags__enable_project_variables","MiscFeatureFlags__enable_view_transitions","DevPro__enable_g1_ineligible_redirect","Cloud__enable_cloud_shell_fte_user_flow","DevPro__enable_google_one_card","DevPro__enable_enterprise","Search__enable_ai_eligibility_checks","MiscFeatureFlags__enable_variable_operator","ProgramGroups__enable_auto_enroll","Search__enable_page_map","MiscFeatureFlags__enable_explain_this_code","MiscFeatureFlags__fix_lower_breadcrumbs","DevPro__enable_developer_subscriptions","Profiles__enable_playlist_community_acl","Profiles__enable_page_saving","Profiles__enable_targeted_hero","DevPro__enable_devsite_captcha","Experiments__reqs_query_experiments","Profiles__enable_auto_apply_credits","MiscFeatureFlags__enable_firebase_utm","TpcFeatures__proxy_prod_host","Cloud__fast_free_trial","Analytics__enable_devpro_interaction_logging","Cloud__enable_cloudx_experiment_ids","Profiles__enable_developer_profile_benefits_ui_redesign","Concierge__enable_pushui","Search__enable_dynamic_content_confidential_banner","Cloud__enable_cloud_shell","DevPro__enable_google_payments_buyflow","MiscFeatureFlags__gdp_dashboard_reskin_enabled","Profiles__enable_join_program_group_endpoint","CloudShell__cloud_code_overflow_menu","DevPro__enable_vertex_credit_card","SignIn__enable_l1_signup_flow","Profiles__require_profile_eligibility_for_signin","Profiles__enable_developer_profile_pages_as_content","Profiles__enable_completequiz_endpoint","Search__enable_suggestions_from_borg","MiscFeatureFlags__enable_llms_txt","Profiles__enable_recognition_badges","DevPro__enable_code_assist","Profiles__enable_purchase_prompts","Profiles__enable_stripe_subscription_management","Profiles__enable_developer_profiles_callout","Concierge__enable_devsite_llm_tools","Analytics__enable_clearcut_logging","BookNav__enable_tenant_cache_key","DevPro__enable_free_benefits","MiscFeatureFlags__developers_footer_image","Profiles__enable_public_developer_profiles","Concierge__enable_remove_info_panel_tags","Profiles__enable_awarding_url","DevPro__enable_firebase_workspaces_card","Home__enable_chatbot","MiscFeatureFlags__enable_explicit_template_dependencies","TpcFeatures__enable_unmirrored_page_left_nav","DevPro__enable_devpro_offers","OnSwitch__enable","Profiles__enable_user_type","MiscFeatureFlags__enable_markdown_accept_header","Cloud__cache_serialized_dynamic_content","DevPro__remove_eu_tax_intake_form","Profiles__enable_completecodelab_endpoint","DevPro__enable_nvidia_credits_card","AIStudioInteractionsToggle__interactions_are_default","DevPro__enable_g1_integration","EngEduTelemetry__enable_engedu_telemetry","Profiles__enable_release_notes_notifications","MiscFeatureFlags__enable_appearance_cookies","MiscFeatureFlags__developers_footer_dark_image","Cloud__enable_cloud_dlp_service","MiscFeatureFlags__enable_variable_operator_index_yaml","CloudShell__cloud_shell_button","DevPro__enable_embed_profile_creation","Profiles__enable_profile_collections","DevPro__enable_cloud_innovators_plus","Concierge__enable_actions_menu","MiscFeatureFlags__enable_framebox_badge_methods","Search__enable_ai_search_summaries_for_all","Cloud__enable_free_trial_server_call","Cloud__enable_legacy_calculator_redirect","Profiles__enable_dashboard_curated_recommendations","MiscFeatureFlags__remove_cross_domain_tracking_params","DevPro__enable_google_payments","Profiles__enable_callout_notifications","Profiles__enable_complete_playlist_endpoint"],null,null,"AIzaSyA58TaKli1DculwmAmbpzLVGuWc8eCQgQc","https://developerscontentserving-pa.googleapis.com","AIzaSyDWBU60w0P9hEkr29kkksYs8Z7gvZ8u_wc","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[53,"chrome","Chrome for Developers","developer.chrome.com",null,"chrome-dot-devsite-v2-prod-3p.appspot.com",null,null,[null,null,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],null,null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,null,[1]],null,[69,null,null,null,null,null,"/images/lockup.svg","/images/touchicon-180.png",null,null,null,1,1,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.svg",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[[],[1,1]],[[null,null,null,null,null,["GTM-5QF3RT2"],null,null,null,null,null,[["GTM-5QF3RT2",1]],1]],null,4],null,null,1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyC11xEGtFhkmSh_iF6l_itbxnFz2GrIBOg","AIzaSyAXJ10nRF73mmdSDINgkCNX5bbd2KPcWm8","https://developers.googleapis.com",null,null,"AIzaSyCjP0KOnHfv8mwe38sfzZJMOnqE3HvrD4A",null,null,"https://developers.googleapis.com"]')
   
 </script>
 
