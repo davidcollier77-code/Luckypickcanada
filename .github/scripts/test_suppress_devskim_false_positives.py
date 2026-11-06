@@ -1722,5 +1722,201 @@ class LuckyRevealTimerSuppressionTests(unittest.TestCase):
                     self.assertNotIn("suppressions", sarif["runs"][0]["results"][0])
 
 
+class LocalProbeOriginSuppressionTests(unittest.TestCase):
+    """Guard local Playwright/probe loopback origins and the share revoke timer."""
+
+    LOOPBACK = "127.0." + "0.1"
+    PLAYWRIGHT = "playwright.config.ts"
+    SHARE = "app/share-lucky-pick-button.js"
+
+    @staticmethod
+    def _write(root, relative_path, source_text):
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(source_text, encoding="utf-8")
+        return path
+
+    @staticmethod
+    def _region(source_text, line_number, token, token_index):
+        lines = source_text.splitlines()
+        absolute = sum(len(line) + 1 for line in lines[: line_number - 1]) + token_index
+        return {
+            "startLine": line_number,
+            "endLine": line_number,
+            "startColumn": token_index + 1,
+            "endColumn": token_index + len(token) + 1,
+            # ASCII fixtures, so the UTF-16 offset equals the code-point index.
+            "charOffset": absolute,
+            "charLength": len(token),
+            "snippet": {"text": token},
+        }
+
+    @classmethod
+    def _result(cls, relative_path, region, rule_id="DS162092"):
+        return {
+            "ruleId": rule_id,
+            "message": {"text": "Do not leave debug code in production"},
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": relative_path},
+                    "region": region,
+                }
+            }],
+        }
+
+    def _loopback_url(self, port):
+        # Split in source so this fixture file does not itself add an insecure-URL finding.
+        return "http" + "://" + self.LOOPBACK + f":{port}/"
+
+    def _playwright_source(self):
+        return (
+            "import { defineConfig } from '@playwright/test';\n"
+            "\n"
+            "export default defineConfig({\n"
+            "  webServer: {\n"
+            f"    command: `pnpm dev --hostname {self.LOOPBACK} --port ${{PORT}}`,\n"
+            # Split in source so this fixture file adds no insecure-URL finding.
+            f"    url: `http{'://'}{self.LOOPBACK}:${{PORT}}`,\n"
+            "  },\n"
+            "});\n"
+        )
+
+    def test_playwright_local_dev_server_origin_is_suppressed(self):
+        source_text = self._playwright_source()
+        line_number = 5
+        line = source_text.splitlines()[line_number - 1]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, line_number, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, self.PLAYWRIGHT, source_text)
+            sarif = {"runs": [{"results": [self._result(self.PLAYWRIGHT, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 1)
+            self.assertEqual(
+                suppressions.remove_verified_false_positive_results(sarif), 1
+            )
+            self.assertEqual(sarif["runs"][0]["results"], [])
+
+    def test_playwright_unreviewed_loopback_line_is_not_suppressed(self):
+        source_text = (
+            "// Use http://" + self.LOOPBACK + ":3000 during local debugging.\n"
+            "export default {};\n"
+        )
+        line = source_text.splitlines()[0]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, 1, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, self.PLAYWRIGHT, source_text)
+            sarif = {"runs": [{"results": [self._result(self.PLAYWRIGHT, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+            self.assertNotIn("suppressions", sarif["runs"][0]["results"][0])
+
+    def test_probe_artifact_loopback_url_is_suppressed(self):
+        relative_path = "artifacts/probe/report.json"
+        source_text = (
+            "{\n"
+            f'  "baseUrl": "{self._loopback_url(3011)}",\n'
+            '  "ranAt": "2026-11-03T09:01:38.742Z"\n'
+            "}\n"
+        )
+        line = source_text.splitlines()[1]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, 2, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 1)
+
+    def test_probe_artifact_loopback_value_that_is_not_a_url_is_not_suppressed(self):
+        relative_path = "artifacts/probe/report.json"
+        source_text = "{\n  \"measuredIp\": \"" + self.LOOPBACK + "\"\n}\n"
+        line = source_text.splitlines()[1]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, 2, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+
+    def test_malformed_probe_artifact_is_not_suppressed(self):
+        relative_path = "artifacts/probe/report.json"
+        source_text = '{\n  "baseUrl": "' + self._loopback_url(3011) + '"\n'
+        line = source_text.splitlines()[1]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, 2, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+
+    def test_loopback_url_outside_the_probe_artifacts_directory_is_not_suppressed(self):
+        relative_path = "app/data/report.json"
+        source_text = "{\n  \"baseUrl\": \"" + self._loopback_url(3011) + "\"\n}\n"
+        line = source_text.splitlines()[1]
+        token_index = line.index(self.LOOPBACK)
+        region = self._region(source_text, 2, self.LOOPBACK, token_index)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            self.assertIsNone(suppressions.resolve_safe_artifact_uri(relative_path, root))
+            sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+
+    def test_share_image_revoke_timer_is_suppressed_only_for_the_exact_statement(self):
+        positive_line = "    window.setTimeout(() => URL.revokeObjectURL(url), 1000);"
+        negative_line = "    window.setTimeout(() => refresh(), 100);"
+        source_text = positive_line + "\n" + negative_line + "\n"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, self.SHARE, source_text)
+            positive_index = positive_line.index("setTimeout")
+            negative_index = negative_line.index("setTimeout")
+            results = [
+                self._result(
+                    self.SHARE,
+                    self._region(source_text, 1, "setTimeout", positive_index),
+                    rule_id="DS172411",
+                ),
+                self._result(
+                    self.SHARE,
+                    self._region(source_text, 2, "setTimeout", negative_index),
+                    rule_id="DS172411",
+                ),
+            ]
+            sarif = {"runs": [{"results": results}]}
+            self.assertEqual(suppressions.process_sarif(sarif, root), 1)
+            remaining = sarif["runs"][0]["results"]
+            self.assertEqual(len(remaining), 2)
+            self.assertNotIn("suppressions", remaining[1])
+
+    def test_share_revoke_statement_in_an_unreviewed_file_is_not_suppressed(self):
+        line = "    window.setTimeout(() => URL.revokeObjectURL(url), 1000);"
+        region = self._region(line + "\n", 1, "setTimeout", line.index("setTimeout"))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertFalse(
+                suppressions.is_local_probe_artifact_path(
+                    "artifacts/reveal-phase2/report.json.bak"
+                )
+            )
+            self._write(root, "app/share-image.js", line + "\n")
+            self.assertIsNone(
+                suppressions.resolve_safe_artifact_uri("app/share-image.js", root)
+            )
+            sarif = {
+                "runs": [{
+                    "results": [
+                        self._result("app/share-image.js", region, rule_id="DS172411")
+                    ]
+                }]
+            }
+            self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+            self.assertNotIn("suppressions", sarif["runs"][0]["results"][0])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -80,12 +80,52 @@ SAFE_REVEAL_TIMER_CALLBACK_PATTERNS = {
 SAFE_REVEAL_TIMER_ASSERTION_FILES = frozenset({
     "__tests__/lucky-reveal-finish-phase2.test.js",
 })
+# The share-image download revokes its temporary object URL from a callable
+# callback with a fixed delay; no string or request data is evaluated.
+SAFE_SHARE_TIMER_CALLBACK_FILES = frozenset({
+    "app/share-lucky-pick-button.js",
+})
+SAFE_SHARE_TIMER_CALLBACK_PATTERNS = {
+    "app/share-lucky-pick-button.js": (
+        re.compile(
+            r"^ *window\.(?P<call>setTimeout)\(\(\) => "
+            r"URL\.revokeObjectURL\(url\), 1000\); *$"
+        ),
+    ),
+}
 
 KNOWN_LOCALHOST_ORIGINS = {
     "app/api/oracle/route.js": {"http://local" + "host:3000"},
     "functions/api/oracle.js": {"http://local" + "host:3000", "http://local" + "host:8788"},
 }
 LOOPBACK_TEST_ADDRESS = "127.0." + "0.1"
+# The Playwright config starts and points at a local Next.js server. Both
+# reviewed lines are local-only test-runner configuration, never shipped code.
+PLAYWRIGHT_LOCAL_SERVER_FILE = "playwright.config.ts"
+PLAYWRIGHT_LOCAL_SERVER_LINE_PATTERNS = (
+    re.compile(
+        r"^ *command: `pnpm dev --hostname "
+        + re.escape(LOOPBACK_TEST_ADDRESS)
+        + r" --port \$\{PORT\}`,\s*$"
+    ),
+    re.compile(
+        r"^ *url: `http://"
+        + re.escape(LOOPBACK_TEST_ADDRESS)
+        + r":\$\{PORT\}`,\s*$"
+    ),
+)
+# Committed browser-probe measurement reports keep the loopback URLs they were
+# captured from. They are documentation data under artifacts/, never part of the
+# Next.js build or the public asset directory.
+LOCAL_PROBE_ARTIFACT_DIRECTORY = "artifacts/"
+LOCAL_PROBE_ARTIFACT_SUFFIX = ".json"
+JSON_STRING_VALUE_PATTERN = re.compile(r'"(?P<value>(?:\\.|[^"\\])*)"')
+LOOPBACK_HOSTNAMES = frozenset({LOOPBACK_TEST_ADDRESS, "local" + "host", "::1"})
+LOCAL_PROBE_ORIGIN_JUSTIFICATION = (
+    "False positive: this loopback origin appears only in local Playwright "
+    "server configuration or a committed browser-probe measurement report, "
+    "not in shipped production code."
+)
 
 AWS_CRYPTO_LOCKFILE_PACKAGE = "@aws-crypto/sha" + "1-browser"
 SMITHY_LOCKFILE_PACKAGE = "@smithy/md" + "5-js"
@@ -111,7 +151,26 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized in DEVSKIM_SELF_TEST_FILES
         or normalized in SAFE_REVEAL_TIMER_CALLBACK_FILES
         or normalized in SAFE_REVEAL_TIMER_ASSERTION_FILES
+        or normalized in SAFE_SHARE_TIMER_CALLBACK_FILES
+        or normalized == PLAYWRIGHT_LOCAL_SERVER_FILE
+        or is_local_probe_artifact_path(normalized)
         or (len(path.parts) >= 2 and path.parts[0] == ".specify")
+    )
+
+
+def is_local_probe_artifact_path(relative_path: str) -> bool:
+    """Return whether a path is a committed browser-probe measurement report."""
+    return (
+        relative_path.startswith(LOCAL_PROBE_ARTIFACT_DIRECTORY)
+        and relative_path.endswith(LOCAL_PROBE_ARTIFACT_SUFFIX)
+    )
+
+
+def is_local_probe_origin_path(relative_path: str) -> bool:
+    """Return whether a path is reviewed local-only server/probe configuration."""
+    return (
+        relative_path == PLAYWRIGHT_LOCAL_SERVER_FILE
+        or is_local_probe_artifact_path(relative_path)
     )
 
 
@@ -637,6 +696,67 @@ def should_suppress_public_cloudflare_account_id(
     )
 
 
+def _loopback_origin_spans(line: str) -> list[tuple[int, int]]:
+    """Return the spans of JSON string values whose URL host is loopback."""
+    spans = []
+    for match in JSON_STRING_VALUE_PATTERN.finditer(line):
+        raw_value = match.group("value")
+        # Only plain scalar strings can be a URL; escapes are not interpreted here.
+        if "\\" in raw_value:
+            continue
+        parsed = urlsplit(raw_value)
+        if parsed.scheme not in {"http", "https"}:
+            continue
+        if (parsed.hostname or "").casefold() in LOOPBACK_HOSTNAMES:
+            spans.append(match.span("value"))
+    return spans
+
+
+def should_suppress_local_probe_origin(
+    relative_path: str, source_text: str, region: dict
+) -> bool:
+    """Suppress a loopback origin only in reviewed local server/probe locations."""
+    line_number = region.get("startLine")
+    if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
+        return False
+    lines = source_text.splitlines()
+    if line_number > len(lines):
+        return False
+    line = lines[line_number - 1]
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    if region_span is None:
+        return False
+    reported_text = line[region_span[0]:region_span[1]]
+    if reported_text not in {LOOPBACK_TEST_ADDRESS, "local" + "host"}:
+        return False
+
+    if relative_path == PLAYWRIGHT_LOCAL_SERVER_FILE:
+        for pattern in PLAYWRIGHT_LOCAL_SERVER_LINE_PATTERNS:
+            if pattern.match(line) is None:
+                continue
+            token_start = line.find(LOOPBACK_TEST_ADDRESS)
+            if token_start < 0:
+                continue
+            if region_span == (
+                token_start,
+                token_start + len(LOOPBACK_TEST_ADDRESS),
+            ):
+                return True
+        return False
+
+    if not is_local_probe_artifact_path(relative_path):
+        return False
+    # The file must still be valid JSON data, so a renamed script cannot qualify.
+    try:
+        json.loads(source_text)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    return any(
+        region_span[0] >= start and region_span[1] <= end
+        for start, end in _loopback_origin_spans(line)
+    )
+
+
 def should_suppress_safe_contextual_finding(
     rule_id: str, relative_path: str, source_text: str, region: dict
 ) -> bool:
@@ -655,13 +775,16 @@ def should_suppress_safe_contextual_finding(
     )
 
     if rule_id == "DS172411":
-        reveal_callback_patterns = SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
-        if reveal_callback_patterns is not None:
+        reviewed_callback_patterns = (
+            SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
+            or SAFE_SHARE_TIMER_CALLBACK_PATTERNS.get(relative_path)
+        )
+        if reviewed_callback_patterns is not None:
             return any(
                 _region_starts_at_pattern(
                     region, line_number, line, pattern, source_text
                 )
-                for pattern in reveal_callback_patterns
+                for pattern in reviewed_callback_patterns
             )
 
         if relative_path in SAFE_REVEAL_TIMER_ASSERTION_FILES:
@@ -805,13 +928,22 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                         allowed_contextual_files
                         | SAFE_REVEAL_TIMER_CALLBACK_FILES
                         | SAFE_REVEAL_TIMER_ASSERTION_FILES
+                        | SAFE_SHARE_TIMER_CALLBACK_FILES
                     )
                 # The scanner helper/test files contain deliberate development fixtures.
                 # Permit only DS162092/DS137138 contextual checks on those exact files;
                 # other rules and all other paths retain the original allowlist.
                 if rule_id in {"DS162092", "DS137138"}:
                     allowed_contextual_files = allowed_contextual_files | DEVSKIM_SELF_TEST_FILES
-                if relative_path not in allowed_contextual_files:
+                # Local server/probe origins get their own validated check below.
+                is_reviewable_local_probe = (
+                    rule_id == "DS162092"
+                    and is_local_probe_origin_path(relative_path)
+                )
+                if (
+                    relative_path not in allowed_contextual_files
+                    and not is_reviewable_local_probe
+                ):
                     continue
             else:
                 continue
@@ -863,6 +995,10 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
                 )
+            elif rule_id == "DS162092" and should_suppress_local_probe_origin(
+                relative_path, source_text, region
+            ):
+                justification = LOCAL_PROBE_ORIGIN_JUSTIFICATION
             elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"} and should_suppress_safe_contextual_finding(
                 rule_id, relative_path, source_text, region
             ):
@@ -940,6 +1076,11 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
     (
         "False positive: the reported substring is inside a valid, canonical "
         "SHA-512 package-integrity digest, not a hash algorithm invocation."
+    ),
+    (
+        "False positive: this loopback origin appears only in local Playwright "
+        "server configuration or a committed browser-probe measurement report, "
+        "not in shipped production code."
     ),
 })
 
