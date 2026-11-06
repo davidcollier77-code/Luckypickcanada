@@ -187,23 +187,23 @@
     },
     "/vercel/next.js": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/vercel/next.js/canary/skills/.claude-plugin/plugin.json"
+      "url": "https://nextjs.org/docs/llms-full.txt"
     },
     "/reactjs/react.dev": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/reactjs/react.dev/main/src/content/reference/react-dom/static/prerender.md"
+      "url": "https://react.dev/llms.txt"
     },
     "/microsoft/typescript": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/microsoft/typescript/main/tsc/testdata/tests/cases/conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts"
+      "url": "https://raw.githubusercontent.com/microsoft/TypeScript-Website/v2/packages/documentation/copy/en/handbook-v2/Basics.md"
     },
     "/websites/tailwindcss": {
       "type": "url",
-      "url": "https://tailwindcss.com/docs/width"
+      "url": "https://context7.com/websites/tailwindcss/llms.txt"
     },
     "/websites/motion_dev": {
       "type": "url",
-      "url": "https://motion.dev/docs/ai-kit-context"
+      "url": "https://motion.dev/llms-full.txt"
     },
     "/lucide-icons/lucide": {
       "type": "url",
@@ -211,7 +211,7 @@
     },
     "/react-hook-form/documentation": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/react-hook-form/documentation/master/contentlayer.config.ts"
+      "url": "https://react-hook-form.com/llms-full.txt"
     },
     "/react-hook-form/resolvers": {
       "type": "url",
@@ -223,19 +223,19 @@
     },
     "/bvaughn/react-error-boundary": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/bvaughn/react-error-boundary/main/lib/index.ts"
+      "url": "https://raw.githubusercontent.com/bvaughn/react-error-boundary/main/README.md"
     },
     "/opennextjs/opennextjs-cloudflare": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/opennextjs/opennextjs-cloudflare/main/AGENTS.md"
+      "url": "https://raw.githubusercontent.com/opennextjs/opennextjs-cloudflare/main/README.md"
     },
     "/opennextjs/docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/opennextjs/docs/main/pages/aws/config.mdx"
+      "url": "https://raw.githubusercontent.com/opennextjs/docs/main/pages/cloudflare/index.mdx"
     },
     "/cloudflare/workers-sdk": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/STYLEGUIDE.md"
+      "url": "https://developers.cloudflare.com/workers/wrangler/index.md"
     },
     "/neondatabase/neon": {
       "type": "url",
@@ -243,15 +243,15 @@
     },
     "/upstash/docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/upstash/docs/main/search/sdks/ts/commands/fetch.mdx"
+      "url": "https://upstash.com/docs/redis/sdks/ts/overview.md"
     },
     "/getsentry/sentry-docs": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/getsentry/sentry-docs/master/scripts/generate-llms-txt.mjs"
+      "url": "https://docs.sentry.io/llms.txt"
     },
     "/websites/developer_chrome": {
       "type": "url",
-      "url": "https://developer.chrome.com/docs/web-platform"
+      "url": "https://developers.chrome.com/docs/web-platform/index.md"
     },
     "/websites/developer_apple_webkit": {
       "type": "url",
@@ -259,7 +259,7 @@
     },
     "/llmstxt/gsap_llms_txt": {
       "type": "url",
-      "url": "https://gsap.com/docs/v3/GSAP/Timeline"
+      "url": "https://context7.com/greensock/gsap/llms.txt"
     },
     "/testing-library/react-testing-library": {
       "type": "url",
@@ -267,15 +267,15 @@
     },
     "/microsoft/playwright": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/microsoft/playwright/main/packages/playwright-core/src/tools/skills/playwright-cli/references/test-generation.md"
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/main/docs/src/writing-tests-js.md"
     },
     "/vitest-dev/vitest": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/vitest-dev/vitest/main/AGENTS.md"
+      "url": "https://vitest.dev/llms-full.txt"
     },
     "/colinhacks/zod": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/colinhacks/zod/main/packages/docs/app/llms-full.txt/route.ts"
+      "url": "https://zod.dev/llms-full.txt"
     },
     "/cure53/dompurify": {
       "type": "url",
@@ -283,7 +283,7 @@
     },
     "/stripe/stripe-js": {
       "type": "url",
-      "url": "https://docs.stripe.com/js/react_stripe_js/elements/other/payment_request_button_element.md"
+      "url": "https://docs.stripe.com/js.md"
     },
     "/resend/resend-node": {
       "type": "url",
@@ -403,7 +403,7 @@
     },
     "/vercel-labs/agent-skills/react-best-practices": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/AGENTS.md"
+      "url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/SKILL.md"
     },
     "/trailofbits/skills/fp-check": {
       "type": "url",
@@ -522,30 +522,16 @@
   ],
   "githubShas": {
     "/github/docs": "d0c59c59fadf92c3a44676a3ed7ed38a015379ca",
-    "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
-    "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
-    "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
     "/lucide-icons/lucide": "53fab88ff9d1b48f4704b5b5b560d6b4d560bf4c",
-    "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "c28ca830f259e4e599211da1916e74f4ea2e39a7",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
-    "/bvaughn/react-error-boundary": "4bc599908663852319724580d81682c2cf5204b3",
     "/cloudflare/cloudflare-docs/turnstile": "cc3bea66de1d5dffa2f3842856f047d0372bc9b6",
     "/cloudflare/cloudflare-docs/pages": "cc3bea66de1d5dffa2f3842856f047d0372bc9b6",
     "/dequelabs/axe-core": "c50bf8e8933eba8cdb7a0d8e744a6c0ec691cdd6",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "dc668b5a44c1810a06c7114f405c9ecf975f15ec",
-    "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
-    "/colinhacks/zod": "19c40d2072288b4cafec851e9d056a72a88e5973",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
-    "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "88c79f6528a9347420e57ceb1fff9a60de651768",
-    "/opennextjs/opennextjs-cloudflare": "8d30187ff558424b8a108ba671c53d1c0e7242fb",
-    "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
-    "/cloudflare/workers-sdk": "56459a561b7b133a9152b993336e1e5470b1d290",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
-    "/upstash/docs": "4de977888b79048b5cc66dd1c43d010eb099eb0c",
-    "/getsentry/sentry-docs": "c363ae896db4672454ba646266e7611458385d21",
     "/pmndrs/react-three-fiber": "d74622ea8ed717f7212d7e19d65ff3e325508389",
     "/magicuidesign/magicui": "37ce829f18dd7d0a7219531a4249b664419933ea",
     "/marsidev/react-turnstile": "fafc7b564386a9b1ab0e58d564e0960adba9d230",
@@ -564,7 +550,6 @@
     "/coreyhaines31/marketingskills/copy-editing-checklist": "88c79f6528a9347420e57ceb1fff9a60de651768",
     "/coreyhaines31/marketingskills/plain-english-alternatives": "88c79f6528a9347420e57ceb1fff9a60de651768",
     "/coreyhaines31/marketingskills/content-refresh": "88c79f6528a9347420e57ceb1fff9a60de651768",
-    "/vercel-labs/agent-skills/react-best-practices": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
     "/trailofbits/skills/fp-check": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
     "/trailofbits/skills/fp-check-standard-verification": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
     "/trailofbits/skills/fp-check-deep-verification": "e4dd0bb5b15535f7c5a0834187dffba6ac37e4ff",
