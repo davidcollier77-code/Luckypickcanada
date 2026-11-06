@@ -1,3 +1,14 @@
+# Active Context — Freebuff Agent Reference Library Expansion (2026-11-06)
+
+- **Task groups:** `creation`, `polishing`, `security`, `deep-dive`, and `testing`; branch `docs/agent-reference-expansion-20261106`; feature `specs/095-agent-reference-library-expansion`.
+- **Scope:** Add agent-oriented marketing copywriting/copy-editing, React/Next.js best-practices, security finding validation, SARIF processing, and post-patch validation references to existing Freebuff groups. No new task group or application behavior change.
+- **Updater routing:** `.docs/manifest.json` contains 20 source IDs with raw upstream URLs, group mappings, inventory entries, and upstream repository commit SHA pins. The existing `refresh-docs.yml` workflow materializes `.docs` snapshots on its next scheduled/manual run after the manifest change reaches `main`.
+- **Licensing:** Corey Haines Marketing Skills is MIT; the Vercel skill declares MIT; Trail of Bits references are CC BY-SA 4.0 and are attributed in `.docs/AGENT_SKILL_ATTRIBUTION.md`.
+- **Verification:** Manifest routing assertions passed 20/20 during commit preparation. Repository test suite and `./freebuff-verify.sh` have not been run in this connected session; PR-head CI remains pending. This is a documentation-only change, so no application build was run.
+- **Preserved:** Live site copy, application code, visuals, UX, functionality, dependencies, payment/email/database systems, updater script and workflow are unchanged. The unrelated Strapi snapshot was removed from the SEO route.
+
+---
+
 # Active Context — Daily Lucky Card Reveal Tier Presentation (2026-11-05)
 
 - **Task groups:** `polishing` + `testing`; branch `polish/reveal-card-tier-experience-20261105`; feature
