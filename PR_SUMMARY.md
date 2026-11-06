@@ -1,153 +1,142 @@
-# Daily Lucky Card Reveal — tappable entry control and tier presentation
+# Visual QA — install Chromium only when needed and reuse a cached browser
 
-**Branch** `polish/reveal-card-tier-experience-20261105` targets `main`. **Status: open and unmerged for review.**
+**Branch** `freebuff/474320d3cde04a21a6a32a0f` targets `main`. **Status: open and unmerged for review.**
 
-Implementation **COMPLETE**. All local mandatory checks and the browser probe pass; **PR-head CI is pending**.
+Implementation **COMPLETE**. Every local mandatory check passes; **GitHub Actions runtime evidence for the
+skip, cache-hit and version-change paths is PENDING (NOT RUN)**.
 
 ## Task and selected task groups
 
-**Assigned task (Master Work Request #1):** Polish and enhance the daily collectible Lucky Card reveal
-experience at `/reveal`. Make the entry button clearly look and feel tappable, and improve the
-presentation and reveal experience across all three card tiers (Standard, Premium, Flagship), while
-preserving the existing artwork and functionality.
+**Assigned task (Master Work Request #1):** Improve the existing visual QA workflow so
+Playwright/Chromium is installed only when visual QA is required, and its browser installation is cached
+and reused across GitHub Actions runs. Non-visual pull requests must skip browser setup entirely, visual
+changes must still run the existing visual QA, the cache must key on Playwright version and operating
+system, only Chromium may be installed, and an uncertain classification must run visual QA rather than
+skip it.
 
 **Selected task groups:**
 
-- **`polishing`** — the whole request is presentation polish on an existing experience: entry-control
-  affordance and the visual framing/naming of the revealed card, with no new feature surface.
-- **`testing`** — the request is about rendered behaviour ("clearly look and feel tappable", three
-  distinct tiers), so it is verified by execution: unit tests for the tier contract, the full suite,
-  the repository gate and a measured Chromium probe.
+- **`troubleshooting`** — the request is a diagnosis-and-repair of CI behaviour: every pull request,
+  including documentation-only ones, paid for a browser download the tests could not use, and repeat runs
+  re-downloaded the same build. The change diagnoses those two costs and repairs them inside the existing
+  workflow.
+- **`testing`** — the affected system *is* the test pipeline. The change must preserve every existing
+  check and visual assertion, and the new classification logic is verified by executing it, not by
+  inspecting it.
+
+Spec Kit stages are in `specs/098-visual-qa-chromium-cache/`; `.specify/feature.json` points there. No
+existing feature covered this workflow's browser handling (077 covers local sandbox browser enablement,
+091 covers package-manager bootstrap, 092 covers the Dependabot governance exemption), and no branch or
+open pull request covered it, so nothing was duplicated.
 
 ## Library / routed documents reviewed
 
 | Document | USED | USEFUL | Contribution |
 | --- | --- | --- | --- |
-| `.docs/manifest.json` | **USED** | **YES** | Routing index; identified the `polishing` and `testing` reference sets and confirmed no document was mandatory. |
-| `.docs/polishing/_websites_mdn_image_types.md` | NOT USED | NO | No raster format, quality or fallback decision was made — artwork delivery is explicitly preserved. |
-| `.docs/polishing/_vercel_next_js.md` | NOT USED | NO | No Next.js API question arose; the change is JSX plus existing utilities in an already-rendered client component. |
-| `.docs/polishing/_websites_tailwindcss.md` | NOT USED | NO | Only existing utility conventions were reused; the one measurement that mattered (root `font-size: 15px` on mobile) was read from `themes/default/default.css` and measured in the browser. |
-| `.docs/polishing/_websites_motion_dev.md` | NOT USED | NO | Reused the `motion` / `useReducedMotion` imports the component already had; no new motion API was consulted. |
-| `.docs/polishing/_websites_developer_chrome.md` | NOT USED | NO | Behaviour (hover lift, press depth, halos, accents) was measured directly in Chromium instead. |
-| `.docs/polishing/_dequelabs_axe-core.md` | NOT USED | NO | Accessibility was handled structurally (real `<button>`, unchanged accessible name, `aria-describedby`, `aria-hidden` decorative layers) rather than by an axe run. |
-| `.docs/polishing/_google_eng-practices.md` | NOT USED | NO | Cross-cutting review guidance only; not needed for this scoped change. |
-| `.docs/testing/_vitest-dev_vitest.md` | NOT USED | NO | Followed the repository's existing `__tests__/*.test.js` conventions. |
-| `.docs/testing/_microsoft_playwright.md` | NOT USED | NO | The probe uses the already-pinned Playwright with the API patterns earlier probes in this repository use. |
-| `.docs/testing/_google_eng-practices.md` | NOT USED | NO | Optional review guidance; not needed. |
+| `.docs/manifest.json` | **USED** | **YES** | Routing index: confirmed the controlled-library lists for `testing` and `troubleshooting` and that no document is mandatory. |
+| `.docs/testing/_google_eng-practices.md` | NOT USED | NO | Cross-cutting review guidance only; the change is a small CI wiring change with its own executed guard. |
+| `.docs/troubleshooting/_google_eng-practices.md` | NOT USED | NO | Same reason; the diagnosis came from the workflow source itself. |
+| `.docs/testing/_microsoft_playwright.md` | NOT USED | NO | Browser-caching and OS-dependency behaviour was verified against Playwright's current upstream CI documentation instead, because the recommendation itself (cache or do not cache) was the decision under review. |
+| `.docs/troubleshooting/_debian_debian-reference.md` | NOT USED | NO | No Linux package, filesystem or process question arose; `playwright install-deps chromium` owns the OS packages. |
+| `.docs/testing/_vitest-dev_vitest.md` | NOT USED | NO | The new guard follows the repository's existing `__tests__/*.test.js` conventions. |
+| `.docs/testing/_trailofbits_skills_post-patch-validation.md` | NOT USED | NO | No security remediation was validated. |
 
 Repository documents that did materially inform the work: `AGENTS.md`, `.freebuff/freebuff.md`,
-`.freebuff/polishing.md`, `.freebuff/testing.md`, `memory-bank/projectBrief.md`,
-`memory-bank/activeContext.md`, `specs/064-sitewide-gold-cta/spec.md` (authoritative gold CTA
-treatment), `specs/069-sitewide-visual-polish/spec.md` and `specs/075-lucky-reveal-polish/spec.md`
-(protected reveal behaviour), and `app/globals.css` (the `.gold-3d-btn` states).
+`.freebuff/testing.md`, `.freebuff/troubleshooting.md`, `.freebuff/ci.md` (pnpm pin policy that must be
+preserved), `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `.github/workflows/visual-qa.yml`,
+`playwright.config.ts`, `scripts/verify-speckit-task.sh` and `scripts/test-verify-speckit-task.sh`.
+Upstream sources consulted: Playwright *Continuous Integration → Caching browsers* (states that caching
+browser binaries is normally not recommended, that Linux OS dependencies are not cacheable, and that any
+browser cache should be keyed against the Playwright version) and the `actions/cache` release line.
+The `github-actions-docs` skill was not invoked; workflow syntax was validated by parsing the file.
 
-## Spec Kit stages (in order)
+## What was actually implemented
 
-| Stage | Artifact |
-| --- | --- |
-| Specify | `specs/094-lucky-card-reveal-polish/spec.md` |
-| Plan | `specs/094-lucky-card-reveal-polish/plan.md` |
-| Tasks | `specs/094-lucky-card-reveal-polish/tasks.md` |
-| Implement | the changes below, with verification recorded here and in `tasks.md` |
-
-`.specify/feature.json` points at the new feature. No earlier feature directory covered the daily
-card reveal page (075/078/081 cover the paid reveal popup, 064/069 cover sitewide CTA and page
-polish), and no existing branch or PR covered this task, so nothing was duplicated.
-
-## What was implemented
-
-1. **Entry control reads and behaves as a tappable primary action** (`app/lucky-card-reveal.js`):
-   a guaranteed **56 px** minimum height (`style={{ minHeight: 56 }}` — a rem-based utility resolves to
-   52.5 px because the theme sets `html { font-size: 15px }` on mobile), full-width on phones and
-   content-width from `sm`, `cursor-pointer`, `touch-manipulation`, `select-none`, larger padding, and
-   a visible instruction (`Tap to reveal today’s Lucky Card`, switching to `Drawing your Lucky Card…`
-   while the draw runs) wired with `aria-describedby` so the accessible name stays
-   "Reveal Today's Luck". The shared `.gold-3d-btn` gradient, raised edge, hover lift, 2 px press and
-   focus ring are unchanged.
-2. **Tier presentation module** (`app/lucky-card-presentation.js`, new): `standard` / `premium` /
-   `flagship` palettes using the colours the reveal canvas already paints (bronze `#e09440`, pewter
-   `#c8ccd0`, gold `#daa520`), with halo/rim/frame strengths that escalate by tier, plus
-   `getLuckyCardTierPresentation()` using an own-property lookup and a Standard fallback.
-3. **Revealed card now states its tier and name**: a tier chip (`★ Standard Tier` / `◆ Premium Tier` /
-   `♛ Flagship Tier`), an `h2` with the card title, a `Series 1 · Added to your collection` caption,
-   and a tier-tinted quote-panel border.
-4. **Tier-aware reveal moment**: an `aria-hidden`, `pointer-events-none` radial halo plus a card-sized
-   rim that fade in once the card is revealed (no fade under `prefers-reduced-motion`), and a
-   tier-tinted inner ring on the revealed card front. The `coast-to-coast-tale` authored frame
-   exception is preserved.
-5. **Evidence tooling**: `artifacts/reveal-card-polish/probe.cjs` and its captured screenshots/report.
+1. **Fail-closed change classifier** — new `.github/scripts/classify-visual-changes.sh`. Reads changed
+   repository-relative paths from stdin and prints exactly `visual_required=true|false`. Only Markdown
+   files at any depth and the `specs/`, `memory-bank/` and `.docs/` trees are documentation-only.
+   Everything else — including unrecognised file types such as `scripts/*.sh` or `LICENSE` — and empty
+   input all request visual QA, so an unclassifiable change can only add a visual run, never remove one.
+2. **Classification job** — new `changes` job in `.github/workflows/visual-qa.yml`. It checks out the
+   repository, lists the pull request's files with `gh api --paginate`, and writes
+   `visual_required=true` (with a `::warning::`) if the listing fails, the classifier fails, or the
+   classifier returns an unexpected value. The result is published as a job output and the step summary.
+3. **Conditional browser setup** — the `visual` job now `needs: changes`, and the Playwright version
+   resolution, cache restore, Chromium install, committed-baseline verification and visual regression
+   steps all carry `if: needs.changes.outputs.visual_required == 'true'`. Non-visual pull requests still
+   run the targeted unit tests, the full unit suite, the standalone TypeScript check, the Spec Kit
+   governance gate and the report upload.
+4. **Cached Chromium** — `actions/cache@v6` restores `~/.cache/ms-playwright` under
+   `playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}`, with no
+   `restore-keys` so a version change invalidates instead of reusing a stale build. A cache miss runs
+   `pnpm exec playwright install --with-deps chromium`; a cache hit runs only
+   `pnpm exec playwright install-deps chromium`, because the OS libraries live outside the cached
+   directory. The version step parses `pnpm exec playwright --version`, requires `x.y.z`, and fails the
+   job on an unparseable value. Only Chromium is ever installed.
+5. **Executed guard** — new `__tests__/visual-qa-chromium-cache.test.js`: nine real classifier inputs
+   (visual path, documentation paths, mixed set, empty input, unknown types, CRLF) plus workflow wiring
+   assertions (job output and dependency, cache key and path, no `restore-keys`, cache-hit split,
+   Chromium-only installs, gated baseline/regression steps, preserved ungated QA steps, three
+   Chromium-only Playwright projects).
 
 ## Files changed
 
-- `app/lucky-card-reveal.js` (entry affordance, tier chip/name/caption, halo/rim, revealed frame)
-- `app/lucky-card-presentation.js` (new)
-- `__tests__/lucky-card-tier-presentation.test.js` (new, executed)
-- `__tests__/lucky-card-reveal-presentation.test.js` (new, structural guard)
-- `specs/094-lucky-card-reveal-polish/{spec,plan,tasks}.md` (new)
-- `.specify/feature.json`
-- `artifacts/reveal-card-polish/` (new: probe + screenshots + `out/report.json`)
-- `memory-bank/activeContext.md`, `memory-bank/progress.md`
-- `PR_SUMMARY.md`
+- `.github/workflows/visual-qa.yml` — `changes` job, `needs: changes`, gated Playwright steps, cache.
+- `.github/scripts/classify-visual-changes.sh` — **new**, executable, fail-closed classifier.
+- `__tests__/visual-qa-chromium-cache.test.js` — **new**, 11 executed/wiring tests.
+- `specs/098-visual-qa-chromium-cache/{spec,plan,tasks}.md` and `checklists/requirements.md` — **new**.
+- `.specify/feature.json` — points at feature 098.
+- `memory-bank/activeContext.md`, `memory-bank/progress.md` — current task state prepended.
+- `PR_SUMMARY.md` — this report.
 
 ## Verification (commands actually run)
 
 | Check | Result |
 | --- | --- |
-| `pnpm exec vitest run __tests__/lucky-card-tier-presentation.test.js __tests__/lucky-card-reveal-presentation.test.js __tests__/lucky-card-collection.test.js` | **PASS** — 3 files / 10 tests |
-| `pnpm exec vitest run` | **PASS** — 45 files / 439 tests |
+| `bash -n .github/scripts/classify-visual-changes.sh` | **PASS** — exit 0 |
+| Classifier smoke: docs-only list, `app/page.js`, empty input | **PASS** — `false`, `true`, `true` |
+| Python YAML parse of `.github/workflows/visual-qa.yml` | **PASS** — jobs `changes`, `visual`; output `visual_required` present |
+| `pnpm exec vitest run __tests__/visual-qa-chromium-cache.test.js` | **PASS** — 1 file / 11 tests |
+| `pnpm exec vitest run` | **PASS** — 43 files / 343 tests |
 | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
-| `./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit artifacts gate, typecheck, production build, refresh-docs 19/19) |
-| Production build size | **PASS** — final `.next` 339,173,423 B + `public` 32,840,043 B = **372,013,466 B (354.8 MiB)**; an earlier build in the same session measured 331,568,750 B (316.2 MiB). Both are below the 495 MB maximum. |
-| Chromium probe (`node artifacts/reveal-card-polish/probe.cjs` against `next start` on the production build) | **PASS** — 51/51 checks |
+| `./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit artifact gate for `specs/098-visual-qa-chromium-cache`, typecheck, production build, refresh-docs 19/19) |
+| Production build size | **PASS** — `.next` 298,726,713 B + `public` 32,840,043 B = **331,566,756 B (316.2 MiB)**, below the 495 MB maximum |
+| GitHub Actions runtime: non-visual skip, cache hit, cache miss, Playwright version change | **NOT RUN** — this workspace has no Actions runner and no pull request context, so the workflow cannot be executed here |
 
-Probe evidence (mobile 390×844 and desktop 1440×900, production server):
+### What the runtime evidence must still show
 
-- entry button: 56 px tall (mobile) / 58 px (desktop), 330 px wide on mobile, 256 px content width on
-  desktop, `cursor: pointer`, `touch-action: manipulation`, gold gradient and raised edge present,
-  accessible name exactly "Reveal Today's Luck", `aria-describedby` → `lucky-card-reveal-hint`,
-  instruction copy exact, hover lift `translateY(-2px)`, press `translateY(2px)`, and pressing the
-  control mounts both canvases and removes the entry control (the draw actually starts);
-- each tier: chip label (`… TIER`), card name (`h2`), collection caption, and the stored quote render;
-  one `data-card-halo` layer per tier inside an `aria-hidden`, `pointer-events:none` wrapper with
-  settled opacity `1`; halo and revealed-frame shadows carry that tier's accent; artwork still
-  resolves to the original `.webp` fallback from the unchanged AVIF-first markup; 0 px horizontal
-  overflow;
-- reduced motion: halo present with opacity `1` and no fade;
-- 0 console/page errors across all runs.
+1. A documentation-only pull request runs `changes` with `visual_required=false` and every browser step
+   is skipped while the unit/TypeScript/Spec Kit steps still run.
+2. A second visual pull request at the same Playwright version reports a cache hit and installs no
+   browser binary (log shows `install-deps chromium` only).
+3. A Playwright version bump reports a cache miss and downloads one matching Chromium build.
 
-The probe caught two real issues during the work, both fixed before this report: a rem-based minimum
-height resolved to 52.5 px because `themes/default/default.css` sets `html { font-size: 15px }` on
-mobile (now an explicit 56 px), and three probe assertions were wrong (innerText instead of the
-accessible name, case-sensitive caption, mismatched `rgb()`/`rgba()` accents) — corrected, not worked
-around in the app.
-
-### Not verified / pending
-
-- **PR-head CI (`Visual QA`, updater, DevSkim, OpenNext validation): PENDING.** No CI run exists yet for this head.
-- **Component render test not possible in this harness**: Vitest's Vite/oxc pipeline refuses JSX inside
-  `.js`, and `app/lucky-card-reveal.js` is a JSX component (renaming it would be an unrelated change).
-  The tier values are covered by an executed unit test; the markup contract is covered by a structural
-  guard plus the browser probe.
-- **Physical iOS/Android devices: NOT RUN.** The probe uses Chromium device emulation only.
-- **Audible playback: NOT RUN** (no audio device); audio cue scheduling and assets are untouched.
-- A real draw (which triggers the canvas/audio choreography) was started by the probe to prove the
-  press works, but the full ~7 s cinematic sequence was not re-timed or re-audited here.
+**No timing improvement is claimed.** Playwright's own guidance is that restoring a browser cache costs
+about as much as downloading the browser, so the measurable benefit here is confined to removing the
+download from documentation-only runs and from repeat visual runs; that has not been measured on a
+runner in this session, and it is reported as unmeasured rather than as an improvement.
 
 ## Behaviour preserved
 
-`LUCKY_CARDS`, `selectWeightedLuckyCard` weighting/anti-repeat, `selectRandomQuote`, the daily
-localStorage lock and `unlockedCards` write, `TIER_HITS` (3/4/5), flip timings, canvas beam code, all
-eight authored audio cues, AVIF-first with WebP fallback artwork and the card-back/backdrop artwork,
-the `coast-to-coast-tale` frame exception, the share control, the collection binder and the Return to
-Home link are unchanged. No dependency, route, API, payment, email, database, authentication,
-deployment or secret change.
+`playwright.config.ts` (three Chromium projects, `maxDiffPixelRatio`, `snapshotPathTemplate`, webServer),
+`tests/visual/**`, every committed baseline, the concurrency group, `fetch-depth: 0`, the forwarded
+`SPEC_KIT_PR_AUTHOR`, the targeted unit tests, the full unit suite, the TypeScript check, the Spec Kit
+gate and the Playwright report upload are unchanged. No application, dependency, lockfile, payment,
+email, database, authentication, Cloudflare, environment or secret change.
 
 ## Remaining issues / limitations
 
-- The tier block sits in the existing result section below the card controls, so on a 390 px phone it
-  begins near the fold; this keeps the existing layout rather than re-ordering protected elements.
-- The reveal-content fade (`animate-fade-in`) means a screenshot taken within ~0.5 s of the reveal
-  shows it partially transparent; the probe waits for it to settle.
+- Documentation-only is a deliberately conservative allowlist; a pull request that changes only a
+  workflow or a script still runs visual QA, which is the safe direction the task asked for.
+- `actions/cache@v6` floats on its major tag, matching the existing `actions/upload-artifact@v7.0.2`
+  convention in this workflow; a commit-SHA pin was not used because a verified SHA could not be obtained
+  in this session.
+- Each Playwright version and OS keeps its own cache entry, which counts against the repository's cache
+  storage allowance until GitHub evicts it.
+- Playwright still needs one correct cache miss per version; a corrupted cache would surface as a browser
+  launch failure, not a silent skip.
 
-**USEFUL RESULT: YES** — the requested behaviour is demonstrated by measured browser evidence and every
-local mandatory gate passes. **Verified completion is still pending PR-head CI.**
+**USEFUL RESULT: NO** — the implementation is complete and every local gate passes, but the task requires
+demonstrated visual and non-visual pull request paths including cache hits, misses and version changes,
+and those require a GitHub Actions run on this head. They are NOT RUN here, so verified completion is not
+claimed.

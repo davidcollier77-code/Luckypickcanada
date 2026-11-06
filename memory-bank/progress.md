@@ -1,3 +1,20 @@
+# Progress — 2026-11-06: Conditional Visual QA with Cached Chromium
+
+- Visual QA no longer installs a browser for documentation-only pull requests. A fail-closed classifier
+  (`.github/scripts/classify-visual-changes.sh`) decides from the changed-path list, and any listing
+  failure, empty list, mixed set or unrecognised file type resolves to running visual QA.
+- Chromium is cached under `playwright-chromium-${runner.os}-${playwright version}` over
+  `~/.cache/ms-playwright`. A cache miss downloads `--with-deps chromium`; a cache hit installs only the OS
+  libraries. A Playwright version change misses the cache by design (no `restore-keys`).
+- Unit tests, the standalone TypeScript check, the Spec Kit gate, committed-baseline verification, the
+  visual regression run and the report upload are all preserved; only the browser steps are conditional.
+- New `__tests__/visual-qa-chromium-cache.test.js` executes the classifier against nine path lists and
+  guards the workflow wiring. Focused run 11/11 PASS; full suite 343 tests PASS; `./freebuff-verify.sh`
+  exit 0 with a 331,566,756 B (316.2 MiB) build.
+- Runtime cache-hit, cache-miss and skip behaviour on GitHub Actions is NOT RUN in this workspace (no
+  runner and no pull request context).
+
+---
 # Progress — 2026-11-06: Custom Gemini PR Reviewer Retirement
 
 - Removed only the custom Gemini PR-review workflow, both API-calling Node scripts, the root `GEMINI_REVIEWER.md` instruction file, and its four exclusive test suites.
