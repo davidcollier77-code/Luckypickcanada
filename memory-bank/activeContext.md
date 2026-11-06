@@ -1,3 +1,24 @@
+# Active Context — Playwright Version Alignment (2026-11-06)
+
+- **Task groups:** `troubleshooting` (the reported Visual QA discovery failure) + `testing` (Playwright
+  discovery, the preserved visual suite, and the new executed alignment guard). Branch
+  `fix/playwright-version-alignment-20261106`; feature `specs/100-playwright-version-alignment`.
+- **Verified baseline:** `pnpm exec playwright --version` reported **1.63.0** while installed
+  `@playwright/test` and `playwright-chromium` reported **1.64.1**; `pnpm exec playwright test --list`
+  aborted with "Playwright Test did not expect test() to be called here." The stale direct range was
+  `playwright: ^1.63.0` in `package.json`.
+- **Implementation:** the `playwright` devDependency is now `^1.64.1`; `pnpm-lock.yaml` rewrites only the
+  root importer entry and removes the orphaned `playwright@1.63.0` / `playwright-core@1.63.0` package and
+  snapshot entries. New `__tests__/playwright-version-alignment.test.js` guards one shared declared range,
+  one shared lockfile resolution for `playwright`, `@playwright/test` and `playwright-chromium`, and no
+  second Playwright version in the lockfile snapshots.
+- **Preserved:** `playwright.config.ts`, `tests/visual/**`, every committed baseline, diff thresholds, the
+  three Chromium projects, `.github/workflows/visual-qa.yml`, application code, artwork, and every other
+  dependency.
+- **Isolation:** the failing pull request is untouched; this correction ships on a separate branch and PR.
+
+---
+
 # Active Context — Documentation Library and Routing Cleanup (2026-11-06)
 
 - **Task groups:** `deep-dive` (evidence-driven audit of the reference library and group assignments)

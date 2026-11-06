@@ -1,3 +1,14 @@
+# Progress — 2026-11-06: Playwright Version Alignment
+
+- Visual QA's discovery failure came from a split Playwright set: the CLI resolved to 1.63.0 while
+  `@playwright/test` and `playwright-chromium` resolved to 1.64.1. The stale `playwright: ^1.63.0` range is
+  corrected to `^1.64.1`, and `pnpm-lock.yaml` drops the orphaned 1.63.0 entries.
+- `__tests__/playwright-version-alignment.test.js` fails if the three Playwright packages stop sharing one
+  declared range, if the lockfile resolves them differently, or if a second Playwright version reappears.
+- No visual test, baseline, threshold, workflow, application, artwork or other dependency changed.
+
+---
+
 # Progress — 2026-11-06: Conditional Visual QA with Cached Chromium
 
 - Visual QA no longer installs a browser for documentation-only pull requests. A fail-closed classifier
