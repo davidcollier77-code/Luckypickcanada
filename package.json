@@ -32,7 +32,7 @@
     "node": "22.x"
   },
   "devDependencies": {
-    "@axe-core/react": "^4.13.0",
+    "@axe-core/react": "^4.14.0",
     "@hookform/resolvers": "^5.9.1",
     "@opennextjs/cloudflare": "1.20.15",
     "@playwright/test": "^1.63.0",
