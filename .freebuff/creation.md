@@ -37,3 +37,17 @@ When materially necessary, consult the following approved libraries. (Requires C
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
 When implementing, ensure you test your changes.
+
+## Conditional Marketing Copywriting Reference
+
+For tasks that create new visitor-facing marketing copy, headlines, value propositions, feature descriptions, or calls to action, consult the Corey Haines Copywriting skill and the supporting references relevant to the page:
+- `.docs/creation/_coreyhaines31_marketingskills.md` — Copywriting skill.
+- `.docs/creation/_coreyhaines31_marketingskills_copy-frameworks.md` — headline, page-section and page-structure frameworks.
+- `.docs/creation/_coreyhaines31_marketingskills_ai-tells.md` — patterns that make copy sound generic or machine-written.
+- `.docs/creation/_coreyhaines31_marketingskills_natural-transitions.md` — natural transitions and signposting.
+
+Use existing Lucky Pick Canada pages, project context and current copy as the source of truth for audience, offer and voice. Do not invent testimonials, statistics, prize claims, odds, guarantees, urgency, lottery affiliation or outcomes. Preserve the entertainment-only positioning. This is reference material, not blanket permission to alter live copy; the assigned task must request copy changes.
+
+## Conditional React / Next.js Performance Agent Guide
+
+For tasks that write, review or refactor React components, Next.js pages, data fetching, bundle loading, rendering or performance, consult `.docs/creation/_vercel-labs_agent-skills_react-best-practices.md`. Apply only guidance compatible with the repository's current versions, architecture and `AGENTS.md`; do not perform broad refactors or adopt APIs solely because the guide mentions them.

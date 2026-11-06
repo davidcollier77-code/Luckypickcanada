@@ -22,7 +22,12 @@
       "/lovell/sharp",
       "/websites/web_dev_images",
       "/websites/mdn_image_types",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/coreyhaines31/marketingskills",
+      "/coreyhaines31/marketingskills/copy-frameworks",
+      "/coreyhaines31/marketingskills/ai-tells",
+      "/coreyhaines31/marketingskills/natural-transitions",
+      "/vercel-labs/agent-skills/react-best-practices"
     ],
     "troubleshooting": [
       "/github/docs",
@@ -66,7 +71,12 @@
       "/lovell/sharp",
       "/websites/web_dev_images",
       "/websites/mdn_image_types",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/coreyhaines31/marketingskills/copy-editing",
+      "/coreyhaines31/marketingskills/copy-editing-checklist",
+      "/coreyhaines31/marketingskills/plain-english-alternatives",
+      "/coreyhaines31/marketingskills/content-refresh",
+      "/vercel-labs/agent-skills/react-best-practices"
     ],
     "testing": [
       "/github/docs",
@@ -81,7 +91,9 @@
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/dequelabs/axe-core",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/trailofbits/skills/post-patch-validation",
+      "/trailofbits/skills/post-patch-validation-evidence-model"
     ],
     "security": [
       "/vercel/next.js",
@@ -101,7 +113,18 @@
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
       "/upstash/ratelimit",
-      "/google/eng-practices"
+      "/google/eng-practices",
+      "/trailofbits/skills/fp-check",
+      "/trailofbits/skills/fp-check-standard-verification",
+      "/trailofbits/skills/fp-check-deep-verification",
+      "/trailofbits/skills/fp-check-bug-class-verification",
+      "/trailofbits/skills/fp-check-gate-reviews",
+      "/trailofbits/skills/fp-check-false-positive-patterns",
+      "/trailofbits/skills/fp-check-evidence-templates",
+      "/trailofbits/skills/sarif-parsing",
+      "/trailofbits/skills/sarif-parsing-jq-queries",
+      "/trailofbits/skills/post-patch-validation",
+      "/trailofbits/skills/post-patch-validation-evidence-model"
     ],
     "audio": [
       "/websites/developer_chrome",
@@ -136,14 +159,22 @@
       "/posthog/posthog-js",
       "/websites/mdn_web_audio",
       "/google/eng-practices",
-      "/debian/debian-reference"
+      "/debian/debian-reference",
+      "/trailofbits/skills/fp-check",
+      "/trailofbits/skills/fp-check-standard-verification",
+      "/trailofbits/skills/fp-check-deep-verification",
+      "/trailofbits/skills/fp-check-bug-class-verification",
+      "/trailofbits/skills/fp-check-gate-reviews",
+      "/trailofbits/skills/fp-check-false-positive-patterns",
+      "/trailofbits/skills/fp-check-evidence-templates",
+      "/trailofbits/skills/sarif-parsing",
+      "/trailofbits/skills/sarif-parsing-jq-queries"
     ],
     "seo": [
       "/vercel/next.js",
       "/reactjs/react.dev",
       "/microsoft/typescript",
       "/websites/tailwindcss",
-      "/coreyhaines31/marketingskills",
       "/github/docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
@@ -269,7 +300,7 @@
     },
     "/coreyhaines31/marketingskills": {
       "type": "url",
-      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/tools/integrations/strapi.md"
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copywriting/SKILL.md"
     },
     "/dequelabs/axe-core": {
       "type": "url",
@@ -358,6 +389,82 @@
     "/debian/debian-reference": {
       "type": "url",
       "url": "https://www.debian.org/doc/manuals/debian-reference/debian-reference.en.txt"
+    },
+    "/coreyhaines31/marketingskills/copy-frameworks": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copywriting/references/copy-frameworks.md"
+    },
+    "/coreyhaines31/marketingskills/ai-tells": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copywriting/references/ai-tells.md"
+    },
+    "/coreyhaines31/marketingskills/natural-transitions": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copywriting/references/natural-transitions.md"
+    },
+    "/coreyhaines31/marketingskills/copy-editing": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copy-editing/SKILL.md"
+    },
+    "/coreyhaines31/marketingskills/copy-editing-checklist": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copy-editing/references/checklist.md"
+    },
+    "/coreyhaines31/marketingskills/plain-english-alternatives": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copy-editing/references/plain-english-alternatives.md"
+    },
+    "/coreyhaines31/marketingskills/content-refresh": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/skills/copy-editing/references/content-refresh.md"
+    },
+    "/vercel-labs/agent-skills/react-best-practices": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/AGENTS.md"
+    },
+    "/trailofbits/skills/fp-check": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/SKILL.md"
+    },
+    "/trailofbits/skills/fp-check-standard-verification": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/standard-verification.md"
+    },
+    "/trailofbits/skills/fp-check-deep-verification": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/deep-verification.md"
+    },
+    "/trailofbits/skills/fp-check-bug-class-verification": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/bug-class-verification.md"
+    },
+    "/trailofbits/skills/fp-check-gate-reviews": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/gate-reviews.md"
+    },
+    "/trailofbits/skills/fp-check-false-positive-patterns": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/false-positive-patterns.md"
+    },
+    "/trailofbits/skills/fp-check-evidence-templates": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/fp-check/skills/fp-check/references/evidence-templates.md"
+    },
+    "/trailofbits/skills/sarif-parsing": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/static-analysis/skills/sarif-parsing/SKILL.md"
+    },
+    "/trailofbits/skills/sarif-parsing-jq-queries": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/static-analysis/skills/sarif-parsing/resources/jq-queries.md"
+    },
+    "/trailofbits/skills/post-patch-validation": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/post-patch-validation/skills/post-patch-validation/SKILL.md"
+    },
+    "/trailofbits/skills/post-patch-validation-evidence-model": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/post-patch-validation/skills/post-patch-validation/references/evidence-model.md"
     }
   },
   "inventory": [
@@ -412,7 +519,26 @@
     "/google-gemini/gemini-skills/gemini-api-dev",
     "/google/eng-practices",
     "/websites/mdn_image_types",
-    "/debian/debian-reference"
+    "/debian/debian-reference",
+    "/coreyhaines31/marketingskills/copy-frameworks",
+    "/coreyhaines31/marketingskills/ai-tells",
+    "/coreyhaines31/marketingskills/natural-transitions",
+    "/coreyhaines31/marketingskills/copy-editing",
+    "/coreyhaines31/marketingskills/copy-editing-checklist",
+    "/coreyhaines31/marketingskills/plain-english-alternatives",
+    "/coreyhaines31/marketingskills/content-refresh",
+    "/vercel-labs/agent-skills/react-best-practices",
+    "/trailofbits/skills/fp-check",
+    "/trailofbits/skills/fp-check-standard-verification",
+    "/trailofbits/skills/fp-check-deep-verification",
+    "/trailofbits/skills/fp-check-bug-class-verification",
+    "/trailofbits/skills/fp-check-gate-reviews",
+    "/trailofbits/skills/fp-check-false-positive-patterns",
+    "/trailofbits/skills/fp-check-evidence-templates",
+    "/trailofbits/skills/sarif-parsing",
+    "/trailofbits/skills/sarif-parsing-jq-queries",
+    "/trailofbits/skills/post-patch-validation",
+    "/trailofbits/skills/post-patch-validation-evidence-model"
   ],
   "githubShas": {
     "/github/docs": "c9d8b26db3b48d8d3e1d91f4cef575623ff12f83",
@@ -452,6 +578,25 @@
     "/numpy/numpy": "0311ff11910b4b7b298967ac8d347bdc83208bc9",
     "/lovell/sharp": "249971a743ebf1044a1a7b0d709e610e8b74fa02",
     "/google-gemini/gemini-skills/gemini-api-dev": "7cfc690ba9c8efe36a5316e6d4000e2b6aa25dbf",
-    "/google/eng-practices": "3bb3ec25b3b0199f4940b1aa75f0ac5c5753301c"
+    "/google/eng-practices": "3bb3ec25b3b0199f4940b1aa75f0ac5c5753301c",
+    "/coreyhaines31/marketingskills/copy-frameworks": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/ai-tells": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/natural-transitions": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/copy-editing": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/copy-editing-checklist": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/plain-english-alternatives": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/coreyhaines31/marketingskills/content-refresh": "88c79f6528a9347420e57ceb1fff9a60de651768",
+    "/vercel-labs/agent-skills/react-best-practices": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+    "/trailofbits/skills/fp-check": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-standard-verification": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-deep-verification": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-bug-class-verification": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-gate-reviews": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-false-positive-patterns": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/fp-check-evidence-templates": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/sarif-parsing": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/sarif-parsing-jq-queries": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/post-patch-validation": "470419e16f97e112d01fc32f4898aea1755015d9",
+    "/trailofbits/skills/post-patch-validation-evidence-model": "470419e16f97e112d01fc32f4898aea1755015d9"
   }
 }

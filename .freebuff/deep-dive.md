@@ -53,3 +53,9 @@ By default, investigation findings should inform concrete implementation work wh
 Audit-only tasks must still deliver substantive findings, supporting evidence, limitations, recommended next steps, and the required verification and reporting. They must not produce empty or unsupported reports.
 
 The owner's explicit scope and authorization take precedence over the default preference for implementation.
+
+## Conditional Security Investigation References — Trail of Bits
+
+For investigations involving scanner findings or suspected vulnerabilities, use the relevant Trail of Bits False Positive Check material routed through `.docs/manifest.json`. Start with `.docs/deep-dive/_trailofbits_skills_fp-check.md` and its supporting references in `.docs/security/`; consult `.docs/deep-dive/_trailofbits_skills_sarif-parsing.md` and `.docs/deep-dive/_trailofbits_skills_sarif-parsing-jq-queries.md` when processing existing SARIF scan output.
+
+Use evidence-based data-flow and threat-model analysis. SARIF processing does not run scanners. Do not assume optional upstream helper tools are installed. Repository governance and the selected task's scope remain authoritative.
