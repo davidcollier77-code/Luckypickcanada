@@ -23,7 +23,6 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Dropbox zxcvbn "/dropbox/zxcvbn"
 - Cloudflare Turnstile "/cloudflare/cloudflare-docs/turnstile"
 - React Turnstile "/marsidev/react-turnstile"
-- Upstash Rate Limit "/upstash/ratelimit"
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
