@@ -11,7 +11,6 @@ When materially necessary, consult the following approved libraries. (Requires C
 - React "/reactjs/react.dev"
 - TypeScript "/microsoft/typescript"
 - Tailwind CSS "/websites/tailwindcss"
-- Marketing Skills "/coreyhaines31/marketingskills"
 - GitHub Docs "/github/docs"
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"

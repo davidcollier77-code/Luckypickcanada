@@ -40,3 +40,17 @@ When implementing, ensure you test your changes.
 ## 2026-09-20 - Cinematic Visual Updates
 **Learning:** Using purely static positional keyframes within Framer Motion without `scale` interpolations is necessary to prevent perspective distortion when a 3D-rotated object (like the Lucky Card) performs its flip inside a complex canvas scene. Coordinate sync between HTML elements and the Canvas `ctx` layer provides high-quality interactive visuals without structural deformation.
 **Action:** Overhauled `app/lucky-card-reveal.js` to draw physical energy strikes directly onto fixed target layout coordinates without using the CSS scaling that caused previous visual glitches.
+
+## Conditional Marketing Copy-Editing Reference
+
+When polishing or refreshing existing visitor-facing wording, use the Corey Haines Copy-Editing skill:
+- `.docs/polishing/_coreyhaines31_marketingskills_copy-editing.md` — editing workflow and voice-preservation rules.
+- `.docs/polishing/_coreyhaines31_marketingskills_copy-editing-checklist.md` — final editing checklist.
+- `.docs/polishing/_coreyhaines31_marketingskills_plain-english-alternatives.md` — plain-English alternatives.
+- `.docs/polishing/_coreyhaines31_marketingskills_content-refresh.md` — updating existing content without losing its purpose.
+
+Preserve Lucky Pick Canada's message and established voice. A point edit remains a point edit; do not rewrite unrelated page sections. Keep claims supportable and respect the entertainment-only positioning. These references do not authorize changes to site wording unless the assigned task asks for them.
+
+## Conditional React / Next.js Performance Agent Guide
+
+When polishing includes React/Next.js code, component rendering, bundle size or performance, consult `.docs/polishing/_vercel-labs_agent-skills_react-best-practices.md`. Use it as an agent-focused technical reference alongside the actual project code and current library versions. It does not override `AGENTS.md` or justify unrelated refactoring.
