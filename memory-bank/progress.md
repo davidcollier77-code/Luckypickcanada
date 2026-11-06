@@ -1,3 +1,16 @@
+# Progress — 2026-11-06: Custom Gemini PR Reviewer Retirement
+
+- Removed only the custom Gemini PR-review workflow, both API-calling Node scripts, the root `GEMINI_REVIEWER.md` instruction file, and its four exclusive test suites.
+- Added `__tests__/reviewer-retirement.test.ts`; the full unit-test suite passed with the retirement guard included. Standalone TypeScript and Spec Kit verification passed.
+- `./freebuff-verify.sh` passed. Combined `.next` + `public` measured 333,794,959 bytes (318.33 MiB), below the 495 MiB hard maximum.
+- DevSkim, updater scheduler verification, and OpenNext Cloudflare / Wrangler build validation passed. No deployment was performed.
+- Pullfrog workflow and website Oracle source match the base branch byte-for-byte; their `GEMINI_API_KEY` references remain. No secret was inspected or changed. All other reviewer files, application code, dependencies, `.docs/`, and historical reviewer records remain untouched.
+- **PR #1736** is open, mergeable, and unmerged. Final Visual QA visual-regression step remains in progress.
+
+---
+
+---
+
 # Progress — 2026-11-05: Daily Lucky Card Reveal tier presentation
 
 - `/reveal` entry button is now a guaranteed 56 px target with `cursor-pointer`, `touch-manipulation` and an `aria-describedby` tap instruction; the shared gold gradient, hover lift and press depth are unchanged.

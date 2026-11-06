@@ -1,3 +1,16 @@
+# Active Context — Custom Gemini PR Reviewer Retirement (2026-11-06)
+
+- **Task groups:** `troubleshooting` + `testing`; branch `chore/retire-custom-gemini-reviewer-20261106`; feature `specs/097-gemini-reviewer-retirement`.
+- **Scope:** Remove only the separate custom Gemini PR-review workflow, its two Node.js scripts, root instruction file, and four exclusive test suites. Add a retirement regression test.
+- **Preserved:** Pullfrog workflow and its `GEMINI_API_KEY` reference; site Oracle source and its `env.GEMINI_API_KEY` runtime reference; all other reviewer files; shared secrets and environment configuration; application code, dependencies, deployment settings, `.docs/`, and historical Gemini / PR-Agent Spec Kit records.
+- **Implementation:** The active reviewer entrypoints and all four exclusive suites are removed. PR #1736 is open, mergeable, and unmerged.
+- **Verification PASS:** Full unit test suite (including the retirement regression guard), standalone TypeScript check, Spec Kit verification, `./freebuff-verify.sh`, DevSkim, updater scheduler verification, and OpenNext Cloudflare build / Wrangler validation. Build size measured at 333,794,959 bytes (318.33 MiB), below 495 MiB.
+- **Verification PENDING:** The final Playwright visual-regression step in Visual QA is still running. No deployment was performed.
+
+---
+
+---
+
 # Active Context — Freebuff Agent Reference Library Expansion (2026-11-06)
 
 - **Task groups:** `creation`, `polishing`, `security`, `deep-dive`, and `testing`; branch `docs/agent-reference-expansion-20261106`; feature `specs/096-agent-reference-library-expansion`.
