@@ -16,7 +16,6 @@
       "/websites/ai_google_dev_gemini-api",
       "/google-gemini/gemini-skills/gemini-api-dev",
       "/dropbox/zxcvbn",
-      "/pmndrs/react-three-fiber",
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
@@ -61,7 +60,6 @@
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/dequelabs/axe-core",
-      "/magicuidesign/magicui",
       "/goldfire/howler.js",
       "/websites/google_webp",
       "/lovell/sharp",
@@ -108,7 +106,6 @@
       "/dropbox/zxcvbn",
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
-      "/upstash/ratelimit",
       "/google/eng-practices",
       "/trailofbits/skills/fp-check",
       "/trailofbits/skills/fp-check-standard-verification",
@@ -151,7 +148,6 @@
       "/websites/developer_apple_webkit",
       "/dequelabs/axe-core",
       "/cloudflare/cloudflare-docs/pages",
-      "/posthog/posthog-js",
       "/websites/mdn_web_audio",
       "/google/eng-practices",
       "/debian/debian-reference",
@@ -313,25 +309,9 @@
       "type": "url",
       "url": "https://raw.githubusercontent.com/marsidev/react-turnstile/main/README.md"
     },
-    "/upstash/ratelimit": {
-      "type": "url",
-      "url": "https://upstash.com/docs/redis/sdks/ratelimit-ts/overview"
-    },
-    "/pmndrs/react-three-fiber": {
-      "type": "url",
-      "url": "https://r3f.docs.pmnd.rs/getting-started/introduction"
-    },
     "/websites/neon": {
       "type": "url",
       "url": "https://neon.com/docs/llms.txt"
-    },
-    "/magicuidesign/magicui": {
-      "type": "url",
-      "url": "https://magicui.design/docs/components"
-    },
-    "/posthog/posthog-js": {
-      "type": "url",
-      "url": "https://posthog.com/docs/libraries/js"
     },
     "/goldfire/howler.js": {
       "type": "url",
@@ -485,11 +465,7 @@
     "/cloudflare/cloudflare-docs/turnstile",
     "/cloudflare/cloudflare-docs/pages",
     "/marsidev/react-turnstile",
-    "/upstash/ratelimit",
-    "/pmndrs/react-three-fiber",
     "/websites/neon",
-    "/magicuidesign/magicui",
-    "/posthog/posthog-js",
     "/goldfire/howler.js",
     "/websites/mdn_web_audio",
     "/numpy/numpy",
@@ -546,11 +522,7 @@
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
     "/upstash/docs": "4de977888b79048b5cc66dd1c43d010eb099eb0c",
     "/getsentry/sentry-docs": "c363ae896db4672454ba646266e7611458385d21",
-    "/pmndrs/react-three-fiber": "d74622ea8ed717f7212d7e19d65ff3e325508389",
-    "/magicuidesign/magicui": "37ce829f18dd7d0a7219531a4249b664419933ea",
     "/marsidev/react-turnstile": "fafc7b564386a9b1ab0e58d564e0960adba9d230",
-    "/posthog/posthog-js": "a0e648577347a0e36c1956fecc66f31623f96f9e",
-    "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "3576a65b8d63bc61becf6ace238f56e3543290ca",
     "/numpy/numpy": "c60f172b3330f76d6592362137f34c4a3030a001",

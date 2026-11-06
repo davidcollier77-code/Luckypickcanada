@@ -1,3 +1,16 @@
+## 2026-11-06 — PR #1746 routing-test coverage correction
+
+- Expanded `__tests__/docs-library-retirement.test.ts` to assert that each of the four retired IDs is absent from every one of the eight manifest group routing files, closing the Amazon Q review finding.
+- Updated Spec Kit task T007 to record the all-groups coverage requirement. No runtime, manifest, snapshot, dependency, updater, workflow, schedule, or deployment files changed.
+- Post-fix PR-head Vitest, `./freebuff-verify.sh`, and 495 MiB build-size results are pending the newly triggered GitHub checks.
+
+## 2026-11-06 — Retire four unused documentation references
+
+- Removed PostHog JS, Magic UI, React Three Fiber, and Upstash Ratelimit from their specialist routes, all manifest indexes, and their canonical documentation snapshots.
+- Added `__tests__/docs-library-retirement.test.ts` to guard those removals, preserve the earlier PR #1740 retirements, and pin NumPy to Audio only.
+- Kept all unrelated sources and URLs unchanged. The updater implementation, updater tests, refresh workflow, schedule, Cloudflare configuration, application code, and dependencies were not changed.
+- Focused tests and `./freebuff-verify.sh` are pending execution in the repository workspace; implementation is not yet verified.
+
 # Progress — 2026-11-06: Playwright Version Alignment
 
 - Visual QA's discovery failure came from a split Playwright set: the CLI resolved to 1.63.0 while

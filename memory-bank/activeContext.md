@@ -1,3 +1,26 @@
+# Active Context — PR #1746 Review-Finding Correction (2026-11-06)
+
+- **Task groups:** `testing` (close the Amazon Q routing-coverage gap) + `deep-dive` (verify the review finding against the test and all eight manifest groups).
+- **Feature/branch/PR:** Reuse `specs/102-unused-reference-retirement`, `docs/retire-unused-library-references-20261106`, and PR #1746; no duplicate feature or PR.
+- **Correction:** `__tests__/docs-library-retirement.test.ts` now checks every retired ID against all eight `.freebuff/<group>.md` files derived from `manifest.groups`, not only the source's original group file.
+- **Scope:** No manifest, snapshot, application, dependency, updater, workflow, schedule, Cloudflare, or deployment changes.
+- **Verification:** The updated PR-head Visual QA workflow is expected to run all Vitest tests, TypeScript, `./freebuff-verify.sh`; OpenNext validation measures `.next + public` against the 495 MiB cap. Results remain pending until the new head checks complete. The connected container cannot reach GitHub to clone the branch, so no local shell/test result is claimed.
+- **Delivery:** Update PR #1746 in place; leave it open and unmerged.
+
+---
+
+# Active Context — Unused Documentation Reference Retirement (2026-11-06)
+
+- **Task groups:** `deep-dive` (evidence-based audit of the four source references) + `testing` (manifest, specialist routing, snapshot, and preservation regression checks).
+- **Feature:** `specs/102-unused-reference-retirement`; branch `docs/retire-unused-library-references-20261106`.
+- **Task:** retire PostHog JS, Magic UI, React Three Fiber, and Upstash Ratelimit from the documentation library. Current source searches found no project integration; matches were limited to the documentation snapshots, manifest, and specialist routing.
+- **Preserved:** PR #1740's earlier removals (Pillow, Android Developers, Gemini CLI), general Chrome web-platform source, and NumPy routed only to Audio.
+- **Scope:** no application code, dependencies, updater script/tests, refresh workflow, schedule, Cloudflare configuration, or deployment settings changed.
+- **Status:** implementation edits committed to the task branch. Focused tests, full repository verification, final diff review, and PR-head CI remain pending.
+- **PR:** to be opened against current `main`; leave open and unmerged.
+
+---
+
 # Active Context — Independent Review of PR #1743 Feedback (2026-11-06)
 
 - **Task groups:** `deep-dive` (evidence-driven audit of review feedback) + `testing` (verification
