@@ -101,9 +101,14 @@ The `github-actions-docs` skill was not invoked; workflow syntax was validated b
 | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
 | `./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit artifact gate for `specs/098-visual-qa-chromium-cache`, typecheck, production build, refresh-docs 19/19) |
 | Production build size | **PASS** — `.next` 298,726,713 B + `public` 32,840,043 B = **331,566,756 B (316.2 MiB)**, below the 495 MB maximum |
-| GitHub Actions runtime: non-visual skip, cache hit, cache miss, Playwright version change | **NOT RUN** — this workspace has no Actions runner and no pull request context, so the workflow cannot be executed here |
+| PR #1737 head `69243cea` — `Detect visual changes` job | **PASS** — completed successfully in Actions run 42250119767, so the `gh api` file listing and the classifier both executed on a real pull request. That run correctly took the visual path: this pull request changes the workflow itself, which the classifier refuses to treat as documentation-only. |
+| PR #1737 head `69243cea` — `Visual QA` job | **PENDING** — in progress at the time of writing; its result is not claimed here. |
+| GitHub Actions runtime: non-visual skip, cache hit, cache miss, Playwright version change | **NOT RUN** — a pull request of this kind cannot exercise the skip path, and cache hit/miss needs a second run at the same Playwright version plus a version bump. Neither has happened yet. |
 
 ### What the runtime evidence must still show
+
+**Verified so far:** the classification job itself runs and passes on GitHub Actions for this head, and a
+pull request with non-documentation paths is correctly classified as needing visual QA.
 
 1. A documentation-only pull request runs `changes` with `visual_required=false` and every browser step
    is skipped while the unit/TypeScript/Spec Kit steps still run.
