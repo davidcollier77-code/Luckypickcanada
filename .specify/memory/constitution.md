@@ -23,7 +23,7 @@ All work MUST follow the required sequence: INSPECT → IDENTIFY → UNDERSTAND 
 Changes to payment processing (Stripe), authentication/authorization, databases (Neon), protected deployments (Cloudflare), and secrets are strictly prohibited unless explicitly authorized by the owner.
 
 ### V. Resource Conservation & Control
-Respect the 495 free-service cap for documentation updates. Context7 MCP usage requires explicit owner approval before EVERY invocation. Local `.docs/` are read-only during normal tasks.
+Respect the 495 free-service cap for documentation updates. Local `.docs/` are read-only during normal tasks.
 
 ## Technology Stack & Constraints
 
