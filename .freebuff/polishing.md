@@ -19,8 +19,6 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Apple WebKit Developer "/websites/developer_apple_webkit"
 - axe-core "/dequelabs/axe-core"
 - Magic UI "/magicuidesign/magicui"
-- Pillow "/python-pillow/Pillow"
-- NumPy "/numpy/numpy"
 - Google WebP "/websites/google_webp"
 - Sharp "/lovell/sharp"
 - web.dev Images "/websites/web_dev_images"

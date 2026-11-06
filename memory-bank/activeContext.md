@@ -1,3 +1,33 @@
+# Active Context — Documentation Library and Routing Cleanup (2026-11-06)
+
+- **Task groups:** `deep-dive` (evidence-driven audit of the reference library and group assignments)
+  + `testing` (the affected regression assertion and executed verification).
+  Branch `freebuff/cf8f9386a7381a2d31381dd8`; feature `specs/099-docs-library-routing-cleanup`.
+- **Verified baseline:** 71 routed identifiers in 8 groups, no orphans, missing snapshots or broken
+  symlinks. Pillow is unused (no `PIL`/`Image.open`/`import PIL`; `setup-media-tools.sh` installs only
+  vosk/soundfile/numpy). NumPy is imported by `scripts/inspect-media.py` and installed by
+  `scripts/setup-media-tools.sh` for audio. The Chrome Developer snapshot was the Chrome Extensions
+  **Offscreen API** page. PR #1738 (scheduled docs refresh) is **merged** at `743a1ce8` (`476e4f43`),
+  so it is the task baseline, not an open conflict.
+- **Implementation:** removed `/python-pillow/Pillow`, `/android/developers` and
+  `/google-gemini/gemini-cli` from every manifest section and deleted their snapshots/symlinks; moved
+  `/numpy/numpy` from `polishing` to `audio` (manifest, `.freebuff` routing, snapshot); repointed
+  `/websites/developer_chrome` off the Offscreen page to `https://developer.chrome.com/docs/web-platform`
+  and replaced its snapshot; deleted the three specialist Gemini CLI sections; updated
+  `__tests__/reviewer-retirement.test.ts` to assert the retained Gemini API snapshot instead.
+- **Preserved:** Gemini API docs and all Gemini/Oracle/reviewer code, Debian Reference, PostHog JS,
+  Magic UI, `scripts/refresh-docs.js`, `scripts/test-refresh-docs.js` and the refresh workflow,
+  application code, assets, dependencies, payments/email/database/security and deployment.
+- **Verification PASS:** manifest audit 68/68/68 with 0 orphans/missing/broken symlinks; focused 4 tests;
+  full `pnpm exec vitest run` 43 files / 343 tests; `tsc --noEmit` exit 0; refresh-docs 19/19;
+  `SPEC_KIT_BASE_REF=743a1ce8 ./freebuff-verify.sh` exit 0; build `.next` 299,056,298 B + `public`
+  32,840,043 B = 331,896,341 B (316.52 MiB) < 495 MB; no protected path in the diff.
+- **PR:** **#1740** open and unmerged, with `PR_SUMMARY.md` published as its body.
+- **Verification PENDING:** PR-head CI. Browser/visual checks NOT RUN (no UI change). `lastUpdated`
+  intentionally left to the updater.
+
+---
+
 # Active Context — Conditional Visual QA with Cached Chromium (2026-11-06)
 
 - **Task groups:** `troubleshooting` (CI workflow behaviour that wasted runner time on every pull request)

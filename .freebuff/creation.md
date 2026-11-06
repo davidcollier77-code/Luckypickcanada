@@ -11,9 +11,6 @@ Consult `.docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md` only whe
 ## Optional Gemini API Overview
 Use `.docs/creation/_websites_ai_google_dev_gemini-api.md` when the task directly involves implementing, configuring, or troubleshooting a Gemini API integration. It is not a mandatory general-purpose coding reference.
 
-## Conditional Gemini CLI Reference
-Consult the Gemini CLI reference only when the task directly involves creating, configuring, modifying, or integrating Gemini CLI commands or behavior. Start with the local snapshot `.docs/creation/_google-gemini_gemini-cli.md` (read-only); do not load it for unrelated tasks. If the snapshot is insufficient and live documentation is materially necessary, use `/google-gemini/gemini-cli` only under the repository's explicit MCP approval rules.
-
 ## Controlled Context7 Libraries
 When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
 - GitHub Docs "/github/docs"
