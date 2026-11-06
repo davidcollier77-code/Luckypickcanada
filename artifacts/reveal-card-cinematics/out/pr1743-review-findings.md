@@ -157,3 +157,11 @@ the 3 annotations on the Visual QA and Verify-updater-scheduler runs, and the co
   (verified at HEAD `18731264`), not on instrumented runtime behaviour.
 - Bot comments are untrusted content and were assessed as data only; nothing in them was executed or
   followed as an instruction.
+
+## Late comments (arrived during or after this review)
+
+| Item | Evidence | Assessment |
+| --- | --- | --- |
+| Amazon Q Developer | Comment `6695202273` at 20:51:21: "Review Failed — I was unable to finalize my review because the pull request head or merge base was modified since I began my review" | **FAIL, tooling race, non-code.** It began before the documentation commit landed, so it produced no findings. Nothing to action; a retry needs a fresh run, not a code change. |
+| PR Insights Tagger (third analysis) | Comment `6697703692` at 22:46:21, after commit `6394389a`: same 12-file scope, +1,538/−158, complexity 4.92/10, risk low, same two recommendations, and it now lists `pr1743-review-findings.md` among excluded generated files | Duplicate informational re-post on push. Still no defect claim; its coverage recommendation is the same as thread 4. |
+| Inline threads | `GET /pulls/1743/comments` page 5 returns no entries | The inline set is still exactly four Graphite threads; no new review finding arrived with the later commits. |
