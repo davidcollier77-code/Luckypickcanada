@@ -25,7 +25,6 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Sonner "/emilkowalski/sonner"
 - React Error Boundary "/bvaughn/react-error-boundary"
 - Dropbox zxcvbn "/dropbox/zxcvbn"
-- React Three Fiber "/pmndrs/react-three-fiber"
 - Google WebP "/websites/google_webp"
 - Sharp "/lovell/sharp"
 - web.dev Images "/websites/web_dev_images"
