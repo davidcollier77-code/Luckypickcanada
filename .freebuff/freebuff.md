@@ -10,7 +10,7 @@ Read `AGENTS.md` first. It is the single source of repository-wide workflow and 
 - Follow the Spec Kit sequence, verification, scope, concise PR-summary, and no-merge rules in `AGENTS.md`. Keep one task, branch, and PR; reuse existing work.
 
 ## Execution and approvals
-Respect the active coding agent's execution and authorization controls. Continue without routine confirmations only when the active mode permits it; never bypass a required approval or blocking gate. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Context7 requires explicit owner approval before every invocation. Other MCPs require explicit approval unless separately authorized. Connection or initialization alone is not use.
+Respect the active coding agent's execution and authorization controls. Continue without routine confirmations only when the active mode permits it; never bypass a required approval or blocking gate. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require explicit approval unless separately authorized. Connection or initialization alone is not use.
 
 ## PR reporting
 Maintain one concise, evidence-based summary in the PR body. Open or update a safe, reviewable PR with truthful pending or failed-check statuses instead of treating those statuses as an automatic PR-creation blocker. Keep implementation and verification status separate. A pending, blocked, or failed mandatory check prevents claiming verified completion or `USEFUL RESULT: YES`. State what remains unverified. Leave the PR open and unmerged.
