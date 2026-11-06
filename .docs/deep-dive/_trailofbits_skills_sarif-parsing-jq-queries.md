@@ -1,0 +1,1 @@
+../security/_trailofbits_skills_sarif-parsing-jq-queries.md
