@@ -1,223 +1,86 @@
-# Cinematic Lucky Card reveal and premium card finish
+# Documentation Updater Reliability and Safety
 
-## Task and task groups
+## Task and selected groups
 
-**Assigned task:** Fully enhance the daily Lucky Card Reveal at `/reveal` across all three tiers —
-Standard, Premium and Flagship — with a more cinematic and spectacular sequence (polished effects,
-depth, lighting, transitions), and give every card a premium, consistent glossy finish that preserves
-its existing design and artwork. Inspect the previous enhancement attempt and correct what it left
-incomplete. Visual only: no functionality, number generation, tier behaviour or payment flow may
-change.
+**Assigned task:** Improve the reliability and safety of the documentation updater (`scripts/refresh-docs.js`), covering download validation, permanent removals, broken-URL reporting, internal link/symlink repair, library reconciliation and complete-workflow verification, without changing existing automation.
 
-**Selected task groups:**
+**Selected task groups and reasons:**
 
-- `polishing` — the task is a visual-quality upgrade of a protected, already-approved UI surface, so
-  the polishing group's visual, accessibility and reduced-motion rules apply.
-- `testing` — the change is user-facing animation and lighting, so the tier contract, structural
-  guard, full suite and rendered browser evidence must be executed and reported.
+- **`troubleshooting`** — the task fixes broken source URLs, failed downloads and broken internal links, so this group's failure-handling guidance applies.
+- **`deep-dive`** — an evidence-based audit of the manifest, snapshot tree, symlinks, retry timing and scheduler configuration was required before changing the updater.
+- **`testing`** — the task explicitly requires executed unit tests and a complete isolated workflow, not code inspection alone.
 
-## What the previous attempt left incomplete (verified in the shipped code)
+**Feature / branch:** `specs/103-docs-updater-integrity` on `freebuff/fffa8bcf4af337cbdf4839af`. No open PR covered this task; zero open PRs existed at the start.
 
-| Finding | Evidence before this change |
-| --- | --- |
-| The reveal moment had no light event | `app/lucky-card-reveal.js` mounted only a static halo and rim once `isRevealed` was true |
-| The card finish was one flat gradient | `cardPolishSheenStyle` was a single 118° linear gradient plus a 1 px frame and one inset edge line |
-| One card was excluded from the finish | `preserveCoastToCoastPolish` skipped the sheen, edge and tier ring entirely for `coast-to-coast-tale` |
-| The card back was never finished | The back face received the sheen/edge only; no specular, bloom or glint anywhere |
-| No cinematic depth or transition | No spotlight, shaft, shockwave, embers, floor shadow; the chip, quote and share control appeared instantly |
+## Library documents reviewed
 
-## Implementation
-
-**`app/lucky-card-presentation.js`** — each tier gains `spotlightOpacity`, `shockwaveOpacity`,
-`shockwaveScale`, `glossOpacity`, `sweepDuration` and `emberOpacity`. The existing own-property lookup
-and Standard fallback are unchanged; the original tier values are untouched.
-
-| Tier | Spotlight | Shockwave (opacity / scale) | Gloss | Sweep | Embers |
-| --- | --- | --- | --- | --- | --- |
-| Standard | 0.24 | 0.42 / 1.45 | 0.16 | 1.15 s | 0.50 |
-| Premium | 0.32 | 0.56 / 1.60 | 0.22 | 1.30 s | 0.66 |
-| Flagship | 0.42 | 0.70 / 1.80 | 0.30 | 1.45 s | 0.82 |
-
-**`app/lucky-card-reveal.js`**
-
-- One module-scope `CardFinish` component paints the identical finish on the back and front of every
-  card: diagonal gloss, top-left specular highlight, bevel edge. The revealed front additionally gets
-  a tier-coloured bottom gloss bloom and exactly one diagonal glint pass. The back never shows the
-  tier accent, so the pull is not given away before the flip.
-- `coast-to-coast-tale` now receives that finish and the tier ring; its authored frame is still
-  preserved through `style={preserveCoastToCoastPolish ? undefined : cardPolishFrameStyle}` and is
-  marked `data-card-frame="authored"`.
-- The stage gains a tier-tinted charging aura while the draw runs, and on reveal a light shaft,
-  spotlight, the existing halo and rim, two expanding shockwave rings, six one-shot embers and a
-  floor shadow. Every layer is `aria-hidden` and `pointer-events: none`; the shockwave, embers and
-  glint are mounted only when motion is allowed.
-- The tier block, quote panel and share control settle in with 0.12 / 0.24 / 0.34 s delays. Their
-  copy, order, classes and layout are unchanged.
-
-**Tests**
-
-- `__tests__/lucky-card-tier-presentation.test.js` — every shipped card resolves a complete finish
-  palette; all six new values escalate Standard < Premium < Flagship and stay bounded so the finish
-  cannot hide the artwork.
-- `__tests__/lucky-card-reveal-presentation.test.js` — pins the two-face finish, the five finish
-  layers, the stage layers, the removed single-sheen/Coast exception, the reduced-motion gating, the
-  staged delays, the preserved authored frame and every functional contract (storage key, weighting,
-  quote selection, collection write, `TIER_HITS`, flip timings, audio cues, artwork URLs, share,
-  binder, Return to Home, and the exact import list proving no dependency was added).
-
-**Files changed**
-
-```text
-app/lucky-card-presentation.js
-app/lucky-card-reveal.js
-__tests__/lucky-card-tier-presentation.test.js
-__tests__/lucky-card-reveal-presentation.test.js
-artifacts/reveal-card-cinematics/probe.cjs
-artifacts/reveal-card-cinematics/out/cloud-browser-report.json
-artifacts/reveal-card-cinematics/out/revealed-flagship-cloud.png
-specs/101-lucky-card-reveal-cinematics/{spec,plan,tasks}.md
-.specify/feature.json
-artifacts/reveal-card-cinematics/out/pr1743-review-findings.md
-memory-bank/activeContext.md
-memory-bank/progress.md
-PR_SUMMARY.md
-```
-
-## Spec Kit stages
-
-| Stage | Artifact |
-| --- | --- |
-| Specify | `specs/101-lucky-card-reveal-cinematics/spec.md` |
-| Plan | `specs/101-lucky-card-reveal-cinematics/plan.md` |
-| Tasks | `specs/101-lucky-card-reveal-cinematics/tasks.md` |
-| Implement | the code and test changes above, recorded in `tasks.md` |
-
-One feature directory, no duplicates; `.specify/feature.json` points at it. No `.docs/` file was
-modified. The PR-review addendum is recorded in the same three artifacts (spec and plan addenda,
-Phase 8 / T017–T023), so this task created no duplicate feature directory.
-
-## Reference documents reviewed
-
-The manifest routes the selected groups to the library snapshots below. In this checkout the
-polishing symlinks do not resolve (`.docs/.snapshots` is not materialized), so the ones attempted
-could not be read; they are recorded honestly rather than claimed.
-
-| Document | USED | USEFUL | Note |
+| Library document | USED | USEFUL | Explanation |
 | --- | --- | --- | --- |
-| `.docs/manifest.json` | YES | YES | Routing index; confirmed the `polishing` and `testing` document sets and that `.docs/` is read-only. |
-| `.docs/polishing/_websites_motion_dev.md` | NO | NO | Symlink target unresolvable in this checkout (`Too many levels of symbolic links`); the Framer Motion usage was verified against the installed package and the shipped component instead. |
-| `.docs/polishing/_websites_tailwindcss.md` | NO | NO | Same broken symlink; no new Tailwind configuration or class system was introduced. |
-| `.docs/polishing/_websites_mdn_image_types.md` | NO | NO | Not consulted: no raster format, encoding or delivery decision was in scope; artwork paths and AVIF/WebP fallbacks are untouched. |
-| `.docs/polishing/_dequelabs_axe-core.md` | NO | NO | Not consulted or run; accessibility was preserved by construction (decorative layers `aria-hidden`, no name/role change) and by the structural guard. |
-| `.docs/polishing/_google_eng-practices.md` | NO | NO | Not consulted. |
-| `.docs/polishing/_vercel-labs_agent-skills_react-best-practices.md` | NO | NO | Not consulted. |
-| `.docs/testing/_google_eng-practices.md` | NO | NO | Not consulted. |
+| `.docs/creation/_google_eng-practices.md` | YES | YES | Read the review criteria (design, functionality, complexity, tests, readability); used to audit the final diff and verify that the change is the smallest correct one. |
+| `.docs/testing/_trailofbits_skills_post-patch-validation.md` | YES | YES | Baseline-versus-patched evidence and honest evidence-level reporting shaped the isolated end-to-end test and the PR verification table. |
+| `.docs/deep-dive/_debian_debian-reference.md` | NO | NO | Searched for symlink/filesystem guidance; no relevant passage was found, so it did not inform the implementation. |
+
+No other routed library document was used. `.docs/` content was not refreshed or modified.
+
+## What was implemented
+
+1. **Download-integrity validation.** Every download passes `validateDocumentContent` before size accounting or any write. It rejects empty/whitespace files, NUL/binary data, undecodable characters, excessive control characters, random-character content, HTTP error pages, Cloudflare/bot challenge pages and JSON error responses. A rejected download never replaces an existing snapshot; with no existing copy nothing is written. The validator is structural only — no relevance or quality scoring.
+2. **General permanent removal.** `manifest.groups` is now the updater's single allowlist. `collectRoutedLibraries` derives the routed set; `reconcileManifestIndexes` prunes non-routed `sources`, `inventory` and `githubShas` entries and deduplicates inventory; `removeStaleSnapshots` deletes snapshots and non-assigned symlinks for removed documents. The previous fixed Jules-ID list was removed. Removed documents are never fetched again because routing is the only download source.
+3. **Broken URLs and failures in the PR.** The updater writes a Markdown report (`--report` / `DOCS_REFRESH_REPORT_PATH` / `$GITHUB_STEP_SUMMARY`) listing each affected document, its source URL, the error and whether an existing copy was preserved. The scheduled workflow runs the refresh with `continue-on-error`, publishes the report, includes it in the refresh PR body (or comments on an existing refresh PR when only failures changed), then fails the job. Source URLs are never guessed or rewritten.
+4. **Safe link and symlink repair.** `repairDocumentationLinks` creates missing links, atomically replaces broken or incorrect symlinks, collapses identical duplicate copies, removes stale links for unassigned groups, and reports differing content without overwriting it.
+5. **Library consistency.** `auditLibraryConsistency` verifies source configuration, snapshot presence, existing-snapshot validity and unowned files. `inventory` is reconciled to exactly the routed library set, and each routed library has one source entry and a resolvable snapshot in every assigned group.
+6. **Preserved automation.** The three native Atlantic cron entries, Cloudflare Worker dispatch slots, concurrency, permissions, 15-second request timeout, 10 MB response limit, 180-second retry delay and retry count are unchanged.
+
+### Files changed
+
+- `scripts/refresh-docs.js` — validation, manifest-driven reconciliation, permanent-removal pruning, link repair, consistency audit, report generation, `--docs-dir`/`--report` options, module exports for testing.
+- `scripts/test-refresh-docs.js` — validator, reconciliation, link-repair, report, retry/timezone, schedule and canonical-link regression tests, plus the end-to-end runner.
+- `scripts/test-refresh-docs-e2e.js` — new isolated complete-workflow test against a copy of the real library.
+- `scripts/test-support/mock-refresh-https.js` — new test-only HTTPS transport (`--require`), no production hook.
+- `.github/workflows/refresh-docs.yml` — report publication, PR-body report, no-change failure comment, post-report failure step; schedule unchanged.
+- `specs/103-docs-updater-integrity/spec.md`, `plan.md`, `tasks.md` — Spec Kit artifacts.
+- `memory-bank/activeContext.md`, `memory-bank/progress.md`, `PR_SUMMARY.md` — task records and this report.
+
+No application, dependency, payment, database, auth, Cloudflare Worker, deployment or `.docs` content change.
+
+## Broken source URLs and download failures
+
+No **real library source URL** was found broken by this work, and no live refresh was run against the network. The complete-workflow test used a copy of the real library with deliberately injected failures, verified as follows:
+
+| Document | URL (test fixture) | Failure | Existing document |
+| --- | --- | --- | --- |
+| `/debian/debian-reference` | `https://www.debian.org/doc/manuals/debian-reference/debian-reference.en.txt` (mocked 404) | `HTTP 404: Not Found`, 2 attempts | Preserved byte-identical |
+| `/example/failing-new-doc` | `https://example.com/failing-new-doc.md` (fixture, mocked 500) | `HTTP 500: Internal Server Error`, 2 attempts | None — nothing written |
+| `/numpy/numpy` | `https://numpy.org/doc/stable/reference/arrays.ndarray.html` (mocked empty body) | `download is empty` | Preserved byte-identical |
+| `/goldfire/howler.js` | `https://raw.githubusercontent.com/goldfire/howler.js/master/README.md` (mocked binary body) | `download contains binary data (NUL bytes)` | Preserved byte-identical |
+| `/websites/mdn_web_audio` | `https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API` (mocked error page) | `download is an HTTP error page` | Preserved byte-identical |
+
+The report and workflow name the affected document, URL and error, and state that URLs were not changed automatically. No URL was rewritten.
 
 ## Verification
 
-| Check | Status | Evidence |
+| Check | Command | Result |
 | --- | --- | --- |
-| Focused suites | PASS | `pnpm exec vitest run __tests__/lucky-card-tier-presentation.test.js __tests__/lucky-card-reveal-presentation.test.js` → 2 files / 12 tests passed. |
-| Full unit suite | PASS | `pnpm exec vitest run` → 44 files / 351 tests passed. |
-| Type check | PASS | `pnpm exec tsc --noEmit` → exit 0. |
-| Build + repository gate | PASS | `./freebuff-verify.sh` → exit 0 (Spec Kit artifact gate, type check, production build, refresh-docs 19/19). |
-| Build size | PASS | `.next` 317,064,504 B + `public` 32,840,043 B = **349,904,547 B (333.7 MiB)**, below the 495 MB maximum. |
-| Build + gate (this review run) | PASS | `./freebuff-verify.sh` → exit 0 (frozen install, Spec Kit governance gate, `tsc --noEmit`, production build, refresh-docs 19/19). |
-| Build size (this review run) | PASS | `.next` 317,067,315 B + `public` 32,840,043 B = **349,907,358 B (333.7 MiB)**, below the 495 MB maximum. |
-| Unit suites (this review run) | PASS | `pnpm exec vitest run` → 44 files / 351 tests passed, exit 0. |
-| Rendered reveal, three tiers | PASS | Managed cloud browser against the production build: chip/name/caption/quote, tier-accent spotlight, shaft, halo, two shockwaves, six embers, floor shadow, 0 px overflow, artwork URLs unchanged; tier block and quote settled at opacity 1. |
-| Both card faces / all cards | PASS | Each tier: back `[gloss, specular, bevel]`, front `[gloss, specular, bevel, tier-bloom, glint]`. Coast-to-Coast Tale: shared finish plus premium ring, authored frame preserved (`data-card-frame="authored"`, border width 0 px). |
-| Charging aura during the draw | PASS | Aura rendered with the drawn tier's accent, `aria-hidden`, `pointer-events: none`; two beam canvases still running; entry control removed while drawing. |
-| Entry accessible name | PASS | `Reveal Today's Luck` (exact), described by `lucky-card-reveal-hint`, 58 px target. |
-| Local Playwright probe | **BLOCKED** | `node artifacts/reveal-card-cinematics/probe.cjs` exits 2: Chromium cannot launch (`libnspr4.so`, `libnss3.so`, `libatspi.so.0`, `libatk*`, `libX*`, `libasound`, `libxkbcommon` absent), the sandbox package lists are empty and there is no root to install them. The managed Playwright bridge also returned an internal `options.mode` error. |
-| Reduced motion, rendered | **NOT RUN** | `prefers-reduced-motion` emulation was unavailable in the browser path used. Covered only by the structural guard, which pins the `!shouldReduceMotion` gates and zero-duration static layers. |
-| Console/page errors | **NOT RUN** | The evaluation harness attached no console listener. The pages rendered without a visible error state. |
-| Graphite AI Reviews (CI) | PASS | Check run `128147449633` success, "AI review ran and left 4 comments"; all four threads are assessed in the review section. |
-| Visual QA (CI) | PASS, but not covering this surface | Check run `128145862084` success (3 annotations). `tests/visual/` has no `/reveal` spec, so this pass is not evidence for the reveal. |
-| DevSkim (CI) | PASS | Check run `128146212628`: "No new alerts in code changed by this pull request". |
-| Updater scheduler checks (CI) | PASS / SKIPPED | Verify `128146861496` success; Deploy `128146863502` and Append alerts `128146291195` skipped by path filter. |
-| Pullfrog (CI) | **FAIL (external)** | Google AI Studio free-tier quota exhausted for `gemini-3.8-flash`; the bot produced no review. Not a code defect. |
-| Remaining check runs | **NOT ENUMERATED** | 13 runs exist on the reviewed head; ~6 could not be retrieved individually (integration payload truncation and a rate-limited REST API). Their conclusions are not claimed. |
+| Updater unit + complete isolated workflow | `node scripts/test-refresh-docs.js` | **PASS** — 31/31 |
+| Full repository tests | `pnpm exec vitest run` | **PASS** — 45 files / 354 tests |
+| TypeScript | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
+| Repository gate | `./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit gate, typecheck, build, refresh tests) |
+| Workflow YAML | `python3 -c "import yaml; yaml.safe_load(...)"` | **PASS** |
+| Production build size | `.next` + `public` | **PASS** — 317,054,411 B + 32,840,043 B = **349,894,454 B (333.69 MiB)** < 495 MB (an earlier gate run measured 332,475,808 B / 317.07 MiB) |
+| Final diff audit | `git status`, `git diff` | **PASS** — only the reported files changed; `.docs` content untouched |
+| PR-head CI | GitHub Actions | **PENDING** — runs after this PR opens |
+| Live scheduled refresh / Cloudflare dispatch | — | **NOT RUN** — no runner, scheduler credentials or network refresh in this workspace |
 
-Two harness defects were found and corrected during the rendered checks, not product defects: the
-first pass clicked the CollectionBinder "View Collection" button instead of the reveal control (6
-failed checks re-run and passing), and one comparison used raw `textContent`, which includes the
-decorative aria-hidden ♠ glyph (the accessible name was then verified separately as exact). Both are
-recorded in `artifacts/reveal-card-cinematics/out/cloud-browser-report.json`.
-
-## Independent review of PR #1743 feedback (2026-11-06)
-
-Audit only — this review changed no application code, test, dependency, workflow or visual baseline,
-and did not reply to, resolve, approve or merge anything. Reviewed head `18731264`. Sources: five
-conversation comments (two bot failures, three PR-Tagger analyses), four inline threads on one `COMMENTED` review, and 13 check runs (seven
-identified individually). Full evidence, method and limitations:
-`artifacts/reveal-card-cinematics/out/pr1743-review-findings.md`.
-
-| # | Feedback | Verdict | Evidence at the reviewed head | Recommended action |
-| --- | --- | --- | --- | --- |
-| 1 | Ember elements use the array index as a React key (`app/lucky-card-reveal.js:2061`) | **Partially valid** — no current defect | `REVEAL_EMBERS` is a fixed module-scope literal of six entries (`:76–83`), never reordered or filtered, and its length does not vary by tier; `ember-0…5` are therefore stable keys and a re-render does not remount the nodes, so the documented no-restart guarantee holds | Optional: derive a content key (for example from `x`/`y`) so the guarantee survives a future dynamic list. Not a blocker |
-| 2 | The glint has no `key`/`AnimatePresence`, so the single-pass guarantee "only holds if there are zero re-renders" (`:127–140`) | **Invalid** — inverts the required behaviour | The glint is mounted only inside `{revealed && !shouldReduceMotion && (` (`:125`), i.e. once at the flip. Framer Motion runs the keyframe array on mount and does not replay a finished animation on re-render; "completed at opacity 0" **is** exactly one pass. A key change or remount is what would risk a second pass | None |
-| 3 | The reduced-motion test slice depends on JSX source order (`__tests__/lucky-card-reveal-presentation.test.js:127–133`) | **Partially valid** — real fragility, stated mechanism wrong | The searched literal `{!shouldReduceMotion && (` matches only `:1998` (line 125 reads `{revealed && !shouldReduceMotion && (`), and the end anchor sits after the ember block, so the assertions are meaningful today. An inverted order yields an empty slice and fails loudly, not silently. The true weakness is that range containment does not prove gating: JSX moved outside the conditional but before the floor shadow would still pass | Optional test hardening (brace-matched block or rendered assertion). Not a blocker |
-| 4 | Reduced motion is covered only by a source-text guard and should be a merge blocker (`PR_SUMMARY.md:130`) | **Valid — the only genuine merge blocker** | `playwright.config.ts` targets `tests/visual/`, whose 8 specs cover the crystal ball, gold CTAs, homepage, paid reveal selection and Turnstile — **none exercises `/reveal`**. The passing Visual QA run therefore cannot cover this surface, and the acceptance criterion remains unproven in a browser | Required follow-up: a Playwright test with `page.emulateMedia({ reducedMotion: 'reduce' })` asserting zero shockwave/ember/glint nodes after reveal while the static shaft, spotlight and halo stay visible. Test changes are outside this audit's scope |
-
-Bot and CI feedback:
-
-| Item | Evidence | Assessment |
-| --- | --- | --- |
-| Pullfrog | Google AI Studio free-tier quota exhausted for `gemini-3.8-flash`; a top-up notice was posted and no review was produced | **FAIL, external, non-code.** Not topped up (cost boundary). No code action |
-| Amazon Q Developer | Comment `6695202273` (20:51:21): "Review Failed — the pull request head or merge base was modified since I began my review" | **FAIL, tooling race, non-code.** It started before the documentation commit landed and produced no findings; a retry needs a fresh run |
-| PR Insights Tagger (3 comments) | `6695147376`, `6695153557`, and `6697703692` after the docs commit: 12 files, +1,408/−155 then +1,538/−158, complexity 4.92/10, risk low; recommends smaller PRs and adequate test coverage | Informational duplicates that re-post on every push. The coverage remark matches thread 4; splitting the PR is not actionable under review |
-| Graphite / AI Reviews | Check `128147449633` success, "AI review ran and left 4 comments" | Green only means the review ran; the four threads above are the substance |
-| **Visual QA** | Check `128145862084` success (3 annotations) | **PASS, but not evidence for this change** — no `/reveal` spec exists in the suite |
-| DevSkim | Check `128146212628` success: "No new alerts in code changed by this pull request" | PASS |
-| Updater scheduler checks | Verify `128146861496` success; Deploy `128146863502` and Append alerts `128146291195` skipped | Unrelated to the reveal code |
-| Remaining check runs | 13 runs exist on the reviewed head; 7 identified individually | **NOT ENUMERATED** — integration payload truncation plus a rate-limited unauthenticated REST API. Their conclusions are not claimed |
-
-No new inline thread exists beyond these four: the review-comment list is exhausted and its fifth page is empty.
-
-**Merge blockers:** exactly one — finding 4 (unproven reduced-motion behaviour on `/reveal`). Findings
-1 and 3 are optional hardening; finding 2 needs no change.
-
-## Behavior preserved
-
-- `LUCKY_CARDS`, `selectWeightedLuckyCard` (weights, tier probabilities, anti-repeat) and
-  `selectRandomQuote` untouched; no number-generation or tier-difference change.
-- Daily localStorage lock, `unlockedCards` write and the update event unchanged.
-- Audio cues, `TIER_HITS` (3/4/5), `FINAL_FLIP_TIME`, `FINAL_FLIP_DURATION`, canvas beam
-  choreography and flip timings unchanged.
-- Card artwork, AVIF-first/WebP fallback, `alt` text and card titles unchanged.
-- Share control, collection binder, countdown, Return to Home link unchanged.
-- Payments, API routes, authentication, database, deployment configuration, environment variables and
-  secrets untouched; the paid Lucky Reveal popup and Crystal Ball were not modified.
-- No dependency, route, network request or asset added.
+**Baseline evidence:** 64 routed libraries, 154 routed entries, 90 secondary links all resolving to their canonical snapshot, identical 64-entry `inventory`/`sources`/`githubShas`, and all 64 canonical snapshots pass the validator. The end-to-end run reconciles a removed document (3 indexes pruned, 1 snapshot deleted, URL never requested), repairs a broken link and a duplicate copy, preserves all good documents byte-identically, and keeps the real `.docs` hash unchanged.
 
 ## Remaining issues and limitations
 
-- Reduced-motion rendering is unverified in a real browser; only the executed structural guard covers
-  it. This is the main outstanding check.
-- The local Playwright probe is committed but cannot execute in this sandbox; it is ready for CI or
-  any environment with Chromium system libraries.
-- The rendered evidence came from an in-page harness in the managed cloud browser rather than the
-  repository's Playwright runner; automation/console assertions are therefore not equivalent to the
-  visual QA suite.
-- The pull request is [#1743](https://github.com/davidcollier77-code/Luckypickcanada/pull/1743),
-  open against `main` and unmerged; the review was performed at `18731264` and this report update adds
-  a documentation-only commit on the same branch.
-- The independent review confirms that reduced motion on `/reveal` is the only genuine merge blocker
-  and that `/reveal` has no automated browser coverage at all; that is a coverage gap in the
-  repository's visual suite, not a regression introduced here.
+- PR-head GitHub Actions has not run yet; results are pending and are not claimed as passing.
+- The integrity validator is structural by design; it does not judge relevance, ownership or documentation quality.
+- Unowned orphan `.md` files that no manifest entry references are reported, not deleted, because the updater cannot prove they are library snapshots.
+- `.freebuff/<group>.md` prose routing files intentionally list only a subset of each manifest group, so they are not auto-edited; consistency is enforced across `manifest.groups`, indexes and the snapshot tree.
+- A live scheduled refresh and Cloudflare Worker dispatch cannot be exercised from this workspace.
 
-**Implementation status:** COMPLETE — unchanged by this review; no application code, test, dependency
-or workflow file was touched, and the final diff for this task is documentation and evidence only.
-
-**Review status:** COMPLETE — all four Graphite threads, the conversation comments and the identifiable
-CI results are assessed with cited code and API evidence; the four verdicts are 1 partially valid,
-1 invalid, 1 partially valid, 1 valid-and-blocking.
-
-**Verification status:** PARTIAL — build, type check, unit suites and rendered tier/finish/stage
-checks pass; the local Playwright probe is BLOCKED and rendered reduced-motion is NOT RUN. The review
-found no new defect and did not change that status.
-
-**USEFUL RESULT: NO** — a mandatory visual check (reduced motion in a browser) remains unverified, so
-verified completion cannot be claimed. The review itself is complete and every other executed check is
-reported above.
+**Implementation status:** COMPLETE (final diff reviewed; no known in-scope defect).
+**Verified completion:** Local mandatory gates PASS; `USEFUL RESULT: NO` until PR-head CI reports.
+**Delivery:** One PR against `main`, left open and unmerged for review.

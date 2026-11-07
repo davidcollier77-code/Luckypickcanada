@@ -415,3 +415,11 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Findings recorded in `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md` and the single PR summary. No application code, test, dependency or workflow was changed; PR #1743 remains open and unmerged.
 - Verification for the review task: `./freebuff-verify.sh` exit 0 (Spec Kit gate, `tsc --noEmit`, production build, refresh-docs 19/19); `pnpm exec vitest run` 44 files / 351 tests passed; build `.next` 317,067,315 B + `public` 32,840,043 B = 349,907,358 B (333.7 MiB), below the 495 MB maximum.
 - Late feedback captured: Amazon Q Developer's run failed as a head-mutation race (no findings), and PR-Tagger re-posted its metrics after the docs commit; no new inline threads exist. Re-audit after the docs commit: verify exit 0, 351 tests passed, build 349,907,358 B, zero code/test/workflow paths changed.
+
+## 2026-11-07 — Documentation updater reliability and safety
+
+- Added structural integrity validation for every downloaded document (empty, binary, garbled, random-character, HTTP error/challenge page and JSON error rejection), preserving the existing good snapshot on rejection.
+- Replaced the fixed Jules-ID cleanup with manifest-driven permanent removal: only `manifest.groups` libraries are downloaded, and non-routed indexes, snapshots and symlinks are pruned.
+- Added a Markdown refresh report containing broken source URLs, affected documents, errors and preservation status; the scheduled workflow publishes it in the refresh PR body and step summary, then fails the run.
+- Added atomic repair of missing, broken, incorrect, stale and duplicate documentation links without overwriting differing content, plus a consistency audit of sources, snapshots and links.
+- Added an isolated end-to-end test that runs the complete updater against a copy of the real library with injected failures. `node scripts/test-refresh-docs.js` → 31/31 PASS. Schedule, retry timing, Atlantic timezone, Cloudflare Worker slots, application code and dependencies are unchanged.

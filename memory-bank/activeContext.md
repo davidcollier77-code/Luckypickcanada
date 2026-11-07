@@ -1,3 +1,15 @@
+# Active Context — Documentation Updater Reliability and Safety (2026-11-07)
+
+- **Task groups:** `troubleshooting` (broken source URLs, failed downloads, broken links) + `deep-dive` (evidence audit of the manifest, symlinks, retry and scheduler settings) + `testing` (unit and complete isolated workflow execution).
+- **Feature/branch:** `specs/103-docs-updater-integrity`; branch `freebuff/fffa8bcf4af337cbdf4839af`. No prior PR covers this task (0 open PRs at start).
+- **Verified baseline:** 64 routed libraries, 154 routed entries, 90 secondary links all resolving correctly, and identical 64-entry `inventory`/`sources`/`githubShas`. All 64 canonical snapshots pass the new validator. The old permanent-removal guard was a fixed Jules-ID list, which is removed.
+- **Implementation:** `scripts/refresh-docs.js` gains `validateDocumentContent` (rejects empty, binary, garbled, random-character, error/challenge-page and JSON-error downloads), manifest-driven reconciliation (`collectRoutedLibraries`, `reconcileManifestIndexes`, `removeStaleSnapshots`), `repairDocumentationLinks` (atomic repair of missing/broken/incorrect/stale/duplicate links, no overwrite of differing content), `auditLibraryConsistency`, and a Markdown refresh report. Broken URLs are reported with the document, URL, error and preservation status; URLs are never rewritten. `.github/workflows/refresh-docs.yml` publishes the report into the PR body/step summary and fails after reporting, with schedule, triggers, retry timing (180 s) and Atlantic timezone unchanged.
+- **Tests:** new `scripts/test-refresh-docs-e2e.js` copies the real `.docs`, injects a removed document, a failing new source, a broken link and a duplicate copy, and runs the complete updater through a test-only HTTPS transport. `node scripts/test-refresh-docs.js` → 31/31 PASS.
+- **Verification:** full Vitest, TypeScript, `./freebuff-verify.sh` and the measured build size are recorded in `PR_SUMMARY.md`.
+- **Preserved:** no application code, dependency, payment, database, auth, Cloudflare Worker, deployment or schedule change. PR remains open and unmerged.
+
+---
+
 # Active Context — PR #1746 Review-Finding Correction (2026-11-06)
 
 - **Task groups:** `testing` (close the Amazon Q routing-coverage gap) + `deep-dive` (verify the review finding against the test and all eight manifest groups).
