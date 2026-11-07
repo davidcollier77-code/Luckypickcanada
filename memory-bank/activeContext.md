@@ -1,3 +1,18 @@
+# Current Task — Browser-testing tooling evaluation and PR #1762 review (2026-11-07)
+
+- **Task groups:** `deep-dive` (evidence-based evaluation of browser tooling) + `testing` (probe review and CI validation) + `troubleshooting` (repair the PR/base conflict and fix reviewer findings).
+- **Feature:** `specs/108-browser-testing-tooling-evaluation`; browser tooling originally used feature number 106, but current `main` already uses 106 for homepage content and 107 for map URL consolidation. Renumbered to the next free slot, 108.
+- **Branch / PR:** `chore/browser-testing-tooling-eval-20261107`, PR #1762; leave open and unmerged.
+- **Merge-conflict root cause:** branch was based on `700f2077`; current `main` advanced to `0d9f3a80` (7 commits beyond the common ancestor). Main and the PR both changed `.specify/feature.json` and `memory-bank/activeContext.md`; main also occupied the original feature number 106.
+- **Resolution approach:** preserve the PR head as a parent and integrate the current main tree, keeping main's existing application, homepage-content, map redirect, progress and Memory Bank changes. Add the browser-tooling evidence/spec files under feature 108 and set the active Spec Kit pointer to feature 108.
+- **Review repairs:** fix P5's duplicate JSON `command` property and missing `result`; state the exact Playwright bridge error for both recorded calls. Correct the Puppeteer statement so an untested browser install/launch is not described as sharing Playwright's exact cached binaries.
+- **Verification qualification:** historical local verification (47 files / 364 tests; build 405,234,555 B / 386.46 MiB; `./freebuff-verify.sh` exit 0) was run under Node v26.13.0, while the repository declares Node 22.x. It is not validated for Node 22.x. The new PR-head CI run must provide that evidence.
+- **Evidence limitation:** exact per-probe UTC timestamps and some raw tool-call payloads were not retained. The JSON now marks per-probe timestamps as null and documents that P2 uses an ephemeral script; T019 remains unchecked until a complete transcript can be supplied.
+- **Scope:** documentation, evidence and conflict resolution only. No application, dependency, lockfile, workflow, payment, database, authentication, deployment, environment or `.docs/` changes.
+- **Status:** merge-conflict integration and reviewer repairs are being applied; latest PR-head CI remains pending.
+
+---
+
 # Completed Task — PR #1761 merge-conflict repair (2026-11-07)
 
 - **Task groups:** `troubleshooting` (diagnose the base/head divergence and resolve the overlapping records) + `testing` (verify the merged tree, branch ancestry and latest PR checks).
