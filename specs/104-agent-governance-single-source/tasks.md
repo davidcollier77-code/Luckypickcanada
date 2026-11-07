@@ -1,33 +1,49 @@
 # Tasks: Single-Source Freebuff Governance
 
-**Input**: spec.md and plan.md
-**Prerequisites**: spec.md, plan.md
+**Input**: Design documents from `spec.md` and `plan.md`
+
+**Prerequisites**: `spec.md` and `plan.md`
+
+**Tests**: Regression coverage is required by the specification's acceptance criteria. No separate TDD workflow was requested.
 
 ## Phase 1: Setup and baseline
 
-- [x] T001 Read AGENTS.md, .freebuff/freebuff.md, the selected deep-dive and testing group instructions, the Memory Bank, Constitution, manifest, and Spec Kit integration configuration.
-- [x] T002 Confirm main is at 52f70dd27d475d9d5bc0658e5a28490968e1d471, no open PR covers this task, and PR #1750 is unrelated.
-- [x] T003 Compare the complete general entrypoint with AGENTS.md; identify duplicated requirements and preserve the distinct MCP connection/initialization clarification.
-- [x] T004 Confirm all eight specialist group files, all current Spec Kit command definitions, and the installed .freebuff/cmds integration are in place.
+- [x] T001 Read `AGENTS.md`, `.freebuff/freebuff.md`, the selected `.freebuff/deep-dive.md` and `.freebuff/testing.md` instructions, Memory Bank files, `.specify/memory/constitution.md`, `.docs/manifest.json`, and Spec Kit integration settings.
+- [x] T002 Inspect the current branch, `.specify/feature.json`, existing task artifacts, and open PRs; confirm no existing PR covers this task.
+- [x] T003 Compare the complete `AGENTS.md` and `.freebuff/freebuff.md` contents and identify the unique MCP connection/initialization clarification to preserve.
 
-## Phase 2: Governance implementation
+## Phase 2: User Story 1 — One authoritative governance file (Priority: P1)
 
-- [x] T005 Update AGENTS.md to name itself as the sole general governance source for every coding agent, remove the redundant entrypoint read, and preserve the MCP clarification.
-- [x] T006 Delete only .freebuff/freebuff.md; preserve every specialist group file and Spec Kit command.
-- [x] T007 Update .specify/feature.json to point to this feature.
-- [x] T008 Add __tests__/agent-governance-single-source.test.js to guard the sole-entrypoint rule and preservation of specialist task-group instructions.
-- [x] T009 Update the saved Library Master Work Request to remove the obsolete entrypoint reference and align reporting with the canonical PR-body summary.
+**Goal**: Make `AGENTS.md` the sole general repository-governance entrypoint while preserving all specialist instructions and unique operating requirements.
 
-## Phase 3: Memory and verification
+**Independent Test**: The governance regression test passes, `.freebuff/freebuff.md` is absent, `AGENTS.md` contains the sole-authority wording and MCP-use clarification, and all eight specialist files plus core Spec Kit commands remain present.
 
-- [x] T010 Add the current task and branch to memory-bank/activeContext.md while retaining historical entries.
-- [ ] T011 Complete ./freebuff-verify.sh; record the final gate result and measured build size. The new focused governance test has already passed as part of the full Vitest suite; the repository gate is still running in PR CI.
-- [x] T012 Search and inspect the final active references; confirm only historical records retain old-path mentions.
-- [x] T013 Review the complete final diff, update the canonical PR-body summary with actual verification statuses, and leave the PR open and unmerged.
+- [x] T004 Update `AGENTS.md` to identify it as the single authority for every coding agent, remove the redundant entrypoint read, and preserve the MCP connection/initialization clarification.
+- [x] T005 Delete only `.freebuff/freebuff.md`; retain the eight `.freebuff/<group>.md` files and `.freebuff/cmds/` Spec Kit commands.
+- [x] T006 Add regression coverage in `__tests__/agent-governance-single-source.test.js` for the sole-entrypoint rule, retained MCP clarification, all specialist groups, and the core Spec Kit commands.
+- [x] T007 Point `.specify/feature.json` to `specs/104-agent-governance-single-source`.
+- [x] T008 Record the active governance task in `memory-bank/activeContext.md` and `memory-bank/progress.md`, preserving historical entries.
+- [ ] T009 Verify `pnpm run test` and the standalone TypeScript check on the latest PR head. The full suite (46 files / 358 tests, including the new 4-test governance suite) and TypeScript check passed on the preceding PR revision; the latest revision's CI rerun is pending.
+
+## Phase 3: User Story 2 — Consistent saved Master Work Request (Priority: P1)
+
+**Goal**: Align the reusable Library template with the single-source governance and canonical PR-summary rules.
+
+**Independent Test**: Read the saved `/Freebuff_Master_Work_Request_1.md` Library file after replacement; confirm it refers to `AGENTS.md` and selected task-group files only, and requires one concise evidence-based PR-body summary.
+
+- [x] T010 Update the saved Library file `/Freebuff_Master_Work_Request_1.md` to remove the obsolete entrypoint reference and align reporting with `AGENTS.md`.
+- [x] T011 Re-read the saved Library file and confirm the replacement content and governance/reporting instructions.
+
+## Final Phase: Verification, audit, and delivery
+
+- [ ] T012 Run `./freebuff-verify.sh` and all required `deep-dive` and `testing` group checks on the latest PR head. The repository gate passed on the preceding PR revision, including 36 refresh-docs tests; its latest-head CI rerun is pending.
+- [x] T013 Search active instructions/configuration for references to the deleted entrypoint, retaining historical specification and PR records unchanged.
+- [x] T014 Review the complete PR diff, update the single canonical PR-body summary with actual verification states, and leave PR #1751 open and unmerged.
 
 ## Completion Conditions
 
-- The redundant general entrypoint is removed and its unique requirement is preserved in AGENTS.md.
-- All specialist instructions and command definitions remain.
+- `AGENTS.md` is the sole general agent-governance entrypoint and retains every unique operating requirement.
+- The redundant `.freebuff/freebuff.md` file is absent.
+- All eight specialist task-group files and the installed Spec Kit command directory remain.
 - The saved Library Master Work Request is aligned with repository governance.
-- Mandatory verification and current PR-head checks are accurately reported.
+- The latest PR-head verification results are reported accurately; no pending check is described as passed.
