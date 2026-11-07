@@ -1,3 +1,17 @@
+# Current Task — Skip-CI verification integrity (2026-11-07)
+
+- **Task groups:** `security` (an unverified change must not look verified; fail-closed integrity) + `troubleshooting` (reproduce the green-checks-from-an-earlier-commit failure) + `testing` (executable regression coverage and honest exit codes).
+- **Feature / branch:** `specs/111-skip-ci-verification-integrity`; branch `freebuff/cef6175f03deca51d10d44c1`.
+- **Verified baseline:** GitHub skips `push`/`pull_request` workflows when the PR HEAD commit contains `[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]` or a `skip-checks: true` trailer; skipped checks stay pending while earlier commits' green checks remain visible. This repository has such heads (e.g. `16588a15 [skip ci] fix(devskim): repair three code review findings`), and no repository script previously read a PR head SHA or its check runs.
+- **Implementation:** `.github/scripts/verify_pr_verification_status.py` audits the current head, its commits and that exact SHA's check runs. PASS needs a completed `success` on the head; failures are FAIL, incomplete runs PENDING, and missing/stale/skipped/neutral/cancelled/null-conclusion checks are NOT RUN. Earlier-SHA runs are listed as ignored. A head directive makes the result NOT VERIFIED even if other checks are green; human and bot authors are both audited. Exit 0 = VERIFIED, 1 = NOT VERIFIED, 2 = audit error.
+- **Workflow:** `.github/workflows/verification-integrity.yml` runs it on `pull_request_target` (not skipped by commit directives) with read-only `contents`/`pull-requests`/`checks`, no path filters, a bounded 600 s wait and the step summary as evidence; it never checks out PR code.
+- **Preserved:** existing workflow triggers/conditions, required checks, branch protection, the `Update Spec Kit` and Dependabot exemptions. Conditional Visual QA is reported NOT RUN when its workflow skips it and never counted as a pass.
+- **Tests:** `.github/scripts/test_verify_pr_verification_status.py` (directive variants, human/bot skips, stale/missing checks, all conclusions, re-runs, conditional checks, CLI exit codes, workflow guard), also run by `freebuff-verify.sh`.
+- **Review repair (2026-11-07):** independent review findings were checked against the code before changing it. Fixed: the missing `shutil` import that failed two Visual QA Python tests; empty `head_sha` matching runs with no SHA; `load_live` now fails closed before any check-run request when the head SHA is missing; transient GitHub failures (HTTP 5xx, network, invalid JSON) retry inside the polling deadline while permanent errors fail immediately; id-less check runs deduplicate by stable identity; the polling sleep is capped to the remaining deadline. Graphite's claim that the second deadline guard was unreachable was incorrect (it is reached with unsettled runs), but its capped-deadline concern was real and is fixed. 25 regression tests cover these cases.
+- **Verification:** recorded in the canonical PR summary; live `pull_request_target` execution is NOT RUN because that workflow cannot run for the pull request that adds it.
+
+---
+
 # Current Task — Pull-request review checker efficiency and reliability (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the request starts from slow/inefficient review processing; the cause was measured, not guessed) + `deep-dive` (identify which checker actually reviews PRs here and prove each fix against the pre-change code) + `testing` (before/after harnesses plus new regression guards).

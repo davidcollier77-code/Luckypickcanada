@@ -1,3 +1,21 @@
+## 2026-11-07 — Skip-CI verification integrity
+
+- Confirmed the failure mode: GitHub skips `push`/`pull_request` runs for a HEAD commit carrying a documented skip directive (`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]`, or a `skip-checks: true` trailer), leaving earlier commits' green checks visible. This repository already has such heads, e.g. `16588a15 [skip ci] fix(devskim): repair three code review findings`.
+- Added a read-only current-head audit (`verify_pr_verification_status.py`) that matches check runs to the exact PR head SHA, reports missing/stale/skipped/neutral/cancelled checks as NOT RUN, detects skip directives on human and automated commits, and exits 0 only when the head is fully verified.
+- Added `verification-integrity.yml` on `pull_request_target` (documented as not skipped by commit-message directives) with read-only permissions and no path filters, so the audit itself cannot be silenced by `[skip ci]`.
+- Preserved all existing CI behaviour: no workflow condition, required check, branch-protection setting or documented exemption was changed; conditional Visual QA remains conditional and is reported NOT RUN when it does not apply.
+- Added 18 regression tests and wired them into `freebuff-verify.sh`.
+
+### Review repair (2026-11-07)
+
+- Reproduced the Visual QA failure locally: two `CommandLineTests` raised `NameError: name 'shutil' is not defined` because the temporary-directory cleanup was registered without importing `shutil`. Added the import; the suite runs again.
+- Fixed empty `head_sha` handling in both directions: the audit no longer matches runs whose SHA is `""` to a head-less pull request, and the live loader raises before requesting commits or check runs when the head SHA is missing (no `/commits//check-runs` path is built).
+- Polling now retries only `TransientApiError` (HTTP 5xx, network, invalid JSON) inside the existing deadline; HTTP 4xx and missing-head errors fail immediately. Sleeps are capped to the remaining budget, so the wait cannot overshoot its deadline.
+- Check-run deduplication identifies id-less runs by a stable tuple of name, SHA, status, conclusion and timestamps instead of appending every id-less run once per SHA.
+- Validated each Graphite finding against the code: its deduplication finding was valid; its polling-deadline finding was partly valid (the second guard is reachable, but the uncapped sleep could overshoot), so only the real defect was repaired.
+
+---
+
 ## 2026-11-07 — DevSkim CI alert repair on PR #1767
 
 - The first PR-head DevSkim run failed with 11 new alerts: 10 × DS173237 ("do not store tokens or keys") on the full 64-hex filtered-SARIF digests inside `artifacts/devskim-review-pipeline/before.json` and `after.json`, plus one DS162092 note for a loopback literal in `benchmark.py`.

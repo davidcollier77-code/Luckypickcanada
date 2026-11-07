@@ -1,0 +1,58 @@
+name: Verification Integrity
+
+# GitHub skips `push` and `pull_request` workflows when the pull request's HEAD
+# commit carries a CI-skip directive such as [skip ci]. Checks from the previous
+# commit then stay visible and can look like the current head passed.
+#
+# `pull_request_target` is documented as NOT skipped by those directives, so this
+# audit always runs. It reads the current head, matches check runs to that exact
+# SHA, and reports skipped or unrun checks as NOT RUN rather than a pass.
+#
+# Read-only: the pull request's code is never checked out or executed.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+concurrency:
+  group: verification-integrity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Verification Integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout base repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Audit current-head verification evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SUMMARY_FILE: ${{ runner.temp }}/verification-integrity.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python3 .github/scripts/verify_pr_verification_status.py \
+            --repo "$REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --wait-seconds 600 \
+            --summary "$SUMMARY_FILE"
+          status=$?
+          set -e
+          if [[ -f "$SUMMARY_FILE" ]]; then
+            cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ "$status" -ne 0 ]]; then
+            echo "::error::Current-head verification is not complete. Skipped or unrun checks are reported as NOT RUN and are not evidence that this pull request passed."
+            exit "$status"
+          fi
