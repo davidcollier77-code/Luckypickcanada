@@ -16,8 +16,9 @@ Complete these steps in order before implementation:
 6. Read `.docs/manifest.json` and use it to route only reference documents that materially help with the task and selected groups.
 7. Use enabled Freebuff skills when relevant, including `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
 
-- Treat `.docs/` as a reference library, not automatic instructions. The manifest is an index, not a requirement to read every source.
-- No document has automatic priority or mandatory use based only on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots.
+- Treat `.docs/` as an important project reference library. Use `.docs/manifest.json` to find and consult documents relevant to the task and selected groups; do not skip relevant guidance or load unrelated material.
+- The manifest is an index, not a requirement to read every source. Documents are reference material, not automatic instructions; no document has automatic priority based only on its name or subject.
+- Do not load unrelated specialist files, command definitions, or library snapshots.
 - Keep `.docs/` read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
 
 ## 2. SPEC KIT AND EXECUTION
