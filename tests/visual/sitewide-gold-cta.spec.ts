@@ -23,7 +23,7 @@ const HOMEPAGE_WORDING = [
   'EXPLORE LUCKY STORIES',
   'Choose a Lucky Pick',
   'Open the tip jar',
-  'Send suggestion',
+  'Share Your Idea',
   'Read Our Story',
 ];
 

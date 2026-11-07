@@ -1,3 +1,14 @@
+## 2026-11-07 — Approved homepage content and presentation refresh
+
+- Implemented the approved Lucky Pick Canada wording: the Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick sections, the Lucky Stories / Community Map introduction, the Tip Jar, the Suggestion Box and the ten-question FAQ.
+- Removed the risk of FAQ/structured-data drift by moving the ten Q&As into `app/homepage/faq-content.js`, consumed by both the server-rendered FAQPage JSON-LD (`app/page.js`) and the client accordion (`app/homepage/FAQSection.js`); the accordion now renders `\n\n` answers as paragraphs and its open container grew from 500 px to 1600 px so the longest answer cannot clip.
+- Presentation stays inside the existing identity: `.homepage-copy-stack` (gold hairline, lead sentence, 1.75 line height, emphasised close) for the Tip Jar and Suggestion Box, `.map-community-intro` for the two map passages, a wider 760 px Tip Jar card, and a smaller Suggestion Box heading for its longer sentence.
+- Preserved: gold 3D CTA markup and count, section destinations, `/api/lucky-stories/react` celebration with its localStorage state and running tally, `/api/suggestions` POST with validation, honeypot and Turnstile, tip checkout, Stripe products/prices, email delivery, artwork, audio and navigation. No new dependency, route or reaction system.
+- Verification: focused guard 18/18; full Vitest 48 files / 382 tests; `tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 before and after the final CSS addition; rendered cloud-browser checks confirmed every passage on `/` and `/map`, 10 visible and 10 structured-data questions, 8 gold CTAs, 0 horizontal overflow, correct placeholder/button text, and all FAQ answers unclipped.
+- Remaining: Playwright visual regression and mobile-viewport capture were not runnable here; PR-head Visual QA covers them. PR left open and unmerged.
+
+---
+
 ## 2026-11-07 — Freebuff startup-command audit
 
 - Established how the Freebuff runtime executes commands: Bash (`SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21); `/bin/sh` is `dash`, which rejects `source` (127) and the bootstrap's Bash syntax.

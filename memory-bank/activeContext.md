@@ -1,3 +1,13 @@
+# Current Task — Approved homepage content and presentation refresh (2026-11-07)
+
+- **Task groups:** `creation` (approved visitor-facing copy placed verbatim) + `polishing` (long-form copy presented inside the existing night-sky/gold identity) + `seo` (visible FAQ and FAQPage structured data kept identical from one source) + `testing` (regression guard for wording, form contract and celebration behaviour). Feature: `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR open and unmerged.
+- **Implementation:** new `app/homepage/faq-content.js` holds the ten approved Q&As; `app/page.js` builds the FAQPage JSON-LD from it and `app/homepage/FAQSection.js` renders the same module (answers split on `\n\n`; open container raised 500 px → 1600 px). `app/homepage/HomePage.js` carries the approved Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick copy, the Lucky Pick heading, and the Tip Jar and Suggestion Box headings, passages, labels, placeholder and "Share Your Idea" button. `app/lucky-map-of-canada/lucky-map-of-canada.js` carries the approved Lucky Stories / Community Map introduction. `themes/default/homepage.css` adds `.homepage-copy-stack` and a smaller Suggestion Box heading; `themes/default/map.css` adds `.map-community-intro`.
+- **Preserved:** all section links and gold 3D buttons, the `/api/lucky-stories/react` celebration endpoint with its localStorage state and running tally, the Suggestion Box POST to `/api/suggestions` with minLength/maxLength, honeypot and Turnstile, the tip checkout modal, Stripe products/prices, email delivery, artwork, audio, canvas and navigation.
+- **Verification PASS:** focused guard 18/18; full `pnpm exec vitest run` 48 files / 382 tests; `pnpm exec tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 (after the final CSS addition); rendered checks in the managed cloud browser — every approved passage present on `/` and `/map`, ten FAQ questions and ten JSON-LD questions from one module, 8 gold CTAs, 0 horizontal overflow, correct textarea placeholder and submit text.
+- **Not verified:** Playwright visual regression could not run here (local Chromium unusable; the managed Playwright bridge returned an internal `options.mode` error), so PR-head Visual QA is the remaining visual check; the mobile viewport was not captured.
+
+---
+
 # Current Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.

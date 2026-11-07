@@ -885,3 +885,61 @@ body:has(.homepage-sky-backdrop)::after {
 @media (prefers-reduced-motion: reduce) {
   .checkout-delivery-option { transition: none; }
 }
+
+/* Long-form section copy: Tip Jar, Suggestion Box and other section intros.
+   Each block keeps a readable measure and rhythm instead of one long
+   paragraph dropped into a card. */
+.homepage-copy-stack {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  gap: 0.85rem;
+  max-width: 62ch;
+  margin-top: 0.9rem;
+}
+
+.homepage-copy-stack::before {
+  content: '';
+  width: 64px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(247, 213, 117, 0.95), rgba(247, 213, 117, 0));
+}
+
+.homepage-copy-stack p {
+  margin: 0;
+  color: rgba(255, 245, 218, 0.8);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.homepage-copy-stack p:first-of-type {
+  color: #fff5dc;
+  font-size: 1rem;
+}
+
+.homepage-copy-stack p:last-of-type {
+  color: #ffe9a8;
+  font-weight: 600;
+}
+
+.homepage-tip-jar .homepage-copy-stack {
+  margin-bottom: 0.25rem;
+}
+
+.suggestion-box-copy .homepage-copy-stack {
+  max-width: 56ch;
+}
+
+/* The Lucky Pick section intro is longer than the short one-liners the shared
+   heading copy was sized for, so give it a comfortable reading size. */
+.homepage-experience .homepage-section-heading-copy {
+  font-size: 0.98rem;
+}
+
+/* The refreshed Suggestion Box heading is a full sentence; scale it so the
+   words stay readable at a glance instead of filling three oversized lines. */
+.suggestion-box-copy h2 {
+  font-size: clamp(1.75rem, 3.6vw, 2.9rem);
+  line-height: 1.04;
+}

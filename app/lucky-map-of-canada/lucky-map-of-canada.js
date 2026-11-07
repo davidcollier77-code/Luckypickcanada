@@ -351,9 +351,10 @@ export default function LuckyMapOfCanada({ mapData }) {
           <h1 style={{ maxWidth: 900, margin: '0.45rem 0', fontSize: 'clamp(2.5rem, 8vw, 5.4rem)', lineHeight: 0.95, letterSpacing: '-0.06em', textShadow: '0 0 28px rgba(250,204,21,0.22)' }}>
             Where Luck Has Been Found Across Canada <span className="clover-3d">🍀</span>
           </h1>
-          <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            Explore lucky stories from across Canada. Browse by province, discover community highlights, and switch between all-time stories and the latest 24 hours.
-          </p>
+          <div className="map-community-intro">
+            <p>Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.</p>
+            <p>Explore stories shared across Canada, browse by province and territory, and see how our community is growing province by province. Read the experiences people have shared, celebrate the stories that resonate with you, and see each story's celebration count. Then share a lucky story of your own.</p>
+          </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
             <a href="#lucky-story-map" className="story-link gold-3d-btn" style={{ textDecoration: 'none', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999 }}>
               <span className="clover-3d gold-cta-emoji" aria-hidden="true">🍀</span> View Lucky Stories
