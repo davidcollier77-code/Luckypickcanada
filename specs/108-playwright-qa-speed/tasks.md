@@ -21,7 +21,7 @@
 
 - [x] T005 [US1] Extend `__tests__/visual-qa-chromium-cache.test.js` to guard the two-worker CI limit and preserve `fullyParallel: false`.
 - [x] T006 [US1] Set the CI worker limit to two in `playwright.config.ts`; preserve all projects, retries, screenshot options, test discovery, baselines, and assertions.
-- [x] T007 [US1] Run the focused guard test and inspect the exact Playwright configuration diff.
+- [ ] T007 [US1] Verify the worker-setting guard passes in the full Vitest suite and inspect the exact Playwright configuration diff.
 
 ## Phase 3: User Story 2 — Reuse pnpm package data (Priority: P2)
 
@@ -31,7 +31,7 @@
 
 - [x] T008 [US2] Extend `__tests__/visual-qa-chromium-cache.test.js` to require pnpm setup before setup-node, `cache: pnpm`, `cache-dependency-path: pnpm-lock.yaml`, and the unchanged frozen-lockfile install.
 - [x] T009 [US2] Reorder the existing pinned setup actions and enable setup-node pnpm caching in `.github/workflows/visual-qa.yml`; preserve the Chromium cache and all other QA steps.
-- [x] T010 [US2] Run the focused workflow/config guard and review the final workflow diff.
+- [ ] T010 [US2] Verify the workflow/cache guard passes in the full Vitest suite and review the final workflow diff.
 
 ## Phase 4: Verification and report
 
@@ -41,7 +41,7 @@
 - [ ] T012 Inspect the complete final diff and confirm no visual specs, screenshots, baselines, thresholds, application code, package manifest, or lockfile changed.
 - [ ] T013 Record PR-head Visual QA duration, discovered/passed/flaky/skipped counts, and pnpm cache outcome; compare with the recorded 6.1-minute / 93-case baseline.
 - [ ] T014 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with verified results, update this task list, and point `.specify/feature.json` at feature 108.
-- [ ] T015 Publish one evidence-based PR summary and leave the PR open and unmerged.
+- [x] T015 Publish one evidence-based PR summary and leave the PR open and unmerged.
 
 ## Dependencies and execution order
 
