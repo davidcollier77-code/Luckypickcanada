@@ -1,7 +1,20 @@
+# Current Task — Governance regression test review correction (2026-11-07)
+
+- **Task group:** `testing` (correct the review finding in the existing Vitest regression test and verify the test suite).
+- **Branch / feature:** `fix/governance-regression-test-20261107`; reuse `specs/104-agent-governance-single-source`.
+- **Authorization:** The repository owner explicitly authorized the immediate correction after PR #1751 merged.
+- **Baseline / finding:** Pullfrog review #5810741955 reported an unimported `beforeAll`. The merged source also shows the original `AGENTS.md` read moved into that unimported module-level hook, not into individual tests.
+- **Implementation:** Replace the hook with a `readAgents()` helper and call it only inside the two test callbacks that need the contents. No additional hook import, dependency, app code, or workflow change.
+- **Spec Kit:** Reuse feature 104; update its spec, plan, and tasks with the review correction. No duplicate feature directory or new design artifact.
+- **Verification:** Focused governance Vitest, full `pnpm run test`, `pnpm exec tsc --noEmit`, and `./freebuff-verify.sh` are pending the follow-up PR run.
+- **Delivery:** Open one follow-up PR against `main`; leave it open and unmerged.
+
+---
+
 # Current Task — Merged remote branch cleanup (2026-11-07)
 
 - **Task groups:** `deep-dive` (evidence-based classification of every remote head) + `testing` (per-branch verification and post-cleanup remote comparison).
-- **Branch / feature:** `freebuff/da1d12a5430a7af901daee1b`; `specs/105-remote-branch-cleanup`.
+- **Work branch:** `freebuff/da1d12a5430a7af901daee1b`; **PR branch:** `chore/merged-remote-branch-cleanup-20261107`; **feature:** `specs/105-remote-branch-cleanup`.
 - **Verified baseline:** 1,623 remote heads; 1,330 ancestors of `main` with `0` unique commits, each checked individually with `merge-base --is-ancestor` and `rev-list --count`; 293 not reachable from `main`; only `main` protected; one open PR (#1750, head `chore/devskim-report-update-42326412143`).
 - **Deletion channel:** `git push --delete` fails here (no credentials: `could not read Username for 'https://github.com'`); the connected GitHub integration deletes one ref per call and each deletion was confirmed against `git ls-remote`.
 - **Implementation:** 169 merged heads removed and verified absent (`alert-autofix-16` channel probe + 168 batch). Retained: `main`, the open-PR head, 292 unmerged, 74 merged heads with tips inside the seven-day window, and 2 `backup/`/`protect-` restore points. 1,084 verified-safe heads were not removed in this pass (one API call per ref) and are recorded as retained with that reason. Post-pass remote heads 1,454 reconcile exactly with the retention inventory.
@@ -10,7 +23,7 @@
 
 ---
 
-# Current Task — Single-source Freebuff governance consolidation (2026-11-07)
+# Completed Task — Single-source Freebuff governance consolidation (2026-11-07)
 
 - **Task groups:** `deep-dive` (compare the complete governance files, inspect active references, and preserve unique instructions) + `testing` (add regression coverage for the single-entrypoint rule and retained specialist guidance).
 - **Branch / feature:** `freebuff/agent-governance-single-source-20261107`; `specs/104-agent-governance-single-source`.
@@ -18,7 +31,7 @@
 - **Implementation:** `AGENTS.md` now identifies itself as the single authority, no longer instructs agents to read the redundant entrypoint, and preserves the MCP-use clarification. The redundant `.freebuff/freebuff.md` file is deleted. A focused regression test verifies the sole-entrypoint rule, MCP clarification, all eight specialist files, and core Spec Kit commands. The saved Library Master Work Request has been updated and re-read; it now points only to AGENTS.md and selected task-group instructions and uses the canonical PR-body summary.
 - **Preserved:** Specialist instructions, Spec Kit commands/integration, the Constitution, Memory Bank history, task/PR records, documentation manifest, verification scripts, and unrelated PR #1750.
 - **Verification:** Full Vitest suite (including the new governance regression test), standalone TypeScript, OpenNext production build and 495 MiB size gate, DevSkim, and visual-change classifier have passed on PR CI. Exact build byte count is not exposed in the available job result. Visual QA, updater-scheduler `./freebuff-verify.sh`, and OpenNext Cloudflare/Wrangler validation remain in progress; final outcomes are pending.
-- **Delivery:** PR #1751 is open and unmerged. The complete 10-file PR diff was reviewed; no out-of-scope changes were found. The PR body records the actual passed and pending checks.
+- **Delivery:** PR #1751 was merged by the repository owner on 2026-11-07 at 07:08:32Z (merge commit `6fa08ddc2941e4a96cb8f6bcaf9f855aafd1d123`). A later Pullfrog review identified a follow-up defect in the merged regression test; see the current correction task above.
 
 ---
 

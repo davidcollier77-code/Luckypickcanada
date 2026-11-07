@@ -5,18 +5,7 @@ import { describe, expect, it } from 'vitest';
 const root = process.cwd();
 const agentsPath = join(root, 'AGENTS.md');
 const obsoleteEntryPoint = join(root, '.freebuff', 'freebuff.md');
-
-let agents;
-
-beforeAll(() => {
-  try {
-    agents = readFileSync(agentsPath, 'utf8');
-  } catch (err) {
-    throw new Error(
-      `Unable to read AGENTS.md at ${agentsPath}: ${err.message}`
-    );
-  }
-});
+const readAgents = () => readFileSync(agentsPath, 'utf8');
 const taskGroups = [
   'creation',
   'troubleshooting',
@@ -30,6 +19,8 @@ const taskGroups = [
 
 describe('single-source agent governance', () => {
   it('uses AGENTS.md as the only general repository-governance entrypoint', () => {
+    const agents = readAgents();
+
     expect(agents).toContain(
       'single authoritative workflow and safety policy for every coding agent, including Freebuff',
     );
@@ -38,6 +29,8 @@ describe('single-source agent governance', () => {
   });
 
   it('preserves the MCP connection-versus-use clarification', () => {
+    const agents = readAgents();
+
     expect(agents).toContain(
       'A connection or initialization alone does not count as MCP use.',
     );
