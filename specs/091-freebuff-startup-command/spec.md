@@ -257,3 +257,108 @@ The verification entry point and package-manager bootstrap must remain determini
 
 - **FR-024**: Re-sourcing the bootstrap in the same shell MUST remain idempotent and MUST NOT add a duplicate pnpm directory entry to PATH.
 - **SC-018**: A regression test sources the bootstrap twice in one shell and confirms PATH remains byte-identical after the second successful source.
+
+## Startup-command execution audit (2026-11-07)
+
+This follow-up audits the platform-side startup command itself. The command lives in Freebuff project settings, not
+in the repository, so the audit records executed evidence and a recommendation rather than editing platform state.
+
+### Baseline findings (verified before recommending anything)
+
+- The current startup command is `bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile`.
+  Running `scripts/bootstrap-pnpm.sh` with `bash` executes it in a child process, so its `export PATH=...` cannot
+  reach the caller. The caller keeps whatever `pnpm` its own PATH resolves.
+- The Freebuff runtime in this workspace executes commands with Bash: `SHELL=/bin/bash`, `bash 5.2.21`,
+  `getent passwd` login shell `/bin/bash`. `/bin/sh` is `dash`, which has no `source` builtin and cannot parse
+  this bootstrap script (`Bad substitution`, `[[: not found`).
+- In this image the account PATH already contains `$HOME/.local/bin`, which is exactly where the bootstrap
+  installs the pin. That coincidence is what makes the current command appear to work: on a workspace whose
+  PATH does not contain that directory, the bootstrap installs pnpm 10.30.3 and the next command still fails
+  with `pnpm: command not found`.
+- `pnpm` 10 can self-manage to `packageManager`, which hides a stale `pnpm` on PATH while the registry is
+  reachable. It cannot help when no `pnpm` is resolvable at all.
+
+### Executed evidence
+
+`artifacts/freebuff-startup-audit/probe.sh` (output in `probe-output.txt`) runs each candidate under a controlled
+`HOME`/`PATH`, installing the pin from the registry in a fresh home where needed:
+
+| Scenario | Command form | Result |
+| --- | --- | --- |
+| Fresh `$HOME`, no `$HOME/.local/bin` on PATH | current `bash scripts/...` | **exit 127** `pnpm: command not found` after the pin was installed |
+| Fresh `$HOME`, no `$HOME/.local/bin` on PATH | proposed `source scripts/...` | exit 0, frozen install, pnpm 10.30.3 |
+| Fresh `$HOME`, no `$HOME/.local/bin` on PATH, outer shell `dash` | `bash -c 'source ... && ...'` | exit 0, frozen install, pnpm 10.30.3 |
+| Fresh `$HOME`, `$HOME/.local/bin` on PATH | current form | exit 0 |
+| Competing pnpm 10.30.0 first on PATH (self-management disabled) | current form | exit 0 but the install ran on **10.30.0**, ignoring the validated pin |
+| Competing pnpm 10.30.0 first on PATH (self-management disabled) | proposed form | exit 0, install ran on **10.30.3** |
+| Competing pnpm first and `$HOME/.local/bin` already later on PATH | proposed form | exit 0, but install ran on **10.30.0**: the idempotent PATH guard does not reorder an existing entry (documented limitation) |
+| Steady state, pin already installed | current / proposed / wrapped | exit 0 in 4.38 s / 4.40 s / 4.38 s |
+| Any PATH | proposed form executed by `dash` | **exit 127** `source: not found` |
+| Any PATH | POSIX `.` form executed by `dash` | bootstrap aborts (`Bad substitution`) |
+
+### Decision
+
+Recommended startup command, unchanged by shell flavour:
+
+```bash
+bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'
+```
+
+- It keeps the bootstrap's validated pnpm directory on the PATH of the shell that runs `pnpm install`
+  (the current form loses it).
+- It does not depend on the image already putting `$HOME/.local/bin` on PATH (the current form does).
+- It does not depend on the platform shell supporting `source` (the proposed form does; `dash` fails with 127).
+- It adds one short-lived Bash process; measured startup cost is inside the run-to-run noise of the install.
+- No repository change is required: `scripts/bootstrap-pnpm.sh` is already source-safe, idempotent and fail-closed,
+  and the repository gate (`freebuff-verify.sh`) already sources it.
+
+### Requirements
+
+- **FR-025**: The documented recommendation MUST be backed by executed evidence for a fresh home without the
+  pin installed, and MUST state the exact command to paste into Freebuff project settings.
+- **FR-026**: The audit MUST NOT change Freebuff project settings, dependency versions, `pnpm-lock.yaml`,
+  package-manager choice, application behaviour, visuals, payments, database, authentication, deployment or
+  Cloudflare configuration.
+- **FR-027**: The audit MUST identify the shell the Freebuff runtime uses and the portability limit of each
+  candidate command, rather than assuming `source` is universally correct.
+- **FR-028**: If no repository change is justified, the audit MUST say so explicitly and change only task
+  artifacts plus its evidence record.
+- **FR-029**: The evidence probe MUST be reproducible from the repository and MUST leave `package.json` and
+  `pnpm-lock.yaml` byte-identical.
+
+### Success criteria
+
+- **SC-019**: The probe records exit codes and pinned-version usage for every candidate command, including a
+  fresh home where the pinned pnpm must be installed from the registry.
+- **SC-020**: The current command's PATH loss is demonstrated by a failed run, not asserted from reading code.
+- **SC-021**: The proposed command's shell dependence is demonstrated by a failed run under `dash`.
+- **SC-022**: The steady-state startup duration of the current and recommended commands is measured and
+  reported.- **SC-023**: `git diff -- package.json pnpm-lock.yaml` is empty after the probe and the full repository gate passes.
+
+## Startup-command documentation guard (2026-11-07)
+
+The recommendation lives in Freebuff project settings, which this repository cannot read. The documented command
+is therefore kept in `README.md` as the single canonical form, and a committed test pins it and executes its
+shell semantics so the documentation cannot drift back to a form that was measured to fail.
+
+- **FR-030**: `README.md` MUST document exactly one Freebuff startup command, and it MUST equal the tested
+  shell-safe form `bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'`.
+- **FR-031**: A committed test MUST fail when the documented command is removed, duplicated, or changed to the
+  PATH-losing `bash scripts/bootstrap-pnpm.sh && …` form or the shell-dependent `source scripts/…` form.
+- **FR-032**: The test MUST execute the documented command in an isolated fixture — a stand-in bootstrap that
+  exports a PATH directory containing a stand-in `pnpm` that records its arguments — and MUST prove it succeeds
+  with `pnpm` absent from `PATH` under both Bash and a POSIX `sh`, while the `bash scripts/…` form fails there.
+- **FR-033**: The guard MUST NOT run a real dependency install, reach the network, or change dependencies,
+  lockfiles, application code, workflows, payments, database, authentication, deployment or Cloudflare
+  configuration.
+- **FR-034**: The guard MUST skip only the POSIX-`sh`-rejects-`source` assertion on a platform whose `sh`
+  actually supports `source`; it MUST NOT skip the successful-execution assertions.
+
+### Success criteria
+
+- **SC-024**: The focused suite fails when the documented command is intentionally edited to either rejected
+  form, and passes unchanged on the delivered tree.
+- **SC-025**: The documented command succeeds in the fixture with `pnpm` absent from `PATH` and under both
+  outer shells, and the rejected `bash scripts/…` form exits 127 in the same fixture.
+- **SC-026**: `./freebuff-verify.sh` exits 0 on the delivered head and the measured production build stays below
+  the 495 MB maximum.

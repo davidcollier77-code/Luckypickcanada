@@ -1,3 +1,15 @@
+## 2026-11-07 — Freebuff startup-command audit
+
+- Established how the Freebuff runtime executes commands: Bash (`SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21); `/bin/sh` is `dash`, which rejects `source` (127) and the bootstrap's Bash syntax.
+- Demonstrated the current command's defect instead of inferring it: in a fresh `HOME` whose PATH lacks `$HOME/.local/bin`, `bash scripts/bootstrap-pnpm.sh` installs pnpm 10.30.3 and the following `pnpm install` still fails with exit 127, because the script's `export PATH` ends with the child process.
+- Measured the alternatives: `source scripts/bootstrap-pnpm.sh && …` exits 0 (fresh home, frozen install, pnpm 10.30.3) but exits 127 under `dash`; `bash -c 'source … && …'` exits 0 in both shells. Steady state is 4.38 s / 4.40 s / 4.38 s, so the wrapper costs nothing measurable.
+- With a competing pnpm 10.30.0 first on PATH and version self-management disabled, the current form installed with 10.30.0 while the sourced form used the validated 10.30.3. Recorded the residual case where `$HOME/.local/bin` is already later on PATH and is not reordered.
+- Recommended `bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'` and confirmed no repository code change is needed; `freebuff-verify.sh` already sources the bootstrap, so the gate and the recommended startup path share one code path.
+- Verification: `./freebuff-verify.sh` exit 0, production build 350,554,659 B (334.31 MiB) on the final gate run (an earlier run measured 333,135,931 B); both below the 495 MB maximum, `package.json`/`pnpm-lock.yaml` unchanged, probe script committed for reruns.
+- Added `__tests__/freebuff-startup-command.test.js` (6 tests) and documented the canonical command in `README.md`: exactly one documented command, byte-equal to the tested form, executed successfully with no `pnpm` on PATH under both Bash and a POSIX `sh`. Deliberately replacing it with either rejected form fails 4 tests; restoring it passes 6/6, and the related bootstrap/gate/dependency suites pass 17/17.
+
+---
+
 ## 2026-11-07 — Post-merge branch-cleanup audit repair
 
 - Rechecked the live GitHub branch list after PR #1754 merged at 07:56:56 UTC to `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
