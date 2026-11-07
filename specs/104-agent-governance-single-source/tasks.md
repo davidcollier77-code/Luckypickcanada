@@ -16,7 +16,7 @@
 - [x] T006 Delete only .freebuff/freebuff.md; preserve every specialist group file and Spec Kit command.
 - [x] T007 Update .specify/feature.json to point to this feature.
 - [x] T008 Add __tests__/agent-governance-single-source.test.js to guard the sole-entrypoint rule and preservation of specialist task-group instructions.
-- [x] T009 Update the saved Library Master Work Request to remove the obsolete entrypoint reference and align reporting with the canonical PR-body summary.
+- [ ] T009 Update the saved Library Master Work Request to remove the obsolete entrypoint reference and align reporting with the canonical PR-body summary.
 
 ## Phase 3: Memory and verification
 
