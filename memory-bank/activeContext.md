@@ -1,3 +1,15 @@
+# Completed Task — PR #1761 merge-conflict repair (2026-11-07)
+
+- **Task groups:** `troubleshooting` (diagnose the base/head divergence and resolve the overlapping records) + `testing` (verify the merged tree, branch ancestry and latest PR checks).
+- **Feature:** reuse `specs/106-homepage-content-presentation`; no duplicate feature directory.
+- **Branch / PR:** `content/homepage-wording-presentation-20261107`, PR #1761; PR remains open and unmerged.
+- **Root cause:** PR #1761 branched from `700f2077`. `main` advanced two commits to `15831963` through PR #1763's map-URL consolidation. Both branches independently edited `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md`; the remaining 13 PR files do not overlap main's changes.
+- **Resolution:** integrate current `main` as the second parent of a merge commit on the PR head. Build the tree from current main, restore all PR-specific files, and combine the two branches' Memory Bank entries. Keep the PR's active feature pointer at `specs/106-homepage-content-presentation`; the merged `specs/107-map-url-consolidation` and both permanent map redirects remain present.
+- **Scope:** no application feature, payment, database, authentication, security, deployment or environment change was introduced by the conflict repair.
+- **Verification:** merged commit ancestry and tree contents are checked after the ref update. The latest-head GitHub Actions/check results are recorded separately; no local command is claimed when it was not executed in this connector session.
+
+---
+
 # Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
 
 - **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
@@ -15,6 +27,21 @@
 - **Preserved:** all section links and gold 3D buttons, the `/api/lucky-stories/react` celebration endpoint with its localStorage state and running tally, the Suggestion Box POST to `/api/suggestions` with minLength/maxLength, honeypot and Turnstile, the tip checkout modal, Stripe products/prices, email delivery, artwork, audio, canvas and navigation.
 - **Verification PASS:** focused guard 18/18; full `pnpm exec vitest run` 48 files / 382 tests; `pnpm exec tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 (after the final CSS addition); rendered checks in the managed cloud browser — every approved passage present on `/` and `/map`, ten FAQ questions and ten JSON-LD questions from one module, 8 gold CTAs, 0 horizontal overflow, correct textarea placeholder and submit text.
 - **Not verified:** Playwright visual regression could not run here (local Chromium unusable; the managed Playwright bridge returned an internal `options.mode` error), so PR-head Visual QA is the remaining visual check; the mobile viewport was not captured.
+
+---
+
+# Completed Task — Consolidate duplicate map URLs onto `/map` (2026-11-07)
+
+- **Task groups:** `seo` (the change implements SEO finding F-H1 from `specs/106-seo-audit`) + `testing` (redirect behaviour proven by execution plus a regression test).
+- **Feature / branch:** new `specs/107-map-url-consolidation`; branch `feat/map-url-consolidation-20261107`, based on `main` at `700f2077`. Feature 106 stays the audit PR (#1760), so this task takes the next free number instead of reusing it.
+- **Change:** two `permanent: true` entries in `next.config.mjs` `redirects()` mapping `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` to `/map`, placed after `/stories` and before the `www` host catch-all. `/map` itself, both alias route modules, metadata and the sitemap are unchanged.
+- **Verified by execution** (local production build, `next start` on port 3100, `curl`): both aliases answer `HTTP/1.1 308 Permanent Redirect` with `location: /map`; `?utm_source=audit-check` survives as `/map?utm_source=audit-check`; `/map` still returns 200 with `<title>Lucky Map | LuckyPickCanada.ca</title>` and canonical `/map`; `/stories` still 308 → `/map`; `Host: www.luckypickcanada.ca` still 308 → `https://luckypickcanada.ca/map`.
+- **Known behaviour:** the trailing-slash form takes one extra hop (`/alias/` → 308 `/alias` → 308 `/map`), the same normalisation `/stories` already has. The status code is 308 because `permanent: true` emits 308, matching the site's existing permanent redirects; 308 is permanent and carries the same consolidation meaning as 301.
+- **Tests:** new `__tests__/map-url-redirects.test.js`, 3/3 pass — both redirects, the two pre-existing redirects unchanged, sitemap lists `/map` only.
+- **Gate:** `./freebuff-verify.sh` exit 0; 36 refresh-docs tests pass; build 372,780,655 B (355.51 MiB), below the 495 MB maximum.
+- **Environment note:** `node_modules` was absent after the workspace restore; reinstalled with `pnpm install --frozen-lockfile`. `package.json` and `pnpm-lock.yaml` are unchanged.
+- **Unverified:** Search Console and Analytics are unavailable, so whether the aliases are indexed and how much traffic they carried cannot be stated.
+- **Delivery:** committed on `feat/map-url-consolidation-20261107` and delivered as one PR against `main`, left open and unmerged; PR-head CI is recorded in the PR body when it reports.
 
 ---
 

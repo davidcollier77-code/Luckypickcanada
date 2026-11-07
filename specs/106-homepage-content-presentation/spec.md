@@ -92,3 +92,7 @@ A visitor scanning the homepage reads the Lucky Stories card and recognises the 
 - SEO audit recommendations, image/performance work and redirects.
 - Any change to payments, email delivery, database schema, authentication or deployment.
 - New pages, new routes, new dependencies or a new reaction system.
+
+## Branch Integration
+
+- **FR-012:** Integrate the approved homepage-content branch with newer `main` history without losing either side's independent changes. Preserve the main-line map redirects, all homepage-content changes, and both task-history records; keep the pull request open and unmerged.

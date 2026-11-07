@@ -1,3 +1,13 @@
+## 2026-11-07 — PR #1761 merge-conflict repair
+
+- Confirmed the common base was `700f2077`; current main was `15831963` after two commits, including PR #1763's map-URL consolidation.
+- The only changed-path overlap was `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md`; the remaining PR changes were independent of main.
+- Kept the PR's active feature pointer at `specs/106-homepage-content-presentation`, retained the main-line `specs/107-map-url-consolidation` artifacts and permanent map redirects, and combined both branches' task-history entries.
+- Integrated main into the PR head with a two-parent merge commit; PR #1761 remains open and unmerged.
+- Latest-head CI and the repository verification gate are recorded independently; no earlier-head check is represented as a new-head pass.
+
+---
+
 # Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
 
 - **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
@@ -16,6 +26,19 @@
 - Preserved: gold 3D CTA markup and count, section destinations, `/api/lucky-stories/react` celebration with its localStorage state and running tally, `/api/suggestions` POST with validation, honeypot and Turnstile, tip checkout, Stripe products/prices, email delivery, artwork, audio and navigation. No new dependency, route or reaction system.
 - Verification: focused guard 18/18; full Vitest 48 files / 382 tests; `tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 before and after the final CSS addition; rendered cloud-browser checks confirmed every passage on `/` and `/map`, 10 visible and 10 structured-data questions, 8 gold CTAs, 0 horizontal overflow, correct placeholder/button text, and all FAQ answers unclipped.
 - Remaining: Playwright visual regression and mobile-viewport capture were not runnable here; PR-head Visual QA covers them. PR left open and unmerged.
+
+---
+
+## 2026-11-07 — Duplicate map URL consolidation (F-H1)
+
+- Implemented the highest-priority fix from the sitewide SEO audit: `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` now permanently redirect to `/map` via two `permanent: true` entries in `next.config.mjs` `redirects()`, ordered after `/stories` and before the `www` host rule.
+- Proved the behaviour instead of inferring it: on a local production build both aliases returned `HTTP/1.1 308 Permanent Redirect` with `location: /map`; `?utm_source=audit-check` was preserved; `/map` returned 200 with its own `<title>Lucky Map | LuckyPickCanada.ca</title>` and canonical; `/stories` and the `www` → apex redirect were unchanged.
+- Trailing-slash alias requests cost one extra hop (`/alias/` → 308 `/alias` → 308 `/map`), matching the existing `/stories` normalisation; recorded rather than hidden.
+- Added `__tests__/map-url-redirects.test.js` (3 tests) covering both redirects, the untouched pre-existing redirects and sitemap exclusion of the aliases; 3/3 pass.
+- No content, visual, metadata, sitemap, payment, database, authentication, secret or deployment configuration changed; the alias route modules stay because the redirects resolve before routing.
+- Verification: `./freebuff-verify.sh` exit 0 (36 refresh-docs tests pass), build 372,780,655 B (355.51 MiB) — below 495 MB.
+- `node_modules` was missing after the workspace restore and was reinstalled with `pnpm install --frozen-lockfile`; the lockfile is unchanged.
+- Search Console and Analytics are unavailable, so alias index state and historical alias traffic remain unverified.
 
 ---
 

@@ -49,3 +49,11 @@
 - [ ] T030 Run the new Playwright spec locally — blocked if the sandbox Chromium cannot launch; the PR-head `Visual QA` workflow is the authoritative run.
 - [x] T031 Report the PR-head check results (Visual QA, CodeQL, DevSkim, Graphite) with their real conclusions in the PR body.
 - [x] T032 Re-audit the final diff, measure the production build and update the single canonical PR summary.
+
+## Phase 6 — Main-branch integration and conflict repair
+
+- [x] T033 Confirm the shared base, current main/head SHAs and every overlapping path.
+- [x] T034 Preserve the main-line map consolidation and all independent homepage-content files in the integrated tree.
+- [x] T035 Combine `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md` without dropping either task's record.
+- [x] T036 Create a two-parent merge commit on the PR branch without force-pushing or completing the PR.
+- [ ] T037 Verify the new PR head through the required repository gate and PR-head checks; record actual outcomes before claiming verified completion.
