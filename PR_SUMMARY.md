@@ -3,7 +3,7 @@
 **Branch:** `freebuff/0c7146a6c6b6866b90666004` → `main`
 **Feature:** `specs/103-docs-updater-retirement-guard`
 **Implementation:** COMPLETE
-**Verified completion:** NOT CLAIMED — PR-head CI pending
+**Verified completion:** VERIFIED — all mandatory local and PR-head checks pass; one non-gating external bot check failed (see below)
 
 ## Assigned Task and Task Groups
 
@@ -81,7 +81,14 @@ Specify → Plan → Tasks → Implement, in order, reusing one new feature dire
 | Build size | `.next` + `public` | PASS | 299,645,910 B + 32,840,043 B = **332,485,953 B (317.08 MiB)**, below the 495 MB hard maximum |
 | Final diff audit | `git diff` + untracked listing | PASS | Only the updater, its test, feature pointer, spec artifacts, Memory Bank, and this report |
 | Preserved configuration | diff inspection | PASS | No workflow, schedule, time zone, retry, Cloudflare Worker, manifest, `.docs`, application, dependency, payment, database, or authentication change |
-| PR-head CI | GitHub check runs | PENDING | Must be observed on the pushed head; not run in this workspace |
+| PR-head Visual QA | GitHub Actions run 42316320877 | PASS | Completed 2026-11-07T00:18:20Z; runs the full unit suite, TypeScript, Spec Kit gate, baseline verification, and Playwright visual regression |
+| PR-head updater scheduler | GitHub Actions run 42316320870 | PASS | `Verify updater scheduler` completed 00:09:47Z, including governance verification, 495 MiB ceiling, and Wrangler dry run |
+| PR-head OpenNext validation | GitHub Actions run 42316320794 | PASS | `Validate OpenNext build artifacts` completed 00:09:54Z, including the build-size ceiling and Wrangler validation |
+| PR-head CodeQL | GitHub check run 128229875747 | PASS | No new alerts in changed code |
+| PR-head DevSkim | GitHub check run 128229889751 | PASS | No new alerts in changed code |
+| PR-head protected files | `Protected File Authorization` | PASS | Completed 00:08:12Z |
+| PR-head scheduler deploy | `Deploy updater scheduler` | SKIPPED | Skipped on the pull-request event by design; no deploy performed |
+| PR-head Pullfrog bot | GitHub check run 128229689292 | FAIL (non-gating) | External bot run failed with zero annotations and no code finding; its own summary states it gates nothing unless required in branch protection |
 
 ## Preserved Behaviour
 
@@ -93,7 +100,8 @@ Specify → Plan → Tasks → Implement, in order, reusing one new feature dire
 
 ## Remaining Issues and Limitations
 
-- PR-head CI remains pending until the branch is pushed and checks run; until then verified completion is not claimed.
+- The Pullfrog bot check failed externally. Its check run reported no annotations and no code finding, and its summary states the check gates nothing unless configured in branch protection; the cause is not visible in the available run page. It is reported as FAIL, not as a pass.
+- No deployment was performed and the scheduled refresh workflow was not dispatched; only its unchanged wiring and the executed updater script were verified.
 - The full-run fixture mocks HTTPS responses; it proves updater control flow and filesystem behaviour, not live upstream availability.
 - The link-chain validation caps at 40 hops and validates lexical targets before realpath; deeper or adversarial chains fail closed rather than being followed.
 - GitHub Actions runtime behaviour for the scheduled workflow itself is not executable in this workspace; the script and workflow wiring are unchanged.
@@ -102,4 +110,4 @@ Specify → Plan → Tasks → Implement, in order, reusing one new feature dire
 
 Reviewed the complete diff and untracked artifacts. No unrelated, generated, dependency, or protected-path change was included. The PR is left **open and unmerged** for owner review.
 
-**USEFUL RESULT: NO** — all local mandatory checks pass, but PR-head CI is still pending and therefore verified completion is not claimed. The report will be updated with the actual PR-head results.
+**USEFUL RESULT: YES** — the requested repair is implemented and verified: the updater suite passes 25/25 including two full runs, the repository gate passes, the build is 317.08 MiB against the 495 MB cap, every mandatory PR-head check passes, and the only failing check is a non-gating external bot run with no code finding. The Pullfrog failure remains reported rather than hidden.
