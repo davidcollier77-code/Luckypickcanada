@@ -1,3 +1,15 @@
+# Current Task — Merged remote branch cleanup (2026-11-07)
+
+- **Task groups:** `deep-dive` (evidence-based classification of every remote head) + `testing` (per-branch verification and post-cleanup remote comparison).
+- **Branch / feature:** `freebuff/da1d12a5430a7af901daee1b`; `specs/105-remote-branch-cleanup`.
+- **Verified baseline:** 1,623 remote heads; 1,330 ancestors of `main` with `0` unique commits, each checked individually with `merge-base --is-ancestor` and `rev-list --count`; 293 not reachable from `main`; only `main` protected; one open PR (#1750, head `chore/devskim-report-update-42326412143`).
+- **Deletion channel:** `git push --delete` fails here (no credentials: `could not read Username for 'https://github.com'`); the connected GitHub integration deletes one ref per call and each deletion was confirmed against `git ls-remote`.
+- **Implementation:** 169 merged heads removed and verified absent (`alert-autofix-16` channel probe + 168 batch). Retained: `main`, the open-PR head, 292 unmerged, 74 merged heads with tips inside the seven-day window, and 2 `backup/`/`protect-` restore points. 1,084 verified-safe heads were not removed in this pass (one API call per ref) and are recorded as retained with that reason. Post-pass remote heads 1,454 reconcile exactly with the retention inventory.
+- **Verification:** `./freebuff-verify.sh` exit 0; production build `.next` 300,296,840 B + `public` 32,840,043 B = 333,136,883 B (317.7 MiB) < 495 MB; retained inventory intact, `main` unchanged, PR #1750 head present.
+- **Delivery:** the PR carries the single canonical summary and stays open and unmerged.
+
+---
+
 # Current Task — Single-source Freebuff governance consolidation (2026-11-07)
 
 - **Task groups:** `deep-dive` (compare the complete governance files, inspect active references, and preserve unique instructions) + `testing` (add regression coverage for the single-entrypoint rule and retained specialist guidance).
