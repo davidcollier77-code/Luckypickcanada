@@ -4,6 +4,13 @@
 
 **Input**: Reduce the runtime of the existing Playwright visual regression checker without reducing its test coverage or changing approved screenshots.
 
+## Selected Task Groups
+
+- `testing` — preserve and verify the full Playwright/visual regression suite and its CI wiring.
+- `deep-dive` — establish the measured bottleneck and validate the safe concurrency/caching approach against actual repository and Actions evidence.
+
+Read the applicable `.freebuff/testing.md`, `.freebuff/deep-dive.md`, `.docs/manifest.json`, and Playwright reference routed for testing. The repository's historical `.freebuff/ci.md` guidance was also checked; the existing pinned pnpm 10.30.3 setup remains unchanged.
+
 ## Summary
 
 The last PR-head Visual QA run for 93 Playwright cases used one worker and completed in 6.1 minutes. The same job's cold `pnpm install --frozen-lockfile` took 12.5 seconds. The existing workflow already skips browser setup for documentation-only changes and caches Chromium by runner OS and Playwright version.
