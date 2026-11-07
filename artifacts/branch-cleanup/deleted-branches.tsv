@@ -1,3 +1,4 @@
+branch	tip_sha	commits_not_in_main	verdict
 alert-autofix-16	3fe3f4b9a85d061042cc4df15f430d8355a82ece	0	deleted
 010-enhance-homepage-golden-12118220135778909314	e0c1d3cd45f3e6b6981312a0265a40c90b3fc9cc	0	deleted
 018-explore-luck-effect-repair	90565390383e84a045db1ffc79d8e75fe2404212	0	deleted
@@ -28,7 +29,6 @@ bolt/memoize-daily-meter-elements-9176352169980473041	5ebbfd6c5ed0750176f0694d9b
 bolt/optimize-canvas-overdraw-10980210094443056466	9f14d7beef2f801a43ba30bd7cfeacd7fcd7c03f	0	deleted
 bolt/optimize-province-regex-12792123987255808289	f96b8782d8f53d631c62a2bc59fc980dedcd1011	0	deleted
 bolt/optimize-twinkling-stars-3041998895458551629	45f6dac1831bd63b6cb47ebdea718d2a318d03be	0	deleted
-branch	tip_sha	commits_not_in_main	verdict
 card-artwork-tier-fix-20260920	a5d2d21da3e3c82424aa3d474057338ed4d44065	0	deleted
 chore/add-context7-api-key-9704281972557023172	78472cf2d234943af4d501ccf0e057e2a58a25db	0	deleted
 chore/agents-reporting-tighten-20260923	39485182b02dfd1b31353399e2a1eaac64b3cf6c	0	deleted
