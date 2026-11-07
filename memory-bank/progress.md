@@ -1,3 +1,31 @@
+## 2026-11-07 — DevSkim CI alert repair on PR #1767
+
+- The first PR-head DevSkim run failed with 11 new alerts: 10 × DS173237 ("do not store tokens or keys") on the full 64-hex filtered-SARIF digests inside `artifacts/devskim-review-pipeline/before.json` and `after.json`, plus one DS162092 note for a loopback literal in `benchmark.py`.
+- Fixed at the cause rather than by suppressing the checker: the benchmark now writes only a 12-character digest prefix and prints the full digest to stdout, and derives the loopback token from the Playwright fixture line with a regex.
+- Regenerated evidence: digest prefix unchanged (`50558a30bcaf`), suppressed counts unchanged, no 32+ hex literal and no loopback literal left in the artifact scripts; suppression suite still passes.
+
+---
+
+## 2026-11-07 — Governance checker corrected to the current AGENTS.md
+
+- Diagnosed the pre-existing `__tests__/agent-governance-single-source.test.js` failure: the test asserted the sentence "A connection or initialization alone does not count as MCP use.", which `AGENTS.md` stopped containing in `d3512df5`. The requirement still exists, now phrased "…or treat connection/initialization alone as MCP use." in §5.
+- Updated only that expectation to the current sentence and documented why it tracks §5 wording; the other three governance assertions (single authoritative entrypoint, absent `.freebuff/freebuff.md`, eight specialist files, four Spec Kit commands) already matched current governance and were unchanged. `AGENTS.md` was not modified.
+- Re-ran the governance file (4/4 PASS) and the full suite (49 files / 388 tests PASS), then `./freebuff-verify.sh` (PASS) with `SPEC_KIT_BASE_REF=f1752c5a`; build measured in the same run.
+
+---
+
+## 2026-11-07 — Pull-request review checker efficiency and reliability
+
+- Identified the repository-owned PR review checker: all custom LLM reviewers are retired and Pullfrog is console-only, leaving the DevSkim pipeline in `.github/scripts/` as the code that inspects PR changes, decides false positives, removes duplicates and reports coverage.
+- Profiled the real path instead of guessing: per finding the filter re-read the whole file, re-parsed JSON, decoded line ranges and scanned the file twice for UTF-16 offsets. At 460 findings that was 1.72 s, 420 reads, 401 parses and 8,648,883 `ord` calls inside `_code_point_offset_from_utf16_offset` (1.78 s cumtime).
+- Added `SourceContext`/`SourceCache` so each file is read once, parsed once and converted with `bisect` over cached astral indices; threaded an optional `context=` through every predicate and shared the cache in the replay gate.
+- Closed a report-identity gap: fingerprint-less findings were keyed on `(rule, uri, line)`, so two distinct findings on one line were recorded once. The refined identity adds message, start column and end line and still recognises legacy entries, proved by running the old appender alongside the new one (1 → 2 entries; duplicates 1; legacy re-append 0).
+- Proved no detection change: suppressed counts and the filtered-SARIF SHA-256 are identical at 85/110/160/260/460 findings while the run is 6.6×–12.1× faster (1716.31 → 141.90 ms at 460) with 420 → 3 reads and 401 → 2 parses. Replay is 37.58 → 21.06 ms with all eight audited families removed and the non-allowlisted finding preserved.
+- Added 9 regression tests (UTF-16 cache equivalence, single read/parse per file, report identity and legacy-id handling); suppression suite is 87 tests, OK.
+- Unchanged: scan scope, allowlists, audited families, workflow triggers, Pullfrog, retired reviewers, `.docs/`, application code and dependencies.
+
+---
+
 ## 2026-11-07 — PR #1764 merge-conflict repair
 
 - Diagnosed the PR/main divergence: common base `700f2077`; current main `597bd94a` was 14 commits ahead; old PR head `4680075f` was 13 commits ahead.

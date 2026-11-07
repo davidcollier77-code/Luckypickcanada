@@ -1,0 +1,56 @@
+{
+  "label": "after",
+  "workspace": "/workspace/chats/a3097b16ebacbe42435b9924",
+  "sizes": {
+    "25": {
+      "findings": 85,
+      "best_ms": 20.35,
+      "median_ms": 20.61,
+      "source_reads": 3,
+      "json_parse_calls": 2,
+      "suppressed": 45,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "50": {
+      "findings": 110,
+      "best_ms": 27.81,
+      "median_ms": 28.16,
+      "source_reads": 3,
+      "json_parse_calls": 2,
+      "suppressed": 70,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "100": {
+      "findings": 160,
+      "best_ms": 42.33,
+      "median_ms": 42.74,
+      "source_reads": 3,
+      "json_parse_calls": 2,
+      "suppressed": 120,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "200": {
+      "findings": 260,
+      "best_ms": 74.53,
+      "median_ms": 76.34,
+      "source_reads": 3,
+      "json_parse_calls": 2,
+      "suppressed": 220,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "400": {
+      "findings": 460,
+      "best_ms": 131.35,
+      "median_ms": 131.8,
+      "source_reads": 3,
+      "json_parse_calls": 2,
+      "suppressed": 420,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    }
+  }
+}

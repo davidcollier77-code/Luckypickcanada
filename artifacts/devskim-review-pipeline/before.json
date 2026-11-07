@@ -1,0 +1,56 @@
+{
+  "label": "before",
+  "workspace": "/workspace/chats/a3097b16ebacbe42435b9924",
+  "sizes": {
+    "25": {
+      "findings": 85,
+      "best_ms": 144.42,
+      "median_ms": 150.97,
+      "source_reads": 45,
+      "json_parse_calls": 26,
+      "suppressed": 45,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "50": {
+      "findings": 110,
+      "best_ms": 252.59,
+      "median_ms": 256.77,
+      "source_reads": 70,
+      "json_parse_calls": 51,
+      "suppressed": 70,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "100": {
+      "findings": 160,
+      "best_ms": 460.04,
+      "median_ms": 465.23,
+      "source_reads": 120,
+      "json_parse_calls": 101,
+      "suppressed": 120,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "200": {
+      "findings": 260,
+      "best_ms": 879.33,
+      "median_ms": 879.57,
+      "source_reads": 220,
+      "json_parse_calls": 201,
+      "suppressed": 220,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    },
+    "400": {
+      "findings": 460,
+      "best_ms": 1711.5,
+      "median_ms": 1721.47,
+      "source_reads": 420,
+      "json_parse_calls": 401,
+      "suppressed": 420,
+      "filtered_results": 40,
+      "filtered_sha256_prefix": "50558a30bcaf"
+    }
+  }
+}

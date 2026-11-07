@@ -2,8 +2,10 @@ import json
 import re
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
+import append_devskim_findings as appender
 import suppress_devskim_false_positives as suppressions
 import verify_devskim_sarif_replay as replay_check
 
@@ -1920,3 +1922,211 @@ class LocalProbeOriginSuppressionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Utf16IndexCacheTests(unittest.TestCase):
+    """The cached index must translate every offset exactly like the reference scan."""
+
+    def test_cached_conversion_matches_reference_for_every_offset(self):
+        for text in ("", "abc", "a\U0001F600b", "\U0001F600\U0001F600x"):
+            context = suppressions.SourceContext.from_text(text)
+            total_units = len(text) + sum(
+                1 for character in text if ord(character) > 0xFFFF
+            )
+            for offset in range(-2, total_units + 3):
+                self.assertEqual(
+                    suppressions._code_point_offset_from_utf16_offset(text, offset),
+                    context.utf16_offset_to_index(offset),
+                    f"{text!r} at offset {offset}",
+                )
+
+    def test_astral_character_index_is_built_once(self):
+        context = suppressions.SourceContext.from_text("a\U0001F600b")
+        context.utf16_offset_to_index(1)
+        built = context._astral_indices
+        context.utf16_offset_to_index(3)
+        self.assertIs(context._astral_indices, built)
+
+
+class SourceCacheEfficiencyTests(unittest.TestCase):
+    """A scan must read and parse each allowlisted source once, not once per finding."""
+
+    DIGEST = "a" * 40
+
+    def build_workspace(self, directory):
+        root = Path(directory)
+        (root / ".docs").mkdir(parents=True)
+        manifest = (
+            '{\n  "githubShas": {\n    "/github/docs": "' + self.DIGEST + '"\n  }\n}\n'
+        )
+        manifest_path = root / ".docs" / "manifest.json"
+        manifest_path.write_text(manifest, encoding="utf-8")
+        return root, manifest_path, manifest
+
+    def build_result(self, manifest):
+        lines = manifest.splitlines()
+        line_number = next(
+            index
+            for index, line in enumerate(lines, start=1)
+            if self.DIGEST in line
+        )
+        line = lines[line_number - 1]
+        column = line.index(self.DIGEST)
+        absolute = sum(len(item) + 1 for item in lines[: line_number - 1]) + column
+        return {
+            "ruleId": "DS173237",
+            "message": {"text": "Potential credential: " + self.DIGEST},
+            "level": "warning",
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": ".docs/manifest.json"},
+                        "region": {
+                            "startLine": line_number,
+                            "endLine": line_number,
+                            "startColumn": column + 1,
+                            "endColumn": column + 1 + len(self.DIGEST),
+                            "charOffset": absolute,
+                            "charLength": len(self.DIGEST),
+                            "snippet": {"text": self.DIGEST},
+                        },
+                    }
+                }
+            ],
+        }
+
+    def test_process_sarif_reads_each_allowlisted_source_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, manifest_path, manifest = self.build_workspace(directory)
+            results = [self.build_result(manifest) for _ in range(5)]
+            document = {"version": "2.1.0", "runs": [{"results": results}]}
+            resolved = manifest_path.resolve()
+            counter = {"reads": 0}
+            original = Path.read_text
+
+            def counting_read_text(path, *args, **kwargs):
+                if path.resolve() == resolved:
+                    counter["reads"] += 1
+                return original(path, *args, **kwargs)
+
+            with unittest.mock.patch.object(Path, "read_text", counting_read_text):
+                suppressed = suppressions.process_sarif(document, root)
+
+        self.assertEqual(suppressed, 5)
+        self.assertEqual(counter["reads"], 1)
+
+    def test_json_document_is_parsed_once_per_file(self):
+        context = suppressions.SourceContext.from_text('{"a": 1}')
+        with unittest.mock.patch("json.loads", wraps=json.loads) as loader:
+            self.assertEqual(context.json_document(), {"a": 1})
+            self.assertEqual(context.json_document(), {"a": 1})
+            self.assertTrue(context.is_json())
+        self.assertEqual(loader.call_count, 1)
+
+    def test_json_object_line_range_is_decoded_once_per_key(self):
+        manifest = '{\n  "githubShas": {\n    "/github/docs": "' + self.DIGEST + '"\n  }\n}\n'
+        context = suppressions.SourceContext.from_text(manifest)
+        with unittest.mock.patch.object(
+            suppressions,
+            "_line_range_for_json_object",
+            wraps=suppressions._line_range_for_json_object,
+        ) as decoder:
+            first = context.line_range_for_json_object("githubShas")
+            second = context.line_range_for_json_object("githubShas")
+        self.assertEqual(first, second)
+        self.assertEqual(first, (2, 4))
+        self.assertEqual(decoder.call_count, 1)
+
+    def test_cached_and_uncached_checksum_decisions_match(self):
+        manifest = '{\n  "githubShas": {\n    "/github/docs": "' + self.DIGEST + '"\n  }\n}\n'
+        result = self.build_result(manifest)
+        region = result["locations"][0]["physicalLocation"]["region"]
+        context = suppressions.SourceContext.from_text(manifest)
+        self.assertTrue(
+            suppressions.should_suppress_checksum_metadata_finding(
+                ".docs/manifest.json", Path(".docs/manifest.json"), manifest, region
+            )
+        )
+        self.assertTrue(
+            suppressions.should_suppress_checksum_metadata_finding(
+                ".docs/manifest.json",
+                Path(".docs/manifest.json"),
+                manifest,
+                region,
+                context=context,
+            )
+        )
+
+
+class DevSkimReportIdentityTests(unittest.TestCase):
+    """The shared report must keep distinct findings and never duplicate an entry."""
+
+    def write_sarif(self, directory, results):
+        path = Path(directory) / "devskim-alerts.sarif"
+        path.write_text(
+            json.dumps({"version": "2.1.0", "runs": [{"results": results}]}),
+            encoding="utf-8",
+        )
+        return path
+
+    def write_report(self, directory, entries=""):
+        path = Path(directory) / "devskim-alerts.md"
+        path.write_text(
+            "# DevSkim alerts\n\n" + appender.MARKER + "\n" + entries,
+            encoding="utf-8",
+        )
+        return path
+
+    def test_distinct_findings_without_source_locations_are_both_recorded(self):
+        with tempfile.TemporaryDirectory() as directory:
+            sarif = self.write_sarif(
+                directory,
+                [
+                    {
+                        "ruleId": "DS000001",
+                        "message": {"text": "First finding"},
+                        "level": "warning",
+                    },
+                    {
+                        "ruleId": "DS000001",
+                        "message": {"text": "Second finding"},
+                        "level": "warning",
+                    },
+                ],
+            )
+            report = self.write_report(directory)
+            self.assertEqual(appender.append_findings(sarif, report), 2)
+            contents = report.read_text(encoding="utf-8")
+            self.assertIn("First finding", contents)
+            self.assertIn("Second finding", contents)
+
+    def test_identical_duplicate_results_are_recorded_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = {
+                "ruleId": "DS000001",
+                "message": {"text": "Same finding"},
+                "level": "warning",
+            }
+            sarif = self.write_sarif(directory, [result, dict(result)])
+            report = self.write_report(directory)
+            self.assertEqual(appender.append_findings(sarif, report), 1)
+
+    def test_existing_report_entry_is_not_duplicated_after_identity_refinement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = {
+                "ruleId": "DS000001",
+                "message": {"text": "Recorded finding"},
+                "level": "warning",
+            }
+            legacy_id = appender.finding_identities(
+                "DS000001", appender.__dict__.get("NO_LOCATION", "Location not provided"), None, result
+            )[1]
+            sarif = self.write_sarif(directory, [result])
+            entry = (
+                "- **WARNING — DS000001** — `Location not provided` — Recorded finding "
+                f"<!-- devskim-id:{legacy_id} -->\n"
+            )
+            report = self.write_report(directory, entry)
+            before = report.read_text(encoding="utf-8")
+            self.assertEqual(appender.append_findings(sarif, report), 0)
+            self.assertEqual(report.read_text(encoding="utf-8"), before)

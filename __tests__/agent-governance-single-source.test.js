@@ -31,8 +31,11 @@ describe('single-source agent governance', () => {
   it('preserves the MCP connection-versus-use clarification', () => {
     const agents = readAgents();
 
+    // Tracks the current wording in AGENTS.md section 5. An earlier revision
+    // phrased the same rule as a separate sentence; rewording must keep the
+    // requirement that a listed MCP or a connection alone is not MCP use.
     expect(agents).toContain(
-      'A connection or initialization alone does not count as MCP use.',
+      'Do not use an MCP merely because it is available, expand task scope through an MCP, or treat connection/initialization alone as MCP use.',
     );
   });
 

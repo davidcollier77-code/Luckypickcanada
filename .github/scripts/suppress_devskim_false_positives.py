@@ -2,15 +2,136 @@
 """Conservatively filter verified DevSkim false positives from SARIF."""
 
 import base64
+import bisect
 import json
 import os
 import re
 import tempfile
+from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 SARIF_FILE = Path("devskim-alerts.sarif")
 WORKSPACE_ROOT = Path.cwd().resolve()
+
+
+@dataclass
+class SourceContext:
+    """One source file's text and the derived views reused across its findings.
+
+    DevSkim reports many findings per file. The checker used to re-read the
+    file, re-split its lines and re-parse its JSON for every finding, so a scan
+    cost grew with findings x file size. A run now builds one context per file
+    and shares it across every result, which keeps each decision identical
+    while making the work per file rather than per finding.
+    """
+
+    text: str
+    lines: list = field(init=False, repr=False)
+    _document_loaded: bool = field(default=False, init=False, repr=False)
+    _document_valid: bool = field(default=False, init=False, repr=False)
+    _document: object = field(default=None, init=False, repr=False)
+    _line_ranges: dict = field(default_factory=dict, init=False, repr=False)
+    _astral_indices: list | None = field(default=None, init=False, repr=False)
+
+    def __post_init__(self):
+        self.lines = self.text.splitlines()
+
+    @classmethod
+    def from_text(cls, text: str) -> "SourceContext":
+        """Build a context for callers that already hold the source text."""
+        return cls(text)
+
+    def json_document(self):
+        """Return the parsed JSON document once, or None when the text is not JSON."""
+        if not self._document_loaded:
+            self._document_loaded = True
+            try:
+                self._document = json.loads(self.text)
+                self._document_valid = True
+            except (json.JSONDecodeError, TypeError):
+                self._document = None
+                self._document_valid = False
+        return self._document
+
+    def is_json(self) -> bool:
+        """Return whether the whole file parses as JSON, parsed at most once."""
+        self.json_document()
+        return self._document_valid
+
+    def line_range_for_json_object(self, object_key: str) -> tuple | None:
+        """Return the line range of a named JSON object, decoded at most once per key."""
+        if object_key not in self._line_ranges:
+            self._line_ranges[object_key] = _line_range_for_json_object(
+                self.text, object_key
+            )
+        return self._line_ranges[object_key]
+
+    def utf16_offset_to_index(self, offset) -> int | None:
+        """Translate DevSkim's UTF-16 code-unit offset into a Python string index.
+
+        The index of the file's astral characters is built once and reused, so
+        the conversion is a binary search rather than a full-file character
+        scan for every finding. DevSkim indexes .NET strings: an astral
+        character occupies a surrogate pair (two units) but one Python code
+        point, and an offset that splits a pair is rejected rather than guessed.
+        """
+        if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+            return None
+        if self._astral_indices is None:
+            self._astral_indices = [
+                index
+                for index, character in enumerate(self.text)
+                if ord(character) > 0xFFFF
+            ]
+        astral = self._astral_indices
+        if offset > len(self.text) + len(astral):
+            return None
+        low, high = 0, len(self.text)
+        while low < high:
+            middle = (low + high) // 2
+            units_before = middle + bisect.bisect_left(astral, middle)
+            if units_before < offset:
+                low = middle + 1
+            else:
+                high = middle
+        if low + bisect.bisect_left(astral, low) != offset:
+            return None
+        return low
+
+
+class SourceCache:
+    """Resolve and cache one SourceContext per file for a single scan run."""
+
+    def __init__(self, workspace: Path = WORKSPACE_ROOT):
+        self._workspace = Path(workspace).resolve()
+        self._contexts: dict = {}
+
+    def context_for(self, path: Path) -> SourceContext:
+        """Read a file at most once per run and reuse its derived views."""
+        resolved = Path(path).resolve()
+        context = self._contexts.get(resolved)
+        if context is None:
+            try:
+                text = resolved.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                text = ""
+            context = SourceContext.from_text(text)
+            self._contexts[resolved] = context
+        return context
+
+    def line(self, path: Path, line_number) -> str | None:
+        """Return one source line, or None when the line cannot be read."""
+        if (
+            not isinstance(line_number, int)
+            or isinstance(line_number, bool)
+            or line_number < 1
+        ):
+            return None
+        lines = self.context_for(path).lines
+        if line_number > len(lines):
+            return None
+        return lines[line_number - 1]
 
 # Keep this allowlist intentionally narrow. Generic "id" and "hash" keys are
 # not safe metadata identifiers and must never qualify by substring.
@@ -292,7 +413,7 @@ def _code_point_offset_from_utf16_offset(
 
 
 def _absolute_source_span(
-    region: dict, source_text: str
+    region: dict, source_text: str, context: "SourceContext | None" = None
 ) -> tuple[int, int] | None:
     """Validate DevSkim's absolute character span against its source snippet and line numbers."""
     has_offset = "charOffset" in region
@@ -315,10 +436,15 @@ def _absolute_source_span(
     # DevSkim reports charOffset/charLength in UTF-16 code units. Convert once
     # here so every downstream comparison stays in Python code-point indices;
     # the conversion is identity for source that contains no astral characters.
-    start = _code_point_offset_from_utf16_offset(source_text, start_units)
-    end = _code_point_offset_from_utf16_offset(
-        source_text, start_units + length_units
-    )
+    if context is not None:
+        # A shared per-file index keeps this conversion off the per-finding path.
+        start = context.utf16_offset_to_index(start_units)
+        end = context.utf16_offset_to_index(start_units + length_units)
+    else:
+        start = _code_point_offset_from_utf16_offset(source_text, start_units)
+        end = _code_point_offset_from_utf16_offset(
+            source_text, start_units + length_units
+        )
     if start is None or end is None or end <= start:
         return None
 
@@ -347,12 +473,13 @@ def _source_region_span_on_line(
     line_number: int,
     line: str,
     source_text: str | None = None,
+    context: "SourceContext | None" = None,
 ) -> tuple[int, int] | None:
     """Return a validated zero-based, end-exclusive source span for one source line."""
     if source_text is not None and (
         "charOffset" in region or "charLength" in region
     ):
-        absolute_span = _absolute_source_span(region, source_text)
+        absolute_span = _absolute_source_span(region, source_text, context)
         if absolute_span is None:
             return None
         start, end = absolute_span
@@ -396,12 +523,13 @@ def _region_starts_at_pattern(
     line: str,
     pattern: re.Pattern[str],
     source_text: str | None = None,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Require a SARIF finding to start at a validated source pattern on its reported line."""
     if source_text is not None and (
         "charOffset" in region or "charLength" in region
     ):
-        absolute_span = _absolute_source_span(region, source_text)
+        absolute_span = _absolute_source_span(region, source_text, context)
         if absolute_span is None:
             return False
         absolute_start, absolute_end = absolute_span
@@ -491,7 +619,10 @@ def _reported_source_text(
 
 
 def should_suppress_sha512_integrity_finding(
-    source_line: str, region: dict, source_text: str | None = None
+    source_line: str,
+    region: dict,
+    source_text: str | None = None,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
     if source_text is not None and (
@@ -501,7 +632,7 @@ def should_suppress_sha512_integrity_finding(
         if not isinstance(line_number, int) or isinstance(line_number, bool):
             return False
         span = _source_region_span_on_line(
-            region, line_number, source_line, source_text
+            region, line_number, source_line, source_text, context=context
         )
         if span is None:
             return False
@@ -540,8 +671,12 @@ def should_suppress_sha512_integrity_finding(
 
 
 
-def _line_range_for_json_object(source_text: str, object_key: str) -> tuple[int, int] | None:
+def _line_range_for_json_object(
+    source_text: str, object_key: str, context: "SourceContext | None" = None
+) -> tuple[int, int] | None:
     """Return the source line range of a named JSON object, or None if absent/invalid."""
+    if context is not None:
+        return context.line_range_for_json_object(object_key)
     pattern = re.compile(rf'(?m)^[ \t]*"{re.escape(object_key)}"\s*:\s*\{{')
     match = pattern.search(source_text)
     if not match:
@@ -572,9 +707,14 @@ def _region_is_within_span(region: dict, span: tuple[int, int]) -> bool:
 
 
 def should_suppress_checksum_metadata_finding(
-    relative_path: str, safe_path: Path, source_text: str, region: dict
+    relative_path: str,
+    safe_path: Path,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress only a verified hash value in a known checksum-map JSON structure."""
+    context = context or SourceContext.from_text(source_text)
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
@@ -587,17 +727,14 @@ def should_suppress_checksum_metadata_finding(
         object_key, expected_length = "files", 64
     else:
         return False
-    try:
-        document = json.loads(source_text)
-    except (json.JSONDecodeError, TypeError):
-        return False
+    document = context.json_document()
     mapping = document.get(object_key) if isinstance(document, dict) else None
     if not isinstance(mapping, dict):
         return False
-    line_range = _line_range_for_json_object(source_text, object_key)
+    line_range = context.line_range_for_json_object(object_key)
     if line_range is None or not line_range[0] <= line_number <= line_range[1]:
         return False
-    source_lines = source_text.splitlines()
+    source_lines = context.lines
     if line_number > len(source_lines):
         return False
     pair = JSON_STRING_PAIR_PATTERN.match(source_lines[line_number - 1])
@@ -613,7 +750,9 @@ def should_suppress_checksum_metadata_finding(
     # fields have historically been one character early for some checksum findings.
     # The validated span must still lie entirely inside this exact quoted digest.
     line = source_lines[line_number - 1]
-    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    region_span = _source_region_span_on_line(
+        region, line_number, line, source_text, context=context
+    )
     if region_span is None:
         return False
     return (
@@ -625,24 +764,25 @@ def should_suppress_checksum_metadata_finding(
 
 
 def should_suppress_constitution_template_checksum(
-    relative_path: str, source_text: str, region: dict
+    relative_path: str,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress only the exact SHA-256 checksum field in the tracked constitution template."""
+    context = context or SourceContext.from_text(source_text)
     if relative_path != ".specify/memory/.constitution-template.json":
         return False
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    try:
-        document = json.loads(source_text)
-    except (json.JSONDecodeError, TypeError):
-        return False
+    document = context.json_document()
     if not isinstance(document, dict):
         return False
     value = document.get("sha256")
     if not isinstance(value, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", value):
         return False
-    lines = source_text.splitlines()
+    lines = context.lines
     if line_number > len(lines):
         return False
     pair = JSON_STRING_PAIR_PATTERN.match(lines[line_number - 1])
@@ -653,7 +793,7 @@ def should_suppress_constitution_template_checksum(
     # Prefer the validated absolute span and snippet when present; the helper
     # falls back to columns only when absolute-offset metadata is absent.
     region_span = _source_region_span_on_line(
-        region, line_number, lines[line_number - 1], source_text
+        region, line_number, lines[line_number - 1], source_text, context=context
     )
     # The reported token may include the checksum's quotes, but no other source.
     return (
@@ -664,15 +804,19 @@ def should_suppress_constitution_template_checksum(
 
 
 def should_suppress_public_cloudflare_account_id(
-    relative_path: str, source_text: str, region: dict
+    relative_path: str,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress the documented public Cloudflare account identifier, not credentials."""
+    context = context or SourceContext.from_text(source_text)
     if relative_path != "workers/jules-bridge/src/index.js":
         return False
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    lines = source_text.splitlines()
+    lines = context.lines
     if line_number > len(lines):
         return False
     line = lines[line_number - 1]
@@ -684,15 +828,17 @@ def should_suppress_public_cloudflare_account_id(
         return False
     # DevSkim reports the account literal, including quotes; never let another
     # finding on this declaration line inherit the account-ID exception.
-    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    region_span = _source_region_span_on_line(
+        region, line_number, line, source_text, context=context
+    )
     literal_span = (match.start(1) - 1, match.end(1) + 1)
-    context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
+    surrounding_context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
     return (
         region_span is not None
         and region_span[0] >= literal_span[0]
         and region_span[1] <= literal_span[1]
-        and "account ID is an identifier, not an authentication credential" in context
-        and "CF_WEBHOOK_SECRET authenticates requests" in context
+        and "account ID is an identifier, not an authentication credential" in surrounding_context
+        and "CF_WEBHOOK_SECRET authenticates requests" in surrounding_context
     )
 
 
@@ -713,17 +859,23 @@ def _loopback_origin_spans(line: str) -> list[tuple[int, int]]:
 
 
 def should_suppress_local_probe_origin(
-    relative_path: str, source_text: str, region: dict
+    relative_path: str,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress a loopback origin only in reviewed local server/probe locations."""
+    context = context or SourceContext.from_text(source_text)
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    lines = source_text.splitlines()
+    lines = context.lines
     if line_number > len(lines):
         return False
     line = lines[line_number - 1]
-    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    region_span = _source_region_span_on_line(
+        region, line_number, line, source_text, context=context
+    )
     if region_span is None:
         return False
     reported_text = line[region_span[0]:region_span[1]]
@@ -747,9 +899,7 @@ def should_suppress_local_probe_origin(
     if not is_local_probe_artifact_path(relative_path):
         return False
     # The file must still be valid JSON data, so a renamed script cannot qualify.
-    try:
-        json.loads(source_text)
-    except (json.JSONDecodeError, TypeError):
+    if not context.is_json():
         return False
     return any(
         region_span[0] >= start and region_span[1] <= end
@@ -758,18 +908,25 @@ def should_suppress_local_probe_origin(
 
 
 def should_suppress_safe_contextual_finding(
-    rule_id: str, relative_path: str, source_text: str, region: dict
+    rule_id: str,
+    relative_path: str,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress audited contextual false positives only when SARIF points at their exact source."""
+    context = context or SourceContext.from_text(source_text)
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    lines = source_text.splitlines()
+    lines = context.lines
     if line_number > len(lines):
         return False
     line = lines[line_number - 1]
-    context = "\n".join(lines[max(0, line_number - 3):line_number])
-    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    surrounding_context = "\n".join(lines[max(0, line_number - 3):line_number])
+    region_span = _source_region_span_on_line(
+        region, line_number, line, source_text, context=context
+    )
     reported_text = (
         line[region_span[0]:region_span[1]] if region_span is not None else None
     )
@@ -782,7 +939,7 @@ def should_suppress_safe_contextual_finding(
         if reviewed_callback_patterns is not None:
             return any(
                 _region_starts_at_pattern(
-                    region, line_number, line, pattern, source_text
+                    region, line_number, line, pattern, source_text, context=context
                 )
                 for pattern in reviewed_callback_patterns
             )
@@ -795,7 +952,8 @@ def should_suppress_safe_contextual_finding(
                 r"setIsNumberFinishActive\(false\), NUMBER_FINISH_TOTAL_MS\)',[ \t]*$"
             )
             return _region_starts_at_pattern(
-                region, line_number, line, reveal_assertion_pattern, source_text
+                region, line_number, line, reveal_assertion_pattern, source_text,
+                context=context,
             )
 
         # The source location must begin at this safe call, not merely share its line.
@@ -803,7 +961,8 @@ def should_suppress_safe_contextual_finding(
         # preceding "test." prefix, so validate that exact reported token.
         test_timeout_pattern = re.compile(r"\btest\.(?P<call>setTimeout)\s*\(\s*\d[\d_]*\s*\)")
         if _region_starts_at_pattern(
-            region, line_number, line, test_timeout_pattern, source_text
+            region, line_number, line, test_timeout_pattern, source_text,
+            context=context,
         ):
             return (
                 relative_path.startswith(("tests/", "test/", "__tests__/"))
@@ -814,7 +973,8 @@ def should_suppress_safe_contextual_finding(
             r"\bsetTimeout\s*\(\s*(?:(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>|function\b)"
         )
         return _region_starts_at_pattern(
-            region, line_number, line, callable_timeout_pattern, source_text
+            region, line_number, line, callable_timeout_pattern, source_text,
+            context=context,
         )
 
     if rule_id in {"DS162092", "DS137138"}:
@@ -844,7 +1004,7 @@ def should_suppress_safe_contextual_finding(
                         localhost_start + len("localhost"),
                     ):
                         return (
-                            "DevSkim: ignore DS162092" in context
+                            "DevSkim: ignore DS162092" in surrounding_context
                             and "ALLOWED_ORIGINS" in source_text
                         )
             return False
@@ -863,19 +1023,24 @@ def should_suppress_safe_contextual_finding(
             and region_span[1] <= pattern_end
             and "revealUrl" in reported_text
             and 'target="_blank"' in reported_text
-            and "DevSkim: ignore DS610000" in context
+            and "DevSkim: ignore DS610000" in surrounding_context
         )
     return False
 
 
 def should_suppress_lockfile_package_name_finding(
-    source_line: str, region: dict, source_text: str | None = None
+    source_line: str,
+    region: dict,
+    source_text: str | None = None,
+    context: "SourceContext | None" = None,
 ) -> bool:
     """Suppress DS126858 only when its reported token sits inside an approved package name."""
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    region_span = _source_region_span_on_line(region, line_number, source_line, source_text)
+    region_span = _source_region_span_on_line(
+        region, line_number, source_line, source_text, context=context
+    )
     if region_span is None:
         return False
     reported_text = source_line[region_span[0]:region_span[1]].casefold()
@@ -891,6 +1056,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
     """Add suppressions only to narrowly validated metadata/dependency findings."""
     suppression_count = 0
     root = workspace.resolve()
+    source_cache = SourceCache(root)
 
     for run in data.get("runs", []):
         for result in run.get("results", []):
@@ -948,10 +1114,8 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
             else:
                 continue
 
-            try:
-                source_text = safe_path.read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                source_text = ""
+            context = source_cache.context_for(safe_path)
+            source_text = context.text
             source_line = _source_line_from_text(source_text, region)
 
             justification = None
@@ -961,46 +1125,46 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "allowlisted metadata field overlaps the reported finding."
                 )
             elif rule_id == "DS173237" and should_suppress_checksum_metadata_finding(
-                relative_path, safe_path, source_text, region
+                relative_path, safe_path, source_text, region, context=context
             ):
                 justification = (
                     "False positive: this exact SHA value is a pinned upstream revision "
                     "or tracked-file checksum in an allowlisted manifest map."
                 )
             elif rule_id == "DS173237" and should_suppress_constitution_template_checksum(
-                relative_path, source_text, region
+                relative_path, source_text, region, context=context
             ):
                 justification = (
                     "False positive: this is the checked-in SHA-256 digest of the constitution "
                     "template, not a credential."
                 )
             elif rule_id == "DS173237" and should_suppress_public_cloudflare_account_id(
-                relative_path, source_text, region
+                relative_path, source_text, region, context=context
             ):
                 justification = (
                     "False positive: this is the repository's documented public Cloudflare "
                     "account identifier; the webhook secret is configured separately."
                 )
             elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(
-                source_line, region, source_text
+                source_line, region, source_text, context=context
             ):
                 justification = (
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
                 )
             elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(
-                source_line, region, source_text
+                source_line, region, source_text, context=context
             ):
                 justification = (
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
                 )
             elif rule_id == "DS162092" and should_suppress_local_probe_origin(
-                relative_path, source_text, region
+                relative_path, source_text, region, context=context
             ):
                 justification = LOCAL_PROBE_ORIGIN_JUSTIFICATION
             elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"} and should_suppress_safe_contextual_finding(
-                rule_id, relative_path, source_text, region
+                rule_id, relative_path, source_text, region, context=context
             ):
                 contextual_reasons = {
                     "DS172411": (

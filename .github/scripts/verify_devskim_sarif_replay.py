@@ -245,7 +245,7 @@ def _carries_verified_suppression(result):
     )
 
 
-def _assert_audited_findings_removed(raw_results, filtered_keys, workspace):
+def _assert_audited_findings_removed(raw_results, filtered_keys, workspace, source_cache=None):
     """Fail when an audited false positive is still present after filtering."""
     raw_keys = Counter(_location_key(result) for _, _, result in raw_results)
     audited_removed = []
@@ -261,7 +261,12 @@ def _assert_audited_findings_removed(raw_results, filtered_keys, workspace):
             if relative_path not in finding.paths:
                 continue
             line_number = _start_line(result)
-            line = _source_line(Path(workspace).resolve() / relative_path, line_number)
+            source_path = Path(workspace).resolve() / relative_path
+            line = (
+                source_cache.line(source_path, line_number)
+                if source_cache is not None
+                else _source_line(source_path, line_number)
+            )
             if line is None:
                 raise ReplayViolation(
                     "cannot validate audited finding "
@@ -317,6 +322,9 @@ def replay(sarif_path=None, workspace=None):
         raise ReplayViolation(f"cannot read SARIF at {sarif_path}: {error}") from error
     raw = load_sarif(sarif_path)
     raw_results = list(_results(raw))
+    # One source cache for the replay: the audited findings and the two filter
+    # passes all read the same files.
+    source_cache = suppressions.SourceCache(root)
 
     with tempfile.TemporaryDirectory(prefix="devskim-replay-") as directory:
         scratch = Path(directory) / sarif_path.name
@@ -341,7 +349,7 @@ def replay(sarif_path=None, workspace=None):
             )
 
     audited_removed, audited_absent = _assert_audited_findings_removed(
-        raw_results, filtered_keys, root
+        raw_results, filtered_keys, root, source_cache
     )
     _assert_removals_stay_inside_the_allowlist(raw_keys, filtered_keys, root)
 
