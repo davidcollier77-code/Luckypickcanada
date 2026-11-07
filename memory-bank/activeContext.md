@@ -1,3 +1,23 @@
+# Current Task — Documentation updater review repair (2026-11-07)
+
+- **Task:** Repair PR #1748 after independent review: restore Spec Kit separation, make critical link/consistency defects fail, protect filename-collision ownership, harden temp cleanup, correct the 64/64/51 report and add regression coverage.
+- **Governance:** Reverted merge `db67ba58` (PR #1749) with `git revert -m 1`; PR #1749's commits remain in history and are not part of PR #1748. `.specify/feature.json` points to `specs/103-docs-updater-integrity`.
+- **Implementation:** `hasCriticalFailures()` drives report result and exit code; orphan snapshots are `severity: warning`, all link problems and other consistency issues are critical. `findFilenameCollisions()` blocks ambiguous downloads, repair and deletion; `lexistsSync()` cleans dangling temp symlinks; report counts corrected to 64 inventory / 64 sources / 51 GitHub SHA entries.
+- **Verification:** updater 36/36, Vitest 354/354, `tsc --noEmit` exit 0, repository gate exit 0, production build 349,900,039 B (333.69 MiB), scheduler 17/17 and Wrangler dry-run exit 0. Local Playwright BLOCKED (missing Chromium system libraries, no root); PR-head Visual QA is the visual path.
+- **Delivery:** PR #1748 remains open and unmerged; final PR-head checks and diff audit recorded in the PR body.
+
+# Active Context — Documentation Updater Reliability and Safety (2026-11-07)
+
+- **Task groups:** `troubleshooting` (broken source URLs, failed downloads, broken links) + `deep-dive` (evidence audit of the manifest, symlinks, retry and scheduler settings) + `testing` (unit and complete isolated workflow execution).
+- **Feature/branch:** `specs/103-docs-updater-integrity`; branch `freebuff/fffa8bcf4af337cbdf4839af`. No prior PR covers this task (0 open PRs at start).
+- **Verified baseline:** 64 routed libraries, 154 routed entries, 90 secondary links all resolving correctly, and identical 64-entry `inventory`/`sources`/`githubShas`. All 64 canonical snapshots pass the new validator. The old permanent-removal guard was a fixed Jules-ID list, which is removed.
+- **Implementation:** `scripts/refresh-docs.js` gains `validateDocumentContent` (rejects empty, binary, garbled, random-character, error/challenge-page and JSON-error downloads), manifest-driven reconciliation (`collectRoutedLibraries`, `reconcileManifestIndexes`, `removeStaleSnapshots`), `repairDocumentationLinks` (atomic repair of missing/broken/incorrect/stale/duplicate links, no overwrite of differing content), `auditLibraryConsistency`, and a Markdown refresh report. Broken URLs are reported with the document, URL, error and preservation status; URLs are never rewritten. `.github/workflows/refresh-docs.yml` publishes the report into the PR body/step summary and fails after reporting, with schedule, triggers, retry timing (180 s) and Atlantic timezone unchanged.
+- **Tests:** new `scripts/test-refresh-docs-e2e.js` copies the real `.docs`, injects a removed document, a failing new source, a broken link and a duplicate copy, and runs the complete updater through a test-only HTTPS transport. `node scripts/test-refresh-docs.js` → 31/31 PASS.
+- **Verification:** full Vitest, TypeScript, `./freebuff-verify.sh` and the measured build size are recorded in `PR_SUMMARY.md`.
+- **Preserved:** no application code, dependency, payment, database, auth, Cloudflare Worker, deployment or schedule change. PR remains open and unmerged.
+
+---
+
 # Active Context — PR #1746 Review-Finding Correction (2026-11-06)
 
 - **Task groups:** `testing` (close the Amazon Q routing-coverage gap) + `deep-dive` (verify the review finding against the test and all eight manifest groups).
@@ -1833,3 +1853,10 @@
 - **Implementation:** Retain the single 12,000 ms declaration; remove the duplicate 30,000 ms declaration; move the single-declaration check into the existing lifecycle test. No reveal runtime behaviour is changed.
 - **Spec Kit:** Reused `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`; specify, plan, and tasks updated before implementation.
 - **Verification:** The supplied main-branch Cloudflare build is the pre-fix failure. Focused tests, full Vitest, TypeScript, `./freebuff-verify.sh`, the OpenNext Cloudflare build, build-size measurement and final PR diff audit remain pending.
+
+# Current Task — Documentation updater review fixes (2026-11-07)
+
+- **Task:** Address the automated review on PR #1748 for the documentation updater reliability work.
+- **Confirmed defects fixed:** `writeDocumentationLink` and the `runRefresh` symlink fallback each generated a symlink temp path and a fallback copy temp path with separate `Date.now()` calls in the same synchronous block, so a same-millisecond failure could reuse the just-deleted path. Both now use distinct `.tmp.symlink.` and `.tmp.copy.` suffixes. `escapeTableCell` now escapes backslashes before pipes and newlines, with a regression assertion.
+- **Dispositions:** the DevSkim `setTimeout` alert is test-only mock code; the CodeQL URL-substring alert is a test assertion; neither is a production defect. Pullfrog's failure is an exhausted Google AI Studio free-tier quota, not a code failure.
+- **Verification:** `node scripts/test-refresh-docs.js` 31/31, `pnpm exec vitest run` 354/354, `SPEC_KIT_BASE_REF=269ea014 ./freebuff-verify.sh` exit 0, build 349,905,235 B (333.70 MiB). PR-head CI result is recorded in the PR body once the run completes; PR #1748 stays open and unmerged.

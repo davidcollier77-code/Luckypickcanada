@@ -67,7 +67,20 @@ jobs:
           pnpm install --frozen-lockfile
 
       - name: Run Documentation Refresh
-        run: node scripts/refresh-docs.js
+        id: refresh
+        continue-on-error: true
+        env:
+          DOCS_REFRESH_REPORT_PATH: ${{ runner.temp }}/docs-refresh-report.md
+        run: node scripts/refresh-docs.js --report "$DOCS_REFRESH_REPORT_PATH"
+
+      - name: Publish Documentation Refresh Report
+        if: always()
+        env:
+          REPORT_PATH: ${{ runner.temp }}/docs-refresh-report.md
+        run: |
+          if [[ -f "$REPORT_PATH" ]]; then
+            cat "$REPORT_PATH" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Check for Changes
         id: changes
@@ -81,12 +94,31 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Report Refresh Problems Without Document Changes
+        if: steps.refresh.outcome == 'failure' && steps.changes.outputs.changed != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_PATH: ${{ runner.temp }}/docs-refresh-report.md
+        run: |
+          set -euo pipefail
+          if [[ ! -f "$REPORT_PATH" ]]; then
+            echo "No documentation refresh report was produced."
+            exit 0
+          fi
+          PR_NUMBER="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || true)"
+          if [[ -n "$PR_NUMBER" && "$PR_NUMBER" != "null" ]]; then
+            gh pr comment "$PR_NUMBER" --body-file "$REPORT_PATH"
+          else
+            echo "No open auto/docs-refresh pull request exists to notify."
+          fi
+
       - name: Create or Refresh Pull Request
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DISPATCH_SOURCE: ${{ github.event.inputs.dispatch_source || github.event_name }}
           SCHEDULER_SLOT: ${{ github.event.inputs.scheduler_slot || 'scheduled' }}
+          REPORT_PATH: ${{ runner.temp }}/docs-refresh-report.md
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -99,18 +131,35 @@ jobs:
           git push --force origin HEAD:refs/heads/auto/docs-refresh
           PR_EXISTS="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || true)"
           COMMIT_SHA="$(git rev-parse HEAD)"
+          BODY_FILE="$RUNNER_TEMP/docs-refresh-pr-body.md"
+          {
+            printf '%s\n\n' 'Automated documentation refresh from the configured upstream documentation sources. This PR updates the local .docs snapshots for the approved library inventory.'
+            if [[ -f "$REPORT_PATH" ]]; then
+              cat "$REPORT_PATH"
+            else
+              printf '%s\n' 'No documentation refresh report was produced for this run.'
+            fi
+          } > "$BODY_FILE"
           if [[ -z "$PR_EXISTS" || "$PR_EXISTS" == "null" ]]; then
-            NEW_PR_URL="$(gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources. This PR updates the local .docs snapshots for the approved library inventory.' --base main --head auto/docs-refresh --reviewer davidcollier77-code || gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources. This PR updates the local .docs snapshots for the approved library inventory.' --base main --head auto/docs-refresh)"
+            NEW_PR_URL="$(gh pr create --title "docs: scheduled documentation refresh" --body-file "$BODY_FILE" --base main --head auto/docs-refresh --reviewer davidcollier77-code || gh pr create --title "docs: scheduled documentation refresh" --body-file "$BODY_FILE" --base main --head auto/docs-refresh)"
             PR_NUMBER="${NEW_PR_URL##*/}"
             PR_OPERATION="created"
           else
             PR_NUMBER="$PR_EXISTS"
+            gh pr edit "$PR_NUMBER" --body-file "$BODY_FILE"
             PR_OPERATION="updated"
           fi
           MARKER="<!-- notify-update:$COMMIT_SHA -->"
           COMMENTS="$(gh pr view "$PR_NUMBER" --json comments -q '.comments[].body' 2>/dev/null || true)"
           if ! printf '%s\n' "$COMMENTS" | grep -Fq "$MARKER"; then
-            gh pr comment "$PR_NUMBER" --body "@davidcollier77-code The Documentation Library updater completed and $PR_OPERATION this PR. Trigger: $DISPATCH_SOURCE ($SCHEDULER_SLOT). Please review the refreshed documentation. Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} $MARKER"
+            gh pr comment "$PR_NUMBER" --body "@davidcollier77-code The Documentation Library updater completed and $PR_OPERATION this PR. Trigger: $DISPATCH_SOURCE ($SCHEDULER_SLOT). Please review the refreshed documentation and the refresh report in the PR body. Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} $MARKER"
           else
             echo "Notification for commit $COMMIT_SHA was already posted."
           fi
+
+      - name: Fail When Documentation Refresh Reported Problems
+        if: steps.refresh.outcome == 'failure'
+        run: |
+          echo "The documentation refresh reported download, validation or consistency problems." >&2
+          echo "See the run summary and the documentation refresh pull request for the affected documents, URLs and errors." >&2
+          exit 1
