@@ -67,7 +67,7 @@ As a repository maintainer, I want the governance regression test to perform fil
 - **FR-006**: The saved Freebuff Master Work Request MUST direct agents to AGENTS.md and selected specialist task-group files without referencing the deleted entrypoint.
 - **FR-007**: The saved Master Work Request MUST align PR reporting with AGENTS.md: one concise, evidence-based summary in the PR body; no separate report or per-resource USED/USEFUL/version matrix.
 - **FR-008**: Historical specifications and completed PR/task records MUST remain unchanged unless they are active instructions.
-- **FR-009**: The PR created for this task MUST remain open and unmerged.
+- **FR-009**: Every PR created by the coding agent MUST remain open and unmerged for owner review.
 - **FR-010**: The governance regression test MUST NOT read `AGENTS.md` at module scope or use an unimported lifecycle hook; each required file read MUST occur inside the test callback that needs it.
 
 ## Success Criteria
@@ -76,7 +76,7 @@ As a repository maintainer, I want the governance regression test to perform fil
 - **SC-002**: A focused automated test passes and confirms the single-entrypoint rule, retained specialist groups, and preserved MCP-use clarification.
 - **SC-003**: The saved Master Work Request contains no reference to .freebuff/freebuff.md and matches the PR-summary rules in AGENTS.md.
 - **SC-004**: Existing specialist instructions, command definitions, verification scripts, and historical records are retained.
-- **SC-005**: The PR remains open and unmerged for owner review.
+- **SC-005**: The follow-up correction PR remains open and unmerged for owner review.
 - **SC-006**: The governance test passes without a module-scope file read or missing Vitest hook import.
 
 ## Assumptions
