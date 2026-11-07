@@ -1,3 +1,16 @@
+## 2026-11-07 — Sitewide SEO audit
+
+- Audited the live site (`https://luckypickcanada.ca/`) and the repository source read-only, and produced a prioritized findings report in the PR body. Task groups: `deep-dive` + `seo`; feature `specs/106-seo-audit`.
+- Verified crawlability and indexability are sound: every discovered URL returns the expected status, `robots.txt` allows crawling and declares the sitemap, the 6-URL sitemap is valid, every indexable page has a self-referencing absolute canonical, unknown paths return a real 404 with `noindex`, and `http`/`www`/trailing-slash variants resolve in one hop. Zero broken internal links.
+- Verified three duplicate 200 URLs for the map (`/map`, `/lucky-map-of-canada`, `/where-luck-has-been-found-in-canada`); the two aliases inherit the homepage `<title>` while canonicalising to `/map`, and their `og:url` contradicts that canonical.
+- Measured image weight with the repository's `sharp`: `/crystal-ball` pedestal 716×875 PNG at 1,493 KB, `/reveal` background 2949×2847 JPEG at 2,456 KB, `/lucky-meter` sky 411 KB, `/map` artwork 236 KB PNG — none with responsive variants; the sitewide share image is 1,407×768 at 1,261 KB while metadata declares 1200×630.
+- Measured the homepage initial payload: 618,379 B JS (incl. 112,594 B polyfills), 291,226 B CSS across five render-blocking files, 137,216 B preloaded fonts — 1,046,821 B before images; TTFB 0.283–0.494 s. Observed `cache-control: public, max-age=0, must-revalidate` on hashed static assets despite a one-year immutable rule in `next.config.mjs`.
+- Confirmed earlier work still holds: escaped JSON-LD helper, FAQ schema matching the visible FAQ, a single AVIF hero preload, the low-priority Turnstile preload, and self-hosted fonts. No earlier sitewide SEO audit, ranking, traffic or keyword report exists in the repository, so no quantitative comparison was claimed.
+- Could not obtain Core Web Vitals, indexing, queries or traffic: PageSpeed Insights returned HTTP 429 quota exhaustion and CrUX requires a key. Recorded as unverified.
+- Scope preserved: documentation only. `./freebuff-verify.sh` exit 0; no `app/`, `public/`, `themes/`, configuration, dependency or `.docs/` change.
+
+---
+
 ## 2026-11-07 — Freebuff startup-command audit
 
 - Established how the Freebuff runtime executes commands: Bash (`SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21); `/bin/sh` is `dash`, which rejects `source` (127) and the bootstrap's Bash syntax.

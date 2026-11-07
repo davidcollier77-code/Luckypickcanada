@@ -1,3 +1,16 @@
+# Current Task — Sitewide SEO audit and findings report (2026-11-07)
+
+- **Task groups:** `deep-dive` (required: evidence-driven investigation delivered as an audit-only report) + `seo` (the repository's directly applicable SEO specialist guidance).
+- **Feature / branch:** new `specs/106-seo-audit`; branch `docs/seo-audit-20261107`. No earlier SEO feature directory, branch or PR existed (0 open PRs at start), so nothing was duplicated.
+- **Scope:** audit and report only. No application code, content, metadata, image, configuration, dependency, DNS, Cloudflare, indexing or deployment change. `.docs/` untouched.
+- **Live evidence:** 10 public URLs crawled (all 200), 4 unknown paths 404, `/stories` and trailing-slash variants 308, `http`/`www` 301 to the apex; sitemap 6 URLs; robots 2,748 B; every internal link 200 (0 broken); image bytes and dimensions measured with the repository's `sharp`; homepage initial payload measured at 618,379 B JS + 291,226 B CSS + 137,216 B fonts; TTFB 0.283–0.494 s over five samples.
+- **Headline findings:** three 200 URLs serve the same map page and two inherit the homepage `<title>` (canonical → `/map`); tool-page images of 1.46 MB and 2.40 MB; one sitewide share image of 1,261 KB at 1407×768 while metadata declares 1200×630; 69–94 words on `/reveal`, `/crystal-ball` and `/lucky-meter`; structured data limited to WebSite + FAQPage; static assets revalidate with `max-age=0`; two robots.txt sources. No critical site-blocking defect was verified.
+- **Unavailable data:** Search Console, Analytics, CrUX and PageSpeed Insights (HTTP 429 anonymous quota). Core Web Vitals, indexing, queries and traffic are reported as unverified, never inferred.
+- **Verification:** `./freebuff-verify.sh` exit 0; production build 300,302,147 B + `public` 32,840,043 B = 333,142,190 B (317.71 MiB), below the 495 MB maximum; final diff documentation-only.
+- **Delivery:** the complete findings report is the PR body (`PR_SUMMARY.md`), one report only; PR left open and unmerged.
+
+---
+
 # Current Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
