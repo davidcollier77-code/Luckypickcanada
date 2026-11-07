@@ -34,11 +34,13 @@
 - [x] T014 [Testing] Wire the unit suite into `freebuff-verify.sh` before the typecheck and build.
 - [x] T015 [Testing] Run the unit suite, `./freebuff-verify.sh`, TypeScript and the production build; measure the build against the 495 MB cap.
   - `python3 -m unittest discover -s .github/scripts -p 'test_verify_pr_verification_status.py'`: PASS (18 tests, OK).
-  - `SPEC_KIT_BASE_REF=75d61aff ./freebuff-verify.sh`: PASS (Spec Kit artifacts verified, 18 integrity tests OK, TypeScript clean, production build compiled, refresh-docs 36/36, final "All verification steps passed").
-  - Build: `.next` + `public` = 333,579,333 B (318.13 MiB), below the 495 MB maximum.
+  - `SPEC_KIT_BASE_REF=75d61aff ./freebuff-verify.sh`: PASS on commit `f7d4525c` (Spec Kit artifacts verified, 18 integrity tests OK, TypeScript clean, production build compiled, refresh-docs 36/36, final "All verification steps passed").
+  - Build: `.next` + `public` = 351,008,260 B (334.75 MiB), below the 495 MB maximum.
   - `pnpm exec vitest run __tests__/freebuff-verify.test.js`: PASS (3 tests).
   - Live `Verification Integrity` workflow execution: NOT RUN — a `pull_request_target` workflow cannot run for the pull request that adds it.
 - [x] T016 Publish the canonical PR summary, leave the PR open and unmerged, and record the final diff audit.
+  - PR #1768 (`freebuff/cef6175f03deca51d10d44c1` → `main`), open and unmerged; its body is the single canonical summary.
+  - Final diff: 11 files in `f7d4525c` plus this evidence-only documentation update; no application, dependency, lockfile, secret, deployment, existing-workflow or `.docs/` change; `git diff --cached --check` clean.
 
 ## Dependencies
 
