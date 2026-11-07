@@ -6,20 +6,23 @@ This file is the repository's single authoritative workflow and safety policy fo
 
 ## 1. INITIALIZE ONCE
 
-1. Read this file first.
-2. Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once.
-3. Select at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. You may select multiple groups when the task requires them. Read and follow the instructions for every selected group.
-4. Read each selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for documentation routing. Use the manifest to identify reference documents that materially help with the task.
-- Use applicable enabled Freebuff skills when relevant: `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
-5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
+Complete these steps in order before implementation:
 
-The manifest is an index, not an instruction to read every listed source. Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
+1. **Read governance first.** Read this file and follow its rules throughout the task.
+2. **Understand the request.** Identify the requested outcome, scope, constraints, and acceptance criteria. Note any missing essential information, approval requirements, or genuine blockers; do not ask generic "continue?" questions.
+3. **Check existing work.** Inspect the current branch/worktree, relevant files and task artifacts, and any existing branch or PR for the same task. Do not duplicate active work.
+4. **Load project context.** Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once. Use only the context relevant to the task.
+5. **Select task groups.** Choose at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. Select multiple only when the task requires them. Read and follow each selected group's `.freebuff/<group>.md` instructions.
+6. **Route reference documents.** Read `.docs/manifest.json` and use it to identify only the reference documents that materially help with the request and selected groups. The manifest is an index, not an instruction to read every listed source.
+7. **Use relevant skills.** Apply enabled Freebuff skills when they materially help, including `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
+
+Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
 
 ## 2. SPEC KIT AND EXECUTION
 
 Every coding task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.freebuff/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
 
-Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect the active coding agent's execution and authorization controls: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
+Keep one active task per run and one branch/PR per task. Respect the active coding agent's execution and authorization controls: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk.
 
 ## 3. SCOPE AND IMPLEMENTATION
 
@@ -43,7 +46,7 @@ Do not require a separate report, a per-resource USED/USEFUL/version matrix, or 
 
 If branch history, merge-base checks, or push permissions block publishing, diagnose the actual state first and preserve all work. Never force-push, discard commits, or ask the owner to force-push as a routine workaround. When safe, recover using a clean branch and only identifiable intended changes. If it cannot be resolved safely, report the exact command/error, branch/ref, and relevant commit SHA, then ask one focused question only if owner action is genuinely required.
 
-## 5. APPROVALS AND PR OWNERSHIP
+## 5. APPROVALS, CONNECTED TOOLS, AND PR OWNERSHIP
 
 Agents may create/update PRs and run checks, but must **never merge**, squash-merge, rebase-merge, enable auto-merge, or otherwise complete a PR. Leave every PR OPEN and UNMERGED for the human owner.
 
@@ -55,11 +58,24 @@ Explicit owner authorization is required before changing:
 - accessibility/responsive behavior or approved visual/product behavior;
 - the documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available. A connection or initialization alone does not count as MCP use.
+Authorization applies only to the specific approved scope.
 
-## 6. BUILD AND EXECUTION SAFETY
+Use the connected MCP integrations below when they materially help with the task and are within its authorized scope:
+- **GitHub:** repository files, branches, commits, issues, and pull requests.
+- **Neon:** PostgreSQL database inspection and management.
+- **Stitch:** UI design and prototyping.
+- **Browserless:** live website browsing, screenshots, page interaction, and browser testing.
+- **Browserbase:** remote browser sessions, website interaction, and browser testing.
 
-495 MB is the hard maximum build size. Measure and report every build; if it reaches or exceeds 495 MB, stop and report the measured size and safe resume point. Use pnpm, never `npm ci`, and inspect `package.json` before using or claiming a script. For visual work, use the configured Playwright setup; for audio work, follow `.freebuff/audio.md` and applicable repository guidance. Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
+Do not use an MCP merely because it is available. Do not expand task scope or bypass approval requirements through an MCP. A connection or initialization alone does not count as MCP use.
+
+## 6. BUILD, HOSTING, AND EXECUTION SAFETY
+
+495 MB is the hard maximum build size. Measure and report every build; if it reaches or exceeds 495 MB, stop and report the measured size and safe resume point. Use pnpm, never `npm ci`, and inspect `package.json` before using or claiming a script.
+
+**Hosting:** Lucky Pick Canada is hosted/deployed through **Cloudflare Pages**. Use applicable Cloudflare Pages and Wrangler documentation when a task involves its build or hosting configuration. This note does not authorize deployment, Cloudflare configuration, environment-variable, or secret changes; the approval requirements in §5 still apply. Cloudflare is the hosting platform, not one of the connected MCP integrations listed in §5.
+
+For visual work, use the configured Playwright setup; for audio work, follow `.freebuff/audio.md` and applicable repository guidance. Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
 
 ## 7. FINAL CHECK
 
