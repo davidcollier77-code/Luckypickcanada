@@ -7,15 +7,13 @@ This is the repository's authoritative workflow and safety policy. The user's ta
 ## 1. INITIALIZE ONCE
 
 1. Read this file first.
-2. Read `.freebuff/freebuff.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once; consult `memory-bank/progress.md` when recent history or an earlier decision is relevant.
+2. Read `.freebuff/freebuff.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
 3. Select at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. You may select multiple groups when the task requires them. Read and follow the instructions for every selected group.
 4. Read each selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for documentation routing. Use the manifest to identify reference documents that materially help with the task.
 - Use applicable enabled Freebuff skills when relevant: `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
 The manifest is an index, not an instruction to read every listed source. Treat all `.docs/` files as ordinary reference material: consult documents that materially help with the task and selected group(s). No document receives automatic priority or mandatory use based solely on its name or subject. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
-
-The Memory Bank must stay concise and useful: `projectBrief.md` holds enduring project facts, `activeContext.md` holds current unfinished work, and `progress.md` holds meaningful completed milestones from roughly the last 30 days. Retain older entries only when they preserve important decisions, architecture, constraints, or lessons. At task completion, consolidate useful outcomes, remove stale or repeated task notes, and leave `activeContext.md` explicit even when no work is active. Keep verified information; do not impose an arbitrary file-size limit. `AGENTS.md` remains authoritative.
 
 ## 2. SPEC KIT AND EXECUTION
 
