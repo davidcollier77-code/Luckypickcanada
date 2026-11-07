@@ -8,7 +8,7 @@
 - **Working path:** managed cloud browser. `preview_evaluate`, `preview_snapshot`, `preview_click`, `preview_navigate`, `preview_screenshot` all succeeded; the real homepage rendered (1024×768, dpr 1), the screenshot is committed, and clicking “Consult the Crystal Ball” navigated to `/crystal-ball`. Viewport is fixed — no device emulation.
 - **Puppeteer:** not installed (registry 25.16.0); same Chromium binaries, so the same library blocker applies locally. **Browser Use:** not installed; needs Python ≥3.11, an LLM key and a working browser. **Computer Use:** needs a vision-model key and a desktop session; neither exists.
 - **Recommendation:** Playwright 1.64.1 in GitHub Actions Visual QA for automated and mobile testing; managed cloud browser for screenshots and visitor walkthroughs; fallbacks Playwright MCP, Chrome DevTools MCP, hosted CDP Chromium, real-device cloud.
-- **Verification:** recorded in the PR body separately from implementation status.
+- **Verification PASS:** `./freebuff-verify.sh` exit 0 (`SPEC_KIT_BASE_REF=HEAD`), including the Spec Kit gate, `tsc --noEmit`, the production build and 36/36 refresh-docs tests; `pnpm run test` 47 files / 364 tests exit 0; production build `.next` 372,394,512 B + `public` 32,840,043 B = 405,234,555 B (386.46 MiB) < 495 MB; final diff 8 files, no application, dependency, lockfile, workflow or `.docs/` change. **BLOCKED here (the finding itself):** local Chromium launch and `preview_playwright`. **PENDING:** pull-request CI on the pushed head.
 
 ---
 
