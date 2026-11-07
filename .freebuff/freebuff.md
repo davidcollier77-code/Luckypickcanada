@@ -4,6 +4,7 @@ Read `AGENTS.md` first. It is the single source of repository-wide workflow and 
 
 ## Every coding task
 - Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once; inspect the current branch, worktree, relevant files, task artifacts, and any existing branch or PR.
+- Maintain the three Memory Bank files under the concise lifecycle policy in `AGENTS.md`; consult `progress.md` when useful and reconcile the files at task completion.
 - Select at least one applicable task group. You may select multiple groups when needed. Read and follow the instructions for every selected group.
 - Use `.docs/manifest.json` to find reference documents relevant to the selected group(s). The manifest is an index, not a requirement to read every document. Consult any documents that materially help with the task; no document receives automatic priority or mandatory use based solely on its name or subject.
 - Every task group has access to the shared Google Engineering Practices reference through `.docs/manifest.json`. Consult the selected group's snapshot when it materially helps; it is optional for each task, and supplements rather than overrides `AGENTS.md`, repository conventions, or the selected group's instructions.
