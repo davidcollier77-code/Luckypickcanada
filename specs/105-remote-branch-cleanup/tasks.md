@@ -77,3 +77,36 @@
 - Missing deletion actor/timestamp information is stated plainly and never guessed.
 - No additional remote refs are changed by this artifact-refresh task.
 - Latest-head checks are reported independently, with pending or unavailable checks left explicitly pending/blocked.
+
+## Phase 6: Pass 2 — remaining verified-safe heads (2026-11-07)
+
+**Goal**: delete exactly the 1,084 heads pass 1 recorded as `verified safe`, after independent revalidation.
+
+**Independent Test**: the live head count drops by exactly 1,084, all 1,084 names are absent, and all 368 non-candidate retained branches remain at their recorded tip SHAs.
+
+- [x] T024 Extract the 1,084 `verified safe` rows and split them into 136 deterministic batches of 8 (final batch of 4), retaining the recorded tip SHAs.
+- [x] T025 Revalidate every candidate against the live remote and `origin/main`: exact tip SHA, ancestry, zero unique commits, protection, open-PR, restore-point and seven-day checks. Result: 1,084 pass, 0 moved, 0 skipped.
+- [x] T026 Delete batches 000–135 through the connected GitHub integration, one ref per call, and confirm each block absent from `git ls-remote --heads origin`.
+- [x] T027 Treat the 88 quota-rejected calls as not executed; revalidate those refs as still present and delete them only after the quota window clears.
+- [x] T028 Add `artifacts/branch-cleanup/deleted-branches-pass2.tsv` with 1,084 rows without rewriting either pass-1 TSV.
+- [x] T029 Verify the 09:18:07Z snapshot: 371 live heads, 0 candidate names present, 368 retained tips intact, and `main` unchanged at the recorded pass-2 baseline.
+- [x] T030 Record the unavailable per-ref timestamp/actor fields honestly and preserve the pass-2 audit section.
+
+## Phase 7: PR #1756 merge-conflict repair (2026-11-07)
+
+**Goal**: reconcile PR #1756 with current `main` while preserving both PRs' documentation evidence.
+
+- [x] T031 Confirm the merge base, 2-ahead / 4-behind divergence, current `main` SHA and PR #1755 merge metadata.
+- [x] T032 Reconcile overlapping audit, Spec Kit and Memory Bank files using current `main` as the baseline and retaining the pass-2 additions.
+- [x] T033 Verify the 1,084-row TSV, 136 batch IDs, exact 8/4 batch sizes, and the historical #1755 head-branch mapping.
+- [x] T034 Commit the reconciled tree to the PR source branch with current `main` as the second parent; keep PR #1756 open and unmerged.
+- [ ] T035 Run `./freebuff-verify.sh` on the updated PR head and record the actual result; do not reuse the previous head's result.
+- [ ] T036 Verify all latest-head CI checks after the merge commit; pending checks remain pending.
+- [ ] T037 Complete the final changed-file and conflict-marker audit; preserve the no-application-code-change scope.
+
+## Completion Conditions
+
+- Both PR #1755's current-main audit repair and PR #1756's pass-2 evidence remain present.
+- The 09:18:07Z branch reconciliation is explicitly historical and correctly maps the #1755 head branch.
+- The 1,084 pass-2 deletion rows remain intact and accurately batch-accounted.
+- PR #1756 remains open and unmerged.

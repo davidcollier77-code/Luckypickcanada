@@ -1,3 +1,31 @@
+# Current Task — PR #1756 merge-conflict repair (2026-11-07)
+
+- **Task groups:** `troubleshooting` (resolve the verified branch/base divergence) + `deep-dive` (compare PR #1756, PR #1755 and current `main`) + `testing` (validate the audit evidence and merged tree).
+- **Feature:** reuse `specs/105-remote-branch-cleanup`; no duplicate feature directory.
+- **Branch / PR:** `chore/branch-cleanup-pass2-20261107`, PR #1756; keep the PR open and unmerged.
+- **Root cause:** PR #1756 shared merge base `af350ba6d4b1dbb10eb1257211778085b1edb4eb` with `main`. PR #1755 then merged into `main` at `6bd5c5da9629b48247b7049a9f8e21e53c747c82`, changing the same audit, Spec Kit and Memory Bank files. The PR branch was 2 commits ahead and 4 behind.
+- **Resolution:** combine the current-main post-merge audit and Memory Bank records with PR #1756's pass-2 evidence; preserve the 1,084-row TSV unchanged; clarify that `docs/branch-cleanup-audit-refresh-20261107` was PR #1755's head at the 09:18:07Z snapshot and that #1755 merged later at 09:48:26Z.
+- **Batch evidence:** TSV independently contains 1,084 rows in 136 batches; batches 000–134 contain 8 rows each and batch 135 contains 4.
+- **Scope:** documentation/evidence only; no application code, workflows, dependencies, payment, database, authentication, deployment, secrets or `.docs/` changes.
+- **Verification:** GitHub commit comparison confirms the divergence and common ancestor; PR #1755 metadata confirms the head-branch mapping and merge timestamp; TSV row/batch checks pass. Latest PR-head CI and `./freebuff-verify.sh` must be reported separately and are not inherited from the earlier commit.
+- **Delivery:** source branch updated with a two-parent merge commit; PR #1756 remains open and unmerged.
+
+---
+
+# Completed Task — Branch cleanup pass 2 (2026-11-07)
+
+- **Task groups:** `deep-dive` + `testing`; reuse feature 105.
+- **Branch / PR:** `chore/branch-cleanup-pass2-20261107`, PR #1756.
+- **Baseline:** `origin/main` = `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; 1,084 candidate branches.
+- **Revalidation:** 1,084/1,084 recorded tips matched, each was an ancestor with zero unique commits, and all protection, open-PR, restore-point and seven-day checks passed.
+- **Implementation:** all 1,084 candidates deleted and confirmed absent; 0 failed, 0 skipped. One rate-limit window rejected 88 calls before execution; those branches were revalidated and deleted after the window cleared.
+- **Post-deletion snapshot (2026-11-07T09:18:07Z):** 371 heads = 368 retained + `main` + PR #1750 head + PR #1755 head; candidates present 0; retained missing 0; retained SHA mismatches 0; pass-1 artifacts preserved.
+- **PR #1755 mapping:** its head at the snapshot was `docs/branch-cleanup-audit-refresh-20261107`; #1755 merged later at 09:48:26Z as `6bd5c5da`.
+- **Audit limits:** per-ref deletion timestamps and API actors were unavailable and were not inferred.
+- **Verification on the original pass-2 head:** repository gate passed; measured build was 334.32 MiB, below 495 MB. These results do not substitute for checks on the updated PR head.
+
+---
+
 # Current Task — Post-merge branch-cleanup audit repair (2026-11-07)
 
 - **Task groups:** `deep-dive` (reconcile the original evidence with live GitHub state and identify audit-trail limitations) + `testing` (compare every recorded branch name/tip with the live remote).

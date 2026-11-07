@@ -118,3 +118,49 @@ Preserve the original cleanup as a point-in-time record. Add a dated post-merge 
 ### Delivery
 
 Update the existing feature 105 Spec Kit artifacts and Memory Bank, add `artifacts/branch-cleanup/post-merge-verification.md`, and open one follow-up PR against `main`. Leave it open and unmerged. Record current PR-head CI and repository-gate results separately from the original cleanup verification.
+
+## Pass 2 Continuation (2026-11-07)
+
+**Goal**: finish the 1,084 heads that pass 1 recorded as `verified safe`, under the same safety rule.
+
+**Baseline**: `origin/main` = `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; open PRs #1750
+and #1755 (neither touched).
+
+**Approach**:
+
+1. Extract the candidate rows whose reason starts `verified safe` and split them deterministically into 136
+   batches of 8 with their recorded tip SHAs.
+2. Revalidate each candidate individually against a fresh `git ls-remote` listing and `origin/main`: tip
+   match, ancestry, unique-commit count, protected/open-PR/backup-name exclusions and tip age.
+3. Delete each batch through the connected GitHub integration, one ref per call, in bounded blocks.
+4. After every block, confirm the block's names are absent from `git ls-remote --heads origin`.
+5. On a rejected (quota) call, treat the branch as not deleted, re-verify it as still present, and retry
+   after the window clears.
+6. Write `deleted-branches-pass2.tsv` additively; leave `deleted-branches.tsv` (169 rows) and
+   `retained-branches.tsv` (1,452 rows) untouched.
+7. Verify the final state: live head count, absence of all 1,084 names, intact retained inventory, unchanged
+   `main`, present open-PR heads.
+
+**Execution constraint**: the integration rate-limits a long block with
+`Too many integration calls. Try again in <n>s`. That occurred once, rejected 11 batches before execution,
+and was handled as described in step 5 — no rejection was recorded as a deletion.
+
+**Result**: 1,084 deleted and verified absent; 371 live heads remain (368 retained + `main` + #1750 head +
+#1755 head); `main` unchanged.
+
+## PR #1756 merge-conflict resolution (2026-11-07)
+
+**Common ancestor:** `af350ba6d4b1dbb10eb1257211778085b1edb4eb`  
+**Current main:** `6bd5c5da9629b48247b7049a9f8e21e53c747c82` (PR #1755 merge)  
+**PR #1756 head before repair:** `01c5ee3ffc0a88dc314d418ae11b0b1892d362e7`
+
+The PR branch was 2 commits ahead and 4 commits behind current `main`. The conflict is caused by overlapping documentation/evidence edits, not application code.
+
+**Resolution strategy**:
+1. Use current `main` as the tree baseline so PR #1755's post-merge audit work is retained.
+2. Reapply PR #1756's pass-2 audit appendix, Spec Kit continuation and Memory Bank task record.
+3. Preserve `deleted-branches-pass2.tsv` byte-for-byte by reusing its existing blob.
+4. State explicitly that `docs/branch-cleanup-audit-refresh-20261107` was PR #1755's head at 09:18:07Z and that #1755 merged later at 09:48:26Z.
+5. Create a merge commit with the PR #1756 head as first parent and current `main` as second parent, then advance the PR source branch without force.
+
+**Evidence checks**: 1,084 TSV data rows, 136 batch IDs, 135 full batches and one final four-row batch; GitHub metadata for PR #1755 supplies the exact head branch and merge timestamp. No branch refs other than the PR source branch are changed by this resolution.

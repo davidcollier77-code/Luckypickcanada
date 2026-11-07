@@ -2,7 +2,7 @@
 
 **Feature Branch**: freebuff/da1d12a5430a7af901daee1b
 **Created**: 2026-11-07
-**Status**: Original cleanup partial; post-merge audit refresh in progress
+**Status**: Pass 2 complete; PR #1756 conflict resolution committed; latest-head checks pending
 **Input**: Owner-authorized task to identify remote Git branches conclusively merged into `main`, verify each candidate individually, delete only branches confirmed safe to remove, retain protected branches, branches associated with open pull requests, and branches with uncertain or active work, and report deletions and retentions with reasons.
 
 ## User Scenarios & Testing
@@ -113,3 +113,43 @@ As the repository owner, I want the audit to distinguish its original point-in-t
 - **FR-013**: Missing per-ref deletion timestamps or actor identities MUST be explicitly described as not captured; no actor or timestamp may be fabricated or inferred from PR metadata.
 - **FR-014**: The original deleted-branch TSV column order and recorded tip evidence MUST be preserved for compatibility.
 - **FR-015**: A documentation-only audit refresh MUST NOT delete or recreate any remote branch.
+
+## Pass 2 Continuation (2026-11-07)
+
+The first pass removed 169 heads and deliberately stopped with 1,084 heads still classified `verified safe`.
+The owner then authorized completing that set. The requirements below extend the specification without
+changing the rule that only independently verified branches are deleted.
+
+### Requirements added
+
+- **FR-013**: Every branch in the 1,084-row candidate set MUST be revalidated individually against the live
+  remote and the current `origin/main` immediately before its deletion; the historical classification alone
+  MUST NOT be treated as evidence.
+- **FR-014**: A candidate whose live tip SHA no longer equals its recorded inventory SHA MUST NOT be deleted
+  and MUST be reported for investigation.
+- **FR-015**: Each pass-2 deletion MUST be recorded with its batch id, branch name, verified tip SHA,
+  verification results and deletion result, in a file that does not overwrite the original 169 deletion
+  records.
+- **FR-016**: Deletion timestamps and API actors MUST be recorded when the integration provides reliable
+  evidence, and otherwise explicitly marked unavailable; attribution MUST NOT be invented.
+- **FR-017**: No branch outside the 1,084-row inventory may be deleted, and PR #1754 and PR #1755 MUST NOT be
+  modified.
+
+### Success criteria added
+
+- **SC-007**: All 1,084 candidates are deleted and independently verified absent, the live head count drops
+  by exactly 1,084, and no retained branch name or tip SHA changes.
+
+### Outcome
+
+All 1,084 candidates were revalidated (0 moved, 0 skipped) and deleted; the live head count fell from 1,455
+to 371, with the 368 non-candidate retained branches, `main` and both open-PR heads intact. See
+`artifacts/branch-cleanup/audit-summary.md` ("Pass 2") and `artifacts/branch-cleanup/deleted-branches-pass2.tsv`.
+
+## PR #1756 merge-conflict resolution (2026-11-07)
+
+PR #1756 was created from `af350ba6d4b1dbb10eb1257211778085b1edb4eb`. PR #1755 subsequently merged into `main` at `6bd5c5da9629b48247b7049a9f8e21e53c747c82`, changing files also edited by PR #1756. The resolution preserves both the post-merge audit update and the pass-2 evidence without rewriting either TSV inventory.
+
+- **FR-018**: The merged PR evidence MUST identify `docs/branch-cleanup-audit-refresh-20261107` as PR #1755's head branch at the 09:18:07Z pass-2 snapshot, and record the later 09:48:26Z merge as a subsequent event.
+- **FR-019**: Conflict resolution MUST preserve the original pass-1 evidence, PR #1755's post-merge audit additions, and the complete pass-2 deletion evidence.
+- **SC-008**: The updated PR branch contains current `main` as a merge parent, retains all 1,084 pass-2 rows, and remains open and unmerged pending latest-head verification.
