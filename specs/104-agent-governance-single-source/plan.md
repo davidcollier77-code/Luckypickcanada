@@ -81,3 +81,14 @@ Add a focused Vitest test proving that the general entrypoint is absent, AGENTS.
   - **Mitigation**: Preserve historical artifacts and distinguish them from active configuration/instructions.
 - **Risk**: The saved Master Work Request may reintroduce obsolete or contradictory rules.
   - **Mitigation**: Update the Library template and verify its full contents after upload.
+
+
+## Follow-up Plan — Governance Regression Test Review Finding (2026-11-07)
+
+- **Trigger**: Pullfrog review `5810741955` of merged PR #1751 reported that `beforeAll` was used without being imported from Vitest. The merged test also retained the module-scope file-read issue originally identified by Amazon Q and Graphite.
+- **Selected group**: `testing` only; the work is confined to a Vitest regression test and its existing Spec Kit records.
+- **Decision**: Do not add a lifecycle hook. Define a small `readAgents()` helper that performs the synchronous read only when invoked from the two test callbacks that need the file. This avoids both module-import-time I/O and an unnecessary hook import.
+- **Scope**: Update `__tests__/agent-governance-single-source.test.js`, this existing feature's `spec.md`, `plan.md`, `tasks.md`, and the Memory Bank task/progress records. No application, governance, dependency, workflow, payment, database, authentication, deployment, or documentation-library changes.
+- **Research**: No additional external research is material; the defect is directly visible in the merged source and Vitest already exists in the project.
+- **Verification**: Focused governance test, full Vitest suite, standalone TypeScript, and `./freebuff-verify.sh`. The pull-request Visual QA workflow runs these repository checks on the submitted head.
+- **Delivery**: Publish one follow-up PR against `main`; leave it open and unmerged. Record each check's observed result in the PR body.
