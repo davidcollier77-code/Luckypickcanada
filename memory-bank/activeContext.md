@@ -1,4 +1,15 @@
-# Current Task — Freebuff startup-command audit and optimization (2026-11-07)
+# Current Task — Faster Playwright Visual QA (2026-11-07)
+
+- **Task groups:** `testing` (full visual-suite and CI verification) + `deep-dive` (measured bottleneck analysis and evidence-based optimization).
+- **Branch:** `perf/visual-qa-speed-20261107`; PR to be created after the required checks and final diff review.
+- **Baseline:** PR #1761 Visual QA run `42385343241`, job `128441515953`: 93 Playwright tests on one worker; 89 passed, 1 flaky, 3 skipped; test execution 6.1 minutes. Cold `pnpm install --frozen-lockfile` took 12.5 seconds.
+- **Changes made:** CI Playwright worker cap raised to two while retaining `fullyParallel: false`; setup-node now restores the pnpm store after the pinned pnpm action is installed; frozen-lockfile installation remains mandatory. Added regression guards.
+- **Preserved:** all visual test files, projects/viewports, test assertions, screenshot baselines, comparison thresholds, retries, diagnostics, app code, dependencies/lockfile, existing docs-only classifier and Chromium cache.
+- **Verification:** pending PR-head GitHub Actions; no post-change speed or reliability claim until measured.
+
+---
+
+## Previous Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
 - **Branch:** `freebuff/5c23e2008d5278c48393b22f`; PR open and unmerged.
