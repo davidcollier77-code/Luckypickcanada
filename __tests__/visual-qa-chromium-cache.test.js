@@ -159,6 +159,29 @@ describe('visual QA workflow wiring', () => {
     expect(stepBlock('Run visual regression tests')).toContain('pnpm exec playwright test');
   });
 
+  it('runs independent spec files with two CI workers while keeping in-file tests ordered', () => {
+    expect(playwrightConfig).toContain('fullyParallel: false');
+    expect(playwrightConfig).toContain('workers: process.env.CI ? 2 : undefined');
+    expect(playwrightConfig).not.toContain('workers: process.env.CI ? 1 : undefined');
+  });
+
+  it('restores the pnpm store before frozen-lockfile installation', () => {
+    const pnpmSetupIndex = workflow.indexOf('      - name: Setup pnpm');
+    const nodeSetupIndex = workflow.indexOf('      - name: Use Node.js 22');
+    expect(pnpmSetupIndex).toBeGreaterThan(-1);
+    expect(nodeSetupIndex).toBeGreaterThan(-1);
+    expect(pnpmSetupIndex).toBeLessThan(nodeSetupIndex);
+
+    const nodeStep = stepBlock('Use Node.js 22');
+    expect(nodeStep).not.toBeNull();
+    expect(nodeStep).toContain('cache: pnpm');
+    expect(nodeStep).toContain('cache-dependency-path: pnpm-lock.yaml');
+
+    const installStep = stepBlock('Install dependencies');
+    expect(installStep).not.toBeNull();
+    expect(installStep).toContain('pnpm install --frozen-lockfile');
+  });
+
   it('keeps all Playwright projects on Chromium', () => {
     expect(playwrightConfig).toContain("browserName: 'chromium'");
     expect(playwrightConfig).not.toMatch(/\b(firefox|webkit)\b/i);
