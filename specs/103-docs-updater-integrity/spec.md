@@ -57,6 +57,11 @@ Manifest routing, indexes, snapshots and links stay in agreement after additions
 - **FR-008**: `inventory` MUST equal the union of routed libraries, and every routed library MUST have exactly one source entry and a resolvable snapshot in every assigned group.
 - **FR-009**: Existing schedules, retry count/timing, Atlantic timezone settings, Cloudflare Worker slots and workflow triggers MUST remain unchanged.
 - **FR-010**: The complete updater MUST be verified against a copy of the current library, not only through isolated unit tests.
+- **FR-011**: Critical unresolved link problems and critical library-consistency problems MUST make the report say `FAILED` and the updater exit non-zero, even when no download failed. An unmanaged/orphan snapshot is informational and MUST NOT by itself fail the run.
+- **FR-012**: The updater MUST detect different library identifiers that map to the same snapshot filename. It MUST NOT delete or overwrite a snapshot owned by a currently routed document, and MUST fail safely without writing when ownership is ambiguous.
+- **FR-013**: Temporary symlink cleanup MUST use `lexistsSync()` so dangling symlinks are removed, while atomic write/rename repair behaviour is preserved.
+- **FR-014**: The PR report MUST state the measured index counts accurately: 64 `inventory` entries, 64 `sources` entries and 51 `githubShas` entries; it MUST NOT claim all three indexes contain the same 64 entries.
+- **FR-015**: Regression tests MUST cover consistency failures without download failures, unresolved link problems without download failures, removed-versus-routed filename collisions, dangling temporary-symlink cleanup, and preservation of an existing valid snapshot when a repair is rejected.
 
 ## Success Criteria
 
@@ -65,6 +70,9 @@ Manifest routing, indexes, snapshots and links stay in agreement after additions
 - **SC-003**: The refresh report contains the affected document, URL, error and preservation status for every failure.
 - **SC-004**: Every routed link resolves to its canonical snapshot inside `.docs` after the workflow.
 - **SC-005**: Unit tests, the isolated end-to-end workflow, TypeScript, the repository gate and the production build all pass, with the build below 495 MB.
+- **SC-006**: A run with only critical consistency or link defects reports `FAILED` and exits non-zero; a run with only informational orphan warnings still reports `SUCCESS`.
+- **SC-007**: A filename collision never removes or rewrites the snapshot of a routed document, and the collision is reported as critical.
+- **SC-008**: A dangling `.tmp.symlink.*` entry is removed by cleanup, and a rejected repair leaves the existing valid snapshot byte-identical.
 
 ## Assumptions and Limitations
 

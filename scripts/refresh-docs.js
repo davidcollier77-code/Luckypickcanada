@@ -214,6 +214,39 @@ function collectRoutedLibraries(groupsConfig) {
   return libraryToGroups;
 }
 
+/**
+ * Two different library identifiers can sanitize to the same snapshot
+ * filename. Such ownership is ambiguous: the updater must not delete or
+ * overwrite a routed document's snapshot until the manifest is corrected.
+ */
+function findFilenameCollisions(libraryToGroups, removedLibraries = []) {
+  const owners = new Map();
+  const addOwner = (library, kind) => {
+    const filename = getLibraryFilename(library);
+    if (!owners.has(filename)) {
+      owners.set(filename, { routed: [], removed: [] });
+    }
+    owners.get(filename)[kind].push(library);
+  };
+
+  for (const library of libraryToGroups.keys()) addOwner(library, 'routed');
+  for (const library of removedLibraries) addOwner(library, 'removed');
+
+  const collisions = [];
+  for (const [filename, owner] of owners) {
+    const libraries = [...new Set([...owner.routed, ...owner.removed])];
+    if (libraries.length > 1) {
+      collisions.push({
+        filename,
+        libraries,
+        routed: owner.routed,
+        removed: owner.removed
+      });
+    }
+  }
+  return collisions;
+}
+
 function reconcileManifestIndexes(manifest, routedLibraries) {
   const removed = [];
 
@@ -255,6 +288,13 @@ function reconcileManifestIndexes(manifest, routedLibraries) {
  * from the manifest also removes its updater-managed files on the next run.
  */
 function removeStaleSnapshots(groupsConfig, removedLibraries) {
+  const routedLibraries = collectRoutedLibraries(groupsConfig);
+  const routedFilenames = new Set(
+    [...routedLibraries.keys()].map((library) => getLibraryFilename(library))
+  );
+  const collisionFilenames = new Set(
+    findFilenameCollisions(routedLibraries, removedLibraries).map((entry) => entry.filename)
+  );
   const removedFilenames = new Map(
     [...removedLibraries].map((library) => [getLibraryFilename(library), library])
   );
@@ -271,7 +311,8 @@ function removeStaleSnapshots(groupsConfig, removedLibraries) {
       if (!entry.name.endsWith('.md') || entry.name.includes('.tmp.')) continue;
       const filePath = safeJoinDocs(safeGroup, entry.name);
 
-      if (entry.isSymbolicLink() && !expected.has(entry.name)) {
+      if (entry.isSymbolicLink()) {
+        if (expected.has(entry.name) || collisionFilenames.has(entry.name)) continue;
         fs.unlinkSync(filePath);
         removed.push({
           group,
@@ -279,7 +320,11 @@ function removeStaleSnapshots(groupsConfig, removedLibraries) {
           library: removedFilenames.get(entry.name) || null,
           reason: 'symlink for a document no longer routed in this group'
         });
-      } else if (!entry.isSymbolicLink() && removedFilenames.has(entry.name)) {
+      } else if (
+        removedFilenames.has(entry.name) &&
+        !routedFilenames.has(entry.name) &&
+        !collisionFilenames.has(entry.name)
+      ) {
         fs.unlinkSync(filePath);
         removed.push({
           group,
@@ -301,13 +346,13 @@ function writeDocumentationLink(linkPath, relativeTarget, fallbackContent) {
     fs.renameSync(tempLinkPath, linkPath);
     return 'symlink';
   } catch (error) {
-    if (fs.existsSync(tempLinkPath)) fs.unlinkSync(tempLinkPath);
+    if (lexistsSync(tempLinkPath)) fs.unlinkSync(tempLinkPath);
     const tempDocPath = linkPath + '.tmp.copy.' + Date.now();
     try {
       fs.writeFileSync(tempDocPath, fallbackContent);
       fs.renameSync(tempDocPath, linkPath);
     } catch (writeError) {
-      if (fs.existsSync(tempDocPath)) fs.unlinkSync(tempDocPath);
+      if (lexistsSync(tempDocPath)) fs.unlinkSync(tempDocPath);
       throw writeError;
     }
     return 'copy';
@@ -319,10 +364,14 @@ function writeDocumentationLink(linkPath, relativeTarget, fallbackContent) {
  * links for documents assigned to another group. A differing regular file is
  * reported and left untouched rather than overwritten.
  */
-function repairDocumentationLinks(groupsConfig) {
+function repairDocumentationLinks(groupsConfig, blockedFilenames = new Set()) {
   const repaired = [];
   const problems = [];
   const libraryToGroups = collectRoutedLibraries(groupsConfig);
+  const collisionFilenames = new Set([
+    ...blockedFilenames,
+    ...findFilenameCollisions(libraryToGroups).map((entry) => entry.filename)
+  ]);
   const primaryGroupByLibrary = new Map();
   for (const [library, groups] of libraryToGroups) {
     primaryGroupByLibrary.set(library, groups[0]);
@@ -331,6 +380,7 @@ function repairDocumentationLinks(groupsConfig) {
   for (const [library, groups] of libraryToGroups) {
     const primaryGroup = groups[0];
     const filename = getLibraryFilename(library);
+    if (collisionFilenames.has(filename)) continue;
     const primaryPath = safeJoinDocs(primaryGroup, filename);
     let primaryContent;
     try {
@@ -428,6 +478,7 @@ function repairDocumentationLinks(groupsConfig) {
 
     for (const entry of fs.readdirSync(groupDir, { withFileTypes: true })) {
       if (expected.has(entry.name) || !entry.name.endsWith('.md') || entry.name.includes('.tmp.')) continue;
+      if (collisionFilenames.has(entry.name)) continue;
       const library = routedByFilename.get(entry.name);
       if (!library) continue;
       const filePath = safeJoinDocs(group, entry.name);
@@ -482,6 +533,14 @@ function auditLibraryConsistency(groupsConfig, sourcesConfig) {
     [...libraryToGroups.keys()].map((library) => [getLibraryFilename(library), library])
   );
 
+  for (const collision of findFilenameCollisions(libraryToGroups)) {
+    issues.push({
+      library: collision.libraries.join(', '),
+      issue: `different routed library identifiers map to the same snapshot filename ${collision.filename}; ownership is ambiguous`,
+      severity: 'critical'
+    });
+  }
+
   for (const [library, groups] of libraryToGroups) {
     const filename = getLibraryFilename(library);
     if (!sourcesConfig[library]) {
@@ -521,7 +580,8 @@ function auditLibraryConsistency(groupsConfig, sourcesConfig) {
       if (!entry.name.endsWith('.md') || entry.name.includes('.tmp.') || expected.has(entry.name)) continue;
       issues.push({
         library: routedByFilename.get(entry.name) || null,
-        issue: `unmanaged snapshot at .docs/${group}/${entry.name} is not assigned to this group; review or remove it`
+        issue: `unmanaged snapshot at .docs/${group}/${entry.name} is not assigned to this group; review or remove it`,
+        severity: 'warning'
       });
     }
   }
@@ -757,8 +817,23 @@ function getUpstreamSha(lib, sourceConfig) {
       https.get(options, (res) => {
         if (res.statusCode === 200) {
           let data = '';
-          res.on('data', chunk => data += chunk);
+          let totalSize = 0;
+          let sizeExceeded = false;
+          res.on('data', chunk => {
+            if (sizeExceeded) return;
+            totalSize += chunk.length;
+            if (totalSize > MAX_DOWNLOAD_BYTES) {
+              sizeExceeded = true;
+              data = '';
+              return;
+            }
+            data += chunk;
+          });
           res.on('end', () => {
+            if (sizeExceeded) {
+              resolve(null);
+              return;
+            }
             try {
               const parsed = JSON.parse(data);
               resolve(parsed.sha);
@@ -798,7 +873,7 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
     fs.writeFileSync(tempManifestPath, JSON.stringify(manifestData, null, 2) + '\n');
     fs.renameSync(tempManifestPath, manifestPath);
   } catch (e) {
-    if (fs.existsSync(tempManifestPath)) fs.unlinkSync(tempManifestPath);
+    if (lexistsSync(tempManifestPath)) fs.unlinkSync(tempManifestPath);
     throw e;
   }
 }
@@ -810,9 +885,11 @@ function cleanupStaleTempFiles(dirPath) {
     const entryPath = safeJoinDocs(path.relative(DOCS_BASE_DIR, dirPath), entry.name);
     if (entry.isDirectory()) {
       cleanupStaleTempFiles(entryPath);
-    } else if (entry.isFile() && entry.name.includes('.tmp.')) {
+    } else if (entry.name.includes('.tmp.')) {
+      // Dirent.isFile() is false for a dangling symlink. Use lexistsSync() so a
+      // stale .tmp.symlink entry is removed even when its target is gone.
       try {
-        fs.unlinkSync(entryPath);
+        if (lexistsSync(entryPath)) fs.unlinkSync(entryPath);
         console.log(`Removed stale temp file: ${entryPath}`);
       } catch (e) {
         console.warn(`Could not remove stale temp file ${entryPath}:`, e.message);
@@ -851,8 +928,30 @@ function escapeTableCell(value) {
     .replace(/\r?\n/g, ' ');
 }
 
+function escapeListText(value) {
+  return String(value == null ? '' : value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, ' ');
+}
+
+function getCriticalIntegrityIssues(report) {
+  const consistency = Array.isArray(report.consistencyIssues) ? report.consistencyIssues : [];
+  const linkProblems = Array.isArray(report.linkProblems) ? report.linkProblems : [];
+  return consistency.concat(linkProblems).filter((issue) => issue.severity !== 'warning');
+}
+
+function hasCriticalFailures(report) {
+  return (
+    (report.errors || []).length > 0 ||
+    (report.downloadFailures || []).length > 0 ||
+    (report.validationRejections || []).length > 0 ||
+    getCriticalIntegrityIssues(report).length > 0
+  );
+}
+
 function renderRefreshReport(report) {
-  const failed = report.errors.length > 0;
+  const failed = hasCriticalFailures(report);
+  const criticalIssues = getCriticalIntegrityIssues(report);
   const lines = [];
   lines.push('## Documentation Refresh Report');
   lines.push('');
@@ -860,7 +959,8 @@ function renderRefreshReport(report) {
   lines.push(`- **Result:** ${failed ? 'FAILED' : 'SUCCESS'}`);
   lines.push(
     `- **Summary:** ${report.updated} updated · ${report.unchanged} unchanged · ${report.skipped} skipped · ` +
-    `${report.failed} download failure(s) · ${report.rejected} rejected download(s)`
+    `${report.failed} download failure(s) · ${report.rejected} rejected download(s) · ` +
+    `${criticalIssues.length} critical integrity issue(s)`
   );
   lines.push(`- **Library size:** ${report.finalSize} bytes (${(report.finalSize / 1024 / 1024).toFixed(2)} MB)`);
   lines.push('');
@@ -905,10 +1005,10 @@ function renderRefreshReport(report) {
     lines.push('None.');
   } else {
     for (const entry of report.removedLibraries) {
-      lines.push(`- \`${entry.library}\` — removed from \`${entry.section}\` (${entry.reason}); it will not be downloaded.`);
+      lines.push(`- \`${escapeListText(entry.library)}\` — removed from \`${escapeListText(entry.section)}\` (${escapeListText(entry.reason)}); it will not be downloaded.`);
     }
     for (const entry of report.removedSnapshots) {
-      lines.push(`- \`.docs/${entry.group}/${entry.filename}\` — deleted (${entry.reason}).`);
+      lines.push(`- \`.docs/${escapeListText(entry.group)}/${escapeListText(entry.filename)}\` — deleted (${escapeListText(entry.reason)}).`);
     }
   }
   lines.push('');
@@ -919,20 +1019,33 @@ function renderRefreshReport(report) {
     lines.push('None.');
   } else {
     for (const repair of report.repairedLinks) {
-      lines.push(`- \`${repair.path}\` — ${repair.action} (${repair.detail}).`);
+      lines.push(`- \`${escapeListText(repair.path)}\` — ${escapeListText(repair.action)} (${escapeListText(repair.detail)}).`);
     }
   }
   lines.push('');
 
   lines.push('### Library consistency review');
   lines.push('');
-  const review = report.consistencyIssues.concat(report.linkProblems);
-  if (review.length === 0) {
+  const informationalReview = report.consistencyIssues
+    .concat(report.linkProblems)
+    .filter((issue) => issue.severity === 'warning');
+  if (criticalIssues.length === 0 && informationalReview.length === 0) {
     lines.push('No inconsistencies detected.');
   } else {
-    for (const issue of review) {
-      const prefix = issue.library ? `\`${issue.library}\` — ` : '';
-      lines.push(`- ${prefix}${issue.issue}`);
+    if (criticalIssues.length > 0) {
+      lines.push('**Critical (fails the run)**');
+      for (const issue of criticalIssues) {
+        const prefix = issue.library ? `\`${escapeTableCell(issue.library)}\` — ` : '';
+        lines.push(`- ${prefix}${escapeListText(issue.issue)}`);
+      }
+    }
+    if (informationalReview.length > 0) {
+      if (criticalIssues.length > 0) lines.push('');
+      lines.push('**Informational (does not fail the run)**');
+      for (const issue of informationalReview) {
+        const prefix = issue.library ? `\`${escapeTableCell(issue.library)}\` — ` : '';
+        lines.push(`- ${prefix}${escapeListText(issue.issue)}`);
+      }
     }
   }
   lines.push('');
@@ -943,7 +1056,7 @@ function renderRefreshReport(report) {
     lines.push('None.');
   } else {
     for (const error of report.errors) {
-      lines.push(`- ${error}`);
+      lines.push(`- ${escapeListText(error)}`);
     }
   }
   lines.push('');
@@ -1024,11 +1137,19 @@ async function runRefresh(options, report) {
     ? manifest.githubShas
     : {};
 
-  const inventory = new Set();
-  for (const library of originalInventory) {
-    if (routedLibraries.has(library)) inventory.add(library);
+  const inventory = new Set(routedLibraries);
+  const removedLibraryIds = new Set(report.removedLibraries.map((entry) => entry.library));
+  const filenameCollisions = findFilenameCollisions(libraryToGroups, removedLibraryIds);
+  const ambiguousFilenames = new Set(filenameCollisions.map((entry) => entry.filename));
+  for (const collision of filenameCollisions) {
+    // Routed-only collisions are also reported by auditLibraryConsistency().
+    if (collision.removed.length === 0) continue;
+    report.consistencyIssues.push({
+      library: collision.libraries.join(', '),
+      issue: `different library identifiers map to the same snapshot filename ${collision.filename}; ownership is ambiguous, so no snapshot was deleted or overwritten`,
+      severity: 'critical'
+    });
   }
-  for (const library of routedLibraries) inventory.add(library);
 
   for (const [group, libraries] of Object.entries(groupsConfig)) {
     if (!Array.isArray(libraries)) throw new Error(`Invalid documentation manifest: group ${group} must be an array.`);
@@ -1038,7 +1159,6 @@ async function runRefresh(options, report) {
     }
   }
 
-  const removedLibraryIds = new Set(report.removedLibraries.map((entry) => entry.library));
   report.removedSnapshots = removeStaleSnapshots(groupsConfig, removedLibraryIds);
 
   const inventoryNeedsSave =
@@ -1055,6 +1175,7 @@ async function runRefresh(options, report) {
 
   const pendingUpdates = [];
   for (const [library, groups] of libraryToGroups) {
+    if (ambiguousFilenames.has(getLibraryFilename(library))) continue;
     pendingUpdates.push({ lib: library, groups });
   }
 
@@ -1084,10 +1205,10 @@ async function runRefresh(options, report) {
 
     let batchContinues = true;
     let deferredUpdates = [];
-    // Only true when a write actually changes .docs / currentDocsSize, so the
-    // hard-ceiling guard below isn't fooled by unrelated skips/failures into
-    // retrying a capacity-deferred library for an extra batch before reporting deadlock.
-    let capacityProgressMade = false;
+    // Tracks freed capacity, not write success: a deferred library can only fit
+    // after an earlier write shrinks .docs. Growth cannot create room, so it must
+    // not trigger another batch and risk a capacity-retry loop.
+    let capacityFreed = false;
 
     while (batchContinues && pendingUpdates.length > 0) {
       const nextUpdate = pendingUpdates.shift();
@@ -1253,12 +1374,12 @@ async function runRefresh(options, report) {
 
           if (i === 0) {
             if (!lexistsSync(docPath)) {
-              const tempPath = docPath + '.tmp.' + Date.now();
+              const tempPath = docPath + '.tmp.primary.' + Date.now();
               try {
                 fs.writeFileSync(tempPath, outputWithCorrectLineEndings);
                 fs.renameSync(tempPath, docPath);
               } catch (e) {
-                if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+                if (lexistsSync(tempPath)) fs.unlinkSync(tempPath);
                 throw e;
               }
             }
@@ -1270,12 +1391,12 @@ async function runRefresh(options, report) {
                 fs.symlinkSync(relativeTarget, docPath);
               } catch (e) {
                 // fallback
-                const tempPath = docPath + '.tmp.' + Date.now();
+                const tempPath = docPath + '.tmp.copy.' + Date.now();
                 try {
                   fs.writeFileSync(tempPath, outputWithCorrectLineEndings);
                   fs.renameSync(tempPath, docPath);
                 } catch (err) {
-                  if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+                  if (lexistsSync(tempPath)) fs.unlinkSync(tempPath);
                   throw err;
                 }
               }
@@ -1291,12 +1412,12 @@ async function runRefresh(options, report) {
         // Write primary copy to first group
         const safeFirstGroup = validateGroupName(groups[0]);
         const firstGroupPath = safeJoinDocs(safeFirstGroup, safeName);
-        const tempPath1 = firstGroupPath + '.tmp.' + Date.now();
+        const tempPath1 = firstGroupPath + '.tmp.primary.' + Date.now();
         try {
           fs.writeFileSync(tempPath1, outputWithCorrectLineEndings);
           fs.renameSync(tempPath1, firstGroupPath);
         } catch (e) {
-          if (fs.existsSync(tempPath1)) fs.unlinkSync(tempPath1);
+          if (lexistsSync(tempPath1)) fs.unlinkSync(tempPath1);
           throw e;
         }
 
@@ -1311,14 +1432,14 @@ async function runRefresh(options, report) {
             fs.symlinkSync(relativeTarget, tempSymlinkPath);
             fs.renameSync(tempSymlinkPath, docPath);
           } catch (e) {
-            if (fs.existsSync(tempSymlinkPath)) fs.unlinkSync(tempSymlinkPath);
+            if (lexistsSync(tempSymlinkPath)) fs.unlinkSync(tempSymlinkPath);
             console.warn(`Symlink failed for ${docPath}, falling back to writing file: `, e.message);
             const tempDocPath = docPath + '.tmp.copy.' + Date.now();
             try {
               fs.writeFileSync(tempDocPath, outputWithCorrectLineEndings);
               fs.renameSync(tempDocPath, docPath);
             } catch (err) {
-              if (fs.existsSync(tempDocPath)) fs.unlinkSync(tempDocPath);
+              if (lexistsSync(tempDocPath)) fs.unlinkSync(tempDocPath);
               throw err;
             }
           }
@@ -1334,7 +1455,7 @@ async function runRefresh(options, report) {
         const sizeAfterWrite = getDirSize(DOCS_DIR);
         // Only mark capacity progress if the write actually reduced .docs size
         if (sizeAfterWrite < sizeBeforeWrite) {
-          capacityProgressMade = true;
+          capacityFreed = true;
         }
       }
 
@@ -1352,7 +1473,7 @@ async function runRefresh(options, report) {
     }
 
     if (deferredUpdates.length > 0) {
-      if (!capacityProgressMade) {
+      if (!capacityFreed) {
         console.error(`Hard ceiling deadlock: No space freed and no pending resources can fit.`);
         console.error(`Current size: ${currentDocsSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
         console.error(`No pending library can fit under the hard ceiling.`);
@@ -1367,7 +1488,7 @@ async function runRefresh(options, report) {
   }
 
   // Repair links after downloads so newly fetched snapshots can be linked.
-  const linkResult = repairDocumentationLinks(groupsConfig);
+  const linkResult = repairDocumentationLinks(groupsConfig, ambiguousFilenames);
   report.repairedLinks = linkResult.repaired;
   report.linkProblems = linkResult.problems;
 
@@ -1413,7 +1534,8 @@ async function main() {
     }
   }
 
-  const failed = report.errors.length > 0;
+  const criticalIntegrity = getCriticalIntegrityIssues(report);
+  const failed = hasCriticalFailures(report);
   const failMsg = `FAILED — [${report.timestamp}] — VERIFICATION FAILED`;
   const successMsg = `SUCCESS — [${report.timestamp}] — VERIFIED`;
 
@@ -1430,6 +1552,13 @@ async function main() {
   console.log(`Batches used: ${report.batches}`);
   console.log(`Removed documents reconciled: ${report.removedLibraries.length} manifest entries, ${report.removedSnapshots.length} snapshots`);
   console.log(`Repaired documentation links: ${report.repairedLinks.length}`);
+  console.log(`Critical integrity problems: ${criticalIntegrity.length}`);
+  if (criticalIntegrity.length > 0) {
+    console.log('Critical integrity problems:');
+    for (const issue of criticalIntegrity) {
+      console.log(`  - ${issue.library ? `${issue.library}: ` : ''}${issue.issue}`);
+    }
+  }
   if (report.downloadFailures.length > 0) {
     console.log(`Broken source URLs:`);
     for (const failure of report.downloadFailures) {
@@ -1457,10 +1586,15 @@ if (require.main === module) {
 module.exports = {
   validateDocumentContent,
   collectRoutedLibraries,
+  findFilenameCollisions,
   reconcileManifestIndexes,
   removeStaleSnapshots,
   repairDocumentationLinks,
   auditLibraryConsistency,
+  cleanupStaleTempFiles,
+  runRefresh,
+  getCriticalIntegrityIssues,
+  hasCriticalFailures,
   renderRefreshReport,
   createRefreshReport,
   getLibraryFilename,

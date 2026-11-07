@@ -1,3 +1,11 @@
+# Current Task — Documentation updater review repair (2026-11-07)
+
+- **Task:** Repair PR #1748 after independent review: restore Spec Kit separation, make critical link/consistency defects fail, protect filename-collision ownership, harden temp cleanup, correct the 64/64/51 report and add regression coverage.
+- **Governance:** Reverted merge `db67ba58` (PR #1749) with `git revert -m 1`; PR #1749's commits remain in history and are not part of PR #1748. `.specify/feature.json` points to `specs/103-docs-updater-integrity`.
+- **Implementation:** `hasCriticalFailures()` drives report result and exit code; orphan snapshots are `severity: warning`, all link problems and other consistency issues are critical. `findFilenameCollisions()` blocks ambiguous downloads, repair and deletion; `lexistsSync()` cleans dangling temp symlinks; report counts corrected to 64 inventory / 64 sources / 51 GitHub SHA entries.
+- **Verification:** updater 36/36, Vitest 354/354, `tsc --noEmit` exit 0, repository gate exit 0, production build 349,900,039 B (333.69 MiB), scheduler 17/17 and Wrangler dry-run exit 0. Local Playwright BLOCKED (missing Chromium system libraries, no root); PR-head Visual QA is the visual path.
+- **Delivery:** PR #1748 remains open and unmerged; final PR-head checks and diff audit recorded in the PR body.
+
 # Active Context — Documentation Updater Reliability and Safety (2026-11-07)
 
 - **Task groups:** `troubleshooting` (broken source URLs, failed downloads, broken links) + `deep-dive` (evidence audit of the manifest, symlinks, retry and scheduler settings) + `testing` (unit and complete isolated workflow execution).

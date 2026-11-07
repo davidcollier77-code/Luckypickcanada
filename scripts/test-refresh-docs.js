@@ -79,10 +79,15 @@ const refreshDocs = require('./refresh-docs.js');
 const {
   validateDocumentContent,
   collectRoutedLibraries,
+  findFilenameCollisions,
   reconcileManifestIndexes,
   removeStaleSnapshots,
   repairDocumentationLinks,
   auditLibraryConsistency,
+  cleanupStaleTempFiles,
+  runRefresh,
+  getCriticalIntegrityIssues,
+  hasCriticalFailures,
   renderRefreshReport,
   createRefreshReport,
   getLibraryFilename,
@@ -533,6 +538,159 @@ async function runTests() {
     assert.match(worker, /\["Tue 02:21", \{ workflow: "refresh-docs.yml", slot: "docs-primary" \}\]/);
     assert.match(worker, /\["Fri 06:21", \{ workflow: "refresh-docs.yml", slot: "docs-backup" \}\]/);
     assert.match(worker, /\["Fri 10:21", \{ workflow: "refresh-docs.yml", slot: "docs-recovery" \}\]/);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Review repair regressions
+  // ---------------------------------------------------------------------------
+
+  await test('critical consistency and link problems fail without download failures', () => {
+    const consistencyReport = createRefreshReport();
+    consistencyReport.consistencyIssues.push({
+      library: '/routed/doc',
+      issue: 'missing snapshot at .docs/creation/_routed_doc.md'
+    });
+    assert.strictEqual(consistencyReport.errors.length, 0);
+    assert.strictEqual(consistencyReport.downloadFailures.length, 0);
+    assert.strictEqual(hasCriticalFailures(consistencyReport), true);
+    assert.strictEqual(getCriticalIntegrityIssues(consistencyReport).length, 1);
+    assert.match(renderRefreshReport(consistencyReport), /\*\*Result:\*\* FAILED/);
+
+    const linkReport = createRefreshReport();
+    linkReport.linkProblems.push({
+      library: '/routed/doc',
+      issue: 'duplicate copy at .docs/audio/_routed_doc.md differs from the primary snapshot; left unchanged for review'
+    });
+    assert.strictEqual(linkReport.errors.length, 0);
+    assert.strictEqual(linkReport.downloadFailures.length, 0);
+    assert.strictEqual(hasCriticalFailures(linkReport), true);
+    assert.match(renderRefreshReport(linkReport), /\*\*Result:\*\* FAILED/);
+
+    const warningReport = createRefreshReport();
+    warningReport.consistencyIssues.push({
+      library: null,
+      issue: 'unmanaged snapshot at .docs/audio/_orphan.md is not assigned to this group; review or remove it',
+      severity: 'warning'
+    });
+    assert.strictEqual(hasCriticalFailures(warningReport), false);
+    assert.match(renderRefreshReport(warningReport), /\*\*Result:\*\* SUCCESS/);
+    assert.match(renderRefreshReport(warningReport), /Informational \(does not fail the run\)/);
+  });
+
+  await test('unresolved link problem without download failures fails and preserves the primary snapshot', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    fs.mkdirSync(path.join(root, 'audio'));
+    const url = 'https://example.com/lib-doc.md';
+    const primaryContent = '# Library\n\nValid documentation content with enough readable words for validation.\n';
+    const differingContent = '# Different\n\nThis duplicate content is different and must not replace the valid primary snapshot.\n';
+    mockResponses[url] = { statusCode: 200, data: primaryContent };
+    fs.writeFileSync(path.join(root, 'creation', '_lib_doc.md'), primaryContent);
+    fs.writeFileSync(path.join(root, 'audio', '_lib_doc.md'), differingContent);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: ['/lib/doc'], audio: ['/lib/doc'] },
+      sources: { '/lib/doc': { type: 'url', url } },
+      inventory: ['/lib/doc'],
+      githubShas: {}
+    }, null, 2));
+
+    const report = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, report);
+
+    assert.strictEqual(report.downloadFailures.length, 0);
+    assert.strictEqual(report.errors.length, 0);
+    assert.ok(report.linkProblems.some((entry) => /differs from the primary snapshot/.test(entry.issue)));
+    assert.strictEqual(hasCriticalFailures(report), true);
+    assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_lib_doc.md'), 'utf8'), primaryContent);
+    assert.strictEqual(fs.readFileSync(path.join(root, 'audio', '_lib_doc.md'), 'utf8'), differingContent);
+    assert.match(renderRefreshReport(report), /\*\*Result:\*\* FAILED/);
+    restoreDocsDirectory();
+  });
+
+  await test('removed and routed library filename collisions preserve the routed snapshot', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    fs.mkdirSync(path.join(root, 'audio'));
+    const routedLibrary = '/lib/doc.name';
+    const removedLibrary = '/lib/doc_name';
+    const filename = getLibraryFilename(routedLibrary);
+    assert.strictEqual(filename, getLibraryFilename(removedLibrary));
+    const routedContent = 'Routed documentation content with enough readable words.\n';
+    fs.writeFileSync(path.join(root, 'creation', filename), routedContent);
+    fs.writeFileSync(path.join(root, 'audio', filename), routedContent);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [routedLibrary], audio: [routedLibrary] },
+      sources: { [removedLibrary]: { type: 'url', url: 'https://example.com/removed.md' } },
+      inventory: [routedLibrary, removedLibrary],
+      githubShas: {}
+    }, null, 2));
+
+    const collisions = findFilenameCollisions(
+      collectRoutedLibraries({ creation: [routedLibrary], audio: [routedLibrary] }),
+      [removedLibrary]
+    );
+    assert.strictEqual(collisions.length, 1);
+    assert.deepStrictEqual(collisions[0].routed, [routedLibrary]);
+    assert.deepStrictEqual(collisions[0].removed, [removedLibrary]);
+
+    const report = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, report);
+
+    assert.strictEqual(fs.readFileSync(path.join(root, 'creation', filename), 'utf8'), routedContent);
+    assert.ok(report.removedSnapshots.every((entry) => entry.filename !== filename));
+    assert.ok(report.consistencyIssues.some((entry) => /same snapshot filename/.test(entry.issue) && /ownership is ambiguous/.test(entry.issue)));
+    assert.strictEqual(hasCriticalFailures(report), true);
+    assert.match(renderRefreshReport(report), /\*\*Result:\*\* FAILED/);
+    restoreDocsDirectory();
+  });
+
+  await test('cleanupStaleTempFiles removes dangling temporary symlinks', () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    const danglingLink = path.join(root, 'creation', '_doc.md.tmp.symlink.1');
+    const tempCopy = path.join(root, 'creation', '_doc.md.tmp.copy.1');
+    fs.symlinkSync('missing-target.md', danglingLink);
+    fs.writeFileSync(tempCopy, 'temp');
+
+    cleanupStaleTempFiles(root);
+
+    assert.throws(() => fs.lstatSync(danglingLink), (error) => error.code === 'ENOENT');
+    assert.strictEqual(fs.existsSync(tempCopy), false);
+    restoreDocsDirectory();
+  });
+
+  await test('consistency-only failures make the updater exit non-zero without download failures', () => {
+    const root = makeTempDocsRoot();
+    fs.mkdirSync(path.join(root, 'creation'));
+    fs.writeFileSync(
+      path.join(root, 'creation', '_no_source_doc.md'),
+      'Valid documentation content with enough readable words for validation.\n'
+    );
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: ['/no_source/doc'] },
+      sources: {},
+      inventory: ['/no_source/doc'],
+      githubShas: {}
+    }, null, 2));
+    const reportPath = path.join(root, 'refresh-report.md');
+
+    const result = spawnSync(
+      process.execPath,
+      [path.join(__dirname, 'refresh-docs.js'), '--docs-dir', root, '--report', reportPath],
+      { cwd: repoRoot, encoding: 'utf8', timeout: 30000 }
+    );
+
+    assert.strictEqual(result.status, 1, result.stderr || result.stdout);
+    const markdown = fs.readFileSync(reportPath, 'utf8');
+    assert.match(markdown, /\*\*Result:\*\* FAILED/);
+    assert.match(markdown, /0 download failure\(s\)/);
+    assert.match(markdown, /no source configuration/);
   });
 
   // ---------------------------------------------------------------------------
