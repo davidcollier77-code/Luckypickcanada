@@ -1,0 +1,129 @@
+{
+  "task": "browser-testing-tooling-evaluation",
+  "feature": "specs/106-browser-testing-tooling-evaluation",
+  "date": "2026-11-07",
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS (Noble Numbat) x86_64",
+    "node": "v26.13.0",
+    "package_json_engines_node": "22.x",
+    "pnpm": "10.30.3",
+    "python": "3.12.3",
+    "user": "fb0b08ef27df00c0e858c01702 (uid 11670930, non-root)",
+    "sudo": "refused: The \"no new privileges\" flag is set, which prevents sudo from running as root",
+    "DISPLAY": "unset",
+    "model_or_browser_cloud_key_vars_present": "none",
+    "installed_playwright_browser_builds": ["chromium-1248", "chromium_headless_shell-1248", "ffmpeg-1013"]
+  },
+  "probes": [
+    {
+      "id": "P1-playwright-versions",
+      "command": "playwright --version; node -e require('./node_modules/@playwright/test/package.json').version",
+      "result": "Version 1.64.1; 1.64.1",
+      "verdict": "installed and version-aligned"
+    },
+    {
+      "id": "P2-chromium-launch",
+      "command": "node /tmp/pw-probe.mjs  (playwright-chromium chromium.launch())",
+      "result": "LAUNCH_FAIL Error: browserType.launch: Target page, context or browser has been closed ... [pid=3251][err] chrome-headless-shell: error while loading shared libraries: libnspr4.so: cannot open shared object file: No such file or directory",
+      "verdict": "local Chromium cannot start"
+    },
+    {
+      "id": "P3-missing-libraries",
+      "command": "ldd ~/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome | grep 'not found'",
+      "result": "16 missing: libnspr4.so libnss3.so libnssutil3.so libsmime3.so libatk-1.0.so.0 libatk-bridge-2.0.so.0 libcups.so.2 libxkbcommon.so.0 libasound.so.2 libcairo.so.2 libpango-1.0.so.0 libXcomposite.so.1 libXdamage.so.1 libXfixes.so.3 libXrandr.so.2 libatspi.so.0",
+      "result_headless_shell": "12 missing of the same set (without libsmime3.so, libcups.so.2, libcairo.so.2, libpango-1.0.so.0)",
+      "verdict": "system dependency gap"
+    },
+    {
+      "id": "P4-install-feasibility",
+      "command": "sudo -n true; apt-get update; apt-get install --dry-run libnspr4",
+      "result": "sudo refused (no-new-privileges); apt-get update: 'Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)'; dry-run: 'E: Unable to locate package libnspr4'",
+      "verdict": "cannot install the missing libraries here; no install attempted"
+    },
+    {
+      "id": "P5-preview-playwright",
+      "command": "preview_playwright { code: 'return 1;' } and preview_playwright { page.goto + textContent }",
+      "result": "both: \"The property 'options.mode' must be one of: 'strip'. Received 'transform'\"",
+      "verdict": "platform bridge defect; identical for trivial and navigational scripts, so not bypassable by script content"
+    },
+    {
+      "id": "P6-repo-search",
+      "command": "code_search 'options\\.mode|preview_playwright'",
+      "result": "1 match, in artifacts/reveal-card-cinematics/out/cloud-browser-report.json (a prior evidence note)",
+      "verdict": "no repository code sets the failing option"
+    },
+    {
+      "id": "P7-managed-browser-evaluate",
+      "command": "preview_evaluate on example.com",
+      "result": "{\"title\":\"Example Domain\",\"ua\":\"... Chrome/154.0.0.0 Safari/537.36\"}",
+      "verdict": "managed browser JavaScript evaluation works"
+    },
+    {
+      "id": "P8-dev-server",
+      "command": "pnpm dev --hostname 0.0.0.0 --port 3000; curl -H 'Host: pv-...style.dev' http://127.0.0.1:3000/",
+      "result": "LISTEN 0.0.0.0:3000; READY in 3s, HTTP 200; log 'GET / 200 in 806ms'",
+      "verdict": "app reachable in the workspace"
+    },
+    {
+      "id": "P9-preview-routing",
+      "command": "preview_navigate to https://pv-...style.dev/ before and after cloud_show_dev_server",
+      "result": "before registration: edge 404 page ('There's nothing here yet ... no application is set up to serve it'); after registration: ticket URL served the app",
+      "verdict": "the 404 was unregistered preview routing, not an application failure"
+    },
+    {
+      "id": "P10-managed-browser-site-render",
+      "command": "preview_evaluate on the ticket URL",
+      "result": "title 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories', h1 'Lucky Pick Canada', innerWidth 1024, innerHeight 768, dpr 1, body text 3975 chars",
+      "verdict": "real site renders; fixed viewport, no device emulation exposed"
+    },
+    {
+      "id": "P11-screenshot",
+      "command": "preview_screenshot savePath artifacts/browser-testing-tooling/out/home-desktop-cloud-browser.png",
+      "result": "saved PNG in the workspace",
+      "verdict": "screenshots work"
+    },
+    {
+      "id": "P12-visitor-walkthrough",
+      "command": "preview_snapshot then preview_click uid=3_10 ('Consult the Crystal Ball')",
+      "result": "navigated: true, https://pv-...style.dev/crystal-ball — 'Crystal Ball | Lucky Pick Canada'",
+      "verdict": "interactive visitor walkthrough works"
+    },
+    {
+      "id": "P13-puppeteer",
+      "command": "require('./node_modules/puppeteer/package.json'); pnpm view puppeteer version",
+      "result": "not installed; published version 25.16.0",
+      "verdict": "available to add, but it drives the same Chromium binaries, so P3 blocks it locally"
+    },
+    {
+      "id": "P14-browser-use",
+      "command": "python3 -c importlib.util.find_spec for playwright/selenium/pyppeteer/browser_use; docs lookup",
+      "result": "all False; PyPI/docs: Python >=3.11 library, needs an LLM key (OPENAI_API_KEY / ANTHROPIC_API_KEY / BROWSER_USE_API_KEY) and a local Playwright browser or hosted cloud browser",
+      "verdict": "not installed and not usable without an LLM key plus a working browser"
+    },
+    {
+      "id": "P15-computer-use",
+      "command": "env variable-name scan; DISPLAY check",
+      "result": "no model-provider or browser-cloud key variables; DISPLAY unset",
+      "verdict": "requires a vision-model API key and a desktop session; unavailable"
+    },
+    {
+      "id": "P16-ci-visual-qa",
+      "command": "read .github/workflows/visual-qa.yml and playwright.config.ts",
+      "result": "CI installs Chromium with --with-deps on ubuntu-latest, runs pnpm exec playwright test; projects desktop 1440x900, mobile-390, mobile-412",
+      "verdict": "authoritative automated visual environment; covers desktop and mobile emulation"
+    }
+  ],
+  "recommendation": {
+    "automated_testing": "Playwright 1.64.1 in GitHub Actions Visual QA, or any host where playwright install-deps works",
+    "mobile_testing": "Playwright mobile-390/mobile-412 projects in CI; real-device cloud for physical devices",
+    "screenshots": "Playwright in CI for baselines; managed cloud browser preview_screenshot for same-session checks",
+    "visitor_walkthrough": "Managed cloud browser: preview_snapshot -> preview_click -> preview_evaluate",
+    "fallbacks": [
+      "Playwright MCP (@playwright/mcp) - needs Node 20+ and a launchable Chromium",
+      "Chrome DevTools MCP - Chrome control plus performance traces; needs a drivable Chrome",
+      "Hosted CDP Chromium (Browser Use Cloud / Browserbase) - connectOverCDP avoids local system libraries; needs owner API key",
+      "Real-device cloud (BrowserStack / LambdaTest) - physical iOS/Android; needs owner account"
+    ],
+    "not_recommended": "Cypress, Selenium/WebdriverIO - same local Chromium system-library requirement, second stack"
+  }
+}

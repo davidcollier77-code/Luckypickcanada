@@ -1,3 +1,17 @@
+# Current Task — Browser-testing tooling evaluation (2026-11-07)
+
+- **Task groups:** `deep-dive` (evidence-driven audit of four tools, no assumption from memory) + `testing` (executed probes of every candidate and of the working alternative) + `troubleshooting` (root-cause the recurring `preview_playwright` failure). Feature: new `specs/106-browser-testing-tooling-evaluation`; branch `freebuff/0b08ef27df00c0e858c01702`.
+- **Scope:** investigation only. No package, browser or system-library install; no application, dependency, lockfile, workflow or configuration change. Only Spec Kit artifacts, one evidence record, one screenshot and this Memory Bank entry changed.
+- **Verified environment:** Ubuntu 24.04.5 LTS x86_64, Node v26.13.0, pnpm 10.30.3, Python 3.12.3, non-root, `no_new_privileges`, no `DISPLAY`, no model-provider or browser-cloud key variables.
+- **Playwright:** 1.64.1 installed and aligned, Chromium builds cached, but `chromium.launch()` fails — the headless shell exits on `libnspr4.so`; `ldd` lists 16 missing libraries for `chrome` and 12 for the headless shell. `sudo` refused, `apt-get update` cannot lock, `apt-get install --dry-run libnspr4` → `E: Unable to locate package`. Local rendering is BLOCKED here.
+- **`preview_playwright`:** reproduced twice (`return 1;` and a navigation script) with the identical `The property 'options.mode' must be one of: 'strip'. Received 'transform'` error. A repository search finds no code that sets that option, so it is a platform-bridge defect, not fixable by repository change and not bypassable by script content.
+- **Working path:** managed cloud browser. `preview_evaluate`, `preview_snapshot`, `preview_click`, `preview_navigate`, `preview_screenshot` all succeeded; the real homepage rendered (1024×768, dpr 1), the screenshot is committed, and clicking “Consult the Crystal Ball” navigated to `/crystal-ball`. Viewport is fixed — no device emulation.
+- **Puppeteer:** not installed (registry 25.16.0); same Chromium binaries, so the same library blocker applies locally. **Browser Use:** not installed; needs Python ≥3.11, an LLM key and a working browser. **Computer Use:** needs a vision-model key and a desktop session; neither exists.
+- **Recommendation:** Playwright 1.64.1 in GitHub Actions Visual QA for automated and mobile testing; managed cloud browser for screenshots and visitor walkthroughs; fallbacks Playwright MCP, Chrome DevTools MCP, hosted CDP Chromium, real-device cloud.
+- **Verification:** recorded in the PR body separately from implementation status.
+
+---
+
 # Current Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
