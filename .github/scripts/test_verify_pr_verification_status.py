@@ -281,8 +281,10 @@ class CurrentHeadAuditTests(unittest.TestCase):
 
 
 class CommandLineTests(unittest.TestCase):
+
     def _fixture(self, pr, commits, check_runs):
         directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory, ignore_errors=True)
         for name, payload in (
             ("pr.json", pr),
             ("commits.json", commits),
