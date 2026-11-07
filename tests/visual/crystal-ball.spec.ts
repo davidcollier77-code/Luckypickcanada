@@ -32,20 +32,20 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
       })),
       fallbackSrc: image.getAttribute('src'),
       wrapperTop: wrapperBox.top,
-      wrapperHeight: wrapperBox.height,
-      glowTop: glowBox.top,
-      glowWidth: glowBox.width,
-      glowHeight: glowBox.height,
-    };
-  });
+    const src = image.currentSrc;
+    return image.complete && /crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/.test(src);
+  })).toBe(true);
 
+  const metrics = await page.evaluate(() => {
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
   expect(metrics.isConnected).toBe(true);
-  // Either responsive candidate is correct: 420w for a 1x 420px box, 716w for
-  // a high-density display.
-  expect([420, 716]).toContain(metrics.imageWidth);
-  expect(metrics.imageHeight).toBe(metrics.imageWidth === 716 ? 875 : 513);
+  // Chromium density-corrects naturalWidth for srcset images (it reports the
+  // `sizes` slot width), so don't hard-code the candidate widths. Both
+  // candidates share the same aspect ratio (~1.222), which is preserved by
+  // the density correction at any viewport size.
+  expect(metrics.imageWidth).toBeGreaterThan(0);
+  expect(metrics.imageHeight / metrics.imageWidth).toBeCloseTo(875 / 716, 1);
   expect(metrics.declaredWidth).toBe('716');
   expect(metrics.declaredHeight).toBe('875');
   expect(metrics.imageRatio).toBeCloseTo(716 / 875, 2);
