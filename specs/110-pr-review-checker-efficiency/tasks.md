@@ -39,3 +39,13 @@
 - [x] T016 Publish the canonical PR summary, leave the PR open and unmerged, and record the final diff audit.
   - PR #1767 (`perf/devskim-review-checker-20261107` → `main`), open and unmerged; the PR body is the single canonical summary.
   - Final diff audit: 20 files, all accounted for in the PR body; no application, workflow, dependency, lockfile, secret or `.docs/` change; no stray debug code in the Python diff.
+
+## Phase 6: Owner-authorized governance checker correction
+
+- [x] T017 Update `__tests__/agent-governance-single-source.test.js` where it asserted the pre-`d3512df5` wording of the MCP clarification, so it tracks the current `AGENTS.md` §5 sentence. The requirement itself (a listed MCP or a connection alone is not MCP use) is preserved and still asserted; `AGENTS.md` was not modified or reverted.
+  - Owner authorization: the task request explicitly asks to update the checker where outdated and not to modify `AGENTS.md`.
+- [x] T018 Re-run the governance test, the full Vitest suite, `./freebuff-verify.sh` and the build size check, and record the results.
+  - `pnpm exec vitest run __tests__/agent-governance-single-source.test.js`: PASS (4/4).
+  - `pnpm exec vitest run`: PASS (49 files, 388 tests).
+  - `SPEC_KIT_BASE_REF=f1752c5a ./freebuff-verify.sh`: PASS; the base ref is required because this clone has no local `main`/`origin/main`, so the gate would otherwise compare only working-tree changes.
+  - Build: `.next` 318,167,649 B + `public` 32,840,043 B = 351,007,692 B (334.75 MiB), below the 495 MB cap.

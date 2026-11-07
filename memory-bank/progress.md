@@ -1,3 +1,11 @@
+## 2026-11-07 — Governance checker corrected to the current AGENTS.md
+
+- Diagnosed the pre-existing `__tests__/agent-governance-single-source.test.js` failure: the test asserted the sentence "A connection or initialization alone does not count as MCP use.", which `AGENTS.md` stopped containing in `d3512df5`. The requirement still exists, now phrased "…or treat connection/initialization alone as MCP use." in §5.
+- Updated only that expectation to the current sentence and documented why it tracks §5 wording; the other three governance assertions (single authoritative entrypoint, absent `.freebuff/freebuff.md`, eight specialist files, four Spec Kit commands) already matched current governance and were unchanged. `AGENTS.md` was not modified.
+- Re-ran the governance file (4/4 PASS) and the full suite (49 files / 388 tests PASS), then `./freebuff-verify.sh` (PASS) with `SPEC_KIT_BASE_REF=f1752c5a`; build measured in the same run.
+
+---
+
 ## 2026-11-07 — Pull-request review checker efficiency and reliability
 
 - Identified the repository-owned PR review checker: all custom LLM reviewers are retired and Pullfrog is console-only, leaving the DevSkim pipeline in `.github/scripts/` as the code that inspects PR changes, decides false positives, removes duplicates and reports coverage.
