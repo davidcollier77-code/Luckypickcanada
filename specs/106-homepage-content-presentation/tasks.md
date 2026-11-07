@@ -31,8 +31,8 @@
 - [x] T018 Run focused Vitest for the new guard — 18/18 PASS.
 - [x] T019 Run the full Vitest suite — 48 files / 382 tests PASS.
 - [x] T020 Run `./freebuff-verify.sh` (pnpm frozen install, Spec Kit gates, `tsc --noEmit`, production build, refresh-docs tests) and measure the production build size against the 495 MB maximum — exit 0; 318.11 MiB measured before the final CSS addition, re-measured after it.
-- [ ] T021 Regenerate or verify the Playwright visual baselines affected by the homepage copy change — NOT RUN locally; PR-head Visual QA is the verification path (the viewport baseline covers only the unchanged hero).
-- [ ] T022 Audit the complete final diff and publish the single canonical PR summary.
+- [ ] T021 Regenerate or verify the Playwright visual baselines affected by the homepage copy change — NOT RUN locally (local Chromium unusable, managed Playwright bridge errored); PR-head Visual QA is the verification path, and the viewport baseline covers only the unchanged hero.
+- [x] T022 Audit the complete final diff and publish the single canonical PR summary — 15 files, no protected path; PR #1761 open and unmerged.
 
 ## Phase 4 — Record
 
