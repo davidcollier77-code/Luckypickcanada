@@ -41,6 +41,9 @@ const SUGGESTION_PARAGRAPHS = [
   'Thanks for helping us shape the future!',
 ];
 
+const STORIES_CARD_COPY =
+  'Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.';
+
 const MAP_INTRO_PARAGRAPHS = [
   'Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.',
   "Explore stories shared across Canada, browse by province and territory, and see how our community is growing province by province. Read the experiences people have shared, celebrate the stories that resonate with you, and see each story's celebration count. Then share a lucky story of your own.",
@@ -122,6 +125,16 @@ describe('Lucky Stories and Community Map', () => {
     for (const paragraph of MAP_INTRO_PARAGRAPHS) {
       expect(mapSource).toContain(paragraph);
     }
+  });
+
+  it('aligns the homepage Lucky Stories card with the approved wording', () => {
+    expect(homePageSource).toContain(STORIES_CARD_COPY);
+    expect(homePageSource).not.toContain(
+      'A community space to share your own experiences of luck and good fortune',
+    );
+    // The existing non-testimonial note is preserved, not replaced.
+    expect(homePageSource).toContain('these are not business reviews or testimonials');
+    expect(homePageSource).toMatch(/<Link href="\/map"[^>]*>[\s\S]{0,200}EXPLORE LUCKY STORIES/);
   });
 
   it('preserves story reading, celebration and the running tally', () => {

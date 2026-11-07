@@ -1,3 +1,13 @@
+# Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
+
+- **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
+- **Changes:** `app/homepage/HomePage.js` card body is now the approved first introduction passage, verbatim, with the existing non-testimonial note as a `.homepage-offer-note` line; `EXPLORE LUCKY STORIES` still targets `/map`. New `tests/visual/homepage-content-refresh.spec.ts` covers the Experience copy, the aligned card, the three Tip Jar passages, the four Suggestion Box passages plus form contract, the ten-question FAQ opened by click (aria-expanded, two-paragraph long answer, no clipping, single-open), both `/map` passages and zero horizontal overflow. `__tests__/homepage-content-refresh.test.js` gains the card alignment guard.
+- **Deliberately not exercised in automation:** the Suggestion Box POST, the Tip Jar checkout and paid reveals (Stripe/Turnstile/database side effects); their contracts remain with the unit and source guards.
+- **PR-head checks observed on `e61013df`:** Visual QA success (15:21:59Z), Graphite AI Reviews success, CodeQL success (no new alerts), DevSkim success (1 note), updater-scheduler jobs success/skipped; Protected File Changes and Pullfrog produced no check runs (no protected path or matching workflow).
+- **Pending:** the new head's Visual QA run, local Playwright execution, the production build measurement and the updated PR body.
+
+---
+
 ## 2026-11-07 — Approved homepage content and presentation refresh
 
 - Implemented the approved Lucky Pick Canada wording: the Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick sections, the Lucky Stories / Community Map introduction, the Tip Jar, the Suggestion Box and the ten-question FAQ.

@@ -61,6 +61,18 @@ A visitor reads ten approved questions and answers; search engines receive the s
 2. **Given** the page source, **Then** the FAQPage structured data is generated from the same module.
 3. **Given** the longest answer, **When** expanded on a narrow screen, **Then** no answer is clipped.
 
+### User Story 5 — The homepage Lucky Stories card speaks with the same voice (Priority: P2)
+
+A visitor scanning the homepage reads the Lucky Stories card and recognises the same introduction the Community Map page opens with, so the two surfaces describe one experience rather than two different ones.
+
+**Independent Test**: Load `/`, read the Lucky Stories card, and compare it with the first of the two approved introduction passages on `/map`; they match exactly.
+
+**Acceptance Scenarios**:
+
+1. **Given** the homepage, **Then** the Lucky Stories card body is the approved first introduction passage, verbatim.
+2. **Given** the same card, **Then** the existing `EXPLORE LUCKY STORIES` gold button still leads to `/map` and the non-testimonial note is still shown.
+3. **Given** the card, **Then** no new claim, testimonial or statistic is introduced.
+
 ## Requirements
 
 - **FR-001**: Use the supplied wording verbatim; do not rewrite, shorten, or add marketing claims.
@@ -72,6 +84,8 @@ A visitor reads ten approved questions and answers; search engines receive the s
 - **FR-007**: Present the copy attractively and readably on mobile and desktop within the existing night-sky, gold-accent identity.
 - **FR-008**: Do not change Stripe products, prices, payment handling, email delivery, the About page, or unrelated homepage wording.
 - **FR-009**: Do not implement other technical SEO audit recommendations (image/performance, redirects); PR #1760 stays untouched.
+- **FR-010**: The homepage Lucky Stories card must use the approved introduction wording (first approved passage) verbatim, keep its `/map` destination and keep the existing non-testimonial note.
+- **FR-011**: The refreshed copy must be covered by executable browser-level checks for rendered text, the FAQ open/close interaction, long-answer clipping and horizontal overflow, in addition to the source guard.
 
 ## Out of Scope
 

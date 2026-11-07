@@ -37,3 +37,15 @@
 ## Phase 4 — Record
 
 - [x] T023 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with the task outcome and evidence.
+
+## Phase 5 — Review follow-up (PR #1761 suggestions)
+
+- [x] T024 Align the homepage Lucky Stories card body with the approved introduction passage (first passage, verbatim) and keep the non-testimonial note.
+- [x] T025 Keep the card's `EXPLORE LUCKY STORIES` gold button and `/map` destination unchanged.
+- [x] T026 Extend `__tests__/homepage-content-refresh.test.js` with the card alignment guard.
+- [x] T027 Add `tests/visual/homepage-content-refresh.spec.ts` covering the Experience copy, card, Tip Jar, Suggestion Box form contract, FAQ interaction/clipping and Community Map intro.
+- [x] T028 Add a horizontal-overflow check for `/` and `/map` at all three Playwright projects.
+- [x] T029 Capture section screenshots as Playwright artifacts; no new committed image baselines.
+- [ ] T030 Run the new Playwright spec locally — blocked if the sandbox Chromium cannot launch; the PR-head `Visual QA` workflow is the authoritative run.
+- [x] T031 Report the PR-head check results (Visual QA, CodeQL, DevSkim, Graphite) with their real conclusions in the PR body.
+- [x] T032 Re-audit the final diff, measure the production build and update the single canonical PR summary.

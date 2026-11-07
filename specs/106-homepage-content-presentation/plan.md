@@ -43,3 +43,10 @@
 ## Verification
 
 `./freebuff-verify.sh` (pnpm frozen install, Spec Kit gate tests and task gate, `tsc --noEmit`, production build, refresh-docs tests), focused and full Vitest, measured build size against the 495 MB maximum, and a final diff audit.
+
+## Follow-up implementation — PR #1761 review suggestions (2026-11-07)
+
+1. **Lucky Stories card alignment.** `app/homepage/HomePage.js` replaces the card's older standalone paragraph with the first approved introduction passage, verbatim, so the homepage card and the `/map` header describe one experience in one voice. The existing non-testimonial note moves to a `.homepage-offer-note` line beneath it, and the `EXPLORE LUCKY STORIES` gold button still points at `/map`. No new claim or statistic is added, and no other homepage wording changes.
+2. **Visual coverage.** New `tests/visual/homepage-content-refresh.spec.ts` renders the pages in the configured Chromium projects and asserts the approved Experience copy, the aligned card, all three Tip Jar passages, all four Suggestion Box passages with the form contract (action, method, labels, placeholder, min/max length, required, honeypot), the ten-question FAQ opened by a real click with no clipping of its longest answer and single-open behaviour, both Community Map passages, and zero horizontal overflow on `/` and `/map`. Section screenshots are attached as Playwright artifacts for review; no new committed image baselines are required, so the approved homepage viewport baseline is untouched.
+3. **Guard extension.** `__tests__/homepage-content-refresh.test.js` gains a source check that the card uses the approved passage, no longer uses the old paragraph, keeps the non-testimonial note and still routes to `/map`.
+4. **PR-head verification.** The repository's existing `Visual QA` GitHub Actions workflow runs the full Vitest suite, `tsc --noEmit`, `./freebuff-verify.sh` and `pnpm exec playwright test` on the pull-request head; its result is recorded in the PR body rather than inferred from local runs.
