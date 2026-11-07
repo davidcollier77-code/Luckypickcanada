@@ -21,9 +21,9 @@
 ## Phase 3: Memory and verification
 
 - [x] T010 Add the current task and branch to memory-bank/activeContext.md while retaining historical entries.
-- [ ] T011 Run the focused governance test and ./freebuff-verify.sh; record actual results and the measured build size.
+- [ ] T011 Complete ./freebuff-verify.sh; record the final gate result and measured build size. The new focused governance test has already passed as part of the full Vitest suite; the repository gate is still running in PR CI.
 - [x] T012 Search and inspect the final active references; confirm only historical records retain old-path mentions.
-- [ ] T013 Review the complete final diff, update the canonical PR-body summary with actual verification statuses, and leave the PR open and unmerged.
+- [x] T013 Review the complete final diff, update the canonical PR-body summary with actual verification statuses, and leave the PR open and unmerged.
 
 ## Completion Conditions
 
