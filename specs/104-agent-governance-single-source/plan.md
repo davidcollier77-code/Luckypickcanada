@@ -1,6 +1,6 @@
 # Implementation Plan: Single-Source Freebuff Governance
 
-**Branch**: freebuff/agent-governance-single-source-20261107 | **Date**: 2026-11-07 | **Spec**: spec.md
+**Original Branch**: freebuff/agent-governance-single-source-20261107 | **Follow-up Branch**: fix/governance-regression-test-20261107 | **Date**: 2026-11-07 | **Spec**: spec.md
 
 **Input**: Owner-authorized consolidation request in the conversation.
 
