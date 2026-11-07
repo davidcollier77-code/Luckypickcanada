@@ -1,3 +1,12 @@
+## 2026-11-07 — Governance regression test review correction
+
+- Confirmed Pullfrog review #5810741955 against merged PR #1751 and current `main`: the test used `beforeAll` without importing it, while the read remained outside individual test callbacks.
+- Replaced the lifecycle hook with a `readAgents()` helper called only inside the two test callbacks that need `AGENTS.md`. This avoids both the missing-hook import and module-scope file I/O.
+- Reused feature 104 and amended its existing specification, plan, and tasks; no new feature directory was created.
+- Focused/full Vitest, TypeScript, and `./freebuff-verify.sh` results are pending the follow-up pull request's CI. No result is claimed before those checks complete.
+
+---
+
 ## 2026-11-07 — Single-source Freebuff governance consolidation
 
 - Consolidated general agent governance in `AGENTS.md`, making it explicit that it governs every coding agent, including Freebuff.
