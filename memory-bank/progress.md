@@ -415,3 +415,10 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Findings recorded in `artifacts/reveal-card-cinematics/out/pr1743-review-findings.md` and the single PR summary. No application code, test, dependency or workflow was changed; PR #1743 remains open and unmerged.
 - Verification for the review task: `./freebuff-verify.sh` exit 0 (Spec Kit gate, `tsc --noEmit`, production build, refresh-docs 19/19); `pnpm exec vitest run` 44 files / 351 tests passed; build `.next` 317,067,315 B + `public` 32,840,043 B = 349,907,358 B (333.7 MiB), below the 495 MB maximum.
 - Late feedback captured: Amazon Q Developer's run failed as a head-mutation race (no findings), and PR-Tagger re-posted its metrics after the docs commit; no new inline threads exist. Re-audit after the docs commit: verify exit 0, 351 tests passed, build 349,907,358 B, zero code/test/workflow paths changed.
+
+## 2026-11-06 — Documentation Updater Retirement Guard and Resilience
+
+- Extended `scripts/refresh-docs.js` to protect the four PR #1746 retired documents (`/posthog/posthog-js`, `/magicuidesign/magicui`, `/pmndrs/react-three-fiber`, `/upstash/ratelimit`) from manifest re-indexing and snapshot recreation, including dangling links and unrouted group directories.
+- Made path resolution and size measurement tolerate dangling final-path symlinks while still rejecting targets outside `.docs`; added dedup-link repair that leaves valid documents and links untouched.
+- Added isolated regression tests in `scripts/test-refresh-docs.js`, including two spawned full updater runs against a mocked-HTTPS fixture; 25/25 pass. `./freebuff-verify.sh` exit 0; production build 332,485,953 B (317.08 MiB) below the 495 MB cap.
+- Feature artifacts: `specs/103-docs-updater-retirement-guard/`. Verification pending: PR-head CI.

@@ -1,3 +1,14 @@
+# Active Context — Documentation Updater Retirement Guard and Resilience (2026-11-06)
+
+- **Task groups:** `troubleshooting` (dangling symlink and missing-target crashes in the updater) + `testing` (isolated regression and repeated-run execution). Feature `specs/103-docs-updater-retirement-guard`; branch `freebuff/0c7146a6c6b6866b90666004`. No existing open PR covered this task.
+- **Verified baseline:** the updater only guarded the two Jules sources; its snapshot cleanup iterated manifest groups; `resolveDocsPath` threw on any final-path symlink whose `realpathSync` failed, so one dangling link aborted `cleanupStaleTempFiles`, `getDirSize`, and the update loop. The four PR #1746 IDs came from `__tests__/docs-library-retirement.test.ts`: `/posthog/posthog-js`, `/magicuidesign/magicui`, `/pmndrs/react-three-fiber`, `/upstash/ratelimit`.
+- **Implementation:** the retired ID set and canonical filename list now include the four documents (plus the two Jules entries); manifest groups/sources/inventory/`githubShas` are stripped before fetch; snapshot cleanup scans on-disk group directories and removes regular files and dangling links without touching nested docs. `resolveDocsPath` validates a dangling link chain lexically inside `.docs` instead of throwing, still rejects escaping targets, and `ensureDocsSymlink` repairs dangling dedup links without duplicating documents. Schedules, Halifax time zones, triggers, 180 s retry, timeouts, size ceiling, Worker and workflow integration are unchanged.
+- **Verification PASS:** `node scripts/test-refresh-docs.js` 25/25, including two full spawned updater runs against a mocked-HTTPS fixture; `./freebuff-verify.sh` exit 0 (Spec Kit gate 25/25, typecheck, production build, updater suite); build `.next` 299,645,910 B + `public` 32,840,043 B = 332,485,953 B (317.08 MiB) < 495 MB; final diff contains only the updater, its test, the feature pointer, the new spec artifacts, Memory Bank, and this report.
+- **Verification PENDING:** PR-head CI after pushing and opening the PR. No manifest, `.docs`, workflow, scheduler, Cloudflare Worker, application, dependency, payment, database, or authentication change.
+- **Delivery:** PR to be opened against `main` and left open and unmerged.
+
+---
+
 # Active Context — PR #1746 Review-Finding Correction (2026-11-06)
 
 - **Task groups:** `testing` (close the Amazon Q routing-coverage gap) + `deep-dive` (verify the review finding against the test and all eight manifest groups).

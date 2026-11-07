@@ -8,14 +8,52 @@ const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 
 // Permanently retired upstream sources. The refresh job must never recreate these
 // snapshots, even if an old or accidentally restored manifest lists them again.
+// The four PR #1746 document IDs are copied exactly from
+// __tests__/docs-library-retirement.test.ts; their snapshot filenames follow this
+// updater's safeName convention.
 const RETIRED_LIBRARY_IDS = new Set([
   'jules.google/docs',
-  'developers.google.com/jules/api'
+  'developers.google.com/jules/api',
+  '/posthog/posthog-js',
+  '/magicuidesign/magicui',
+  '/pmndrs/react-three-fiber',
+  '/upstash/ratelimit'
 ]);
-const RETIRED_JULES_SNAPSHOT_FILENAMES = [
+const RETIRED_SNAPSHOT_FILENAMES = [
   'jules_google_docs.md',
-  'developers_google_com_jules_api.md'
+  'developers_google_com_jules_api.md',
+  '_posthog_posthog-js.md',
+  '_magicuidesign_magicui.md',
+  '_pmndrs_react-three-fiber.md',
+  '_upstash_ratelimit.md'
 ];
+
+// Validates a (possibly dangling) symlink chain lexically so inspecting or
+// repairing a link with a missing target cannot escape the .docs directory.
+function validateSymlinkTargetChain(linkPath) {
+  let currentPath = linkPath;
+  for (let hop = 0; hop < 40; hop += 1) {
+    let linkTarget;
+    try {
+      linkTarget = fs.readlinkSync(currentPath);
+    } catch (e) {
+      if (e.code === 'ENOENT' || e.code === 'EINVAL') {
+        return;
+      }
+      throw new Error('Documentation symlink target could not be resolved safely.');
+    }
+
+    const resolvedTarget = path.resolve(path.dirname(currentPath), linkTarget);
+    if (
+      resolvedTarget !== DOCS_BASE_DIR &&
+      !resolvedTarget.startsWith(DOCS_BASE_DIR + path.sep)
+    ) {
+      throw new Error('Documentation symlink target must remain inside the .docs directory.');
+    }
+    currentPath = resolvedTarget;
+  }
+  throw new Error('Documentation symlink chain is too deep to resolve safely.');
+}
 
 function resolveDocsPath(...segments) {
   if (fs.lstatSync(DOCS_BASE_DIR).isSymbolicLink()) {
@@ -52,10 +90,17 @@ function resolveDocsPath(...segments) {
       try {
         realTarget = fs.realpathSync(currentPath);
       } catch (e) {
-        throw new Error('Documentation symlink target could not be resolved safely.');
+        if (e.code !== 'ENOENT') {
+          throw new Error('Documentation symlink target could not be resolved safely.');
+        }
+        // A dangling link (for example, after its canonical snapshot was
+        // removed) has no real target. Validate the recorded link targets so
+        // callers can inspect and repair it instead of crashing the refresh.
+        validateSymlinkTargetChain(currentPath);
       }
 
       if (
+        realTarget !== undefined &&
         realTarget !== DOCS_BASE_DIR &&
         !realTarget.startsWith(DOCS_BASE_DIR + path.sep)
       ) {
@@ -86,7 +131,32 @@ function validateLibraryIdentifier(value) {
 }
 
 
-function removeRetiredJulesLibraryEntries(manifest) {
+function isDanglingSymlink(targetPath) {
+  try {
+    return fs.lstatSync(targetPath).isSymbolicLink() && !fs.existsSync(targetPath);
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return false;
+    }
+    throw e;
+  }
+}
+
+// Restores a missing deduplicated snapshot link. An existing valid file or link
+// is left untouched; a dangling link is replaced with the correct target rather
+// than failing with EEXIST or writing a duplicate document.
+function ensureDocsSymlink(linkPath, relativeTarget) {
+  if (fs.existsSync(linkPath)) {
+    return false;
+  }
+  if (isDanglingSymlink(linkPath)) {
+    fs.unlinkSync(linkPath);
+  }
+  fs.symlinkSync(relativeTarget, linkPath);
+  return true;
+}
+
+function removeRetiredLibraryEntries(manifest) {
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
     throw new Error('Invalid documentation manifest.');
   }
@@ -128,17 +198,30 @@ function removeRetiredJulesLibraryEntries(manifest) {
   return removed;
 }
 
-function removeRetiredJulesSnapshots(groups) {
+function removeRetiredSnapshots() {
   let removed = 0;
-  for (const group of Object.keys(groups || {})) {
-    const safeGroup = validateGroupName(group);
-    for (const filename of RETIRED_JULES_SNAPSHOT_FILENAMES) {
-      const groupPath = resolveDocsPath(safeGroup);
+  if (!fs.existsSync(DOCS_DIR)) {
+    return removed;
+  }
+
+  // Scan the on-disk group directories rather than the manifest, so a retired
+  // snapshot is removed even if its group routing was already dropped. Only the
+  // exact canonical filenames are deleted; nested documentation is untouched.
+  const groupDirectories = fs
+    .readdirSync(DOCS_DIR, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+
+  for (const group of groupDirectories) {
+    const groupPath = resolveDocsPath(group);
+    for (const filename of RETIRED_SNAPSHOT_FILENAMES) {
       const snapshotPath = path.join(groupPath, filename);
       try {
-        fs.lstatSync(snapshotPath);
-        fs.unlinkSync(snapshotPath);
-        removed += 1;
+        const stats = fs.lstatSync(snapshotPath);
+        if (stats.isFile() || stats.isSymbolicLink()) {
+          fs.unlinkSync(snapshotPath);
+          removed += 1;
+        }
       } catch (error) {
         if (error.code !== 'ENOENT') throw error;
       }
@@ -459,7 +542,7 @@ async function main() {
       process.exit(1);
   }
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  const retiredReferencesRemoved = removeRetiredJulesLibraryEntries(manifest);
+  const retiredReferencesRemoved = removeRetiredLibraryEntries(manifest);
   const groupsConfig = manifest.groups || {};
   const sourcesConfig = manifest.sources || {};
 
@@ -482,7 +565,7 @@ async function main() {
     }
   }
 
-  const retiredSnapshotsRemoved = removeRetiredJulesSnapshots(groupsConfig);
+  const retiredSnapshotsRemoved = removeRetiredSnapshots();
 
   const pendingUpdates = [];
   for (const lib of uniqueLibraries) {
@@ -507,7 +590,7 @@ async function main() {
   if (retiredReferencesRemoved > 0 || retiredSnapshotsRemoved > 0) {
     saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, false);
     console.log(
-      `Removed retired Jules references from the manifest: ${retiredReferencesRemoved}; stale snapshots deleted: ${retiredSnapshotsRemoved}.`
+      `Removed retired library references from the manifest: ${retiredReferencesRemoved}; stale snapshots deleted: ${retiredSnapshotsRemoved}.`
     );
   }
 
@@ -689,7 +772,7 @@ async function main() {
                   try {
                     const safeFirstGroup = validateGroupName(groups[0]);
                     const relativeTarget = path.relative(groupDir, resolveDocsPath(safeFirstGroup, `${safeName}.md`));
-                    fs.symlinkSync(relativeTarget, docPath);
+                    ensureDocsSymlink(docPath, relativeTarget);
                   } catch(e) {
                      // fallback
                      const tempPath = docPath + '.tmp.' + Date.now();
