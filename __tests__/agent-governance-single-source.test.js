@@ -5,7 +5,18 @@ import { describe, expect, it } from 'vitest';
 const root = process.cwd();
 const agentsPath = join(root, 'AGENTS.md');
 const obsoleteEntryPoint = join(root, '.freebuff', 'freebuff.md');
-const agents = readFileSync(agentsPath, 'utf8');
+
+let agents;
+
+beforeAll(() => {
+  try {
+    agents = readFileSync(agentsPath, 'utf8');
+  } catch (err) {
+    throw new Error(
+      `Unable to read AGENTS.md at ${agentsPath}: ${err.message}`
+    );
+  }
+});
 const taskGroups = [
   'creation',
   'troubleshooting',
