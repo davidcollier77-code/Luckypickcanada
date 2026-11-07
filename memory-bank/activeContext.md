@@ -1,3 +1,18 @@
+# Current Task — Consolidate duplicate map URLs onto `/map` (2026-11-07)
+
+- **Task groups:** `seo` (the change implements SEO finding F-H1 from `specs/106-seo-audit`) + `testing` (redirect behaviour proven by execution plus a regression test).
+- **Feature / branch:** new `specs/107-map-url-consolidation`; branch `feat/map-url-consolidation-20261107`, based on `main` at `700f2077`. Feature 106 stays the audit PR (#1760), so this task takes the next free number instead of reusing it.
+- **Change:** two `permanent: true` entries in `next.config.mjs` `redirects()` mapping `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` to `/map`, placed after `/stories` and before the `www` host catch-all. `/map` itself, both alias route modules, metadata and the sitemap are unchanged.
+- **Verified by execution** (local production build, `next start` on port 3100, `curl`): both aliases answer `HTTP/1.1 308 Permanent Redirect` with `location: /map`; `?utm_source=audit-check` survives as `/map?utm_source=audit-check`; `/map` still returns 200 with `<title>Lucky Map | LuckyPickCanada.ca</title>` and canonical `/map`; `/stories` still 308 → `/map`; `Host: www.luckypickcanada.ca` still 308 → `https://luckypickcanada.ca/map`.
+- **Known behaviour:** the trailing-slash form takes one extra hop (`/alias/` → 308 `/alias` → 308 `/map`), the same normalisation `/stories` already has. The status code is 308 because `permanent: true` emits 308, matching the site's existing permanent redirects; 308 is permanent and carries the same consolidation meaning as 301.
+- **Tests:** new `__tests__/map-url-redirects.test.js`, 3/3 pass — both redirects, the two pre-existing redirects unchanged, sitemap lists `/map` only.
+- **Gate:** `./freebuff-verify.sh` exit 0; 36 refresh-docs tests pass; build 372,780,655 B (355.51 MiB), below the 495 MB maximum.
+- **Environment note:** `node_modules` was absent after the workspace restore; reinstalled with `pnpm install --frozen-lockfile`. `package.json` and `pnpm-lock.yaml` are unchanged.
+- **Unverified:** Search Console and Analytics are unavailable, so whether the aliases are indexed and how much traffic they carried cannot be stated.
+- **Delivery:** committed on `feat/map-url-consolidation-20261107` and delivered as one PR against `main`, left open and unmerged; PR-head CI is recorded in the PR body when it reports.
+
+---
+
 # Current Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
