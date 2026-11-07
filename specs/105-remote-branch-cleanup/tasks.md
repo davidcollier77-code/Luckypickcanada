@@ -126,7 +126,7 @@ reconcile with the live head count, `main` must be unchanged, and the open pull 
 - [x] T043 Reconcile the inventory with the pass-1 retained rows and both deletion inventories: 1,084 absent and fully accounted for, 169 pass-1 deletions still absent, 0 unexplained differences.
 - [x] T044 Confirm the eligible set is empty and record 0 deletions; no delete call was issued.
 - [x] T045 Verify `main` is unchanged (`4785e5e4`), the PR #1750 head is present, and the head count reconciles (`370 = 368 retained + main + PR head`).
-- [ ] T046 Record the measured build size and repository gate result for this head in the PR body; report them separately from earlier heads.
+- [x] T046 Record the measured build size and repository gate result for this head in the PR body, reported separately from earlier heads (`./freebuff-verify.sh` exit 0; `.next` + `public` = 350,558,797 B / 334.32 MiB).
 - [x] T047 Update `audit-summary.md`, `spec.md`, `plan.md` and this task list with the pass-3 evidence; no application, workflow, dependency, deployment, payment, database, authentication or `.docs/` change.
 
 ## Pass 3 completion conditions
