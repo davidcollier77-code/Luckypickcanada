@@ -28,14 +28,32 @@ describe('single-source agent governance', () => {
     expect(existsSync(obsoleteEntryPoint)).toBe(false);
   });
 
-  it('preserves the MCP connection-versus-use clarification', () => {
+  it('defines the Connected Integrations section and preserves its access rules', () => {
     const agents = readAgents();
+    const start = agents.indexOf('### Connected Integrations');
+    const end = agents.indexOf('### PR ownership', start);
+    const connectedIntegrations = agents.slice(start, end);
 
-    // Tracks the current wording in AGENTS.md section 5. An earlier revision
-    // phrased the same rule as a separate sentence; rewording must keep the
-    // requirement that a listed MCP or a connection alone is not MCP use.
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    expect(connectedIntegrations).not.toContain('MCP');
     expect(agents).toContain(
-      'Do not use an MCP merely because it is available, expand task scope through an MCP, or treat connection/initialization alone as MCP use.',
+      'A connection or initialization alone does not count as actual integration use.',
+    );
+    expect(connectedIntegrations).toContain(
+      'GitHub:** Always available for normal authorized repository work',
+    );
+    expect(connectedIntegrations).toContain(
+      "Browserless:** Freebuff's required default hosted browser environment.",
+    );
+    expect(connectedIntegrations).toContain(
+      'Ask the owner for explicit approval before using Browserbase.',
+    );
+    expect(connectedIntegrations).toContain(
+      'Stitch:** Available whenever useful',
+    );
+    expect(connectedIntegrations).toContain(
+      'Use it sparingly to conserve usage.',
     );
   });
 
