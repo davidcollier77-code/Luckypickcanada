@@ -36,4 +36,6 @@
   - `./freebuff-verify.sh`: PASS (TypeScript clean, `next build` compiled, refresh-docs 36/36, final "All verification steps passed").
   - Build size: `.next` 300,738,134 B + `public` 32,840,043 B = 333,578,177 B (318.12 MiB), below the 495 MB cap.
   - Full `pnpm exec vitest run`: 48 of 49 files pass, 387 of 388 tests pass; the single failure is `__tests__/agent-governance-single-source.test.js > preserves the MCP connection-versus-use clarification`, which also fails on the base commit because the asserted sentence is absent from `AGENTS.md` at HEAD and this task did not modify `AGENTS.md`. Recorded as a pre-existing, out-of-scope failure rather than fixed here.
-- [ ] T016 Publish the canonical PR summary, leave the PR open and unmerged, and record the final diff audit.
+- [x] T016 Publish the canonical PR summary, leave the PR open and unmerged, and record the final diff audit.
+  - PR #1767 (`perf/devskim-review-checker-20261107` → `main`), open and unmerged; the PR body is the single canonical summary.
+  - Final diff audit: 20 files, all accounted for in the PR body; no application, workflow, dependency, lockfile, secret or `.docs/` change; no stray debug code in the Python diff.

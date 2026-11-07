@@ -8,7 +8,8 @@
 - **Before → after (same fixture):** 460 findings 1716.31 → 141.90 ms (12.1×), 85 findings 139.58 → 21.28 ms (6.6×); reads 420 → 3, parses 401 → 2; suppressed counts and the filtered-SARIF SHA-256 (`50558a30…0636`) identical at all five sizes. Replay 37.58 → 21.06 ms with the same verdict, 8/8 audited families removed and the non-allowlisted finding preserved. Identity: 2 distinct same-line findings 1 → 2 entries, duplicates still once, legacy entry re-appended 0 times.
 - **Tests:** suppression suite 87 tests OK (78 pre-existing + 9 new for UTF-16 caching, single-read/parse behaviour and report identity).
 - **Deliberately unchanged:** scan scope, allowlists, audited families, workflow triggers, Pullfrog, retired reviewers, `.docs/`, application code, dependencies.
-- **Status:** implementation complete; repository verification, production build measurement and the PR remain to be recorded.
+- **Verification:** `./freebuff-verify.sh` PASS (Spec Kit gate, TypeScript, `next build`, refresh-docs 36/36); build `.next` 300,738,134 B + `public` 32,840,043 B = 333,578,177 B (318.12 MiB), below 495 MB. Full `pnpm exec vitest run` FAILs one test, `__tests__/agent-governance-single-source.test.js` (MCP clarification sentence absent from `AGENTS.md` at base); pre-existing, unrelated, and left unfixed because `AGENTS.md` is protected governance. Local Node is v26.13.0 while `package.json` declares 22.x.
+- **Delivery:** PR #1767 against `main`, open and unmerged, with the PR body as the single canonical summary; PR-head CI pending.
 
 ---
 
