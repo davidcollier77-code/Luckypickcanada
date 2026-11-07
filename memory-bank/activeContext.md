@@ -1,15 +1,81 @@
-# Current Task — Faster Playwright Visual QA (2026-11-07)
+# Current Task — PR #1764 merge-conflict repair (2026-11-07)
 
-- **Task groups:** `testing` (full visual-suite and CI verification) + `deep-dive` (measured bottleneck analysis and evidence-based optimization).
-- **Branch:** `perf/visual-qa-speed-20261107`; PR #1764 is open and unmerged.
-- **Baseline:** PR #1761 Visual QA run `42385343241`, job `128441515953`: 93 Playwright tests on one worker; 89 passed, 1 flaky, 3 skipped; test execution 6.1 minutes. Cold `pnpm install --frozen-lockfile` took 12.5 seconds.
-- **Changes made:** CI Playwright worker cap raised to two while retaining `fullyParallel: false`; setup-node now restores the pnpm store after the pinned pnpm action is installed; frozen-lockfile installation remains mandatory. Added regression guards.
-- **Preserved:** all visual test files, projects/viewports, test assertions, screenshot baselines, comparison thresholds, retries, diagnostics, app code, dependencies/lockfile, existing docs-only classifier and Chromium cache.
-- **Verification:** pending PR-head GitHub Actions; no post-change speed or reliability claim until measured.
+- **Task groups:** `troubleshooting` (diagnose and repair the base/head conflict) + `deep-dive` (compare the branch histories and protect concurrent work) + `testing` (verify the merged tree, CI evidence and branch ancestry).
+- **Feature:** `specs/109-playwright-qa-speed`. Feature number 108 is already occupied on current `main` by PR #1762's `specs/108-browser-testing-tooling-evaluation`; the Playwright speed artifacts were relocated to the next free feature number, 109.
+- **Branch / PR:** `perf/visual-qa-speed-20261107`, PR #1764; PR remains open and unmerged.
+- **Root cause:** the PR and current `main` diverged from common base `700f2077`. At repair time, `main` was `597bd94a` (14 commits ahead of the common base) and the PR head was `4680075f` (13 commits ahead). Both sides changed `.specify/feature.json` and `memory-bank/activeContext.md`; the feature-number collision also required relocating the PR artifacts.
+- **Resolution:** integrated the current `main` tree as the base, preserving its homepage, map, PR #1762 browser-tooling work and all other files. Overlaid only PR #1764's Playwright workflow/config/test changes and Spec Kit artifacts under feature 109. The two-parent integration commit uses the old PR head first and current `main` second; the branch update used an expected-SHA, non-forced ref update.
+- **Pre-integration verification on `4680075f`:** 47 Vitest files / 366 tests passed; 14 focused tests passed; `pnpm tsc --noEmit` passed; `./freebuff-verify.sh` passed (including 36 updater checks); combined `.next + public` size was 335,352,915 bytes (319.82 MiB), below the 495 MiB cap.
+- **Measured Playwright result:** 93 tests with two workers; 89 passed, 1 flaky, 3 skipped; duration 5.5 minutes versus the 6.1-minute one-worker baseline (about 10% faster). This does **not** meet the 20% target. The desktop Gold CTA hover test hit a detached-element error, passed on retry, and remained classified as flaky. The pnpm store and Chromium caches were cold misses and were saved at job completion.
+- **Integrated-head verification:** pending. The results above belong to the pre-integration SHA and are not represented as checks on the new merge commit.
+- **Scope preserved:** no application behaviour, visual tests, snapshots/baselines, thresholds, dependencies, lockfile, payment, database, authentication, deployment, environment, secrets or `.docs/` changes were added by this conflict repair.
+- **Status:** merge conflict and feature-directory collision are resolved; new integrated-head CI and mandatory verification are pending. Do not claim the 20% runtime target until a comparable run proves it.
 
 ---
 
-## Previous Task — Freebuff startup-command audit and optimization (2026-11-07)
+# Preserved Main-Line Task Record — Browser-testing tooling evaluation and PR #1762 review (2026-11-07)
+
+- **Task groups:** `deep-dive` (evidence-based evaluation of browser tooling) + `testing` (probe review and CI validation) + `troubleshooting` (repair the PR/base conflict and fix reviewer findings).
+- **Feature:** `specs/108-browser-testing-tooling-evaluation`; browser tooling originally used feature number 106, but current `main` already uses 106 for homepage content and 107 for map URL consolidation. Renumbered to the next free slot, 108.
+- **Branch / PR:** `chore/browser-testing-tooling-eval-20261107`, PR #1762; leave open and unmerged.
+- **Merge-conflict root cause:** branch was based on `700f2077`; current `main` advanced to `0d9f3a80` (7 commits beyond the common ancestor). Main and the PR both changed `.specify/feature.json` and `memory-bank/activeContext.md`; main also occupied the original feature number 106.
+- **Resolution approach:** preserve the PR head as a parent and integrate the current main tree, keeping main's existing application, homepage-content, map redirect, progress and Memory Bank changes. Add the browser-tooling evidence/spec files under feature 108 and set the active Spec Kit pointer to feature 108.
+- **Review repairs:** fix P5's duplicate JSON `command` property and missing `result`; state the exact Playwright bridge error for both recorded calls. Correct the Puppeteer statement so an untested browser install/launch is not described as sharing Playwright's exact cached binaries.
+- **Verification qualification:** historical local verification (47 files / 364 tests; build 405,234,555 B / 386.46 MiB; `./freebuff-verify.sh` exit 0) was run under Node v26.13.0, while the repository declares Node 22.x. It is not validated for Node 22.x. The new PR-head CI run must provide that evidence.
+- **Evidence limitation:** exact per-probe UTC timestamps and some raw tool-call payloads were not retained. The JSON now marks per-probe timestamps as null and documents that P2 uses an ephemeral script; T019 remains unchecked until a complete transcript can be supplied.
+- **Scope:** documentation, evidence and conflict resolution only. No application, dependency, lockfile, workflow, payment, database, authentication, deployment, environment or `.docs/` changes.
+- **Status:** merge-conflict integration and reviewer repairs are being applied; latest PR-head CI remains pending.
+
+---
+
+# Completed Task — PR #1761 merge-conflict repair (2026-11-07)
+
+- **Task groups:** `troubleshooting` (diagnose the base/head divergence and resolve the overlapping records) + `testing` (verify the merged tree, branch ancestry and latest PR checks).
+- **Feature:** reuse `specs/106-homepage-content-presentation`; no duplicate feature directory.
+- **Branch / PR:** `content/homepage-wording-presentation-20261107`, PR #1761; PR remains open and unmerged.
+- **Root cause:** PR #1761 branched from `700f2077`. `main` advanced two commits to `15831963` through PR #1763's map-URL consolidation. Both branches independently edited `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md`; the remaining 13 PR files do not overlap main's changes.
+- **Resolution:** integrate current `main` as the second parent of a merge commit on the PR head. Build the tree from current main, restore all PR-specific files, and combine the two branches' Memory Bank entries. Keep the PR's active feature pointer at `specs/106-homepage-content-presentation`; the merged `specs/107-map-url-consolidation` and both permanent map redirects remain present.
+- **Scope:** no application feature, payment, database, authentication, security, deployment or environment change was introduced by the conflict repair.
+- **Verification:** merged commit ancestry and tree contents are checked after the ref update. The latest-head GitHub Actions/check results are recorded separately; no local command is claimed when it was not executed in this connector session.
+
+---
+
+# Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
+
+- **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
+- **Changes:** `app/homepage/HomePage.js` card body is now the approved first introduction passage, verbatim, with the existing non-testimonial note as a `.homepage-offer-note` line; `EXPLORE LUCKY STORIES` still targets `/map`. New `tests/visual/homepage-content-refresh.spec.ts` covers the Experience copy, the aligned card, the three Tip Jar passages, the four Suggestion Box passages plus form contract, the ten-question FAQ opened by click (aria-expanded, two-paragraph long answer, no clipping, single-open), both `/map` passages and zero horizontal overflow. `__tests__/homepage-content-refresh.test.js` gains the card alignment guard.
+- **Deliberately not exercised in automation:** the Suggestion Box POST, the Tip Jar checkout and paid reveals (Stripe/Turnstile/database side effects); their contracts remain with the unit and source guards.
+- **PR-head checks observed on `e61013df`:** Visual QA success (15:21:59Z), Graphite AI Reviews success, CodeQL success (no new alerts), DevSkim success (1 note), updater-scheduler jobs success/skipped; Protected File Changes and Pullfrog produced no check runs (no protected path or matching workflow).
+- **Pending:** the new head's Visual QA run, local Playwright execution, the production build measurement and the updated PR body.
+
+---
+
+# Current Task — Approved homepage content and presentation refresh (2026-11-07)
+
+- **Task groups:** `creation` (approved visitor-facing copy placed verbatim) + `polishing` (long-form copy presented inside the existing night-sky/gold identity) + `seo` (visible FAQ and FAQPage structured data kept identical from one source) + `testing` (regression guard for wording, form contract and celebration behaviour). Feature: `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged. Existing SEO audit PR #1760 untouched.
+- **Implementation:** new `app/homepage/faq-content.js` holds the ten approved Q&As; `app/page.js` builds the FAQPage JSON-LD from it and `app/homepage/FAQSection.js` renders the same module (answers split on `\n\n`; open container raised 500 px → 1600 px). `app/homepage/HomePage.js` carries the approved Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick copy, the Lucky Pick heading, and the Tip Jar and Suggestion Box headings, passages, labels, placeholder and "Share Your Idea" button. `app/lucky-map-of-canada/lucky-map-of-canada.js` carries the approved Lucky Stories / Community Map introduction. `themes/default/homepage.css` adds `.homepage-copy-stack` and a smaller Suggestion Box heading; `themes/default/map.css` adds `.map-community-intro`.
+- **Preserved:** all section links and gold 3D buttons, the `/api/lucky-stories/react` celebration endpoint with its localStorage state and running tally, the Suggestion Box POST to `/api/suggestions` with minLength/maxLength, honeypot and Turnstile, the tip checkout modal, Stripe products/prices, email delivery, artwork, audio, canvas and navigation.
+- **Verification PASS:** focused guard 18/18; full `pnpm exec vitest run` 48 files / 382 tests; `pnpm exec tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 (after the final CSS addition); rendered checks in the managed cloud browser — every approved passage present on `/` and `/map`, ten FAQ questions and ten JSON-LD questions from one module, 8 gold CTAs, 0 horizontal overflow, correct textarea placeholder and submit text.
+- **Not verified:** Playwright visual regression could not run here (local Chromium unusable; the managed Playwright bridge returned an internal `options.mode` error), so PR-head Visual QA is the remaining visual check; the mobile viewport was not captured.
+
+---
+
+# Completed Task — Consolidate duplicate map URLs onto `/map` (2026-11-07)
+
+- **Task groups:** `seo` (the change implements SEO finding F-H1 from `specs/106-seo-audit`) + `testing` (redirect behaviour proven by execution plus a regression test).
+- **Feature / branch:** new `specs/107-map-url-consolidation`; branch `feat/map-url-consolidation-20261107`, based on `main` at `700f2077`. Feature 106 stays the audit PR (#1760), so this task takes the next free number instead of reusing it.
+- **Change:** two `permanent: true` entries in `next.config.mjs` `redirects()` mapping `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` to `/map`, placed after `/stories` and before the `www` host catch-all. `/map` itself, both alias route modules, metadata and the sitemap are unchanged.
+- **Verified by execution** (local production build, `next start` on port 3100, `curl`): both aliases answer `HTTP/1.1 308 Permanent Redirect` with `location: /map`; `?utm_source=audit-check` survives as `/map?utm_source=audit-check`; `/map` still returns 200 with `<title>Lucky Map | LuckyPickCanada.ca</title>` and canonical `/map`; `/stories` still 308 → `/map`; `Host: www.luckypickcanada.ca` still 308 → `https://luckypickcanada.ca/map`.
+- **Known behaviour:** the trailing-slash form takes one extra hop (`/alias/` → 308 `/alias` → 308 `/map`), the same normalisation `/stories` already has. The status code is 308 because `permanent: true` emits 308, matching the site's existing permanent redirects; 308 is permanent and carries the same consolidation meaning as 301.
+- **Tests:** new `__tests__/map-url-redirects.test.js`, 3/3 pass — both redirects, the two pre-existing redirects unchanged, sitemap lists `/map` only.
+- **Gate:** `./freebuff-verify.sh` exit 0; 36 refresh-docs tests pass; build 372,780,655 B (355.51 MiB), below the 495 MB maximum.
+- **Environment note:** `node_modules` was absent after the workspace restore; reinstalled with `pnpm install --frozen-lockfile`. `package.json` and `pnpm-lock.yaml` are unchanged.
+- **Unverified:** Search Console and Analytics are unavailable, so whether the aliases are indexed and how much traffic they carried cannot be stated.
+- **Delivery:** committed on `feat/map-url-consolidation-20261107` and delivered as one PR against `main`, left open and unmerged; PR-head CI is recorded in the PR body when it reports.
+
+---
+
+# Current Task — Freebuff startup-command audit and optimization (2026-11-07)
 
 - **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
 - **Branch:** `freebuff/5c23e2008d5278c48393b22f`; PR open and unmerged.

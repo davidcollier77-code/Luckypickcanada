@@ -1,6 +1,6 @@
 # Tasks: Faster Playwright Visual QA
 
-**Input**: Design documents from `specs/108-playwright-qa-speed/`
+**Input**: Design documents from `specs/109-playwright-qa-speed/`
 
 **Prerequisites**: `spec.md`, `plan.md`
 
@@ -9,8 +9,8 @@
 **Purpose**: Complete the required task definition before changing the checker.
 
 - [x] T001 Inspect `AGENTS.md`, Memory Bank, selected task-group instructions, `.docs/manifest.json`, the existing Visual QA workflow/configuration, guard test, and latest comparable Actions run.
-- [x] T002 Complete `specs/108-playwright-qa-speed/spec.md` and the requirements checklist.
-- [x] T003 Complete `specs/108-playwright-qa-speed/plan.md` using actual baseline timing and relevant official guidance.
+- [x] T002 Complete `specs/109-playwright-qa-speed/spec.md` and the requirements checklist.
+- [x] T003 Complete `specs/109-playwright-qa-speed/plan.md` using actual baseline timing and relevant official guidance.
 - [x] T004 Complete this ordered task list before implementation.
 
 ## Phase 2: User Story 1 — Faster, safe visual execution (Priority: P1)
@@ -21,7 +21,7 @@
 
 - [x] T005 [US1] Extend `__tests__/visual-qa-chromium-cache.test.js` to guard the two-worker CI limit and preserve `fullyParallel: false`.
 - [x] T006 [US1] Set the CI worker limit to two in `playwright.config.ts`; preserve all projects, retries, screenshot options, test discovery, baselines, and assertions.
-- [ ] T007 [US1] Verify the worker-setting guard passes in the full Vitest suite and inspect the exact Playwright configuration diff.
+- [x] T007 [US1] Verify the worker-setting guard passes in the full Vitest suite and inspect the exact Playwright configuration diff — PASS on pre-integration head 4680075f; full Vitest suite passed.
 
 ## Phase 3: User Story 2 — Reuse pnpm package data (Priority: P2)
 
@@ -31,16 +31,16 @@
 
 - [x] T008 [US2] Extend `__tests__/visual-qa-chromium-cache.test.js` to require pnpm setup before setup-node, `cache: pnpm`, `cache-dependency-path: pnpm-lock.yaml`, and the unchanged frozen-lockfile install.
 - [x] T009 [US2] Reorder the existing pinned setup actions and enable setup-node pnpm caching in `.github/workflows/visual-qa.yml`; preserve the Chromium cache and all other QA steps.
-- [ ] T010 [US2] Verify the workflow/cache guard passes in the full Vitest suite and review the final workflow diff.
+- [x] T010 [US2] Verify the workflow/cache guard passes in the full Vitest suite and review the final workflow diff — PASS on pre-integration head 4680075f; full Vitest suite passed.
 
 ## Phase 4: Verification and report
 
 **Purpose**: Prove that the optimizations work and that no existing coverage was removed.
 
-- [ ] T011 Run the full Vitest suite, `pnpm exec tsc --noEmit`, and `./freebuff-verify.sh`; record actual outcomes and measured production build size.
-- [ ] T012 Inspect the complete final diff and confirm no visual specs, screenshots, baselines, thresholds, application code, package manifest, or lockfile changed.
-- [ ] T013 Record PR-head Visual QA duration, discovered/passed/flaky/skipped counts, and pnpm cache outcome; compare with the recorded 6.1-minute / 93-case baseline.
-- [ ] T014 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with verified results, update this task list, and point `.specify/feature.json` at feature 108.
+- [ ] T011 Re-run the full Vitest suite, `pnpm exec tsc --noEmit`, and `./freebuff-verify.sh` on the integrated merge head; record its measured production build size. Pre-integration results are recorded in the PR summary; integrated-head rerun is pending.
+- [x] T012 Inspect the complete final merge tree and confirm no visual specs, screenshots, baselines, thresholds, application code, package manifest, or lockfile were changed by the optimization.
+- [x] T013 Record pre-integration PR-head Visual QA evidence: 93 tests, 89 passed, 1 flaky, 3 skipped, 5.5 minutes using 2 workers; about 10% faster than the 6.1-minute baseline, below the 20% target. Both pnpm and Chromium caches missed and were saved. Integrated-head rerun remains pending.
+- [x] T014 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with verified results, update this task list, and point `.specify/feature.json` at feature 109.
 - [x] T015 Publish one evidence-based PR summary and leave the PR open and unmerged.
 
 ## Dependencies and execution order

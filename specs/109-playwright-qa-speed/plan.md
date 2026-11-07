@@ -101,8 +101,8 @@ These source wiring checks supplement, not replace, the real PR-head Actions run
 playwright.config.ts                         # CI file-level worker cap
 .github/workflows/visual-qa.yml              # pnpm setup-node store cache
 __tests__/visual-qa-chromium-cache.test.js   # config/workflow regression guards
-specs/108-playwright-qa-speed/{spec,plan,tasks}.md
-specs/108-playwright-qa-speed/checklists/requirements.md
+specs/109-playwright-qa-speed/{spec,plan,tasks}.md
+specs/109-playwright-qa-speed/checklists/requirements.md
 .specify/feature.json                        # active feature pointer
 memory-bank/activeContext.md                 # current task state
 memory-bank/progress.md                      # verified milestone
