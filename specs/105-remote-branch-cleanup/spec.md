@@ -2,7 +2,7 @@
 
 **Feature Branch**: freebuff/da1d12a5430a7af901daee1b
 **Created**: 2026-11-07
-**Status**: Draft
+**Status**: Original cleanup partial; post-merge audit refresh in progress
 **Input**: Owner-authorized task to identify remote Git branches conclusively merged into `main`, verify each candidate individually, delete only branches confirmed safe to remove, retain protected branches, branches associated with open pull requests, and branches with uncertain or active work, and report deletions and retentions with reasons.
 
 ## User Scenarios & Testing
@@ -89,3 +89,27 @@ As the repository owner, I want one record naming what was deleted and what was 
 - A seven-day retention window is a reasonable margin for recently touched merged branches that could still be active.
 - The connected GitHub integration may delete refs; the local checkout has no Git push credentials, so deletion is performed through that integration rather than `git push`.
 - Tip SHAs recorded in the audit artifacts are sufficient to restore any deleted ref from `main`'s history if the owner wants it back.
+
+
+## Follow-up — Post-merge evidence maintenance (2026-11-07)
+
+### User Story 4 — Keep branch-cleanup evidence accurate after merge (Priority: P1)
+
+As the repository owner, I want the audit to distinguish its original point-in-time findings from current repository state, so a later reader can verify retained and deleted refs without mistaking historical SHAs or counts for live values.
+
+**Independent Test**: Compare the branch inventory artifacts with the live remote, confirm current protected branches and open PR heads, and verify that all recorded retained tips still match and every recorded deleted name remains absent.
+
+**Acceptance Scenarios**:
+
+1. **Given** the original audit base has advanced, **When** the audit is refreshed, **Then** the original counts and SHAs remain identified as historical and a dated current-state section records the new base.
+2. **Given** retained and deleted branch inventories exist, **When** the live remote is checked, **Then** duplicate, missing, moved and still-present deleted refs are counted explicitly.
+3. **Given** deletion timestamps and actors were not captured, **When** audit-trail gaps are documented, **Then** those fields are marked unavailable and are never inferred from the later PR merge event.
+4. **Given** verified-safe branches were intentionally not deleted, **When** the follow-up report is published, **Then** those branches remain untouched unless separately authorized.
+
+### Additional follow-up requirements
+
+- **FR-011**: The audit summary MUST label original branch counts and base SHAs as point-in-time evidence whenever the base advances.
+- **FR-012**: A post-merge verification artifact MUST record the current main SHA, live branch count, protected branch list, open PR heads, inventory reconciliation and verification limits.
+- **FR-013**: Missing per-ref deletion timestamps or actor identities MUST be explicitly described as not captured; no actor or timestamp may be fabricated or inferred from PR metadata.
+- **FR-014**: The original deleted-branch TSV column order and recorded tip evidence MUST be preserved for compatibility.
+- **FR-015**: A documentation-only audit refresh MUST NOT delete or recreate any remote branch.

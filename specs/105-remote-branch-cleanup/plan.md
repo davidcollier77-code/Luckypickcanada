@@ -95,3 +95,26 @@ The integration deletes one ref per call, so deletions are issued in bounded bat
   - **Mitigation**: deterministic alphabetical batching, per-batch verification, and committed evidence for every deleted tip SHA so any ref can be recreated.
 - **Risk**: The open pull request cannot be pushed from this workspace.
   - **Mitigation**: use the managed Git integration for the branch push; report any failure exactly rather than claiming success.
+
+
+## Follow-up Plan — Post-merge audit evidence repair (2026-11-07)
+
+**Follow-up branch**: `docs/branch-cleanup-audit-refresh-20261107`  
+**Current base**: `main` at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`  
+**Selected groups**: `deep-dive` (reconcile audit claims to live GitHub state and identify provenance limits) + `testing` (verify every recorded retained/deleted branch name and tip against the remote).
+
+### Scope
+
+Preserve the original cleanup as a point-in-time record. Add a dated post-merge verification appendix, correct the stale present-tense statement about the original main SHA, and explicitly document the unavailable per-ref deletion actor/timestamp data. Do not change the original deletion rows, delete additional branches, or alter application/runtime configuration.
+
+### Verification method
+
+- Paginate GitHub's live branch listing and compare all names/tip SHAs with the retained and deleted TSVs.
+- Query protected branches and open PRs independently.
+- Compare the original audit base with current main to establish whether its recorded ancestor relationships remain valid.
+- Reconcile live counts and report exactly which checks were not repeated (including per-branch recent-tip age and the 292 unmerged unique-commit counts).
+- Preserve unknown deletion actor/timestamp values as unknown; the PR merge actor is not a substitute for the actor who deleted refs.
+
+### Delivery
+
+Update the existing feature 105 Spec Kit artifacts and Memory Bank, add `artifacts/branch-cleanup/post-merge-verification.md`, and open one follow-up PR against `main`. Leave it open and unmerged. Record current PR-head CI and repository-gate results separately from the original cleanup verification.

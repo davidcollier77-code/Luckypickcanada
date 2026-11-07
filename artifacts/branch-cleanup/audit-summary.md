@@ -84,7 +84,7 @@ main_present=1
 pr1750_head_present=1
 ```
 
-`main` still resolves to `6fa08ddc`, and no branch recorded as retained is missing.
+At the end of the original cleanup pass, `main` resolved to `6fa08ddc` and no branch recorded as retained was missing. This is a **point-in-time result from the original pass**, not the current repository state. See [post-merge verification](post-merge-verification.md) for the current `main` SHA and live inventory reconciliation.
 
 ## Why 1,084 verified-safe heads remain
 
@@ -124,3 +124,16 @@ audit's deletion set: this task's own branch `chore/merged-remote-branch-cleanup
 pull request) and an unrelated concurrently created branch `fix/governance-regression-test-20261107`, which
 was left untouched. The remote therefore held 1,456 heads at the final check, with no retained branch
 missing (`retained_missing=0`).
+
+
+---
+
+## Post-merge verification — 2026-11-07
+
+PR #1754 was merged into `main` at 07:56:56 UTC on 2026-11-07, producing `af350ba6d4b1dbb10eb1257211778085b1edb4eb`. Current `main` is 17 commits ahead of the original audit base `6fa08ddc2941e4a96cb8f6bcaf9f855aafd1d123`.
+
+A fresh live-remote reconciliation found 1,454 unique branch names. All 1,452 entries in `retained-branches.tsv` remain present at their recorded tip SHAs (0 missing, 0 moved); all 169 names in `deleted-branches.tsv` remain absent (0 duplicates, 0 still present). The inventories contain no duplicate names or overlap. The protected-branch filter returns only `main`, and the only open PR is #1750 with head `chore/devskim-report-update-42326412143`. The live count reconciles as 1,452 retained inventory entries + `main` + the #1750 head.
+
+The deleted inventory's header is on line 1 and the file contains 169 data rows. Its original four columns are preserved. Per-ref deletion timestamps and actors were not captured; the PR merge actor/time must not be mistaken for deletion attribution. The exact checks and limitations are recorded in `artifacts/branch-cleanup/post-merge-verification.md`.
+
+This follow-up did not delete the 1,084 verified-safe branches that remain, recalculate every retained branch's age, or rerun `./freebuff-verify.sh`. The original build and gate results remain scoped to the original cleanup head; current follow-up PR checks must be reported separately.
