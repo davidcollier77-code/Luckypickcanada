@@ -422,6 +422,7 @@ def _paginate(url, token, key=None, limit=10):
     return items
 
 
+
 def load_live(repo, pr_number, token):
     base = "https://api.github.com/repos/%s" % repo
     pr = _api_get("%s/pulls/%d" % (base, pr_number), token)
@@ -429,9 +430,31 @@ def load_live(repo, pr_number, token):
     commits = _paginate(
         "%s/pulls/%d/commits" % (base, pr_number), token
     )
-    check_runs = _paginate(
-        "%s/commits/%s/check-runs" % (base, head_sha), token, key="check_runs"
-    )
+
+    # Fetch check runs for the head commit and for every earlier commit in the
+    # PR, so that stale runs (attached to earlier SHAs) can be reported as
+    # audit evidence, matching fixture-mode behavior.
+    shas = []
+    if head_sha:
+        shas.append(head_sha)
+    for commit in commits:
+        sha = (commit or {}).get("sha")
+        if sha and sha not in shas:
+            shas.append(sha)
+
+    check_runs = []
+    seen_ids = set()
+    for sha in shas:
+        runs = _paginate(
+            "%s/commits/%s/check-runs" % (base, sha), token, key="check_runs"
+        )
+        for run in runs:
+            run_id = (run or {}).get("id")
+            if run_id is not None:
+                if run_id in seen_ids:
+                    continue
+                seen_ids.add(run_id)
+            check_runs.append(run)
     return pr, commits, check_runs
 
 
