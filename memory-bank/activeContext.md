@@ -1,3 +1,17 @@
+# Current Task — Post-merge branch-cleanup audit repair (2026-11-07)
+
+- **Task groups:** `deep-dive` (reconcile the original evidence with live GitHub state and identify audit-trail limitations) + `testing` (compare every recorded branch name/tip with the live remote).
+- **Feature:** reuse `specs/105-remote-branch-cleanup`; no duplicate feature directory.
+- **Branch:** `docs/branch-cleanup-audit-refresh-20261107`, based on `main` at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
+- **Scope:** Preserve the original deletion inventory and four-column TSV; correct stale present-tense status; add a dated post-merge verification record; explicitly document unavailable per-ref deletion timestamps and actors. No additional branch deletion is authorized by this task.
+- **Live verification:** 1,454 unique remote branches; 1,452 retained rows all present at the recorded tips; 169 deleted rows all absent; no duplicates or inventory overlap; only `main` protected; only open PR #1750 uses `chore/devskim-report-update-42326412143`.
+- **Base relationship:** current main is 17 commits ahead of original audit base `6fa08ddc`; the 1,084 previously verified-safe tips remain reachable. The 292 unmerged rows' per-branch unique-commit counts and the 74 recent-tip ages were not recalculated in this follow-up.
+- **Attribution limitation:** the original delete-ref run did not capture per-branch deletion timestamp/actor. PR #1754 merge metadata is not deletion attribution.
+- **Verification:** GitHub inventory checks completed. Latest-head `./freebuff-verify.sh` and PR CI are pending; the original build measurement/gate does not transfer to this new head.
+- **Delivery:** one follow-up PR against `main`; leave open and unmerged.
+
+---
+
 # Current Task — Governance regression test review correction (2026-11-07)
 
 - **Task group:** `testing` (correct the review finding in the existing Vitest regression test and verify the test suite).
