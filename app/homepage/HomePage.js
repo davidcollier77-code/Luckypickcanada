@@ -414,7 +414,7 @@ export default function HomePage() {
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
-          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Take a moment, tune in to today’s energy, and discover what your luck has in store. Your daily resonance is waiting.</p>
+          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">How's your luck looking today? Give the Lucky Meter a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!</p>
           <div className="flex flex-col items-center gap-2">
             <Link href="/lucky-meter" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">✨</span>Check Lucky Meter <span aria-hidden="true">→</span></Link>
             {totalVisits !== null && (
@@ -428,13 +428,13 @@ export default function HomePage() {
         <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Today's Lucky Card</h2>
-          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A new Lucky Card awaits your collection. Open today's Lucky Card, enjoy the reveal, and keep building your collection.</p>
+          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A little surprise is waiting for you! Discover today's Lucky Card, enjoy the reveal, and add another special card to your collection. Keep collecting, because you never know when new cards might be added!</p>
           <Link href="/reveal" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">♠</span>Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Crystal Ball</h2>
-          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
+          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Have something on your mind? Take a moment, focus on your question, and let the Crystal Ball reveal a little mystery. You never know what kind of unexpected message might be waiting for you!</p>
           <Link href="/crystal-ball" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔮</span>CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
         </article>
         </div>
@@ -447,7 +447,8 @@ export default function HomePage() {
           <div className="relative z-10">
           <p className="homepage-offer-kicker">COMMUNITY</p>
           <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
-          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
+          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-3">Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.</p>
+          <p className="homepage-offer-note">Please note: these are not business reviews or testimonials.</p>
           <Link href="/map" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🍀</span>EXPLORE LUCKY STORIES →</Link>
           </div>
         </article>
@@ -455,8 +456,8 @@ export default function HomePage() {
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
-        <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Reveal">
-          Choose 6 Pick or 7 Pick, then keep the reveal for yourself on the website or send the Gift Edition by email.
+        <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Pick — Your Little Touch of Luck">
+          Get ready to discover your own little touch of luck! Enjoy a fun and exciting reveal featuring your special set of lucky numbers, a colour to wear for a little extra luck, and a lucky day to look forward to. Who knows what little surprises the day might bring? Enjoy it yourself or share a little luck with someone special!
         </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article className="homepage-offer homepage-offer-featured">
@@ -477,12 +478,16 @@ export default function HomePage() {
       <LuckyRevealsCounter />
 
       <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
-        <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>
-          <article className="homepage-offer">
+        <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '760px', margin: '0 auto' }}>
+          <article className="homepage-offer homepage-tip-jar">
 
-            <p id="tip-jar-heading" className="homepage-offer-kicker">Keep the lights glowing</p>
-            <h2 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Leave a tip for the journey.</h2>
-            <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
+            <p className="homepage-offer-kicker">Keep the lights glowing</p>
+            <h2 id="tip-jar-heading" className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Tip Jar — Help Keep the Luck Rolling</h2>
+            <div className="homepage-copy-stack">
+              <p>Enjoying Lucky Pick Canada? If you've had a little fun exploring the site, consider leaving a little something in our Tip Jar. Your support helps keep Lucky Pick Canada going, improving, and growing.</p>
+              <p>Whether you're simply enjoying the site and would like to show your appreciation, or you have an idea for something you'd love to see in the future, we'd be delighted to hear from you. Every contribution, big or small, helps us build on what we've started.</p>
+              <p>Whether it's a tip, a donation, or a suggestion, it's sincerely appreciated. Thank you for being part of the journey!</p>
+            </div>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
             <div className="inline-block"><button type="button" className="gold-3d-btn gold-btn-glow relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openTipJar(e); }}><span className="gold-cta-emoji" aria-hidden="true">❤️</span>Open the tip jar<span className="gold-shimmer absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none" aria-hidden="true"></span></button></div>
           </article>
@@ -504,9 +509,13 @@ export default function HomePage() {
 
       <section id="suggestion-box" className="suggestion-box premium-surface" aria-labelledby="suggestion-box-heading">
         <div className="suggestion-box-copy">
-          <p className="suggestion-box-kicker">Suggestion Box</p>
-          <h2 id="suggestion-box-heading">Help make Lucky Pick Canada better</h2>
-          <p>Have an idea, a suggestion, or something you’d love to see on Lucky Pick Canada? Drop it in the Suggestion Box and help us make the experience even better.</p>
+          <h2 id="suggestion-box-heading">Suggestion Box — Your Ideas Help Shape What's Next</h2>
+          <div className="homepage-copy-stack suggestion-box-intro">
+            <p>Lucky Pick Canada is always growing, and we'd love you to be part of that journey!</p>
+            <p>Have an idea for something new, a feature you'd enjoy, or an improvement you'd like to see? We'd love to hear from you.</p>
+            <p>Big ideas, little ideas, and everything in between are welcome. Your suggestions help inspire what comes next and make Lucky Pick Canada an even better place for everyone to enjoy.</p>
+            <p>Thanks for helping us shape the future!</p>
+          </div>
         </div>
         {suggested && <p className="suggestion-box-notice suggestion-box-notice-success" role="status">Thanks for the suggestion. I’ll review it soon.</p>}
         {suggestionError && <p className="suggestion-box-notice suggestion-box-notice-error" role="alert">{suggestionError}</p>}
@@ -515,10 +524,10 @@ export default function HomePage() {
             <label>Name <span>(optional)</span><input name="name" type="text" maxLength="40" placeholder="Your name" /></label>
             <label>Email <span>(optional)</span><input name="email" type="email" maxLength="120" placeholder="you@example.com" /></label>
           </div>
-          <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
+          <label>Your suggestion <span>(required)</span><textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="Tell us what's on your mind. What would you love to see on Lucky Pick Canada?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField submitButtonId="suggestion-box-submit" action="suggestion-box" />
-          <button id="suggestion-box-submit" type="submit" disabled={isSubmitting} onClick={playButtonClick} className={`gold-3d-btn gold-btn-glow relative group overflow-hidden inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${isSubmitting ? 'opacity-70 cursor-not-allowed hover:scale-100' : ''}`}><span className="gold-cta-emoji" aria-hidden="true">💡</span>{isSubmitting ? 'Please wait...' : 'Send suggestion'} {!isSubmitting && <span aria-hidden="true">→</span>}{!isSubmitting && <span className="gold-shimmer absolute inset-0 block h-full w-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer pointer-events-none group-hover:animate-none" aria-hidden="true"></span>}</button>
+          <button id="suggestion-box-submit" type="submit" disabled={isSubmitting} onClick={playButtonClick} className={`gold-3d-btn gold-btn-glow relative group overflow-hidden inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${isSubmitting ? 'opacity-70 cursor-not-allowed hover:scale-100' : ''}`}><span className="gold-cta-emoji" aria-hidden="true">💡</span>{isSubmitting ? 'Please wait...' : 'Share Your Idea'} {!isSubmitting && <span aria-hidden="true">→</span>}{!isSubmitting && <span className="gold-shimmer absolute inset-0 block h-full w-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer pointer-events-none group-hover:animate-none" aria-hidden="true"></span>}</button>
         </form>
       </section>
 

@@ -1,4 +1,36 @@
-# Current Task — Consolidate duplicate map URLs onto `/map` (2026-11-07)
+# Completed Task — PR #1761 merge-conflict repair (2026-11-07)
+
+- **Task groups:** `troubleshooting` (diagnose the base/head divergence and resolve the overlapping records) + `testing` (verify the merged tree, branch ancestry and latest PR checks).
+- **Feature:** reuse `specs/106-homepage-content-presentation`; no duplicate feature directory.
+- **Branch / PR:** `content/homepage-wording-presentation-20261107`, PR #1761; PR remains open and unmerged.
+- **Root cause:** PR #1761 branched from `700f2077`. `main` advanced two commits to `15831963` through PR #1763's map-URL consolidation. Both branches independently edited `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md`; the remaining 13 PR files do not overlap main's changes.
+- **Resolution:** integrate current `main` as the second parent of a merge commit on the PR head. Build the tree from current main, restore all PR-specific files, and combine the two branches' Memory Bank entries. Keep the PR's active feature pointer at `specs/106-homepage-content-presentation`; the merged `specs/107-map-url-consolidation` and both permanent map redirects remain present.
+- **Scope:** no application feature, payment, database, authentication, security, deployment or environment change was introduced by the conflict repair.
+- **Verification:** merged commit ancestry and tree contents are checked after the ref update. The latest-head GitHub Actions/check results are recorded separately; no local command is claimed when it was not executed in this connector session.
+
+---
+
+# Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
+
+- **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
+- **Changes:** `app/homepage/HomePage.js` card body is now the approved first introduction passage, verbatim, with the existing non-testimonial note as a `.homepage-offer-note` line; `EXPLORE LUCKY STORIES` still targets `/map`. New `tests/visual/homepage-content-refresh.spec.ts` covers the Experience copy, the aligned card, the three Tip Jar passages, the four Suggestion Box passages plus form contract, the ten-question FAQ opened by click (aria-expanded, two-paragraph long answer, no clipping, single-open), both `/map` passages and zero horizontal overflow. `__tests__/homepage-content-refresh.test.js` gains the card alignment guard.
+- **Deliberately not exercised in automation:** the Suggestion Box POST, the Tip Jar checkout and paid reveals (Stripe/Turnstile/database side effects); their contracts remain with the unit and source guards.
+- **PR-head checks observed on `e61013df`:** Visual QA success (15:21:59Z), Graphite AI Reviews success, CodeQL success (no new alerts), DevSkim success (1 note), updater-scheduler jobs success/skipped; Protected File Changes and Pullfrog produced no check runs (no protected path or matching workflow).
+- **Pending:** the new head's Visual QA run, local Playwright execution, the production build measurement and the updated PR body.
+
+---
+
+# Current Task — Approved homepage content and presentation refresh (2026-11-07)
+
+- **Task groups:** `creation` (approved visitor-facing copy placed verbatim) + `polishing` (long-form copy presented inside the existing night-sky/gold identity) + `seo` (visible FAQ and FAQPage structured data kept identical from one source) + `testing` (regression guard for wording, form contract and celebration behaviour). Feature: `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged. Existing SEO audit PR #1760 untouched.
+- **Implementation:** new `app/homepage/faq-content.js` holds the ten approved Q&As; `app/page.js` builds the FAQPage JSON-LD from it and `app/homepage/FAQSection.js` renders the same module (answers split on `\n\n`; open container raised 500 px → 1600 px). `app/homepage/HomePage.js` carries the approved Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick copy, the Lucky Pick heading, and the Tip Jar and Suggestion Box headings, passages, labels, placeholder and "Share Your Idea" button. `app/lucky-map-of-canada/lucky-map-of-canada.js` carries the approved Lucky Stories / Community Map introduction. `themes/default/homepage.css` adds `.homepage-copy-stack` and a smaller Suggestion Box heading; `themes/default/map.css` adds `.map-community-intro`.
+- **Preserved:** all section links and gold 3D buttons, the `/api/lucky-stories/react` celebration endpoint with its localStorage state and running tally, the Suggestion Box POST to `/api/suggestions` with minLength/maxLength, honeypot and Turnstile, the tip checkout modal, Stripe products/prices, email delivery, artwork, audio, canvas and navigation.
+- **Verification PASS:** focused guard 18/18; full `pnpm exec vitest run` 48 files / 382 tests; `pnpm exec tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 (after the final CSS addition); rendered checks in the managed cloud browser — every approved passage present on `/` and `/map`, ten FAQ questions and ten JSON-LD questions from one module, 8 gold CTAs, 0 horizontal overflow, correct textarea placeholder and submit text.
+- **Not verified:** Playwright visual regression could not run here (local Chromium unusable; the managed Playwright bridge returned an internal `options.mode` error), so PR-head Visual QA is the remaining visual check; the mobile viewport was not captured.
+
+---
+
+# Completed Task — Consolidate duplicate map URLs onto `/map` (2026-11-07)
 
 - **Task groups:** `seo` (the change implements SEO finding F-H1 from `specs/106-seo-audit`) + `testing` (redirect behaviour proven by execution plus a regression test).
 - **Feature / branch:** new `specs/107-map-url-consolidation`; branch `feat/map-url-consolidation-20261107`, based on `main` at `700f2077`. Feature 106 stays the audit PR (#1760), so this task takes the next free number instead of reusing it.

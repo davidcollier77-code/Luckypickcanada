@@ -118,3 +118,32 @@ html { scroll-behavior: smooth; }
 .clover-3d:hover {
   transform: scale(1.1) rotate(5deg);
 }
+
+/* Introduction to Lucky Stories and the Community Map, presented as two
+   readable passages rather than a single flat line. */
+.map-community-intro {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 760px;
+  margin-top: 1.15rem;
+}
+
+.map-community-intro::before {
+  content: '';
+  width: 64px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.95), rgba(250, 204, 21, 0));
+}
+
+.map-community-intro p {
+  margin: 0;
+  font-size: clamp(1.02rem, 3.2vw, 1.18rem);
+  line-height: 1.72;
+  color: rgba(255, 247, 214, 0.86);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+.map-community-intro p:first-of-type {
+  color: #fff3cf;
+}

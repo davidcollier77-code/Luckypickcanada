@@ -1,3 +1,34 @@
+## 2026-11-07 — PR #1761 merge-conflict repair
+
+- Confirmed the common base was `700f2077`; current main was `15831963` after two commits, including PR #1763's map-URL consolidation.
+- The only changed-path overlap was `.specify/feature.json`, `memory-bank/activeContext.md` and `memory-bank/progress.md`; the remaining PR changes were independent of main.
+- Kept the PR's active feature pointer at `specs/106-homepage-content-presentation`, retained the main-line `specs/107-map-url-consolidation` artifacts and permanent map redirects, and combined both branches' task-history entries.
+- Integrated main into the PR head with a two-parent merge commit; PR #1761 remains open and unmerged.
+- Latest-head CI and the repository verification gate are recorded independently; no earlier-head check is represented as a new-head pass.
+
+---
+
+# Current Task — PR #1761 follow-up: visual coverage, PR checks and Lucky Stories card alignment (2026-11-07)
+
+- **Task groups:** `testing` (new browser-level coverage for the refreshed copy and the FAQ interaction) + `creation` (the homepage Lucky Stories card now uses the approved introduction wording) + `polishing` (the card keeps its existing note and gold CTA rhythm). Feature: reuse `specs/106-homepage-content-presentation`; branch `content/homepage-wording-presentation-20261107`; PR #1761 open and unmerged.
+- **Changes:** `app/homepage/HomePage.js` card body is now the approved first introduction passage, verbatim, with the existing non-testimonial note as a `.homepage-offer-note` line; `EXPLORE LUCKY STORIES` still targets `/map`. New `tests/visual/homepage-content-refresh.spec.ts` covers the Experience copy, the aligned card, the three Tip Jar passages, the four Suggestion Box passages plus form contract, the ten-question FAQ opened by click (aria-expanded, two-paragraph long answer, no clipping, single-open), both `/map` passages and zero horizontal overflow. `__tests__/homepage-content-refresh.test.js` gains the card alignment guard.
+- **Deliberately not exercised in automation:** the Suggestion Box POST, the Tip Jar checkout and paid reveals (Stripe/Turnstile/database side effects); their contracts remain with the unit and source guards.
+- **PR-head checks observed on `e61013df`:** Visual QA success (15:21:59Z), Graphite AI Reviews success, CodeQL success (no new alerts), DevSkim success (1 note), updater-scheduler jobs success/skipped; Protected File Changes and Pullfrog produced no check runs (no protected path or matching workflow).
+- **Pending:** the new head's Visual QA run, local Playwright execution, the production build measurement and the updated PR body.
+
+---
+
+## 2026-11-07 — Approved homepage content and presentation refresh
+
+- Implemented the approved Lucky Pick Canada wording: the Lucky Meter, Daily Lucky Card Reveal, Crystal Ball and Lucky Pick sections, the Lucky Stories / Community Map introduction, the Tip Jar, the Suggestion Box and the ten-question FAQ.
+- Removed the risk of FAQ/structured-data drift by moving the ten Q&As into `app/homepage/faq-content.js`, consumed by both the server-rendered FAQPage JSON-LD (`app/page.js`) and the client accordion (`app/homepage/FAQSection.js`); the accordion now renders `\n\n` answers as paragraphs and its open container grew from 500 px to 1600 px so the longest answer cannot clip.
+- Presentation stays inside the existing identity: `.homepage-copy-stack` (gold hairline, lead sentence, 1.75 line height, emphasised close) for the Tip Jar and Suggestion Box, `.map-community-intro` for the two map passages, a wider 760 px Tip Jar card, and a smaller Suggestion Box heading for its longer sentence.
+- Preserved: gold 3D CTA markup and count, section destinations, `/api/lucky-stories/react` celebration with its localStorage state and running tally, `/api/suggestions` POST with validation, honeypot and Turnstile, tip checkout, Stripe products/prices, email delivery, artwork, audio and navigation. No new dependency, route or reaction system.
+- Verification: focused guard 18/18; full Vitest 48 files / 382 tests; `tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0 before and after the final CSS addition; rendered cloud-browser checks confirmed every passage on `/` and `/map`, 10 visible and 10 structured-data questions, 8 gold CTAs, 0 horizontal overflow, correct placeholder/button text, and all FAQ answers unclipped.
+- Remaining: Playwright visual regression and mobile-viewport capture were not runnable here; PR-head Visual QA covers them. PR left open and unmerged.
+
+---
+
 ## 2026-11-07 — Duplicate map URL consolidation (F-H1)
 
 - Implemented the highest-priority fix from the sitewide SEO audit: `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` now permanently redirect to `/map` via two `permanent: true` entries in `next.config.mjs` `redirects()`, ordered after `/stories` and before the `www` host rule.
