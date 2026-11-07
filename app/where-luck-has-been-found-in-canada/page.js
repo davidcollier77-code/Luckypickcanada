@@ -11,12 +11,12 @@ export const metadata = {
   openGraph: {
     description: 'Discover where luck has been found in Canada. Explore our interactive map featuring community stories of everyday magic and fortunate moments.',
     url: '/where-luck-has-been-found-in-canada',
-    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
+    images: [{ url: '/luckypickcanada-share-1200x630.jpg', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Where Luck Has Been Found in Canada | LuckyPickCanada.ca',
     description: 'Discover where luck has been found in Canada. Explore our interactive map featuring community stories of everyday magic and fortunate moments.',
-    images: ['/1785347037732.png'],
+    images: ['/luckypickcanada-share-1200x630.jpg'],
   },
 };
 

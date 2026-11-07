@@ -355,8 +355,18 @@ export default function CrystalBall({
               aria-hidden="true"
             />
             <picture className={styles.ballArtwork}>
-              <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
-              <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
+              {/* The artwork box is clamp(280px, 75vw, 420px), so 420w covers 1x and the
+                  716w source covers high-density displays. */}
+              <source
+                srcSet="/assets/crystal-ball-pedestal-420w.avif 420w, /assets/crystal-ball-pedestal.avif 716w"
+                sizes="(max-width: 560px) 75vw, 420px"
+                type="image/avif"
+              />
+              <source
+                srcSet="/assets/crystal-ball-pedestal-420w.webp 420w, /assets/crystal-ball-pedestal.webp 716w"
+                sizes="(max-width: 560px) 75vw, 420px"
+                type="image/webp"
+              />
               <img
                 ref={ballImageRef}
                 src="/assets/crystal-ball-pedestal.png"

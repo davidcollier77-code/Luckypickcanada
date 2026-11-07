@@ -570,3 +570,13 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Added an isolated end-to-end test that runs the complete updater against a copy of the real library with injected failures. `node scripts/test-refresh-docs.js` → 31/31 PASS. Schedule, retry timing, Atlantic timezone, Cloudflare Worker slots, application code and dependencies are unchanged.
 - PR #1748 opened (open, unmerged). Review follow-up `87ecf95c` fixed two verified same-millisecond temp-path collisions in link/symlink repair and hardened report table escaping; re-verified with 31/31 updater tests, 354/354 Vitest tests, `SPEC_KIT_BASE_REF=269ea014 ./freebuff-verify.sh` exit 0, and build 349,905,235 B (333.70 MiB).
 - 2026-11-07 — Independent-review repair: reverted the wrongly based PR #1749 merge without rewriting history, restored `specs/103-docs-updater-integrity` as the only task feature, made critical link/consistency defects report FAILED and exit non-zero, protected colliding snapshot filenames from download/repair/deletion, switched temp-symlink cleanup to `lexistsSync()`, corrected the report to 64 inventory / 64 sources / 51 SHA entries, and added five regressions. Updater 36/36, Vitest 354/354, TypeScript exit 0, gate exit 0, build 349,900,039 B (333.69 MiB), scheduler 17/17 and Wrangler dry-run exit 0; local Playwright blocked by missing Chromium system libraries.
+
+## Feature-page image optimization and social-sharing image (2026-11-07)
+
+- Implemented SEO audit findings F-H2, F-H3 and the in-scope part of F-M6 (`specs/112-feature-image-social-sharing-optimization`).
+- Added width candidates generated from the committed originals: crystal ball 420w (66,706 B AVIF), lucky meter 640w/1024w (61,326 / 164,418 B AVIF), reveal 1280w/1920w (47,665 / 74,892 B AVIF), each with a WebP counterpart, wired through `srcSet` + `sizes` in the existing AVIF→WebP→original `<picture>` chains.
+- `/reveal` background now declares `width={2949} height={2847}`; crystal ball and map already declared theirs.
+- New `public/luckypickcanada-share-1200x630.jpg` (1200×630, 127,584 B) replaces the 1407×768, 1,290,881 B PNG in all seven Open Graph/Twitter metadata modules; declared dimensions now match the file.
+- The `/map` artwork was left untouched: its 569 px source is smaller than its 704 px box and its AVIF/WebP derivatives were already correct.
+- Verification: focused Vitest 16/16, full suite 396 tests, TypeScript, `./freebuff-verify.sh` exit 0, build 334,596,786 B (319.10 MiB) < 495 MB, production delivery probe and in-VM Chromium candidate/fallback checks.
+- Blocked: remote Browserbase/Browserless inspection of the changed build (Browserbase tools not exposed; the preview is owner-gated).

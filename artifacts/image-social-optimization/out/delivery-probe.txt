@@ -1,0 +1,133 @@
+
+===== /  HTTP 200  bytes=74146 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= (max-width: 768px) 100vw, 1024px | srcset= None
+    - image/webp | sizes= (max-width: 768px) 100vw, 1024px | srcset= None
+    img src= /homepage-hero-lucky-pick-canada.webp | width= None | height= None | loading= None
+  <picture> sources:
+    - image/avif | sizes= (max-width: 768px) 352px, 704px | srcset= None
+    - image/webp | sizes= (max-width: 768px) 352px, 704px | srcset= None
+    img src= /1784889264858.png | width= 704 | height= 1524 | loading= lazy
+  <picture> sources:
+    - image/avif | sizes= (max-width: 768px) 100vw, 551px | srcset= None
+    - image/webp | sizes= (max-width: 768px) 100vw, 551px | srcset= None
+    img src= /FB_IMG_1785107325979.jpg | width= 1376 | height= 768 | loading= lazy
+
+===== /crystal-ball  HTTP 200  bytes=23545 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= (max-width: 560px) 75vw, 420px | srcset= None
+    - image/webp | sizes= (max-width: 560px) 75vw, 420px | srcset= None
+    img src= /assets/crystal-ball-pedestal.png | width= 716 | height= 875 | loading= eager
+
+===== /reveal  HTTP 200  bytes=27721 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= 100vw | srcset= None
+    - image/webp | sizes= 100vw | srcset= None
+    - image/jpeg | sizes= 100vw | srcset= None
+    img src= /NGC4216_crawford.jpg | width= 2949 | height= 2847 | loading= None
+  <picture> sources:
+    - image/avif | sizes= None | srcset= None
+    - image/webp | sizes= None | srcset= None
+    img src= /IMG_20260728_220305_112042.webp | width= None | height= None | loading= None
+
+===== /lucky-meter  HTTP 200  bytes=24208 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= 100vw | srcset= None
+    - image/webp | sizes= 100vw | srcset= None
+    img src= /images/lucky-meter-night-sky.webp | width= None | height= None | loading= eager
+
+===== /map  HTTP 200  bytes=40474 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    - image/webp | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    img src= /IMG_20260731_055452_187611.png | width= 569 | height= 464 | loading= eager
+
+===== /lucky-map-of-canada  HTTP 200  bytes=40474 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    - image/webp | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    img src= /IMG_20260731_055452_187611.png | width= 569 | height= 464 | loading= eager
+
+===== /where-luck-has-been-found-in-canada  HTTP 200  bytes=40474 =====
+  og:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  og:image:width: ['1200']
+  og:image:height: ['630']
+  twitter:image: ['https://luckypickcanada.ca/luckypickcanada-share-1200x630.jpg']
+  twitter:card: ['summary_large_image']
+  <picture> sources:
+    - image/avif | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    - image/webp | sizes= (max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem | srcset= None
+    img src= /IMG_20260731_055452_187611.png | width= 569 | height= 464 | loading= eager
+
+===== ASSET HEADERS =====
+  /luckypickcanada-share-1200x630.jpg -> 200 image/jpeg 127584 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /assets/crystal-ball-pedestal-420w.avif -> 200 image/avif 66706 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /assets/crystal-ball-pedestal.avif -> 200 image/avif 226663 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /images/lucky-meter-night-sky-640w.avif -> 200 image/avif 61326 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /images/lucky-meter-night-sky-1024w.avif -> 200 image/avif 164418 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /images/lucky-meter-night-sky.avif -> 200 image/avif 390334 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /NGC4216_crawford-1280w.avif -> 200 image/avif 47665 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /NGC4216_crawford-1920w.avif -> 200 image/avif 74892 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /NGC4216_crawford.avif -> 200 image/avif 137183 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /IMG_20260731_055452_187611.avif -> 200 image/avif 38666 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /assets/crystal-ball-pedestal.png -> 200 image/png 1529009 cache=public, s-maxage=3600, stale-while-revalidate=86400
+  /1785347037732.png -> 200 image/png 1290881 cache=public, s-maxage=3600, stale-while-revalidate=86400
+
+===== RAW PICTURE MARKUP /crystal-ball =====
+<picture class="CrystalBall_ballArtwork__xAhCo">
+<source srcSet="/assets/crystal-ball-pedestal-420w.avif 420w, /assets/crystal-ball-pedestal.avif 716w" sizes="(max-width: 560px) 75vw, 420px" type="image/avif"/>
+<source srcSet="/assets/crystal-ball-pedestal-420w.webp 420w, /assets/crystal-ball-pedestal.webp 716w" sizes="(max-width: 560px) 75vw, 420px" type="image/webp"/>
+<img src="/assets/crystal-ball-pedestal.png" alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal" class="CrystalBall_ballImage__tMlCC" width="716" height="875" loading="eager" decoding="async"/>
+</picture>
+
+===== RAW PICTURE MARKUP /reveal =====
+<picture class="absolute inset-0 w-full h-full">
+<source type="image/avif" srcSet="/NGC4216_crawford-1280w.avif 1280w, /NGC4216_crawford-1920w.avif 1920w, /NGC4216_crawford.avif 2949w" sizes="100vw"/>
+<source type="image/webp" srcSet="/NGC4216_crawford-1280w.webp 1280w, /NGC4216_crawford-1920w.webp 1920w, /NGC4216_crawford.webp 2949w" sizes="100vw"/>
+<source type="image/jpeg" srcSet="/NGC4216_crawford.jpg" sizes="100vw"/>
+<img src="/NGC4216_crawford.jpg" alt="Cosmic Space Background" width="2949" height="2847" class="w-full h-full object-cover object-center" aria-hidden="true"/>
+</picture>
+
+===== RAW PICTURE MARKUP /lucky-meter =====
+<picture class="absolute inset-0 w-full h-full -z-20 pointer-events-none">
+<source srcSet="/images/lucky-meter-night-sky-640w.avif 640w, /images/lucky-meter-night-sky-1024w.avif 1024w, /images/lucky-meter-night-sky.avif 1400w" sizes="100vw" type="image/avif"/>
+<source srcSet="/images/lucky-meter-night-sky-640w.webp 640w, /images/lucky-meter-night-sky-1024w.webp 1024w, /images/lucky-meter-night-sky.webp 1400w" sizes="100vw" type="image/webp"/>
+<img alt="" role="presentation" aria-hidden="true" fetchPriority="high" loading="eager" decoding="async" data-nimg="fill" class="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;object-position:center 40%;color:transparent" src="/images/lucky-meter-night-sky.webp"/>
+</picture>
+
+===== RAW PICTURE MARKUP /map =====
+<picture class="w-full">
+<source srcSet="/IMG_20260731_055452_187611.avif" type="image/avif" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"/>
+<source srcSet="/IMG_20260731_055452_187611.webp" type="image/webp" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"/>
+<img src="/IMG_20260731_055452_187611.png" alt="Lucky Pick Canada interactive map displaying community stories across Canadian provinces" width="569" height="464" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem" loading="eager" fetchPriority="high" class="official-map-image"/>
+</picture>

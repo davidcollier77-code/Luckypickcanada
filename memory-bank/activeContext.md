@@ -1,3 +1,16 @@
+# Current Task — Feature-page image optimization and social-sharing image (2026-11-07)
+
+- **Task groups:** `seo` (implements audit findings F-H2 and F-H3 plus the in-scope part of F-M6 from PR #1760) + `polishing` (raster format and serving decisions; the mandated MDN image-format reference was consulted) + `testing` (asset/markup regression guard and executed verification).
+- **Feature / branch:** `specs/112-feature-image-social-sharing-optimization`; branch `freebuff/6ce646730644757a168998bf`.
+- **Verified baseline:** all four feature images already had AVIF/WebP derivatives delivered through `<picture>`; the audit's PNG/JPEG byte figures described the fallbacks, not the delivered bytes. Outstanding work was therefore width variants (crystal ball, lucky meter, reveal), the missing intrinsic dimensions on the `/reveal` background, and the social image.
+- **Implementation:** new 420w crystal-ball, 640w/1024w lucky-meter and 1280w/1920w reveal AVIF+WebP candidates generated with the existing `sharp@0.35.5`; `srcSet`/`sizes` added to the three `<picture>` blocks; `width={2949} height={2847}` on the `/reveal` background (F-M6); `public/luckypickcanada-share-1200x630.jpg` (1200×630, 127,584 B) replaces `/1785347037732.png` in all seven metadata modules; the `/map` artwork was deliberately left untouched because its 569 px source is smaller than its box and its derivatives were already correct.
+- **Measured:** crystal ball 226,663 → 66,706 B (−70.57%); lucky meter 390,334 → 164,418 B at 1024w (−57.88%) and 61,326 B at 640w (−84.29%); reveal 137,183 → 47,665 B at 1280w (−65.25%) and 74,892 B at 1920w (−45.41%); social image 1,290,881 → 127,584 B (−90.12%). Original assets are retained.
+- **Verification PASS:** focused Vitest 16/16; full suite 50 files / 396 tests; `tsc --noEmit`; `./freebuff-verify.sh` exit 0 (Spec Kit gate, 25 integrity tests, refresh-docs 36/36); production build `.next` 300,762,458 + `public` 33,834,328 = 334,596,786 B (319.10 MiB) < 495 MB; production `next start` delivery probe across all seven routes; in-VM Chromium confirmed the selected candidate file and decoded bytes per viewport and that every fallback decodes.
+- **BLOCKED:** Browserbase MCP tools are not exposed in this session and the Browserless fallback receives the owner-gated preview 403, so remote-MCP inspection of the changed build was not run. No deployment or public tunnel was created.
+- **Not verified:** fallback *selection* with AVIF/WebP decoding disabled; visual review of `/reveal` and `/lucky-meter` beyond DOM/metric checks; platform share-preview re-scraping (owner action).
+
+---
+
 # Current Task — Skip-CI verification integrity (2026-11-07)
 
 - **Task groups:** `security` (an unverified change must not look verified; fail-closed integrity) + `troubleshooting` (reproduce the green-checks-from-an-earlier-commit failure) + `testing` (executable regression coverage and honest exit codes).

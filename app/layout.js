@@ -9,7 +9,7 @@ import './globals.css';
 
 
 const siteUrl = 'https://luckypickcanada.ca';
-const socialImage = '/1785347037732.png';
+const socialImage = '/luckypickcanada-share-1200x630.jpg';
 
 export const metadata = {
   title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
@@ -25,13 +25,13 @@ export const metadata = {
     url: 'https://luckypickcanada.ca',
     locale: 'en_CA',
     type: 'website',
-    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
+    images: [{ url: socialImage, width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
     description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
-    images: ['/1785347037732.png'],
+    images: [socialImage],
   },
   icons: {
     icon: '/favicon.ico',
