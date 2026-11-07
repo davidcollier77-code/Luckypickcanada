@@ -386,7 +386,7 @@ Executed in order, per `AGENTS.md` §2 and the `.freebuff/cmds/speckit.*.md` def
 | PageSpeed Insights field/lab data | `curl https://www.googleapis.com/pagespeedonline/v5/runPagespeed…` | **BLOCKED** — HTTP 429, anonymous daily quota exhausted |
 | CrUX field data | `curl https://chromeuxreport.googleapis.com/v1/records:queryRecord` | **BLOCKED** — API key required |
 | Repository gate | `./freebuff-verify.sh` | **PASS** — exit 0; Spec Kit governance tests and gate, `tsc --noEmit`, production build (`next build --webpack`) and the 36 refresh-docs tests all completed with "All verification steps passed" |
-| Production build size vs 495 MB | `du -sb .next public` after the gate build | **PASS** — `.next` 300,302,147 B (286.39 MiB) + `public` 32,840,043 B (31.32 MiB) = **333,142,190 B (317.71 MiB)**, below the 495 MB maximum |
+| Production build size vs 495 MB | `du -sb .next public` after each gate build | **PASS** — final gate build: `.next` 317,720,442 B + `public` 32,840,043 B = **350,560,485 B (334.32 MiB)**; the earlier gate build in the same session measured 333,142,190 B (317.71 MiB). Both are below the 495 MB maximum |
 | Final diff audit | `git status --short`, `git diff --stat`, full diff read | **PASS** — four documentation paths only: `PR_SUMMARY.md`, `.specify/feature.json`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, plus the new `specs/106-seo-audit/` tree. No `app/`, `public/`, `themes/`, `components/`, `next.config.mjs`, `wrangler.jsonc`, `.github/`, dependency or `.docs/` path |
 | PR-head CI | GitHub checks on the pushed branch | **PENDING** — not yet reported by GitHub at the time this body was written |
 

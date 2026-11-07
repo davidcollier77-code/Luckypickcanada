@@ -6,7 +6,7 @@
 - **Live evidence:** 10 public URLs crawled (all 200), 4 unknown paths 404, `/stories` and trailing-slash variants 308, `http`/`www` 301 to the apex; sitemap 6 URLs; robots 2,748 B; every internal link 200 (0 broken); image bytes and dimensions measured with the repository's `sharp`; homepage initial payload measured at 618,379 B JS + 291,226 B CSS + 137,216 B fonts; TTFB 0.283–0.494 s over five samples.
 - **Headline findings:** three 200 URLs serve the same map page and two inherit the homepage `<title>` (canonical → `/map`); tool-page images of 1.46 MB and 2.40 MB; one sitewide share image of 1,261 KB at 1407×768 while metadata declares 1200×630; 69–94 words on `/reveal`, `/crystal-ball` and `/lucky-meter`; structured data limited to WebSite + FAQPage; static assets revalidate with `max-age=0`; two robots.txt sources. No critical site-blocking defect was verified.
 - **Unavailable data:** Search Console, Analytics, CrUX and PageSpeed Insights (HTTP 429 anonymous quota). Core Web Vitals, indexing, queries and traffic are reported as unverified, never inferred.
-- **Verification:** `./freebuff-verify.sh` exit 0; production build 300,302,147 B + `public` 32,840,043 B = 333,142,190 B (317.71 MiB), below the 495 MB maximum; final diff documentation-only.
+- **Verification:** `./freebuff-verify.sh` exit 0; production build 350,560,485 B (334.32 MiB) on the final gate run (an earlier run in the same session measured 333,142,190 B / 317.71 MiB); both below the 495 MB maximum; final diff documentation-only.
 - **Delivery:** the complete findings report is the PR body (`PR_SUMMARY.md`), one report only; PR left open and unmerged.
 
 ---

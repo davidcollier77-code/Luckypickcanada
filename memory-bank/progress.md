@@ -7,7 +7,7 @@
 - Measured the homepage initial payload: 618,379 B JS (incl. 112,594 B polyfills), 291,226 B CSS across five render-blocking files, 137,216 B preloaded fonts — 1,046,821 B before images; TTFB 0.283–0.494 s. Observed `cache-control: public, max-age=0, must-revalidate` on hashed static assets despite a one-year immutable rule in `next.config.mjs`.
 - Confirmed earlier work still holds: escaped JSON-LD helper, FAQ schema matching the visible FAQ, a single AVIF hero preload, the low-priority Turnstile preload, and self-hosted fonts. No earlier sitewide SEO audit, ranking, traffic or keyword report exists in the repository, so no quantitative comparison was claimed.
 - Could not obtain Core Web Vitals, indexing, queries or traffic: PageSpeed Insights returned HTTP 429 quota exhaustion and CrUX requires a key. Recorded as unverified.
-- Scope preserved: documentation only. `./freebuff-verify.sh` exit 0; no `app/`, `public/`, `themes/`, configuration, dependency or `.docs/` change.
+- Scope preserved: documentation only. `./freebuff-verify.sh` exit 0 on the committed diff (Spec Kit artifacts verified); production build 350,560,485 B (334.32 MiB) on the final gate run, below the 495 MB maximum; no `app/`, `public/`, `themes/`, configuration, dependency or `.docs/` change.
 
 ---
 
