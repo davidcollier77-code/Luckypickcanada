@@ -1,3 +1,15 @@
+## 2026-11-07 — PR #1764 merge-conflict repair
+
+- Diagnosed the PR/main divergence: common base `700f2077`; current main `597bd94a` was 14 commits ahead; old PR head `4680075f` was 13 commits ahead.
+- Preserved the current main tree, including PR #1762's browser-testing tooling feature under `specs/108-browser-testing-tooling-evaluation`; relocated PR #1764's Playwright speed artifacts to `specs/109-playwright-qa-speed` and updated `.specify/feature.json`.
+- Applied only PR #1764's intended changes: two-worker Playwright CI with `fullyParallel: false`, setup-node pnpm store cache wiring, and matching regression guards. No visual test, baseline, threshold, application, dependency or lockfile changes were introduced.
+- Integrated current main and the PR branch as a two-parent commit, with old PR head first and current main second; updated the branch using an expected-SHA ref update without force.
+- Pre-integration checks on the old PR head: 47 Vitest files / 366 tests and 14 focused tests passed; TypeScript and `./freebuff-verify.sh` passed (including 36 updater checks); combined build size was 335,352,915 bytes (319.82 MiB), below 495 MiB.
+- Pre-integration Playwright: 93 tests, 89 passed, 1 flaky, 3 skipped, 5.5 minutes with two workers versus 6.1 minutes with one worker (about 10% faster, below the 20% target). The desktop Gold CTA hover test had a detached-element failure and passed on retry. pnpm and Chromium caches were cold misses and were saved.
+- Integrated-head CI must rerun; old-head results are not claimed for the new commit. PR #1764 remains open and unmerged.
+
+---
+
 ## 2026-11-07 — PR #1761 merge-conflict repair
 
 - Confirmed the common base was `700f2077`; current main was `15831963` after two commits, including PR #1763's map-URL consolidation.

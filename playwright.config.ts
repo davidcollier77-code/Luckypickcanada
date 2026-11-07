@@ -7,7 +7,8 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   snapshotPathTemplate: '{testDir}/__screenshots__/{projectName}/{arg}{ext}',
   fullyParallel: false,
-  workers: process.env.CI ? 1 : undefined,
+  // Run independent spec files concurrently; keep tests within each file ordered.
+  workers: process.env.CI ? 2 : undefined,
   retries: process.env.CI ? 1 : 0,
   // The `github` reporter turns failures into check-run annotations so CI
   // results stay readable without downloading job logs or artifacts.

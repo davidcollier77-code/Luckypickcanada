@@ -1,4 +1,19 @@
-# Current Task — Browser-testing tooling evaluation and PR #1762 review (2026-11-07)
+# Current Task — PR #1764 merge-conflict repair (2026-11-07)
+
+- **Task groups:** `troubleshooting` (diagnose and repair the base/head conflict) + `deep-dive` (compare the branch histories and protect concurrent work) + `testing` (verify the merged tree, CI evidence and branch ancestry).
+- **Feature:** `specs/109-playwright-qa-speed`. Feature number 108 is already occupied on current `main` by PR #1762's `specs/108-browser-testing-tooling-evaluation`; the Playwright speed artifacts were relocated to the next free feature number, 109.
+- **Branch / PR:** `perf/visual-qa-speed-20261107`, PR #1764; PR remains open and unmerged.
+- **Root cause:** the PR and current `main` diverged from common base `700f2077`. At repair time, `main` was `597bd94a` (14 commits ahead of the common base) and the PR head was `4680075f` (13 commits ahead). Both sides changed `.specify/feature.json` and `memory-bank/activeContext.md`; the feature-number collision also required relocating the PR artifacts.
+- **Resolution:** integrated the current `main` tree as the base, preserving its homepage, map, PR #1762 browser-tooling work and all other files. Overlaid only PR #1764's Playwright workflow/config/test changes and Spec Kit artifacts under feature 109. The two-parent integration commit uses the old PR head first and current `main` second; the branch update used an expected-SHA, non-forced ref update.
+- **Pre-integration verification on `4680075f`:** 47 Vitest files / 366 tests passed; 14 focused tests passed; `pnpm tsc --noEmit` passed; `./freebuff-verify.sh` passed (including 36 updater checks); combined `.next + public` size was 335,352,915 bytes (319.82 MiB), below the 495 MiB cap.
+- **Measured Playwright result:** 93 tests with two workers; 89 passed, 1 flaky, 3 skipped; duration 5.5 minutes versus the 6.1-minute one-worker baseline (about 10% faster). This does **not** meet the 20% target. The desktop Gold CTA hover test hit a detached-element error, passed on retry, and remained classified as flaky. The pnpm store and Chromium caches were cold misses and were saved at job completion.
+- **Integrated-head verification:** pending. The results above belong to the pre-integration SHA and are not represented as checks on the new merge commit.
+- **Scope preserved:** no application behaviour, visual tests, snapshots/baselines, thresholds, dependencies, lockfile, payment, database, authentication, deployment, environment, secrets or `.docs/` changes were added by this conflict repair.
+- **Status:** merge conflict and feature-directory collision are resolved; new integrated-head CI and mandatory verification are pending. Do not claim the 20% runtime target until a comparable run proves it.
+
+---
+
+# Preserved Main-Line Task Record — Browser-testing tooling evaluation and PR #1762 review (2026-11-07)
 
 - **Task groups:** `deep-dive` (evidence-based evaluation of browser tooling) + `testing` (probe review and CI validation) + `troubleshooting` (repair the PR/base conflict and fix reviewer findings).
 - **Feature:** `specs/108-browser-testing-tooling-evaluation`; browser tooling originally used feature number 106, but current `main` already uses 106 for homepage content and 107 for map URL consolidation. Renumbered to the next free slot, 108.
