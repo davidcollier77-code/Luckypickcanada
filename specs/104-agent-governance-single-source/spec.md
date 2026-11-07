@@ -2,7 +2,7 @@
 
 **Feature Branch**: freebuff/agent-governance-single-source-20261107
 **Created**: 2026-11-07
-**Status**: Draft
+**Status**: Review correction in progress
 **Input**: User-authorized task to consolidate general agent governance into AGENTS.md, remove the redundant .freebuff/freebuff.md entrypoint, and align the saved Freebuff Master Work Request in the Library.
 
 ## User Scenarios & Testing
@@ -54,6 +54,7 @@ As the repository owner, I want the saved Freebuff Master Work Request to refer 
 - **FR-007**: The saved Master Work Request MUST align PR reporting with AGENTS.md: one concise, evidence-based summary in the PR body; no separate report or per-resource USED/USEFUL/version matrix.
 - **FR-008**: Historical specifications and completed PR/task records MUST remain unchanged unless they are active instructions.
 - **FR-009**: The PR created for this task MUST remain open and unmerged.
+- **FR-010**: The governance regression test MUST NOT read `AGENTS.md` at module scope or use an unimported lifecycle hook; each required file read MUST occur inside the test callback that needs it.
 
 ## Success Criteria
 
@@ -62,6 +63,7 @@ As the repository owner, I want the saved Freebuff Master Work Request to refer 
 - **SC-003**: The saved Master Work Request contains no reference to .freebuff/freebuff.md and matches the PR-summary rules in AGENTS.md.
 - **SC-004**: Existing specialist instructions, command definitions, verification scripts, and historical records are retained.
 - **SC-005**: The PR remains open and unmerged for owner review.
+- **SC-006**: The governance test passes without a module-scope file read or missing Vitest hook import.
 
 ## Assumptions
 
@@ -69,3 +71,17 @@ As the repository owner, I want the saved Freebuff Master Work Request to refer 
 - .freebuff/<group>.md files remain as specialist task-group instructions, not competing general governance.
 - .freebuff/cmds remains the installed Spec Kit command directory.
 - The Master Work Request is a saved Library artifact and is updated separately from the repository PR.
+
+
+### User Story 3 — Reliable governance regression test (Priority: P1)
+
+As a repository maintainer, I want the governance regression test to perform file reads only while its individual tests are running, so a missing or unreadable `AGENTS.md` produces a normal test failure instead of aborting the whole test module during import.
+
+**Why this priority**: The regression test must be reliable and must report failures through Vitest's test runner.
+
+**Independent Test**: Run `pnpm exec vitest run __tests__/agent-governance-single-source.test.js`; all four governance assertions pass, and the test module does not invoke filesystem reads during module initialization.
+
+**Acceptance Scenarios**:
+
+1. **Given** Vitest imports the governance test module, **When** module-level declarations execute, **Then** no `AGENTS.md` read is attempted.
+2. **Given** a test needs governance text, **When** that individual test runs, **Then** it reads `AGENTS.md` inside the test callback and any read failure is reported as that test's failure.
