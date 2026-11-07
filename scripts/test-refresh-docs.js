@@ -383,6 +383,15 @@ async function runTests() {
     assert.match(markdown, /repaired broken documentation symlink/);
     assert.match(markdown, /Source URLs were not changed automatically/);
     assert.match(markdown, /\*\*Result:\*\* FAILED/);
+
+    const escaped = renderRefreshReport({
+      ...createRefreshReport(),
+      downloadFailures: [
+        { library: 'a\\b|c', url: 'https://example.com/a|b', attempts: 1, error: 'boom' }
+      ]
+    });
+    assert.ok(escaped.includes('a\\\\b\\|c'), 'table cells must escape backslashes and pipes');
+    assert.ok(escaped.includes('https://example.com/a\\|b'), 'URLs must escape pipes');
   });
 
   // ---------------------------------------------------------------------------

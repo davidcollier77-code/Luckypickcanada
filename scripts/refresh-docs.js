@@ -295,14 +295,14 @@ function removeStaleSnapshots(groupsConfig, removedLibraries) {
 }
 
 function writeDocumentationLink(linkPath, relativeTarget, fallbackContent) {
-  const tempLinkPath = linkPath + '.tmp.' + Date.now();
+  const tempLinkPath = linkPath + '.tmp.symlink.' + Date.now();
   try {
     fs.symlinkSync(relativeTarget, tempLinkPath);
     fs.renameSync(tempLinkPath, linkPath);
     return 'symlink';
   } catch (error) {
     if (fs.existsSync(tempLinkPath)) fs.unlinkSync(tempLinkPath);
-    const tempDocPath = linkPath + '.tmp.' + Date.now();
+    const tempDocPath = linkPath + '.tmp.copy.' + Date.now();
     try {
       fs.writeFileSync(tempDocPath, fallbackContent);
       fs.renameSync(tempDocPath, linkPath);
@@ -845,7 +845,10 @@ function createRefreshReport() {
 }
 
 function escapeTableCell(value) {
-  return String(value == null ? '' : value).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+  return String(value == null ? '' : value)
+    .replace(/\\/g, '\\\\')
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ');
 }
 
 function renderRefreshReport(report) {
@@ -1302,7 +1305,7 @@ async function runRefresh(options, report) {
           const safeGroup = validateGroupName(groups[i]);
           const groupDir = safeJoinDocs(safeGroup);
           const docPath = safeJoinDocs(safeGroup, safeName);
-          const tempSymlinkPath = docPath + '.tmp.' + Date.now();
+          const tempSymlinkPath = docPath + '.tmp.symlink.' + Date.now();
           try {
             const relativeTarget = path.relative(groupDir, firstGroupPath);
             fs.symlinkSync(relativeTarget, tempSymlinkPath);
@@ -1310,7 +1313,7 @@ async function runRefresh(options, report) {
           } catch (e) {
             if (fs.existsSync(tempSymlinkPath)) fs.unlinkSync(tempSymlinkPath);
             console.warn(`Symlink failed for ${docPath}, falling back to writing file: `, e.message);
-            const tempDocPath = docPath + '.tmp.' + Date.now();
+            const tempDocPath = docPath + '.tmp.copy.' + Date.now();
             try {
               fs.writeFileSync(tempDocPath, outputWithCorrectLineEndings);
               fs.renameSync(tempDocPath, docPath);
