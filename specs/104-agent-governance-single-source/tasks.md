@@ -23,7 +23,7 @@
 - [x] T006 Add regression coverage in `__tests__/agent-governance-single-source.test.js` for the sole-entrypoint rule, retained MCP clarification, all specialist groups, and the core Spec Kit commands.
 - [x] T007 Point `.specify/feature.json` to `specs/104-agent-governance-single-source`.
 - [x] T008 Record the active governance task in `memory-bank/activeContext.md` and `memory-bank/progress.md`, preserving historical entries.
-- [ ] T009 Verify `pnpm run test` and the standalone TypeScript check on the latest PR head. The full suite (46 files / 358 tests, including the new 4-test governance suite) and TypeScript check passed on the preceding PR revision; the latest revision's CI rerun is pending.
+- [ ] T009 Verify `pnpm run test` and the standalone TypeScript check on the latest PR head. Earlier results are not sufficient evidence for the merged revision; the follow-up PR reruns these checks.
 
 ## Phase 3: User Story 2 — Consistent saved Master Work Request (Priority: P1)
 
@@ -36,18 +36,9 @@
 
 ## Final Phase: Verification, audit, and delivery
 
-- [ ] T012 Run `./freebuff-verify.sh` and all required `deep-dive` and `testing` group checks on the latest PR head. The repository gate passed on the preceding PR revision, including 36 refresh-docs tests; its latest-head CI rerun is pending.
+- [ ] T012 Run `./freebuff-verify.sh` and all required `deep-dive` and `testing` group checks on the latest PR head. The follow-up PR reruns the required repository gate; record only the new run's result.
 - [x] T013 Search active instructions/configuration for references to the deleted entrypoint, retaining historical specification and PR records unchanged.
-- [x] T014 Review the complete PR diff, update the single canonical PR-body summary with actual verification states, and leave PR #1751 open and unmerged.
-
-## Completion Conditions
-
-- `AGENTS.md` is the sole general agent-governance entrypoint and retains every unique operating requirement.
-- The redundant `.freebuff/freebuff.md` file is absent.
-- All eight specialist task-group files and the installed Spec Kit command directory remain.
-- The saved Library Master Work Request is aligned with repository governance.
-- The latest PR-head verification results are reported accurately; no pending check is described as passed.
-
+- [x] T014 Review the complete PR #1751 diff and publish its canonical PR-body summary; the owner subsequently merged PR #1751.
 
 ## Phase 4: Review correction — governance regression test
 
@@ -61,3 +52,12 @@
 - [ ] T018 Run `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` and `pnpm run test` on the follow-up PR head.
 - [ ] T019 Run `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; record the actual build size and all gate results.
 - [ ] T020 Review the final PR diff and CI results, update the single canonical PR body, and leave the follow-up PR open and unmerged.
+
+
+## Completion Conditions
+
+- `AGENTS.md` is the sole general agent-governance entrypoint and retains every unique operating requirement.
+- The redundant `.freebuff/freebuff.md` file is absent.
+- All eight specialist task-group files and the installed Spec Kit command directory remain.
+- The saved Library Master Work Request is aligned with repository governance.
+- The follow-up PR remains open and unmerged for owner review; the latest PR-head verification results are reported accurately.
