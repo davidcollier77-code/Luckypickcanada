@@ -182,3 +182,33 @@ justifies; it is recorded as a residual risk.
 Run the probe on the final tree, confirm `git diff -- package.json pnpm-lock.yaml` is empty, then run
 `./freebuff-verify.sh`, measure `.next + public` against the 495 MB maximum, audit the final diff and publish the
 canonical summary in the pull request body.
+
+## Startup-command documentation guard (2026-11-07)
+
+**Scope**: keep the recommendation from silently regressing. The platform setting is not readable from the
+repository, so the command is documented once in `README.md` under *Freebuff Workspace Startup* and pinned by
+`__tests__/freebuff-startup-command.test.js`.
+
+### Design
+
+1. Parse every ```` ```bash ```` fence in `README.md` and collect lines mentioning `bootstrap-pnpm.sh`.
+   Require exactly one line and require byte equality with the tested form. Any edit to the two rejected forms
+   fails here, so the documentation cannot drift without a red test.
+2. Execute the *documented* command (not a copy) in a temporary fixture: a stand-in
+   `scripts/bootstrap-pnpm.sh` that exports `$FREE_BUFF_TEST_BIN` on PATH, and a stand-in `pnpm` in that
+   directory that appends its arguments to a log and exits 0. The fixture `PATH` is `/usr/bin:/bin`, so no real
+   pnpm, `$HOME/.local/bin` or network is reachable. This proves the wrapper carries the PATH export into the
+   install under both Bash and a POSIX `sh`.
+3. Run the rejected `bash scripts/…` form in the same fixture and require exit 127 with no `pnpm` invocation,
+   and the rejected `source …` form under `sh` — the latter skipped only where `sh` genuinely supports
+   `source`, so the suite stays portable without weakening the success assertions.
+
+### Why a fixture instead of the real command
+
+Running the real startup command would install dependencies and need the registry on every test run. The
+fixture isolates exactly the property that broke: whether the bootstrap's PATH export reaches the shell that
+invokes `pnpm`. Provider-specific steps (registry download, pinned-version resolution) were already measured by
+`artifacts/freebuff-startup-audit/probe.sh` and are not re-run per test.
+
+No dependency, lockfile, application, workflow, payment, database, authentication, deployment or Cloudflare
+file changes; `README.md` gains developer documentation only.

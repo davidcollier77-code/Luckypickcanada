@@ -63,3 +63,21 @@ This project uses `pnpm`.
 pnpm install
 pnpm dev
 ```
+
+### Freebuff Workspace Startup
+
+The Freebuff project startup command is stored in Freebuff Project Settings, outside this repository. The
+documented command is kept here so it can be verified:
+
+```bash
+bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'
+```
+
+`scripts/bootstrap-pnpm.sh` resolves the exact `pnpm` version pinned in `package.json#packageManager` and exports
+its directory on `PATH`. Because that export only survives in the shell that sources it, the command wraps the
+bootstrap and the install in one explicit Bash process — the export reaches the `pnpm` call even when the
+platform shell is not Bash. Do not replace it with `bash scripts/bootstrap-pnpm.sh && …` (the export dies with
+the child process) or a bare `source …` (it fails under a POSIX `sh`).
+
+`__tests__/freebuff-startup-command.test.js` fails if this block is removed, duplicated, edited away from that
+tested form, or stops working with `pnpm` absent from `PATH` under Bash and a POSIX shell.

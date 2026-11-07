@@ -100,4 +100,13 @@
 - [x] T057 [US1] Demonstrate the wrapped form `bash -c 'source … && …'` exits 0 in both a fresh home with no `.local/bin` on PATH and under an outer `dash`.
 - [x] T058 [US1] Demonstrate that with a competing pnpm 10.30.0 first on PATH (self-management disabled) the current form installs with 10.30.0 while the sourced form uses the validated 10.30.3; record that a `.local/bin` entry already present later in PATH is not reordered (known limitation).
 - [x] T059 [US1] Measure steady-state startup: current 4.38 s, proposed 4.40 s, wrapped 4.38 s; confirm `git diff -- package.json pnpm-lock.yaml` is empty after the probe.
-- [ ] T060 [US1] Run `./freebuff-verify.sh`, measure the production build against the 495 MB ceiling, audit the final diff, publish the canonical PR summary and leave the PR open and unmerged.
+- [x] T060 [US1] Ran `./freebuff-verify.sh` (exit 0), measured the production build at 350,557,463 B (334.32 MiB), audited the 8-file diff and published the canonical PR summary; PR #1758 stays open and unmerged.
+
+## Phase 12: Startup-command documentation guard (2026-11-07)
+
+- [x] T061 [US1] Document the single canonical startup command in `README.md` under *Freebuff Workspace Startup*, with the reason the wrapper is required and the two rejected forms.
+- [x] T062 [P] [US1] Add `__tests__/freebuff-startup-command.test.js`: exactly one documented command, byte-equal to the tested form, and not either rejected form.
+- [x] T063 [US1] Execute the documented command in an isolated fixture (stand-in bootstrap exporting a PATH directory, stand-in `pnpm` logging its arguments) under Bash and a POSIX `sh` with `pnpm` absent from `PATH`; require exit 0 and `install --frozen-lockfile`.
+- [x] T064 [US1] Require the rejected `bash scripts/…` form to exit 127 with no pnpm invocation in that fixture, and the rejected `source …` form to fail under `sh` where `sh` lacks the builtin.
+- [x] T065 [US1] Prove the guard fails on drift: temporarily replace the documented command with each rejected form and confirm the suite fails; restore the documented form.
+- [x] T066 [US1] Ran the focused guard 6/6, the drift failure proof (4 tests fail on the rejected form), the related bootstrap/gate/dependency suites 17/17, and `./freebuff-verify.sh` exit 0 on the committed head; production build 334.32 MiB (< 495 MB); `package.json`/`pnpm-lock.yaml` unchanged. PR body updated; PR stays open and unmerged.

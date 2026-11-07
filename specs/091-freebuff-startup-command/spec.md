@@ -333,6 +333,32 @@ bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockf
 - **SC-020**: The current command's PATH loss is demonstrated by a failed run, not asserted from reading code.
 - **SC-021**: The proposed command's shell dependence is demonstrated by a failed run under `dash`.
 - **SC-022**: The steady-state startup duration of the current and recommended commands is measured and
-  reported.
-- **SC-023**: `git diff -- package.json pnpm-lock.yaml` is empty after the probe and the full repository gate
-  passes.
+  reported.- **SC-023**: `git diff -- package.json pnpm-lock.yaml` is empty after the probe and the full repository gate passes.
+
+## Startup-command documentation guard (2026-11-07)
+
+The recommendation lives in Freebuff project settings, which this repository cannot read. The documented command
+is therefore kept in `README.md` as the single canonical form, and a committed test pins it and executes its
+shell semantics so the documentation cannot drift back to a form that was measured to fail.
+
+- **FR-030**: `README.md` MUST document exactly one Freebuff startup command, and it MUST equal the tested
+  shell-safe form `bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'`.
+- **FR-031**: A committed test MUST fail when the documented command is removed, duplicated, or changed to the
+  PATH-losing `bash scripts/bootstrap-pnpm.sh && …` form or the shell-dependent `source scripts/…` form.
+- **FR-032**: The test MUST execute the documented command in an isolated fixture — a stand-in bootstrap that
+  exports a PATH directory containing a stand-in `pnpm` that records its arguments — and MUST prove it succeeds
+  with `pnpm` absent from `PATH` under both Bash and a POSIX `sh`, while the `bash scripts/…` form fails there.
+- **FR-033**: The guard MUST NOT run a real dependency install, reach the network, or change dependencies,
+  lockfiles, application code, workflows, payments, database, authentication, deployment or Cloudflare
+  configuration.
+- **FR-034**: The guard MUST skip only the POSIX-`sh`-rejects-`source` assertion on a platform whose `sh`
+  actually supports `source`; it MUST NOT skip the successful-execution assertions.
+
+### Success criteria
+
+- **SC-024**: The focused suite fails when the documented command is intentionally edited to either rejected
+  form, and passes unchanged on the delivered tree.
+- **SC-025**: The documented command succeeds in the fixture with `pnpm` absent from `PATH` and under both
+  outer shells, and the rejected `bash scripts/…` form exits 127 in the same fixture.
+- **SC-026**: `./freebuff-verify.sh` exits 0 on the delivered head and the measured production build stays below
+  the 495 MB maximum.
