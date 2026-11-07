@@ -116,3 +116,11 @@ VERIFY_EXIT=0
 $ du -sb .next public
 .next 300,296,840 B + public 32,840,043 B = 333,136,883 B (317.7 MiB)  # < 495 MB maximum
 ```
+
+## Subsequent state
+
+Immediately after the pass the remote held 1,454 heads. Two heads appeared afterwards and are outside this
+audit's deletion set: this task's own branch `chore/merged-remote-branch-cleanup-20261107` (pushed for the
+pull request) and an unrelated concurrently created branch `fix/governance-regression-test-20261107`, which
+was left untouched. The remote therefore held 1,456 heads at the final check, with no retained branch
+missing (`retained_missing=0`).
