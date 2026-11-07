@@ -47,3 +47,17 @@
 - All eight specialist task-group files and the installed Spec Kit command directory remain.
 - The saved Library Master Work Request is aligned with repository governance.
 - The latest PR-head verification results are reported accurately; no pending check is described as passed.
+
+
+## Phase 4: Review correction — governance regression test
+
+**Goal**: Correct the merged test's missing `beforeAll` import finding while also eliminating module-scope filesystem I/O.
+
+**Independent Test**: The focused governance Vitest module passes; `AGENTS.md` is read only when the two relevant test callbacks execute.
+
+- [x] T015 Confirm PR #1751 is merged, inspect Pullfrog review #5810741955, and reproduce the unimported `beforeAll` usage in the current `main` test source.
+- [x] T016 Reuse and amend `specs/104-agent-governance-single-source/spec.md`, `plan.md`, and `tasks.md` to record the review correction without creating a duplicate feature directory.
+- [x] T017 Refactor `__tests__/agent-governance-single-source.test.js` so `readAgents()` performs file reads only inside the two test callbacks; do not add a lifecycle hook.
+- [ ] T018 Run `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` and `pnpm run test` on the follow-up PR head.
+- [ ] T019 Run `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; record the actual build size and all gate results.
+- [ ] T020 Review the final PR diff and CI results, update the single canonical PR body, and leave the follow-up PR open and unmerged.
