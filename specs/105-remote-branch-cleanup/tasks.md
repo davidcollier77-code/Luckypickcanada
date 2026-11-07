@@ -54,7 +54,7 @@
 - Only verified-safe branches are deleted; no retained branch is missing afterwards.
 - `main` and the open pull request head still exist.
 - Repository verification results and build size are reported accurately.
-- The pull request stays open and unmerged.
+- PR #1754 was merged on 2026-11-07; this follow-up pull request stays open and unmerged until T022 and T023 are complete.
 
 
 ## Phase 5: Post-merge audit repair (2026-11-07)
