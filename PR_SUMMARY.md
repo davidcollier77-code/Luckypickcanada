@@ -48,10 +48,10 @@ No application, dependency, payment, database, auth, Cloudflare Worker, deployme
 - **Amazon Q review — two same-millisecond temp-path collisions: CONFIRMED AND FIXED.** `writeDocumentationLink` generated its symlink temp path and its fallback copy temp path with two `Date.now()` calls in one synchronous block; the `runRefresh` symlink fallback had the same pattern. A same-millisecond failure could reuse the just-deleted path. Both sites now use distinct `.tmp.symlink.<ms>` and `.tmp.copy.<ms>` suffixes, and the existing `.tmp.` exclusion still ignores leftovers.
 - **CodeQL — incomplete table escaping: CONFIRMED AND FIXED.** `escapeTableCell` now escapes backslashes before pipes and newlines; a regression assertion covers backslash, pipe and URL cells in `renderRefreshReport`.
 - **DevSkim — `setTimeout` in the test-only HTTPS mock: NOT A PRODUCTION DEFECT.** The alert points at `scripts/test-support/mock-refresh-https.js`, loaded only by the isolated end-to-end test via `--require`; no production code path changed.
-- **CodeQL — URL substring pattern in tests: NOT A PRODUCTION DEFECT.** The flagged pattern is a test assertion, not source-URL validation in the updater.
+- **CodeQL — URL substring pattern in tests: CONFIRMED AND FIXED.** The scanner treated `requestedUrls.includes(<url>)` as URL sanitization. The assertion now uses exact URL equality (`some((url) => url === expected)`), which is stricter and clears the alert; the updater's source-URL handling is unchanged.
 - **Pullfrog** failed because the repository's Google AI Studio free-tier quota is exhausted; that is an external account limit, not a code failure.
 
-The review fixes were committed as `87ecf95c` after re-running `node scripts/test-refresh-docs.js` (31/31), `pnpm exec vitest run` (354/354) and `./freebuff-verify.sh` (exit 0) on the final code.
+The review fixes were committed as `87ecf95c` (code) and a test-only CodeQL follow-up after re-running `node scripts/test-refresh-docs.js` (31/31) and `pnpm exec vitest run` (354/354); `./freebuff-verify.sh` passed with exit 0 on the final code.
 
 ## Broken source URLs and download failures
 
@@ -77,7 +77,7 @@ The report and workflow name the affected document, URL and error, and state tha
 | Repository gate | `SPEC_KIT_BASE_REF=269ea014 ./freebuff-verify.sh` | **PASS** — exit 0 (bootstrap, frozen install, Spec Kit gate tests, Spec Kit gate, typecheck, build, refresh tests); the workspace has no `origin/main`, so the PR base commit was supplied explicitly |
 | Workflow YAML | `python3 -c "import yaml; yaml.safe_load(...)"` | **PASS** |
 | Production build size | `.next` + `public` | **PASS** — 317,065,192 B + 32,840,043 B = **349,905,235 B (333.70 MiB)** < 495 MB |
-| Final diff audit | `git status`, `git diff` | **PASS** — only the reported files changed; `.docs` content untouched; review-fix diff was 2 files, +17/−5 |
+| Final diff audit | `git status`, `git diff` | **PASS** — only the reported files changed; `.docs` content untouched; review fixes touched only `scripts/refresh-docs.js` and `scripts/test-refresh-docs.js` |
 | PR-head CI | GitHub Actions | **PASS** — Visual QA run [42320559319](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/42320559319) on `87ecf95c` (unit tests, TypeScript, Spec Kit gate, Playwright visual regression) |
 | Live scheduled refresh / Cloudflare dispatch | — | **NOT RUN** — no runner, scheduler credentials or network refresh in this workspace |
 

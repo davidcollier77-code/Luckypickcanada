@@ -405,7 +405,7 @@ async function runTests() {
     };
     const sha = await getUpstreamSha('/owner/repo', { type: 'url', url: 'https://raw.githubusercontent.com/owner/repo/main/README.md' });
     assert.strictEqual(sha, '123main');
-    assert.ok(requestedUrls.includes('https://api.github.com/repos/owner/repo/commits/main'));
+    assert.ok(requestedUrls.some((requestedUrl) => requestedUrl === 'https://api.github.com/repos/owner/repo/commits/main'));
   });
 
   await test('getUpstreamSha: source on master', async () => {
