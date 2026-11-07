@@ -46,7 +46,7 @@
 
 - [x] T013 Run `./freebuff-verify.sh`, record the exit status and measure the production build size against the 495 MB maximum. Exit `0`; `.next` 300,296,840 B + `public` 32,840,043 B = 333,136,883 B (317.7 MiB).
 - [x] T014 Review the complete diff for out-of-scope changes and confirm no application, dependency, workflow, payment, database, authentication, deployment or `.docs/` change. Nine files: this feature's Spec Kit artifacts, two audit evidence files, `.specify/feature.json` and `memory-bank/activeContext.md`.
-- [x] T015 Push the task branch, open the pull request with the canonical summary, and leave it open and unmerged. Branch `chore/merged-remote-branch-cleanup-20261107`; PR #1754 open and unmerged.
+- [x] T015 Push the task branch and open the pull request with the canonical summary. At creation, PR #1754 was open and unmerged; it was subsequently merged on 2026-11-07 at 07:56:56 UTC as `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
 
 ## Completion Conditions
 
