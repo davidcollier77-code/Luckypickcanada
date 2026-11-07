@@ -43,7 +43,7 @@
     {
       "id": "P5-preview-playwright",
       "command": "preview_playwright { code: 'return 1;' } and preview_playwright { page.goto + textContent }",
-      "result": "both: \"The property 'options.mode' must be one of: 'strip'. Received 'transform'\"",
+      "command": "preview_playwright {\"code\": \"return 1;\"} ; preview_playwright {\"code\": \"await page.goto('http://localhost:3000'); return await page.textContent('body');\"}",
       "verdict": "platform bridge defect; identical for trivial and navigational scripts, so not bypassable by script content"
     },
     {
