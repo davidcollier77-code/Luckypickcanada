@@ -31,8 +31,10 @@ python3 artifacts/devskim-review-pipeline/identity_benchmark.py --old-scripts /t
 | 260 | 872.01 | 81.72 | 10.7× | 220 → 3 | 201 → 2 | 220 = 220 | 40 |
 | 460 | 1716.31 | 141.90 | 12.1× | 420 → 3 | 401 → 2 | 420 = 420 | 40 |
 
-The filtered-SARIF SHA-256 is `50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636`
-for **both** versions at every size, so no suppression decision changed.
+The filtered-SARIF SHA-256 prefix is `50558a30bcaf` for **both** versions at every size, so no
+suppression decision changed. The harness prints each full digest to stdout; the committed JSON stores
+only the 12-character prefix, because a 64-hex literal in a data file reads as a stored key to
+security scanners (DevSkim DS173237 flagged it on the first CI run).
 
 ## 2. Replay gate (`replay_benchmark.py`)
 

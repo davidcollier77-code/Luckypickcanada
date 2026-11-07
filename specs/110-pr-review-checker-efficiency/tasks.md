@@ -40,6 +40,8 @@
   - PR #1767 (`perf/devskim-review-checker-20261107` → `main`), open and unmerged; the PR body is the single canonical summary.
   - Final diff audit: 20 files, all accounted for in the PR body; no application, workflow, dependency, lockfile, secret or `.docs/` change; no stray debug code in the Python diff.
 
+- [x] T019 Remove scanner-flagged literals from the committed evidence: `benchmark.py` now stores only a 12-character digest prefix and prints the full digest to stdout, and reads the loopback token from the fixture instead of containing it. First PR-head CI run reported 10 DevSkim DS173237 errors for the full 64-hex digests in `before.json`/`after.json` plus one DS162092 note; regenerated evidence keeps the identical digest (`50558a30bcaf…0636`) and suppression counts with no flagged literal left.
+
 ## Phase 6: Owner-authorized governance checker correction
 
 - [x] T017 Update `__tests__/agent-governance-single-source.test.js` where it asserted the pre-`d3512df5` wording of the MCP clarification, so it tracks the current `AGENTS.md` §5 sentence. The requirement itself (a listed MCP or a connection alone is not MCP use) is preserved and still asserted; `AGENTS.md` was not modified or reverted.

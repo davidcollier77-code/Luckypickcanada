@@ -4,53 +4,53 @@
   "sizes": {
     "25": {
       "findings": 85,
-      "best_ms": 139.58,
-      "median_ms": 143.86,
+      "best_ms": 144.42,
+      "median_ms": 150.97,
       "source_reads": 45,
       "json_parse_calls": 26,
       "suppressed": 45,
       "filtered_results": 40,
-      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+      "filtered_sha256_prefix": "50558a30bcaf"
     },
     "50": {
       "findings": 110,
-      "best_ms": 249.91,
-      "median_ms": 253.24,
+      "best_ms": 252.59,
+      "median_ms": 256.77,
       "source_reads": 70,
       "json_parse_calls": 51,
       "suppressed": 70,
       "filtered_results": 40,
-      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+      "filtered_sha256_prefix": "50558a30bcaf"
     },
     "100": {
       "findings": 160,
-      "best_ms": 458.86,
-      "median_ms": 459.88,
+      "best_ms": 460.04,
+      "median_ms": 465.23,
       "source_reads": 120,
       "json_parse_calls": 101,
       "suppressed": 120,
       "filtered_results": 40,
-      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+      "filtered_sha256_prefix": "50558a30bcaf"
     },
     "200": {
       "findings": 260,
-      "best_ms": 872.01,
-      "median_ms": 873.67,
+      "best_ms": 879.33,
+      "median_ms": 879.57,
       "source_reads": 220,
       "json_parse_calls": 201,
       "suppressed": 220,
       "filtered_results": 40,
-      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+      "filtered_sha256_prefix": "50558a30bcaf"
     },
     "400": {
       "findings": 460,
-      "best_ms": 1716.31,
-      "median_ms": 1721.41,
+      "best_ms": 1711.5,
+      "median_ms": 1721.47,
       "source_reads": 420,
       "json_parse_calls": 401,
       "suppressed": 420,
       "filtered_results": 40,
-      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+      "filtered_sha256_prefix": "50558a30bcaf"
     }
   }
 }
