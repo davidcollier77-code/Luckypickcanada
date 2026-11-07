@@ -110,3 +110,28 @@
 - The 09:18:07Z branch reconciliation is explicitly historical and correctly maps the #1755 head branch.
 - The 1,084 pass-2 deletion rows remain intact and accurately batch-accounted.
 - PR #1756 remains open and unmerged.
+
+## Phase 8: Pass 3 — re-audit of the remaining heads (2026-11-07)
+
+**Goal**: classify every live head independently and delete only heads that satisfy all seven requirements.
+
+**Independent Test**: re-run the per-head classification against a fresh `git ls-remote`; the verdict counts must
+reconcile with the live head count, `main` must be unchanged, and the open pull request head must still exist.
+
+- [x] T038 Read `AGENTS.md`, the Memory Bank, `.docs/manifest.json` and the `deep-dive` + `testing` group files; reuse feature 105.
+- [x] T039 Fetch all heads and record the live inventory (`git ls-remote --heads origin`): 370 heads, 0 duplicates, `main` = `4785e5e4`.
+- [x] T040 Query protected branches (`main` only) and open pull requests (#1750, head `chore/devskim-report-update-42326412143`).
+- [x] T041 Classify all 370 heads individually (tip SHA, age, ancestry, unique commits, protection, open PR, restore point) into `artifacts/branch-cleanup/pass3-classification.tsv`.
+- [x] T042 Cross-check the ancestor set with `git branch -r --merged origin/main` (76 non-`main` heads, all 0 unique commits).
+- [x] T043 Reconcile the inventory with the pass-1 retained rows and both deletion inventories: 1,084 absent and fully accounted for, 169 pass-1 deletions still absent, 0 unexplained differences.
+- [x] T044 Confirm the eligible set is empty and record 0 deletions; no delete call was issued.
+- [x] T045 Verify `main` is unchanged (`4785e5e4`), the PR #1750 head is present, and the head count reconciles (`370 = 368 retained + main + PR head`).
+- [x] T046 Record the measured build size and repository gate result for this head in the PR body, reported separately from earlier heads (`./freebuff-verify.sh` exit 0; `.next` + `public` = 350,558,797 B / 334.32 MiB).
+- [x] T047 Update `audit-summary.md`, `spec.md`, `plan.md` and this task list with the pass-3 evidence; no application, workflow, dependency, deployment, payment, database, authentication or `.docs/` change.
+
+## Pass 3 completion conditions
+
+- Every live head has one recorded verdict and the counts reconcile with the live total.
+- No head is deleted that fails any of the seven requirements.
+- `main` and the open pull request head still exist at their expected SHAs.
+- Prior deletion evidence is unchanged and every inventory difference is explained.

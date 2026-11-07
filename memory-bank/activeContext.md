@@ -1,4 +1,18 @@
-# Current Task — PR #1756 merge-conflict repair (2026-11-07)
+# Current Task — Remote branch cleanup pass 3 (2026-11-07)
+
+- **Task groups:** `deep-dive` (independent classification from current evidence) + `testing` (per-branch safety verification and remote reconciliation). Feature: reuse `specs/105-remote-branch-cleanup`.
+- **Branch:** `chore/branch-cleanup-pass3-20261107`; PR open and unmerged.
+- **Baseline:** `origin/main` = `4785e5e43e96e61d7543cfef5a7345333091c516`; 370 live heads (0 duplicates); only `main` protected; one open PR (#1750, head `chore/devskim-report-update-42326412143` @ `380e1301`).
+- **Result:** 0 of 370 heads satisfy all seven deletion requirements, so **0 branches were deleted** and **0 delete calls were issued**. Verdicts: 1 protected `main`, 1 open-PR head, 3 restore points, 74 merged heads whose tips are 0–6 days old, 291 heads with 1–26 unique commits absent from `main`.
+- **Reconciliation:** pass-1 inventory 1,452 rows → 368 still live at their recorded tips (0 moved), 1,084 absent and every one accounted for by `deleted-branches-pass2.tsv`; all 169 pass-1 deletions still absent; only two live heads postdate that inventory (`main`, PR #1750 head). `370 = 368 + main + PR head`.
+- **Auto-deleted on merge:** `docs/branch-cleanup-audit-refresh-20261107` and `chore/branch-cleanup-pass2-20261107` are absent because `delete_branch_on_merge` is enabled and PRs #1755/#1756 merged; neither was in the pass-1 retained inventory.
+- **Next eligible work:** 10 merged heads reach seven days within 24 hours; revalidate them against a fresh `main` before removal.
+- **Scope:** evidence and Spec Kit documentation only; no application, workflow, dependency, payment, database, authentication, deployment, secret or `.docs/` change.
+- **Limits:** per-ref deletion timestamps and API actors remain unavailable and are not inferred; the full GitHub listing payload was truncated by the integration, so name parity rests on `git ls-remote` plus SHA spot-checks.
+
+---
+
+# Completed Task — PR #1756 merge-conflict repair (2026-11-07)
 
 - **Task groups:** `troubleshooting` (resolve the verified branch/base divergence) + `deep-dive` (compare PR #1756, PR #1755 and current `main`) + `testing` (validate the audit evidence and merged tree).
 - **Feature:** reuse `specs/105-remote-branch-cleanup`; no duplicate feature directory.
