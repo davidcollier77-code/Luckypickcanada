@@ -1,3 +1,14 @@
+## 2026-11-07 — Single-source Freebuff governance consolidation
+
+- Consolidated general agent governance in `AGENTS.md`, making it explicit that it governs every coding agent, including Freebuff.
+- Preserved the unique clarification that connecting or initializing an MCP alone does not count as using it.
+- Removed the redundant `.freebuff/freebuff.md` entrypoint while retaining all eight specialist group files and the `.freebuff/cmds/` Spec Kit command directory.
+- Added `__tests__/agent-governance-single-source.test.js` to guard the single-entrypoint rule and retained specialist guidance.
+- Updated the saved Freebuff Master Work Request in the ChatGPT Library to remove the deleted entrypoint reference and align PR reporting with the canonical PR body.
+- Full Vitest suite (including the new governance regression test), standalone TypeScript, the OpenNext Next.js production build and 495 MiB size gate, DevSkim, and visual-change classification passed on PR CI. The exact build byte count was not available in the returned job metadata. Visual QA Spec Kit verification/browser stages, updater-scheduler repository gate/build-size/Wrangler checks, and OpenNext worker/assets/Wrangler validation remain in progress. PR #1751 is open and unmerged; the complete 10-file diff was audited.
+
+---
+
 ## 2026-11-06 — PR #1746 routing-test coverage correction
 
 - Expanded `__tests__/docs-library-retirement.test.ts` to assert that each of the four retired IDs is absent from every one of the eight manifest group routing files, closing the Amazon Q review finding.

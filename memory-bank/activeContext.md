@@ -1,3 +1,15 @@
+# Current Task — Single-source Freebuff governance consolidation (2026-11-07)
+
+- **Task groups:** `deep-dive` (compare the complete governance files, inspect active references, and preserve unique instructions) + `testing` (add regression coverage for the single-entrypoint rule and retained specialist guidance).
+- **Branch / feature:** `freebuff/agent-governance-single-source-20261107`; `specs/104-agent-governance-single-source`.
+- **Authorized scope:** Make `AGENTS.md` the sole general governance entrypoint for all coding agents, including Freebuff; preserve the distinct MCP connection/initialization clarification; delete only `.freebuff/freebuff.md`; retain all eight specialist task-group files and the Spec Kit command directory; update the saved Library Master Work Request.
+- **Implementation:** `AGENTS.md` now identifies itself as the single authority, no longer instructs agents to read the redundant entrypoint, and preserves the MCP-use clarification. The redundant `.freebuff/freebuff.md` file is deleted. A focused regression test verifies the sole-entrypoint rule, MCP clarification, all eight specialist files, and core Spec Kit commands. The saved Library Master Work Request has been updated and re-read; it now points only to AGENTS.md and selected task-group instructions and uses the canonical PR-body summary.
+- **Preserved:** Specialist instructions, Spec Kit commands/integration, the Constitution, Memory Bank history, task/PR records, documentation manifest, verification scripts, and unrelated PR #1750.
+- **Verification:** Full Vitest suite (including the new governance regression test), standalone TypeScript, OpenNext production build and 495 MiB size gate, DevSkim, and visual-change classifier have passed on PR CI. Exact build byte count is not exposed in the available job result. Visual QA, updater-scheduler `./freebuff-verify.sh`, and OpenNext Cloudflare/Wrangler validation remain in progress; final outcomes are pending.
+- **Delivery:** PR #1751 is open and unmerged. The complete 10-file PR diff was reviewed; no out-of-scope changes were found. The PR body records the actual passed and pending checks.
+
+---
+
 # Current Task — Documentation updater review repair (2026-11-07)
 
 - **Task:** Repair PR #1748 after independent review: restore Spec Kit separation, make critical link/consistency defects fail, protect filename-collision ownership, harden temp cleanup, correct the 64/64/51 report and add regression coverage.
