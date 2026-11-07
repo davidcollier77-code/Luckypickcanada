@@ -9,11 +9,13 @@ commit's checks.
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -278,6 +280,202 @@ class CurrentHeadAuditTests(unittest.TestCase):
         self.assertIn(HEAD, markdown)
         self.assertNotIn("| **PASS**", markdown)
         self.assertIn("**NOT RUN**", markdown)
+
+
+class EmptyHeadShaTests(unittest.TestCase):
+    def test_empty_head_sha_never_matches_runs_without_a_sha(self):
+        runs = [
+            check_run(name, sha="", run_id=index)
+            for index, name in enumerate(auditor.REQUIRED_CHECKS, start=1)
+        ]
+        runs.append(
+            check_run(auditor.CONDITIONAL_CHECKS[0], sha=EARLIER, run_id=99)
+        )
+        report = auditor.audit_verification(
+            pull_request(sha=""), [commit(HEAD, "fix: current head")], runs
+        )
+
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+        for record in report["required_checks"]:
+            self.assertEqual(record["status"], "NOT RUN")
+            self.assertEqual(record["head_sha"], "")
+        self.assertIn("no current head SHA", " ".join(report["blocking_reasons"]))
+
+    def test_load_live_refuses_missing_head_sha_before_check_run_request(self):
+        requested = []
+
+        def fake_api_get(url, token):
+            requested.append(url)
+            return {"number": 42, "head": {"sha": ""}}
+
+        def fake_paginate(url, token, key=None, limit=10):
+            requested.append(url)
+            return []
+
+        with mock.patch.object(auditor, "_api_get", fake_api_get), mock.patch.object(
+            auditor, "_paginate", fake_paginate
+        ):
+            with self.assertRaises(RuntimeError):
+                auditor.load_live("owner/repo", 42, "token")
+
+        self.assertFalse(any("/commits//" in url for url in requested))
+        self.assertFalse(any("/check-runs" in url for url in requested))
+
+
+class LiveLoadDeduplicationTests(unittest.TestCase):
+    def test_runs_without_ids_are_deduplicated_safely(self):
+        pr = pull_request()
+        commits = [commit(HEAD, "fix: current head"), commit(EARLIER, "feat: earlier")]
+        idless = {
+            "name": "Visual QA",
+            "head_sha": HEAD,
+            "status": "completed",
+            "conclusion": "success",
+        }
+        idless_duplicate = dict(idless)
+        identified = check_run(
+            "DevSkim scan and Security upload", sha=HEAD, run_id=7
+        )
+        identified_duplicate = dict(identified)
+        runs_by_sha = {
+            HEAD: [idless, identified],
+            EARLIER: [idless_duplicate, identified_duplicate],
+        }
+
+        def fake_api_get(url, token):
+            return pr
+
+        def fake_paginate(url, token, key=None, limit=10):
+            if "/check-runs" not in url:
+                return commits
+            sha = url.split("/commits/")[1].split("/check-runs")[0]
+            return list(runs_by_sha.get(sha, []))
+
+        with mock.patch.object(auditor, "_api_get", fake_api_get), mock.patch.object(
+            auditor, "_paginate", fake_paginate
+        ):
+            loaded_pr, loaded_commits, loaded_runs = auditor.load_live(
+                "owner/repo", 42, "token"
+            )
+
+        self.assertEqual(loaded_pr, pr)
+        self.assertEqual(len(loaded_commits), 2)
+        self.assertEqual(len(loaded_runs), 2)
+
+
+class PollingDeadlineTests(unittest.TestCase):
+    def _settled(self):
+        return (pull_request(), [commit(HEAD, "fix: current head")], green_checks())
+
+    def test_transient_error_is_retried_within_the_deadline(self):
+        state = {"now": 0.0}
+        calls = {"count": 0}
+        sleeps = []
+
+        def clock():
+            return state["now"]
+
+        def sleep(seconds):
+            sleeps.append(seconds)
+            state["now"] += seconds
+
+        def loader(repo, pr_number, token):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                raise auditor.TransientApiError("GitHub API returned HTTP 502")
+            return self._settled()
+
+        auditor.wait_for_current_head(
+            "owner/repo",
+            42,
+            "token",
+            100,
+            15,
+            loader=loader,
+            clock=clock,
+            sleep=sleep,
+        )
+
+        self.assertEqual(calls["count"], 2)
+        self.assertEqual(len(sleeps), 1)
+
+    def test_persistent_errors_raise_after_the_deadline(self):
+        state = {"now": 0.0}
+
+        def clock():
+            return state["now"]
+
+        def sleep(seconds):
+            state["now"] += seconds
+
+        def loader(repo, pr_number, token):
+            raise auditor.TransientApiError("GitHub API unavailable")
+
+        with self.assertRaises(auditor.TransientApiError):
+            auditor.wait_for_current_head(
+                "owner/repo",
+                42,
+                "token",
+                30,
+                15,
+                loader=loader,
+                clock=clock,
+                sleep=sleep,
+            )
+
+        self.assertLessEqual(state["now"], 30)
+
+    def test_permanent_errors_are_not_retried(self):
+        calls = {"count": 0}
+        sleeps = []
+
+        def loader(repo, pr_number, token):
+            calls["count"] += 1
+            raise RuntimeError("GitHub API request failed with HTTP 404")
+
+        with self.assertRaises(RuntimeError):
+            auditor.wait_for_current_head(
+                "owner/repo",
+                42,
+                "token",
+                100,
+                15,
+                loader=loader,
+                clock=lambda: 0.0,
+                sleep=sleeps.append,
+            )
+
+        self.assertEqual(calls["count"], 1)
+        self.assertEqual(sleeps, [])
+
+    def test_poll_sleep_never_overshoots_the_deadline(self):
+        state = {"now": 0.0}
+        sleeps = []
+
+        def clock():
+            return state["now"]
+
+        def sleep(seconds):
+            sleeps.append(seconds)
+            state["now"] += seconds
+
+        def loader(repo, pr_number, token):
+            return (pull_request(), [commit(HEAD, "fix: current head")], [])
+
+        auditor.wait_for_current_head(
+            "owner/repo",
+            42,
+            "token",
+            10,
+            60,
+            loader=loader,
+            clock=clock,
+            sleep=sleep,
+        )
+
+        self.assertTrue(sleeps)
+        self.assertLessEqual(sum(sleeps), 10)
+        self.assertLessEqual(max(sleeps), 10)
 
 
 class CommandLineTests(unittest.TestCase):

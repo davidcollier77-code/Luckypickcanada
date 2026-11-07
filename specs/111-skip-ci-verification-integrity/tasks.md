@@ -42,6 +42,16 @@
   - PR #1768 (`freebuff/cef6175f03deca51d10d44c1` → `main`), open and unmerged; its body is the single canonical summary.
   - Final diff: 11 files in `f7d4525c` plus this evidence-only documentation update; no application, dependency, lockfile, secret, deployment, existing-workflow or `.docs/` change; `git diff --cached --check` clean.
 
+## Phase 6: Review repair increment (2026-11-07)
+
+- [x] T017 [US1] Add the missing `shutil` import so the registered temporary-directory cleanup works and the two failing CLI tests pass.
+- [x] T018 [US1] Stop empty `head_sha` values from matching runs with no SHA; covered by `EmptyHeadShaTests`.
+- [x] T019 [US1] Guard `load_live` against a missing head SHA before any commit/check-run request; covered by a test that records requested URLs.
+- [x] T020 [US1] Introduce `TransientApiError` and retry only transient failures inside the polling deadline; permanent errors fail immediately.
+- [x] T021 [US2] Deduplicate id-less check runs by stable identity so partial records cannot be appended once per SHA.
+- [x] T022 [US3] Cap the polling sleep to the remaining deadline and check the deadline before sleeping.
+- [x] T023 [Testing] Extend `.github/scripts/test_verify_pr_verification_status.py` with deterministic retry/deadline tests, then run the focused suite and `./freebuff-verify.sh`.
+
 ## Dependencies
 
 - T004 → T005 → T006; T008 depends on T004; T010 depends on T005.

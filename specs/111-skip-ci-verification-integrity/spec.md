@@ -101,6 +101,11 @@ none may be reported as PASS.
 - **FR-008**: The audit command MUST exit non-zero when the head is not verified and write the same evidence to the GitHub step summary.
 - **FR-009**: No existing workflow, required check, branch-protection setting or CI exception may be weakened or removed.
 - **FR-010**: Automated tests MUST cover human and automated skips, stale checks, missing checks, skipped/neutral/cancelled conclusions, re-runs, conditional checks and CLI exit codes.
+- **FR-011**: When the pull request has no head SHA, no check run may be matched to the head; every required check MUST be NOT RUN and the result NOT VERIFIED.
+- **FR-012**: The live loader MUST NOT request check runs without a non-empty head SHA.
+- **FR-013**: The bounded wait MUST retry transient GitHub API failures (HTTP 5xx, network, invalid JSON) within its existing deadline, and MUST NOT retry permanent failures such as HTTP 4xx.
+- **FR-014**: Check-run deduplication MUST behave deterministically when a run has no numeric id, without dropping distinct runs or appending the same partial record twice.
+- **FR-015**: The bounded wait MUST NOT sleep past its deadline, including when required runs are still outstanding.
 
 ### Success Criteria
 
@@ -109,6 +114,44 @@ none may be reported as PASS.
 - **SC-003**: No audited fixture reports an unrun check as PASS.
 - **SC-004**: The new unit suite, `./freebuff-verify.sh`, TypeScript and the production build pass, and the measured build stays below the 495 MB maximum.
 - **SC-005**: The workflow guard test proves the audit runs on `pull_request_target` and has no path filter that could hide it.
+- **SC-006**: Focused tests reproduce the empty-SHA, transient-error, missing-id and deadline defects and pass against the repaired code.
+- **SC-007**: The Python tests that failed with `NameError` under Visual QA pass locally and in the repository gate.
+
+## Repair Increment — Reviewer Findings (2026-11-07)
+
+Independent review of PR #1768 reported defects in the repair commits. Each
+finding was checked against the current code before anything was changed.
+
+- **Empty `head_sha` matching (Amazon Q, valid):** `on_head` compared `""` to
+  `""`, so runs with no SHA were treated as current-head evidence for a
+  head-less pull request. With no head SHA nothing can now match, and every run
+  is reported as stale/ignored.
+- **Empty `head_sha` API path (Amazon Q, already safe):** the repaired
+  `load_live` only appended a non-empty head SHA, so it could not build a
+  `/commits//check-runs` request. The repair is kept as an explicit fail-closed
+  guard, and a regression test asserts that no check-run request is made.
+- **Transient API errors abort polling (Amazon Q, valid):** the wait aborted on
+  the first error. Retryable failures (HTTP 5xx, network, invalid JSON) are now
+  retried inside the same deadline; permanent failures (4xx, missing head SHA)
+  still fail immediately instead of consuming the remaining budget.
+- **Missing check-run IDs (Graphite, valid):** id-less runs bypassed the
+  seen-ids guard and could be appended once per SHA. They now use a stable field
+  identity, so identical partial records collapse while distinct evidence is not
+  silently discarded.
+- **Polling deadline (Graphite, partly valid):** the review's claim that the
+  second deadline guard was unreachable was incorrect — it is reached when runs
+  are still unsettled. The real defect was that the loop slept `poll_seconds`
+  without checking the remaining budget, so it could overshoot the deadline by
+  up to one poll interval. The loop now checks the remaining time before
+  sleeping and caps the sleep to it.
+
+**Requirements added**: FR-011 (a missing head SHA never matches any run),
+FR-012 (no check-run request without a head SHA), FR-013 (retry only transient
+API errors, within the existing deadline), FR-014 (id-less runs deduplicated by
+stable identity), FR-015 (the bounded wait never sleeps past its deadline).
+
+**Success criteria added**: SC-006 focused unit tests reproduce and cover every
+repair above; SC-007 the previously failing Visual QA Python tests pass again.
 
 ## Scope
 

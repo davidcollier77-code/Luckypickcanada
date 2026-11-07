@@ -190,12 +190,19 @@ def audit_verification(pr, commits, check_runs):
     head_directives = head_commit["skip_directives"] if head_commit else []
 
     # Only runs attached to the exact current head SHA can count as evidence.
-    on_head = [
-        run for run in check_runs if (run.get("head_sha") or "") == head_sha
-    ]
-    stale = [
-        run for run in check_runs if (run.get("head_sha") or "") != head_sha
-    ]
+    # Without a head SHA there is no current head to match, so nothing can
+    # qualify: treating orphaned runs with a null SHA as head evidence would
+    # corrupt the per-check records even though the overall result is blocked.
+    if head_sha:
+        on_head = [
+            run for run in check_runs if (run.get("head_sha") or "") == head_sha
+        ]
+        stale = [
+            run for run in check_runs if (run.get("head_sha") or "") != head_sha
+        ]
+    else:
+        on_head = []
+        stale = list(check_runs)
 
     def runs_named(name, collection):
         return [run for run in collection if (run.get("name") or "") == name]
@@ -376,6 +383,10 @@ def render_markdown(report):
     return "\n".join(lines) + "\n"
 
 
+class TransientApiError(RuntimeError):
+    """A GitHub API failure that may succeed if retried (5xx, network, bad JSON)."""
+
+
 def _api_get(url, token):
     request = urllib.request.Request(
         url,
@@ -390,17 +401,20 @@ def _api_get(url, token):
         with urllib.request.urlopen(request, timeout=30) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
-        raise RuntimeError(
-            "GitHub API request failed with HTTP %s for %s"
-            % (error.code, url.split("?")[0])
-        ) from None
+        message = "GitHub API request failed with HTTP %s for %s" % (
+            error.code,
+            url.split("?")[0],
+        )
+        if error.code >= 500:
+            raise TransientApiError(message) from None
+        raise RuntimeError(message) from None
     except urllib.error.URLError as error:
-        raise RuntimeError(
+        raise TransientApiError(
             "GitHub API request could not reach %s: %s"
             % (url.split("?")[0], error.reason)
         ) from None
     except json.JSONDecodeError:
-        raise RuntimeError(
+        raise TransientApiError(
             "GitHub API returned invalid JSON for %s" % url.split("?")[0]
         ) from None
 
@@ -423,10 +437,39 @@ def _paginate(url, token, key=None, limit=10):
 
 
 
+def _run_identity(run):
+    """Identify a check run even when GitHub omits its numeric id.
+
+    Deduplication must never silently drop a run just because its id is
+    missing, and it must not re-append the same id-less run either. A stable
+    field tuple is used only when no id is available.
+    """
+    run = run if isinstance(run, dict) else {}
+    run_id = run.get("id")
+    if run_id is not None:
+        return ("id", run_id)
+    return (
+        "fields",
+        run.get("name") or "",
+        run.get("head_sha") or "",
+        run.get("status") or "",
+        run.get("conclusion") or "",
+        run.get("started_at") or "",
+        run.get("completed_at") or "",
+    )
+
+
 def load_live(repo, pr_number, token):
     base = "https://api.github.com/repos/%s" % repo
     pr = _api_get("%s/pulls/%d" % (base, pr_number), token)
     head_sha = (pr.get("head") or {}).get("sha") or ""
+    # A missing head SHA cannot be audited and would build a malformed
+    # /commits//check-runs path, so fail closed before requesting check runs.
+    if not head_sha:
+        raise RuntimeError(
+            "pull request %d has no current head SHA; refusing to fetch check runs"
+            % pr_number
+        )
     commits = _paginate(
         "%s/pulls/%d/commits" % (base, pr_number), token
     )
@@ -434,26 +477,23 @@ def load_live(repo, pr_number, token):
     # Fetch check runs for the head commit and for every earlier commit in the
     # PR, so that stale runs (attached to earlier SHAs) can be reported as
     # audit evidence, matching fixture-mode behavior.
-    shas = []
-    if head_sha:
-        shas.append(head_sha)
+    shas = [head_sha]
     for commit in commits:
         sha = (commit or {}).get("sha")
         if sha and sha not in shas:
             shas.append(sha)
 
     check_runs = []
-    seen_ids = set()
+    seen = set()
     for sha in shas:
         runs = _paginate(
             "%s/commits/%s/check-runs" % (base, sha), token, key="check_runs"
         )
         for run in runs:
-            run_id = (run or {}).get("id")
-            if run_id is not None:
-                if run_id in seen_ids:
-                    continue
-                seen_ids.add(run_id)
+            identity = _run_identity(run)
+            if identity in seen:
+                continue
+            seen.add(identity)
             check_runs.append(run)
     return pr, commits, check_runs
 
@@ -466,15 +506,40 @@ def load_fixture(directory):
     return read("pr.json"), read("commits.json"), read("check-runs.json")
 
 
-def wait_for_current_head(repo, pr_number, token, timeout_seconds, poll_seconds):
+def wait_for_current_head(
+    repo,
+    pr_number,
+    token,
+    timeout_seconds,
+    poll_seconds,
+    *,
+    loader=None,
+    clock=None,
+    sleep=None,
+):
     """Wait, bounded, for the current head's audited checks to settle.
 
     The pull request is re-read on every poll, so if a new commit lands while
-    waiting the audit follows the new head instead of the stale one.
+    waiting the audit follows the new head instead of the stale one. Transient
+    GitHub API errors are retried inside the same deadline; the final attempt's
+    error is raised only once the deadline has passed. Sleeps are capped to the
+    remaining time so the wait cannot overshoot its deadline.
     """
-    deadline = time.monotonic() + timeout_seconds
+    loader = loader or load_live
+    clock = clock or time.monotonic
+    sleep = sleep or time.sleep
+
+    deadline = clock() + max(0, timeout_seconds)
     while True:
-        pr, commits, check_runs = load_live(repo, pr_number, token)
+        try:
+            pr, commits, check_runs = loader(repo, pr_number, token)
+        except TransientApiError:
+            remaining = deadline - clock()
+            if remaining <= 0:
+                raise
+            sleep(min(max(1, poll_seconds), remaining))
+            continue
+
         head_sha = (pr.get("head") or {}).get("sha") or ""
         head_commit = next(
             (item for item in commits if (item.get("sha") or "") == head_sha), None
@@ -498,11 +563,12 @@ def wait_for_current_head(repo, pr_number, token, timeout_seconds, poll_seconds)
         all_required_observed = set(REQUIRED_CHECKS).issubset(
             {run.get("name") for run in on_head}
         )
-        if not unsettled and (all_required_observed or time.monotonic() >= deadline):
+        remaining = deadline - clock()
+        if not unsettled and (all_required_observed or remaining <= 0):
             return
-        if time.monotonic() >= deadline:
+        if remaining <= 0:
             return
-        time.sleep(max(1, poll_seconds))
+        sleep(min(max(1, poll_seconds), remaining))
 
 
 def build_parser():

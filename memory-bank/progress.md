@@ -6,6 +6,14 @@
 - Preserved all existing CI behaviour: no workflow condition, required check, branch-protection setting or documented exemption was changed; conditional Visual QA remains conditional and is reported NOT RUN when it does not apply.
 - Added 18 regression tests and wired them into `freebuff-verify.sh`.
 
+### Review repair (2026-11-07)
+
+- Reproduced the Visual QA failure locally: two `CommandLineTests` raised `NameError: name 'shutil' is not defined` because the temporary-directory cleanup was registered without importing `shutil`. Added the import; the suite runs again.
+- Fixed empty `head_sha` handling in both directions: the audit no longer matches runs whose SHA is `""` to a head-less pull request, and the live loader raises before requesting commits or check runs when the head SHA is missing (no `/commits//check-runs` path is built).
+- Polling now retries only `TransientApiError` (HTTP 5xx, network, invalid JSON) inside the existing deadline; HTTP 4xx and missing-head errors fail immediately. Sleeps are capped to the remaining budget, so the wait cannot overshoot its deadline.
+- Check-run deduplication identifies id-less runs by a stable tuple of name, SHA, status, conclusion and timestamps instead of appending every id-less run once per SHA.
+- Validated each Graphite finding against the code: its deduplication finding was valid; its polling-deadline finding was partly valid (the second guard is reachable, but the uncapped sleep could overshoot), so only the real defect was repaired.
+
 ---
 
 ## 2026-11-07 — DevSkim CI alert repair on PR #1767

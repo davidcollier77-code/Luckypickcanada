@@ -117,6 +117,24 @@ Python 3 for the audit and tests.
 - **Token leakage** → the token is read from `GH_TOKEN`/`GITHUB_TOKEN`, used only
   in request headers, and never printed.
 
+## Repair Increment (2026-11-07)
+
+The review repairs stay inside the audit core and its tests; no workflow,
+application, dependency, secret or `.docs/` change is involved.
+
+| Finding | Verdict against the code | Repair |
+| --- | --- | --- |
+| Empty `head_sha` matched `""` runs (Amazon Q) | Valid | `audit_verification` only selects head runs when the head SHA is non-empty; otherwise every run is stale/ignored. |
+| Empty `head_sha` built `/commits//check-runs` (Amazon Q) | Already safe after the previous repair; kept explicit | `load_live` raises before fetching commits or check runs when the head SHA is empty; a test asserts no check-run request is made. |
+| Transient API errors aborted the wait (Amazon Q) | Valid | New `TransientApiError` for HTTP 5xx, network and invalid-JSON failures, retried by `wait_for_current_head` inside the same deadline. HTTP 4xx and missing-head errors still fail immediately. |
+| Id-less runs bypassed deduplication (Graphite) | Valid | `_run_identity` deduplicates by numeric id when present, otherwise by a stable tuple of name, SHA, status, conclusion and timestamps. Identical partial records collapse; distinct runs are kept. |
+| Wait could pass its deadline (Graphite) | Partly valid: the second guard was reachable, but the uncapped sleep could overshoot | The loop computes the remaining budget before sleeping and caps the sleep to it; the deadline guard is evaluated before any sleep. |
+
+`wait_for_current_head` accepts injectable `loader`, `clock` and `sleep`
+keywords so retry and deadline behaviour is proven deterministically instead of
+by real sleeping. The `_fixture` helper keeps the temporary-directory cleanup
+added by the earlier repair, now with the missing `shutil` import.
+
 ## Verification Plan
 
 Run the new unit suite; run `./freebuff-verify.sh` with
