@@ -164,3 +164,39 @@ The PR branch was 2 commits ahead and 4 commits behind current `main`. The confl
 5. Create a merge commit with the PR #1756 head as first parent and current `main` as second parent, then advance the PR source branch without force.
 
 **Evidence checks**: 1,084 TSV data rows, 136 batch IDs, 135 full batches and one final four-row batch; GitHub metadata for PR #1755 supplies the exact head branch and merge timestamp. No branch refs other than the PR source branch are changed by this resolution.
+
+## Pass 3 — remaining heads re-audited (2026-11-07)
+
+**Goal**: take the next cleanup pass over the heads remaining after pass 2, deleting only those that satisfy every
+requirement at the moment of deletion.
+
+**Baseline**: `origin/main` = `4785e5e43e96e61d7543cfef5a7345333091c516`; 370 live heads; only `main` protected; one
+open pull request (#1750).
+
+### Approach
+
+1. `git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune`, then `git ls-remote --heads origin` as the
+   authoritative live inventory, independent of any earlier count.
+2. Query protected branches and open pull requests through the GitHub integration.
+3. For each head record tip SHA, tip committer date and age, `git merge-base --is-ancestor <head> origin/main`,
+   `git rev-list --count origin/main..<head>`, and the protected / open-PR / restore-point flags, then apply the seven
+   requirements.
+4. Cross-check the ancestor set with `git branch -r --merged origin/main` plus per-ref unique-commit counts.
+5. Reconcile the live inventory against the pass-1 retained rows and both deletion inventories, explaining every
+   difference.
+6. Delete in bounded batches through the integration only if the eligible set is non-empty, verifying absence after
+   each batch.
+
+### Execution constraint
+
+The integration deletes one ref per call and rate-limits long blocks. Because the eligible set was empty, no delete
+call was issued and no rate limit was encountered.
+
+### Result
+
+0 eligible, 0 deleted. 370 heads retained with recorded reasons; `main` unchanged; PR #1750 head intact. 10 merged
+heads inside the seven-day window become eligible within 24 hours.
+
+### Verification
+
+Recorded in the "Pass 3" section of `artifacts/branch-cleanup/audit-summary.md` and summarised in the pull request body.

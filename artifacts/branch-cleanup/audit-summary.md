@@ -231,3 +231,77 @@ with delete permission in this workspace.
 Pass-1 evidence was not rewritten: `deleted-branches.tsv` still holds the original 169 rows with the header
 on line 1, `retained-branches.tsv` still holds all 1,452 rows of the original classification, and pass-2
 deletions are additive evidence in a new file.
+
+---
+
+## Pass 3 — remaining heads re-audited (2026-11-07)
+
+**Snapshot:** `2026-11-07T10:31:28Z` · **`origin/main`:** `4785e5e43e96e61d7543cfef5a7345333091c516` (PR #1756 merge)
+**Live remote heads:** 370 (0 duplicate names) · **Protected branches:** `main` only · **Open pull requests:** 1 (#1750)
+
+Pass 2 removed the 1,084 heads it had revalidated, so this pass started from a fresh inventory: every live head was
+fetched again with `git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune` and classified individually
+against the *current* `main`, not the historical audit base.
+
+### Verdicts (all 370 heads)
+
+| Verdict | Count | Rule |
+| --- | --- | --- |
+| SAFE TO DELETE | **0** | every deletion requirement satisfied |
+| KEEP — protected default branch | 1 | `main` |
+| KEEP — head of open PR #1750 | 1 | `chore/devskim-report-update-42326412143` @ `380e1301` |
+| KEEP — backup/recovery restore point | 3 | `backup/pr-1518-before-scope-correction`, `protect-12-files`, `protect-12-files-human-authorization` |
+| KEEP — merged, tip inside seven-day window | 74 | ancestor of `main`, 0 unique commits, tip 0–6 days old |
+| KEEP — not an ancestor of `main` | 291 | 1–26 commits still absent from `main` |
+
+`1 + 1 + 3 + 74 + 291 = 370` — the classification reconciles exactly with the live head count.
+
+### Why nothing qualified for deletion
+
+No live head satisfied all seven requirements at once:
+
+- **76** heads are ancestors of `main` with `git rev-list --count origin/main..<head>` = `0`. Two of those are
+  `protect-*` restore points; the other **74** have tip commits only 0–6 days old (oldest
+  `2026-10-31T10:32:24-03:00`, newest `2026-11-07T06:45:35+00:00`) and are retained by the seven-day rule. **10** of
+  them reach seven days within 24 hours and become eligible for a later pass.
+- **291** heads are not reachable from `main` at all (1–26 unique commits), so deleting them would discard work.
+- `main` is protected, and the single open pull request's head is retained.
+
+No branch was deleted in this pass, so there is no deletion outcome to reconcile. **Deletions: 0. Failures: 0.**
+
+### Reconciliation with earlier evidence
+
+| Check | Result |
+| --- | --- |
+| Pass-1 `retained-branches.tsv` rows | 1,452 |
+| …of those still live at the recorded tip | 368 (0 moved, 1,084 absent) |
+| Absent pass-1 retained rows explained by `deleted-branches-pass2.tsv` | 1,084 / 1,084 — 0 unexplained |
+| Pass-2 deletion rows still live | 0 / 1,084 |
+| Pass-1 deletion rows still live | 0 / 169 |
+| Pass-2 names that were never in the pass-1 retained inventory | 0 |
+| Live heads absent from the pass-1 retained inventory | 2 — `main` and the PR #1750 head |
+
+`370 = 368 retained + main + PR #1750 head`.
+
+Two branches present at the 09:18:07Z pass-2 snapshot are gone without an explicit delete call:
+`docs/branch-cleanup-audit-refresh-20261107` (PR #1755 head) and `chore/branch-cleanup-pass2-20261107` (PR #1756
+head). They are absent because the repository has `delete_branch_on_merge: true` and both pull requests merged.
+Neither was ever part of the pass-1 retained inventory, so no inventory row needs correcting.
+
+### Evidence
+
+`pass3-classification.tsv` records one row per live head: name, tip SHA, tip committer date, tip age in days,
+`merge-base --is-ancestor` result, `rev-list --count origin/main..<head>`, protected/open-PR/restore-point flags,
+verdict and retention reason.
+
+The ancestor set is cross-checked independently: `git branch -r --merged origin/main` returned the same 76 non-`main`
+heads, and each reported 0 unique commits, so it is not an artifact of a single command.
+
+### Verification limits
+
+- The paginated GitHub branch listing confirmed `main` (`4785e5e4`), the open PR head (`380e1301`) and
+  `backup/pr-1518-before-scope-correction` (`56ed79fb`) at the expected SHAs. The full 370-name listing payload
+  exceeded the integration response limit, so name-for-name parity rests on `git ls-remote`, which reads the same
+  remote the REST API serves.
+- Per-ref deletion timestamps and API actors remain unavailable for passes 1 and 2 and are still not inferred.
+- No delete call was issued, so no rate limiting occurred in this pass.

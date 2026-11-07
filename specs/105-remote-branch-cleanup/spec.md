@@ -2,7 +2,7 @@
 
 **Feature Branch**: freebuff/da1d12a5430a7af901daee1b
 **Created**: 2026-11-07
-**Status**: Pass 2 complete; PR #1756 conflict resolution committed; latest-head checks pending
+**Status**: Pass 3 complete — 0 of 370 live heads eligible for deletion at the 2026-11-07T10:31:28Z snapshot; PR open and unmerged
 **Input**: Owner-authorized task to identify remote Git branches conclusively merged into `main`, verify each candidate individually, delete only branches confirmed safe to remove, retain protected branches, branches associated with open pull requests, and branches with uncertain or active work, and report deletions and retentions with reasons.
 
 ## User Scenarios & Testing
@@ -153,3 +153,34 @@ PR #1756 was created from `af350ba6d4b1dbb10eb1257211778085b1edb4eb`. PR #1755 s
 - **FR-018**: The merged PR evidence MUST identify `docs/branch-cleanup-audit-refresh-20261107` as PR #1755's head branch at the 09:18:07Z pass-2 snapshot, and record the later 09:48:26Z merge as a subsequent event.
 - **FR-019**: Conflict resolution MUST preserve the original pass-1 evidence, PR #1755's post-merge audit additions, and the complete pass-2 deletion evidence.
 - **SC-008**: The updated PR branch contains current `main` as a merge parent, retains all 1,084 pass-2 rows, and remains open and unmerged pending latest-head verification.
+
+## Pass 3 — remaining heads re-audited (2026-11-07)
+
+The owner requested a further cleanup pass over the heads remaining after pass 2. Pass 3 re-inventoried every live head
+instead of reusing earlier counts or classifications.
+
+### Requirements added
+
+- **FR-020**: Every live remote head MUST be re-fetched and reclassified against the current `origin/main` before any
+  decision; a historical classification MUST NOT be treated as evidence.
+- **FR-021**: A head MUST be deleted only when all seven requirements hold simultaneously; a head failing any one of
+  them MUST be retained with that failing reason recorded.
+- **FR-022**: Protected branches, open-pull-request heads, `backup/`/`protect-` restore points and heads whose tip
+  commit is younger than seven days MUST be retained even when they are conclusively merged.
+- **FR-023**: The pass MUST reconcile the live inventory with `retained-branches.tsv`, `deleted-branches.tsv` and
+  `deleted-branches-pass2.tsv`, explaining every difference.
+- **FR-024**: When no head satisfies every requirement, the pass MUST record zero deletions and MUST NOT delete a head
+  merely to demonstrate activity.
+
+### Success criteria added
+
+- **SC-009**: Each of the 370 heads present at the 2026-11-07T10:31:28Z snapshot has exactly one recorded verdict, and
+  the verdict counts reconcile with the live head count.
+- **SC-010**: No head is deleted in pass 3 unless it satisfies all seven requirements at revalidation time.
+- **SC-011**: `main` is unchanged and the open pull request head remains present after the pass.
+
+### Outcome
+
+370 heads classified: 0 SAFE TO DELETE, 370 KEEP (`main`, the PR #1750 head, 3 restore points, 74 merged heads inside
+the seven-day window, 291 heads with unique commits). No branch was deleted. See
+`artifacts/branch-cleanup/pass3-classification.tsv` and the "Pass 3" section of `audit-summary.md`.
