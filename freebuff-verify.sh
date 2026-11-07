@@ -35,6 +35,14 @@ else
   fi
 fi
 
+echo -e "\n--- Testing Verification Status Integrity Checker ---"
+# Proves skipped or unrun checks are reported NOT RUN and that checks from an
+# earlier commit are never accepted as evidence for the current head.
+if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_verify_pr_verification_status.py'; then
+  echo "❌ Verification status integrity tests failed; remaining verification was not run." >&2
+  exit 1
+fi
+
 # Type Check (TypeScript)
 echo -e "\n--- Running Type Check ---"
 if ! pnpm exec tsc --noEmit; then
