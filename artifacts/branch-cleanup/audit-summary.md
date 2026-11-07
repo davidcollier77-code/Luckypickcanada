@@ -124,3 +124,92 @@ audit's deletion set: this task's own branch `chore/merged-remote-branch-cleanup
 pull request) and an unrelated concurrently created branch `fix/governance-regression-test-20261107`, which
 was left untouched. The remote therefore held 1,456 heads at the final check, with no retained branch
 missing (`retained_missing=0`).
+
+## Pass 2 — the remaining verified-safe heads removed (2026-11-07)
+
+**Task**: continue the cleanup for the 1,084 heads recorded as `verified safe` in `retained-branches.tsv`,
+independently revalidating each against the live remote and the current `origin/main` immediately before
+deletion.
+
+**Baseline at pass-2 start**: `origin/main` = `af350ba6d4b1dbb10eb1257211778085b1edb4eb` (PR #1754 merge
+commit); 1,455 live heads. `origin/main` was unchanged at final verification.
+
+The numbered sections above describe pass 1 and remain the historical record. In particular, "Why 1,084
+verified-safe heads remain" is superseded by this section.
+
+### Per-branch revalidation (1,084 rows, 0 skipped)
+
+| Check | Result |
+| --- | --- |
+| Live tip SHA equals the recorded inventory SHA | 1,084 / 1,084 match — 0 moved |
+| `git merge-base --is-ancestor <tip> origin/main` | 1,084 / 1,084 `yes` |
+| `git rev-list --count origin/main..<tip>` | 1,084 / 1,084 = `0` |
+| Not `main`, and not protected | 1,084 / 1,084 pass (only `main` is protected) |
+| Not the head of an open pull request | 1,084 / 1,084 pass (open: #1750, #1755) |
+| Not a `backup/`, `protect-` or restore-point name | 1,084 / 1,084 pass |
+| Tip at least seven days old | 1,084 / 1,084 pass (oldest tip 2026-07-16, newest 2026-07-31) |
+
+Every candidate was an ancestor of `main` with zero unique commits, so no deletion can orphan history: each
+tip remains reachable from `main`, and the recorded SHA can recreate the ref.
+
+### Deletion execution
+
+136 batches of 8, issued through the connected GitHub integration (one ref per call) and each confirmed
+against `git ls-remote --heads origin`. Deletion was performed in these batch ranges:
+
+- batches 000–075, 076–087, 088–099, 100–111, 112–123: issued in blocks of 96 branches;
+- batches 124–135: the final 108 branches.
+
+One integration quota window interrupted a block: 11 batches were rejected with
+`Too many integration calls` before executing. Those 88 branches were re-verified as still present with
+unchanged tips, then deleted after the window cleared. A rejected call was never counted as a deletion.
+
+### Result
+
+| Item | Count |
+| --- | --- |
+| Candidates revalidated and eligible | 1,084 |
+| Deleted and verified absent | 1,084 |
+| Failed | 0 |
+| Skipped / retained from this set | 0 |
+| Live heads at pass-2 start | 1,455 |
+| Live heads after pass 2 | 371 |
+
+Reconciliation: `1,455 − 1,084 = 371`, and `371 = 368 non-candidate retained rows + main + PR #1750 head +
+PR #1755 head`.
+
+### Post-deletion verification (2026-11-07T09:18:07Z)
+
+```
+$ git ls-remote --heads origin | wc -l
+371
+$ # all 1,084 deleted names absent
+candidates_present=0
+$ # every non-candidate retained row still at its recorded tip SHA
+keep_ok=368 keep_missing=0 keep_mismatch=0
+$ git rev-parse origin/main
+af350ba6d4b1dbb10eb1257211778085b1edb4eb
+$ # protected branch and open-PR heads
+main present=1
+chore/devskim-report-update-42326412143 present=1
+docs/branch-cleanup-audit-refresh-20261107 present=1
+$ # pass-1 evidence untouched
+deleted-branches_rows=169
+retained-branches_rows=1452
+```
+
+### Evidence for pass 2
+
+`deleted-branches-pass2.tsv` records one row per branch: batch id, name, verified tip SHA, tip-match
+result, ancestry result, commits not in `main`, deletion result, absence verification, and the
+timestamp/actor columns.
+
+`deletion_timestamp_utc` and `api_actor` are `unavailable` for every row. The integration returns only a
+success acknowledgement with no per-call timestamp or actor, so neither is inferred. The deletion window is
+bounded instead by the pass-2 pre-deletion revalidation and the post-deletion verification recorded above.
+Authorization comes from the owner-issued task; the connected repository integration is the only channel
+with delete permission in this workspace.
+
+Pass-1 evidence was not rewritten: `deleted-branches.tsv` still holds the original 169 rows with the header
+on line 1, `retained-branches.tsv` still holds all 1,452 rows of the original classification, and pass-2
+deletions are additive evidence in a new file.

@@ -89,3 +89,35 @@ As the repository owner, I want one record naming what was deleted and what was 
 - A seven-day retention window is a reasonable margin for recently touched merged branches that could still be active.
 - The connected GitHub integration may delete refs; the local checkout has no Git push credentials, so deletion is performed through that integration rather than `git push`.
 - Tip SHAs recorded in the audit artifacts are sufficient to restore any deleted ref from `main`'s history if the owner wants it back.
+
+## Pass 2 Continuation (2026-11-07)
+
+The first pass removed 169 heads and deliberately stopped with 1,084 heads still classified `verified safe`.
+The owner then authorized completing that set. The requirements below extend the specification without
+changing the rule that only independently verified branches are deleted.
+
+### Requirements added
+
+- **FR-013**: Every branch in the 1,084-row candidate set MUST be revalidated individually against the live
+  remote and the current `origin/main` immediately before its deletion; the historical classification alone
+  MUST NOT be treated as evidence.
+- **FR-014**: A candidate whose live tip SHA no longer equals its recorded inventory SHA MUST NOT be deleted
+  and MUST be reported for investigation.
+- **FR-015**: Each pass-2 deletion MUST be recorded with its batch id, branch name, verified tip SHA,
+  verification results and deletion result, in a file that does not overwrite the original 169 deletion
+  records.
+- **FR-016**: Deletion timestamps and API actors MUST be recorded when the integration provides reliable
+  evidence, and otherwise explicitly marked unavailable; attribution MUST NOT be invented.
+- **FR-017**: No branch outside the 1,084-row inventory may be deleted, and PR #1754 and PR #1755 MUST NOT be
+  modified.
+
+### Success criteria added
+
+- **SC-007**: All 1,084 candidates are deleted and independently verified absent, the live head count drops
+  by exactly 1,084, and no retained branch name or tip SHA changes.
+
+### Outcome
+
+All 1,084 candidates were revalidated (0 moved, 0 skipped) and deleted; the live head count fell from 1,455
+to 371, with the 368 non-candidate retained branches, `main` and both open-PR heads intact. See
+`artifacts/branch-cleanup/audit-summary.md` ("Pass 2") and `artifacts/branch-cleanup/deleted-branches-pass2.tsv`.

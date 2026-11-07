@@ -1,3 +1,16 @@
+# Current Task — Merged remote branch cleanup, pass 2 (2026-11-07)
+
+- **Task groups:** `deep-dive` (independent per-branch revalidation against the live remote and current `origin/main`) + `testing` (post-deletion remote reconciliation: every deleted name absent, retained inventory intact).
+- **Work branch:** `freebuff/da1d12a5430a7af901daee1b`; **feature:** `specs/105-remote-branch-cleanup` (reused; no duplicate feature directory).
+- **Verified baseline:** PR #1754 merged at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; 1,084 heads recorded `verified safe` in `retained-branches.tsv`.
+- **Revalidation:** all 1,084 matched their recorded tip SHA, were ancestors of `af350ba6`, had 0 unique commits, were not `main`/protected, not an open-PR head (#1750, #1755), not `backup/`/`protect-`, and had tips older than seven days (2026-07-16 → 2026-07-31). 0 moved, 0 skipped.
+- **Implementation:** 136 batches of 8 deleted through the GitHub integration; 1,084/1,084 verified absent; 0 failed. One quota window rejected 11 batches (88 branches) before execution; those were re-verified present and deleted after the window cleared.
+- **Post-deletion verification (2026-11-07T09:18:07Z):** 371 live heads (`1,455 − 1,084`) = 368 non-candidate retained + `main` + PR #1750 head + PR #1755 head; `candidates_present=0`; `keep_ok=368 keep_missing=0 keep_mismatch=0`; `origin/main` unchanged; pass-1 artifacts untouched (169 deletion rows, 1,452 retained rows).
+- **Audit limits:** the integration returns no per-ref timestamp or actor, so `deletion_timestamp_utc` and `api_actor` are `unavailable` in `deleted-branches-pass2.tsv`; the window is bounded by the revalidation and post-deletion checks and no attribution is inferred.
+- **Delivery:** separate PR against `main`; PR #1754 and PR #1755 untouched and unmerged; this PR stays open and unmerged.
+
+---
+
 # Current Task — Governance regression test review correction (2026-11-07)
 
 - **Task group:** `testing` (correct the review finding in the existing Vitest regression test and verify the test suite).

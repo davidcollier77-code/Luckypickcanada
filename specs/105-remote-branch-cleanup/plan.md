@@ -95,3 +95,32 @@ The integration deletes one ref per call, so deletions are issued in bounded bat
   - **Mitigation**: deterministic alphabetical batching, per-batch verification, and committed evidence for every deleted tip SHA so any ref can be recreated.
 - **Risk**: The open pull request cannot be pushed from this workspace.
   - **Mitigation**: use the managed Git integration for the branch push; report any failure exactly rather than claiming success.
+
+## Pass 2 Continuation (2026-11-07)
+
+**Goal**: finish the 1,084 heads that pass 1 recorded as `verified safe`, under the same safety rule.
+
+**Baseline**: `origin/main` = `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; open PRs #1750
+and #1755 (neither touched).
+
+**Approach**:
+
+1. Extract the candidate rows whose reason starts `verified safe` and split them deterministically into 136
+   batches of 8 with their recorded tip SHAs.
+2. Revalidate each candidate individually against a fresh `git ls-remote` listing and `origin/main`: tip
+   match, ancestry, unique-commit count, protected/open-PR/backup-name exclusions and tip age.
+3. Delete each batch through the connected GitHub integration, one ref per call, in bounded blocks.
+4. After every block, confirm the block's names are absent from `git ls-remote --heads origin`.
+5. On a rejected (quota) call, treat the branch as not deleted, re-verify it as still present, and retry
+   after the window clears.
+6. Write `deleted-branches-pass2.tsv` additively; leave `deleted-branches.tsv` (169 rows) and
+   `retained-branches.tsv` (1,452 rows) untouched.
+7. Verify the final state: live head count, absence of all 1,084 names, intact retained inventory, unchanged
+   `main`, present open-PR heads.
+
+**Execution constraint**: the integration rate-limits a long block with
+`Too many integration calls. Try again in <n>s`. That occurred once, rejected 11 batches before execution,
+and was handled as described in step 5 — no rejection was recorded as a deletion.
+
+**Result**: 1,084 deleted and verified absent; 371 live heads remain (368 retained + `main` + #1750 head +
+#1755 head); `main` unchanged.
