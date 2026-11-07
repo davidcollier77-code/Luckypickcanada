@@ -19,9 +19,9 @@
 
 **Independent Test**: The config guard asserts two CI workers and `fullyParallel: false`; the PR-head run discovers the same test cases and finishes faster without increased flakiness.
 
-- [ ] T005 [US1] Extend `__tests__/visual-qa-chromium-cache.test.js` to guard the two-worker CI limit and preserve `fullyParallel: false`.
-- [ ] T006 [US1] Set the CI worker limit to two in `playwright.config.ts`; preserve all projects, retries, screenshot options, test discovery, baselines, and assertions.
-- [ ] T007 [US1] Run the focused guard test and inspect the exact Playwright configuration diff.
+- [x] T005 [US1] Extend `__tests__/visual-qa-chromium-cache.test.js` to guard the two-worker CI limit and preserve `fullyParallel: false`.
+- [x] T006 [US1] Set the CI worker limit to two in `playwright.config.ts`; preserve all projects, retries, screenshot options, test discovery, baselines, and assertions.
+- [x] T007 [US1] Run the focused guard test and inspect the exact Playwright configuration diff.
 
 ## Phase 3: User Story 2 — Reuse pnpm package data (Priority: P2)
 
@@ -29,9 +29,9 @@
 
 **Independent Test**: The workflow guard verifies action order and pnpm cache inputs; the PR-head run reports a cache hit or miss while the frozen-lockfile command still executes.
 
-- [ ] T008 [US2] Extend `__tests__/visual-qa-chromium-cache.test.js` to require pnpm setup before setup-node, `cache: pnpm`, `cache-dependency-path: pnpm-lock.yaml`, and the unchanged frozen-lockfile install.
-- [ ] T009 [US2] Reorder the existing pinned setup actions and enable setup-node pnpm caching in `.github/workflows/visual-qa.yml`; preserve the Chromium cache and all other QA steps.
-- [ ] T010 [US2] Run the focused workflow/config guard and review the final workflow diff.
+- [x] T008 [US2] Extend `__tests__/visual-qa-chromium-cache.test.js` to require pnpm setup before setup-node, `cache: pnpm`, `cache-dependency-path: pnpm-lock.yaml`, and the unchanged frozen-lockfile install.
+- [x] T009 [US2] Reorder the existing pinned setup actions and enable setup-node pnpm caching in `.github/workflows/visual-qa.yml`; preserve the Chromium cache and all other QA steps.
+- [x] T010 [US2] Run the focused workflow/config guard and review the final workflow diff.
 
 ## Phase 4: Verification and report
 
