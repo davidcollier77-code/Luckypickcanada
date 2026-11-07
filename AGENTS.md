@@ -2,12 +2,12 @@
 
 🔴 READ FIRST. VERIFY BEFORE CLAIMING.
 
-This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
+This file is the repository's single authoritative workflow and safety policy for every coding agent, including Freebuff. No separate general-purpose Freebuff entrypoint is used. The user's task request defines the requested outcome and scope. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
 
 ## 1. INITIALIZE ONCE
 
 1. Read this file first.
-2. Read `.freebuff/freebuff.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
+2. Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once.
 3. Select at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. You may select multiple groups when the task requires them. Read and follow the instructions for every selected group.
 4. Read each selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for documentation routing. Use the manifest to identify reference documents that materially help with the task.
 - Use applicable enabled Freebuff skills when relevant: `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
@@ -55,7 +55,7 @@ Explicit owner authorization is required before changing:
 - accessibility/responsive behavior or approved visual/product behavior;
 - the documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
+Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available. A connection or initialization alone does not count as MCP use.
 
 ## 6. BUILD AND EXECUTION SAFETY
 
