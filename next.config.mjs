@@ -82,11 +82,24 @@ const nextConfig = {
       },
     ];
   },
-  // 301 Redirect for Domain Consistency: route www to non-www
+  // Permanent redirects: legacy map aliases and domain consistency.
   async redirects() {
     return [
       {
         source: '/stories',
+        destination: '/map',
+        permanent: true,
+      },
+      // Both legacy URLs serve the same map page as /map (SEO audit finding
+      // F-H1). Consolidate them on the canonical URL instead of letting a
+      // duplicate 200 response inherit the homepage title.
+      {
+        source: '/lucky-map-of-canada',
+        destination: '/map',
+        permanent: true,
+      },
+      {
+        source: '/where-luck-has-been-found-in-canada',
         destination: '/map',
         permanent: true,
       },

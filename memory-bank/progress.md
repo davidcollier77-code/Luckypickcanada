@@ -1,3 +1,16 @@
+## 2026-11-07 — Duplicate map URL consolidation (F-H1)
+
+- Implemented the highest-priority fix from the sitewide SEO audit: `/lucky-map-of-canada` and `/where-luck-has-been-found-in-canada` now permanently redirect to `/map` via two `permanent: true` entries in `next.config.mjs` `redirects()`, ordered after `/stories` and before the `www` host rule.
+- Proved the behaviour instead of inferring it: on a local production build both aliases returned `HTTP/1.1 308 Permanent Redirect` with `location: /map`; `?utm_source=audit-check` was preserved; `/map` returned 200 with its own `<title>Lucky Map | LuckyPickCanada.ca</title>` and canonical; `/stories` and the `www` → apex redirect were unchanged.
+- Trailing-slash alias requests cost one extra hop (`/alias/` → 308 `/alias` → 308 `/map`), matching the existing `/stories` normalisation; recorded rather than hidden.
+- Added `__tests__/map-url-redirects.test.js` (3 tests) covering both redirects, the untouched pre-existing redirects and sitemap exclusion of the aliases; 3/3 pass.
+- No content, visual, metadata, sitemap, payment, database, authentication, secret or deployment configuration changed; the alias route modules stay because the redirects resolve before routing.
+- Verification: `./freebuff-verify.sh` exit 0 (36 refresh-docs tests pass), build 372,780,655 B (355.51 MiB) — below 495 MB.
+- `node_modules` was missing after the workspace restore and was reinstalled with `pnpm install --frozen-lockfile`; the lockfile is unchanged.
+- Search Console and Analytics are unavailable, so alias index state and historical alias traffic remain unverified.
+
+---
+
 ## 2026-11-07 — Freebuff startup-command audit
 
 - Established how the Freebuff runtime executes commands: Bash (`SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21); `/bin/sh` is `dash`, which rejects `source` (127) and the bootstrap's Bash syntax.
