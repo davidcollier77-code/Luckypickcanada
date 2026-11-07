@@ -44,7 +44,7 @@ Complete these steps in order before implementation:
 - Never expose or commit secrets.
 - Never weaken validation, sanitization, authentication, authorization, CAPTCHA/Turnstile, rate limiting, duplicate protection, or environment handling.
 - Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
-- For visual work, use the configured Playwright setup.
+- For browser-based inspection and visual QA, use Browserless as the required default hosted browser environment described in §5. Do not configure a separate browser environment for Freebuff.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
@@ -86,7 +86,7 @@ Do not require a separate report, a per-resource USED/USEFUL/version matrix, or 
 - If the issue cannot be resolved safely, report the exact command/error, branch/ref, and relevant commit SHA.
 - Ask one focused question only when owner action is genuinely required.
 
-## 5. APPROVALS, CONNECTED TOOLS, AND PR OWNERSHIP
+## 5. APPROVALS, CONNECTED INTEGRATIONS, AND PR OWNERSHIP
 
 ### Owner approval
 
@@ -101,17 +101,17 @@ Get explicit owner authorization before changing:
 
 Authorization applies only to the specific approved scope. Approval for one change does not authorize wider or unrelated changes.
 
-### Connected MCP integrations
+### Connected Integrations
 
-Use connected MCP integrations only when they materially help with the task and are within its authorized scope:
+Use the connected integrations below when they materially support the assigned task. Use the required default and owner-approved fallback as stated. Do not make unnecessary calls, expand task scope through an integration, or claim use when it did not occur.
 
-- **GitHub:** Repository files, branches, commits, issues, and pull requests. It has substantial repository access; use it carefully and only for authorized repository work.
-- **Neon:** PostgreSQL database inspection and management.
-- **Stitch:** UI design, layout concepts, and prototyping.
-- **Browserless:** Live-site browsing, screenshots, page interaction, and browser testing.
-- **Browserbase:** Remote browser sessions, website interaction, and browser testing.
+- **GitHub:** Always available for normal authorized repository work, including repository inspection, file access, branches, commits, issues, and pull requests. No additional owner approval is needed for routine use within the assigned task. Existing approval rules and safeguards for destructive or high-risk actions remain in force.
+- **Stitch:** Available whenever useful for UI design, layout exploration, visual concepts, and prototyping. It may be used without additional owner approval when relevant and within the authorized task scope.
+- **Browserless:** Freebuff's required default hosted browser environment. Use it for browser-based page inspection, screenshots, page interaction, browser testing, and visual QA whenever the task requires browser access. Do not configure a separate browser environment for Freebuff. Browserless may be used without additional owner approval within the assigned task.
+- **Browserbase:** Backup hosted browser environment when Browserless is unavailable or unsuitable. Ask the owner for explicit approval before using Browserbase.
+- **Neon:** Available for relevant PostgreSQL database inspection and task-scoped database work. Use it sparingly to conserve usage. Owner approval remains required before database or schema changes, as stated above.
 
-Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Other MCPs require approval unless separately authorized. Do not use an MCP merely because it is available, expand task scope through an MCP, or treat connection/initialization alone as MCP use.
+Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Any other connected integration not listed above requires owner approval before use unless separately authorized. A connection or initialization alone does not count as actual integration use.
 
 ### PR ownership
 
@@ -127,7 +127,7 @@ Neon and Stitch may be used without additional approval when materially relevant
 - Lucky Pick Canada uses **Cloudflare Pages** for hosting and deployment.
 - For hosting/build configuration tasks, use applicable Cloudflare Pages and Wrangler documentation. Keep recommendations and implementation compatible with the existing Cloudflare Pages setup; do not propose unrelated hosting platforms or migrations.
 - This hosting information does not authorize deployment, Cloudflare configuration, environment-variable, or secret changes. The approval rules in §5 still apply.
-- Cloudflare Pages is the hosting platform, not an MCP integration.
+- Cloudflare Pages is the hosting platform, not a connected integration.
 
 ## 7. FINAL CHECK
 
