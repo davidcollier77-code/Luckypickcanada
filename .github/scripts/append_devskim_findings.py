@@ -16,18 +16,57 @@ def clean(value):
     return re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").replace("`", "\\`").strip()
 
 
-def finding_identity(rule_id, uri, line, result):
+def _identity_digest(parts):
+    return hashlib.sha256("\0".join(parts).encode("utf-8")).hexdigest()[:20]
+
+
+def finding_identities(rule_id, uri, line, result):
+    """Return (identity, legacy_identity) for one SARIF result.
+
+    A stable scanner fingerprint identifies a finding across scans. DevSkim
+    omits one for findings with no source region, and the legacy identity
+    (rule, uri, line) collapsed every such finding in a file into one entry,
+    hiding distinct defects from the shared report. Those findings now also use
+    their reported message and columns, while the legacy identity is still
+    recognised so an entry already in the report is never duplicated.
+    """
     fingerprints = result.get("partialFingerprints") or result.get("fingerprints") or {}
     stable_fingerprint = (
         fingerprints.get("primaryLocationLineHash")
         or fingerprints.get("primaryLocationStartColumnFingerprint")
         or ""
     )
+    legacy_identity = _identity_digest([str(rule_id), str(uri), str(line or "")])
     if stable_fingerprint:
-        identity = "\0".join([str(rule_id), str(uri), str(stable_fingerprint)])
-    else:
-        identity = "\0".join([str(rule_id), str(uri), str(line or "")])
-    return hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
+        return (
+            _identity_digest([str(rule_id), str(uri), str(stable_fingerprint)]),
+            legacy_identity,
+        )
+    region = {}
+    locations = result.get("locations") or []
+    if locations and isinstance(locations[0], dict):
+        physical = locations[0].get("physicalLocation") or {}
+        if isinstance(physical, dict):
+            region = physical.get("region") or {}
+    if not isinstance(region, dict):
+        region = {}
+    detail = "\0".join(
+        [
+            str(result.get("message", {}).get("text", "")),
+            str(region.get("startColumn") or ""),
+            str(region.get("endColumn") or ""),
+            str(region.get("endLine") or ""),
+        ]
+    )
+    return (
+        _identity_digest([str(rule_id), str(uri), str(line or ""), detail]),
+        legacy_identity,
+    )
+
+
+def finding_identity(rule_id, uri, line, result):
+    """Return the identity used to record one SARIF result."""
+    return finding_identities(rule_id, uri, line, result)[0]
 
 
 def append_findings(sarif_path=SARIF_PATH, report_path=REPORT_PATH):
@@ -58,9 +97,9 @@ def append_findings(sarif_path=SARIF_PATH, report_path=REPORT_PATH):
             region = physical.get("region", {})
             line = region.get("startLine")
             where = f"{uri}:{line}" if line else uri
-            finding_id = finding_identity(rule_id, uri, line, result)
+            finding_id, legacy_id = finding_identities(rule_id, uri, line, result)
 
-            if finding_id in known:
+            if finding_id in known or legacy_id in known:
                 continue
             known.add(finding_id)
             additions.append(

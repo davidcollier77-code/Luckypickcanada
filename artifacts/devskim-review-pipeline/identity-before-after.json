@@ -1,0 +1,18 @@
+{
+  "before": {
+    "distinct_same_line_appended": 1,
+    "distinct_same_line_entries": 1,
+    "duplicate_appended": 1,
+    "duplicate_entries": 1,
+    "repeat_is_idempotent": true
+  },
+  "after": {
+    "distinct_same_line_appended": 2,
+    "distinct_same_line_entries": 2,
+    "duplicate_appended": 1,
+    "duplicate_entries": 1,
+    "repeat_is_idempotent": true,
+    "legacy_entry_readded": 0,
+    "legacy_entries": 1
+  }
+}

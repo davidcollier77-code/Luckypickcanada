@@ -1,0 +1,23 @@
+{
+  "label": "before",
+  "scripts": "/tmp/old-scripts",
+  "findings": 9,
+  "best_ms": 37.58,
+  "median_ms": 40.03,
+  "raw_results": 9,
+  "suppressed": 8,
+  "removed_results": 8,
+  "filtered_results": 1,
+  "audited_removed": [
+    "Playwright test timeout configuration (1)",
+    "Lucky Reveal number-finish callback (1)",
+    "Lucky Reveal confetti-wave callback (1)",
+    "Lucky Reveal canvas-watch callback (1)",
+    "Lucky Reveal test source assertion string (1)",
+    "Share-image object-URL revoke callback (1)",
+    "Playwright local dev-server origin (1)",
+    "Committed local probe measurement origin (1)"
+  ],
+  "audited_absent": [],
+  "notes": []
+}

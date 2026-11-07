@@ -1,0 +1,56 @@
+{
+  "label": "before",
+  "workspace": "/workspace/chats/a3097b16ebacbe42435b9924",
+  "sizes": {
+    "25": {
+      "findings": 85,
+      "best_ms": 139.58,
+      "median_ms": 143.86,
+      "source_reads": 45,
+      "json_parse_calls": 26,
+      "suppressed": 45,
+      "filtered_results": 40,
+      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+    },
+    "50": {
+      "findings": 110,
+      "best_ms": 249.91,
+      "median_ms": 253.24,
+      "source_reads": 70,
+      "json_parse_calls": 51,
+      "suppressed": 70,
+      "filtered_results": 40,
+      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+    },
+    "100": {
+      "findings": 160,
+      "best_ms": 458.86,
+      "median_ms": 459.88,
+      "source_reads": 120,
+      "json_parse_calls": 101,
+      "suppressed": 120,
+      "filtered_results": 40,
+      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+    },
+    "200": {
+      "findings": 260,
+      "best_ms": 872.01,
+      "median_ms": 873.67,
+      "source_reads": 220,
+      "json_parse_calls": 201,
+      "suppressed": 220,
+      "filtered_results": 40,
+      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+    },
+    "400": {
+      "findings": 460,
+      "best_ms": 1716.31,
+      "median_ms": 1721.41,
+      "source_reads": 420,
+      "json_parse_calls": 401,
+      "suppressed": 420,
+      "filtered_results": 40,
+      "filtered_sha256": "50558a30bcaf9502a3c61fec9ba6d2a27dbf92fdea570c9a55c61ed036ee0636"
+    }
+  }
+}

@@ -1,4 +1,18 @@
-# Current Task — PR #1764 merge-conflict repair (2026-11-07)
+# Current Task — Pull-request review checker efficiency and reliability (2026-11-07)
+
+- **Task groups:** `troubleshooting` (the request starts from slow/inefficient review processing; the cause was measured, not guessed) + `deep-dive` (identify which checker actually reviews PRs here and prove each fix against the pre-change code) + `testing` (before/after harnesses plus new regression guards).
+- **Feature / branch:** `specs/110-pr-review-checker-efficiency`; branch `perf/devskim-review-checker-20261107`.
+- **Verified finding:** every custom LLM reviewer is retired (Gemini `specs/097`, CodeRabbit CLI, PR-Agent `specs/050`) and Pullfrog is console-only with a "DO NOT EDIT" workflow, so the repository-owned PR review checker is the DevSkim pipeline: `suppress_devskim_false_positives.py`, `verify_devskim_sarif_replay.py`, `append_devskim_findings.py`.
+- **Measured root causes:** per finding, one full source read, one full `json.loads`/`raw_decode`, a line-range decode, and two O(file size) UTF-16→code-point scans. At 460 findings: 1.72 s, 420 reads, 401 parses, and `_code_point_offset_from_utf16_offset` alone at 1.236 s tottime / 1.779 s cumtime with 8,648,883 `ord` calls. Separately, fingerprint-less findings were identified by `(rule, uri, line)` only, so two distinct findings on one line collapsed into one report entry.
+- **Implementation:** `SourceContext`/`SourceCache` (one read, one parse, cached line ranges, `bisect` over cached astral indices for UTF-16 conversion) with an optional `context=` threaded through every suppression predicate and one cache per `process_sarif`; the replay gate shares one cache; `finding_identities` adds a refined identity (message, start column, end line) and also recognises the legacy identity so existing entries are never re-appended.
+- **Before → after (same fixture):** 460 findings 1716.31 → 141.90 ms (12.1×), 85 findings 139.58 → 21.28 ms (6.6×); reads 420 → 3, parses 401 → 2; suppressed counts and the filtered-SARIF SHA-256 (`50558a30…0636`) identical at all five sizes. Replay 37.58 → 21.06 ms with the same verdict, 8/8 audited families removed and the non-allowlisted finding preserved. Identity: 2 distinct same-line findings 1 → 2 entries, duplicates still once, legacy entry re-appended 0 times.
+- **Tests:** suppression suite 87 tests OK (78 pre-existing + 9 new for UTF-16 caching, single-read/parse behaviour and report identity).
+- **Deliberately unchanged:** scan scope, allowlists, audited families, workflow triggers, Pullfrog, retired reviewers, `.docs/`, application code, dependencies.
+- **Status:** implementation complete; repository verification, production build measurement and the PR remain to be recorded.
+
+---
+
+# Preserved Task Record — PR #1764 merge-conflict repair (2026-11-07)
 
 - **Task groups:** `troubleshooting` (diagnose and repair the base/head conflict) + `deep-dive` (compare the branch histories and protect concurrent work) + `testing` (verify the merged tree, CI evidence and branch ancestry).
 - **Feature:** `specs/109-playwright-qa-speed`. Feature number 108 is already occupied on current `main` by PR #1762's `specs/108-browser-testing-tooling-evaluation`; the Playwright speed artifacts were relocated to the next free feature number, 109.

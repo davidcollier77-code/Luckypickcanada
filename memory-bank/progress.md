@@ -1,3 +1,15 @@
+## 2026-11-07 — Pull-request review checker efficiency and reliability
+
+- Identified the repository-owned PR review checker: all custom LLM reviewers are retired and Pullfrog is console-only, leaving the DevSkim pipeline in `.github/scripts/` as the code that inspects PR changes, decides false positives, removes duplicates and reports coverage.
+- Profiled the real path instead of guessing: per finding the filter re-read the whole file, re-parsed JSON, decoded line ranges and scanned the file twice for UTF-16 offsets. At 460 findings that was 1.72 s, 420 reads, 401 parses and 8,648,883 `ord` calls inside `_code_point_offset_from_utf16_offset` (1.78 s cumtime).
+- Added `SourceContext`/`SourceCache` so each file is read once, parsed once and converted with `bisect` over cached astral indices; threaded an optional `context=` through every predicate and shared the cache in the replay gate.
+- Closed a report-identity gap: fingerprint-less findings were keyed on `(rule, uri, line)`, so two distinct findings on one line were recorded once. The refined identity adds message, start column and end line and still recognises legacy entries, proved by running the old appender alongside the new one (1 → 2 entries; duplicates 1; legacy re-append 0).
+- Proved no detection change: suppressed counts and the filtered-SARIF SHA-256 are identical at 85/110/160/260/460 findings while the run is 6.6×–12.1× faster (1716.31 → 141.90 ms at 460) with 420 → 3 reads and 401 → 2 parses. Replay is 37.58 → 21.06 ms with all eight audited families removed and the non-allowlisted finding preserved.
+- Added 9 regression tests (UTF-16 cache equivalence, single read/parse per file, report identity and legacy-id handling); suppression suite is 87 tests, OK.
+- Unchanged: scan scope, allowlists, audited families, workflow triggers, Pullfrog, retired reviewers, `.docs/`, application code and dependencies.
+
+---
+
 ## 2026-11-07 — PR #1764 merge-conflict repair
 
 - Diagnosed the PR/main divergence: common base `700f2077`; current main `597bd94a` was 14 commits ahead; old PR head `4680075f` was 13 commits ahead.
