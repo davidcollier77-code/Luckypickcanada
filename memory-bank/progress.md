@@ -1,3 +1,14 @@
+## 2026-11-07 — Post-merge branch-cleanup audit repair
+
+- Rechecked the live GitHub branch list after PR #1754 merged at 07:56:56 UTC to `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
+- Reconciled 1,452 retained inventory rows: 0 missing branches, 0 tip-SHA changes, 0 duplicates. Reconciled 169 deleted rows: 0 still-present branches, 0 duplicates. Live branch count is 1,454, including protected `main` and the only open PR head (#1750).
+- Confirmed current main is 17 commits ahead of the original audit base `6fa08ddc`; previously verified-safe branch tips remain reachable. The 1,084 remaining verified-safe branches were not deleted.
+- Corrected the old present-tense baseline wording and added a dated post-merge verification artifact. Preserved the deleted-branch TSV's corrected header and original four-column evidence.
+- Documented that per-branch deletion actor/timestamp data was not captured; the later PR merge actor/time is not evidence of who deleted the refs.
+- Latest follow-up PR CI and `./freebuff-verify.sh` remain pending; the original cleanup head's build/gate result is not reused as latest-head evidence.
+
+---
+
 ## 2026-11-07 — Governance regression test review correction
 
 - Confirmed Pullfrog review #5810741955 against merged PR #1751 and current `main`: the test used `beforeAll` without importing it, while the read remained outside individual test callbacks.

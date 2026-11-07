@@ -1,13 +1,42 @@
-# Current Task — Merged remote branch cleanup, pass 2 (2026-11-07)
+# Current Task — PR #1756 merge-conflict repair (2026-11-07)
 
-- **Task groups:** `deep-dive` (independent per-branch revalidation against the live remote and current `origin/main`) + `testing` (post-deletion remote reconciliation: every deleted name absent, retained inventory intact).
-- **Work branch:** `freebuff/da1d12a5430a7af901daee1b`; **feature:** `specs/105-remote-branch-cleanup` (reused; no duplicate feature directory).
-- **Verified baseline:** PR #1754 merged at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; 1,084 heads recorded `verified safe` in `retained-branches.tsv`.
-- **Revalidation:** all 1,084 matched their recorded tip SHA, were ancestors of `af350ba6`, had 0 unique commits, were not `main`/protected, not an open-PR head (#1750, #1755), not `backup/`/`protect-`, and had tips older than seven days (2026-07-16 → 2026-07-31). 0 moved, 0 skipped.
-- **Implementation:** 136 batches of 8 deleted through the GitHub integration; 1,084/1,084 verified absent; 0 failed. One quota window rejected 11 batches (88 branches) before execution; those were re-verified present and deleted after the window cleared.
-- **Post-deletion verification (2026-11-07T09:18:07Z):** 371 live heads (`1,455 − 1,084`) = 368 non-candidate retained + `main` + PR #1750 head + PR #1755 head; `candidates_present=0`; `keep_ok=368 keep_missing=0 keep_mismatch=0`; `origin/main` unchanged; pass-1 artifacts untouched (169 deletion rows, 1,452 retained rows).
-- **Audit limits:** the integration returns no per-ref timestamp or actor, so `deletion_timestamp_utc` and `api_actor` are `unavailable` in `deleted-branches-pass2.tsv`; the window is bounded by the revalidation and post-deletion checks and no attribution is inferred.
-- **Delivery:** separate PR against `main`; PR #1754 and PR #1755 untouched and unmerged; this PR stays open and unmerged.
+- **Task groups:** `troubleshooting` (resolve the verified branch/base divergence) + `deep-dive` (compare PR #1756, PR #1755 and current `main`) + `testing` (validate the audit evidence and merged tree).
+- **Feature:** reuse `specs/105-remote-branch-cleanup`; no duplicate feature directory.
+- **Branch / PR:** `chore/branch-cleanup-pass2-20261107`, PR #1756; keep the PR open and unmerged.
+- **Root cause:** PR #1756 shared merge base `af350ba6d4b1dbb10eb1257211778085b1edb4eb` with `main`. PR #1755 then merged into `main` at `6bd5c5da9629b48247b7049a9f8e21e53c747c82`, changing the same audit, Spec Kit and Memory Bank files. The PR branch was 2 commits ahead and 4 behind.
+- **Resolution:** combine the current-main post-merge audit and Memory Bank records with PR #1756's pass-2 evidence; preserve the 1,084-row TSV unchanged; clarify that `docs/branch-cleanup-audit-refresh-20261107` was PR #1755's head at the 09:18:07Z snapshot and that #1755 merged later at 09:48:26Z.
+- **Batch evidence:** TSV independently contains 1,084 rows in 136 batches; batches 000–134 contain 8 rows each and batch 135 contains 4.
+- **Scope:** documentation/evidence only; no application code, workflows, dependencies, payment, database, authentication, deployment, secrets or `.docs/` changes.
+- **Verification:** GitHub commit comparison confirms the divergence and common ancestor; PR #1755 metadata confirms the head-branch mapping and merge timestamp; TSV row/batch checks pass. Latest PR-head CI and `./freebuff-verify.sh` must be reported separately and are not inherited from the earlier commit.
+- **Delivery:** source branch updated with a two-parent merge commit; PR #1756 remains open and unmerged.
+
+---
+
+# Completed Task — Branch cleanup pass 2 (2026-11-07)
+
+- **Task groups:** `deep-dive` + `testing`; reuse feature 105.
+- **Branch / PR:** `chore/branch-cleanup-pass2-20261107`, PR #1756.
+- **Baseline:** `origin/main` = `af350ba6d4b1dbb10eb1257211778085b1edb4eb`; 1,455 live heads; 1,084 candidate branches.
+- **Revalidation:** 1,084/1,084 recorded tips matched, each was an ancestor with zero unique commits, and all protection, open-PR, restore-point and seven-day checks passed.
+- **Implementation:** all 1,084 candidates deleted and confirmed absent; 0 failed, 0 skipped. One rate-limit window rejected 88 calls before execution; those branches were revalidated and deleted after the window cleared.
+- **Post-deletion snapshot (2026-11-07T09:18:07Z):** 371 heads = 368 retained + `main` + PR #1750 head + PR #1755 head; candidates present 0; retained missing 0; retained SHA mismatches 0; pass-1 artifacts preserved.
+- **PR #1755 mapping:** its head at the snapshot was `docs/branch-cleanup-audit-refresh-20261107`; #1755 merged later at 09:48:26Z as `6bd5c5da`.
+- **Audit limits:** per-ref deletion timestamps and API actors were unavailable and were not inferred.
+- **Verification on the original pass-2 head:** repository gate passed; measured build was 334.32 MiB, below 495 MB. These results do not substitute for checks on the updated PR head.
+
+---
+
+# Current Task — Post-merge branch-cleanup audit repair (2026-11-07)
+
+- **Task groups:** `deep-dive` (reconcile the original evidence with live GitHub state and identify audit-trail limitations) + `testing` (compare every recorded branch name/tip with the live remote).
+- **Feature:** reuse `specs/105-remote-branch-cleanup`; no duplicate feature directory.
+- **Branch:** `docs/branch-cleanup-audit-refresh-20261107`, based on `main` at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
+- **Scope:** Preserve the original deletion inventory and four-column TSV; correct stale present-tense status; add a dated post-merge verification record; explicitly document unavailable per-ref deletion timestamps and actors. No additional branch deletion is authorized by this task.
+- **Live verification:** 1,454 unique remote branches; 1,452 retained rows all present at the recorded tips; 169 deleted rows all absent; no duplicates or inventory overlap; only `main` protected; only open PR #1750 uses `chore/devskim-report-update-42326412143`.
+- **Base relationship:** current main is 17 commits ahead of original audit base `6fa08ddc`; the 1,084 previously verified-safe tips remain reachable. The 292 unmerged rows' per-branch unique-commit counts and the 74 recent-tip ages were not recalculated in this follow-up.
+- **Attribution limitation:** the original delete-ref run did not capture per-branch deletion timestamp/actor. PR #1754 merge metadata is not deletion attribution.
+- **Verification:** GitHub inventory checks completed. Latest-head `./freebuff-verify.sh` and PR CI are pending; the original build measurement/gate does not transfer to this new head.
+- **Delivery:** one follow-up PR against `main`; leave open and unmerged.
 
 ---
 

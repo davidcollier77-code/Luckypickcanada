@@ -30,7 +30,7 @@
 **Independent Test**: After cleanup no retained branch is missing, `main` is unchanged, and the open pull request head still exists.
 
 - [x] T008 Confirm the deletion channel by deleting one verified merged branch through the integration and checking `git ls-remote` reports no such head (`alert-autofix-16`).
-- [x] T009 Delete the verified deletion set in bounded batches through the integration, excluding `main`, the open pull request head, `backup/` and `protect-` restore points, and merged branches with a tip inside the seven-day retention window. **COMPLETE**: pass 1 removed 168 batch deletions plus one channel-probe deletion and was completed by pass 2, which removed the remaining 1,084 verified-safe heads (see T016–T022).
+- [ ] T009 Delete the verified deletion set in bounded batches through the integration, excluding `main`, the open pull request head, `backup/` and `protect-` restore points, and merged branches with a tip inside the seven-day retention window. **PARTIAL**: 168 batch deletions plus one channel-probe deletion completed and verified absent; the remaining 1,084 verified-safe heads are recorded in `artifacts/branch-cleanup/retained-branches.tsv` because removal costs one API call per ref.
 - [x] T010 Re-list remote heads and confirm the post-cleanup count equals the retained inventory plus `main`, that `main` still resolves, and that the open pull request head remains.
 
 ## Phase 4: User Story 3 — Auditable report (Priority: P2)
@@ -46,21 +46,7 @@
 
 - [x] T013 Run `./freebuff-verify.sh`, record the exit status and measure the production build size against the 495 MB maximum. Exit `0`; `.next` 300,296,840 B + `public` 32,840,043 B = 333,136,883 B (317.7 MiB).
 - [x] T014 Review the complete diff for out-of-scope changes and confirm no application, dependency, workflow, payment, database, authentication, deployment or `.docs/` change. Nine files: this feature's Spec Kit artifacts, two audit evidence files, `.specify/feature.json` and `memory-bank/activeContext.md`.
-- [x] T015 Push the task branch, open the pull request with the canonical summary, and leave it open and unmerged. Branch `chore/merged-remote-branch-cleanup-20261107`; PR #1754 open and unmerged.
-
-## Phase 5: Pass 2 — remaining verified-safe heads (2026-11-07)
-
-**Goal**: delete exactly the 1,084 heads pass 1 recorded as `verified safe`, after independent revalidation.
-
-**Independent Test**: The live head count drops by exactly 1,084, all 1,084 names are absent, and the 368 non-candidate retained branches still sit at their recorded tip SHAs.
-
-- [x] T016 Extract the 1,084 rows whose reason starts `verified safe` and split them into 136 deterministic batches of 8 with their recorded tip SHAs.
-- [x] T017 Revalidate every candidate against the live remote and current `origin/main` immediately before deletion: tip match, `merge-base --is-ancestor`, `rev-list --count`, not `main`/protected, not an open-PR head (#1750, #1755), not a `backup/`/`protect-` name, tip at least seven days old. Result: 1,084 valid, 0 moved, 0 skipped.
-- [x] T018 Delete batches 000–135 through the connected GitHub integration, one ref per call, confirming each block's names are absent from `git ls-remote --heads origin`.
-- [x] T019 Treat the 11 batches rejected by the integration quota as not deleted: re-verify them as still present with unchanged tips, then delete after the window cleared.
-- [x] T020 Write `artifacts/branch-cleanup/deleted-branches-pass2.tsv` (1,084 rows) additively and append the pass-2 section to `artifacts/branch-cleanup/audit-summary.md` without rewriting the original 169 deletion records or the 1,452-row retained inventory.
-- [x] T021 Record `deletion_timestamp_utc` and `api_actor` as `unavailable` for every pass-2 row because the integration returns no per-ref timestamp or actor; bound the deletion window with the revalidation and post-deletion checks instead of inferring attribution.
-- [x] T022 Verify the final state at 2026-11-07T09:18:07Z: 371 live heads (`1,455 − 1,084`), `candidates_present=0`, `keep_ok=368 keep_missing=0 keep_mismatch=0`, `origin/main` still `af350ba6`, `main` and both open-PR heads present.
+- [x] T015 Push the task branch and open the pull request with the canonical summary. At creation, PR #1754 was open and unmerged; it was subsequently merged on 2026-11-07 at 07:56:56 UTC as `af350ba6d4b1dbb10eb1257211778085b1edb4eb`.
 
 ## Completion Conditions
 
@@ -68,4 +54,59 @@
 - Only verified-safe branches are deleted; no retained branch is missing afterwards.
 - `main` and the open pull request head still exist.
 - Repository verification results and build size are reported accurately.
-- The pull request stays open and unmerged.
+- PR #1754 was merged on 2026-11-07; this follow-up pull request stays open and unmerged until T022 and T023 are complete.
+
+
+## Phase 5: Post-merge audit repair (2026-11-07)
+
+**Goal**: Refresh the audit's current-state claims without rewriting the original deletion evidence or performing additional branch deletions.
+
+- [x] T016 Confirm PR #1754's merged state, merge timestamp and current `main` SHA; compare current `main` with the original audit base.
+- [x] T017 Paginate the live branch listing and independently query protected branches and open PR heads.
+- [x] T018 Reconcile all 1,452 retained rows and 169 deleted rows against live branch names and tip SHAs; verify no duplicates, missing retained refs, moved retained tips or still-present deleted refs.
+- [x] T019 Confirm the deleted TSV header is the first row; preserve its four-column schema and original tip evidence.
+- [x] T020 Correct the stale historical wording, add `artifacts/branch-cleanup/post-merge-verification.md`, and document that per-ref deletion timestamps/actors were not captured.
+- [x] T021 Update this feature's plan/spec/tasks and Memory Bank records; do not create a duplicate feature directory.
+- [ ] T022 Run `./freebuff-verify.sh` and the required latest-head CI checks; record the actual result for the follow-up PR (not inherited from the original cleanup head).
+- [ ] T023 Review the complete follow-up PR diff and publish the canonical verification summary; leave the PR open and unmerged.
+
+## Follow-up completion conditions
+
+- Original branch-deletion evidence remains intact and is clearly labeled as historical.
+- Current inventory, protected branches, open PR heads, and count reconciliation are recorded with exact observed results.
+- Missing deletion actor/timestamp information is stated plainly and never guessed.
+- No additional remote refs are changed by this artifact-refresh task.
+- Latest-head checks are reported independently, with pending or unavailable checks left explicitly pending/blocked.
+
+## Phase 6: Pass 2 — remaining verified-safe heads (2026-11-07)
+
+**Goal**: delete exactly the 1,084 heads pass 1 recorded as `verified safe`, after independent revalidation.
+
+**Independent Test**: the live head count drops by exactly 1,084, all 1,084 names are absent, and all 368 non-candidate retained branches remain at their recorded tip SHAs.
+
+- [x] T024 Extract the 1,084 `verified safe` rows and split them into 136 deterministic batches of 8 (final batch of 4), retaining the recorded tip SHAs.
+- [x] T025 Revalidate every candidate against the live remote and `origin/main`: exact tip SHA, ancestry, zero unique commits, protection, open-PR, restore-point and seven-day checks. Result: 1,084 pass, 0 moved, 0 skipped.
+- [x] T026 Delete batches 000–135 through the connected GitHub integration, one ref per call, and confirm each block absent from `git ls-remote --heads origin`.
+- [x] T027 Treat the 88 quota-rejected calls as not executed; revalidate those refs as still present and delete them only after the quota window clears.
+- [x] T028 Add `artifacts/branch-cleanup/deleted-branches-pass2.tsv` with 1,084 rows without rewriting either pass-1 TSV.
+- [x] T029 Verify the 09:18:07Z snapshot: 371 live heads, 0 candidate names present, 368 retained tips intact, and `main` unchanged at the recorded pass-2 baseline.
+- [x] T030 Record the unavailable per-ref timestamp/actor fields honestly and preserve the pass-2 audit section.
+
+## Phase 7: PR #1756 merge-conflict repair (2026-11-07)
+
+**Goal**: reconcile PR #1756 with current `main` while preserving both PRs' documentation evidence.
+
+- [x] T031 Confirm the merge base, 2-ahead / 4-behind divergence, current `main` SHA and PR #1755 merge metadata.
+- [x] T032 Reconcile overlapping audit, Spec Kit and Memory Bank files using current `main` as the baseline and retaining the pass-2 additions.
+- [x] T033 Verify the 1,084-row TSV, 136 batch IDs, exact 8/4 batch sizes, and the historical #1755 head-branch mapping.
+- [x] T034 Commit the reconciled tree to the PR source branch with current `main` as the second parent; keep PR #1756 open and unmerged.
+- [ ] T035 Run `./freebuff-verify.sh` on the updated PR head and record the actual result; do not reuse the previous head's result.
+- [ ] T036 Verify all latest-head CI checks after the merge commit; pending checks remain pending.
+- [ ] T037 Complete the final changed-file and conflict-marker audit; preserve the no-application-code-change scope.
+
+## Completion Conditions
+
+- Both PR #1755's current-main audit repair and PR #1756's pass-2 evidence remain present.
+- The 09:18:07Z branch reconciliation is explicitly historical and correctly maps the #1755 head branch.
+- The 1,084 pass-2 deletion rows remain intact and accurately batch-accounted.
+- PR #1756 remains open and unmerged.

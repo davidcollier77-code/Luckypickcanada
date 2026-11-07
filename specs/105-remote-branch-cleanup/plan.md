@@ -96,6 +96,29 @@ The integration deletes one ref per call, so deletions are issued in bounded bat
 - **Risk**: The open pull request cannot be pushed from this workspace.
   - **Mitigation**: use the managed Git integration for the branch push; report any failure exactly rather than claiming success.
 
+
+## Follow-up Plan — Post-merge audit evidence repair (2026-11-07)
+
+**Follow-up branch**: `docs/branch-cleanup-audit-refresh-20261107`  
+**Current base**: `main` at `af350ba6d4b1dbb10eb1257211778085b1edb4eb`  
+**Selected groups**: `deep-dive` (reconcile audit claims to live GitHub state and identify provenance limits) + `testing` (verify every recorded retained/deleted branch name and tip against the remote).
+
+### Scope
+
+Preserve the original cleanup as a point-in-time record. Add a dated post-merge verification appendix, correct the stale present-tense statement about the original main SHA, and explicitly document the unavailable per-ref deletion actor/timestamp data. Do not change the original deletion rows, delete additional branches, or alter application/runtime configuration.
+
+### Verification method
+
+- Paginate GitHub's live branch listing and compare all names/tip SHAs with the retained and deleted TSVs.
+- Query protected branches and open PRs independently.
+- Compare the original audit base with current main to establish whether its recorded ancestor relationships remain valid.
+- Reconcile live counts and report exactly which checks were not repeated (including per-branch recent-tip age and the 292 unmerged unique-commit counts).
+- Preserve unknown deletion actor/timestamp values as unknown; the PR merge actor is not a substitute for the actor who deleted refs.
+
+### Delivery
+
+Update the existing feature 105 Spec Kit artifacts and Memory Bank, add `artifacts/branch-cleanup/post-merge-verification.md`, and open one follow-up PR against `main`. Leave it open and unmerged. Record current PR-head CI and repository-gate results separately from the original cleanup verification.
+
 ## Pass 2 Continuation (2026-11-07)
 
 **Goal**: finish the 1,084 heads that pass 1 recorded as `verified safe`, under the same safety rule.
@@ -124,3 +147,20 @@ and was handled as described in step 5 — no rejection was recorded as a deleti
 
 **Result**: 1,084 deleted and verified absent; 371 live heads remain (368 retained + `main` + #1750 head +
 #1755 head); `main` unchanged.
+
+## PR #1756 merge-conflict resolution (2026-11-07)
+
+**Common ancestor:** `af350ba6d4b1dbb10eb1257211778085b1edb4eb`  
+**Current main:** `6bd5c5da9629b48247b7049a9f8e21e53c747c82` (PR #1755 merge)  
+**PR #1756 head before repair:** `01c5ee3ffc0a88dc314d418ae11b0b1892d362e7`
+
+The PR branch was 2 commits ahead and 4 commits behind current `main`. The conflict is caused by overlapping documentation/evidence edits, not application code.
+
+**Resolution strategy**:
+1. Use current `main` as the tree baseline so PR #1755's post-merge audit work is retained.
+2. Reapply PR #1756's pass-2 audit appendix, Spec Kit continuation and Memory Bank task record.
+3. Preserve `deleted-branches-pass2.tsv` byte-for-byte by reusing its existing blob.
+4. State explicitly that `docs/branch-cleanup-audit-refresh-20261107` was PR #1755's head at 09:18:07Z and that #1755 merged later at 09:48:26Z.
+5. Create a merge commit with the PR #1756 head as first parent and current `main` as second parent, then advance the PR source branch without force.
+
+**Evidence checks**: 1,084 TSV data rows, 136 batch IDs, 135 full batches and one final four-row batch; GitHub metadata for PR #1755 supplies the exact head branch and merge timestamp. No branch refs other than the PR source branch are changed by this resolution.
