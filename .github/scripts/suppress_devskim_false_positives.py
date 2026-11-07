@@ -671,8 +671,12 @@ def should_suppress_sha512_integrity_finding(
 
 
 
-def _line_range_for_json_object(source_text: str, object_key: str) -> tuple[int, int] | None:
+def _line_range_for_json_object(
+    source_text: str, object_key: str, context: "SourceContext | None" = None
+) -> tuple[int, int] | None:
     """Return the source line range of a named JSON object, or None if absent/invalid."""
+    if context is not None:
+        return context.line_range_for_json_object(object_key)
     pattern = re.compile(rf'(?m)^[ \t]*"{re.escape(object_key)}"\s*:\s*\{{')
     match = pattern.search(source_text)
     if not match:
@@ -828,7 +832,7 @@ def should_suppress_public_cloudflare_account_id(
         region, line_number, line, source_text, context=context
     )
     literal_span = (match.start(1) - 1, match.end(1) + 1)
-    surrounding_context = "
+    surrounding_context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
     return (
         region_span is not None
         and region_span[0] >= literal_span[0]
