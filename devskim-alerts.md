@@ -14,3 +14,6 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `tests/visual/homepage-content-refresh.spec.ts:116` — Review setTimeout for untrusted data <!-- devskim-id:d01fcdd7b4e59467696f -->
 - **NOTE — DS172411** — `tests/visual/homepage-content-refresh.spec.ts:92` — Review setTimeout for untrusted data <!-- devskim-id:f9c38d121dd612b7d056 -->
 - **NOTE — DS176209** — `__tests__/homepage-content-refresh.test.js:178` — Suspicious comment <!-- devskim-id:bb5a87625c00dfabe3d6 -->
+
+- **NOTE — DS162092** — `artifacts/browser-testing-tooling/out/tool-probes.json:74` — Do not leave debug code in production <!-- devskim-id:cb71f4f282439896e64e -->
+- **NOTE — DS162092** — `artifacts/browser-testing-tooling/out/tool-probes.json:53` — Do not leave debug code in production <!-- devskim-id:9dfe2eae4e3aad0ae895 -->
