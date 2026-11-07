@@ -1,3 +1,15 @@
+# Current Task — Single-source Freebuff governance consolidation (2026-11-07)
+
+- **Task groups:** `deep-dive` (compare the complete governance files, inspect active references, and preserve unique instructions) + `testing` (add regression coverage for the single-entrypoint rule and retained specialist guidance).
+- **Branch / feature:** `freebuff/agent-governance-single-source-20261107`; `specs/104-agent-governance-single-source`.
+- **Authorized scope:** Make `AGENTS.md` the sole general governance entrypoint for all coding agents, including Freebuff; preserve the distinct MCP connection/initialization clarification; delete only `.freebuff/freebuff.md`; retain all eight specialist task-group files and the Spec Kit command directory; update the saved Library Master Work Request.
+- **Implementation:** `AGENTS.md` now identifies itself as the single authority, no longer instructs agents to read the redundant entrypoint, and preserves the MCP-use clarification. The redundant `.freebuff/freebuff.md` file is deleted. A focused regression test verifies the sole-entrypoint rule, MCP clarification, all eight specialist files, and core Spec Kit commands. The saved Master Work Request is being aligned with current PR-body reporting rules.
+- **Preserved:** Specialist instructions, Spec Kit commands/integration, the Constitution, Memory Bank history, task/PR records, documentation manifest, verification scripts, and unrelated PR #1750.
+- **Verification:** Focused Vitest, full `./freebuff-verify.sh`, build-size measurement, and PR-head checks are pending actual execution. Do not report them as passed until observed.
+- **Delivery:** PR creation and final diff audit pending; leave the PR open and unmerged.
+
+---
+
 # Current Task — Documentation updater review repair (2026-11-07)
 
 - **Task:** Repair PR #1748 after independent review: restore Spec Kit separation, make critical link/consistency defects fail, protect filename-collision ownership, harden temp cleanup, correct the 64/64/51 report and add regression coverage.
