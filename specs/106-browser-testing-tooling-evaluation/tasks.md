@@ -52,7 +52,7 @@
 
 - [x] T019 Write `artifacts/browser-testing-tooling/out/tool-probes.json` with the exact commands, outputs and timestamps for every probe.
 - [x] T020 Run `./freebuff-verify.sh`, record the exit status and measure the production build size against the 495 MB maximum. Result: exit `0` with `SPEC_KIT_BASE_REF=HEAD`; `.next` 372,394,512 B + `public` 32,840,043 B = 405,234,555 B (386.46 MiB) < 495 MB. Note: `origin/main` and `main` are absent in this workspace clone and `freebuff-base` shares no merge base with `HEAD`, so the worktree-vs-`HEAD` comparison is the only valid base here.
-- [x] T021 Audit the complete diff for out-of-scope changes and confirm no application code, `package.json`, `pnpm-lock.yaml`, workflow or `.docs/` modification. Result: 6 files — this feature's four Spec Kit artifacts, two evidence files, plus `.specify/feature.json` and `memory-bank/activeContext.md`.
+- [x] T021 Audit the complete diff for out-of-scope changes and confirm no application code, `package.json`, `pnpm-lock.yaml`, workflow or `.docs/` modification. Result: 8 files — this feature's four Spec Kit artifacts, two evidence files, plus `.specify/feature.json` and `memory-bank/activeContext.md`.
 - [x] T022 Push the task branch, open the pull request with the canonical summary, and leave it open and unmerged. Branch `chore/browser-testing-tooling-eval-20261107`; the pull request carries the single canonical summary and stays open.
 
 ## Completion Conditions
