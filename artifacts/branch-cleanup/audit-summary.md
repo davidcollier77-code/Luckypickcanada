@@ -154,11 +154,14 @@ tip remains reachable from `main`, and the recorded SHA can recreate the ref.
 
 ### Deletion execution
 
-136 batches of 8, issued through the connected GitHub integration (one ref per call) and each confirmed
-against `git ls-remote --heads origin`. Deletion was performed in these batch ranges:
 
-- batches 000–075, 076–087, 088–099, 100–111, 112–123: issued in blocks of 96 branches;
-- batches 124–135: the final 108 branches.
+136 batches of 8 (the final batch holds only 4), issued through the connected GitHub integration (one
+ref per call) and each confirmed against `git ls-remote --heads origin`. Deletion was performed in
+these batch ranges:
+
+- batches 000–075: 76 batches, 608 branches;
+- batches 076–087, 088–099, 100–111, 112–123: issued in blocks of 96 branches (12 batches each);
+- batches 124–135: the final 92 branches (11 full batches plus a final batch of 4).
 
 One integration quota window interrupted a block: 11 batches were rejected with
 `Too many integration calls` before executing. Those 88 branches were re-verified as still present with
