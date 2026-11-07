@@ -102,6 +102,7 @@ def append_findings(sarif_path=SARIF_PATH, report_path=REPORT_PATH):
             if finding_id in known or legacy_id in known:
                 continue
             known.add(finding_id)
+            known.add(legacy_id)
             additions.append(
                 f"- **{level.upper()} — {clean(rule_id)}** — "
                 f"`{clean(where)}` — {message} "
