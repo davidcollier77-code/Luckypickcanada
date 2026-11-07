@@ -127,7 +127,7 @@ Managed authentication built on Better Auth that branches with your database.
 
 Long-running serverless compute, close to your database.
 
-- [All 18 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
+- [All 19 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
 
 - [Neon Functions](https://neon.com/docs/compute/functions/overview.md): Long-running serverless functions on your Neon branch, next to your data.
 - [Get started with Neon Functions](https://neon.com/docs/compute/functions/get-started.md): Deploy your first Neon Function and call it over HTTP.
