@@ -29,8 +29,9 @@
 - [x] T012 Add validator, reconciliation, link-repair, report, retry/timezone and schedule-preservation unit tests; add a canonical-link regression check.
 - [x] T013 Add `scripts/test-refresh-docs-e2e.js` and the test-only HTTPS transport: copy the real library, inject a removed document, a failing new source, a broken link and a duplicate copy, then run the complete updater.
 - [x] T014 Run `node scripts/test-refresh-docs.js`: 31 passed, 0 failed.
-- [x] T015 Run `pnpm exec vitest run` (45 files / 354 tests), `pnpm exec tsc --noEmit`, `./freebuff-verify.sh` (exit 0), and record the measured production build size: 349,894,454 B (333.69 MiB) < 495 MB.
-- [ ] T016 Inspect the complete final diff, update `PR_SUMMARY.md`, commit, push, open one PR against `main` and leave it open and unmerged.
+- [x] T015 Run `pnpm exec vitest run` (45 files / 354 tests), `pnpm exec tsc --noEmit`, `./freebuff-verify.sh` (exit 0), and record the measured production build size: 349,894,454 B (333.69 MiB) < 495 MB. Re-ran after the review fixes: 354/354 tests, gate exit 0, build 349,905,235 B (333.70 MiB).
+- [x] T016 Inspect the complete final diff, update `PR_SUMMARY.md`, commit, push, open one PR against `main` and leave it open and unmerged. **PR #1748**, open and unmerged.
+- [x] T017 Review the PR feedback, fix confirmed defects, and re-verify: `writeDocumentationLink`/`runRefresh` temp-path suffixes are now collision-safe, report table cells escape backslashes, and the escaping regression assertion passes.
 
 ## Dependencies
 

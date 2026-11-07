@@ -1845,3 +1845,10 @@
 - **Implementation:** Retain the single 12,000 ms declaration; remove the duplicate 30,000 ms declaration; move the single-declaration check into the existing lifecycle test. No reveal runtime behaviour is changed.
 - **Spec Kit:** Reused `specs/081-lucky-reveal-finish-and-media-capability/{spec,plan,tasks}.md`; specify, plan, and tasks updated before implementation.
 - **Verification:** The supplied main-branch Cloudflare build is the pre-fix failure. Focused tests, full Vitest, TypeScript, `./freebuff-verify.sh`, the OpenNext Cloudflare build, build-size measurement and final PR diff audit remain pending.
+
+# Current Task — Documentation updater review fixes (2026-11-07)
+
+- **Task:** Address the automated review on PR #1748 for the documentation updater reliability work.
+- **Confirmed defects fixed:** `writeDocumentationLink` and the `runRefresh` symlink fallback each generated a symlink temp path and a fallback copy temp path with separate `Date.now()` calls in the same synchronous block, so a same-millisecond failure could reuse the just-deleted path. Both now use distinct `.tmp.symlink.` and `.tmp.copy.` suffixes. `escapeTableCell` now escapes backslashes before pipes and newlines, with a regression assertion.
+- **Dispositions:** the DevSkim `setTimeout` alert is test-only mock code; the CodeQL URL-substring alert is a test assertion; neither is a production defect. Pullfrog's failure is an exhausted Google AI Studio free-tier quota, not a code failure.
+- **Verification:** `node scripts/test-refresh-docs.js` 31/31, `pnpm exec vitest run` 354/354, `SPEC_KIT_BASE_REF=269ea014 ./freebuff-verify.sh` exit 0, build 349,905,235 B (333.70 MiB). PR-head CI result is recorded in the PR body once the run completes; PR #1748 stays open and unmerged.
