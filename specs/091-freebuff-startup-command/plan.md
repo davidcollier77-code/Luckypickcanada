@@ -133,3 +133,52 @@ The latest reviewer pass exposed defects in the previous correction commit itsel
 No dependency, lockfile, application, payment, email, database, image, artwork, deployment, or scheduler behavior change is required. No new package is required.
 
 6. Make the PATH update idempotent: if the canonical pnpm binary directory already appears as a complete PATH element, leave PATH unchanged. Add an isolated same-shell test that sources the bootstrap twice and compares PATH byte-for-byte.
+
+## Startup-command execution audit (2026-11-07)
+
+**Scope**: the platform-side Freebuff startup command. It is stored in Freebuff project settings, outside this
+repository, so this stage produces evidence plus one recommendation and changes no platform setting.
+
+### Research
+
+1. Read `package.json` (`packageManager: pnpm@10.30.3`, `engines.node: 22.x`), `pnpm-lock.yaml`
+   (`lockfileVersion 9.0`) and `scripts/bootstrap-pnpm.sh` (bashisms, `export PATH`, sourced-vs-executed exit
+   handling).
+2. Establish the runtime shell empirically: `SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21,
+   `/bin/sh` → `dash`, `sh -c 'source …'` → 127, `bash -c 'source …'` → 0. The Freebuff runtime also documents
+   Bash as its command shell on every OS.
+3. Build `artifacts/freebuff-startup-audit/probe.sh` to run each candidate in a controlled `env` (own `HOME`,
+   own `PATH`, shared pnpm store) so the outcomes are executed facts, not reasoning.
+
+### Design decision
+
+Recommend `bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'`:
+
+| Property | current (`bash script`) | proposed (`source`) | recommended (`bash -c 'source …'`) |
+| --- | --- | --- | --- |
+| Keeps bootstrap PATH for the install | no | yes | yes |
+| Works when `$HOME/.local/bin` is absent from PATH | no (exit 127) | yes | yes |
+| Works when the platform shell is `dash`/POSIX `sh` | yes | no (exit 127) | yes |
+| Uses the validated pinned pnpm over a competing one | no | yes | yes |
+| Steady-state cost (measured) | 4.38 s | 4.40 s | 4.38 s |
+| Repository change needed | — | — | none |
+
+`source` alone is therefore better than the current command but not the most robust option; the explicit `bash -c`
+wrapper keeps the PATH export inside the shell that performs the install and removes the dependency on the
+platform shell. `scripts/bootstrap-pnpm.sh` already supports sourced use, repeated sourcing, cleanup and
+fail-closed behaviour, so no script change is justified. `freebuff-verify.sh` already sources it, so repository
+verification and the recommended startup path exercise the same code path.
+
+### Known limitation (documented, not changed)
+
+When `$HOME/.local/bin` is already on PATH *behind* another `pnpm`, the bootstrap validates its candidate and
+installs the pin, but its idempotent PATH guard does not move the existing directory to the front (FR-024). In
+that sequence both `source` and `bash` forms run the competing binary. No competing `pnpm` exists in this image's
+PATH (only `.bun/bin` and `.local/bin`), so changing that guard is outside the minimal change this audit
+justifies; it is recorded as a residual risk.
+
+### Verification plan
+
+Run the probe on the final tree, confirm `git diff -- package.json pnpm-lock.yaml` is empty, then run
+`./freebuff-verify.sh`, measure `.next + public` against the 495 MB maximum, audit the final diff and publish the
+canonical summary in the pull request body.

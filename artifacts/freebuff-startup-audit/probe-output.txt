@@ -1,0 +1,222 @@
+================ SCENARIO 0: baseline environment ================
+real HOME: /workspace/homes/5c23e2008d5278c48393b22f
+real PATH: /workspace/homes/5c23e2008d5278c48393b22f/.bun/bin:/workspace/homes/5c23e2008d5278c48393b22f/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+resolved pnpm: /workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm -> 10.30.3
+declared pin (package.json#packageManager): pnpm@10.30.3
+sh -> /usr/bin/dash; bash -> GNU bash, version 5.2.21(1)-release (x86_64-pc-linux-gnu)
+sh supports 'source': 127 (127 = not found)
+bash supports 'source': 0
+
+----- SCENARIO A1 current command, fresh HOME, $HOME/.local/bin NOT on PATH -----
+shell: bash
+command: bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-no-local-path
+PATH: /usr/local/bin:/usr/bin:/bin
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-no-local-path/.local ...
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-no-local-path/.local/bin/pnpm)
+  | bash: line 1: pnpm: command not found
+EXIT: 127
+SECONDS: 1.63
+pnpm afterwards: none
+
+----- SCENARIO A2 proposed command, fresh HOME, $HOME/.local/bin NOT on PATH -----
+shell: bash
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-no-local-path-source
+PATH: /usr/local/bin:/usr/bin:/bin
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-no-local-path-source/.local ...
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-no-local-path-source/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.8s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 5.87
+pnpm afterwards: none
+
+----- SCENARIO A3 wrapped command under /bin/sh, fresh HOME, no .local/bin -----
+shell: sh
+command: bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'
+HOME: /tmp/fb-startup-audit/fresh-no-local-path-wrapped
+PATH: /usr/local/bin:/usr/bin:/bin
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-no-local-path-wrapped/.local ...
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-no-local-path-wrapped/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.9s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 5.58
+pnpm afterwards: none
+
+----- SCENARIO B1 current command, fresh HOME, $HOME/.local/bin ON PATH -----
+shell: bash
+command: bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-local-on-path
+PATH: /tmp/fb-startup-audit/fresh-local-on-path/.local/bin:/usr/local/bin:/usr/bin:/bin
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-local-on-path/.local ...
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-local-on-path/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.8s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 5.57
+pnpm afterwards: /tmp/fb-startup-audit/fresh-local-on-path/.local/bin/pnpm
+
+----- SCENARIO B2 proposed command, fresh HOME, $HOME/.local/bin ON PATH -----
+shell: bash
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-local-on-path-source
+PATH: /tmp/fb-startup-audit/fresh-local-on-path-source/.local/bin:/usr/local/bin:/usr/bin:/bin
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-local-on-path-source/.local ...
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-local-on-path-source/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 4.6s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 6.39
+pnpm afterwards: /tmp/fb-startup-audit/fresh-local-on-path-source/.local/bin/pnpm
+
+================ SCENARIO C: competing pnpm earlier in PATH ================
+competing pnpm at /tmp/fb-startup-audit/other-pnpm/bin/pnpm reports: 10.30.0
+----- SCENARIO C1 current command, competing pnpm 10.30.0 first in PATH, no .local/bin -----
+shell: bash
+command: bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-competing
+PATH: /tmp/fb-startup-audit/other-pnpm/bin:/usr/local/bin:/usr/bin:/bin
+extra env: npm_config_manage_package_manager_versions=false
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-competing/.local ...
+  | npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-competing/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.0"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 4.5s using pnpm v10.30.0
+EXIT: 0
+SECONDS: 6.63
+pnpm afterwards: /tmp/fb-startup-audit/other-pnpm/bin/pnpm
+
+----- SCENARIO C2 proposed command, competing pnpm 10.30.0 first in PATH, no .local/bin -----
+shell: bash
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-competing-source
+PATH: /tmp/fb-startup-audit/other-pnpm/bin:/usr/local/bin:/usr/bin:/bin
+extra env: npm_config_manage_package_manager_versions=false
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-competing-source/.local ...
+  | npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-competing-source/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.9s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 6.05
+pnpm afterwards: /tmp/fb-startup-audit/other-pnpm/bin/pnpm
+
+----- SCENARIO C3 proposed command, competing pnpm first and .local/bin later in PATH -----
+shell: bash
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /tmp/fb-startup-audit/fresh-competing-local-later
+PATH: /tmp/fb-startup-audit/other-pnpm/bin:/tmp/fb-startup-audit/fresh-competing-local-later/.local/bin:/usr/local/bin:/usr/bin:/bin
+extra env: npm_config_manage_package_manager_versions=false
+  | Installing pnpm 10.30.3 into /tmp/fb-startup-audit/fresh-competing-local-later/.local ...
+  | npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+  | 
+  | added 1 package in 1s
+  | ✅ Using pnpm 10.30.3 (/tmp/fb-startup-audit/fresh-competing-local-later/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.0"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 4.1s using pnpm v10.30.0
+EXIT: 0
+SECONDS: 6.26
+pnpm afterwards: /tmp/fb-startup-audit/other-pnpm/bin/pnpm
+
+================ SCENARIO D: steady state, real Freebuff environment ================
+----- SCENARIO D1 current command, installed pinned pnpm (repeat run) -----
+shell: bash
+command: bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /workspace/homes/5c23e2008d5278c48393b22f
+PATH: /workspace/homes/5c23e2008d5278c48393b22f/.bun/bin:/workspace/homes/5c23e2008d5278c48393b22f/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+  | ✅ Using pnpm 10.30.3 (/workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.9s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 4.43
+pnpm afterwards: /workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm
+
+----- SCENARIO D2 proposed command, installed pinned pnpm (repeat run) -----
+shell: bash
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /workspace/homes/5c23e2008d5278c48393b22f
+PATH: /workspace/homes/5c23e2008d5278c48393b22f/.bun/bin:/workspace/homes/5c23e2008d5278c48393b22f/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+  | ✅ Using pnpm 10.30.3 (/workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 3.8s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 4.35
+pnpm afterwards: /workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm
+
+----- SCENARIO D3 wrapped command under /bin/sh, installed pinned pnpm -----
+shell: sh
+command: bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'
+HOME: /workspace/homes/5c23e2008d5278c48393b22f
+PATH: /workspace/homes/5c23e2008d5278c48393b22f/.bun/bin:/workspace/homes/5c23e2008d5278c48393b22f/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+  | ✅ Using pnpm 10.30.3 (/workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm)
+  |  WARN  Unsupported engine: wanted: {"node":"22.x"} (current: {"node":"v26.13.0","pnpm":"10.30.3"})
+  | Lockfile is up to date, resolution step is skipped
+  | Already up to date
+  | 
+  | Done in 4s using pnpm v10.30.3
+EXIT: 0
+SECONDS: 4.46
+pnpm afterwards: /workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm
+
+================ SCENARIO E: shell portability ================
+----- SCENARIO E1 proposed command run by dash (source unsupported) -----
+shell: sh
+command: source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile
+HOME: /workspace/homes/5c23e2008d5278c48393b22f
+PATH: /workspace/homes/5c23e2008d5278c48393b22f/.bun/bin:/workspace/homes/5c23e2008d5278c48393b22f/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+  | sh: 1: source: not found
+EXIT: 127
+SECONDS: 0.00
+pnpm afterwards: /workspace/homes/5c23e2008d5278c48393b22f/.local/bin/pnpm
+
+SCENARIO E2 POSIX dot form run by dash (bootstrap uses Bash syntax):
+  | sh: 9: scripts/bootstrap-pnpm.sh: Bad substitution
+  | sh: 17: scripts/bootstrap-pnpm.sh: [[: not found
+  | ❌ pnpm bootstrap: could not read package.json#packageManager
+  | sh: 98: scripts/bootstrap-pnpm.sh: Bad substitution
+
+================ LOCKFILE / MANIFEST INTEGRITY ================
+changed lines in package.json + pnpm-lock.yaml: 0

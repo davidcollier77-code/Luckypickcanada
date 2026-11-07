@@ -1,4 +1,19 @@
-# Current Task — Remote branch cleanup pass 3 (2026-11-07)
+# Current Task — Freebuff startup-command audit and optimization (2026-11-07)
+
+- **Task groups:** `troubleshooting` (the startup path's PATH handling and its fresh-workspace failure) + `testing` (executed probe of every candidate command under controlled `HOME`/`PATH`). Feature: reuse `specs/091-freebuff-startup-command`; no duplicate feature, branch or PR for this task.
+- **Branch:** `freebuff/5c23e2008d5278c48393b22f`; PR open and unmerged.
+- **Current command:** `bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile`.
+- **Proposed command:** `source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile`.
+- **Recommended command:** `bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'`.
+- **Verified shell:** the Freebuff runtime executes commands with Bash (`SHELL=/bin/bash`, login shell `/bin/bash`, GNU Bash 5.2.21). `/bin/sh` is `dash`, which has no `source` builtin and cannot parse the bootstrap script.
+- **Evidence** (`artifacts/freebuff-startup-audit/probe.sh`, `probe-output.txt`): fresh `HOME` without `$HOME/.local/bin` on PATH → the current form installs pnpm 10.30.3 and then exits **127** (`pnpm: command not found`); `source` and `bash -c 'source …'` exit 0 on pnpm 10.30.3; `source` under `dash` exits 127; steady state 4.38 s / 4.40 s / 4.38 s; competing pnpm 10.30.0 first on PATH (self-management disabled) → the current form installs with 10.30.0 while the sourced form uses 10.30.3.
+- **Documented limitation:** if `$HOME/.local/bin` is already on PATH *behind* another pnpm, the idempotent PATH guard does not reorder it, so the competing binary wins in both forms. No competing pnpm exists on this image's PATH, so no script change was justified.
+- **Repository change:** none required. `scripts/bootstrap-pnpm.sh` already supports sourced use, repeated sourcing, cleanup and fail-closed exits, and `freebuff-verify.sh` already sources it. Only the Spec Kit artifacts, the evidence record and the Memory Bank changed.
+- **Verification:** `./freebuff-verify.sh` exit 0 (`SPEC_KIT_BASE_REF=FETCH_HEAD`); production build 350,554,659 B (334.31 MiB) on the final gate run (an earlier run in the same session measured 333,135,931 B / 317.70 MiB; both are below 495 MB); `git diff -- package.json pnpm-lock.yaml` empty.
+
+---
+
+# Completed Task — Remote branch cleanup pass 3 (2026-11-07)
 
 - **Task groups:** `deep-dive` (independent classification from current evidence) + `testing` (per-branch safety verification and remote reconciliation). Feature: reuse `specs/105-remote-branch-cleanup`.
 - **Branch:** `chore/branch-cleanup-pass3-20261107`; PR open and unmerged.
