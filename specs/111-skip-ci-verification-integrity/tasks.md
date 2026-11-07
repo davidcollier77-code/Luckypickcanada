@@ -51,6 +51,10 @@
 - [x] T021 [US2] Deduplicate id-less check runs by stable identity so partial records cannot be appended once per SHA.
 - [x] T022 [US3] Cap the polling sleep to the remaining deadline and check the deadline before sleeping.
 - [x] T023 [Testing] Extend `.github/scripts/test_verify_pr_verification_status.py` with deterministic retry/deadline tests, then run the focused suite and `./freebuff-verify.sh`.
+  - Focused suite: PASS (25 tests, OK; 7 new tests for empty-SHA matching, the live-loader guard, id-less deduplication, transient retry, permanent-error failure and the capped sleep).
+  - `SPEC_KIT_BASE_REF=75d61aff ./freebuff-verify.sh` on `e7b835ac`: PASS (exit 0; Spec Kit artifacts verified, 25 integrity tests OK, TypeScript finished, production build compiled, refresh-docs 36/36, final "All verification steps passed").
+  - Build: `.next` 318,170,990 B + `public` 32,840,043 B = 351,011,033 B (334.75 MiB), below the 495 MB maximum.
+- [x] T024 Update the canonical PR body for this increment and reply to each reviewed thread with its disposition. Formal thread resolution is BLOCKED: the connected GitHub tools expose replies but no resolve-review-thread operation. The PR stays open and unmerged.
 
 ## Dependencies
 
