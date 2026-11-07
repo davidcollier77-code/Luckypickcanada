@@ -1,3 +1,14 @@
+## 2026-11-07 — Single-source Freebuff governance consolidation
+
+- Consolidated general agent governance in `AGENTS.md`, making it explicit that it governs every coding agent, including Freebuff.
+- Preserved the unique clarification that connecting or initializing an MCP alone does not count as using it.
+- Removed the redundant `.freebuff/freebuff.md` entrypoint while retaining all eight specialist group files and the `.freebuff/cmds/` Spec Kit command directory.
+- Added `__tests__/agent-governance-single-source.test.js` to guard the single-entrypoint rule and retained specialist guidance.
+- Updated the saved Freebuff Master Work Request in the ChatGPT Library to remove the deleted entrypoint reference and align PR reporting with the canonical PR body.
+- Focused and full verification, production build measurement, and PR-head checks remain pending until actually executed.
+
+---
+
 ## 2026-11-06 — PR #1746 routing-test coverage correction
 
 - Expanded `__tests__/docs-library-retirement.test.ts` to assert that each of the four retired IDs is absent from every one of the eight manifest group routing files, closing the Amazon Q review finding.
