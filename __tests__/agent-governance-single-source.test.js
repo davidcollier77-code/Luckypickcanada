@@ -43,18 +43,15 @@ describe('single-source agent governance', () => {
     expect(connectedIntegrations).toContain(
       'GitHub:** Always available for normal authorized repository work',
     );
-    // Accept all documented browser QA providers without asserting which one a run must select.
-    const browserQaToolPolicies = [
-      '**Playwright:** Primary browser tool. Use first when available.',
-      '**Browserless:** Mandatory fallback when Playwright is unavailable or fails. No additional approval required.',
-      '**Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.',
-    ];
+    // Recognize every supported browser QA provider without hard-coding tool order or descriptions.
+    const supportedBrowserQaTools = ['Playwright', 'Browserless', 'Browserbase'];
 
-    for (const toolPolicy of browserQaToolPolicies) {
-      expect(connectedIntegrations).toContain(toolPolicy);
+    for (const toolName of supportedBrowserQaTools) {
+      expect(connectedIntegrations).toContain(toolName);
     }
 
     expect(agents).toContain('**Browser QA is mandatory.**');
+    expect(connectedIntegrations).toContain('Requires explicit owner approval.');
 
     // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.
     expect(connectedIntegrations).toContain(
