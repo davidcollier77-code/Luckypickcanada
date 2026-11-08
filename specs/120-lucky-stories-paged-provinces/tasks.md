@@ -57,8 +57,8 @@
 - [x] T017 [US3] Restore the bounded Recent Canadian Activity behaviour of up to three stories per province in `app/lucky-stories.js` and cover it in `__tests__/lucky-stories-pagination.test.js`.
 - [x] T018 [US3] Make the map interaction browser test wait for the actual summary API response and hydrated province markers in `tests/visual/map-marker-interaction.spec.ts`.
 - [x] T019 [US3] Wait for the final pressed-edge transition in `tests/visual/gold-cta.spec.ts` and replace the fixed pagination sleep with a network-idle condition in `tests/visual/lucky-stories-pagination.spec.ts`.
-- [ ] T020 Refresh the three homepage screenshot baselines in `tests/visual/__screenshots__/{desktop,mobile-390,mobile-412}/homepage-viewport.png` from the current approved homepage rendering.
-- [x] T021 [Security] Extend the narrowly scoped DevSkim false-positive allowlist for the exact Playwright `test.setTimeout(120_000)` configuration in the two updated visual test files; add regression coverage proving request-derived timeout values are not suppressed. **Pending**: the CI artifact proves the committed screenshots are stale, but this workspace cannot execute Playwright's snapshot update command or publish binary screenshot blobs through the available repository interface.
+- [x] T020 Refresh the three homepage screenshot baselines in `tests/visual/__screenshots__/{desktop,mobile-390,mobile-412}/homepage-viewport.png` from the current approved homepage rendering. **PASS (2026-11-08)**: Playwright generated the desktop, mobile-390 and mobile-412 snapshots from the current branch rendering; all 3 regeneration tests passed and only these three PNGs were committed in `3203f086be8eb841eca7ee20e61389cbe05c0741`.
+- [x] T021 [Security] Extend the narrowly scoped DevSkim false-positive allowlist for the exact Playwright `test.setTimeout(120_000)` configuration in the two updated visual test files; add regression coverage proving request-derived timeout values are not suppressed. **PASS (2026-11-08)**: the allowlist remains narrowly scoped to the fixed numeric Playwright test timeout in the two named files; request-derived values remain unsuppressed in regression coverage.
 
 ## Verification evidence (2026-11-08)
 
@@ -93,16 +93,27 @@ Deliver the data path first, then the paged client feed and its browser/unit evi
 ## Follow-up responsive QA tasks
 
 - [x] T022 Independently compare the current Playwright expected/actual/diff screenshots for desktop, mobile-390 and mobile-412 and inspect the approved hero source/composition. Result: mobile baselines depict the older hero layout; current rendering corresponds to the later approved hero composition. Desktop is a small pixel delta. Ghost Invasion local-only execution is blocked because this session has no local disposable app/reset fixture; no Ghost Invasion execution is claimed.
-- [ ] T023 Add Playwright responsive first-screen coverage at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels. Verify no horizontal overflow, clipped welcome text, hidden navigation links or missing Explore control.
-- [ ] T024 Fix the sitewide gold CTA assertion to wait for the settled pressed-edge state and verify its measured depth is 1 CSS pixel without relaxing the intended appearance.
-- [ ] T025 Regenerate only the desktop, mobile-390 and mobile-412 homepage viewport PNG baselines from actual Playwright output and commit them.
+- [x] T023 Add Playwright responsive first-screen coverage at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels. Verify no horizontal overflow, clipped welcome text, hidden navigation links or missing Explore control. **Implemented** in `tests/visual/homepage.spec.ts`; full browser execution remains part of T026.
+- [x] T024 Fix the sitewide gold CTA assertion to wait for the settled pressed-edge state and verify its measured depth is 1 CSS pixel without relaxing the intended appearance. **Implemented** in `tests/visual/sitewide-gold-cta.spec.ts`; full browser execution remains part of T026.
+- [x] T025 Regenerate only the desktop, mobile-390 and mobile-412 homepage viewport PNG baselines from actual Playwright output and commit them. **PASS**: 3/3 Playwright baseline regeneration tests; exact three-file commit `3203f086be8eb841eca7ee20e61389cbe05c0741`.
 - [ ] T026 Run current-head Playwright visual QA, `pnpm exec vitest run`, `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; measure build size against the 495 MB cap, inspect the full diff and update the canonical PR summary.
 
 ## Follow-up verification status
 
 - Screenshot/source inspection: **PASS** (evidence limited to the Playwright workflow artifact and repository source at the recorded head).
 - Ghost Invasion local-only reviewer: **BLOCKED / NOT RUN** (no local repository checkout, disposable application or same-origin reset endpoint available in this session).
-- Expanded responsive Playwright matrix: **PENDING**.
-- CTA transition assertion correction: **PENDING**.
-- Three screenshot baseline regeneration: **PENDING**.
+- Expanded responsive Playwright matrix: **IMPLEMENTED; runtime verification PENDING**.
+- CTA transition assertion correction: **IMPLEMENTED; runtime verification PENDING**.
+- Three screenshot baseline regeneration: **PASS** (3/3 projects, commit `3203f086be8eb841eca7ee20e61389cbe05c0741`).
 - Current-head full verification: **PENDING**.
+
+
+## Current responsive QA checkpoint (2026-11-08)
+
+- The one-time PR #1783 snapshot refresh workflow generated the three committed baselines using Playwright Chromium: desktop 1440x900, mobile-390 390x844 and mobile-412 412x915. The selected baseline test passed 3/3.
+- Only these files were staged and committed: `tests/visual/__screenshots__/desktop/homepage-viewport.png`, `tests/visual/__screenshots__/mobile-390/homepage-viewport.png`, `tests/visual/__screenshots__/mobile-412/homepage-viewport.png`.
+- The temporary snapshot-refresh workflow permission and step are being removed; the normal Visual QA workflow remains read-only and uses its existing Playwright regression path.
+- The responsive geometry matrix is implemented at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels. The normal full Playwright run must pass before marking it verified.
+- The CTA pressed-edge assertion now waits for and parses the settled 1px CSS shadow. Normal full Playwright runtime verification remains pending.
+- The prior baseline-refresh workflow run passed full Vitest, TypeScript and `./freebuff-verify.sh` before refreshing the binary screenshots. The standard current-head full visual regression and post-cleanup build/size run remain pending.
+- Ghost Invasion remains **BLOCKED / NOT RUN** because the installed runner requires a disposable local app and same-origin reset endpoint; the connected session has no local checkout/fixture. No Ghost Invasion verdict is claimed.

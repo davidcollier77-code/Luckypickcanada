@@ -651,3 +651,13 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 
 
 - **Mobile touch verification hardening:** the mobile Explore test now reloads between the click-path/cooldown checks and the touch-path check. It records `scrollY` after bringing the Explore stage into view, verifies the tap point resolves to the Explore button, then requires further scroll movement after the touch. This prevents `scrollIntoViewIfNeeded()` itself from satisfying the activation assertion.
+
+
+## 2026-11-08 — PR #1783 homepage responsive QA and visual baseline refresh
+
+- Inspected the failed desktop, mobile-390 and mobile-412 Playwright screenshot comparisons and the current approved hero implementation. The mobile expected PNGs represented an older layout; the current rendering used the later approved hero composition. No production CSS/design changes were justified by that screenshot comparison alone.
+- Added a Playwright first-screen responsive geometry matrix for 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS px. Added containment, overflow, navigation, text-fit and Explore control checks.
+- Corrected the sitewide gold CTA pressed-state test to wait for the settled 1px shadow depth rather than reading a fractional transition frame.
+- Generated three current homepage viewport snapshots with the existing Playwright Chromium workflow. All three snapshot update projects passed; only the three approved PNG paths were staged and committed in `3203f086be8eb841eca7ee20e61389cbe05c0741`.
+- The snapshot-refresh-only Visual QA run passed full Vitest, standalone TypeScript and `./freebuff-verify.sh`, then intentionally skipped the full regression step after committing the PNGs. A normal full Playwright run on the current branch remains required.
+- Ghost Invasion was not run because its installed local-only mode requires a disposable localhost app/reset endpoint that this connected session cannot provide. No Ghost Invasion independent review is claimed. Firecrawl was not used.

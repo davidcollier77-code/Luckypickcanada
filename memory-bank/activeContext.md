@@ -2182,3 +2182,14 @@
 - **CI verification (2026-11-08, tested HEAD `230ee8d7efbecbf93853dad24a311877e2aa2a34`)**: GitHub Actions Visual QA passed 52 Vitest test files, `pnpm tsc --noEmit`, `./freebuff-verify.sh`, and 137/137 Playwright tests across desktop and mobile-390/mobile-412. DevSkim scan and SARIF upload passed. OpenNext validation passed the Next.js build, 495 MiB size gate (334,764,588 bytes / 319.26 MiB), OpenNext Cloudflare build, compiled Tailwind CSS/worker/assets checks and Wrangler no-deploy validation. These results are tied to the tested SHA; a documentation-only follow-up commit will have its own CI run.
 - **Content confirmation still required**: IDs 9–21 are explicitly marked `[dev-seed]` in their story text. They remain in production unchanged; the owner must confirm these prepared seed/demo records are intentionally public before merge. Do not delete or rewrite production rows without explicit authorization.
 - **Browser QA distinction**: CI Playwright browser tests passed. Ghost Invasion's disposable-local-app scenario was not separately run.
+
+
+# Current Task — PR #1783 responsive homepage QA checkpoint (2026-11-08)
+
+- **Branch / PR:** `freebuff/40867abcd68f1e53d3356b9f`; PR #1783 remains open and unmerged.
+- **Scope:** preserve the approved homepage hero composition, artwork, wording, navigation, interaction, AVIF-first/WebP fallback, keyboard support and reduced-motion behavior. Verify responsive layout, not redesign it.
+- **Responsive coverage:** added a Playwright first-screen geometry matrix for 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixel widths. Checks include horizontal overflow, containment of nav/panel/hero, visibility and containment of all four nav links, text-fit and Explore button target size.
+- **CTA test:** replaced the single mid-transition shadow sample with a poll for the settled 1px pressed edge; parser regex was corrected and checked in source.
+- **Visual baselines:** Playwright CI regenerated exactly three approved viewport PNGs: desktop, mobile-390 and mobile-412. Each selected baseline test passed. Commit: `3203f086be8eb841eca7ee20e61389cbe05c0741`.
+- **Independent review limitation:** Ghost Invasion was not run; its installed runner needs a disposable local app and same-origin reset endpoint unavailable in this session. Actual Playwright screenshot evidence and current source were inspected instead.
+- **Verification checkpoint:** full Vitest, standalone TypeScript and `./freebuff-verify.sh` passed during the one-time baseline refresh run. A normal full Playwright regression after the snapshot update and current-head build/size validation are still pending.
