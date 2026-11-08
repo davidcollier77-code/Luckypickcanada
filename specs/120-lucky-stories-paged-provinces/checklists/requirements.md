@@ -33,3 +33,4 @@
 
 - The demonstration-author requirement is a data-only correction, not an application hardcode. The PR owner reports 21 rows retained, 13 demo authors corrected, and original contributor records 1–8 preserved; only the leading [dev-seed] marker was removed. The public map page was checked read-only, but this workspace could not independently query production Neon.
 - Recent Canadian Activity now has an explicit requirement of up to three newest stories per province/territory, with a hard maximum of 39 across all 13 regions.
+- The DevSkim test-timeout exception is limited to constant numeric Playwright test-runner timeout configuration in the two reviewed visual test files; a regression test confirms request-derived timeout values are not suppressed.
