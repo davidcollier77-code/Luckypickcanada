@@ -58,7 +58,7 @@ describe('single-source agent governance', () => {
 
     // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.
     expect(connectedIntegrations).toContain(
-      'Browserless and Browserbase are for Freebuff\\'s direct browser-based task work.',
+      "Browserless and Browserbase are for Freebuff's direct browser-based task work.",
     );
     expect(connectedIntegrations).toContain(
       'Do not add either service to, or trigger either service from, automatic PR-checker workflows.',
