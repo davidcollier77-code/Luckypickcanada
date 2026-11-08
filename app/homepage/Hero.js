@@ -4,6 +4,40 @@ import { preload } from 'react-dom';
 import ExploreLuckButton from './ExploreLuckButton';
 
 /**
+ * The hero artwork is one flattened painting (1024 x 1536) that carries the gold
+ * ring, the tagline, the gold wordmark, a painted subtitle, a maple-leaf divider
+ * and the "EXPLORE YOUR LUCK" line with its chevron.
+ *
+ * specs/117-homepage-hero-reference-layout shows that same painting through
+ * measured row windows so the reference layout can place the existing welcome
+ * panel between the painting's own maple-leaf divider and the Explore line.
+ * Nothing is redrawn or resized: every window renders the same file at the same
+ * scale, cropped by CSS. Row bands measured from the painting's alpha profile:
+ * emblem/tagline/wordmark 14-1085, divider 1222-1306, Explore line 1325-1502;
+ * the windows cut on the near-empty rows between them.
+ *
+ * @param {{ alt?: string }} props Decorative slices omit `alt`; the emblem slice
+ *   keeps the artwork's description.
+ * @returns {import('react').ReactElement} One artwork window.
+ */
+function HeroArtwork({ alt = '' }) {
+  return (
+    <picture className="hero-art-picture">
+      <source type="image/avif" srcSet="/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
+      <source type="image/webp" srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
+      <img
+        className="hero-art-image"
+        src="/homepage-hero-lucky-pick-canada.webp"
+        srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w"
+        sizes="(max-width: 768px) 100vw, 1024px"
+        alt={alt}
+        fetchPriority="high"
+      />
+    </picture>
+  );
+}
+
+/**
  * Renders the interactive homepage hero with primary navigation and the hero artwork.
  *
  * @returns {import('react').ReactElement} The homepage hero header.
@@ -24,9 +58,9 @@ export default function Hero() {
   });
 
   return (
-    <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome" style={{ minHeight: '100svh' }}>
+    <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome">
       {/* Main Content Stack */}
-      <div className="relative z-10 w-full h-[100svh] min-h-0 flex flex-col items-center">
+      <div className="relative z-10 w-full flex flex-col items-center">
         {/* Navigation */}
         <nav
           className="homepage-main-nav w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
@@ -63,54 +97,61 @@ export default function Hero() {
           </div>
         </nav>
 
-        {/* First-screen introduction (specs/115-first-screen-clarity-naming-csp):
-            what Lucky Pick Canada is, why it is fun, and a free way in — all
-            visible before any scrolling. Artwork, navigation and animations are
-            unchanged. */}
-        <div className="hero-welcome">
-          <h1 className="hero-welcome-title">Lucky Pick Canada</h1>
-          <p className="hero-welcome-lede">A fun, free place to explore what luck means to you.</p>
-          <p className="hero-welcome-copy">
-            Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read
-            Lucky Community Stories shared from across Canada. Luck is about more than fortune and
-            fame — it lives in everyday moments, hope and possibility.
-          </p>
-          <a href="#play-explore" className="hero-welcome-cta gold-3d-btn">
-            <span className="gold-cta-emoji" aria-hidden="true">🍀</span>
-            Explore free experiences
-            <span aria-hidden="true">→</span>
-          </a>
-          <p className="hero-welcome-note">Free to enjoy · For fun and entertainment only</p>
-        </div>
+        {/* Reference composition (specs/117-homepage-hero-reference-layout):
+            emblem + tagline + wordmark, maple-leaf divider, the existing welcome
+            panel, the same divider again, then the painted Explore line. The
+            hero grows with its content instead of shrinking the branding into a
+            fixed screen height. */}
+        <div className="hero-artwork-column">
+          <div className="hero-art-slice hero-art-slice--emblem">
+            <HeroArtwork alt="Lucky Pick Canada emblem with a maple leaf and clover set against a starry sky." />
+            {/* Decorative gold shimmer (specs/089-homepage-nav-gold-shimmer):
+                masked light bands that drift across the emblem's gold ring and
+                the gold wordmark. The frame reproduces the painted artwork box,
+                so no image, wording, colour or layout changes and no input is
+                captured. */}
+            <span className="hero-gold-shimmer-frame" aria-hidden="true">
+              <span className="hero-gold-shimmer hero-gold-shimmer--ring" />
+              <span className="hero-gold-shimmer hero-gold-shimmer--wordmark" />
+            </span>
+          </div>
 
-        {/* Hero Center Content */}
-        <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center text-center w-full max-w-[1100px] mx-auto mt-4 mb-4 px-4 sm:px-6 relative">
-            <div className="relative w-full hero-image-container flex items-center justify-center pointer-events-none">
-              <picture className="absolute inset-0 w-full h-full relative z-10 pointer-events-none flex items-center justify-center">
-                <source type="image/avif" srcSet="/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
-                <source type="image/webp" srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
-                <img
-                  className="pointer-events-none object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] w-full h-full"
-                  src="/homepage-hero-lucky-pick-canada.webp"
-                  srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w"
-                  sizes="(max-width: 768px) 100vw, 1024px"
-                  alt="Lucky Pick Canada emblem with a maple leaf and clover set against a starry sky."
-                  fetchPriority="high"
-                />
-              </picture>
-              {/* Decorative gold shimmer (specs/089-homepage-nav-gold-shimmer):
-                  three masked light bands that drift across the emblem's gold
-                  ring, the gold wordmark and the Explore Your Luck line/arrow.
-                  The frame reproduces the painted artwork box, so no image,
-                  wording, colour or layout changes and no input is captured. */}
-              <span className="hero-gold-shimmer-frame" aria-hidden="true">
-                <span className="hero-gold-shimmer hero-gold-shimmer--ring" />
-                <span className="hero-gold-shimmer hero-gold-shimmer--wordmark" />
-                <span className="hero-gold-shimmer hero-gold-shimmer--explore" />
-              </span>
-              <ExploreLuckButton />
-            </div>
+          <div className="hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--top" aria-hidden="true">
+            <HeroArtwork />
+          </div>
+
+          {/* First-screen introduction (specs/115-first-screen-clarity-naming-csp):
+              what Lucky Pick Canada is, why it is fun, and a free way in. Content
+              and controls are unchanged; the panel framing comes from the
+              reference layout. */}
+          <div className="hero-welcome">
+            <h1 className="hero-welcome-title">Lucky Pick Canada</h1>
+            <p className="hero-welcome-lede">A fun, free place to explore what luck means to you.</p>
+            <p className="hero-welcome-copy">
+              Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read
+              Lucky Community Stories shared from across Canada. Luck is about more than fortune and
+              fame — it lives in everyday moments, hope and possibility.
+            </p>
+            <a href="#play-explore" className="hero-welcome-cta gold-3d-btn">
+              <span className="gold-cta-emoji" aria-hidden="true">🍀</span>
+              Explore free experiences
+              <span aria-hidden="true">→</span>
+            </a>
+            <p className="hero-welcome-note">Free to enjoy · For fun and entertainment only</p>
+          </div>
+
+          <div className="hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom" aria-hidden="true">
+            <HeroArtwork />
+          </div>
+
+          <div className="hero-art-slice hero-art-slice--explore hero-image-container pointer-events-none">
+            <HeroArtwork />
+            {/* The third shimmer band tracks the painted "EXPLORE YOUR LUCK" line
+                and its chevron inside this window. */}
+            <span className="hero-gold-shimmer-frame" aria-hidden="true">
+              <span className="hero-gold-shimmer hero-gold-shimmer--explore" />
+            </span>
+            <ExploreLuckButton />
           </div>
         </div>
       </div>

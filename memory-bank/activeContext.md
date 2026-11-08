@@ -1,3 +1,18 @@
+# Current Task — Homepage hero rebuilt to the supplied reference composition (2026-11-08)
+
+- **Task groups:** `creation` (the hero itself is rebuilt to an approved design) + `polishing` (existing AVIF/WebP artwork reused and served unchanged) + `testing` (composition guard, refreshed baselines, executed browser checks).
+- **Feature / branch:** `specs/117-homepage-hero-reference-layout`; branch `freebuff/c2fffecd2a96680aacf6147e`.
+- **Asset finding:** the hero painting is one flattened 1024 × 1536 image with no layered source in HEAD or history (only AVIF/WebP derivatives; `public/emblem.png` is unrelated). Splitting it was therefore done in CSS, not by editing or redrawing the artwork.
+- **Implementation:** `HeroArtwork` renders four aspect-ratio windows over the same picture element — emblem/tagline/wordmark (`1024 / 1090`, offset `0`), the painted gold maple divider (`1024 / 84`, offset `-1222/84`), the panel gap (same divider repeated), and the Explore band (`1024 / 200`, offset `-1306/200`). The measured painted subtitle (rows 1095–1205) is replaced by the approved `.hero-welcome` panel, as in the reference. `minHeight:100svh`, `h-[100svh]` and the two fixed `.hero-image-container` heights were removed so the hero follows column width (`min(100%, 46rem)`); the old container class now sits on the Explore window so the existing centred/bottom-anchored button contract and `pointer-events` rules still hold. Preload, AVIF/WebP sources, `srcset`/`sizes`, `fetchPriority`, emblem alt text, nav, shimmer layers, star canvas, confetti, sound, scroll and accessibility behaviour are unchanged; nothing below the hero changed.
+- **Guards:** new `__tests__/homepage-hero-layout.test.js` (order, reused divider, no viewport-height caps, window ratios and offsets, preserved panel content, single preload, no new assets); `__tests__/homepage-nav-gold-shimmer.test.js` alignment expectation moved from `object-contain` to the measured slice mapping.
+- **Measured (1440/1024/412/390):** windows 0.939 / 12.19 / 12.19 / 5.12 at every width, 0 px horizontal overflow, the Explore label hit-tests as the top element at every width, slices 696 × 740.9 / 57.1 / 57.1 / 135.9 at 1440 and 379.5 × 404 / 31.1 / 31.1 / 74.1 at 390. Evidence in `artifacts/hero-reference-20261108/`.
+- **In-task correction:** caption sizes tightened for a one-line mobile note measured 11.25–11.4 px and failed the repository's 12 px mobile caption floor; the `h1` is back to 12.9 px and the note to 12 px, so that line now wraps after "ENTERTAINMENT" instead of staying on one row.
+- **Verification:** full Vitest 53 files / 428 tests, focused guards 33/33, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, Playwright homepage 18 passed / 3 skips, content refresh + gold CTA 33 passed, site-wide gold CTA 18 passed, mobile accessibility 14 passed / 1 skip; build `.next` 401 MB + `public` 33 MB = 434 MB < 495 MB.
+- **Remaining issue:** the `/map` skip-link check fails intermittently — it reads the link's box during its own 160 ms focus transition (`top: -61` immediately, `top: 12` after 400 ms). Pre-existing and unrelated to the hero; left untouched as out of scope.
+- **BLOCKED / NOT RUN:** `.docs/polishing/_websites_mdn_image_types.md` could not be read (symlink loop), and the local font set has no emoji glyph, so the clover in the CTA renders as tofu in screenshots only.
+
+---
+
 # Continuation — PR #1777 map marker fixes, full suite and final verification (2026-11-08)
 
 - **Task groups:** `troubleshooting` (marker-selection fault diagnosed by measurement) + `testing` (responsive interaction coverage, complete Playwright suite, build size). Feature reused: `specs/115-first-screen-clarity-naming-csp`.

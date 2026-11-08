@@ -1,3 +1,14 @@
+## 2026-11-08 — Homepage hero rebuilt to the supplied reference composition
+
+- Rebuilt the hero in reference order (nav pill → emblem → tagline → gold wordmark → gold maple divider → welcome panel → divider → "Explore your luck" + chevron) using CSS windows over the one existing flattened artwork: `HeroArtwork` paints the image four times inside aspect-ratio slices with measured row offsets, so no artwork was redrawn, split into new files or flattened further.
+- Removed the fixed viewport-height sizing (`minHeight:100svh`, `h-[100svh]`, two `.hero-image-container` heights) so the hero follows column width and the branding is never shrunk to fit one screen; the Explore control keeps its centred, bottom-anchored, `pointer-events:none` parent contract inside the new Explore window.
+- Preserved the nav, artwork sources and preload, shimmer bands, star canvas, confetti, sound, scroll target and accessibility labels; nothing below the hero changed.
+- Corrected an in-task defect: caption sizes chosen for a one-line mobile note fell to 11.25–11.4 px and broke the 12 px mobile caption floor; the `h1` is 12.9 px and the note 12 px again.
+- Checks: full Vitest 53 files / 428 tests, focused guards 33/33, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, Playwright homepage 18 passed / 3 skips, content refresh + gold CTA 33 passed, site-wide gold CTA 18 passed, mobile accessibility 14 passed / 1 skip, build 434 MB (< 495 MB).
+- Residual: the `/map` skip-link check is intermittently flaky (measures during its 160 ms focus transition) and is unrelated to this change; the emoji glyph is missing from the local font set, so it renders as tofu in screenshots only.
+
+---
+
 ## 2026-11-08 — First-screen clarity, approved naming, analytics CSP and tap-target verification
 
 - Replaced the homepage's hidden `sr-only` `H1` with a visible first-screen block: brand line, one-sentence "fun, free place to explore what luck means to you" lede, the "more than fortune and fame" explanation naming the Luck Generator, Crystal Ball and Lucky Community Stories, a free gold CTA into `#play-explore`, and a "Free to enjoy · For fun and entertainment only" note. The hero artwork container is shorter so the block fits inside `100svh`; the artwork, its sources, preload and shimmer layers are unchanged.

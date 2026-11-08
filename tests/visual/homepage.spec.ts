@@ -225,6 +225,15 @@ test.describe("Homepage Visual", () => {
     const particles = page.locator('canvas[style*="z-index: 100"]');
     await expect(heroStage).toBeVisible();
 
+    // The approved hero layout (specs/117) is taller than the viewport and does
+    // not shrink the branding to fit it, so the page still starts at the top and
+    // the Explore control is measured and tapped after scrolling it into view.
+    const scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBe(0);
+
+    await heroStage.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+
     const buttonBox = await exploreButton.boundingBox();
     const stageBox = await heroStage.boundingBox();
     expect(buttonBox).not.toBeNull();
@@ -246,9 +255,6 @@ test.describe("Homepage Visual", () => {
       return element?.closest('button')?.getAttribute('aria-label') ?? null;
     }, { x: tapX, y: tapY });
     expect(hitTargetLabel).toBe(label);
-
-    const scrollY = await page.evaluate(() => window.scrollY);
-    expect(scrollY).toBe(0);
 
     const targetScrollY = await page.evaluate(() => {
       const luckyMeter = document.getElementById('play-explore');
@@ -358,7 +364,15 @@ test.describe("Homepage Visual", () => {
       });
 
       await expect.poll(async () => {
-        await page.touchscreen.tap(tapX, tapY);
+        // The taller approved hero puts the control below the first screen, so
+        // the tap point is re-measured after scrolling it into view.
+        await heroStage.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(100);
+        const liveStageBox = (await heroStage.boundingBox())!;
+        await page.touchscreen.tap(
+          liveStageBox.x + liveStageBox.width / 2,
+          liveStageBox.y + liveStageBox.height * 0.9
+        );
         const y = await page.evaluate(() => window.scrollY);
         return y;
       }, {

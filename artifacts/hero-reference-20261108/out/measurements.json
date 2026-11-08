@@ -1,0 +1,690 @@
+[
+  {
+    "viewport": {
+      "name": "desktop-1440x900",
+      "width": 1440,
+      "height": 900
+    },
+    "measured": {
+      "title": "Lucky Pick Canada",
+      "navBox": {
+        "x": 336,
+        "y": 0,
+        "width": 768,
+        "height": 42
+      },
+      "heroBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 1536
+      },
+      "columnBox": {
+        "x": 352,
+        "y": 70,
+        "width": 736,
+        "height": 1402
+      },
+      "columnPadding": "20px",
+      "slices": [
+        {
+          "classes": "hero-art-slice hero-art-slice--emblem",
+          "box": {
+            "x": 372,
+            "y": 70,
+            "width": 696,
+            "height": 740.9
+          },
+          "ratio": 0.939,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "0px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--top",
+          "box": {
+            "x": 372,
+            "y": 835,
+            "width": 696,
+            "height": 57.1
+          },
+          "ratio": 12.19,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-830.578px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom",
+          "box": {
+            "x": 372,
+            "y": 1267,
+            "width": 696,
+            "height": 57.1
+          },
+          "ratio": 12.19,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-830.578px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--explore hero-image-container pointer-events-none",
+          "box": {
+            "x": 372,
+            "y": 1336,
+            "width": 696,
+            "height": 135.9
+          },
+          "ratio": 5.12,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-887.672px"
+        }
+      ],
+      "panelBox": {
+        "x": 399.8,
+        "y": 910,
+        "width": 640.3,
+        "height": 339.8
+      },
+      "panelStyles": {
+        "border": "1px rgba(246, 202, 95, 0.72)",
+        "radius": "26px",
+        "backgroundImage": "radial-gradient(120% 90% at 50% 0%, rgba(30, 46, 92, 0.58), rgba(8, 13, 31, 0.88) 62%), none"
+      },
+      "exploreButtonBox": {
+        "x": 464,
+        "y": 1376,
+        "width": 512,
+        "height": 96
+      },
+      "exploreStageBox": {
+        "x": 372,
+        "y": 1336,
+        "width": 696,
+        "height": 136
+      },
+      "exploreButtonCentered": true,
+      "exploreButtonAtBottom": true,
+      "stagePointerEvents": "none",
+      "shimmerBands": [
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--ring",
+          "box": {
+            "x": 480.6,
+            "y": 75,
+            "width": 476.1,
+            "height": 476.1
+          },
+          "frameBox": {
+            "x": 372,
+            "y": 70,
+            "width": 696,
+            "height": 1044
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--wordmark",
+          "box": {
+            "x": 385.9,
+            "y": 577,
+            "width": 668.2,
+            "height": 229.7
+          },
+          "frameBox": {
+            "x": 372,
+            "y": 70,
+            "width": 696,
+            "height": 1044
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--explore",
+          "box": {
+            "x": 483.4,
+            "y": 1338,
+            "width": 473.3,
+            "height": 121.1
+          },
+          "frameBox": {
+            "x": 372,
+            "y": 448,
+            "width": 696,
+            "height": 1044
+          }
+        }
+      ],
+      "horizontalOverflowPx": 0,
+      "firstScreenText": {
+        "heading": "A fun, free place to explore what luck means to you.",
+        "cta": "🍀Explore free experiences→",
+        "note": "Free to enjoy · For fun and entertainment only"
+      },
+      "belowHeroPresent": true,
+      "exploreStageLiveBox": {
+        "x": 372,
+        "y": 382,
+        "width": 696,
+        "height": 136
+      },
+      "exploreHitTest": "Explore your luck. Scroll down to the Play and Explore section."
+    },
+    "heroScreenshot": "artifacts/hero-reference-20261108/out/hero-desktop-1440x900.png"
+  },
+  {
+    "viewport": {
+      "name": "laptop-1024x768",
+      "width": 1024,
+      "height": 768
+    },
+    "measured": {
+      "title": "Lucky Pick Canada",
+      "navBox": {
+        "x": 128,
+        "y": 0,
+        "width": 768,
+        "height": 42
+      },
+      "heroBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 1505.6
+      },
+      "columnBox": {
+        "x": 144,
+        "y": 70,
+        "width": 736,
+        "height": 1374.2
+      },
+      "columnPadding": "20px",
+      "slices": [
+        {
+          "classes": "hero-art-slice hero-art-slice--emblem",
+          "box": {
+            "x": 164,
+            "y": 70,
+            "width": 696,
+            "height": 740.9
+          },
+          "ratio": 0.939,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "0px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--top",
+          "box": {
+            "x": 164,
+            "y": 835,
+            "width": 696,
+            "height": 57.1
+          },
+          "ratio": 12.19,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-830.578px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom",
+          "box": {
+            "x": 164,
+            "y": 1239,
+            "width": 696,
+            "height": 57.1
+          },
+          "ratio": 12.19,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-830.578px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--explore hero-image-container pointer-events-none",
+          "box": {
+            "x": 164,
+            "y": 1308,
+            "width": 696,
+            "height": 135.9
+          },
+          "ratio": 5.12,
+          "image": "homepage-hero-lucky-pick-canada.avif",
+          "naturalWidth": 1024,
+          "imageTop": "-887.672px"
+        }
+      ],
+      "panelBox": {
+        "x": 191.8,
+        "y": 910,
+        "width": 640.3,
+        "height": 312
+      },
+      "panelStyles": {
+        "border": "1px rgba(246, 202, 95, 0.72)",
+        "radius": "26px",
+        "backgroundImage": "radial-gradient(120% 90% at 50% 0%, rgba(30, 46, 92, 0.58), rgba(8, 13, 31, 0.88) 62%), none"
+      },
+      "exploreButtonBox": {
+        "x": 256,
+        "y": 1348,
+        "width": 512,
+        "height": 96
+      },
+      "exploreStageBox": {
+        "x": 164,
+        "y": 1308,
+        "width": 696,
+        "height": 136
+      },
+      "exploreButtonCentered": true,
+      "exploreButtonAtBottom": true,
+      "stagePointerEvents": "none",
+      "shimmerBands": [
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--ring",
+          "box": {
+            "x": 272.6,
+            "y": 75,
+            "width": 476.1,
+            "height": 476.1
+          },
+          "frameBox": {
+            "x": 164,
+            "y": 70,
+            "width": 696,
+            "height": 1044
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--wordmark",
+          "box": {
+            "x": 177.9,
+            "y": 577,
+            "width": 668.2,
+            "height": 229.7
+          },
+          "frameBox": {
+            "x": 164,
+            "y": 70,
+            "width": 696,
+            "height": 1044
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--explore",
+          "box": {
+            "x": 275.4,
+            "y": 1310,
+            "width": 473.3,
+            "height": 121.1
+          },
+          "frameBox": {
+            "x": 164,
+            "y": 421,
+            "width": 696,
+            "height": 1044
+          }
+        }
+      ],
+      "horizontalOverflowPx": 0,
+      "firstScreenText": {
+        "heading": "A fun, free place to explore what luck means to you.",
+        "cta": "🍀Explore free experiences→",
+        "note": "Free to enjoy · For fun and entertainment only"
+      },
+      "belowHeroPresent": true,
+      "exploreStageLiveBox": {
+        "x": 164,
+        "y": 316,
+        "width": 696,
+        "height": 136
+      },
+      "exploreHitTest": "Explore your luck. Scroll down to the Play and Explore section."
+    },
+    "heroScreenshot": "artifacts/hero-reference-20261108/out/hero-laptop-1024x768.png"
+  },
+  {
+    "viewport": {
+      "name": "mobile-412x915",
+      "width": 412,
+      "height": 915,
+      "isMobile": true,
+      "hasTouch": true
+    },
+    "measured": {
+      "title": "Lucky Pick Canada",
+      "navBox": {
+        "x": 0,
+        "y": 0,
+        "width": 412,
+        "height": 66.9
+      },
+      "heroBox": {
+        "x": 0,
+        "y": 0,
+        "width": 412,
+        "height": 1066.8
+      },
+      "columnBox": {
+        "x": 0,
+        "y": 81,
+        "width": 412,
+        "height": 955.9
+      },
+      "columnPadding": "5.25px",
+      "slices": [
+        {
+          "classes": "hero-art-slice hero-art-slice--emblem",
+          "box": {
+            "x": 5.3,
+            "y": 81,
+            "width": 401.5,
+            "height": 427.4
+          },
+          "ratio": 0.939,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 412,
+          "imageTop": "0px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--top",
+          "box": {
+            "x": 5.3,
+            "y": 520,
+            "width": 401.5,
+            "height": 32.9
+          },
+          "ratio": 12.196,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 412,
+          "imageTop": "-478.922px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom",
+          "box": {
+            "x": 5.3,
+            "y": 920,
+            "width": 401.5,
+            "height": 32.9
+          },
+          "ratio": 12.196,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 412,
+          "imageTop": "-478.922px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--explore hero-image-container pointer-events-none",
+          "box": {
+            "x": 5.3,
+            "y": 958,
+            "width": 401.5,
+            "height": 78.4
+          },
+          "ratio": 5.121,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 412,
+          "imageTop": "-511.984px"
+        }
+      ],
+      "panelBox": {
+        "x": 21.3,
+        "y": 562,
+        "width": 369.4,
+        "height": 349.2
+      },
+      "panelStyles": {
+        "border": "1px rgba(246, 202, 95, 0.72)",
+        "radius": "18px",
+        "backgroundImage": "radial-gradient(120% 90% at 50% 0%, rgba(30, 46, 92, 0.58), rgba(8, 13, 31, 0.88) 62%), none"
+      },
+      "exploreButtonBox": {
+        "x": 21,
+        "y": 947,
+        "width": 371,
+        "height": 90
+      },
+      "exploreStageBox": {
+        "x": 5,
+        "y": 958,
+        "width": 402,
+        "height": 78
+      },
+      "exploreButtonCentered": true,
+      "exploreButtonAtBottom": true,
+      "stagePointerEvents": "none",
+      "shimmerBands": [
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--ring",
+          "box": {
+            "x": 67.9,
+            "y": 84,
+            "width": 274.6,
+            "height": 274.6
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 81,
+            "width": 401.5,
+            "height": 602.3
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--wordmark",
+          "box": {
+            "x": 13.3,
+            "y": 374,
+            "width": 385.4,
+            "height": 132.5
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 81,
+            "width": 401.5,
+            "height": 602.3
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--explore",
+          "box": {
+            "x": 69.5,
+            "y": 960,
+            "width": 273,
+            "height": 69.9
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 446,
+            "width": 401.5,
+            "height": 602.3
+          }
+        }
+      ],
+      "horizontalOverflowPx": 0,
+      "firstScreenText": {
+        "heading": "A fun, free place to explore what luck means to you.",
+        "cta": "🍀Explore free experiences→",
+        "note": "Free to enjoy · For fun and entertainment only"
+      },
+      "belowHeroPresent": true,
+      "exploreStageLiveBox": {
+        "x": 5,
+        "y": 418,
+        "width": 402,
+        "height": 78
+      },
+      "exploreHitTest": "Explore your luck. Scroll down to the Play and Explore section."
+    },
+    "heroScreenshot": "artifacts/hero-reference-20261108/out/hero-mobile-412x915.png"
+  },
+  {
+    "viewport": {
+      "name": "mobile-390x844",
+      "width": 390,
+      "height": 844,
+      "isMobile": true,
+      "hasTouch": true
+    },
+    "measured": {
+      "title": "Lucky Pick Canada",
+      "navBox": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 66.9
+      },
+      "heroBox": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 1032
+      },
+      "columnBox": {
+        "x": 0,
+        "y": 81,
+        "width": 390,
+        "height": 921.3
+      },
+      "columnPadding": "5.25px",
+      "slices": [
+        {
+          "classes": "hero-art-slice hero-art-slice--emblem",
+          "box": {
+            "x": 5.3,
+            "y": 81,
+            "width": 379.5,
+            "height": 404
+          },
+          "ratio": 0.939,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 390,
+          "imageTop": "0px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--top",
+          "box": {
+            "x": 5.3,
+            "y": 496,
+            "width": 379.5,
+            "height": 31.1
+          },
+          "ratio": 12.193,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 390,
+          "imageTop": "-452.781px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom",
+          "box": {
+            "x": 5.3,
+            "y": 891,
+            "width": 379.5,
+            "height": 31.1
+          },
+          "ratio": 12.193,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 390,
+          "imageTop": "-452.781px"
+        },
+        {
+          "classes": "hero-art-slice hero-art-slice--explore hero-image-container pointer-events-none",
+          "box": {
+            "x": 5.3,
+            "y": 928,
+            "width": 379.5,
+            "height": 74.1
+          },
+          "ratio": 5.121,
+          "image": "homepage-hero-lucky-pick-canada-669w.avif",
+          "naturalWidth": 390,
+          "imageTop": "-483.922px"
+        }
+      ],
+      "panelBox": {
+        "x": 20.4,
+        "y": 536,
+        "width": 349.1,
+        "height": 346.3
+      },
+      "panelStyles": {
+        "border": "1px rgba(246, 202, 95, 0.72)",
+        "radius": "18px",
+        "backgroundImage": "radial-gradient(120% 90% at 50% 0%, rgba(30, 46, 92, 0.58), rgba(8, 13, 31, 0.88) 62%), none"
+      },
+      "exploreButtonBox": {
+        "x": 20,
+        "y": 912,
+        "width": 351,
+        "height": 90
+      },
+      "exploreStageBox": {
+        "x": 5,
+        "y": 928,
+        "width": 380,
+        "height": 74
+      },
+      "exploreButtonCentered": true,
+      "exploreButtonAtBottom": true,
+      "stagePointerEvents": "none",
+      "shimmerBands": [
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--ring",
+          "box": {
+            "x": 64.4,
+            "y": 83,
+            "width": 259.6,
+            "height": 259.6
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 81,
+            "width": 379.5,
+            "height": 569.3
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--wordmark",
+          "box": {
+            "x": 12.8,
+            "y": 357,
+            "width": 364.3,
+            "height": 125.2
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 81,
+            "width": 379.5,
+            "height": 569.3
+          }
+        },
+        {
+          "className": "hero-gold-shimmer hero-gold-shimmer--explore",
+          "box": {
+            "x": 66,
+            "y": 929,
+            "width": 258,
+            "height": 66
+          },
+          "frameBox": {
+            "x": 5.3,
+            "y": 444,
+            "width": 379.5,
+            "height": 569.3
+          }
+        }
+      ],
+      "horizontalOverflowPx": 0,
+      "firstScreenText": {
+        "heading": "A fun, free place to explore what luck means to you.",
+        "cta": "🍀Explore free experiences→",
+        "note": "Free to enjoy · For fun and entertainment only"
+      },
+      "belowHeroPresent": true,
+      "exploreStageLiveBox": {
+        "x": 5,
+        "y": 385,
+        "width": 380,
+        "height": 74
+      },
+      "exploreHitTest": "Explore your luck. Scroll down to the Play and Explore section."
+    },
+    "heroScreenshot": "artifacts/hero-reference-20261108/out/hero-mobile-390x844.png"
+  }
+]
