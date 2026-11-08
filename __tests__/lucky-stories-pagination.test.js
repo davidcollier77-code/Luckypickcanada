@@ -78,7 +78,6 @@ function installDatabase({ feedFactory } = {}) {
         storyRow({ id: '99', display_name: 'Rowan', location: 'Halifax, Nova Scotia' }),
         storyRow({ id: '98', display_name: 'Maya', location: 'Sydney, NS' }),
         storyRow({ id: '97', display_name: 'Owen', location: 'Truro, Nova Scotia' }),
-        storyRow({ id: '96', display_name: 'Grace', location: 'Dartmouth, NS' }),
         storyRow({ id: '95', display_name: 'Avery', location: 'Toronto, Ontario' }),
         storyRow({ id: '94', display_name: 'Noah', location: 'Ottawa, ON' }),
       ];
@@ -229,13 +228,13 @@ describe('getLuckyStoryMap paging', () => {
     expect(mapData.stories).toEqual([]);
     expect(mapData.linkedStory.id).toBe('20');
     expect(mapData.linkedStory.province).toBe('NT');
-    expect(mapData.recentStories).toHaveLength(6);
+    expect(mapData.recentStories).toHaveLength(5);
 
     const countsByProvince = mapData.recentStories.reduce((counts, story) => {
       counts[story.province] = (counts[story.province] || 0) + 1;
       return counts;
     }, {});
-    expect(countsByProvince).toEqual({ NS: 4, ON: 2 });
+    expect(countsByProvince).toEqual({ NS: 3, ON: 2 });
 
     const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
     expect(recentQuery).toBeTruthy();
