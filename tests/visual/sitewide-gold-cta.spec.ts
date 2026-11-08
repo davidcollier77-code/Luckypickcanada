@@ -35,7 +35,7 @@ function translateY(transform: string): number {
 }
 
 function pressedGoldEdgeDepth(boxShadow: string): number {
-  const match = boxShadow.match(/rgb\\(138,\\s*85,\\s*12\\)\\s+0px\\s+([\\d.]+)px\\s+0px/);
+  const match = boxShadow.match(/rgb\(138,\s*85,\s*12\)\s+0px\s+([\d.]+)px\s+0px/);
   return match ? Number(match[1]) : Number.NaN;
 }
 
