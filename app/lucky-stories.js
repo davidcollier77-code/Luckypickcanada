@@ -329,7 +329,7 @@ async function fetchRecentStories(database, { hours = null } = {}) {
 
   if (hours) {
     params.push(hours);
-    windowClause = ` and ls.created_at >= now() - (${nextIndex}::int * interval '1 hour')`;
+    windowClause = ` and ls.created_at >= now() - ($${nextIndex}::int * interval '1 hour')`;
     nextIndex += 1;
   }
 
