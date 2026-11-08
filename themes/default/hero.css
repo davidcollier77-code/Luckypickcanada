@@ -270,9 +270,15 @@ html { scroll-behavior: smooth; }
 
 @media (max-width: 620px) {
   .hero-artwork-column { padding-inline: .35rem; }
-  .hero-welcome { padding: .8rem .8rem .85rem; }
-  .hero-welcome-lede { font-size: clamp(1rem, 4.6vw, 1.25rem); }
-  .hero-welcome-copy { font-size: .9rem; line-height: 1.45; }
+  /* Keep the full painted emblem/wordmark intact while reclaiming enough
+     first-screen height for the separate Explore title and arrows. */
+  .hero-art-slice--emblem { width: 92%; }
+  .hero-welcome { padding: .55rem .8rem .6rem; }
+  .hero-welcome-title { margin-bottom: .2rem; }
+  .hero-welcome-lede { margin-bottom: .35rem; font-size: clamp(.98rem, 4.3vw, 1.18rem); line-height: 1.1; }
+  .hero-welcome-copy { font-size: .875rem; line-height: 1.35; }
+  .hero-art-divider--top { margin-bottom: .2rem; }
+  .hero-art-divider--bottom { margin-top: .2rem; margin-bottom: .1rem; }
 }
 
 
