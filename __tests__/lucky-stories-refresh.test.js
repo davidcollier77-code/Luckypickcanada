@@ -5,10 +5,14 @@ const mocks = vi.hoisted(() => ({
   getLuckyStoryMap: vi.fn(),
 }));
 
-vi.mock('../app/lucky-stories', () => ({
-  createLuckyStory: vi.fn(),
-  getLuckyStoryMap: mocks.getLuckyStoryMap,
-}));
+vi.mock('../app/lucky-stories', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    createLuckyStory: vi.fn(),
+    getLuckyStoryMap: mocks.getLuckyStoryMap,
+  };
+});
 
 vi.mock('../app/spam-protection', () => ({
   validatePublicFormSubmission: vi.fn(),
@@ -47,6 +51,27 @@ describe('Lucky Stories GET freshness', () => {
     expect(body.stories).toEqual([story]);
     expect(response.headers.get('cache-control')).toContain('no-store');
     expect(response.headers.get('cloudflare-cdn-cache-control')).toBe('no-store');
+  });
+
+  it('passes the paged province query through to the data layer', async () => {
+    mocks.getLuckyStoryMap.mockResolvedValue({
+      stories: [],
+      provinceCounts: {},
+      totalStories: 0,
+      provincesWithStories: 0,
+      isConfigured: true,
+    });
+
+    await GET(new Request('http://localhost/api/lucky-stories?province=bc&offset=3&limit=3&hours=24&story=20'));
+
+    expect(mocks.getLuckyStoryMap).toHaveBeenCalledWith({
+      province: 'BC',
+      offset: 3,
+      limit: 3,
+      hours: 24,
+      includeFeed: true,
+      storyId: '20',
+    });
   });
 
   it('also prevents caching an unavailable-database response', async () => {

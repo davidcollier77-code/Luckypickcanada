@@ -1,5 +1,9 @@
 import { revalidatePath } from 'next/cache';
-import { createLuckyStory, getLuckyStoryMap } from '../../lucky-stories';
+import {
+  createLuckyStory,
+  getLuckyStoryMap,
+  parseLuckyStoriesQuery,
+} from '../../lucky-stories';
 import { validatePublicFormSubmission } from '../../spam-protection';
 import { NextResponse } from 'next/server';
 
@@ -12,8 +16,11 @@ const noStoreHeaders = {
 };
 
 // GET always reads current map data. Do not cache empty/configuration failures or stale story lists.
-export async function GET() {
-  const mapData = await getLuckyStoryMap();
+// Supports one province page at a time plus summary-only refreshes; see parseLuckyStoriesQuery.
+export async function GET(request) {
+  const url = new URL(request?.url || '/api/lucky-stories', 'http://localhost');
+  const { province, offset, limit, hours, includeFeed, storyId } = parseLuckyStoriesQuery(url.searchParams);
+  const mapData = await getLuckyStoryMap({ province, offset, limit, hours, includeFeed, storyId });
   const status = mapData.isConfigured ? 200 : 500;
 
   return NextResponse.json(mapData, {

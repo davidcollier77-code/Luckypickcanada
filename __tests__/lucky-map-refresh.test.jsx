@@ -42,7 +42,7 @@ describe('Lucky Map live story refresh', () => {
     stopRefresh = startLuckyStoriesRefresh(setMapData);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledWith('/api/lucky-stories', { cache: 'no-store' });
+    expect(fetchMock).toHaveBeenCalledWith('/api/lucky-stories?summary=1', { cache: 'no-store' });
 
     // Two intervals pass while the initial response is still pending. Neither may start a second request.
     vi.advanceTimersByTime(120_000);
@@ -55,6 +55,15 @@ describe('Lucky Map live story refresh', () => {
     // Once the request settles, the next regular poll may run normally.
     vi.advanceTimersByTime(60_000);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock).toHaveBeenLastCalledWith('/api/lucky-stories', { cache: 'no-store' });
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/lucky-stories?summary=1', { cache: 'no-store' });
+  });
+
+  it('refreshes the bounded summary for the active 24-hour window', () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(mapData) });
+    vi.stubGlobal('fetch', fetchMock);
+
+    stopRefresh = startLuckyStoriesRefresh(vi.fn(), { getQueryParams: () => ({ hours: '24' }) });
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/lucky-stories?summary=1&hours=24', { cache: 'no-store' });
   });
 });

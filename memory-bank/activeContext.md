@@ -1,3 +1,14 @@
+# Current Task — Lucky Stories paged province feed and demo-author presentation (2026-11-08)
+
+- **Branch / PR:** `freebuff/40867abcd68f1e53d3356b9f`; Spec Kit feature `specs/120-lucky-stories-paged-provinces`. PR link and HEAD are recorded in `progress.md` after submission.
+- **Task groups:** `troubleshooting` (the page downloaded every published story, defaulted to the newest story's province and filtered client-side), `polishing` (feed and author presentation), `testing` (DB-level filtering, paging and count coverage).
+- **Implementation:** `getLuckyStoryMap` accepts a province page request; province membership is a parameterized SQL predicate built from the same `storyProvinces` alias table as `getStoryProvince`; page size 3 (max 12), ordered `created_at desc, id desc`; independent `count(*) filter` aggregates for all-time and the 24-hour window; a bounded three-row recent slice; summary cached in KV and invalidated on create/reaction; shared links read one row directly. The client restores only a manually saved province, otherwise selects the highest-count province, appends 3 -> 6 -> 7 through an IntersectionObserver sentinel with request tokens, and drives markers, controls and the heading from the summary. The refresh helper now asks for `summary=1` so it never replaces the feed.
+- **Data correction (BLOCKED):** the live `/api/lucky-stories` feed on 2026-11-08 resolved 21 published stories; IDs 9-21 carry `Dev*` author names plus `[dev-seed]` text and IDs 1-8 are genuine contributors. This workspace has no Neon credential and the Neon integration exposes no SQL tool, so the 13 author names were not changed. The prepared name mapping and guarded, idempotent statement are in the PR summary; story text, dates, creation dates and provinces are untouched.
+- **Verification:** full Vitest 446/446 PASS; Playwright pagination + marker specs 15/15 PASS on desktop/390/412; `tsc --noEmit` exit 0; `./freebuff-verify.sh` exit 0; build 426.44 MB < 495 MB. Diff audited: `.specify/feature.json`, four app files, three existing test files, one new unit test, one new browser spec and the feature directory.
+- **Risk recorded:** Recent Canadian Activity now shows at most the three newest published stories (previously up to three per province) to keep the first payload bounded.
+
+---
+
 # Current Task — Connected integrations and mandatory QA contract (2026-11-08)
 
 - **Branch / PR:** `docs/integration-usage-policy` / [PR #1782](https://github.com/davidcollier77-code/Luckypickcanada/pull/1782).

@@ -43,13 +43,61 @@ const provinceCounts = mapStories.reduce<Record<string, number>>((counts, story)
   return counts;
 }, {});
 
-const mapData = {
-  stories: mapStories,
-  provinceCounts,
-  totalStories: mapStories.length,
-  provincesWithStories: Object.keys(provinceCounts).length,
-  isConfigured: true,
-};
+const PROVINCE_ORDER = PROVINCES.map((province) => province.code);
+
+function pickDefaultProvince(counts: Record<string, number>) {
+  let code = 'ON';
+  let best = 0;
+  for (const candidate of PROVINCE_ORDER) {
+    const count = counts[candidate] || 0;
+    if (count > best) {
+      best = count;
+      code = candidate;
+    }
+  }
+  return code;
+}
+
+const defaultProvince = pickDefaultProvince(provinceCounts);
+
+function buildMapPayload(url: URL) {
+  const summaryOnly = url.searchParams.get('summary') === '1';
+  const hours = url.searchParams.get('hours') === '24';
+  const now = Date.now();
+  const scopedStories = hours
+    ? mapStories.filter((story) => now - Date.parse(story.createdAt) < 24 * 60 * 60 * 1000)
+    : mapStories;
+  const scopedCounts = scopedStories.reduce<Record<string, number>>((counts, story) => {
+    counts[story.province] = (counts[story.province] || 0) + 1;
+    return counts;
+  }, {});
+  const requestedProvince = url.searchParams.get('province');
+  const selectedProvince = requestedProvince && PROVINCE_ORDER.includes(requestedProvince)
+    ? requestedProvince
+    : defaultProvince;
+  const provinceStories = scopedStories
+    .filter((story) => story.province === selectedProvince)
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  const limit = Number(url.searchParams.get('limit') ?? 3);
+  const offset = Number(url.searchParams.get('offset') ?? 0);
+  const stories = summaryOnly ? [] : provinceStories.slice(offset, offset + limit);
+  const storyParam = url.searchParams.get('story');
+
+  return {
+    stories,
+    linkedStory: mapStories.find((story) => story.id === storyParam) ?? null,
+    provinceCounts: scopedCounts,
+    allTimeProvinceCounts: provinceCounts,
+    totalStories: mapStories.length,
+    provincesWithStories: Object.keys(provinceCounts).length,
+    recentStories: scopedStories.slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 3),
+    defaultProvince,
+    selectedProvince,
+    provinceTotal: provinceStories.length,
+    hasMore: offset + stories.length < provinceStories.length,
+    isConfigured: true,
+  };
+}
 
 /** The Maritime fan-out that the stylesheet applies at each width band. */
 const MARITIME_FAN = {
@@ -60,7 +108,8 @@ const MARITIME_FAN = {
 async function openPopulatedMap(page: Page) {
   await page.route('**/api/lucky-stories*', async (route) => {
     if (route.request().method() !== 'GET') return route.continue();
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mapData) });
+    const url = new URL(route.request().url());
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildMapPayload(url)) });
   });
   await page.goto('/map', { waitUntil: 'domcontentloaded' });
   // Interaction is what is under test, not the smooth-scroll animation: with it

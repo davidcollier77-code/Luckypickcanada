@@ -1,3 +1,15 @@
+## 2026-11-08 — Lucky Stories paged province feed (implementation, data correction blocked)
+
+- Replaced the full-collection `/api/lucky-stories` GET with a province-scoped page request (`province`, `offset`, `limit`, `hours`, `summary`, `story`) and SQL-level province matching built from the same alias table as `getStoryProvince`, so other provinces' rows are never returned to the page.
+- The feed renders three stories, appends the next three near the sentinel, deduplicates ids and ignores stale responses after a province switch; the panel heading, province controls and markers use independent `count(*) filter` aggregates and refresh through a `summary=1` poll that no longer replaces the feed.
+- First visits select the highest-count province with deterministic ties; only a manual choice is stored (`luckyStoriesProvince`) and restored, and a saved province with no published stories falls back to the computed default.
+- Shared links resolve through a single-story query and pin that story above the province's first page; the 24-hour filter is applied in SQL for the feed, counts and recent slice.
+- Checks: full Vitest 54 files / 446 tests PASS, Playwright pagination + map markers 15/15 across three viewports, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, build 426.44 MB < 495 MB.
+- BLOCKED: renaming demonstration authors for IDs 9–21 needs the production database; this workspace has no credential and the Neon integration has no SQL tool, so no row was changed. The prepared mapping and guarded statement are in the PR summary; genuine IDs 1–8 and all story text, dates and provinces remain untouched.
+- Known reduction: Recent Canadian Activity is now the three newest published stories overall (previously up to three per province) so the first payload stays bounded.
+
+---
+
 ## 2026-11-08 — Homepage welcome panel cleanup (implementation candidate)
 
 - Removed the oversized “Explore free experiences” link and the gold entertainment-only line from the welcome card while retaining its dark navy/gold frame, heading, lede and explanatory paragraph.
