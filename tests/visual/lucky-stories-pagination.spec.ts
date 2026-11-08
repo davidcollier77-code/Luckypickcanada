@@ -77,7 +77,10 @@ function buildPayload(url: URL) {
     allTimeProvinceCounts: provinceCounts,
     totalStories: allStories.length,
     provincesWithStories: Object.keys(provinceCounts).length,
-    recentStories: allStories.slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 3),
+    recentStories: PROVINCE_ORDER.flatMap((province) => allStories
+      .filter((story) => story.province === province)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      .slice(0, 3)),
     defaultProvince: pickDefault(provinceCounts),
     selectedProvince,
     provinceTotal: provinceStories.length,
@@ -155,7 +158,7 @@ test('the first page is three province stories and scrolling loads the rest', as
   expect(pageRequests.every((request) => request.limit === 3)).toBe(true);
 
   const requestCount = requests.filter((request) => !request.summary).length;
-  await page.waitForTimeout(1_000);
+  await page.waitForLoadState('networkidle');
   expect(requests.filter((request) => !request.summary)).toHaveLength(requestCount);
 });
 

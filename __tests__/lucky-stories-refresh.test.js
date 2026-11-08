@@ -62,7 +62,7 @@ describe('Lucky Stories GET freshness', () => {
       isConfigured: true,
     });
 
-    await GET(new Request('http://localhost/api/lucky-stories?province=bc&offset=3&limit=3&hours=24&story=20'));
+    await GET(new Request('https://example.test/api/lucky-stories?province=bc&offset=3&limit=3&hours=24&story=20'));
 
     expect(mocks.getLuckyStoryMap).toHaveBeenCalledWith({
       province: 'BC',

@@ -18,7 +18,7 @@ const noStoreHeaders = {
 // GET always reads current map data. Do not cache empty/configuration failures or stale story lists.
 // Supports one province page at a time plus summary-only refreshes; see parseLuckyStoriesQuery.
 export async function GET(request) {
-  const url = new URL(request?.url || '/api/lucky-stories', 'http://localhost');
+  const url = new URL(request.url);
   const { province, offset, limit, hours, includeFeed, storyId } = parseLuckyStoriesQuery(url.searchParams);
   const mapData = await getLuckyStoryMap({ province, offset, limit, hours, includeFeed, storyId });
   const status = mapData.isConfigured ? 200 : 500;

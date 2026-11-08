@@ -24,8 +24,8 @@ export const storyProvinces = [
 export const LUCKY_STORIES_PAGE_SIZE = 3;
 /** Upper bound accepted from a public query string so one request cannot ask for everything. */
 export const LUCKY_STORIES_MAX_PAGE_SIZE = 12;
-/** Number of stories shown in the Recent Canadian Activity section. */
-const RECENT_STORIES_LIMIT = 3;
+/** Maximum number of stories shown per province in Recent Canadian Activity. */
+const RECENT_STORIES_PER_PROVINCE_LIMIT = 3;
 /** KV cache-aside namespace for the province summary aggregates. */
 const SUMMARY_CACHE_NAMESPACE = 'lucky-stories-summary';
 
@@ -324,24 +324,48 @@ async function fetchProvinceCounts(database, { hours = null } = {}) {
  */
 async function fetchRecentStories(database, { hours = null } = {}) {
   const params = [];
+  let nextIndex = 1;
   let windowClause = '';
 
   if (hours) {
     params.push(hours);
-    windowClause = ` and ls.created_at >= now() - ($${params.length}::int * interval '1 hour')`;
+    windowClause = ` and ls.created_at >= now() - (${nextIndex}::int * interval '1 hour')`;
+    nextIndex += 1;
   }
 
-  params.push(RECENT_STORIES_LIMIT);
+  // Derive the partition key from the same province aliases used by the feed.
+  // This keeps activity grouped correctly even when locations use abbreviations.
+  const provinceCases = storyProvinces.map((province) => {
+    const parts = provinceFilterParts(province, 'ls.location', nextIndex);
+    params.push(...parts.params);
+    nextIndex += parts.params.length;
+    return `when ${parts.clause} then '${province.code}'`;
+  });
+  const provinceExpression = `case ${provinceCases.join(' ')} else null end`;
 
   const rows = await database(
     `
-      select ls.id, ls.display_name, ls.location, ls.story, ls.created_at, count(lr.id) as reaction_count
-      from lucky_stories ls
-      left join lucky_story_reactions lr on ls.id = lr.story_id
-      where ls.approved = true${windowClause}
-      group by ls.id
-      order by ls.created_at desc, ls.id desc
-      limit $${params.length}
+      with ranked_stories as (
+        select
+          ls.id,
+          ls.display_name,
+          ls.location,
+          ls.story,
+          ls.created_at,
+          count(lr.id) as reaction_count,
+          row_number() over (
+            partition by ${provinceExpression}
+            order by ls.created_at desc, ls.id desc
+          ) as province_rank
+        from lucky_stories ls
+        left join lucky_story_reactions lr on ls.id = lr.story_id
+        where ls.approved = true${windowClause}
+        group by ls.id
+      )
+      select id, display_name, location, story, created_at, reaction_count
+      from ranked_stories
+      where province_rank <= ${RECENT_STORIES_PER_PROVINCE_LIMIT}
+      order by created_at desc, id desc
     `,
     params,
   );

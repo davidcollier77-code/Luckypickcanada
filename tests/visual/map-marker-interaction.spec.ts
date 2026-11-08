@@ -90,7 +90,10 @@ function buildMapPayload(url: URL) {
     allTimeProvinceCounts: provinceCounts,
     totalStories: mapStories.length,
     provincesWithStories: Object.keys(provinceCounts).length,
-    recentStories: scopedStories.slice().sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 3),
+    recentStories: PROVINCES.flatMap((province) => scopedStories
+      .filter((story) => story.province === province.code)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      .slice(0, 3)),
     defaultProvince,
     selectedProvince,
     provinceTotal: provinceStories.length,
@@ -111,20 +114,27 @@ async function openPopulatedMap(page: Page) {
     const url = new URL(route.request().url());
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildMapPayload(url)) });
   });
+  const initialFeedResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.pathname === '/api/lucky-stories'
+      && response.request().method() === 'GET'
+      && url.searchParams.get('summary') !== '1';
+  });
   await page.goto('/map', { waitUntil: 'domcontentloaded' });
+  const feedResponse = await initialFeedResponse;
+  expect(feedResponse.status()).toBe(200);
+
   // Interaction is what is under test, not the smooth-scroll animation: with it
   // enabled the artwork keeps moving while Playwright clicks and the click can
   // land beside the marker.
   await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' });
-  await expect(page.locator('.province-marker')).toHaveCount(PROVINCES.length);
+  await expect(page.locator('.province-marker')).toHaveCount(PROVINCES.length, { timeout: 30_000 });
   await expect(page.locator('.map-statistics .map-statistic')).toHaveCount(1);
   await expect(page.locator('.map-statistics')).toContainText('Total lucky stories shared (All-time)');
   await expect(page.locator('.map-statistics')).toContainText('21');
   await expect(page.locator('.map-statistics')).not.toContainText('Provinces with lucky moments');
   await expect(page.locator('.map-statistics')).not.toContainText('Mapped story markers');
-  // The client refresh replaces the empty server payload, which changes the
-  // panel and statistic heights; let that layout settle before clicking.
-  await page.waitForTimeout(500);
+  await expect(page.locator('.map-story-card')).toHaveCount(2, { timeout: 30_000 });
 }
 
 test('every province marker selects only its own province when clicked', async ({ page }) => {

@@ -73,8 +73,15 @@ function installDatabase({ feedFactory } = {}) {
       return params[0] === '20' ? [storyRow({ id: '20', display_name: 'DevLee', location: 'Yellowknife, NT' })] : [];
     }
 
-    if (text.includes('limit $')) {
-      return [storyRow({ id: '99', display_name: 'Rowan', location: 'Halifax, Nova Scotia' })];
+    if (text.includes('row_number() over')) {
+      return [
+        storyRow({ id: '99', display_name: 'Rowan', location: 'Halifax, Nova Scotia' }),
+        storyRow({ id: '98', display_name: 'Maya', location: 'Sydney, NS' }),
+        storyRow({ id: '97', display_name: 'Owen', location: 'Truro, Nova Scotia' }),
+        storyRow({ id: '96', display_name: 'Grace', location: 'Dartmouth, NS' }),
+        storyRow({ id: '95', display_name: 'Avery', location: 'Toronto, Ontario' }),
+        storyRow({ id: '94', display_name: 'Noah', location: 'Ottawa, ON' }),
+      ];
     }
 
     return [];
@@ -216,12 +223,25 @@ describe('getLuckyStoryMap paging', () => {
     expect(feedCalls).toHaveLength(0);
   });
 
-  it('returns a linked story and keeps a bounded recent slice', async () => {
+  it('returns up to three recent stories per province, not three across Canada', async () => {
     const mapData = await getLuckyStoryMap({ province: 'ON', limit: 0, storyId: '20' });
 
     expect(mapData.stories).toEqual([]);
     expect(mapData.linkedStory.id).toBe('20');
     expect(mapData.linkedStory.province).toBe('NT');
-    expect(mapData.recentStories).toHaveLength(1);
+    expect(mapData.recentStories).toHaveLength(6);
+
+    const countsByProvince = mapData.recentStories.reduce((counts, story) => {
+      counts[story.province] = (counts[story.province] || 0) + 1;
+      return counts;
+    }, {});
+    expect(countsByProvince).toEqual({ NS: 4, ON: 2 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain('partition by case');
+    expect(recentQuery[0]).toContain('where province_rank <= 3');
+    expect(recentQuery[1]).toContain('(^|[^a-z])ns([^a-z]|$)');
+    expect(recentQuery[1]).toContain('(^|[^a-z])on([^a-z]|$)');
   });
 });
