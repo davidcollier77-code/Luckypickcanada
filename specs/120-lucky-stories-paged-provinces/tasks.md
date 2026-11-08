@@ -57,7 +57,8 @@
 - [x] T017 [US3] Restore the bounded Recent Canadian Activity behaviour of up to three stories per province in `app/lucky-stories.js` and cover it in `__tests__/lucky-stories-pagination.test.js`.
 - [x] T018 [US3] Make the map interaction browser test wait for the actual summary API response and hydrated province markers in `tests/visual/map-marker-interaction.spec.ts`.
 - [x] T019 [US3] Wait for the final pressed-edge transition in `tests/visual/gold-cta.spec.ts` and replace the fixed pagination sleep with a network-idle condition in `tests/visual/lucky-stories-pagination.spec.ts`.
-- [ ] T020 Refresh the three homepage screenshot baselines in `tests/visual/__screenshots__/{desktop,mobile-390,mobile-412}/homepage-viewport.png` from the current approved homepage rendering. **Pending**: the CI artifact proves the committed screenshots are stale, but this workspace cannot execute Playwright's snapshot update command or publish binary screenshot blobs through the available repository interface.
+- [ ] T020 Refresh the three homepage screenshot baselines in `tests/visual/__screenshots__/{desktop,mobile-390,mobile-412}/homepage-viewport.png` from the current approved homepage rendering.
+- [x] T021 [Security] Extend the narrowly scoped DevSkim false-positive allowlist for the exact Playwright `test.setTimeout(120_000)` configuration in the two updated visual test files; add regression coverage proving request-derived timeout values are not suppressed. **Pending**: the CI artifact proves the committed screenshots are stale, but this workspace cannot execute Playwright's snapshot update command or publish binary screenshot blobs through the available repository interface.
 
 ## Verification evidence (2026-11-08)
 
