@@ -73,7 +73,9 @@ PR stays open and unmerged
   overflow clipping does not conceal keyboard focus.
 - The reference probe waits for the lead image to decode, fonts to settle and measured geometry to
   stabilize instead of relying on fixed sleep durations. The Explore interaction test uses the
-  same animation-frame geometry stabilization after scrolling rather than fixed 150/100 ms sleeps.
+  same animation-frame geometry stabilization after scrolling rather than fixed 150/100 ms sleeps;
+  its mobile touch assertion measures movement beyond the pre-tap scroll position after an isolated
+  reload so setup scrolling cannot create a false pass.
 - The viewport PNGs under `artifacts/hero-reference-20261108/out/` are retained intentionally as
   four desktop/laptop/phone visual-review captures, not as public runtime assets.
 

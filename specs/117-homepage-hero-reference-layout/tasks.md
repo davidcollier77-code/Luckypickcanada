@@ -47,6 +47,7 @@
 - [X] T026 [US3] Add Playwright assertions for the crop-row geometry and Explore hit-target coverage, plus a source guard for the single high-priority/eager artwork policy.
 - [X] T027 [P] Replace fixed waits in the reference probe with image decode, font readiness and stable-geometry conditions.
 - [X] T028 [US3] Replace the remaining fixed post-scroll waits in the Explore Playwright test with settled-geometry polling, clarify the prop-free artwork count, and terminate the measurements JSON with a newline.
+- [X] T029 [US3] Verify the mobile Explore touch activation by comparing scroll movement from the position immediately before the tap, isolated from the preceding click cooldown.
 
 ## Dependencies
 

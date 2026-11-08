@@ -618,3 +618,6 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 
 
 - **Graphite second-pass follow-up:** replaced the remaining 150 ms and 100 ms Playwright sleeps after Explore-stage scrolls with bounded animation-frame geometry stabilization; clarified that the three bare artwork calls represent top divider, bottom divider and Explore slice (the emblem call has props); added the missing trailing newline to measurements.json. The eight rendered viewport PNGs remain intentionally committed as review evidence and are not production assets.
+
+
+- **Mobile touch verification hardening:** the mobile Explore test now reloads between the click-path/cooldown checks and the touch-path check. It records `scrollY` after bringing the Explore stage into view, verifies the tap point resolves to the Explore button, then requires further scroll movement after the touch. This prevents `scrollIntoViewIfNeeded()` itself from satisfying the activation assertion.

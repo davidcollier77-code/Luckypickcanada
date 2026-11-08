@@ -393,53 +393,36 @@ test.describe("Homepage Visual", () => {
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.waitForFunction(() => window.scrollY === 0);
     
-    // Wait for cooldown to expire before remaining mobile-specific tests
+    // Reload to isolate the mobile touch activation from the click-path cooldown
+    // above. Scrolling the Explore stage into view is setup, not proof that the
+    // tap activated the control, so compare the page position before and after it.
     if (test.info().project.name.startsWith('mobile-')) {
-      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-      await page.waitForFunction(() => window.scrollY === 0);
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await expect(exploreButton).toBeVisible();
+      await expect(exploreButton).toHaveAttribute('data-hydrated', 'true', { timeout: 30_000 });
 
-      await expect.poll(async () => {
-        await exploreButton.click();
-        const y = await page.evaluate(() => window.scrollY);
-        return y;
-      }, {
-        timeout: EXPLORE_COOLDOWN_MS + 2_000,
-        intervals: [250],
-      }).toBeGreaterThan(0);
+      await heroStage.scrollIntoViewIfNeeded();
+      await waitForStableRect(heroStage);
+      const liveStageBox = await heroStage.boundingBox();
+      expect(liveStageBox).not.toBeNull();
 
-      await page.waitForTimeout(1_500);
-      const clickAfterTouchScrollY = await page.evaluate(() => window.scrollY);
-      expect(clickAfterTouchScrollY).toBeGreaterThan(0);
+      const beforeTouchScrollY = await page.evaluate(() => window.scrollY);
+      const touchX = liveStageBox!.x + liveStageBox!.width / 2;
+      const touchY = liveStageBox!.y + liveStageBox!.height * 0.9;
+      const touchHitTarget = await page.evaluate(({ x, y }) => (
+        document.elementFromPoint(x, y)?.closest('button')?.getAttribute('aria-label') ?? null
+      ), { x: touchX, y: touchY });
+      expect(touchHitTarget).toBe(label);
 
-      await page.evaluate(() => {
-        document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
-        window.scrollTo(0, 0);
-      });
-      await page.waitForFunction(() => window.scrollY === 0);
-      await page.evaluate(() => {
-        document.documentElement.style.removeProperty('scroll-behavior');
-      });
-
-      await expect.poll(async () => {
-        // The taller approved hero puts the control below the first screen, so
-        // the tap point is re-measured after scrolling it into view.
-        await heroStage.scrollIntoViewIfNeeded();
-        await waitForStableRect(heroStage);
-        const liveStageBox = (await heroStage.boundingBox())!;
-        await page.touchscreen.tap(
-          liveStageBox.x + liveStageBox.width / 2,
-          liveStageBox.y + liveStageBox.height * 0.9
-        );
-        const y = await page.evaluate(() => window.scrollY);
-        return y;
-      }, {
-        timeout: EXPLORE_COOLDOWN_MS + 2_000,
-        intervals: [250],
-      }).toBeGreaterThan(0);
+      await page.touchscreen.tap(touchX, touchY);
+      await expect.poll(() => page.evaluate(() => window.scrollY), {
+        timeout: 5_000,
+        intervals: [50, 100, 200],
+      }).toBeGreaterThan(beforeTouchScrollY);
 
       await page.waitForTimeout(1_500);
-      const secondTouchScrollY = await page.evaluate(() => window.scrollY);
-      expect(secondTouchScrollY).toBeGreaterThan(0);
+      const afterTouchScrollY = await page.evaluate(() => window.scrollY);
+      expect(afterTouchScrollY).toBeGreaterThan(beforeTouchScrollY);
     }
   });
 
