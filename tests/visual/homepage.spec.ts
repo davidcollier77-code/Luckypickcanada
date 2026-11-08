@@ -2,6 +2,31 @@ import { test, expect } from '@playwright/test';
 
 const EXPLORE_COOLDOWN_MS = 15_000;
 
+/** Wait until a scrolled element's viewport rectangle is stable across animation frames. */
+async function waitForStableRect(locator) {
+  await locator.evaluate(async (element) => {
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    let previous = null;
+    let stableFrames = 0;
+
+    for (let frame = 0; frame < 180 && stableFrames < 3; frame += 1) {
+      await nextFrame();
+      const rect = element.getBoundingClientRect();
+      const current = [rect.x, rect.y, rect.width, rect.height];
+      if (previous && current.every((value, index) => Math.abs(value - previous[index]) < 0.5)) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      previous = current;
+    }
+
+    if (stableFrames < 3) {
+      throw new Error('Hero stage geometry did not settle after scrolling.');
+    }
+  });
+}
+
 /**
  * Builds a short, valid silent PCM WAV so interaction coverage can verify
  * local audio loading deterministically without playing the real sound in CI.
@@ -111,6 +136,36 @@ test.describe("Homepage Visual", () => {
       // Keep the allowance narrowly above the measured mobile nav-only delta.
       maxDiffPixelRatio: 0.007,
     });
+  });
+
+  test('hero artwork windows render the measured source rows', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    const crops = [
+      { selector: '.hero-art-slice--emblem', sourceStartRow: 0, sourceRows: 1090 },
+      { selector: '.hero-art-divider--top', sourceStartRow: 1222, sourceRows: 84 },
+      { selector: '.hero-art-divider--bottom', sourceStartRow: 1222, sourceRows: 84 },
+      { selector: '.hero-art-slice--explore', sourceStartRow: 1306, sourceRows: 200 },
+    ];
+    for (const crop of crops) {
+      const slice = page.locator(crop.selector);
+      await slice.scrollIntoViewIfNeeded();
+      const image = slice.locator('img');
+      await expect.poll(
+        () => image.evaluate((element) => (element as HTMLImageElement).naturalWidth),
+        { timeout: 15_000 }
+      ).toBeGreaterThan(0);
+      const geometry = await slice.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const imageElement = element.querySelector('img');
+        return {
+          width: box.width,
+          height: box.height,
+          imageTop: imageElement ? Number.parseFloat(getComputedStyle(imageElement).top) : Number.NaN,
+        };
+      });
+      expect(Math.abs(geometry.height - (geometry.width * crop.sourceRows) / 1024)).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry.imageTop + (geometry.width * crop.sourceStartRow) / 1024)).toBeLessThanOrEqual(1);
+    }
   });
 
   test('hero navigation is correct and the gold shimmer moves across all three regions', async ({ page }) => {
@@ -225,14 +280,25 @@ test.describe("Homepage Visual", () => {
     const particles = page.locator('canvas[style*="z-index: 100"]');
     await expect(heroStage).toBeVisible();
 
+    // The approved hero layout (specs/117) is taller than the viewport and does
+    // not shrink the branding to fit it, so the page still starts at the top and
+    // the Explore control is measured and tapped after scrolling it into view.
+    const scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBe(0);
+
+    await heroStage.scrollIntoViewIfNeeded();
+    await waitForStableRect(heroStage);
+
     const buttonBox = await exploreButton.boundingBox();
     const stageBox = await heroStage.boundingBox();
     expect(buttonBox).not.toBeNull();
     expect(stageBox).not.toBeNull();
 
     expect(Math.abs((buttonBox!.x + buttonBox!.width / 2) - (stageBox!.x + stageBox!.width / 2))).toBeLessThanOrEqual(1);
-    expect(buttonBox!.y + buttonBox!.height).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
-    expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
+    expect(Math.abs(buttonBox!.y - stageBox!.y)).toBeLessThanOrEqual(1);
+    expect(Math.abs(buttonBox!.height - stageBox!.height)).toBeLessThanOrEqual(1);
+    expect(Math.abs(buttonBox!.width - stageBox!.width)).toBeLessThanOrEqual(1);
+    expect(buttonBox!.height).toBeGreaterThanOrEqual(44);
 
     const computedStagePointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);
     const computedButtonPointerEvents = await exploreButton.evaluate((element) => getComputedStyle(element).pointerEvents);
@@ -246,9 +312,6 @@ test.describe("Homepage Visual", () => {
       return element?.closest('button')?.getAttribute('aria-label') ?? null;
     }, { x: tapX, y: tapY });
     expect(hitTargetLabel).toBe(label);
-
-    const scrollY = await page.evaluate(() => window.scrollY);
-    expect(scrollY).toBe(0);
 
     const targetScrollY = await page.evaluate(() => {
       const luckyMeter = document.getElementById('play-explore');
@@ -330,45 +393,36 @@ test.describe("Homepage Visual", () => {
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.waitForFunction(() => window.scrollY === 0);
     
-    // Wait for cooldown to expire before remaining mobile-specific tests
+    // Reload to isolate the mobile touch activation from the click-path cooldown
+    // above. Scrolling the Explore stage into view is setup, not proof that the
+    // tap activated the control, so compare the page position before and after it.
     if (test.info().project.name.startsWith('mobile-')) {
-      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-      await page.waitForFunction(() => window.scrollY === 0);
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await expect(exploreButton).toBeVisible();
+      await expect(exploreButton).toHaveAttribute('data-hydrated', 'true', { timeout: 30_000 });
 
-      await expect.poll(async () => {
-        await exploreButton.click();
-        const y = await page.evaluate(() => window.scrollY);
-        return y;
-      }, {
-        timeout: EXPLORE_COOLDOWN_MS + 2_000,
-        intervals: [250],
-      }).toBeGreaterThan(0);
+      await heroStage.scrollIntoViewIfNeeded();
+      await waitForStableRect(heroStage);
+      const liveStageBox = await heroStage.boundingBox();
+      expect(liveStageBox).not.toBeNull();
 
-      await page.waitForTimeout(1_500);
-      const clickAfterTouchScrollY = await page.evaluate(() => window.scrollY);
-      expect(clickAfterTouchScrollY).toBeGreaterThan(0);
+      const beforeTouchScrollY = await page.evaluate(() => window.scrollY);
+      const touchX = liveStageBox!.x + liveStageBox!.width / 2;
+      const touchY = liveStageBox!.y + liveStageBox!.height * 0.9;
+      const touchHitTarget = await page.evaluate(({ x, y }) => (
+        document.elementFromPoint(x, y)?.closest('button')?.getAttribute('aria-label') ?? null
+      ), { x: touchX, y: touchY });
+      expect(touchHitTarget).toBe(label);
 
-      await page.evaluate(() => {
-        document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
-        window.scrollTo(0, 0);
-      });
-      await page.waitForFunction(() => window.scrollY === 0);
-      await page.evaluate(() => {
-        document.documentElement.style.removeProperty('scroll-behavior');
-      });
-
-      await expect.poll(async () => {
-        await page.touchscreen.tap(tapX, tapY);
-        const y = await page.evaluate(() => window.scrollY);
-        return y;
-      }, {
-        timeout: EXPLORE_COOLDOWN_MS + 2_000,
-        intervals: [250],
-      }).toBeGreaterThan(0);
+      await page.touchscreen.tap(touchX, touchY);
+      await expect.poll(() => page.evaluate(() => window.scrollY), {
+        timeout: 5_000,
+        intervals: [50, 100, 200],
+      }).toBeGreaterThan(beforeTouchScrollY);
 
       await page.waitForTimeout(1_500);
-      const secondTouchScrollY = await page.evaluate(() => window.scrollY);
-      expect(secondTouchScrollY).toBeGreaterThan(0);
+      const afterTouchScrollY = await page.evaluate(() => window.scrollY);
+      expect(afterTouchScrollY).toBeGreaterThan(beforeTouchScrollY);
     }
   });
 

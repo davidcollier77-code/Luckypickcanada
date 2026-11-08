@@ -1,3 +1,15 @@
+## 2026-11-08 — Homepage hero rebuilt to the supplied reference composition
+
+- Rebuilt the hero in reference order (nav pill → emblem → tagline → gold wordmark → gold maple divider → welcome panel → divider → "Explore your luck" + chevron) using CSS windows over the one existing flattened artwork: `HeroArtwork` paints the image four times inside aspect-ratio slices with measured row offsets, so no artwork was redrawn, split into new files or flattened further.
+- Removed the fixed viewport-height sizing (`minHeight:100svh`, `h-[100svh]`, two `.hero-image-container` heights) so the hero follows column width and the branding is never shrunk to fit one screen; the Explore control keeps its centred, bottom-anchored, `pointer-events:none` parent contract inside the new Explore window.
+- Preserved the nav, artwork sources and preload, shimmer bands, star canvas, confetti, sound, scroll target and accessibility labels; nothing below the hero changed.
+- Corrected an in-task defect: caption sizes chosen for a one-line mobile note fell to 11.25–11.4 px and broke the 12 px mobile caption floor; the `h1` is 12.9 px and the note 12 px again.
+- Checks: full Vitest 53 files / 428 tests, focused guards 33/33, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, Playwright homepage 18 passed / 3 skips, content refresh + gold CTA 33 passed, site-wide gold CTA 18 passed, mobile accessibility 14 passed / 1 skip, build 434 MB (< 495 MB).
+- Residual: the `/map` skip-link check is intermittently flaky (measures during its 160 ms focus transition) and is unrelated to this change; the emoji glyph is missing from the local font set, so it renders as tofu in screenshots only.
+- Follow-up: repaired that flake in the test rather than the CSS — the check now polls for the link's settled viewport position (bounded at 3 s) instead of sampling one mid-transition frame, with the same visibility and on-screen assertion. Re-ran it five times per project plus the whole mobile-accessibility file: all green.
+
+---
+
 ## 2026-11-08 — First-screen clarity, approved naming, analytics CSP and tap-target verification
 
 - Replaced the homepage's hidden `sr-only` `H1` with a visible first-screen block: brand line, one-sentence "fun, free place to explore what luck means to you" lede, the "more than fortune and fame" explanation naming the Luck Generator, Crystal Ball and Lucky Community Stories, a free gold CTA into `#play-explore`, and a "Free to enjoy · For fun and entertainment only" note. The hero artwork container is shorter so the block fits inside `100svh`; the artwork, its sources, preload and shimmer layers are unchanged.
@@ -591,3 +603,21 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - The `/map` artwork was left untouched: its 569 px source is smaller than its 704 px box and its AVIF/WebP derivatives were already correct.
 - Verification: focused Vitest 16/16, full suite 396 tests, TypeScript, `./freebuff-verify.sh` exit 0, build 334,596,786 B (319.10 MiB) < 495 MB, production delivery probe and in-VM Chromium candidate/fallback checks.
 - Blocked: remote Browserbase/Browserless inspection of the changed build (Browserbase tools not exposed; the preview is owner-gated).
+
+
+## 2026-11-08 — PR #1780 independent review follow-up
+
+- Reviewed all nine inline review threads, all three formal reviewer submissions (Amazon Q, Graphite and Pullfrog), the two PR conversation summaries, and the current-head GitHub check runs. Recovered Pullfrog's four inline comments that GitHub dropped because they did not anchor to changed diff lines.
+- Confirmed the gold ring, wordmark and Explore shimmer animations remain in separate masks; homepage Playwright coverage samples all three animations and checks reduced-motion removal. The star canvas remains in HomePage.js and its twinkle test is unaffected; shared sky backdrop checks cover the homepage, Crystal Ball and Lucky Map.
+- Found and corrected the Explore hit-area regression: the old 30%-of-full-artwork wrapper was moved into a short 200-row crop, leaving part of the visible Explore title outside the click target on desktop. The target now covers the full visible Explore crop; its keyboard focus outline is inset to remain visible within the crop's overflow boundary.
+- Corrected image priority: only the emblem crop is eager/high priority; the three repeated decorative image instances are lazy/auto. AVIF-first, WebP fallback, the existing responsive candidates and the single AVIF preload remain intact.
+- Added browser-level crop geometry assertions and strengthened the Explore target assertion. Replaced fixed waits in the reference probe with image decode, document-font readiness and stable-rectangle waits.
+- Pullfrog's hardcoded-URL, magic-number, missing-fallback and viewport-unit claims were not confirmed as actionable defects for this fixed-asset crop implementation; the runtime crop-test suggestion was accepted and addressed. Its eager-loading comment is addressed by explicitly eager-loading only the emblem crop. Graphite's test-count claim is false: the three prop-free instances are correctly counted, because the emblem instance has attributes.
+- The prior PR head 77628f3124d7697220176149ea3fc54ae62d2b61 had 14 successful GitHub check runs. This follow-up commit's Vitest, TypeScript, Spec Kit, Playwright, OpenNext/size, CodeQL and DevSkim results remain pending until CI completes; do not claim verified completion beforehand.
+- No changes were made to lottery affiliation/endorsement wording or the site's entertainment-only positioning.
+
+
+- **Graphite second-pass follow-up:** replaced the remaining 150 ms and 100 ms Playwright sleeps after Explore-stage scrolls with bounded animation-frame geometry stabilization; clarified that the three bare artwork calls represent top divider, bottom divider and Explore slice (the emblem call has props); added the missing trailing newline to measurements.json. The eight rendered viewport PNGs remain intentionally committed as review evidence and are not production assets.
+
+
+- **Mobile touch verification hardening:** the mobile Explore test now reloads between the click-path/cooldown checks and the touch-path check. It records `scrollY` after bringing the Explore stage into view, verifies the tap point resolves to the Explore button, then requires further scroll movement after the touch. This prevents `scrollIntoViewIfNeeded()` itself from satisfying the activation assertion.

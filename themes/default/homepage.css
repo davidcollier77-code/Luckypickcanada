@@ -747,20 +747,15 @@ body:has(.homepage-sky-backdrop)::after {
   .homepage-community-banner { margin: 1rem; }
 }
 
-/* Hero Image Container. The first-screen introduction above it needs room inside
-   the 100svh hero, so the container is shorter than before; the artwork file,
-   its <picture> sources and the object-contain fit are unchanged. */
+/* Hero artwork container. specs/117-homepage-hero-reference-layout removed the
+   fixed 100svh hero and its viewport-height budget, so the artwork windows take
+   their height from the painting's own proportions (see themes/default/hero.css)
+   and the branding is never shrunk to fit a screen. The artwork file, its
+   <picture> sources and the AVIF/WebP delivery are unchanged. */
 .hero-image-container {
   width: 100%;
-  height: clamp(300px, 50svh, 560px);
   max-width: 1100px;
   margin-inline: auto;
-}
-
-@media (max-width: 820px) {
-  .hero-image-container {
-    height: clamp(220px, 44svh, 380px);
-  }
 }
 
 

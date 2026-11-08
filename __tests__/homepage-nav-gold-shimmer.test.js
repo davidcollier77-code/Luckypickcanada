@@ -71,8 +71,15 @@ describe('Hero gold shimmer', () => {
 
   it('aligns the decoration with the painted artwork box at every viewport', () => {
     expect(heroCss).toContain('.hero-image-container { container-type: size; }');
-    expect(heroCss).toContain('height: min(100cqh, 150cqw);');
+    // The frame still reproduces the painting's full box, so every band keeps its
+    // measured percentage of the 1024 x 1536 artwork (specs/117 windows).
     expect(heroCss).toContain('aspect-ratio: 1024 / 1536;');
+    expect(heroCss).toContain('width: 100%;\n  aspect-ratio: 1024 / 1536;');
+    // Each window anchors the frame to the same measured row the image shows.
+    expect(heroCss).toContain('top: var(--hero-art-offset, 0%);');
+    expect(heroCss).toContain('.hero-art-slice--emblem { aspect-ratio: 1024 / 1090; }');
+    expect(heroCss).toContain('.hero-art-slice--divider { aspect-ratio: 1024 / 84; --hero-art-offset: calc(-1222 / 84 * 100%); }');
+    expect(heroCss).toContain('.hero-art-slice--explore { aspect-ratio: 1024 / 200; --hero-art-offset: calc(-1306 / 200 * 100%); }');
   });
 
   it('keeps the decoration out of pointer, tap and keyboard input', () => {

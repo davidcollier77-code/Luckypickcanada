@@ -288,13 +288,13 @@ export default function ExploreLuckButton() {
   }, [activateExplore]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-[300px] items-end justify-center">
+    <div className="pointer-events-none absolute inset-0 z-30 flex items-end justify-center">
       <button
         type="button"
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
-        className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+        className="pointer-events-auto h-full w-full max-w-full cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
         data-hydrated={isHydrated ? 'true' : 'false'}
         data-confetti-pop-ready={isConfettiPopReady ? 'true' : 'false'}

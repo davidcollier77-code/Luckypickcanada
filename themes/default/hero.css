@@ -85,13 +85,15 @@ html { scroll-behavior: smooth; }
 
 .hero-gold-shimmer-frame {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  /* specs/117: each frame is anchored to its artwork window with the same
+     measured row offset the window's image uses, so the frame still reproduces
+     the painting's full box and the measured band percentages below keep
+     landing on the gold they were measured from at every viewport. */
+  top: var(--hero-art-offset, 0%);
+  left: 0;
   z-index: 20;
-  width: auto;
-  height: min(100cqh, 150cqw);
+  width: 100%;
   aspect-ratio: 1024 / 1536;
-  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
@@ -166,38 +168,96 @@ html { scroll-behavior: smooth; }
   .hero-gold-shimmer { display: none; }
 }
 
-/* ---- First-screen introduction (specs/115-first-screen-clarity-naming-csp) --
-   The visitor learns what Lucky Pick Canada offers, why it is fun, and gets a
-   free way in before scrolling. The block uses the established night-sky/gold
-   identity; the artwork, navigation and animations are untouched. */
+/* ---- Reference hero composition (specs/117-homepage-hero-reference-layout) --
+   The one flattened painting is shown through measured row windows, so the
+   reference order works without redrawing, replacing or re-encoding it: the
+   emblem/tagline/wordmark window, the painting's own maple-leaf divider (used
+   above and below the panel) and the "EXPLORE YOUR LUCK" line with its chevron.
+   Every window keeps the painting's proportions, and the column is sized by
+   width so the branding is never shrunk to fit a fixed screen height. */
+.homepage-hero-welcome { padding-bottom: clamp(2rem, 6vw, 4rem); }
+
+.hero-artwork-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 46rem);
+  margin: clamp(.4rem, 1.6vw, 1rem) auto 0;
+  padding-inline: clamp(.5rem, 3vw, 1.25rem);
+}
+
+.hero-art-slice { position: relative; width: 100%; overflow: hidden; }
+/* Rows of the 1024 x 1536 painting: emblem/tagline/wordmark 14-1085,
+   divider 1222-1306, Explore line and chevron 1325-1502. */
+.hero-art-slice--emblem { aspect-ratio: 1024 / 1090; }
+.hero-art-slice--divider { aspect-ratio: 1024 / 84; --hero-art-offset: calc(-1222 / 84 * 100%); }
+.hero-art-slice--explore { aspect-ratio: 1024 / 200; --hero-art-offset: calc(-1306 / 200 * 100%); }
+
+/* The interactive target fills this cropped window; keep its focus ring inside
+   the slice so the parent's overflow clip cannot hide the keyboard indicator. */
+.hero-art-slice--explore button:focus-visible { outline-offset: -4px; }
+
+.hero-art-picture { position: absolute; inset: 0; display: block; }
+
+.hero-art-image {
+  position: absolute;
+  top: var(--hero-art-offset, 0%);
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hero-art-divider--top { margin: clamp(.75rem, 2.6vw, 1.5rem) auto clamp(.6rem, 2vw, 1.1rem); }
+.hero-art-divider--bottom { margin: clamp(.6rem, 2vw, 1.1rem) auto clamp(.35rem, 1.4vw, .75rem); }
+
+/* ---- Welcome panel (specs/115-first-screen-clarity-naming-csp) -------------
+   What Lucky Pick Canada offers, why it is fun and a free way in. Content and
+   controls are unchanged; the gold hairline panel framing comes from the
+   reference layout. */
 .hero-welcome {
   position: relative;
   z-index: 20;
-  width: min(100%, 46rem);
-  margin: clamp(.35rem, 1.2vw, .9rem) auto 0;
-  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(92%, 40.5rem);
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 1.7rem) clamp(.9rem, 3.4vw, 2rem);
+  border: 1px solid rgba(246, 202, 95, .72);
+  border-radius: clamp(18px, 2.6vw, 26px);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(30, 46, 92, .58), rgba(8, 13, 31, .88) 62%),
+    rgba(6, 11, 26, .84);
+  box-shadow: inset 0 1px 0 rgba(255, 231, 158, .3), 0 0 30px rgba(245, 191, 61, .16), 0 22px 55px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   text-align: center;
 }
 
 .hero-welcome-title {
-  margin: 0 0 .4rem;
-  color: #ffe9a8;
+  margin: 0 0 .35rem;
+  color: #f3d489;
   font-family: var(--lpc-display, sans-serif);
-  font-size: clamp(.86rem, 2vw, 1.05rem);
+  /* The root is 15 px, so .86rem is 12.9 px: above the repository's 12 px floor. */
+  font-size: clamp(.86rem, 2vw, .95rem);
   font-weight: 900;
   letter-spacing: .2em;
   text-transform: uppercase;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, .85);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .85);
 }
 
 .hero-welcome-lede {
-  margin: 0 0 .45rem;
-  color: #fff;
+  max-width: 30rem;
+  margin: 0 0 .55rem;
+  color: #ffe6a0;
   font-family: var(--lpc-display, sans-serif);
-  font-size: clamp(1.18rem, 2.9vw, 1.75rem);
-  font-weight: 800;
-  line-height: 1.15;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, .85);
+  font-size: clamp(1.05rem, 3.3vw, 1.55rem);
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: .015em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(126, 63, 4, .45), 0 0 20px rgba(255, 198, 70, .3);
 }
 
 .hero-welcome-copy {
@@ -230,16 +290,21 @@ html { scroll-behavior: smooth; }
 }
 
 .hero-welcome-note {
-  margin: .55rem 0 0;
-  color: rgba(255, 240, 200, .8);
-  font-size: .8rem;
-  letter-spacing: .06em;
+  margin: .6rem 0 0;
+  color: #f2cf7a;
+  /* 0.8rem of the 15 px root is 12 px, the repository's mobile caption floor. */
+  font-size: clamp(.8rem, 1.5vw, .84rem);
+  font-weight: 800;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
 @media (max-width: 620px) {
-  .hero-welcome { margin-top: .2rem; padding: 0 .75rem; }
+  .hero-artwork-column { padding-inline: .35rem; }
+  .hero-welcome { padding: .95rem .8rem 1.05rem; }
+  .hero-welcome-lede { font-size: clamp(1rem, 4.6vw, 1.25rem); }
   .hero-welcome-copy { font-size: .9rem; line-height: 1.5; }
+  .hero-welcome-note { font-size: .8rem; letter-spacing: .05em; }
   .hero-welcome-cta { width: min(100%, 18rem); min-height: 48px; }
 }
 
