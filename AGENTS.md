@@ -133,29 +133,18 @@ A task request that clearly specifies a protected change is explicit authorizati
 
 ### Connected Integrations
 
-Connected integrations are preferred project tools, not hidden or last-resort options. At the start of each task, inspect the integrations and tools actually available in the current agent environment. Identify the relevant ones and use them when they materially improve accuracy, coverage, efficiency, or task completion. Make appropriate use of available integrations instead of defaulting to manual work when a connected tool is a better fit.
+Use the connected integrations below when they materially support the assigned task. Use the required default and owner-approved fallback as stated. Do not make unnecessary calls, expand task scope through an integration, or claim use when it did not occur.
 
-Do not invoke every integration on every task. Select tools by task relevance, use the minimum necessary calls, and avoid redundant work, unnecessary usage or cost, unrelated scope expansion, and external side effects. Availability can vary by agent/session: use only integrations that are actually connected and accessible. Never claim an integration was used unless it was used.
-
-#### Web research, crawling, and scraping
-
-- **Firecrawl — primary / preferred:** Use Firecrawl first for website research and web-content retrieval when its capabilities fit the task. This includes targeted page scraping, extracting clean Markdown or structured page content, mapping a site's URLs, and crawling multiple pages or a site within a defined scope.
-- **Crawlbase — secondary / fallback:** Use Crawlbase when Firecrawl is unavailable, fails, is blocked, cannot retrieve the required content, or when a targeted retry through Crawlbase is reasonably likely to improve coverage. Treat it as the backup provider, not the default. Do not run both providers for the same request without a concrete reason, such as validating conflicting results or recovering missing content.
-- Use the narrowest suitable operation: a single-page scrape for a known page, URL mapping when the page location is unknown, and a bounded crawl only when multiple pages are needed. Keep crawls scoped to the task and avoid unnecessary page volume.
-- For research that requires current information from the wider web rather than extracting content from a known site, use the most suitable available search/research integration. Scraping and crawling are not substitutes for source discovery or independent verification.
-
-#### Other connected integrations
-
-- **GitHub:** Use for authorized repository work, including repository inspection, file access, branches, commits, issues, and pull requests. No additional owner approval is needed for routine use within the assigned task. Existing approval rules and safeguards for destructive or high-risk actions remain in force.
+- **GitHub:** Always available for normal authorized repository work, including repository inspection, file access, branches, commits, issues, and pull requests. No additional owner approval is needed for routine use within the assigned task. Existing approval rules and safeguards for destructive or high-risk actions remain in force.
+- **Firecrawl:** Primary / preferred provider for website crawling, scraping, URL mapping, and extracting page content. Use it first when web-content retrieval from a website is needed and its capabilities fit the task.
+- **Crawlbase:** Secondary / fallback provider. Use it when Firecrawl is unavailable, fails, is blocked, or cannot retrieve the required content. Do not use both for the same request unless there is a specific reason, such as recovering missing content or cross-checking results.
 - **Penpot:** Available whenever useful for UI design, layout exploration, visual concepts, and prototyping. It may be used without additional owner approval when relevant and within the authorized task scope.
-- **Playwright:** Primary browser tool. Use first when browser QA is required and it is available.
-- **Browserless:** Mandatory browser-QA fallback when Playwright is unavailable or fails. No additional approval required.
-- **Browserbase:** Last-resort browser-QA fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.
-- **Neon:** Restricted to deliberate, task-scoped PostgreSQL database work, such as a specifically requested database inspection, diagnosis, or authorized data/schema task. Because Neon connects to the project's database, do not use it for routine tasks, general research, unrelated checks, or convenience. Minimize access and queries, avoid exposing sensitive data, and obtain explicit owner approval before any database or schema changes, as stated above.
+- **Playwright:** Primary browser tool. Use first when available.
+- **Browserless:** Mandatory fallback when Playwright is unavailable or fails. No additional approval required.
+- **Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.
+- **Neon:** Available for relevant PostgreSQL database inspection and task-scoped database work. Use it sparingly to conserve usage. Owner approval remains required before database or schema changes, as stated above.
 
-Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows.
-
-Other connected integrations may be used when they materially help the assigned task and fall within the user's authorization and the integration's permissions. Obtain explicit approval before external side effects, paid usage, destructive actions, or sharing sensitive data beyond the authorized task. Existing approval rules for repository, database, security, and deployment changes still apply. A connection or initialization alone does not count as actual integration use.
+Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Other connected integrations may be used when they materially help the assigned task and fall within the user's authorization and the integration's permissions. Obtain explicit approval before external side effects, paid usage, destructive actions, or sharing sensitive data beyond the authorized task. Existing approval rules for repository, database, security, and deployment changes still apply. A connection or initialization alone does not count as actual integration use.
 
 ### PR ownership
 
