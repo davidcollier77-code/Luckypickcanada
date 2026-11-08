@@ -106,3 +106,13 @@ Story objects keep their existing shape (`id`, `firstName`, `province`, `provinc
 - **Paging races.** A request token discards a superseded province/timeframe response; appends de-duplicate by story id.
 - **Stale counts.** Summary cache TTL is 60 seconds and both window keys are invalidated after in-app publishes; the client refreshes summary counts every 60 seconds.
 - **Build ceiling and browser tooling.** The build size is measured in verification; Playwright availability in this VM is reported factually if Chromium cannot start.
+
+## Follow-up plan: Homepage responsive visual QA
+
+- Preserve the approved hero composition and its source artwork, copy, navigation, Explore interaction, AVIF-first/WebP fallback and reduced-motion behavior.
+- Inspect the failed Playwright expected/actual/diff images first. The mobile snapshots depict an older hero composition; they are not an acceptable target for the current approved markup.
+- Extend the existing homepage Playwright coverage with a first-screen geometry sweep at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels. Check horizontal overflow, hero text clipping, navigation-link containment and Explore control visibility.
+- Correct the sitewide gold CTA browser assertion to wait for the completed pressed-edge transition and inspect the measured 1px edge depth; do not weaken the design contract.
+- Regenerate only the three committed viewport screenshots through Playwright's real `--update-snapshots` execution. Do not synthesize or hand-edit the PNGs.
+- Run the existing browser projects and required repository verification on the updated head. Preserve any unrelated or unavailable checks as explicit statuses.
+- Ghost Invasion is not run against the hosted PR or production site: its installed local-only runner requires a disposable loopback app and same-origin reset endpoint. No such local checkout/fixture is available in this session, so do not claim a Ghost Invasion result. The independent review is limited to the captured Playwright evidence and source inspection.
