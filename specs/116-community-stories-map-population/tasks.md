@@ -31,8 +31,8 @@
 - [X] T011 [US3] Verify production rolling 24-hour count is exactly two and identify the intended story IDs/names in evidence.
 
 ## Phase 6: Polish and Verification
-- [ ] T012 Run focused Vitest and Playwright map tests at mobile and desktop viewports (NOT RUN in this connector-only workspace).
-- [ ] T013 Run pnpm exec tsc --noEmit and ./freebuff-verify.sh; record build size against 495 MB (NOT RUN in this connector-only workspace).
+- [X] T012 GitHub Actions Visual QA: full Vitest suite passed (52 test files); Playwright passed 137/137 tests across desktop and mobile-390/mobile-412 projects, including the province-marker and rolling-24-hour map tests. Playwright report uploaded as artifact `playwright-visual-report`.
+- [X] T013 GitHub Actions Visual QA and OpenNext validation: `pnpm tsc --noEmit` passed; `./freebuff-verify.sh` passed; Next.js production build and OpenNext Cloudflare build passed; Wrangler build validation passed without deployment; combined `.next + public` size was 334,764,588 bytes (319.26 MiB), below the 495 MiB hard cap.
 - [X] T014 Review full diff and confirm no homepage files, unrelated routes or non-map behavior changed; update task list and Memory Bank.
 - [X] T015 Create one canonical PR with implementation, data migration evidence, checks and full HEAD SHA; leave it OPEN and UNMERGED.
 
