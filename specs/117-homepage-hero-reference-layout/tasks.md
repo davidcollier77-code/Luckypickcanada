@@ -42,6 +42,7 @@
 - [X] T021 Run `./freebuff-verify.sh` with a valid comparison base and measure `.next` + `public` against the 495 MB maximum. PASS — exit 0 (Spec Kit gate, production build, 36/36 documentation tests); `.next` 401 MB + `public` 33 MB = 434 MB (on-disk, includes the dev cache) < 495 MB.
 - [X] T022 Capture desktop and mobile screenshots, compare them with the reference, and correct any composition defect. PASS — 1440 × 900, 1024 × 768, 412 × 915 and 390 × 844 all show the reference order with 0 px horizontal overflow; the tighter caption sizes initially added for the one-line note broke the repository's 12 px mobile caption floor and were raised back (`h1` 12.9 px, note 12 px).
 - [X] T023 Inspect the complete final diff, then open/update the single PR with the canonical summary, leaving it open and unmerged.
+- [X] T024 Repair the `/map` skip-link Playwright flake found during T020: the check sampled the link during its own 160 ms focus transition, so it now polls for the settled viewport position with the same assertion. PASS — repeated five times per project and the full mobile-accessibility file passes.
 
 ## Dependencies
 

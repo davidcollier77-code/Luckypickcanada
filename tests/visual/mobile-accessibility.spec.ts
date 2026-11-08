@@ -29,13 +29,20 @@ test('skip link is keyboard-visible and moves focus to the shared main landmark'
   await page.keyboard.press('Tab');
   const skipLink = page.locator('a.skip-link');
   await expect(skipLink).toBeFocused();
-  const onScreen = await skipLink.evaluate((element) => {
+
+  /** Reports whether the focused link has finished sliding into the viewport. */
+  const isSettledOnScreen = () => skipLink.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
     return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= window.innerHeight &&
       style.visibility !== 'hidden' && style.display !== 'none';
   });
-  expect(onScreen).toBe(true);
+
+  // The link moves with a 160 ms focus transition, so wait for the settled
+  // position instead of sampling a mid-animation frame. The assertion itself is
+  // unchanged: the link must end up fully inside the viewport and visible.
+  await expect.poll(isSettledOnScreen, { timeout: 3_000, intervals: [50, 100] }).toBe(true);
+  expect(await isSettledOnScreen()).toBe(true);
   await page.keyboard.press('Enter');
   await expect(page.locator('main#main-content')).toBeFocused();
 });

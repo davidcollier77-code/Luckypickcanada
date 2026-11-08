@@ -6,6 +6,7 @@
 - Corrected an in-task defect: caption sizes chosen for a one-line mobile note fell to 11.25–11.4 px and broke the 12 px mobile caption floor; the `h1` is 12.9 px and the note 12 px again.
 - Checks: full Vitest 53 files / 428 tests, focused guards 33/33, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, Playwright homepage 18 passed / 3 skips, content refresh + gold CTA 33 passed, site-wide gold CTA 18 passed, mobile accessibility 14 passed / 1 skip, build 434 MB (< 495 MB).
 - Residual: the `/map` skip-link check is intermittently flaky (measures during its 160 ms focus transition) and is unrelated to this change; the emoji glyph is missing from the local font set, so it renders as tofu in screenshots only.
+- Follow-up: repaired that flake in the test rather than the CSS — the check now polls for the link's settled viewport position (bounded at 3 s) instead of sampling one mid-transition frame, with the same visibility and on-screen assertion. Re-ran it five times per project plus the whole mobile-accessibility file: all green.
 
 ---
 
