@@ -50,7 +50,7 @@ describe('single-source agent governance', () => {
       'Ask the owner for explicit approval before using Browserbase.',
     );
     expect(connectedIntegrations).toContain(
-      'Stitch:** Available whenever useful',
+      'Penpot:** Available whenever useful',
     );
     expect(connectedIntegrations).toContain(
       'Use it sparingly to conserve usage.',
