@@ -787,21 +787,41 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 )
 
     def test_playwright_test_timeout_configuration_is_suppressed_only_in_tests(self):
-        line = "test.setTimeout(90_000);"
+        line = "test.setTimeout(120_000);"
         start_column = line.index("setTimeout") + 1
         region = {
             "startLine": 1,
             "startColumn": start_column,
             "endColumn": start_column + len("setTimeout"),
         }
-        self.assertTrue(
-            suppressions.should_suppress_safe_contextual_finding(
-                "DS172411", "tests/visual/homepage.spec.ts", line, region
-            )
-        )
+        for path in (
+            "tests/visual/homepage.spec.ts",
+            "tests/visual/map-marker-interaction.spec.ts",
+            "tests/visual/lucky-stories-pagination.spec.ts",
+        ):
+            with self.subTest(path=path):
+                self.assertTrue(
+                    suppressions.should_suppress_safe_contextual_finding(
+                        "DS172411", path, line, region
+                    )
+                )
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS172411", "app/homepage/HomePage.js", line, region
+            )
+        )
+        unsafe_line = "test.setTimeout(request.timeout);"
+        unsafe_start = unsafe_line.index("setTimeout") + 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "tests/visual/map-marker-interaction.spec.ts",
+                unsafe_line,
+                {
+                    "startLine": 1,
+                    "startColumn": unsafe_start,
+                    "endColumn": unsafe_start + len("setTimeout"),
+                },
             )
         )
 

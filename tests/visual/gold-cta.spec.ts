@@ -176,6 +176,13 @@ test.describe('Homepage Gold CTA', () => {
         })
         .toBeGreaterThanOrEqual(1.5);
 
+      await expect
+        .poll(async () => button.evaluate((element) => getComputedStyle(element).boxShadow), {
+          timeout: 5_000,
+          intervals: [50, 100, 200],
+        })
+        .toContain(`${GOLD_EDGE_COLOR} 0px 1px 0px`);
+
       const pressed = await button.evaluate((element) => {
         const computed = getComputedStyle(element);
         return { boxShadow: computed.boxShadow, animationName: computed.animationName };

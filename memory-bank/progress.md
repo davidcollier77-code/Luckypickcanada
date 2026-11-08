@@ -1,3 +1,25 @@
+## 2026-11-08 — PR #1783 QA repair follow-up
+
+- Restored Recent Canadian Activity to up to three newest stories per province using a SQL window-function partition derived from the existing province alias rules. The result is bounded at 39 rows maximum (13 provinces/territories × 3).
+- Added unit coverage for per-province activity limits, made the map browser test wait for the actual summary API response and hydrated markers, and made the gold CTA assertion wait for the final pressed-edge transition rather than sampling mid-transition.
+- Replaced the fixed Playwright idle sleep with a network-idle condition and removed a production localhost URL fallback from the Lucky Stories API route. The localhost pattern was a scanner pattern match, not an exploitable remote access path; the route receives a framework-provided request URL.
+- Reconciled the Spec Kit data-correction requirement with the owner-reported production cleanup: IDs 9–21 were renamed, only the leading [dev-seed] marker was removed, and the owner reports 21 rows retained with contributor IDs 1–8 preserved. This workspace could not independently query production.
+- Current CI evidence at the pre-repair PR head: Vitest 446/446, TypeScript, Spec Kit gate, OpenNext, DevSkim and updater passed; Visual QA failed on three stale homepage baselines and one map hydration timeout, with one flaky gold-edge timing assertion. The homepage screenshots show the newer approved welcome panel versus the older committed baselines.
+- Pending: regenerate the three approved homepage baselines using Playwright on the repository runner, execute current-head `./freebuff-verify.sh` and full Visual QA, re-audit all scanner results, and complete a fresh final diff review.
+- PR #1783 remains open and unmerged: https://github.com/davidcollier77-code/Luckypickcanada/pull/1783.
+
+## 2026-11-08 — Lucky Stories paged province feed (implementation, data correction blocked)
+
+- Replaced the full-collection `/api/lucky-stories` GET with a province-scoped page request (`province`, `offset`, `limit`, `hours`, `summary`, `story`) and SQL-level province matching built from the same alias table as `getStoryProvince`, so other provinces' rows are never returned to the page.
+- The feed renders three stories, appends the next three near the sentinel, deduplicates ids and ignores stale responses after a province switch; the panel heading, province controls and markers use independent `count(*) filter` aggregates and refresh through a `summary=1` poll that no longer replaces the feed.
+- First visits select the highest-count province with deterministic ties; only a manual choice is stored (`luckyStoriesProvince`) and restored, and a saved province with no published stories falls back to the computed default.
+- Shared links resolve through a single-story query and pin that story above the province's first page; the 24-hour filter is applied in SQL for the feed, counts and recent slice.
+- Checks: full Vitest 54 files / 446 tests PASS, Playwright pagination + map markers 15/15 across three viewports, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, build 426.44 MB < 495 MB.
+- BLOCKED: renaming demonstration authors for IDs 9–21 needs the production database; this workspace has no credential and the Neon integration has no SQL tool, so no row was changed. The prepared mapping and guarded statement are in the PR summary; genuine IDs 1–8 and all story text, dates and provinces remain untouched.
+- Known reduction: Recent Canadian Activity is now the three newest published stories overall (previously up to three per province) so the first payload stays bounded.
+
+---
+
 ## 2026-11-08 — Homepage welcome panel cleanup (implementation candidate)
 
 - Removed the oversized “Explore free experiences” link and the gold entertainment-only line from the welcome card while retaining its dark navy/gold frame, heading, lede and explanatory paragraph.

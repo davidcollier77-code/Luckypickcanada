@@ -138,6 +138,67 @@ test.describe("Homepage Visual", () => {
     });
   });
 
+  test('homepage first-screen remains usable across phone, tablet and desktop widths', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'desktop', 'The expanded width matrix runs once in the desktop Chromium project.');
+    test.setTimeout(120_000);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await expect(page.locator('.homepage-main-nav-surface')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.hero-welcome')).toBeVisible({ timeout: 15_000 });
+
+    const widths = [320, 360, 390, 412, 768, 820, 1024, 1180, 1440];
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: width <= 412 ? 844 : 900 });
+
+      const layout = await page.evaluate(() => {
+        const rect = (element: Element | null) => {
+          if (!element) return null;
+          const box = element.getBoundingClientRect();
+          return { left: box.left, right: box.right, width: box.width, height: box.height };
+        };
+        const surface = document.querySelector('.homepage-main-nav-surface');
+        const panel = document.querySelector('.hero-welcome');
+        const hero = document.querySelector('.hero-artwork-column');
+        const explore = document.querySelector('.homepage-hero-welcome button[aria-label^="Explore your luck"]');
+        const navLinks = Array.from(surface?.querySelectorAll('a') ?? []);
+        const panelText = Array.from(panel?.querySelectorAll('h1, p') ?? []);
+        const inside = (box: ReturnType<typeof rect>, parent: ReturnType<typeof rect>) => (
+          Boolean(box && parent && box.width > 0 && box.left >= parent.left - 1 && box.right <= parent.right + 1)
+        );
+
+        return {
+          viewportWidth: window.innerWidth,
+          pageWidth: document.documentElement.scrollWidth,
+          surface: rect(surface),
+          panel: rect(panel),
+          hero: rect(hero),
+          explore: rect(explore),
+          linkCount: navLinks.length,
+          linksInsideNavigation: navLinks.every((link) => inside(rect(link), rect(surface))),
+          panelTextFits: panelText.every((element) => {
+            const style = getComputedStyle(element);
+            return element.scrollWidth <= element.clientWidth + 1 && parseFloat(style.fontSize) >= 12;
+          }),
+          navigationContentFits: Boolean(surface && surface.scrollWidth <= surface.clientWidth + 1),
+        };
+      });
+
+      expect(layout.pageWidth, `horizontal page overflow at ${width}px`).toBeLessThanOrEqual(width + 1);
+      expect(layout.hero && layout.hero.left >= -1 && layout.hero.right <= width + 1,
+        `hero artwork column is outside the ${width}px viewport`).toBeTruthy();
+      expect(layout.panel && layout.panel.left >= -1 && layout.panel.right <= width + 1,
+        `welcome panel is outside the ${width}px viewport`).toBeTruthy();
+      expect(layout.surface && layout.surface.left >= -1 && layout.surface.right <= width + 1,
+        `navigation surface is outside the ${width}px viewport`).toBeTruthy();
+      expect(layout.linkCount, `navigation links missing at ${width}px`).toBe(4);
+      expect(layout.linksInsideNavigation, `navigation link clipped at ${width}px`).toBeTruthy();
+      expect(layout.navigationContentFits, `navigation content overflows at ${width}px`).toBeTruthy();
+      expect(layout.panelTextFits, `welcome text clipped or below 12px at ${width}px`).toBeTruthy();
+      expect(layout.explore && layout.explore.width > 0 && layout.explore.height >= 44,
+        `Explore control is missing or too small at ${width}px`).toBeTruthy();
+    }
+  });
+
   test('hero artwork windows render the measured source rows', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     const crops = [

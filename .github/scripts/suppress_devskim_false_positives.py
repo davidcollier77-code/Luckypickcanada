@@ -168,6 +168,8 @@ KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
     "tests/visual/crystal-ball-daily-limit.spec.ts",
     "tests/visual/gold-cta.spec.ts",
     "tests/visual/homepage.spec.ts",
+    "tests/visual/map-marker-interaction.spec.ts",
+    "tests/visual/lucky-stories-pagination.spec.ts",
     "tests/visual/sitewide-gold-cta.spec.ts",
     "app/admin/suggestions/route.test.js",
     "functions/api/oracle.js",
