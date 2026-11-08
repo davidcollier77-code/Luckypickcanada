@@ -44,7 +44,7 @@ Complete these steps in order before implementation:
 - Never expose or commit secrets.
 - Never weaken validation, sanitization, authentication, authorization, CAPTCHA/Turnstile, rate limiting, duplicate protection, or environment handling.
 - Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
-- For browser-based inspection and visual QA, use Browserless as the required default hosted browser environment described in §5. Do not configure a separate browser environment for Freebuff.
+- **Browser QA is mandatory.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval. Diagnose failures briefly. Never skip required browser QA because a tool fails.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
@@ -116,8 +116,9 @@ Use the connected integrations below when they materially support the assigned t
 
 - **GitHub:** Always available for normal authorized repository work, including repository inspection, file access, branches, commits, issues, and pull requests. No additional owner approval is needed for routine use within the assigned task. Existing approval rules and safeguards for destructive or high-risk actions remain in force.
 - **Stitch:** Available whenever useful for UI design, layout exploration, visual concepts, and prototyping. It may be used without additional owner approval when relevant and within the authorized task scope.
-- **Browserless:** Freebuff's required default hosted browser environment. Use it for browser-based page inspection, screenshots, page interaction, browser testing, and visual QA whenever the task requires browser access. Do not configure a separate browser environment for Freebuff. Browserless may be used without additional owner approval within the assigned task.
-- **Browserbase:** Backup hosted browser environment when Browserless is unavailable or unsuitable. Ask the owner for explicit approval before using Browserbase.
+- **Playwright:** Primary browser tool. Use first when available.
+- **Browserless:** Mandatory fallback when Playwright is unavailable or fails. No additional approval required.
+- **Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.
 - **Neon:** Available for relevant PostgreSQL database inspection and task-scoped database work. Use it sparingly to conserve usage. Owner approval remains required before database or schema changes, as stated above.
 
 Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Any other connected integration not listed above requires owner approval before use unless separately authorized. A connection or initialization alone does not count as actual integration use.
