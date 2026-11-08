@@ -50,7 +50,7 @@ describe('single-source agent governance', () => {
       expect(connectedIntegrations).toContain(toolName);
     }
 
-    expect(agents).toContain('**Browser QA is mandatory.**');
+    expect(agents).toContain('**Browser QA is mandatory for changes that affect browser-visible behavior or end-to-end user workflows.**');
     expect(connectedIntegrations).toContain('Requires explicit owner approval.');
 
     // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.

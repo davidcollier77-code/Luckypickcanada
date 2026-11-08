@@ -12,9 +12,9 @@ Complete these steps in order before implementation:
 2. **Understand the request.** Identify the requested outcome, scope, constraints, and acceptance criteria. Note missing essential information, required approvals, and genuine blockers. Do not ask generic "continue?" questions.
 3. **Check existing work.** Inspect the current branch/worktree, relevant files, task artifacts, and existing branches/PRs for the same task. Do not duplicate active work or overwrite existing work.
 4. **Load project context.** Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once. Use the context relevant to the task.
-5. **Select task groups.** Choose at least one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. Select multiple only when the task requires them. Read and follow each selected group's `.freebuff/<group>.md`.
+5. **Select task groups.** Choose the applicable groups: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. Read only the selected groups' `.freebuff/<group>.md` guidance. If none clearly fit (for example, a governance-only or documentation-only task), do not force an unrelated group; follow this file and the relevant task instructions.
 6. **Route reference documents.** Read `.docs/manifest.json`. Use it to identify and consult library documents that materially help with the request and selected task groups.
-7. **Use relevant skills.** Apply enabled Freebuff skills when they materially help, including `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`.
+7. **Discover and use relevant skills.** Check the skills currently available to the agent and select only those that materially help the task. Read each selected skill's instructions and any required references before applying it. Useful examples, when installed, include `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `neon-postgres`, `extract-design-system`, `mcp-builder`, and `performance`. This list is not exhaustive or a guarantee that a skill is installed. Do not load or invoke every skill by default, and never claim a skill was used unless it was actually used.
 
 ### Project document library
 
@@ -43,8 +43,14 @@ Complete these steps in order before implementation:
 - Do not redesign, replace, or remove existing product behavior or assets to satisfy an unrelated checklist.
 - Never expose or commit secrets.
 - Never weaken validation, sanitization, authentication, authorization, CAPTCHA/Turnstile, rate limiting, duplicate protection, or environment handling.
+- **Code quality and functional integrity are mandatory.** Keep code maintainable, reliable, secure, efficient, and consistent with the existing architecture and project standards.
+- Preserve existing behaviour and system integrity. Changes MUST NOT break, weaken, bypass, or compromise existing features, services, integrations, data, or safeguards.
+- Assess the impact on interconnected components, APIs, shared utilities, and dependent workflows before changing them.
+- Avoid unnecessary complexity, duplicated logic, fragile workarounds, dependencies, and preventable technical debt.
+- Prevent regressions by testing new functionality and existing behaviour that could be affected. A successful build alone does NOT prove functional correctness.
+- If a requested change conflicts with existing functionality, security, or system integrity, preserve existing safeguards and report the conflict rather than compromising them.
 - Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
-- **Browser QA is mandatory.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval. Diagnose failures briefly. Never skip required browser QA because a tool fails.
+- **Browser QA is mandatory for changes that affect browser-visible behavior or end-to-end user workflows.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval. For backend-only, infrastructure-only, or documentation-only work with no affected browser workflow, run the relevant automated or integration checks instead. Diagnose failures briefly. Never skip applicable browser QA because a tool fails.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
@@ -69,6 +75,7 @@ The PR body is the **single canonical summary**. Draft it during the work, publi
 Keep the summary concise and aligned with the Master Work Request. Include:
 
 - Task goal, selected task group(s), and a brief reason for each.
+- Skills materially used (only those actually applied).
 - Short implementation result and exact files changed.
 - Required Spec Kit stages and artifact paths.
 - Only reference documents/resources that materially informed the work.
@@ -108,7 +115,7 @@ Get explicit owner authorization before changing:
 - Accessibility/responsive behavior or approved visual/product behavior.
 - The documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Approval for one change does not authorize wider or unrelated changes.
+A task request that clearly specifies a protected change is explicit authorization for that exact scope; do not ask for the same approval twice. A vague request or indirect implication is not approval. Pause only the affected change when authorization is genuinely missing. Authorization applies only to the specific approved scope and does not authorize wider or unrelated changes.
 
 ### Connected Integrations
 
@@ -121,7 +128,7 @@ Use the connected integrations below when they materially support the assigned t
 - **Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.
 - **Neon:** Available for relevant PostgreSQL database inspection and task-scoped database work. Use it sparingly to conserve usage. Owner approval remains required before database or schema changes, as stated above.
 
-Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Any other connected integration not listed above requires owner approval before use unless separately authorized. A connection or initialization alone does not count as actual integration use.
+Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Other connected integrations may be used when they materially help the assigned task and fall within the user's authorization and the integration's permissions. Obtain explicit approval before external side effects, paid usage, destructive actions, or sharing sensitive data beyond the authorized task. Existing approval rules for repository, database, security, and deployment changes still apply. A connection or initialization alone does not count as actual integration use.
 
 ### PR ownership
 
@@ -133,7 +140,7 @@ Browserless and Browserbase are for Freebuff's direct browser-based task work. D
 
 - **495 MB is the hard maximum build size.** Measure and report every build.
 - If a build reaches or exceeds 495 MB, stop and report the measured size and safe resume point.
-- Use pnpm; never use `npm ci`. Inspect `package.json` before using or claiming a script.
+- Use the package manager declared in `package.json` (currently `pnpm@10.30.3`); keep dependency installation and lockfile changes consistent with it. An owner-configured environment startup installer may differ only when it preserves the committed lockfile and dependency resolution. Never use `npm ci`. Inspect `package.json` before using or claiming a script.
 - Lucky Pick Canada uses **Cloudflare Pages** for hosting and deployment.
 - For hosting/build configuration tasks, use applicable Cloudflare Pages and Wrangler documentation. Keep recommendations and implementation compatible with the existing Cloudflare Pages setup; do not propose unrelated hosting platforms or migrations.
 - This hosting information does not authorize deployment, Cloudflare configuration, environment-variable, or secret changes. The approval rules in §5 still apply.
