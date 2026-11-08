@@ -46,8 +46,8 @@ footer nav a {
 /* The 24 px box above already meets the target floor, so the footer's original
    ::before expander is neutralised: it made the footer rows' hit areas reach into
    the row above and below, which could steal a tap from a neighbouring link. */
+footer nav a::before {
   inset: 0 !important;
-  inset: 0;
 }
 
 /* Footer caption floor (audit D4). The theme's mobile root font size is 15 px, so
