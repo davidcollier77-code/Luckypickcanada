@@ -78,6 +78,15 @@ Keep the summary concise and aligned with the Master Work Request. Include:
 
 Do not require a separate report, a per-resource USED/USEFUL/version matrix, or an inventory of irrelevant documents. The PR summary is complete when it accurately records the current work and evidence, including pending items. **Verified completion** still requires every mandatory gate to pass. A safe PR may remain open for review while clearly identified checks are pending.
 
+### PR submission and handoff
+
+- After completing the in-scope implementation, running the required local checks, and reviewing the complete final diff, create or update the PR for owner and tracker review.
+- Do not wait for external CI trackers, automated reviewers, or other post-submission checks to finish before submitting the PR. Let those checks run after submission.
+- The PR may be submitted while external checks are pending. Report every check's actual status accurately; never describe a pending or failed check as passed or claim verified completion when a mandatory check has not passed.
+- After submission, confirm the PR exists and is **OPEN and UNMERGED**. Retrieve its actual `head.sha` and include the full PR HEAD SHA in the canonical PR summary.
+- Report the PR link, full PR HEAD SHA, and any outstanding checks or issues. This completes the agent's handoff.
+- After handing off the PR, stop. Do not wait for, monitor, or act on later tracker/reviewer results, and do not make further changes unless the owner requests them. If an owner-requested update adds commits, refresh the reported PR HEAD SHA.
+
 ### Branch and PR recovery
 
 - If branch history, merge-base checks, or push permissions block publishing, diagnose the actual state first and preserve all work.
