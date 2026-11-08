@@ -1,3 +1,17 @@
+# Current Task — Sitewide visual, usability, functionality and brand-positioning audit (2026-11-08)
+
+- **Task groups:** `deep-dive` (evidence-only, audit-only investigation with declared limitations) + `polishing` (visual consistency, readability, responsive presentation). `testing` not selected: no behaviour changed.
+- **Feature / branch:** `specs/113-visual-ux-audit`; branch `freebuff/322f2aa890481919fd0b374b`.
+- **Audited:** production `https://luckypickcanada.ca` through Browserless only (no Playwright), 2026-11-08. All 10 public routes, 3 aliases, a genuine 404 and an unknown `/reveal/<id>` were reached; 8 pages measured at 1440x900 and 390x844; FAQ, Lucky Meter, Daily Card, Crystal Ball, Tip Jar dialog, Suggestion Box contract and map province filter were exercised once each.
+- **Headline finding (D1, critical):** the first screen at 1440x900 contains only four header links; the only `H1` ("Lucky Pick Canada") renders 1 px wide (`sr-only`); the first explanatory line starts at y about 843 px. A first-time visitor cannot tell what the site is without scrolling.
+- **Other verified defects:** CSP blocks the Cloudflare analytics beacon on every page (`static.cloudflareinsights.com` missing from `script-src`); mobile tap targets 13-23 px (12 map markers at 23x23, footer/social links 13-16 px high); mobile body type 11.25-11.7 px on `/reveal` and `/crystal-ball`; two `<main>` landmarks on `/crystal-ball`; `H2` before `H1` on `/lucky-meter`; no skip link; the same destinations carry different header/footer labels; `/map` shows "1 lucky story" while its own stats report 8; inconsistent focus rings; Terms' "random number generation / cryptographic randomness" framing.
+- **Interaction results:** FAQ, Lucky Meter (37%, quote, ritual count 109), Daily Card (Coast-to-Coast Tale), Crystal Ball reading, Tip Jar dialog + Escape, and the province filter all work. Story-detail modal could not be opened (unverified); Suggestion Box submission blocked by Turnstile in the hosted browser (environment, not a site defect). Crystal Ball allowance stayed "3 of 3" once — single sample, not claimed.
+- **Deliverables:** `specs/113-visual-ux-audit/{spec,plan,tasks,findings}.md`, `checklists/requirements.md`, `artifacts/ui-audit-20261108/measurements.json`.
+- **BLOCKED:** screenshots were captured but every payload was truncated by the integration transport (480x300 q12 returned inline only and was lost on a runner restart); no image file is claimed and no finding depends on one.
+- **Preserved:** no application, asset, copy, config, dependency, deployment or `.docs/` change; no suggestion, story, reaction, tip or payment was created.
+
+---
+
 # Current Task — Feature-page image optimization and social-sharing image (2026-11-07)
 
 - **Task groups:** `seo` (implements audit findings F-H2 and F-H3 plus the in-scope part of F-M6 from PR #1760) + `polishing` (raster format and serving decisions; the mandated MDN image-format reference was consulted) + `testing` (asset/markup regression guard and executed verification).

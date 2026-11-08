@@ -1,3 +1,14 @@
+## 2026-11-08 — Sitewide visual, usability and brand-positioning audit
+
+- Audited the live production site with Browserless (no Playwright): 10 public routes, 3 permanent aliases, a 404 probe, 8 pages at 1440×900 and 390×844, and one pass through every interactive experience.
+- Critical finding: the first screen has no visible brand name or explanation — the only `H1` renders 1 px wide and the first explanatory copy starts at y≈843 px, so a newcomer cannot identify the offer without scrolling.
+- Verified defects also include a CSP that blocks the Cloudflare analytics beacon sitewide, 13–23 px mobile tap targets, 11.25–11.7 px mobile body type on two pages, a duplicate `<main>` on `/crystal-ball`, `H2`-before-`H1` on `/lucky-meter`, no skip link, inconsistent header/footer destination names, and `/map` reporting "1 lucky story" beside 8 in its own stats.
+- Confirmed working: FAQ accordion, Lucky Meter reveal, Daily Card reveal, Crystal Ball reading, Tip Jar dialog with Escape dismissal, and the province filter with `aria-pressed`.
+- Screenshot retention is blocked by the integration transport (all base64 payloads truncated); every layout statement is therefore a measured geometry or rendered-text observation, and this is recorded rather than glossed over.
+- No application, asset, copy, configuration, dependency or deployment change; audit and prioritised recommendations only.
+
+---
+
 ## 2026-11-07 — Skip-CI verification integrity
 
 - Confirmed the failure mode: GitHub skips `push`/`pull_request` runs for a HEAD commit carrying a documented skip directive (`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]`, or a `skip-checks: true` trailer), leaving earlier commits' green checks visible. This repository already has such heads, e.g. `16588a15 [skip ci] fix(devskim): repair three code review findings`.

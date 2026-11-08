@@ -1,0 +1,78 @@
+{
+  "audit": {
+    "target": "https://luckypickcanada.ca",
+    "date": "2026-11-08",
+    "browser": "Browserless (BROWSERLESS_EXECUTE_CUSTOM_FUNCTION, BROWSERLESS_SCRAPE_CONTENT, BROWSERLESS_TAKE_SCREENSHOT)",
+    "playwrightUsed": false,
+    "viewports": { "desktop": "1440x900", "mobile": "390x844 touch" }
+  },
+  "routes": [
+    { "path": "/", "status": 200, "desktopLoadMs": 5445, "docHeightDesktop": 8448, "docHeightMobile": 7894, "title": "Lucky Pick Canada | Daily Lucky Picks, Cards & Stories", "h1": { "text": "Lucky Pick Canada", "renderedWidthPx": 1, "srOnly": true }, "h2Count": 12, "words": 3185, "links": { "total": 23, "internal": 17, "external": 6 }, "buttons": 14, "images": { "total": 4, "noAlt": 0, "emptyAlt": 2, "missingDims": 2, "lazy": 2 }, "navs": 4, "main": 1, "skipLink": false },
+    { "path": "/about", "status": 200, "desktopLoadMs": 1298, "docHeightDesktop": 3437, "docHeightMobile": 4955, "title": "About the Creator & Our Story | Lucky Pick Canada", "h1": "About the Creator & Our Story", "h2Count": 6, "words": 1629, "images": 0, "navs": 3, "main": 1, "skipLink": false },
+    { "path": "/crystal-ball", "status": 200, "desktopLoadMs": 1070, "docHeightDesktop": 1511, "docHeightMobile": 1313, "title": "Crystal Ball | Lucky Pick Canada", "h2Count": 0, "words": 406, "main": 2, "navs": 4, "ariaLive": 1, "medianMobileFontPx": 11.7, "minMobileFontPx": 10 },
+    { "path": "/lucky-meter", "status": 200, "desktopLoadMs": 28272, "docHeightDesktop": 1178, "mobileNetworkIdleTimeoutMs": 45000, "title": "Lucky Meter | Lucky Pick Canada", "headingOrder": "2,1,2", "canvases": 2, "words": 421, "images": { "total": 1, "missingDims": 1, "emptyAlt": 1 } },
+    { "path": "/reveal", "status": 200, "desktopLoadMs": 1651, "docHeightDesktop": 1404, "docHeightMobile": 1061, "title": "Daily Card Reveal | Lucky Pick Canada", "h2Count": 0, "words": 399, "medianMobileFontPx": 11.25, "minMobileFontPx": 10 },
+    { "path": "/map", "status": 200, "desktopLoadMs": 1539, "docHeightDesktop": 4064, "docHeightMobile": 4267, "title": "Lucky Map | LuckyPickCanada.ca", "h1": "Where Luck Has Been Found Across Canada 🍀", "h2Default": ["1 lucky story", "Recent Canadian Activity", "Lucky Stories by province"], "statTiles": ["Total lucky stories shared (All-time) 8", "Provinces with lucky moments (All-time) 6", "Mapped story markers 8"], "provinceMarkerSizePx": "23x23 mobile / 42x42 desktop", "provinceMarkerCount": 12, "words": 1554 },
+    { "path": "/privacy", "status": 200, "title": "Privacy Policy | Lucky Pick Canada", "h2Count": 4 },
+    { "path": "/terms", "status": 200, "title": "Terms of Service | Lucky Pick Canada", "h2Count": 3 },
+    { "path": "/widget/daily-meter", "status": 200 },
+    { "path": "/reveal/00000000-0000-0000-0000-000000000000", "status": 200, "note": "unknown id still renders the daily reveal page" },
+    { "path": "/stories", "status": 308, "location": "/map" },
+    { "path": "/lucky-map-of-canada", "status": 308, "location": "/map" },
+    { "path": "/where-luck-has-been-found-in-canada", "status": 308, "location": "/map" },
+    { "path": "/does-not-exist-audit", "status": 404 }
+  ],
+  "firstScreen": {
+    "desktop1440x900": {
+      "visibleTextAboveFold": ["Lucky Meter", "Lucky Stories", "Consult the Crystal Ball", "Daily Card Reveal"],
+      "visibleBrandName": false,
+      "h1RenderedWidthPx": 1,
+      "firstExplanatoryLineTopPx": 843,
+      "playExploreHeadingTopPx": 870
+    },
+    "mobile390x844": {
+      "visibleTextAboveFold": ["Lucky Meter", "Lucky Stories", "Consult the Crystal Ball", "Daily Card Reveal", "Explore your luck"],
+      "headerLinkHeightPx": 14
+    }
+  },
+  "interactions": {
+    "faq": { "before": { "expanded": "false", "controls": "faq-answer-0" }, "after": { "expanded": "true", "panelHeightPx": 133, "panelChars": 313, "panelClipped": false, "openCount": 1 }, "result": "PASS" },
+    "luckyMeter": { "result": "PASS", "reading": "COSMIC LIGHTNING RESONANCE 37%", "quote": "A fresh breeze from the Pacific brings clarity and new opportunities.", "ritualCount": 109, "resetCountdown": "22:16:04", "canvases": 2 },
+    "dailyCard": { "result": "PASS", "card": "Coast-to-Coast Tale", "tier": "PREMIUM TIER", "series": "SERIES 1", "quote": "Good fortune grows where hope is planted." },
+    "crystalBall": { "result": "PASS with observation", "submitDisabledInitially": true, "submitEnabledAfterTyping": true, "reading": "The Northern Lights whisper that today brings unexpected luck and double-doubles.", "readingRepeatedTwiceInText": true, "allowanceAfterReading": "3 of 3 questions remaining today", "allowanceReproduction": "NOT COMPLETED (runner restart)" },
+    "tipJar": { "result": "PASS", "dialogRole": "dialog", "suggestedAmount": "CAD $5.00", "action": "Continue to secure checkout", "escapeCloses": true },
+    "suggestionBox": { "result": "CONTRACT VERIFIED / SUBMISSION BLOCKED", "fields": ["name", "email", "message", "website (honeypot)", "cf-turnstile-response (hidden)"], "textarea": { "minLength": 10, "maxLength": 1000, "required": true }, "submitDisabled": true, "turnstileInHostedBrowser": "401 from challenges.cloudflare.com; ERR_NAME_NOT_RESOLVED for brunhild.challenges.cloudflare.com" },
+    "mapFilter": { "result": "PASS", "before": "1 lucky story", "afterSelectingNovaScotia": "3 lucky stories", "ariaPressedSet": true },
+    "storyDetailModal": { "result": "NOT VERIFIED", "note": "story cards are buttons with tabindex 0; activation produced no role=dialog in two attempts" },
+    "reducedMotion": { "result": "PASS", "animatedElementsUnderReduce": 3, "animationDuration": "1e-06s" },
+    "focusIndication": { "result": "PARTIAL", "sample": ["nav links: outline solid 3px", "Back to Home Page: outline none", "gold CTA: outline none"] }
+  },
+  "sitewide": {
+    "consoleErrorAllPages": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/…' violates the following Content Security…",
+    "failedRequestAllPages": "REQFAIL https://static.cloudflareinsights.com/beacon.min.js/… csp",
+    "horizontalScroll": "none (scrollWidth == 390 at 390x844 on every measured page)",
+    "decorativeOverflow": ["homepage-sky-backdrop right=393", "gold-shimmer right=407..627"],
+    "footerLinkHeightPx": "13-16",
+    "captionFontPx": "9.6-11.52"
+  },
+  "httpChecks": {
+    "apiLuckyRevealsCount": { "status": 200, "body": { "total": 0 } },
+    "apiLuckyStories": { "status": 200, "hasStories": true },
+    "homeTtfbSeconds": 0.437,
+    "homeHtmlBytes": 74137,
+    "luckyMeterHtmlBytes": 23957,
+    "staticAssetsCacheControl": "public, max-age=0, must-revalidate",
+    "assets": { "polyfillsJsBytes": 112594, "chunkJsBytes": [203721, 242535], "cssBytes": 23066 },
+    "externalLinks": { "instagram": 200, "tiktok": 200, "x": 404, "facebook": "400/login (bot response, inconclusive)" }
+  },
+  "screenshots": {
+    "retained": false,
+    "attempts": [
+      { "request": "full page JPEG q35", "outcome": "truncated by integration transport" },
+      { "request": "900x560 clip JPEG q35", "outcome": "truncated by integration transport" },
+      { "request": "640x400 clip JPEG q22", "outcome": "truncated by integration transport" },
+      { "request": "480x300 clip JPEG q12", "outcome": "inline payload only; lost on runner restart before it could be written" }
+    ],
+    "note": "No visual conclusion in findings.md depends on an image; all layout statements are measured geometry or rendered text."
+  }
+}
