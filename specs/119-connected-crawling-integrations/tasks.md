@@ -1,8 +1,21 @@
-# Tasks: Connected Crawling Integrations
+# Tasks: Connected Integrations and QA Contract
 
-- [x] T001 Specify the primary/fallback provider behavior and scope in spec.md.
-- [x] T002 Plan the governance-only change and verification approach in plan.md.
-- [x] T003 Add Firecrawl as primary and Crawlbase as fallback in AGENTS.md, preserving existing entries and safeguards.
-- [x] T004 Add the Spec Kit task record and point .specify/feature.json to this feature.
-- [ ] T005 Run the repository Spec Kit verifier and confirm it detects this feature's spec.md, plan.md, and tasks.md.
-- [ ] T006 Run ./freebuff-verify.sh and review the complete final diff; record actual results in the canonical PR summary.
+## Phase 1 — Setup and specification
+- [x] T001 Read `AGENTS.md`, Memory Bank context, `.docs/manifest.json`, `.freebuff/testing.md`, relevant QA references, and the existing Visual QA workflow/classifier.
+- [x] T002 Specify the crawling-provider order and three QA user stories in `specs/119-connected-crawling-integrations/spec.md`.
+- [x] T003 Plan a concise governance-only QA contract and preserve existing workflow/tool restrictions in `specs/119-connected-crawling-integrations/plan.md`.
+- [x] T004 Define this ordered, independently reviewable task list in `specs/119-connected-crawling-integrations/tasks.md`.
+
+## Phase 2 — User Story 1: Retrieve and verify website content (P1)
+- [x] T005 Set Firecrawl as the primary website-content provider and Crawlbase as its conditional fallback in `AGENTS.md`.
+
+## Phase 3 — User Story 2: Verify browser-visible changes (P1)
+- [ ] T006 Add a concise QA contract rule in `AGENTS.md` that preserves Playwright as the automatic PR Visual QA runner, the existing fail-closed classifier, and the direct-agent Browserless/Browserbase fallback and approval boundaries.
+- [ ] T007 Clarify in `AGENTS.md` that Firecrawl/Crawlbase content retrieval does not replace browser-rendering, interaction, or end-to-end verification.
+
+## Phase 4 — User Story 3: Apply mandatory but relevant QA checks (P1)
+- [ ] T008 Define in `AGENTS.md` that applicable checks are mandatory, irrelevant checks are N/A with a reason, blockers are not product defects or passes, and failures require evidence.
+
+## Final verification and handoff
+- [ ] T009 Run the Spec Kit verifier and `./freebuff-verify.sh`; record the actual outcomes in the canonical PR summary.
+- [ ] T010 Review the complete PR diff and verify the PR remains open and unmerged; update the canonical PR summary with exact verification status and outstanding checks.
