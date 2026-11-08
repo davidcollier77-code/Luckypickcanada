@@ -1030,105 +1030,6 @@
       "inFooter": true,
       "outlineStyle": "solid",
       "outlineWidth": "3px"
-    },
-    {
-      "tag": "a",
-      "className": "skip-link",
-      "text": "Skip to main content",
-      "href": "#main-content",
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "a",
-      "className": "home-link",
-      "text": "Back to Home Page",
-      "href": "/",
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "a",
-      "className": "story-link gold-3d-btn",
-      "text": "🍀 View Lucky Stories",
-      "href": "#lucky-story-map",
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "story-link gold-3d-btn",
-      "text": "✍️Share your lucky story",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "",
-      "text": "All-Time",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "",
-      "text": "Last 24 Hours",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "province-marker has-stories",
-      "text": "ON",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "province-select-card map-province-card",
-      "text": "Yukon0 stories",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "province-select-card map-province-card",
-      "text": "Northwest Territories0 stories",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "province-select-card map-province-card",
-      "text": "Nunavut0 stories",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
-    },
-    {
-      "tag": "button",
-      "className": "province-select-card map-province-card",
-      "text": "British Columbia0 stories",
-      "href": null,
-      "inFooter": false,
-      "outlineStyle": "solid",
-      "outlineWidth": "3px"
     }
   ],
   "skipLink": {
@@ -1149,5 +1050,9 @@
       "isMain": true,
       "scrollY": 0
     }
-  }
+  },
+  "focusWalkOriginalCount": 44,
+  "focusWalkCount": 33,
+  "focusWalkRepeatedStopsRemoved": 11,
+  "focusWalkNote": "The old fixed-length Tab loop continued after keyboard focus wrapped. Repeated identical stops have been removed; the corrected harness stops on the first repeated focusable element."
 }

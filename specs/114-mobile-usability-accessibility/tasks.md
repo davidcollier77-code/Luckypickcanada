@@ -27,7 +27,7 @@
 - [X] T012 [US2] Raise the Lucky Map statistic label and story badge from `0.72rem` to `0.8rem`, and the Crystal Ball quota countdown from `0.78rem` to `0.8rem`.
 - [X] T013 [US2] Raise the revealed-card tier chip and series caption from `0.68rem`/`0.7rem` to `0.8rem` in `app/lucky-card-reveal.js`.
 - [X] T014 [US2] Raise the mobile offer note, lucky-moment eyebrow and card share status to `0.8rem` in `themes/default/a11y.css`, leaving decorative kickers and artwork labels untouched.
-- [X] T015 [US2] Re-enumerate computed font sizes per route at 390 × 844; record min/median and classify any remaining sub-12 px element by role. Result min/median: `/` 10/14.25, `/reveal` 12/12, `/crystal-ball` 9.945/12, `/map` 12/15, `/about` 12/16.875, `/lucky-meter` 12/12. Remaining sub-12 px: aria-hidden `•` separators (10 px, decorative) and the Crystal Ball engraved plaque label (9.945 px, part of the artwork).
+- [X] T015 Re-enumerate computed font sizes per route at 390 × 844 and classify remaining sub-12 px text. The post-change capture showed the only visible non-hidden sub-12 px item was the 9.945 px Crystal Ball plaque engraving; its overlay is now `aria-hidden` with no visual change. The homepage's 10 px bullet separators were already `aria-hidden`.
 - [X] T016 [US2] Review the homepage at 390 × 844 for horizontal overflow, clipped text, control overlap and first-screen touch use. Result: `scrollWidth` 390 = `clientWidth` 390, no horizontally clipped text and no overlapping hit areas.
 
 ## Phase 5 — User story 3: correct landmarks, headings and skip navigation (P1)
@@ -40,7 +40,7 @@
 ## Phase 6 — User story 4: visible keyboard focus (P2)
 
 - [X] T021 [US4] Remove the `outline: none` declarations for map controls and add the 3 px gold `:focus-visible` rule in `themes/default/map.css`; add the footer focus ring in `a11y.css`.
-- [X] T022 [US4] Tab through `/map` and record `outline-style`/`outline-width` for every focused control, including footer links, the gold CTA and “Back to Home Page”. Result: 43 focused stops, 0 with `outline-style: none`; skip link, `.home-link`, `.story-link` and footer links report a 3 px solid outline.
+- [X] T022 Tab through `/map` and record focus styling. The old fixed-length walk included wrap-around repetitions; deduplicated evidence contains 21 unique mobile stops and 33 unique desktop stops, all with visible 3 px solid outlines. The corrected harness now stops on the first repeated focus target.
 
 ## Phase 7 — Guard, verify and deliver
 
@@ -52,6 +52,15 @@
 - [X] T028 Update `.specify/feature.json` to point at this feature. The shared memory-bank notes are left to the owner's own workflow so this branch does not overwrite other work in them.
 - [ ] T029 Commit, push, open one PR with the canonical summary, and leave it open and unmerged. (Completed at handoff; PR HEAD SHA is recorded in the PR body.)
 - [ ] T030 Record the PR-head check status truthfully (pending is acceptable; never reported as passed).
+
+## Phase 8 — Review follow-up hardening
+
+- [X] T031 Restore the `footer nav a::before` selector around `inset: 0 !important` in `themes/default/a11y.css`; preserve the existing homepage reset.
+- [X] T032 Mark the decorative Crystal Ball plaque overlay `aria-hidden` in `app/components/CrystalBall/CrystalBall.tsx`, without changing its visual appearance.
+- [X] T033 Add rendered accessibility checks in `tests/visual/mobile-accessibility.spec.ts` for route landmarks, named navigation, H1 order, skip-link focus, tap-target boxes, mobile text and unique keyboard focus stops.
+- [X] T034 Correct `artifacts/a11y-mobile-20261108/measure.mjs` to scroll and await each target, fail closed for off-screen measurements, compare document-coordinate hit boxes and stop after Tab wraps.
+- [X] T035 Mark the off-screen 1×1 footer samples in `before.json` invalid and deduplicate repeated focus-walk records in `after.json` and `after-desktop.json`; preserve the raw reported data.
+- [ ] T036 Run the focused Vitest guard, the new Playwright accessibility suite, TypeScript, `./freebuff-verify.sh` and the production build on the updated PR head. Record the real results; do not treat the historical Visual QA scanner as a visual-regression result.
 
 ## Dependencies
 

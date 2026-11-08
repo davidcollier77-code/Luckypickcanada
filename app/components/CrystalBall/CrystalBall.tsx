@@ -378,7 +378,7 @@ export default function CrystalBall({
                 decoding="async"
               />
             </picture>
-            <div className={styles.plaqueOverlay}>
+            <div className={styles.plaqueOverlay} aria-hidden="true">
               <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
             </div>
           </div>

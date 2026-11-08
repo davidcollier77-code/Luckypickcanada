@@ -111,15 +111,15 @@ await page.waitForTimeout(1500);
  * elementFromPoint stops resolving inside the control. Generated (::before/
  * ::after) hit areas count, so this reports what a finger actually hits.
  */
-const tapProbe = await page.evaluate(() => {
-  // `html { scroll-behavior: smooth }` makes scrollIntoView asynchronous, which
-  // would probe an element that is still off-screen. Scroll instantly instead.
-  const scrollInstant = (el) => {
+const tapProbe = await page.evaluate(async () => {
+  const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const scrollInstant = async (el) => {
     const previous = document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = 'auto';
-    const rect = el.getBoundingClientRect();
-    window.scrollTo({ top: window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2, behavior: 'instant' });
+    el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
+    await nextFrame();
     document.documentElement.style.scrollBehavior = previous;
+    await nextFrame();
   };
 
   const span = (el) => {
@@ -135,7 +135,7 @@ const tapProbe = await page.evaluate(() => {
       while (n < 80) {
         const x = cx + dx * (n + 1);
         const y = cy + dy * (n + 1);
-        if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) break;
+        if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) break;
         if (!inside(x, y)) break;
         n += 1;
       }
@@ -152,29 +152,50 @@ const tapProbe = await page.evaluate(() => {
     };
   };
 
-  const measured = (label, selector, limit = 3) => Array.from(document.querySelectorAll(selector))
-    .filter((el) => el.getBoundingClientRect().width > 0)
-    .slice(0, limit)
-    .map((el) => {
-      scrollInstant(el);
+  const measured = async (label, selector, limit = 3) => {
+    const elements = Array.from(document.querySelectorAll(selector))
+      .filter((el) => el.getBoundingClientRect().width > 0)
+      .slice(0, limit);
+    const records = [];
+    for (const el of elements) {
+      await scrollInstant(el);
       const r = el.getBoundingClientRect();
+      const cx = r.x + r.width / 2;
+      const cy = r.y + r.height / 2;
+      const centerHit = document.elementFromPoint(cx, cy);
+      const centerResolvesToTarget = Boolean(centerHit && (centerHit === el || el.contains(centerHit)));
+      const inViewport = r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+      if (!inViewport || !centerResolvesToTarget) {
+        throw new Error('Cannot measure ' + label + ' "' + (el.textContent || '').trim() +
+          '": target is not fully hit-testable in the viewport (top=' + r.top +
+          ', bottom=' + r.bottom + ', centerHit=' + centerResolvesToTarget + ').');
+      }
       const hit = span(el);
-      return {
+      records.push({
         label,
         tag: el.tagName.toLowerCase(),
         className: (typeof el.className === 'string' ? el.className : '').slice(0, 80),
         text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40),
         rect: { w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 },
+        inViewport,
+        centerResolvesToTarget,
         hitArea: { width: hit.width, height: hit.height },
-        hitBox: hit.box,
-      };
-    });
+        hitBox: {
+          left: hit.box.left + window.scrollX,
+          right: hit.box.right + window.scrollX,
+          top: hit.box.top + window.scrollY,
+          bottom: hit.box.bottom + window.scrollY,
+        },
+      });
+    }
+    return records;
+  };
 
   const targets = [
-    ...measured('homepage header link', '.homepage-main-nav a', 4),
-    ...measured('footer nav link', 'footer nav[aria-label="Footer navigation"] a', 3),
-    ...measured('footer social link', 'footer nav[aria-label="Social links"] a', 3),
-    ...measured('footer legal link', 'footer nav[aria-label="Legal links"] a', 2),
+    ...(await measured('homepage header link', '.homepage-main-nav a', 4)),
+    ...(await measured('footer nav link', 'footer nav[aria-label="Footer navigation"] a', 3)),
+    ...(await measured('footer social link', 'footer nav[aria-label="Social links"] a', 3)),
+    ...(await measured('footer legal link', 'footer nav[aria-label="Legal links"] a', 2)),
   ];
 
   const overlaps = [];
@@ -185,11 +206,10 @@ const tapProbe = await page.evaluate(() => {
       const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
       const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
       if (w > 0 && h > 0) {
-        overlaps.push({ a: `${targets[i].label}: ${targets[i].text.slice(0, 24)}`, b: `${targets[j].label}: ${targets[j].text.slice(0, 24)}`, overlapPx: { w: Math.round(w * 10) / 10, h: Math.round(h * 10) / 10 } });
+        overlaps.push({ a: targets[i].label + ': ' + targets[i].text.slice(0, 24), b: targets[j].label + ': ' + targets[j].text.slice(0, 24), overlapPx: { w: Math.round(w * 10) / 10, h: Math.round(h * 10) / 10 } });
       }
     }
   }
-
   return { targets, overlaps };
 });
 results.tapTargets = tapProbe.targets;
@@ -198,22 +218,19 @@ results.tapOverlaps = tapProbe.overlaps;
 // Map province markers need the map data rendered before measuring.
 await page.goto(baseUrl + '/map', { waitUntil: 'domcontentloaded', timeout: 60000 });
 await page.waitForTimeout(4000);
-results.mapMarkers = await page.evaluate(() => {
-  const scrollInstant = (el) => {
+results.mapMarkers = await page.evaluate(async () => {
+  const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const scrollInstant = async (el) => {
     const previous = document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = 'auto';
-    const rect = el.getBoundingClientRect();
-    window.scrollTo({ top: window.scrollY + rect.top - window.innerHeight / 2 + rect.height / 2, behavior: 'instant' });
+    el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'center' });
+    await nextFrame();
     document.documentElement.style.scrollBehavior = previous;
+    await nextFrame();
   };
-
   let marker = document.querySelector('.province-marker');
   let injected = false;
   if (!marker) {
-    // The local workspace has no story database, so the map renders its empty
-    // state and no marker buttons. Inject one button with the production class
-    // name into the map surface so the authored CSS can still be measured. This
-    // is recorded as injected and does not change any page file.
     const artwork = document.querySelector('.official-map-artwork') || document.body;
     const probe = document.createElement('button');
     probe.type = 'button';
@@ -227,10 +244,17 @@ results.mapMarkers = await page.evaluate(() => {
     injected = true;
   }
   const markers = injected ? [marker] : Array.from(document.querySelectorAll('.province-marker'));
-  scrollInstant(marker);
+  await scrollInstant(marker);
   const r = marker.getBoundingClientRect();
   const cx = r.x + r.width / 2;
   const cy = r.y + r.height / 2;
+  const centerHit = document.elementFromPoint(cx, cy);
+  const centerResolvesToTarget = Boolean(centerHit && (centerHit === marker || marker.contains(centerHit)));
+  const inViewport = r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+  if (!inViewport || !centerResolvesToTarget) {
+    throw new Error('Cannot measure map marker: target is not fully hit-testable in viewport (top=' +
+      r.top + ', bottom=' + r.bottom + ', centerHit=' + centerResolvesToTarget + ').');
+  }
   const inside = (x, y) => {
     const hit = document.elementFromPoint(x, y);
     return Boolean(hit && (hit === marker || marker.contains(hit)));
@@ -238,7 +262,10 @@ results.mapMarkers = await page.evaluate(() => {
   const walk = (dx, dy) => {
     let n = 0;
     while (n < 80) {
-      if (!inside(cx + dx * (n + 1), cy + dy * (n + 1))) break;
+      const x = cx + dx * (n + 1);
+      const y = cy + dy * (n + 1);
+      if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) break;
+      if (!inside(x, y)) break;
       n += 1;
     }
     return n;
@@ -251,35 +278,42 @@ results.mapMarkers = await page.evaluate(() => {
       const dx = (a.x + a.width / 2) - (b.x + b.width / 2);
       const dy = (a.y + a.height / 2) - (b.y + b.height / 2);
       const dist = Math.hypot(dx, dy);
-      if (dist < (a.width + b.width) / 2) {
-        overlaps.push({
-          a: markers[i].getAttribute('aria-label'),
-          b: markers[j].getAttribute('aria-label'),
-          centreDistance: Math.round(dist * 10) / 10,
-          visibleRadiusSum: Math.round((a.width + b.width) / 2 * 10) / 10,
-        });
-      }
+      if (dist < (a.width + b.width) / 2) overlaps.push({
+        a: markers[i].getAttribute('aria-label'),
+        b: markers[j].getAttribute('aria-label'),
+        centreDistance: Math.round(dist * 10) / 10,
+        visibleRadiusSum: Math.round((a.width + b.width) / 2 * 10) / 10,
+      });
     }
   }
   return {
     count: markers.length,
     injected,
+    inViewport,
+    centerResolvesToTarget,
     rect: { w: Math.round(r.width * 10) / 10, h: Math.round(r.height * 10) / 10 },
     hitArea: { width: walk(-1, 0) + walk(1, 0) + 1, height: walk(0, -1) + walk(0, 1) + 1 },
     overlaps,
   };
 });
 
-// Keyboard focus walk on /map: tab through the page and record visible focus.
+// Keyboard focus walk on /map: stop when Tab wraps to the first visited element.
 await page.evaluate(() => document.activeElement && document.activeElement.blur());
 const focusWalk = [];
-for (let i = 0; i < 45; i += 1) {
+const seenFocusIndices = new Set();
+for (let i = 0; i < 100; i += 1) {
   await page.keyboard.press('Tab');
   const focused = await page.evaluate(() => {
     const el = document.activeElement;
     if (!el || el === document.body) return null;
+    const candidates = Array.from(document.querySelectorAll(
+      'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
+    ));
+    const focusIndex = candidates.indexOf(el);
+    if (focusIndex < 0) return null;
     const style = getComputedStyle(el);
     return {
+      focusIndex,
       tag: el.tagName.toLowerCase(),
       className: (typeof el.className === 'string' ? el.className : '').slice(0, 60),
       text: (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 30),
@@ -289,9 +323,13 @@ for (let i = 0; i < 45; i += 1) {
       outlineWidth: style.outlineWidth,
     };
   });
-  if (focused) focusWalk.push(focused);
+  if (!focused || seenFocusIndices.has(focused.focusIndex)) break;
+  seenFocusIndices.add(focused.focusIndex);
+  focusWalk.push(focused);
 }
 results.focusWalkMap = focusWalk;
+results.focusWalkCount = focusWalk.length;
+results.focusWalkStoppedOnWrap = true;
 
 // Skip-link activation: first Tab must land on a visible skip link, Enter must
 // move focus to the page's main content landmark.

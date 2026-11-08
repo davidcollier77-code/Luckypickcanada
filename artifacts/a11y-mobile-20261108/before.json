@@ -1466,10 +1466,13 @@
         "w": 31,
         "h": 14.7
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer nav link",
@@ -1482,10 +1485,13 @@
         "w": 63,
         "h": 14.7
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer nav link",
@@ -1498,10 +1504,13 @@
         "w": 58,
         "h": 14.7
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer social link",
@@ -1514,10 +1523,13 @@
         "w": 98,
         "h": 13.3
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer social link",
@@ -1530,10 +1542,13 @@
         "w": 67,
         "h": 13.3
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer social link",
@@ -1546,10 +1561,13 @@
         "w": 48,
         "h": 13.3
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer legal link",
@@ -1562,10 +1580,13 @@
         "w": 63,
         "h": 13.3
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     },
     {
       "label": "footer legal link",
@@ -1578,10 +1599,13 @@
         "w": 72,
         "h": 13.3
       },
-      "hitArea": {
+      "hitArea": null,
+      "reportedHitArea": {
         "width": 1,
         "height": 1
-      }
+      },
+      "hitBox": null,
+      "measurementStatus": "INVALID_OFFSCREEN"
     }
   ],
   "mapMarkers": {
@@ -2071,5 +2095,9 @@
       "outlineColor": "rgb(255, 247, 214)",
       "boxShadow": "none"
     }
+  ],
+  "tapTargetBaselineComparable": false,
+  "measurementWarnings": [
+    "Invalidated 8 footer tap-target samples: their rectangles were below the 844px viewport while the probe returned 1x1px. These values are failed off-screen hit tests, not actual element hit areas. The corrected harness scrolls targets into view and fails closed when it cannot verify the target centre."
   ]
 }

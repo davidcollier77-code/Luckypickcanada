@@ -116,3 +116,15 @@ and the computed box shadow; assert a non-`none` outline wider than 0 on every i
 - Colour contrast is out of scope and is not measured or changed.
 - The audit's disputed first-screen branding recommendation, the Lucky Map data/count issue (D7), navigation
   label consistency (D6) and Terms copy (D9) are separate future tasks and are not touched here.
+
+
+## Follow-up review hardening (2026-11-08)
+
+- The Crystal Ball pedestal plaque remains visually unchanged; its text overlay is decorative artwork and is now marked `aria-hidden="true"` so the 9.945 px engraving is not announced as reading text.
+- The footer pseudo-element reset is restored as a real `footer nav a::before` selector with `inset: 0 !important`; the existing homepage reset is unchanged.
+- The Vitest source assertions are fast implementation guards, not a substitute for browser verification. `tests/visual/mobile-accessibility.spec.ts` exercises rendered landmarks, heading order, skip-link focus, tap-target geometry, mobile text and keyboard focus.
+- The old `before.json` footer hit-area values at y-coordinates below the viewport are invalid off-screen probes. Their raw 1×1 values are preserved in `reportedHitArea`, but the authoritative `hitArea` is null and the records are marked `INVALID_OFFSCREEN`; they are not valid before/after evidence.
+- The prior fixed-length keyboard walk continued after Tab wrapped. Existing after-capture evidence has repeated records removed and now reports unique stops. The corrected harness stops at the first repeated focusable element. No screenshot baselines or the historical Visual QA scanner are changed.
+
+- **SC-007**: Playwright verifies rendered landmarks, heading order, skip-link focus, target geometry, mobile text floor and keyboard focus behavior.
+- **SC-008**: Measurement evidence excludes off-screen hit-test failures and reports unique keyboard stops without counting Tab-wrap repetitions.

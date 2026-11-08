@@ -6,10 +6,10 @@ import { join, relative } from 'node:path';
  * Regression guard for the mobile usability and accessibility remediation
  * (audit findings D3, D4, D5 and D8 from PR #1773).
  *
- * These assertions protect the structural guarantees that a browser
- * measurement confirmed on this branch. They are intentionally narrow: they
- * fail when the single main landmark, the first heading, the skip link, the
- * focus outlines or the mobile target/type floors are removed or reverted.
+ * These fast source-level assertions protect stable implementation invariants.
+ * Rendered behavior is independently checked by
+ * tests/visual/mobile-accessibility.spec.ts using the configured Playwright
+ * browser projects; these source checks are not a substitute for browser QA.
  */
 
 const ROOT = process.cwd();
@@ -19,7 +19,13 @@ function walk(dir, files = []) {
   for (const entry of readdirSync(join(ROOT, dir))) {
     const rel = join(dir, entry);
     const full = join(ROOT, rel);
-    if (statSync(full).isDirectory()) {
+    let info;
+    try {
+      info = statSync(full);
+    } catch (error) {
+      throw new Error(`Unable to inspect "${rel}" during the accessibility source walk: ${error.message}`);
+    }
+    if (info.isDirectory()) {
       if (['node_modules', '.next', '.git', 'out'].includes(entry)) continue;
       walk(rel, files);
     } else if (/\.(js|jsx|tsx)$/.test(entry)) {

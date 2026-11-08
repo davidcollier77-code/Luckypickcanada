@@ -121,3 +121,13 @@ Not changed: artwork and `public/` assets, `next.config.mjs`, `wrangler.jsonc`, 
 - **Focus-visible regressions**: hover/focus lift and brightness stay; only the outline removal is reverted.
 - **Focus target invisibility**: `#main-content` is focusable and not `outline: none`, so keyboard users can see
   where the skip link lands.
+
+
+## Follow-up review hardening (2026-11-08)
+
+- Restore the footer `::before` reset as an actual `footer nav a::before` selector with `inset: 0 !important`; preserve the existing homepage reset.
+- Keep the engraved Crystal Ball artwork exactly as-is and mark only its decorative overlay `aria-hidden`.
+- Add Playwright browser assertions in `tests/visual/mobile-accessibility.spec.ts`; keep the Vitest checks as fast source-level guards.
+- Correct the measurement harness to scroll targets into view, await layout, validate hit testing, compare document-coordinate hit boxes and stop when Tab wraps.
+- Mark invalid off-screen footer baselines and remove repeated focus-wrap records from existing after-captures.
+- Leave the legacy screenshot/Visual QA scanner untouched.
