@@ -18,4 +18,4 @@
 
 ## Final verification and handoff
 - [ ] T009 Run the Spec Kit verifier and `./freebuff-verify.sh`; record the actual outcomes in the canonical PR summary.
-- [ ] T010 Review the complete PR diff and verify the PR remains open and unmerged; update the canonical PR summary with exact verification status and outstanding checks.
+- [x] T010 Review the complete PR diff and verify the PR remains open and unmerged; update the canonical PR summary with exact verification status and outstanding checks.
