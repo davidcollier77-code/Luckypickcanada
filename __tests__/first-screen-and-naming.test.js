@@ -116,14 +116,30 @@ describe('approved experience names', () => {
   });
 });
 
-describe('mobile marker spacing', () => {
-  it('fans the Maritime markers apart so each keeps its own target', () => {
+describe('province marker spacing and stacking', () => {
+  it('fans the Maritime markers apart at every width so each keeps its own target', () => {
     const mapCss = read('themes/default/map.css');
 
     expect(mapSource).toContain('data-province={province.code}');
-    expect(mapCss).toMatch(/\.province-marker\[data-province='NB'\]/);
-    expect(mapCss).toMatch(/\.province-marker\[data-province='PE'\]/);
-    expect(mapCss).toMatch(/\.province-marker\[data-province='NS'\]/);
+    // Wide screens: Nova Scotia used to cover New Brunswick's centre.
+    expect(mapCss).toMatch(/\.province-marker\[data-province='NB'\] \{ left: 74\.5% !important; top: 77\.5% !important; \}/);
+    expect(mapCss).toMatch(/\.province-marker\[data-province='PE'\] \{ left: 80% !important; top: 71% !important; \}/);
+    expect(mapCss).toMatch(/\.province-marker\[data-province='NS'\] \{ left: 85\.5% !important; top: 80\.5% !important; \}/);
+    // Narrow screens keep the verified phone fan.
     expect(mapCss).toMatch(/@media \(max-width: 620px\)/);
+    expect(mapCss).toMatch(/\[data-province='NB'\] \{ left: 72\.5% !important; top: 70\.5% !important; \}/);
+    expect(mapCss).toMatch(/\[data-province='PE'\] \{ left: 80% !important; top: 69% !important; \}/);
+    expect(mapCss).toMatch(/\[data-province='NS'\] \{ left: 84% !important; top: 80% !important; \}/);
+  });
+
+  it('keeps the selected marker above its neighbours and gives the cluster room', () => {
+    const mapCss = read('themes/default/map.css');
+    const baseZ = mapCss.match(/\.province-marker \{[^}]*z-index: (\d+);/);
+    const activeZ = mapCss.match(/\.province-marker\.is-active \{[^}]*z-index: (\d+);/);
+
+    expect(baseZ, 'base marker z-index').not.toBeNull();
+    expect(activeZ, 'active marker z-index').not.toBeNull();
+    expect(Number(activeZ[1])).toBeGreaterThan(Number(baseZ[1]));
+    expect(mapCss).toMatch(/\.official-map-artwork \{ position: relative; width: min\(100%, 48rem\);/);
   });
 });

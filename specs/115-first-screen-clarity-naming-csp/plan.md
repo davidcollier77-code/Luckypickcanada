@@ -118,3 +118,17 @@ Not changed: `public/**` artwork, Stripe/checkout/payment code, `package.json`, 
 ## Follow-up (2026-11-08) — marker spacing
 
 Measuring the populated map (temporary local fixture, reverted) showed the three Maritime markers overlapping at phone width, leaving NB and PEI with a 0 px target. The fix stays inside the existing architecture: one `data-province` attribute on the existing marker button plus three narrow-screen `left`/`top` overrides in `themes/default/map.css`. No component restructuring, no new dependency, no desktop change. A guard in `__tests__/first-screen-and-naming.test.js` keeps the attribute and the three rules from being removed.
+
+## Follow-up (2026-11-08, PR #1777) — marker selection and desktop Maritime spacing
+
+1. `themes/default/map.css`: fan NB/PE/NS at every width (74.5/77.5, 80/71, 85.5/80.5) while keeping
+   the existing sub-620 px fan; raise `.province-marker.is-active` from `z-index: 3` (below its
+   siblings) to `z-index: 7`; raise `.official-map-artwork` from `min(100%, 44rem)` to
+   `min(100%, 48rem)` so the cluster has room. Marker size, styling, artwork and every non-Maritime
+   position are untouched.
+2. `tests/visual/map-marker-interaction.spec.ts`: a database-free Playwright guard that answers
+   `/api/lucky-stories` from a local fixture, clicks all 13 markers with an unforced click and
+   asserts the selected province and panel heading, then checks rendered geometry — every centre is
+   its own hit target, no marker is under 24 px, and the Maritime fan matches the active width band.
+3. `__tests__/first-screen-and-naming.test.js`: extend the CSS guard to the wide-band fan, the
+   narrow-band fan, the active-marker stacking order and the wider artwork cap.

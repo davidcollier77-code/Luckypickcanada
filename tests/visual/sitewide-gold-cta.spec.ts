@@ -14,9 +14,10 @@ const EDGE = 'rgb(138, 85, 12)';
 const MAIN_GOLD = 'rgb(220, 174, 78)';
 
 // Assigned leading emoji per homepage CTA, in DOM order.
-const HOMEPAGE_EMOJI = ['✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
+const HOMEPAGE_EMOJI = ['🍀', '✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
 
 const HOMEPAGE_WORDING = [
+  'Explore free experiences',
   'Check Luck Generator',
   "Reveal Today's Card",
   'ASK THE CRYSTAL BALL',
@@ -76,7 +77,9 @@ test.describe('Site-wide gold CTA', () => {
       };
     }));
 
-    expect(ctas).toHaveLength(8);
+    // Nine since the approved first-screen block added its free "Explore free
+    // experiences" CTA ahead of the original eight sections.
+    expect(ctas).toHaveLength(9);
 
     ctas.forEach((cta, index) => {
       // FR-001: the measured metallic ramp, not the previous vivid yellow.

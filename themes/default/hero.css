@@ -209,10 +209,20 @@ html { scroll-behavior: smooth; }
 }
 
 .hero-welcome-cta {
+  /* An inline <a> ignores min-height, which left this control at 41.8 px on
+     desktop and 39.5 px on phones against the 44 px target the gold-CTA suite
+     measures. Flex centring makes the minimum real. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
   min-height: 46px;
   padding: .65rem 1.35rem;
   border-radius: 999px;
-  font-size: clamp(.78rem, 1.4vw, .9rem);
+  /* 0.85rem of the 15 px root is 12.75 px, which keeps this control above the
+     repository's 12 px mobile caption floor (PR #1774); 0.78rem measured
+     11.7 px and failed the audit test. */
+  font-size: clamp(.85rem, 1.4vw, .9rem);
   font-weight: 900;
   letter-spacing: .06em;
   text-transform: uppercase;

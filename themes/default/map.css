@@ -9,8 +9,8 @@ html { scroll-behavior: smooth; }
 .home-link:focus-visible, .story-link:focus-visible, .province-marker:focus-visible, .province-select-card:focus-visible, .map-activity-card:focus-visible, .map-province-card:focus-visible, .secondary-action-btn:focus-visible { outline: 3px solid #fff3c4; outline-offset: 3px; }
 .map-panel { display: flex; flex-direction: column; width: 100%; align-items: center; justify-content: center; gap: 1rem; padding: 0 !important; overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
 .map-panel::before, .map-panel::after { content: none !important; }
-.official-map-artwork { position: relative; width: min(100%, 44rem); max-width: 100%; aspect-ratio: 569 / 464; overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
-/* The artwork is 569x464 and is displayed up to 44rem (704px), so it is always upscaled.
+.official-map-artwork { position: relative; width: min(100%, 48rem); max-width: 100%; aspect-ratio: 569 / 464; overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
+/* The artwork is 569x464 and is displayed up to 48rem (768px), so it is always upscaled.
    `crisp-edges` selects nearest-neighbour-style scaling and replicated pixels along every
    edge and label; `auto` uses the browser's smooth, high-quality scaling instead. No source
    asset, display size, marker geometry, or interaction changes. */
@@ -24,19 +24,28 @@ html { scroll-behavior: smooth; }
    about 29 px without enlarging or restyling the marker artwork (WCAG 2.2
    SC 2.5.8). The ring is transparent and captures no new visuals. */
 .province-marker::before { content: ''; position: absolute; inset: -3px; border-radius: inherit; }
+/* Maritime spacing at every width. Measured on a 1440 px viewport the marker
+   button is 42 px wide, but New Brunswick, Prince Edward Island and Nova
+   Scotia sat 25-36 px apart, so the later marker in DOM order painted over the
+   earlier one: Nova Scotia covered the centre of New Brunswick and made that
+   button unclickable. Fan the trio a few percent apart so every centre stays
+   its own hit target. Marker styling and artwork are unchanged. */
+.province-marker[data-province='NB'] { left: 74.5% !important; top: 77.5% !important; }
+.province-marker[data-province='PE'] { left: 80% !important; top: 71% !important; }
+.province-marker[data-province='NS'] { left: 85.5% !important; top: 80.5% !important; }
 /* Mobile spacing floor for the three Maritime markers. Measured at a 390 px
    viewport (360 px artwork), New Brunswick and Prince Edward Island sat 15-18 px
    from Nova Scotia and were completely covered by it, leaving a 0 px effective
-   hit area even though each marker box is 22.5 px. On narrow screens only, fan
-   the trio a few percent apart so every marker keeps its own >= 24 px target.
-   Marker styling, artwork and every desktop position are unchanged. */
+   hit area even though each marker box is 22.5 px. At 620 px and below these
+   override the wide fan so every marker keeps its own >= 24 px target. */
+
 @media (max-width: 620px) {
   .province-marker[data-province='NB'] { left: 72.5% !important; top: 70.5% !important; }
   .province-marker[data-province='PE'] { left: 80% !important; top: 69% !important; }
   .province-marker[data-province='NS'] { left: 84% !important; top: 80% !important; }
 }
 .province-marker.has-stories { color: #15372a; background: radial-gradient(circle at 32% 28%, #fffdf0 0 8%, #fce38a 23%, #e7ae36 51%, #9b6513 100%); border-color: #fff0a9; box-shadow: 0 0 0 4px rgba(255, 220, 111, .12), 0 0 24px rgba(248, 198, 73, .6), 0 8px 18px rgba(0, 0, 0, .38), inset 0 2px 3px rgba(255, 255, 255, .65); }
-.province-marker.is-active { transform: translate(-50%, calc(-50% - 2px)) scale(1.12); border-color: #fffbea; box-shadow: 0 0 0 6px rgba(255, 236, 162, .18), 0 0 34px rgba(255, 202, 64, .9), 0 10px 22px rgba(0, 0, 0, .42); z-index: 3; }
+.province-marker.is-active { transform: translate(-50%, calc(-50% - 2px)) scale(1.12); border-color: #fffbea; box-shadow: 0 0 0 6px rgba(255, 236, 162, .18), 0 0 34px rgba(255, 202, 64, .9), 0 10px 22px rgba(0, 0, 0, .42); z-index: 7; }
 .province-marker:hover, .province-marker:focus-visible { transform: translate(-50%, calc(-50% - 3px)); }
 .province-marker.is-active:hover, .province-marker.is-active:focus-visible { transform: translate(-50%, calc(-50% - 3px)) scale(1.12); }
 .province-marker .marker-count { position: static; display: grid; width: 100%; height: 100%; min-width: 0; place-items: center; padding: 0; border: 0; border-radius: inherit; color: inherit; background: transparent; box-shadow: none; font-size: clamp(.78rem, 1.7vw, 1.12rem); }

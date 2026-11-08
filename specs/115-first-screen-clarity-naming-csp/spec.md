@@ -127,3 +127,23 @@ emulated touch viewport and compare with 24 px; record every value.
 - With markers present, at 390 × 844 (360 px artwork) New Brunswick and Prince Edward Island were completely covered by Nova Scotia — centres only 15–18 px apart and a measured **0 px effective hit area**, a real failure the empty map had hidden. This contradicted the earlier "no control remains below 24 px" reading, which was therefore corrected in `tasks.md`.
 - Fix: the marker button exposes `data-province`, and `themes/default/map.css` fans only NB, PEI and NS apart below 620 px. Marker styling, artwork and every desktop position are untouched.
 - Re-measured after the fix: 13 markers, minimum visible circle 22.5 px, **minimum effective hit area 54 × 54 px**, all 13 centres hittable, no pair closer than 24 px. Desktop markers remain 42 px. Evidence in `artifacts/first-screen-20261108/results.json`.
+
+## Follow-up (2026-11-08, PR #1777) — marker selection and the desktop Maritime overlap
+
+The narrow-screen fan fixed the phone targets but left the desktop cluster untouched, and a
+populated map exposed two defects.
+
+- **D-A — selection failure (hit-testing, not event handling).** At 1440 px the marker button is
+  42 px wide, but New Brunswick, Prince Edward Island and Nova Scotia sat 25–36 px apart. The later
+  button in DOM order paints on top, so Nova Scotia covered the centre of New Brunswick: a click
+  there landed on Nova Scotia's decorative sparkle, and Playwright refused to click the button at
+  all (`subtree intercepts pointer events`). A direct DOM click on each of the 13 buttons always
+  selected that same province, which proves the `onClick` handler and its state update were sound
+  and the fault was the covered hit target.
+- **D-B — inverted stacking.** The selected marker carried `z-index: 3` while unselected markers
+  use `z-index: 5`, so the active province sank behind its neighbours instead of rising above them.
+
+The fix stays inside the existing marker layer: the three Maritime markers are fanned a few percent
+apart at every width (the verified sub-620 px fan is unchanged), the active marker is raised above
+its siblings, and the map's maximum rendered width grows from 44rem to 48rem so the cluster has
+room. No artwork, colour, marker size, route, copy, price or data behaviour changes.

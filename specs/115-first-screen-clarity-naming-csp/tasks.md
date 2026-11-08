@@ -61,3 +61,19 @@ Four independently verifiable increments in one branch and one PR: first-screen 
 fit), the additive CSP source, approved naming consistency, and verification of the tap targets PR
 #1774 already delivered. They share no runtime code beyond the homepage files, and all four come from
 the same audit and master request.
+
+## Phase 8 — Follow-up: marker selection and desktop Maritime overlap (PR #1777)
+
+- [X] T025 [US5] Reproduce on a populated map without touching the database: `/api/lucky-stories` answered from a local fixture so the real client component renders all 13 markers. Playwright refused the New Brunswick click because the Nova Scotia marker subtree intercepts pointer events; pre-change artwork screenshots captured in `artifacts/map-marker-fix/before/`.
+- [X] T026 [US5] Separate hit-testing from event handling: a direct DOM click on each of the 13 buttons selected that same province every time, so the `onClick`/`setSelectedProvince` path was sound and only the covered target failed.
+- [X] T027 [US5] `themes/default/map.css`: fan NB/PE/NS at every width, raise `.province-marker.is-active` to `z-index: 7` (it was below its siblings at 3), widen `.official-map-artwork` from 44rem to 48rem; the sub-620 px fan is byte-identical.
+- [X] T028 [US5] Re-measured at 1440, 1024, 768, 621, 620, 619, 412 and 390 px: 13 markers at every width, 0 covered centres, 0 close pairs, 0 pointer-click failures, 0 handler failures, keyboard Enter activates the marker, 0 px horizontal overflow. Evidence: `artifacts/map-marker-fix/after-wide.json`, `after-narrow.json`, screenshots beside them.
+- [X] T029 Add `tests/visual/map-marker-interaction.spec.ts` (fixture-served map; unforced clicks on all 13 markers, panel heading per province, keyboard activation, hit-target geometry and per-band Maritime fan).
+- [X] T030 Extend `__tests__/first-screen-and-naming.test.js` with the wide fan, the narrow fan, the active-marker stacking order and the 48rem artwork cap.
+- [ ] T031 Run the focused guards, the full Vitest suite, `tsc --noEmit`, the complete Playwright suite, `./freebuff-verify.sh` and the production build size check; record the real results in the PR body.
+
+## Dependencies (Phase 8)
+
+- T025–T026 before T027.
+- T027 before T028–T030.
+- T029–T030 before T031.
