@@ -25,7 +25,6 @@ export default function Hero() {
 
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome" style={{ minHeight: '100svh' }}>
-      <h1 className="sr-only">Lucky Pick Canada</h1>
       {/* Main Content Stack */}
       <div className="relative z-10 w-full h-[100svh] min-h-0 flex flex-col items-center">
         {/* Navigation */}
@@ -38,21 +37,21 @@ export default function Hero() {
               href="/lucky-meter"
               className="text-amber-400 hover:text-amber-300 transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
-              Lucky Meter
+              Luck Generator
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="#community-stories"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
-              Lucky Stories
+              Lucky Community Stories
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/crystal-ball"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
-              Consult the Crystal Ball
+              Crystal Ball
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
@@ -63,6 +62,26 @@ export default function Hero() {
             </Link>
           </div>
         </nav>
+
+        {/* First-screen introduction (specs/115-first-screen-clarity-naming-csp):
+            what Lucky Pick Canada is, why it is fun, and a free way in — all
+            visible before any scrolling. Artwork, navigation and animations are
+            unchanged. */}
+        <div className="hero-welcome">
+          <h1 className="hero-welcome-title">Lucky Pick Canada</h1>
+          <p className="hero-welcome-lede">A fun, free place to explore what luck means to you.</p>
+          <p className="hero-welcome-copy">
+            Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read
+            Lucky Community Stories shared from across Canada. Luck is about more than fortune and
+            fame — it lives in everyday moments, hope and possibility.
+          </p>
+          <a href="#play-explore" className="hero-welcome-cta gold-3d-btn">
+            <span className="gold-cta-emoji" aria-hidden="true">🍀</span>
+            Explore free experiences
+            <span aria-hidden="true">→</span>
+          </a>
+          <p className="hero-welcome-note">Free to enjoy · For fun and entertainment only</p>
+        </div>
 
         {/* Hero Center Content */}
         <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center">

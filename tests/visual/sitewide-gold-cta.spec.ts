@@ -14,14 +14,15 @@ const EDGE = 'rgb(138, 85, 12)';
 const MAIN_GOLD = 'rgb(220, 174, 78)';
 
 // Assigned leading emoji per homepage CTA, in DOM order.
-const HOMEPAGE_EMOJI = ['✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
+const HOMEPAGE_EMOJI = ['🍀', '✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
 
 const HOMEPAGE_WORDING = [
-  'Check Lucky Meter',
+  'Explore free experiences',
+  'Check Luck Generator',
   "Reveal Today's Card",
-  'CONSULT THE ORACLE',
-  'EXPLORE LUCKY STORIES',
-  'Choose a Lucky Pick',
+  'ASK THE CRYSTAL BALL',
+  'EXPLORE LUCKY COMMUNITY STORIES',
+  'Choose Your Reveal',
   'Open the tip jar',
   'Share Your Idea',
   'Read Our Story',
@@ -76,7 +77,9 @@ test.describe('Site-wide gold CTA', () => {
       };
     }));
 
-    expect(ctas).toHaveLength(8);
+    // Nine since the approved first-screen block added its free "Explore free
+    // experiences" CTA ahead of the original eight sections.
+    expect(ctas).toHaveLength(9);
 
     ctas.forEach((cta, index) => {
       // FR-001: the measured metallic ramp, not the previous vivid yellow.
@@ -154,7 +157,7 @@ test.describe('Site-wide gold CTA', () => {
     await page.goto('/map', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await expect(page.locator('main, .lucky-map-shell').first()).toBeVisible({ timeout: 30_000 });
 
-    const viewStories = page.locator('a.gold-3d-btn:has-text("View Lucky Stories")').first();
+    const viewStories = page.locator('a.gold-3d-btn:has-text("View Lucky Community Stories")').first();
     await expect(viewStories).toBeVisible();
     await expect(viewStories.locator('.gold-cta-emoji')).toHaveText('🍀');
     await expect(viewStories).toHaveCSS('background-image', /rgb\(220, 174, 78\)/);

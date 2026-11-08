@@ -14,7 +14,7 @@ const socialImage = '/luckypickcanada-share-1200x630.jpg';
 export const metadata = {
   title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
   description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
-  keywords: ['luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
+  keywords: ['luckypickcanada', 'lucky community stories', 'luck generator', 'lucky reveals', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
   metadataBase: new URL('https://luckypickcanada.ca'),
   alternates: {
     canonical: '/',
@@ -99,10 +99,10 @@ export default function RootLayout({ children }) {
 
               <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs text-white/90 max-w-lg mb-2">
                 <Link href="/" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Home</Link>
-                <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Meter</Link>
+                <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Luck Generator</Link>
                 <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Crystal Ball</Link>
                 <Link href="/reveal" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Daily Reveal</Link>
-                <Link href="/map" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Map</Link>
+                <Link href="/map" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Community Stories</Link>
                 <Link href="/about" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">About</Link>
               </nav>
 

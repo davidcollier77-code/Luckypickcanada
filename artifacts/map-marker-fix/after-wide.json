@@ -1,0 +1,1285 @@
+{
+  "base": "http://127.0.0.1:3000",
+  "console": [
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/e4af272ccee01ff0-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/8760c4774489e4ba-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/eaead17c7dbfcd5d-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/a273567b21a7c318-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+  ],
+  "viewports": {
+    "desktop-1440": {
+      "count": 13,
+      "initial": {
+        "pressed": [
+          "NU"
+        ],
+        "panel": "Nunavut"
+      },
+      "geometry": [
+        {
+          "code": "YT",
+          "size": 42,
+          "centre": [
+            232,
+            332
+          ],
+          "centreHits": "YT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NT",
+          "size": 42,
+          "centre": [
+            362,
+            315
+          ],
+          "centreHits": "NT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NU",
+          "size": 47,
+          "centre": [
+            462,
+            242
+          ],
+          "centreHits": "NU",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "BC",
+          "size": 42,
+          "centre": [
+            246,
+            497
+          ],
+          "centreHits": "BC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "AB",
+          "size": 42,
+          "centre": [
+            340,
+            514
+          ],
+          "centreHits": "AB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "SK",
+          "size": 42,
+          "centre": [
+            412,
+            520
+          ],
+          "centreHits": "SK",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "MB",
+          "size": 42,
+          "centre": [
+            484,
+            532
+          ],
+          "centreHits": "MB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "ON",
+          "size": 42,
+          "centre": [
+            563,
+            573
+          ],
+          "centreHits": "ON",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "QC",
+          "size": 42,
+          "centre": [
+            664,
+            491
+          ],
+          "centreHits": "QC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NB",
+          "size": 42,
+          "centre": [
+            668,
+            611
+          ],
+          "centreHits": "NB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "PE",
+          "size": 42,
+          "centre": [
+            707,
+            573
+          ],
+          "centreHits": "PE",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NS",
+          "size": 42,
+          "centre": [
+            747,
+            629
+          ],
+          "centreHits": "NS",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NL",
+          "size": 42,
+          "centre": [
+            761,
+            517
+          ],
+          "centreHits": "NL",
+          "centreHitsSelf": true
+        }
+      ],
+      "pairs": [],
+      "clicks": [
+        {
+          "clicked": "YT",
+          "pointerTargets": "YT",
+          "pointerPressed": [
+            "YT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "YT"
+          ],
+          "handlerOk": true,
+          "panel": "Yukon"
+        },
+        {
+          "clicked": "NT",
+          "pointerTargets": "NT",
+          "pointerPressed": [
+            "NT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NT"
+          ],
+          "handlerOk": true,
+          "panel": "Northwest Territories"
+        },
+        {
+          "clicked": "NU",
+          "pointerTargets": "NU",
+          "pointerPressed": [
+            "NU"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NU"
+          ],
+          "handlerOk": true,
+          "panel": "Nunavut"
+        },
+        {
+          "clicked": "BC",
+          "pointerTargets": "BC",
+          "pointerPressed": [
+            "BC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "BC"
+          ],
+          "handlerOk": true,
+          "panel": "British Columbia"
+        },
+        {
+          "clicked": "AB",
+          "pointerTargets": "AB",
+          "pointerPressed": [
+            "AB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "AB"
+          ],
+          "handlerOk": true,
+          "panel": "Alberta"
+        },
+        {
+          "clicked": "SK",
+          "pointerTargets": "SK",
+          "pointerPressed": [
+            "SK"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "SK"
+          ],
+          "handlerOk": true,
+          "panel": "Saskatchewan"
+        },
+        {
+          "clicked": "MB",
+          "pointerTargets": "MB",
+          "pointerPressed": [
+            "MB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "MB"
+          ],
+          "handlerOk": true,
+          "panel": "Manitoba"
+        },
+        {
+          "clicked": "ON",
+          "pointerTargets": "ON",
+          "pointerPressed": [
+            "ON"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "ON"
+          ],
+          "handlerOk": true,
+          "panel": "Ontario"
+        },
+        {
+          "clicked": "QC",
+          "pointerTargets": "QC",
+          "pointerPressed": [
+            "QC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "QC"
+          ],
+          "handlerOk": true,
+          "panel": "Quebec"
+        },
+        {
+          "clicked": "NB",
+          "pointerTargets": "NB",
+          "pointerPressed": [
+            "NB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NB"
+          ],
+          "handlerOk": true,
+          "panel": "New Brunswick"
+        },
+        {
+          "clicked": "PE",
+          "pointerTargets": "PE",
+          "pointerPressed": [
+            "PE"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "PE"
+          ],
+          "handlerOk": true,
+          "panel": "Prince Edward Island"
+        },
+        {
+          "clicked": "NS",
+          "pointerTargets": "NS",
+          "pointerPressed": [
+            "NS"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NS"
+          ],
+          "handlerOk": true,
+          "panel": "Nova Scotia"
+        },
+        {
+          "clicked": "NL",
+          "pointerTargets": "NL",
+          "pointerPressed": [
+            "NL"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NL"
+          ],
+          "handlerOk": true,
+          "panel": "Newfoundland and Labrador"
+        }
+      ],
+      "keyboardBC": [
+        "BC"
+      ],
+      "overflow": 0
+    },
+    "intermediate-1024": {
+      "count": 13,
+      "initial": {
+        "pressed": [
+          "NU"
+        ],
+        "panel": "Nunavut"
+      },
+      "geometry": [
+        {
+          "code": "YT",
+          "size": 41,
+          "centre": [
+            108,
+            353
+          ],
+          "centreHits": "YT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NT",
+          "size": 41,
+          "centre": [
+            215,
+            339
+          ],
+          "centreHits": "NT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NU",
+          "size": 45.9,
+          "centre": [
+            298,
+            279
+          ],
+          "centreHits": "NU",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "BC",
+          "size": 41,
+          "centre": [
+            120,
+            489
+          ],
+          "centreHits": "BC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "AB",
+          "size": 41,
+          "centre": [
+            197,
+            503
+          ],
+          "centreHits": "AB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "SK",
+          "size": 41,
+          "centre": [
+            256,
+            508
+          ],
+          "centreHits": "SK",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "MB",
+          "size": 41,
+          "centre": [
+            316,
+            518
+          ],
+          "centreHits": "MB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "ON",
+          "size": 41,
+          "centre": [
+            381,
+            551
+          ],
+          "centreHits": "ON",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "QC",
+          "size": 41,
+          "centre": [
+            464,
+            484
+          ],
+          "centreHits": "QC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NB",
+          "size": 41,
+          "centre": [
+            467,
+            583
+          ],
+          "centreHits": "NB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "PE",
+          "size": 41,
+          "centre": [
+            499,
+            551
+          ],
+          "centreHits": "PE",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NS",
+          "size": 41,
+          "centre": [
+            532,
+            597
+          ],
+          "centreHits": "NS",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NL",
+          "size": 41,
+          "centre": [
+            544,
+            506
+          ],
+          "centreHits": "NL",
+          "centreHitsSelf": true
+        }
+      ],
+      "pairs": [],
+      "clicks": [
+        {
+          "clicked": "YT",
+          "pointerTargets": "YT",
+          "pointerPressed": [
+            "YT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "YT"
+          ],
+          "handlerOk": true,
+          "panel": "Yukon"
+        },
+        {
+          "clicked": "NT",
+          "pointerTargets": "NT",
+          "pointerPressed": [
+            "NT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NT"
+          ],
+          "handlerOk": true,
+          "panel": "Northwest Territories"
+        },
+        {
+          "clicked": "NU",
+          "pointerTargets": "NU",
+          "pointerPressed": [
+            "NU"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NU"
+          ],
+          "handlerOk": true,
+          "panel": "Nunavut"
+        },
+        {
+          "clicked": "BC",
+          "pointerTargets": "BC",
+          "pointerPressed": [
+            "BC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "BC"
+          ],
+          "handlerOk": true,
+          "panel": "British Columbia"
+        },
+        {
+          "clicked": "AB",
+          "pointerTargets": "AB",
+          "pointerPressed": [
+            "AB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "AB"
+          ],
+          "handlerOk": true,
+          "panel": "Alberta"
+        },
+        {
+          "clicked": "SK",
+          "pointerTargets": "SK",
+          "pointerPressed": [
+            "SK"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "SK"
+          ],
+          "handlerOk": true,
+          "panel": "Saskatchewan"
+        },
+        {
+          "clicked": "MB",
+          "pointerTargets": "MB",
+          "pointerPressed": [
+            "MB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "MB"
+          ],
+          "handlerOk": true,
+          "panel": "Manitoba"
+        },
+        {
+          "clicked": "ON",
+          "pointerTargets": "ON",
+          "pointerPressed": [
+            "ON"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "ON"
+          ],
+          "handlerOk": true,
+          "panel": "Ontario"
+        },
+        {
+          "clicked": "QC",
+          "pointerTargets": "QC",
+          "pointerPressed": [
+            "QC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "QC"
+          ],
+          "handlerOk": true,
+          "panel": "Quebec"
+        },
+        {
+          "clicked": "NB",
+          "pointerTargets": "NB",
+          "pointerPressed": [
+            "NB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NB"
+          ],
+          "handlerOk": true,
+          "panel": "New Brunswick"
+        },
+        {
+          "clicked": "PE",
+          "pointerTargets": "PE",
+          "pointerPressed": [
+            "PE"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "PE"
+          ],
+          "handlerOk": true,
+          "panel": "Prince Edward Island"
+        },
+        {
+          "clicked": "NS",
+          "pointerTargets": "NS",
+          "pointerPressed": [
+            "NS"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NS"
+          ],
+          "handlerOk": true,
+          "panel": "Nova Scotia"
+        },
+        {
+          "clicked": "NL",
+          "pointerTargets": "NL",
+          "pointerPressed": [
+            "NL"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NL"
+          ],
+          "handlerOk": true,
+          "panel": "Newfoundland and Labrador"
+        }
+      ],
+      "keyboardBC": [
+        "BC"
+      ],
+      "overflow": 0
+    },
+    "intermediate-768": {
+      "count": 13,
+      "initial": {
+        "pressed": [
+          "NU"
+        ],
+        "panel": "Nunavut"
+      },
+      "geometry": [
+        {
+          "code": "YT",
+          "size": 30.7,
+          "centre": [
+            131,
+            336
+          ],
+          "centreHits": "YT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NT",
+          "size": 30.7,
+          "centre": [
+            258,
+            318
+          ],
+          "centreHits": "NT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NU",
+          "size": 34.4,
+          "centre": [
+            356,
+            248
+          ],
+          "centreHits": "NU",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "BC",
+          "size": 30.7,
+          "centre": [
+            145,
+            496
+          ],
+          "centreHits": "BC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "AB",
+          "size": 30.7,
+          "centre": [
+            237,
+            513
+          ],
+          "centreHits": "AB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "SK",
+          "size": 30.7,
+          "centre": [
+            307,
+            519
+          ],
+          "centreHits": "SK",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "MB",
+          "size": 30.7,
+          "centre": [
+            377,
+            530
+          ],
+          "centreHits": "MB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "ON",
+          "size": 30.7,
+          "centre": [
+            454,
+            570
+          ],
+          "centreHits": "ON",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "QC",
+          "size": 30.7,
+          "centre": [
+            552,
+            490
+          ],
+          "centreHits": "QC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NB",
+          "size": 30.7,
+          "centre": [
+            556,
+            607
+          ],
+          "centreHits": "NB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "PE",
+          "size": 30.7,
+          "centre": [
+            595,
+            570
+          ],
+          "centreHits": "PE",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NS",
+          "size": 30.7,
+          "centre": [
+            633,
+            625
+          ],
+          "centreHits": "NS",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NL",
+          "size": 30.7,
+          "centre": [
+            647,
+            516
+          ],
+          "centreHits": "NL",
+          "centreHitsSelf": true
+        }
+      ],
+      "pairs": [],
+      "clicks": [
+        {
+          "clicked": "YT",
+          "pointerTargets": "YT",
+          "pointerPressed": [
+            "YT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "YT"
+          ],
+          "handlerOk": true,
+          "panel": "Yukon"
+        },
+        {
+          "clicked": "NT",
+          "pointerTargets": "NT",
+          "pointerPressed": [
+            "NT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NT"
+          ],
+          "handlerOk": true,
+          "panel": "Northwest Territories"
+        },
+        {
+          "clicked": "NU",
+          "pointerTargets": "NU",
+          "pointerPressed": [
+            "NU"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NU"
+          ],
+          "handlerOk": true,
+          "panel": "Nunavut"
+        },
+        {
+          "clicked": "BC",
+          "pointerTargets": "BC",
+          "pointerPressed": [
+            "BC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "BC"
+          ],
+          "handlerOk": true,
+          "panel": "British Columbia"
+        },
+        {
+          "clicked": "AB",
+          "pointerTargets": "AB",
+          "pointerPressed": [
+            "AB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "AB"
+          ],
+          "handlerOk": true,
+          "panel": "Alberta"
+        },
+        {
+          "clicked": "SK",
+          "pointerTargets": "SK",
+          "pointerPressed": [
+            "SK"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "SK"
+          ],
+          "handlerOk": true,
+          "panel": "Saskatchewan"
+        },
+        {
+          "clicked": "MB",
+          "pointerTargets": "MB",
+          "pointerPressed": [
+            "MB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "MB"
+          ],
+          "handlerOk": true,
+          "panel": "Manitoba"
+        },
+        {
+          "clicked": "ON",
+          "pointerTargets": "ON",
+          "pointerPressed": [
+            "ON"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "ON"
+          ],
+          "handlerOk": true,
+          "panel": "Ontario"
+        },
+        {
+          "clicked": "QC",
+          "pointerTargets": "QC",
+          "pointerPressed": [
+            "QC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "QC"
+          ],
+          "handlerOk": true,
+          "panel": "Quebec"
+        },
+        {
+          "clicked": "NB",
+          "pointerTargets": "NB",
+          "pointerPressed": [
+            "NB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NB"
+          ],
+          "handlerOk": true,
+          "panel": "New Brunswick"
+        },
+        {
+          "clicked": "PE",
+          "pointerTargets": "PE",
+          "pointerPressed": [
+            "PE"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "PE"
+          ],
+          "handlerOk": true,
+          "panel": "Prince Edward Island"
+        },
+        {
+          "clicked": "NS",
+          "pointerTargets": "NS",
+          "pointerPressed": [
+            "NS"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NS"
+          ],
+          "handlerOk": true,
+          "panel": "Nova Scotia"
+        },
+        {
+          "clicked": "NL",
+          "pointerTargets": "NL",
+          "pointerPressed": [
+            "NL"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NL"
+          ],
+          "handlerOk": true,
+          "panel": "Newfoundland and Labrador"
+        }
+      ],
+      "keyboardBC": [
+        "BC"
+      ],
+      "overflow": 0
+    },
+    "breakpoint-621": {
+      "count": 13,
+      "initial": {
+        "pressed": [
+          "NU"
+        ],
+        "panel": "Nunavut"
+      },
+      "geometry": [
+        {
+          "code": "YT",
+          "size": 24.8,
+          "centre": [
+            105,
+            357
+          ],
+          "centreHits": "YT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NT",
+          "size": 24.8,
+          "centre": [
+            208,
+            343
+          ],
+          "centreHits": "NT",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NU",
+          "size": 27.8,
+          "centre": [
+            288,
+            285
+          ],
+          "centreHits": "NU",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "BC",
+          "size": 24.8,
+          "centre": [
+            116,
+            487
+          ],
+          "centreHits": "BC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "AB",
+          "size": 24.8,
+          "centre": [
+            191,
+            501
+          ],
+          "centreHits": "AB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "SK",
+          "size": 24.8,
+          "centre": [
+            248,
+            506
+          ],
+          "centreHits": "SK",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "MB",
+          "size": 24.8,
+          "centre": [
+            305,
+            515
+          ],
+          "centreHits": "MB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "ON",
+          "size": 24.8,
+          "centre": [
+            368,
+            547
+          ],
+          "centreHits": "ON",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "QC",
+          "size": 24.8,
+          "centre": [
+            448,
+            482
+          ],
+          "centreHits": "QC",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NB",
+          "size": 24.8,
+          "centre": [
+            450,
+            578
+          ],
+          "centreHits": "NB",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "PE",
+          "size": 24.8,
+          "centre": [
+            482,
+            547
+          ],
+          "centreHits": "PE",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NS",
+          "size": 24.8,
+          "centre": [
+            513,
+            592
+          ],
+          "centreHits": "NS",
+          "centreHitsSelf": true
+        },
+        {
+          "code": "NL",
+          "size": 24.8,
+          "centre": [
+            525,
+            503
+          ],
+          "centreHits": "NL",
+          "centreHitsSelf": true
+        }
+      ],
+      "pairs": [],
+      "clicks": [
+        {
+          "clicked": "YT",
+          "pointerTargets": "YT",
+          "pointerPressed": [
+            "YT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "YT"
+          ],
+          "handlerOk": true,
+          "panel": "Yukon"
+        },
+        {
+          "clicked": "NT",
+          "pointerTargets": "NT",
+          "pointerPressed": [
+            "NT"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NT"
+          ],
+          "handlerOk": true,
+          "panel": "Northwest Territories"
+        },
+        {
+          "clicked": "NU",
+          "pointerTargets": "NU",
+          "pointerPressed": [
+            "NU"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NU"
+          ],
+          "handlerOk": true,
+          "panel": "Nunavut"
+        },
+        {
+          "clicked": "BC",
+          "pointerTargets": "BC",
+          "pointerPressed": [
+            "BC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "BC"
+          ],
+          "handlerOk": true,
+          "panel": "British Columbia"
+        },
+        {
+          "clicked": "AB",
+          "pointerTargets": "AB",
+          "pointerPressed": [
+            "AB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "AB"
+          ],
+          "handlerOk": true,
+          "panel": "Alberta"
+        },
+        {
+          "clicked": "SK",
+          "pointerTargets": "SK",
+          "pointerPressed": [
+            "SK"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "SK"
+          ],
+          "handlerOk": true,
+          "panel": "Saskatchewan"
+        },
+        {
+          "clicked": "MB",
+          "pointerTargets": "MB",
+          "pointerPressed": [
+            "MB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "MB"
+          ],
+          "handlerOk": true,
+          "panel": "Manitoba"
+        },
+        {
+          "clicked": "ON",
+          "pointerTargets": "ON",
+          "pointerPressed": [
+            "ON"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "ON"
+          ],
+          "handlerOk": true,
+          "panel": "Ontario"
+        },
+        {
+          "clicked": "QC",
+          "pointerTargets": "QC",
+          "pointerPressed": [
+            "QC"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "QC"
+          ],
+          "handlerOk": true,
+          "panel": "Quebec"
+        },
+        {
+          "clicked": "NB",
+          "pointerTargets": "NB",
+          "pointerPressed": [
+            "NB"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NB"
+          ],
+          "handlerOk": true,
+          "panel": "New Brunswick"
+        },
+        {
+          "clicked": "PE",
+          "pointerTargets": "PE",
+          "pointerPressed": [
+            "PE"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "PE"
+          ],
+          "handlerOk": true,
+          "panel": "Prince Edward Island"
+        },
+        {
+          "clicked": "NS",
+          "pointerTargets": "NS",
+          "pointerPressed": [
+            "NS"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NS"
+          ],
+          "handlerOk": true,
+          "panel": "Nova Scotia"
+        },
+        {
+          "clicked": "NL",
+          "pointerTargets": "NL",
+          "pointerPressed": [
+            "NL"
+          ],
+          "pointerOk": true,
+          "handlerPressed": [
+            "NL"
+          ],
+          "handlerOk": true,
+          "panel": "Newfoundland and Labrador"
+        }
+      ],
+      "keyboardBC": [
+        "BC"
+      ],
+      "overflow": 0
+    }
+  },
+  "consoleErrors": [
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/e4af272ccee01ff0-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/8760c4774489e4ba-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/eaead17c7dbfcd5d-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "warning: The resource http://127.0.0.1:3000/_next/static/media/a273567b21a7c318-s.p.woff2?v=1794137828506 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+  ]
+}

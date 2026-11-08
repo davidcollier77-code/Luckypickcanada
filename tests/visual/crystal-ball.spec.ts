@@ -76,5 +76,9 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
 
   await expect(page.getByText('LUCKYPICKCANADA.CA', { exact: true })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Your question for the crystal ball' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Luck Meter' })).toBeVisible();
+  // This page also carries its own "Luck Generator" content CTA, so scope the
+  // navigation check to the shared footer navigation instead of matching both.
+  await expect(
+    page.getByRole('navigation', { name: 'Footer navigation' }).getByRole('link', { name: 'Luck Generator' }),
+  ).toBeVisible();
 });

@@ -1,3 +1,14 @@
+## 2026-11-08 — First-screen clarity, approved naming, analytics CSP and tap-target verification
+
+- Replaced the homepage's hidden `sr-only` `H1` with a visible first-screen block: brand line, one-sentence "fun, free place to explore what luck means to you" lede, the "more than fortune and fame" explanation naming the Luck Generator, Crystal Ball and Lucky Community Stories, a free gold CTA into `#play-explore`, and a "Free to enjoy · For fun and entertainment only" note. The hero artwork container is shorter so the block fits inside `100svh`; the artwork, its sources, preload and shimmer layers are unchanged.
+- Allowed `https://static.cloudflareinsights.com` in `script-src` and nothing else; the rendered production header shows the source present and `connect-src`, `object-src`, `base-uri`, `frame-ancestors` and `form-action` unchanged.
+- Applied the approved names (Crystal Ball, Lucky Community Stories, Lucky Reveals with Personal Reveal CAD $1.00 / Gift Reveal CAD $1.99, Luck Generator, Tip Jar and FAQ unchanged) across the homepage, hero nav, footer, FAQ, `/lucky-meter`, Crystal Ball, About, map pages, story modules and error text, leaving routes, prices, Stripe product names, checkout titles, email delivery and destinations untouched.
+- Verified PR #1774's tap-target CSS in the rendered page instead of re-implementing it: footer nav 34 × 24, social 36 × 24, legal 64 × 24, homepage header 64 × 24, and the map marker 22.5 px visible with a 32 px effective hit area; no sub-24 px control remains.
+- Checks: full Vitest 52 files / 419 tests, focused guards 32/32, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, refresh-docs 36/36, production build 395.1 MB (< 495 MB hard maximum).
+- Limitations recorded rather than claimed: local Playwright Chromium cannot launch in this VM and Browserless cannot reach the owner-gated preview, so the Cloud browser produced the rendered evidence; `/map` had no story data locally, so the marker hit area was measured from the component's own class inside the real map container; the Playwright suites were not executed.
+
+---
+
 ## 2026-11-07 — Skip-CI verification integrity
 
 - Confirmed the failure mode: GitHub skips `push`/`pull_request` runs for a HEAD commit carrying a documented skip directive (`[skip ci]`, `[ci skip]`, `[no ci]`, `[skip actions]`, `[actions skip]`, or a `skip-checks: true` trailer), leaving earlier commits' green checks visible. This repository already has such heads, e.g. `16588a15 [skip ci] fix(devskim): repair three code review findings`.

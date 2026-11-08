@@ -8,7 +8,7 @@ function MapErrorFallback({ error }) {
       <div style={{ color: '#ef4444', fontSize: '3rem' }}>⚠️</div>
       <h2 style={{ marginTop: '1rem', color: '#ef4444', fontWeight: 'bold' }}>Unable to Load Map</h2>
       <p style={{ marginTop: '0.5rem', color: '#6b7280' }}>
-        We're having trouble loading the Lucky Map. Please try again later.
+        We're having trouble loading Lucky Community Stories. Please try again later.
       </p>
       <button
         onClick={() => window.location.reload()}

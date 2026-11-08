@@ -5,7 +5,7 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test';
  *
  * The unit guard proves the approved wording exists in source. This suite proves
  * it actually reaches the rendered page: the four Experience cards, the aligned
- * Lucky Stories card, the Tip Jar and Suggestion Box passages, the ten-question
+ * Lucky Community Stories card, the Tip Jar and Suggestion Box passages, the ten-question
  * FAQ (expanded by a real click, never clipped), the Community Map introduction,
  * and no horizontal overflow at every configured viewport.
  *
@@ -15,12 +15,12 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test';
  */
 
 const LUCKY_METER_COPY =
-  "How's your luck looking today? Give the Lucky Meter a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!";
+  "How's your luck looking today? Give the Luck Generator a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!";
 const DAILY_CARD_COPY =
   "A little surprise is waiting for you! Discover today's Lucky Card, enjoy the reveal, and add another special card to your collection. Keep collecting, because you never know when new cards might be added!";
 const CRYSTAL_BALL_COPY =
   'Have something on your mind? Take a moment, focus on your question, and let the Crystal Ball reveal a little mystery. You never know what kind of unexpected message might be waiting for you!';
-const LUCKY_PICK_HEADING = 'Lucky Pick — Your Little Touch of Luck';
+const LUCKY_PICK_HEADING = 'Lucky Reveals — Your Little Touch of Luck';
 
 const STORIES_CARD_COPY =
   'Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.';
@@ -112,7 +112,7 @@ test.describe('Homepage content refresh', () => {
     }
   });
 
-  test('the Lucky Stories card carries the approved wording and keeps its map path', async ({ page }, testInfo) => {
+  test('the Lucky Community Stories card carries the approved wording and keeps its map path', async ({ page }, testInfo) => {
     test.setTimeout(120_000);
     await openHomepage(page);
 
@@ -124,7 +124,7 @@ test.describe('Homepage content refresh', () => {
 
     const explore = card.locator('a.gold-3d-btn');
     await expect(explore).toHaveAttribute('href', '/map');
-    await expect(explore).toContainText('EXPLORE LUCKY STORIES');
+    await expect(explore).toContainText('EXPLORE LUCKY COMMUNITY STORIES');
 
     await attachSection(page, '#community-stories', 'homepage-lucky-stories-card', testInfo);
   });
@@ -211,7 +211,7 @@ test.describe('Homepage content refresh', () => {
     await expect(questions).toHaveCount(10);
 
     const communityButton = page.locator('#faq-btn-3');
-    await expect(communityButton).toContainText('What are Lucky Stories and the Community Map?');
+    await expect(communityButton).toContainText('What are Lucky Community Stories and the Community Map?');
     await waitForHydration(page, '#faq-btn-3');
 
     await communityButton.click();

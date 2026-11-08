@@ -339,7 +339,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
 
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
-        <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <nav aria-label="Lucky Community Stories navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
             <img src="/map-logo-small.png" alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             Back to Home Page
@@ -347,7 +347,7 @@ export default function LuckyMapOfCanada({ mapData }) {
         </nav>
 
         <header className="premium-surface" style={{ ...cardStyle, padding: 'clamp(1.35rem, 4vw, 3rem)', position: 'relative', overflow: 'hidden' }}>
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900 }}>Lucky Map of Canada</p>
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900 }}>Lucky Community Stories</p>
           <h1 style={{ maxWidth: 900, margin: '0.45rem 0', fontSize: 'clamp(2.5rem, 8vw, 5.4rem)', lineHeight: 0.95, letterSpacing: '-0.06em', textShadow: '0 0 28px rgba(250,204,21,0.22)' }}>
             Where Luck Has Been Found Across Canada <span className="clover-3d">🍀</span>
           </h1>
@@ -357,18 +357,18 @@ export default function LuckyMapOfCanada({ mapData }) {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
             <a href="#lucky-story-map" className="story-link gold-3d-btn" style={{ textDecoration: 'none', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999 }}>
-              <span className="clover-3d gold-cta-emoji" aria-hidden="true">🍀</span> View Lucky Stories
+              <span className="clover-3d gold-cta-emoji" aria-hidden="true">🍀</span> View Lucky Community Stories
             </a>
             <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link gold-3d-btn" style={{ fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, cursor: 'pointer' }}><span className="gold-cta-emoji" aria-hidden="true">✍️</span>Share your lucky story</button>
           </div>
           {!currentMapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
-              The Lucky Stories database needs to be available before the map can load community stories.
+              The Lucky Community Stories database needs to be available before the map can load community stories.
             </p>
           ) : null}
         </header>
 
-        <section aria-label="Lucky Map statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
+        <section aria-label="Lucky Community Stories statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
           {[
             ['Total lucky stories shared (All-time)', currentMapData?.totalStories || 0],
             ['Provinces with lucky moments (All-time)', currentMapData?.provincesWithStories || 0],
@@ -405,7 +405,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           </div>
         </div>
 
-        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ gap: '1.5rem', marginTop: '1.5rem' }}>
+        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky community stories map" className="lucky-story-map" style={{ gap: '1.5rem', marginTop: '1.5rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <picture className="w-full">
@@ -432,6 +432,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     key={province.code}
                     type="button"
                     className={`province-marker ${provinceCount ? 'has-stories' : ''} ${active ? 'is-active' : ''}`}
+                    data-province={province.code}
                     onClick={() => selectProvince(province.code)}
                     aria-label={`${province.name}: ${provinceCount} ${provinceCount === 1 ? 'lucky story' : 'lucky stories'}`}
                     aria-pressed={active}
@@ -497,7 +498,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                 ))}
               </div>
             ) : (
-              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province to keep exploring the Lucky Story Map.</p>
+              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Community Stories have been shared from {selectedProvinceInfo.name} yet. Select another province to keep exploring the Lucky Community Stories map.</p>
             )}
             </div>
           </aside>
@@ -530,7 +531,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
         <section className="premium-surface map-province-section" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
           <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Province selection</p>
-          <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
+          <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Community Stories by province</h2>
           <label className="mobile-province-select">Choose a province or territory<select value={selectedProvince} onChange={(event) => selectProvince(event.target.value)}>{provinceSelections.map((province) => <option key={province.code} value={province.code}>{province.name} ({province.count})</option>)}</select></label>
           <div className="province-selection-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
             {provinceSelections.map((province) => (

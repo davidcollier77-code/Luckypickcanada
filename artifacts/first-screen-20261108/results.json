@@ -1,0 +1,102 @@
+{
+  "feature": "specs/115-first-screen-clarity-naming-csp",
+  "capturedAt": "2026-11-08",
+  "target": "local dev server (next dev, webpack) shown through the Cloud browser preview origin",
+  "method": "Cloud browser (Chromium 154) rendered the real app inside same-origin iframes sized 1440x900 and 390x844, so viewport media queries, svh units and layout use the target viewport. Effective hit areas were measured by probing document.elementFromPoint outwards from each control until the point no longer belongs to it. Local Playwright Chromium could not launch in this VM (missing libnspr4.so) and Browserless cannot reach the owner-gated preview origin, so the Cloud browser was used.",
+  "desktop": {
+    "viewport": "1440x900",
+    "scrollWidth": 1430,
+    "clientWidth": 1430,
+    "horizontalOverflow": 0,
+    "heroArtworkHeight": 450,
+    "blocks": {
+      "h1.hero-welcome-title": { "text": "Lucky Pick Canada", "top": 68, "bottom": 93, "insideFirstViewport": true },
+      ".hero-welcome-lede": { "text": "A fun, free place to explore what luck means to you.", "top": 100, "bottom": 164, "insideFirstViewport": true },
+      ".hero-welcome-copy": { "text": "Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read Lucky Community Stories shared from across Canada. Luck is about more than fortune and fame - it lives in everyday moments, memories, hope and possibility.", "top": 171, "bottom": 246, "insideFirstViewport": true },
+      ".hero-welcome-cta": { "text": "Explore free experiences", "top": 250, "bottom": 291, "insideFirstViewport": true },
+      ".hero-welcome-note": { "text": "Free to enjoy - For fun and entertainment only", "top": 291, "bottom": 310, "insideFirstViewport": true }
+    },
+    "allInsideFirstViewport": true
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "horizontalOverflow": 0,
+    "heroArtworkHeight": 371,
+    "blocks": {
+      "h1.hero-welcome-title": { "top": 77, "bottom": 96, "insideFirstViewport": true },
+      ".hero-welcome-lede": { "top": 102, "bottom": 143, "insideFirstViewport": true },
+      ".hero-welcome-copy": { "top": 150, "bottom": 231, "insideFirstViewport": true },
+      ".hero-welcome-cta": { "top": 236, "bottom": 273, "insideFirstViewport": true },
+      ".hero-welcome-note": { "top": 274, "bottom": 292, "insideFirstViewport": true }
+    },
+    "allInsideFirstViewport": true
+  },
+  "tapTargets": {
+    "viewport": "390x844",
+    "floor": "24x24 CSS px (WCAG 2.2 SC 2.5.8)",
+    "groups": {
+      "footerNavigation": { "controls": 6, "minimumHitArea": [34, 24], "refine": "narrowest label is Home at 32.5x24 with 34x24 effective", "failures": 0 },
+      "footerSocial": { "controls": 5, "minimumHitArea": [36, 24], "failures": 0 },
+      "footerLegal": { "controls": 2, "minimumHitArea": [64, 24], "failures": 0 },
+      "homepageHeader": { "controls": 4, "minimumHitArea": [64, 24], "failures": 0 }
+    },
+    "provinceMarkers": {
+      "dataSource": "The workspace has no database (.env.local is 0 bytes and app/lib/db-init.js getSql() returns null), so /map rendered its empty state. A temporary local story fixture in getLuckyStoryMap, gated by LUCKY_STORIES_FIXTURE=1, supplied 6 stories across BC, AB, ON, QC, NS and NL for the measurement only; it was reverted with git checkout before commit and never entered the diff.",
+      "renderedMarkers": 13,
+      "markersWithStories": 6,
+      "desktopVisibleMarkerSize": 42,
+      "visibleMarkerSize": [22.5, 22.5],
+      "beforeFix": {
+        "observedAt": "390x844, 360 px artwork",
+        "maritimeCenterDistances": { "NB-PE": 15, "NB-NS": 18, "PE-NS": 16 },
+        "newBrunswick": { "border": 22.5, "effectiveHitArea": [0, 0], "coveredBy": "Nova Scotia" },
+        "princeEdwardIsland": { "border": 22.5, "effectiveHitArea": [0, 0], "coveredBy": "Nova Scotia" },
+        "otherMarkersMinimumHitArea": [54, 54],
+        "failures": 2
+      },
+      "fix": {
+        "files": ["app/lucky-map-of-canada/lucky-map-of-canada.js", "themes/default/map.css"],
+        "change": "The marker button exposes data-province, and a max-width 620 px rule fans only NB, PEI and NS a few percent apart (NB 72.5/70.5, PE 80/69, NS 84/80). Marker styling, artwork and desktop positions are unchanged."
+      },
+      "afterFix": {
+        "minimumVisibleMarkerSize": 22.5,
+        "minimumEffectiveHitArea": [54, 54],
+        "markersWithStoriesEffectiveHitArea": [78, 78],
+        "centresHittable": 13,
+        "pairsCloserThan24px": 0,
+        "failures": 0,
+        "emptyStateVisible": false,
+        "note": "Effective areas are larger than the 3 px ring because the decorative marker-sparkle layer also belongs to the button."
+      }
+    },
+    "skipLink": "skip link sits off-screen until focused (expected pattern, not a target failure)"
+  },
+  "names": {
+    "firstScreen": ["Lucky Pick Canada", "A fun, free place to explore what luck means to you.", "Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read Lucky Community Stories shared from across Canada.", "Explore free experiences", "Free to enjoy - For fun and entertainment only"],
+    "heroNav": ["Luck Generator", "Lucky Community Stories", "Crystal Ball", "Daily Card Reveal"],
+    "homepageHeadings": ["Play & Explore", "LUCK GENERATOR", "Today's Lucky Card", "Crystal Ball", "Lucky Community Stories", "Lucky Reveals - Your Little Touch of Luck", "Lucky Reveals", "Tip Jar - Help Keep the Luck Rolling"],
+    "homepageCtas": ["Check Luck Generator", "Reveal Today's Card", "ASK THE CRYSTAL BALL", "EXPLORE LUCKY COMMUNITY STORIES", "Choose Your Reveal", "Open the tip jar"],
+    "footerNav": ["Home", "Luck Generator", "Crystal Ball", "Daily Reveal", "Lucky Community Stories", "About"],
+    "faqQuestions": ["How does the Daily Lucky Card generator work?", "What is the Luck Generator, and how does it work?", "Is Lucky Pick Canada free to use?", "What are Lucky Community Stories and the Community Map?", "Is Lucky Pick Canada intended for entertainment?", "How does the Gift Reveal work?"],
+    "mapHeadings": ["Where Luck Has Been Found Across Canada", "Lucky Community Stories by province"],
+    "mapLabels": ["Lucky Community Stories navigation", "Lucky Community Stories statistics", "LuckyPickCanada lucky community stories map"],
+    "mapMarkerLabels": ["British Columbia: 1 lucky story", "Quebec: 1 lucky story", "Nova Scotia: 1 lucky story", "Newfoundland and Labrador: 1 lucky story"]
+  },
+  "namingSweep": {
+    "routes": ["/", "/lucky-meter", "/about", "/map"],
+    "bannedTermsFound": [],
+    "note": "Server HTML with scripts stripped was scanned for 'Lucky Meter', 'Luck Meter', 'Oracle', 'Lucky Stories', 'Lucky Map' and 'Consult the Crystal'. No proper-name matches remain. A case-insensitive pass on /map matched lower-case descriptive text 'Total lucky stories shared', which is the statistic label, not the experience name. /faq returns 404 because the FAQ lives on the homepage and its own page never existed.",
+    "approvedNamesPresent": {
+      "/": ["Luck Generator", "Crystal Ball", "Lucky Community Stories", "Lucky Reveals"],
+      "/lucky-meter": ["Luck Generator", "Crystal Ball", "Lucky Community Stories"],
+      "/about": ["Luck Generator", "Crystal Ball", "Lucky Community Stories"],
+      "/map": ["Luck Generator", "Crystal Ball", "Lucky Community Stories"]
+    }
+  },
+  "brandIdentity": {
+    "gamblingTermsIntroduced": false,
+    "note": "First-screen copy, the renamed labels and the fixture stories describe free, fun experiences, community stories and everyday luck. No gambling, betting, wagering, lottery or casino wording was added, and the payment sections keep their existing product names and prices."
+  }
+}

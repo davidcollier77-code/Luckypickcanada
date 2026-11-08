@@ -72,7 +72,7 @@ describe('Stripe product alignment', () => {
   });
 
   it('keeps the Lucky Reveal presentation on the website', () => {
-    expect(homepageSource).toContain('Choose a Lucky Pick');
+    expect(homepageSource).toContain('Choose Your Reveal');
     expect(homepageSource).toContain('Personal Reveal');
     expect(homepageSource).toContain('Gift Reveal');
     expect(modalSource).toContain("title: 'Lucky Reveal'");
@@ -80,7 +80,7 @@ describe('Stripe product alignment', () => {
   });
 
   it('advertises the same prices on the website as it charges', () => {
-    expect(homepageSource).toContain('Lucky Reveal · CAD $1');
+    expect(homepageSource).toContain('Lucky Reveals · CAD $1');
     expect(homepageSource).toContain('CAD $1.99');
     expect(homepageSource).not.toContain('$2.99');
     expect(modalSource).not.toContain('$2.99');
