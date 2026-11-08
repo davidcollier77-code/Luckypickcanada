@@ -55,6 +55,17 @@ Complete these steps in order before implementation:
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
 
+### QA contract [MANDATORY]
+
+- **Scope [REQUIRED]:** Select checks from acceptance criteria, changed paths, and affected user workflows. Every applicable required check MUST run; an irrelevant check is `N/A` with a brief reason, not a failure. `N/A` never waives Spec Kit or another explicit gate.
+- **Spec Kit [GATED]:** Complete all four stages in §2 and pass repository verification. This applies to every task, including documentation and governance work.
+- **Browser/visual [CONDITIONAL GATE]:** Changes that can affect rendered output or browser workflows MUST pass the existing Visual QA/Playwright checks, including configured projects and committed baselines. The existing classifier is authoritative: only positively classified documentation-only changes skip browser steps; empty, unknown, mixed, or unclassifiable changes fail closed and request visual QA. Other workflow gates still run.
+- **Browser tools [RESTRICTED]:** For direct agent browser work, follow §3/§5's Playwright → Browserless → Browserbase order and approval rules. Automatic PR-checker workflows MUST use the existing Playwright path when visual QA is required and MUST NOT add or invoke Browserless or Browserbase.
+- **Integrations [WHEN USED/CHANGED]:** Verify a real result and relevant failure/fallback behavior, following §5's provider order and approvals. Firecrawl/Crawlbase retrieve page content; they do not replace browser rendering, interaction, or end-to-end checks.
+- **Functional/accessibility/security/performance [WHEN AFFECTED]:** Test changed behavior and affected dependencies; preserve keyboard access, labels, contrast, reduced motion, security, and performance requirements where relevant. Do not fail a task for checks unrelated to its scope.
+- **Failure diagnosis [REQUIRED]:** Distinguish a confirmed product defect from a flaky/invalid assertion or tool/environment failure. Do not dismiss a test failure as flaky without evidence; a required check blocked by tooling remains unresolved, not passed or a product defect.
+- **Reporting [MANDATORY]:** Report each check as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, `NOT RUN`, or `N/A` with a reason; include concise evidence for failures and blockers in the canonical PR summary.
+
 ### Verification requirements
 
 - Run `./freebuff-verify.sh` and the checks required by every selected task group.
@@ -64,7 +75,7 @@ Complete these steps in order before implementation:
 - If a required check is unavailable, explain why and run an applicable documented alternative where practical.
 - Keep implementation status separate from verification status.
 - Mark implementation `COMPLETE` only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains.
-- Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Never present a pending, blocked, failed, or unrun check as passed.
+- Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, `NOT RUN`, or `N/A` with a brief reason. Use N/A only when a check is out of scope; never use it to waive a mandatory gate or present an unresolved check as passed.
 - A failed, blocked, or pending mandatory check prevents claiming **verified completion** or `USEFUL RESULT: YES`. It does not by itself prevent reporting implementation as complete or opening/updating an otherwise safe, reviewable PR.
 - State exactly what remains unverified.
 
@@ -136,6 +147,8 @@ A task request that clearly specifies a protected change is explicit authorizati
 Use the connected integrations below when they materially support the assigned task. Use the required default and owner-approved fallback as stated. Do not make unnecessary calls, expand task scope through an integration, or claim use when it did not occur.
 
 - **GitHub:** Always available for normal authorized repository work, including repository inspection, file access, branches, commits, issues, and pull requests. No additional owner approval is needed for routine use within the assigned task. Existing approval rules and safeguards for destructive or high-risk actions remain in force.
+- **Firecrawl:** Primary / preferred provider for website crawling, scraping, URL mapping, and extracting page content. Use it first when web-content retrieval from a website is needed and its capabilities fit the task.
+- **Crawlbase:** Secondary / fallback provider. Use it when Firecrawl is unavailable, fails, is blocked, or cannot retrieve the required content. Do not use both for the same request unless there is a specific reason, such as recovering missing content or cross-checking results.
 - **Penpot:** Available whenever useful for UI design, layout exploration, visual concepts, and prototyping. It may be used without additional owner approval when relevant and within the authorized task scope.
 - **Playwright:** Primary browser tool. Use first when available.
 - **Browserless:** Mandatory fallback when Playwright is unavailable or fails. No additional approval required.
