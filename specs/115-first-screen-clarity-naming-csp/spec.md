@@ -120,3 +120,10 @@ emulated touch viewport and compare with 24 px; record every value.
 - Colour contrast, `D7` (map story count), `D9` (Terms copy) and the optional `O*` recommendations are
   outside this request and untouched.
 - Real hardware is not available; mobile evidence uses an emulated 390 × 844 touch viewport.
+
+## Follow-up evidence (2026-11-08) — province markers measured with real data
+
+- The workspace has no database (`.env.local` is 0 bytes and `getSql()` returns null), so `/map` rendered its empty state. A temporary local story fixture, gated by `LUCKY_STORIES_FIXTURE=1` and reverted with `git checkout` before commit, supplied six stories across BC, AB, ON, QC, NS and NL purely to render the 13 real province markers for measurement.
+- With markers present, at 390 × 844 (360 px artwork) New Brunswick and Prince Edward Island were completely covered by Nova Scotia — centres only 15–18 px apart and a measured **0 px effective hit area**, a real failure the empty map had hidden. This contradicted the earlier "no control remains below 24 px" reading, which was therefore corrected in `tasks.md`.
+- Fix: the marker button exposes `data-province`, and `themes/default/map.css` fans only NB, PEI and NS apart below 620 px. Marker styling, artwork and every desktop position are untouched.
+- Re-measured after the fix: 13 markers, minimum visible circle 22.5 px, **minimum effective hit area 54 × 54 px**, all 13 centres hittable, no pair closer than 24 px. Desktop markers remain 42 px. Evidence in `artifacts/first-screen-20261108/results.json`.

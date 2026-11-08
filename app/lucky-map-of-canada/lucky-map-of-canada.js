@@ -432,6 +432,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     key={province.code}
                     type="button"
                     className={`province-marker ${provinceCount ? 'has-stories' : ''} ${active ? 'is-active' : ''}`}
+                    data-province={province.code}
                     onClick={() => selectProvince(province.code)}
                     aria-label={`${province.name}: ${provinceCount} ${provinceCount === 1 ? 'lucky story' : 'lucky stories'}`}
                     aria-pressed={active}

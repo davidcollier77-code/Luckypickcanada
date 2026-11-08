@@ -115,3 +115,15 @@ describe('approved experience names', () => {
     expect(homePageSource).toContain('CAD $1.99');
   });
 });
+
+describe('mobile marker spacing', () => {
+  it('fans the Maritime markers apart so each keeps its own target', () => {
+    const mapCss = read('themes/default/map.css');
+
+    expect(mapSource).toContain('data-province={province.code}');
+    expect(mapCss).toMatch(/\.province-marker\[data-province='NB'\]/);
+    expect(mapCss).toMatch(/\.province-marker\[data-province='PE'\]/);
+    expect(mapCss).toMatch(/\.province-marker\[data-province='NS'\]/);
+    expect(mapCss).toMatch(/@media \(max-width: 620px\)/);
+  });
+});

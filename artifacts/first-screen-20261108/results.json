@@ -43,12 +43,33 @@
       "homepageHeader": { "controls": 4, "minimumHitArea": [64, 24], "failures": 0 }
     },
     "provinceMarkers": {
-      "renderedMarkers": 0,
-      "note": "The local development database holds no community stories, so /map renders its empty state and no real province markers. The component's own .province-marker class was rendered inside the real .official-map-artwork container at 390 px to measure the CSS hit area.",
+      "dataSource": "The workspace has no database (.env.local is 0 bytes and app/lib/db-init.js getSql() returns null), so /map rendered its empty state. A temporary local story fixture in getLuckyStoryMap, gated by LUCKY_STORIES_FIXTURE=1, supplied 6 stories across BC, AB, ON, QC, NS and NL for the measurement only; it was reverted with git checkout before commit and never entered the diff.",
+      "renderedMarkers": 13,
+      "markersWithStories": 6,
+      "desktopVisibleMarkerSize": 42,
       "visibleMarkerSize": [22.5, 22.5],
-      "effectiveHitArea": [32, 32],
-      "ring": { "source": "themes/default/map.css .province-marker::before", "inset": "-3px" },
-      "failures": 0
+      "beforeFix": {
+        "observedAt": "390x844, 360 px artwork",
+        "maritimeCenterDistances": { "NB-PE": 15, "NB-NS": 18, "PE-NS": 16 },
+        "newBrunswick": { "border": 22.5, "effectiveHitArea": [0, 0], "coveredBy": "Nova Scotia" },
+        "princeEdwardIsland": { "border": 22.5, "effectiveHitArea": [0, 0], "coveredBy": "Nova Scotia" },
+        "otherMarkersMinimumHitArea": [54, 54],
+        "failures": 2
+      },
+      "fix": {
+        "files": ["app/lucky-map-of-canada/lucky-map-of-canada.js", "themes/default/map.css"],
+        "change": "The marker button exposes data-province, and a max-width 620 px rule fans only NB, PEI and NS a few percent apart (NB 72.5/70.5, PE 80/69, NS 84/80). Marker styling, artwork and desktop positions are unchanged."
+      },
+      "afterFix": {
+        "minimumVisibleMarkerSize": 22.5,
+        "minimumEffectiveHitArea": [54, 54],
+        "markersWithStoriesEffectiveHitArea": [78, 78],
+        "centresHittable": 13,
+        "pairsCloserThan24px": 0,
+        "failures": 0,
+        "emptyStateVisible": false,
+        "note": "Effective areas are larger than the 3 px ring because the decorative marker-sparkle layer also belongs to the button."
+      }
     },
     "skipLink": "skip link sits off-screen until focused (expected pattern, not a target failure)"
   },
@@ -60,7 +81,8 @@
     "footerNav": ["Home", "Luck Generator", "Crystal Ball", "Daily Reveal", "Lucky Community Stories", "About"],
     "faqQuestions": ["How does the Daily Lucky Card generator work?", "What is the Luck Generator, and how does it work?", "Is Lucky Pick Canada free to use?", "What are Lucky Community Stories and the Community Map?", "Is Lucky Pick Canada intended for entertainment?", "How does the Gift Reveal work?"],
     "mapHeadings": ["Where Luck Has Been Found Across Canada", "Lucky Community Stories by province"],
-    "mapLabels": ["Lucky Community Stories navigation", "Lucky Community Stories statistics", "LuckyPickCanada lucky community stories map"]
+    "mapLabels": ["Lucky Community Stories navigation", "Lucky Community Stories statistics", "LuckyPickCanada lucky community stories map"],
+    "mapMarkerLabels": ["British Columbia: 1 lucky story", "Quebec: 1 lucky story", "Nova Scotia: 1 lucky story", "Newfoundland and Labrador: 1 lucky story"]
   },
   "namingSweep": {
     "routes": ["/", "/lucky-meter", "/about", "/map"],
@@ -75,6 +97,6 @@
   },
   "brandIdentity": {
     "gamblingTermsIntroduced": false,
-    "note": "First-screen copy and the renamed labels describe free, fun experiences, community stories and everyday luck. No gambling, betting, wagering, lottery or casino wording was added, and the payment sections keep their existing product names and prices."
+    "note": "First-screen copy, the renamed labels and the fixture stories describe free, fun experiences, community stories and everyday luck. No gambling, betting, wagering, lottery or casino wording was added, and the payment sections keep their existing product names and prices."
   }
 }

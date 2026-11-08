@@ -114,3 +114,7 @@ Not changed: `public/**` artwork, Stripe/checkout/payment code, `package.json`, 
 - **Regression in existing behaviour**: the homepage copy and FAQ strings are guarded by updated
   tests, and the free "Explore your luck" control, reveal checkout, Tip Jar and Suggestion Box are
   left functionally untouched.
+
+## Follow-up (2026-11-08) — marker spacing
+
+Measuring the populated map (temporary local fixture, reverted) showed the three Maritime markers overlapping at phone width, leaving NB and PEI with a 0 px target. The fix stays inside the existing architecture: one `data-province` attribute on the existing marker button plus three narrow-screen `left`/`top` overrides in `themes/default/map.css`. No component restructuring, no new dependency, no desktop change. A guard in `__tests__/first-screen-and-naming.test.js` keeps the attribute and the three rules from being removed.
