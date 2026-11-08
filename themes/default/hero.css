@@ -208,13 +208,13 @@ html { scroll-behavior: smooth; }
   height: auto;
 }
 
-.hero-art-divider--top { margin: clamp(.75rem, 2.6vw, 1.5rem) auto clamp(.6rem, 2vw, 1.1rem); }
-.hero-art-divider--bottom { margin: clamp(.6rem, 2vw, 1.1rem) auto clamp(.35rem, 1.4vw, .75rem); }
+.hero-art-divider--top { margin: clamp(.45rem, 1.5vw, .85rem) auto clamp(.35rem, 1.2vw, .65rem); }
+.hero-art-divider--bottom { margin: clamp(.35rem, 1.2vw, .65rem) auto clamp(.25rem, .9vw, .45rem); }
 
 /* ---- Welcome panel (specs/115-first-screen-clarity-naming-csp) -------------
-   What Lucky Pick Canada offers, why it is fun and a free way in. Content and
-   controls are unchanged; the gold hairline panel framing comes from the
-   reference layout. */
+   What Lucky Pick Canada offers and why it is fun. The compact panel keeps its
+   existing copy and gold hairline framing; the artwork provides the separate
+   Explore title and scroll control below. */
 .hero-welcome {
   position: relative;
   z-index: 20;
@@ -223,7 +223,7 @@ html { scroll-behavior: smooth; }
   align-items: center;
   width: min(92%, 40.5rem);
   margin: 0 auto;
-  padding: clamp(1rem, 3vw, 1.7rem) clamp(.9rem, 3.4vw, 2rem);
+  padding: clamp(.8rem, 2.1vw, 1.2rem) clamp(.9rem, 3.4vw, 2rem);
   border: 1px solid rgba(246, 202, 95, .72);
   border-radius: clamp(18px, 2.6vw, 26px);
   background:
@@ -262,50 +262,23 @@ html { scroll-behavior: smooth; }
 
 .hero-welcome-copy {
   max-width: 38rem;
-  margin: 0 auto .8rem;
+  margin: 0 auto;
   color: rgba(255, 251, 236, .92);
   font-size: clamp(.9rem, 1.5vw, 1rem);
-  line-height: 1.55;
-}
-
-.hero-welcome-cta {
-  /* An inline <a> ignores min-height, which left this control at 41.8 px on
-     desktop and 39.5 px on phones against the 44 px target the gold-CTA suite
-     measures. Flex centring makes the minimum real. */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .4rem;
-  min-height: 46px;
-  padding: .65rem 1.35rem;
-  border-radius: 999px;
-  /* 0.85rem of the 15 px root is 12.75 px, which keeps this control above the
-     repository's 12 px mobile caption floor (PR #1774); 0.78rem measured
-     11.7 px and failed the audit test. */
-  font-size: clamp(.85rem, 1.4vw, .9rem);
-  font-weight: 900;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  text-decoration: none;
-}
-
-.hero-welcome-note {
-  margin: .6rem 0 0;
-  color: #f2cf7a;
-  /* 0.8rem of the 15 px root is 12 px, the repository's mobile caption floor. */
-  font-size: clamp(.8rem, 1.5vw, .84rem);
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  line-height: 1.5;
 }
 
 @media (max-width: 620px) {
   .hero-artwork-column { padding-inline: .35rem; }
-  .hero-welcome { padding: .95rem .8rem 1.05rem; }
-  .hero-welcome-lede { font-size: clamp(1rem, 4.6vw, 1.25rem); }
-  .hero-welcome-copy { font-size: .9rem; line-height: 1.5; }
-  .hero-welcome-note { font-size: .8rem; letter-spacing: .05em; }
-  .hero-welcome-cta { width: min(100%, 18rem); min-height: 48px; }
+  /* Keep the full painted emblem/wordmark intact while reclaiming enough
+     first-screen height for the separate Explore title and arrows. */
+  .hero-art-slice--emblem { width: 92%; }
+  .hero-welcome { padding: .55rem .8rem .6rem; }
+  .hero-welcome-title { margin-bottom: .2rem; }
+  .hero-welcome-lede { margin-bottom: .35rem; font-size: clamp(.98rem, 4.3vw, 1.18rem); line-height: 1.1; }
+  .hero-welcome-copy { font-size: .875rem; line-height: 1.35; }
+  .hero-art-divider--top { margin-bottom: .2rem; }
+  .hero-art-divider--bottom { margin-top: .2rem; margin-bottom: .1rem; }
 }
 
 
