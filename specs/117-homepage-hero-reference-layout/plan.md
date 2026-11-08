@@ -72,7 +72,10 @@ PR stays open and unmerged
 - The Explore hit target fills the complete Explore crop; its focus outline is inset so the crop's
   overflow clipping does not conceal keyboard focus.
 - The reference probe waits for the lead image to decode, fonts to settle and measured geometry to
-  stabilize instead of relying on fixed sleep durations.
+  stabilize instead of relying on fixed sleep durations. The Explore interaction test uses the
+  same animation-frame geometry stabilization after scrolling rather than fixed 150/100 ms sleeps.
+- The viewport PNGs under `artifacts/hero-reference-20261108/out/` are retained intentionally as
+  four desktop/laptop/phone visual-review captures, not as public runtime assets.
 
 ## Project Structure
 

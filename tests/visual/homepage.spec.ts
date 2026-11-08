@@ -6,6 +6,35 @@ const EXPLORE_COOLDOWN_MS = 15_000;
  * Builds a short, valid silent PCM WAV so interaction coverage can verify
  * local audio loading deterministically without playing the real sound in CI.
  */
+/** Wait until a scrolled element's viewport rectangle is stable across animation frames. */
+async function waitForStableRect(locator) {
+  await locator.evaluate(async (element) => {
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    let previous = null;
+    let stableFrames = 0;
+
+    for (let frame = 0; frame < 180 && stableFrames < 3; frame += 1) {
+      await nextFrame();
+      const rect = element.getBoundingClientRect();
+      const current = [rect.x, rect.y, rect.width, rect.height];
+      if (previous && current.every((value, index) => Math.abs(value - previous[index]) < 0.5)) {
+        stableFrames += 1;
+      } else {
+        stableFrames = 0;
+      }
+      previous = current;
+    }
+
+    if (stableFrames < 3) {
+      throw new Error('Hero stage geometry did not settle after scrolling.');
+    }
+  });
+}
+
+/**
+ * Builds a short, valid silent PCM WAV so interaction coverage can verify
+ * local audio loading deterministically without playing the real sound in CI.
+ */
 function createSilentWavFixture() {
   const sampleRate = 8_000;
   const durationMs = 120;
@@ -262,7 +291,7 @@ test.describe("Homepage Visual", () => {
     expect(scrollY).toBe(0);
 
     await heroStage.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(150);
+    await waitForStableRect(heroStage);
 
     const buttonBox = await exploreButton.boundingBox();
     const stageBox = await heroStage.boundingBox();
@@ -399,7 +428,7 @@ test.describe("Homepage Visual", () => {
         // The taller approved hero puts the control below the first screen, so
         // the tap point is re-measured after scrolling it into view.
         await heroStage.scrollIntoViewIfNeeded();
-        await page.waitForTimeout(100);
+        await waitForStableRect(heroStage);
         const liveStageBox = (await heroStage.boundingBox())!;
         await page.touchscreen.tap(
           liveStageBox.x + liveStageBox.width / 2,

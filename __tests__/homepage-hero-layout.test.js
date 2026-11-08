@@ -44,9 +44,11 @@ describe('Reference hero composition', () => {
     const dividerSlices = heroSource.match(/hero-art-slice--divider/g) ?? [];
 
     expect(dividerSlices).toHaveLength(2);
-    // Both dividers render the same artwork component; no separate asset exists.
+    // These are the two divider windows plus the Explore window. The emblem call
+    // passes alt/loading/fetchPriority props, so it is intentionally not matched.
     expect(heroSource).toContain('Row bands measured from the painting');
-    expect(heroSource.match(/<HeroArtwork \/>/g) ?? []).toHaveLength(3);
+    const bareArtworkUsages = heroSource.match(/<HeroArtwork \/>/g) ?? [];
+    expect(bareArtworkUsages).toHaveLength(3);
   });
 
   it('sizes the artwork from its width instead of a fixed screen height', () => {

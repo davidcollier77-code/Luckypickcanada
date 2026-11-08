@@ -46,6 +46,7 @@
 - [X] T025 [US3] Restore the Explore hit target to the full visible Explore crop and keep its keyboard focus outline visible inside the crop's overflow boundary.
 - [X] T026 [US3] Add Playwright assertions for the crop-row geometry and Explore hit-target coverage, plus a source guard for the single high-priority/eager artwork policy.
 - [X] T027 [P] Replace fixed waits in the reference probe with image decode, font readiness and stable-geometry conditions.
+- [X] T028 [US3] Replace the remaining fixed post-scroll waits in the Explore Playwright test with settled-geometry polling, clarify the prop-free artwork count, and terminate the measurements JSON with a newline.
 
 ## Dependencies
 
