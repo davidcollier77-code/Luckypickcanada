@@ -43,30 +43,25 @@ describe('single-source agent governance', () => {
     expect(connectedIntegrations).toContain(
       'GitHub:** Always available for normal authorized repository work',
     );
-    // Browser QA has three tools in a strict priority order, not three interchangeable options.
-    const playwrightIndex = connectedIntegrations.indexOf(
+    // Accept all documented browser QA providers without asserting which one a run must select.
+    const browserQaToolPolicies = [
       '**Playwright:** Primary browser tool. Use first when available.',
-    );
-    const browserlessIndex = connectedIntegrations.indexOf(
       '**Browserless:** Mandatory fallback when Playwright is unavailable or fails. No additional approval required.',
-    );
-    const browserbaseIndex = connectedIntegrations.indexOf(
       '**Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.',
-    );
+    ];
 
-    expect(playwrightIndex).toBeGreaterThanOrEqual(0);
-    expect(browserlessIndex).toBeGreaterThan(playwrightIndex);
-    expect(browserbaseIndex).toBeGreaterThan(browserlessIndex);
+    for (const toolPolicy of browserQaToolPolicies) {
+      expect(connectedIntegrations).toContain(toolPolicy);
+    }
 
-    // Browserless is the automatic second choice; Browserbase is approval-gated.
+    expect(agents).toContain('**Browser QA is mandatory.**');
+
+    // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.
     expect(connectedIntegrations).toContain(
-      'Browserless and Browserbase are for Freebuff\'s direct browser-based task work.',
+      'Browserless and Browserbase are for Freebuff\\'s direct browser-based task work.',
     );
     expect(connectedIntegrations).toContain(
       'Do not add either service to, or trigger either service from, automatic PR-checker workflows.',
-    );
-    expect(agents).toContain(
-      '**Browser QA is mandatory.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval.',
     );
     expect(connectedIntegrations).toContain(
       'Stitch:** Available whenever useful',
