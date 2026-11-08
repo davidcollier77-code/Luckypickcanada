@@ -375,7 +375,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ['Mapped story markers', stories.length],
           ].map(([label, value]) => (
             <div key={label} className="premium-surface map-statistic" style={{ ...cardStyle, padding: '1.2rem 1.4rem' }}>
-              <p style={{ margin: 0, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.72rem', opacity: 0.9 }}>{label}</p>
+              <p style={{ margin: 0, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.8rem', opacity: 0.9 }}>{label}</p>
               <strong style={{ display: 'block', marginTop: '0.45rem', fontSize: 'clamp(2rem, 6vw, 2.8rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 10px rgba(255, 255, 255, 0.1)' }}>{value}</strong>
             </div>
           ))}
@@ -469,7 +469,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
-                    <p style={{ display: 'inline-flex', margin: '0.55rem 0 0', padding: '0.28rem 0.55rem', border: '1px solid rgba(250,204,21,0.5)', borderRadius: 999, color: '#fde68a', fontSize: '0.72rem', fontWeight: 900, letterSpacing: 0.8, textTransform: 'uppercase' }}>Community Lucky Story</p>
+                    <p style={{ display: 'inline-flex', margin: '0.55rem 0 0', padding: '0.28rem 0.55rem', border: '1px solid rgba(250,204,21,0.5)', borderRadius: 999, color: '#fde68a', fontSize: '0.8rem', fontWeight: 900, letterSpacing: 0.8, textTransform: 'uppercase' }}>Community Lucky Story</p>
                     <p style={{ lineHeight: 1.65 }}>{selectedStory?.id === story.id ? story.story : story.preview}</p>
                     <p style={{ margin: '0.5rem 0 0', color: '#9ca3af', fontSize: '0.85rem' }}>{formatRelativeTime(story.createdAt)}</p>
                     {selectedStory?.id === story.id ? (

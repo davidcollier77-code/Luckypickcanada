@@ -1187,7 +1187,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       {!isCompact && (
         <div className="absolute top-4 left-4 z-20">
-          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 resonance-return-link text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
             <span aria-hidden>←</span> Return to Home
           </Link>
         </div>
@@ -1208,7 +1208,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         }`}>
           {!isRevealed && !isRevealing ? (
           <div className="flex flex-col items-center justify-center flex-1 w-full py-8">
-            <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
+            {/* Visually identical eyebrow line. It is a paragraph, not a heading, so
+                the page's first heading is its single H1 (audit D5). */}
+            <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY'S RESONANCE</h1>
             <ResonanceButton onClick={handleReveal} />
           </div>

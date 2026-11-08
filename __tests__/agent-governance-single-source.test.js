@@ -43,11 +43,22 @@ describe('single-source agent governance', () => {
     expect(connectedIntegrations).toContain(
       'GitHub:** Always available for normal authorized repository work',
     );
+    // Recognize every supported browser QA provider without hard-coding tool order or descriptions.
+    const supportedBrowserQaTools = ['Playwright', 'Browserless', 'Browserbase'];
+
+    for (const toolName of supportedBrowserQaTools) {
+      expect(connectedIntegrations).toContain(toolName);
+    }
+
+    expect(agents).toContain('**Browser QA is mandatory.**');
+    expect(connectedIntegrations).toContain('Requires explicit owner approval.');
+
+    // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.
     expect(connectedIntegrations).toContain(
-      "Browserless:** Freebuff's required default hosted browser environment.",
+      "Browserless and Browserbase are for Freebuff's direct browser-based task work.",
     );
     expect(connectedIntegrations).toContain(
-      'Ask the owner for explicit approval before using Browserbase.',
+      'Do not add either service to, or trigger either service from, automatic PR-checker workflows.',
     );
     expect(connectedIntegrations).toContain(
       'Penpot:** Available whenever useful',

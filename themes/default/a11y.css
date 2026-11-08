@@ -1,0 +1,112 @@
+/* Accessibility presentation layer for the Default Theme.
+   Scope: keyboard focus visibility, skip navigation, minimum control hit areas
+   and mobile caption legibility (audit findings D3, D4, D5 and D8).
+   Nothing here changes artwork, branding, colour choices, copy or layout order. */
+
+/* Skip navigation: off-screen until it receives keyboard focus, then pinned to
+   the top-left of the viewport above the sticky header. */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0.75rem;
+  z-index: 200;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid rgba(255, 242, 168, 0.9);
+  border-radius: 999px;
+  color: #1c1200;
+  background: linear-gradient(180deg, #fff6c4 0%, #f0d685 55%, #dcae4e 100%);
+  font-family: var(--lpc-body);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+  transform: translateY(calc(-100% - 1rem));
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0.75rem);
+  outline: 3px solid #fff6c4;
+  outline-offset: 3px;
+}
+
+/* Footer controls: the visible text stays exactly where it was, while the
+   anchor box and its existing ::before expansion give a 24 px minimum target
+   (WCAG 2.2 SC 2.5.8) that does not reach into neighbouring links. */
+footer nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* The 24 px box above already meets the target floor, so the footer's original
+   ::before expander is neutralised: it made the footer rows' hit areas reach into
+   the row above and below, which could steal a tap from a neighbouring link. */
+footer nav a::before {
+  inset: 0 !important;
+}
+
+/* Footer caption floor (audit D4). The theme's mobile root font size is 15 px, so
+   0.8rem is 12 px; the desktop value keeps the existing 12 px (0.75rem at the
+   16 px desktop root). Declared here rather than as new utility classes so the
+   size does not depend on the Tailwind build picking up new arbitrary values. */
+footer p,
+footer nav a {
+  font-size: 0.8rem;
+}
+
+@media (min-width: 640px) {
+  footer p,
+  footer nav a {
+    font-size: 0.75rem;
+  }
+}
+
+/* Caption floor for the Lucky Meter return link (audit D4). Same reasoning as
+   the footer rules: text-xs is 11.25 px under the 15 px mobile root. */
+.resonance-return-link {
+  font-size: 0.8rem;
+}
+
+@media (min-width: 640px) {
+  .resonance-return-link {
+    font-size: 0.75rem;
+  }
+}
+
+/* Footer links keep a visible keyboard focus ring (audit D8). */
+footer a:focus-visible,
+footer button:focus-visible {
+  outline: 3px solid rgba(255, 226, 136, 0.95);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Homepage header links: the visible type is the same weight and colour family,
+   while the anchor box guarantees the 24 px target floor. Their existing
+   ::before expander still surrounds it, and the row gap keeps links apart. */
+.homepage-main-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+/* The theme sets its mobile root font size to 15 px, so 0.8rem is the 12 px
+   caption floor here (Tailwind's text-xs is 0.75rem = 11.25 px).
+   The header wraps to two rows on a phone, so the anchor's ::before expander is
+   neutralised there: the 24 px box is the target and the two rows' hit areas no
+   longer overlap each other. */
+@media (max-width: 620px) {
+  .homepage-main-nav a {
+    font-size: 0.8rem;
+  }
+
+  .homepage-main-nav a::before {
+    inset: 0 !important;
+  }
+}

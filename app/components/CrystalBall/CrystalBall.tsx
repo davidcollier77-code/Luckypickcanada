@@ -332,7 +332,7 @@ export default function CrystalBall({
           <GoldenLeaf className={styles.fallingLeafArtwork} />
         </div>
       )}
-      <main className={styles.container}>
+      <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
           <p className={styles.subtitle}>
@@ -378,7 +378,7 @@ export default function CrystalBall({
                 decoding="async"
               />
             </picture>
-            <div className={styles.plaqueOverlay}>
+            <div className={styles.plaqueOverlay} aria-hidden="true">
               <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
             </div>
           </div>
@@ -547,7 +547,7 @@ export default function CrystalBall({
             Community Map
           </Link>
         </nav>
-      </main>
+      </div>
     </div>
   );
 }
