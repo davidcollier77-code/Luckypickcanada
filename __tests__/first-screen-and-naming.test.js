@@ -20,15 +20,16 @@ const layoutSource = read('app/layout.js');
 const mapSource = read('app/lucky-map-of-canada/lucky-map-of-canada.js');
 
 describe('first-screen clarity', () => {
-  it('shows the brand, the purpose and a free way in before scrolling', () => {
+  it('shows the brand, the purpose and the free experiences before scrolling without an oversized CTA', () => {
     expect(heroSource).toMatch(/<h1 className="hero-welcome-title">Lucky Pick Canada<\/h1>/);
     expect(heroSource).toContain('A fun, free place to explore what luck means to you.');
     expect(heroSource).toMatch(/more than fortune and\s+fame/);
-    expect(heroSource).toMatch(/<a href="#play-explore" className="hero-welcome-cta gold-3d-btn">/);
-    expect(heroSource).toContain('Explore free experiences');
+    expect(heroSource).not.toContain('hero-welcome-cta');
+    expect(heroSource).not.toContain('Explore free experiences');
     expect(heroSource).toContain('Luck Generator');
     expect(heroSource).toContain('Crystal Ball');
     expect(heroSource).toContain('Lucky Community Stories');
+    expect(heroSource).toContain('<ExploreLuckButton />');
   });
 
   it('keeps the existing artwork, free explore control and animations', () => {
@@ -38,8 +39,10 @@ describe('first-screen clarity', () => {
     expect(heroSource).not.toMatch(/sr-only">Lucky Pick Canada/);
   });
 
-  it('keeps the fun, community and non-gambling identity', () => {
-    expect(heroSource).toContain('Free to enjoy · For fun and entertainment only');
+  it('keeps the fun, community and non-gambling identity without the removed gold note', () => {
+    expect(heroSource).toContain('A fun, free place to explore what luck means to you.');
+    expect(heroSource).toContain('Lucky Community Stories shared from across Canada.');
+    expect(heroSource).not.toContain('Free to enjoy · For fun and entertainment only');
     expect(heroSource).not.toMatch(/\b(casino|betting|wager|wagering|jackpot|odds)\b/i);
   });
 });
