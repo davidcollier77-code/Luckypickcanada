@@ -7,7 +7,7 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   await expect(artwork).toBeVisible({ timeout: 10_000 });
   await expect.poll(() => artwork.evaluate((element) => {
     const image = element as HTMLImageElement;
-    return image.complete && (image.naturalWidth === 420 || image.naturalWidth === 716);
+    return image.complete && /crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/.test(image.currentSrc);
   })).toBe(true);
 
   const metrics = await page.evaluate(() => {
@@ -26,24 +26,30 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
       declaredHeight: image.getAttribute('height'),
       imageRatio: imageBox.width / imageBox.height,
       isConnected: image.isConnected,
+      currentSrc: image.currentSrc,
       sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
         type: source.type,
         srcSet: source.srcset,
       })),
       fallbackSrc: image.getAttribute('src'),
       wrapperTop: wrapperBox.top,
-    const src = image.currentSrc;
-    return image.complete && /crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/.test(src);
-  })).toBe(true);
+      wrapperHeight: wrapperBox.height,
+      glowTop: glowBox.top,
+      glowWidth: glowBox.width,
+      glowHeight: glowBox.height,
+    };
+  });
 
-  const metrics = await page.evaluate(() => {
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
   expect(metrics.isConnected).toBe(true);
-  // Chromium density-corrects naturalWidth for srcset images (it reports the
-  // `sizes` slot width), so don't hard-code the candidate widths. Both
-  // candidates share the same aspect ratio (~1.222), which is preserved by
-  // the density correction at any viewport size.
+  // `sizes` resolves to a viewport-dependent slot width (75vw below 560px,
+  // 420px above), so Chromium picks the 420w candidate on small screens and the
+  // 716w candidate on wide ones. It then reports naturalWidth density-corrected,
+  // so the reported width varies with the viewport instead of staying 420 or
+  // 716. Both candidates share the same intrinsic aspect ratio, which is the
+  // property the layout actually depends on.
+  expect(metrics.currentSrc).toMatch(/crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/);
   expect(metrics.imageWidth).toBeGreaterThan(0);
   expect(metrics.imageHeight / metrics.imageWidth).toBeCloseTo(875 / 716, 1);
   expect(metrics.declaredWidth).toBe('716');
@@ -62,8 +68,8 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
     },
   ]);
   expect(metrics.fallbackSrc).toBe('/assets/crystal-ball-pedestal.png');
-  expect(Math.abs(metrics.glowWidth - metrics.glowHeight)).toBeLessThanOrEqual(1);
 
+  expect(Math.abs(metrics.glowWidth - metrics.glowHeight)).toBeLessThanOrEqual(1);
   const glowCenterY = metrics.glowTop + metrics.glowHeight / 2;
   const expectedGlowCenterY = metrics.wrapperTop + metrics.wrapperHeight * 0.32;
   expect(Math.abs(glowCenterY - expectedGlowCenterY)).toBeLessThanOrEqual(1.5);
