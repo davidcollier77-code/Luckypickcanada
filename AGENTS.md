@@ -78,12 +78,26 @@ Keep the summary concise and aligned with the Master Work Request. Include:
 - Skills materially used (only those actually applied).
 - Short implementation result and exact files changed.
 - Required Spec Kit stages and artifact paths.
-- Only reference documents/resources that materially informed the work.
+- Keep the existing Spec Kit, Memory Bank, task-group, and skill reporting unchanged.
+- Report `.docs/` library-document usefulness separately using the concise table defined below.
 - Actual verification commands and results, including failures, blockers, pending checks, and checks not run.
 - Behavior preserved, remaining issues/risks, and final diff/error-check results.
 - `USEFUL RESULT: YES/NO`; use YES only when the requested result is verified.
 
-Do not require a separate report, a per-resource USED/USEFUL/version matrix, or an inventory of irrelevant documents. The PR summary is complete when it accurately records the current work and evidence, including pending items. **Verified completion** still requires every mandatory gate to pass. A safe PR may remain open for review while clearly identified checks are pending.
+Do not create a separate report or inventory of irrelevant documents. The PR summary is complete when it accurately records the current work and evidence, including pending items. **Verified completion** still requires every mandatory gate to pass. A safe PR may remain open for review while clearly identified checks are pending.
+
+### `.docs/` library document usefulness
+
+Include a small Markdown table in the canonical PR body, separate from all Spec Kit, Memory Bank, task-group, and skill reporting. This table applies **only** to individual reference documents in `.docs/`; it does not apply to Spec Kit artifacts, Memory Bank files, `.freebuff/` task-group guidance, skills, or other workflow resources. Do not change their existing reporting.
+
+List only `.docs/` documents that Freebuff actually opened or consulted for the task. For each document, identify whether it materially helped and give one brief, task-specific explanation (a short phrase or sentence) of what it contributed. Use `Useful` or `Not useful` in the status column. If a consulted document did not contribute, say so briefly; do not list documents that were not consulted or unrelated documents. Keep the table concise, with no lengthy reviews, scoring, version tracking, or separate report. Do not modify `.docs/` documents as part of this reporting requirement.
+
+Example:
+
+| `.docs/` library document | Usefulness | Brief reason |
+|---|---|---|
+| `responsive-design.md` | Useful | Guided the mobile layout checks. |
+| `testing-guide.md` | Not useful | Consulted, but its guidance did not apply to this change. |
 
 ### PR submission and handoff
 
