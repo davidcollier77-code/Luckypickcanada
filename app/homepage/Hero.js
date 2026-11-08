@@ -125,10 +125,9 @@ export default function Hero() {
             <HeroArtwork />
           </div>
 
-          {/* First-screen introduction (specs/115-first-screen-clarity-naming-csp):
-              what Lucky Pick Canada is, why it is fun, and a free way in. Content
-              and controls are unchanged; the panel framing comes from the
-              reference layout. */}
+          {/* First-screen introduction: keep the welcome copy in the dark panel.
+              The painted Explore title and its separate scroll control remain
+              directly below the panel in the artwork window. */}
           <div className="hero-welcome">
             <h1 className="hero-welcome-title">Lucky Pick Canada</h1>
             <p className="hero-welcome-lede">A fun, free place to explore what luck means to you.</p>
@@ -137,12 +136,6 @@ export default function Hero() {
               Lucky Community Stories shared from across Canada. Luck is about more than fortune and
               fame — it lives in everyday moments, hope and possibility.
             </p>
-            <a href="#play-explore" className="hero-welcome-cta gold-3d-btn">
-              <span className="gold-cta-emoji" aria-hidden="true">🍀</span>
-              Explore free experiences
-              <span aria-hidden="true">→</span>
-            </a>
-            <p className="hero-welcome-note">Free to enjoy · For fun and entertainment only</p>
           </div>
 
           <div className="hero-art-slice hero-art-slice--divider hero-art-divider hero-art-divider--bottom" aria-hidden="true">

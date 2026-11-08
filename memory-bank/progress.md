@@ -1,3 +1,11 @@
+## 2026-11-08 — Homepage welcome panel cleanup (implementation candidate)
+
+- Removed the oversized “Explore free experiences” link and the gold entertainment-only line from the welcome card while retaining its dark navy/gold frame, heading, lede and explanatory paragraph.
+- Tightened the welcome card's vertical padding, paragraph margin and the divider spacing around it so the existing painted Explore title and arrows sit closer below the panel.
+- Left `ExploreLuckButton.js` unchanged; the separate `#play-explore` scroll, confetti, sound, cooldown, keyboard/touch and reduced-motion paths are preserved in source.
+- Added source guard coverage for the retained panel copy, removed content/styles and continued placement of the Explore control.
+- Verification is not yet complete: this connected execution environment cannot resolve `github.com`, so local commands and Playwright could not be run. CI and rendered browser evidence are pending; no successful build or screenshot-baseline refresh is claimed.
+
 ## 2026-11-08 — Homepage hero rebuilt to the supplied reference composition
 
 - Rebuilt the hero in reference order (nav pill → emblem → tagline → gold wordmark → gold maple divider → welcome panel → divider → "Explore your luck" + chevron) using CSS windows over the one existing flattened artwork: `HeroArtwork` paints the image four times inside aspect-ratio slices with measured row offsets, so no artwork was redrawn, split into new files or flattened further.

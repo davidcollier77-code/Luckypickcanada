@@ -1,3 +1,13 @@
+# Current Task — Homepage welcome panel cleanup (2026-11-08)
+
+- **Scope:** Remove only the oversized gold “Explore free experiences” link and the gold “Free to enjoy · For fun and entertainment only” note from the welcome card. Keep its dark navy/gold frame, heading, lede and explanatory copy. Tighten card padding and the two adjacent divider margins so the painted Explore title/down arrows sit closer beneath it.
+- **Behaviour protection:** The separate `ExploreLuckButton` remains mounted after the welcome panel. Its `#play-explore` destination, confetti, sound, cooldown, keyboard/touch activation, interruption and reduced-motion behavior are outside the change and remain untouched.
+- **Visual protection:** Existing emblem/wordmark/artwork, AVIF-first/WebP fallback and preload, starfield, gold shimmer, navigation and all sections below the hero are out of scope.
+- **Implementation:** Branch `fix/hero-welcome-panel-cleanup`; Spec Kit feature `specs/118-hero-welcome-panel-cleanup`.
+- **Verification status:** Source edits and the source regression guard are prepared through GitHub repository APIs. Local execution is blocked because the connected command container cannot resolve `github.com`; Vitest, Playwright, `./freebuff-verify.sh`, build-size measurement and browser-render verification remain pending. Do not claim verified completion until current-head checks run.
+
+---
+
 # Current Task — PR #1780 independent review follow-up (2026-11-08)
 
 - **Scope:** independent review of PR #1780 against the supplied homepage reference; preserve the Milky Way backdrop, animated star canvas, three gold shimmer regions (ring, wordmark and Explore line), AVIF-first/WebP fallback, navigation, confetti, chime, scroll behavior, and all content below the hero.

@@ -67,15 +67,30 @@ describe('Reference hero composition', () => {
     expect(heroCss).toContain('width: 100%;\n  height: auto;');
   });
 
-  it('keeps the welcome panel content, the free CTA and the entertainment note', () => {
+  it('keeps the welcome panel and its copy while removing the oversized CTA and gold note', () => {
     expect(heroSource).toContain('<h1 className="hero-welcome-title">Lucky Pick Canada</h1>');
     expect(heroSource).toContain('A fun, free place to explore what luck means to you.');
-    expect(heroSource).toContain('<a href="#play-explore" className="hero-welcome-cta gold-3d-btn">');
-    expect(heroSource).toContain('Explore free experiences');
-    expect(heroSource).toContain('Free to enjoy · For fun and entertainment only');
-    // The panel is the reference's bordered surface, not a transparent wrapper.
+    expect(heroSource).toContain('Try the Luck Generator for a daily reading, ask the Crystal Ball a question, and read');
+    expect(heroSource).toContain('Lucky Community Stories shared from across Canada.');
+    expect(heroSource).not.toContain('hero-welcome-cta');
+    expect(heroSource).not.toContain('Explore free experiences');
+    expect(heroSource).not.toContain('Free to enjoy · For fun and entertainment only');
+    // Keep the panel's dark, gold-edged treatment while making its vertical rhythm tighter.
     expect(heroCss).toContain('border: 1px solid rgba(246, 202, 95, .72);');
     expect(heroCss).toContain('border-radius: clamp(18px, 2.6vw, 26px);');
+    expect(heroCss).toContain('padding: clamp(.8rem, 2.1vw, 1.2rem) clamp(.9rem, 3.4vw, 2rem);');
+    expect(heroCss).toContain('margin: 0 auto;');
+    expect(heroCss).not.toContain('.hero-welcome-cta');
+    expect(heroCss).not.toContain('.hero-welcome-note');
+  });
+
+  it('keeps the separate painted Explore control mounted after the welcome panel', () => {
+    const panel = indexOfOrFail(heroSource, 'className="hero-welcome"');
+    const explore = indexOfOrFail(heroSource, '<ExploreLuckButton />');
+
+    expect(heroSource).toContain("import ExploreLuckButton from './ExploreLuckButton';");
+    expect(panel).toBeLessThan(explore);
+    expect(heroSource).toContain('hero-art-slice--explore hero-image-container pointer-events-none');
   });
 
   it('prioritizes only the lead artwork and defers the repeated decorative crops', () => {
