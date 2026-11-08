@@ -943,3 +943,17 @@ body:has(.homepage-sky-backdrop)::after {
   font-size: clamp(1.75rem, 3.6vw, 2.9rem);
   line-height: 1.04;
 }
+
+/* Mobile caption floor (audit D4). The theme's mobile root font-size is 15 px,
+   so 0.8rem resolves to 12 px here; these rules are scoped to phone widths, so
+   the desktop scale is unchanged. */
+@media (max-width: 620px) {
+  .homepage-section-heading > p,
+  .homepage-offer-kicker,
+  .homepage-offer-note,
+  .lucky-moment-eyebrow,
+  .lucky-card-share-status,
+  .homepage-reveals-counter-label {
+    font-size: 0.8rem;
+  }
+}

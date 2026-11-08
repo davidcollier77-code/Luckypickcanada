@@ -344,7 +344,7 @@
 .dailyQuotaCountdown {
   margin: 0 0 1rem;
   color: var(--brass-300);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.025em;
   line-height: 1.4;

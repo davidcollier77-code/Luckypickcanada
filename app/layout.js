@@ -70,7 +70,12 @@ export default function RootLayout({ children }) {
       <body className="m-0 p-0">
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
-        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
+        <a href="#main-content" className="skip-link">Skip to main content</a>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen"
+        >
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
             <>
               <Script
@@ -92,7 +97,7 @@ export default function RootLayout({ children }) {
             <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5 flex flex-col items-center">
               <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
 
-              <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-white/90 max-w-lg mb-2">
+              <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs text-white/90 max-w-lg mb-2">
                 <Link href="/" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Home</Link>
                 <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Meter</Link>
                 <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Crystal Ball</Link>
@@ -101,7 +106,7 @@ export default function RootLayout({ children }) {
                 <Link href="/about" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">About</Link>
               </nav>
 
-              <nav className="flex flex-wrap justify-center gap-3 sm:gap-4 text-white/75 text-[10px] sm:text-[11px] max-w-sm mb-2" aria-label="Social links">
+              <nav className="flex flex-wrap justify-center gap-3 sm:gap-4 text-white/75 text-xs max-w-sm mb-2" aria-label="Social links">
                 <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Facebook Community</a>
                 <a href="https://www.facebook.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Facebook Page</a>
                 <a href="https://x.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">X (Twitter)</a>
@@ -110,15 +115,15 @@ export default function RootLayout({ children }) {
               </nav>
 
               <div className="w-16 h-px bg-white/10 my-2"></div>
-              <nav className="flex flex-wrap justify-center gap-4 text-white/60 text-[10px]" aria-label="Legal links">
+              <nav className="flex flex-wrap justify-center gap-4 text-white/60 text-xs" aria-label="Legal links">
                 <Link href="/privacy" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Privacy Policy</Link>
                 <Link href="/terms" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Terms of Service</Link>
               </nav>
 
-              <p className="text-[10px] text-white/50 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xs text-white/50 max-w-2xl mx-auto leading-relaxed">
                 LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.
               </p>
-              <p className="text-[10px] text-white/50">&copy; {new Date().getFullYear()} Lucky Pick Canada. All rights reserved.</p>
+              <p className="text-xs text-white/50">&copy; {new Date().getFullYear()} Lucky Pick Canada. All rights reserved.</p>
             </div>
           </footer>
         </main>

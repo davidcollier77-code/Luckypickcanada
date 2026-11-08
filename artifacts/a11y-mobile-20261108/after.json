@@ -1,0 +1,1097 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "generatedAt": "2026-11-08T03:52:24.378Z",
+  "routes": {
+    "/": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Lucky Pick Canada",
+          "renderedWidth": 1
+        },
+        {
+          "level": 2,
+          "text": "Play & Explore",
+          "renderedWidth": 328.5
+        },
+        {
+          "level": 2,
+          "text": "LUCKY METER",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "Today's Lucky Card",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "Crystal Ball",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "Lucky Stories",
+          "renderedWidth": 281.5
+        },
+        {
+          "level": 2,
+          "text": "Lucky Pick — Your Little Touch of Luck",
+          "renderedWidth": 328.5
+        },
+        {
+          "level": 3,
+          "text": "Lucky Reveal",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "Tip Jar — Help Keep the Luck Rolling",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "Keep the good energy moving.",
+          "renderedWidth": 295
+        },
+        {
+          "level": 2,
+          "text": "Frequently Asked Questions",
+          "renderedWidth": 335.5
+        },
+        {
+          "level": 2,
+          "text": "Suggestion Box — Your Ideas Help Shape What's Next",
+          "renderedWidth": 286
+        },
+        {
+          "level": 2,
+          "text": "About the Creator & Our Story",
+          "renderedWidth": 319.5
+        },
+        {
+          "level": 2,
+          "text": "About Lucky Pick Canada",
+          "renderedWidth": 342
+        }
+      ],
+      "headingOrder": "1,2,2,2,2,2,2,3,2,2,2,2,2,2",
+      "navs": [
+        {
+          "label": "Primary navigation",
+          "links": 4
+        },
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 10,
+        "median": 14.25,
+        "under12": [
+          {
+            "fontSize": 10,
+            "tag": "span",
+            "className": "text-white/20 text-[10px] sm:text-xs",
+            "text": "•",
+            "hiddenFromAssistiveTech": true,
+            "inFooter": false
+          },
+          {
+            "fontSize": 10,
+            "tag": "span",
+            "className": "text-white/20 text-[10px] sm:text-xs",
+            "text": "•",
+            "hiddenFromAssistiveTech": true,
+            "inFooter": false
+          },
+          {
+            "fontSize": 10,
+            "tag": "span",
+            "className": "text-white/20 text-[10px] sm:text-xs",
+            "text": "•",
+            "hiddenFromAssistiveTech": true,
+            "inFooter": false
+          }
+        ]
+      },
+      "status": 200
+    },
+    "/reveal": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Today’s Lucky Card",
+          "renderedWidth": 336.6
+        }
+      ],
+      "headingOrder": "1",
+      "navs": [
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 12,
+        "median": 12,
+        "under12": []
+      },
+      "status": 200
+    },
+    "/crystal-ball": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Crystal Ball",
+          "renderedWidth": 352.5
+        }
+      ],
+      "headingOrder": "1",
+      "navs": [
+        {
+          "label": "Crystal Ball navigation",
+          "links": 3
+        },
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 9.945,
+        "median": 12,
+        "under12": [
+          {
+            "fontSize": 9.945,
+            "tag": "span",
+            "className": "CrystalBall_plaque__MpNI6",
+            "text": "LUCKYPICKCANADA.CA",
+            "hiddenFromAssistiveTech": false,
+            "inFooter": false
+          }
+        ]
+      },
+      "status": 200
+    },
+    "/map": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Where Luck Has Been Found Across Canada 🍀",
+          "renderedWidth": 317.5
+        },
+        {
+          "level": 2,
+          "text": "0 lucky stories",
+          "renderedWidth": 322
+        },
+        {
+          "level": 2,
+          "text": "Recent Canadian Activity",
+          "renderedWidth": 320.5
+        },
+        {
+          "level": 2,
+          "text": "Lucky Stories by province",
+          "renderedWidth": 320.5
+        }
+      ],
+      "headingOrder": "1,2,2,2",
+      "navs": [
+        {
+          "label": "Lucky Map navigation",
+          "links": 1
+        },
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 12,
+        "median": 15,
+        "under12": []
+      },
+      "status": 200
+    },
+    "/about": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "About the Creator & Our Story",
+          "renderedWidth": 360
+        },
+        {
+          "level": 2,
+          "text": "How It All Started",
+          "renderedWidth": 298
+        },
+        {
+          "level": 2,
+          "text": "Why I Created Luckypickcanada.ca",
+          "renderedWidth": 298
+        },
+        {
+          "level": 2,
+          "text": "Growing Together Through Community Stories",
+          "renderedWidth": 298
+        },
+        {
+          "level": 2,
+          "text": "Reinvesting in the Experience",
+          "renderedWidth": 298
+        },
+        {
+          "level": 2,
+          "text": "Core Philosophy",
+          "renderedWidth": 298
+        },
+        {
+          "level": 3,
+          "text": "Just for Fun",
+          "renderedWidth": 298
+        },
+        {
+          "level": 3,
+          "text": "Independent & Positive Craft",
+          "renderedWidth": 298
+        },
+        {
+          "level": 2,
+          "text": "Thank You",
+          "renderedWidth": 298
+        }
+      ],
+      "headingOrder": "1,2,2,2,2,2,3,3,2",
+      "navs": [
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 12,
+        "median": 16.875,
+        "under12": []
+      },
+      "status": 200
+    },
+    "/lucky-meter": {
+      "mainCount": 1,
+      "mainIds": [
+        "main-content"
+      ],
+      "headings": [
+        {
+          "level": 1,
+          "text": "AWAKEN TODAY'S RESONANCE",
+          "renderedWidth": 390
+        },
+        {
+          "level": 2,
+          "text": "Discover Your Canadian Daily Luck",
+          "renderedWidth": 345
+        }
+      ],
+      "headingOrder": "1,2",
+      "navs": [
+        {
+          "label": "Footer navigation",
+          "links": 6
+        },
+        {
+          "label": "Social links",
+          "links": 5
+        },
+        {
+          "label": "Legal links",
+          "links": 2
+        }
+      ],
+      "skipLink": [
+        "#main-content"
+      ],
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390
+      },
+      "font": {
+        "min": 12,
+        "median": 12,
+        "under12": []
+      },
+      "status": 200
+    }
+  },
+  "tapTargets": [
+    {
+      "label": "homepage header link",
+      "tag": "a",
+      "className": "text-amber-400 hover:text-amber-300 transition-colors relative before:absolute b",
+      "text": "Lucky Meter",
+      "rect": {
+        "w": 69,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 70,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 30.4375,
+        "right": 99.4375,
+        "top": 6.625,
+        "bottom": 29.625
+      }
+    },
+    {
+      "label": "homepage header link",
+      "tag": "a",
+      "className": "text-white/80 hover:text-white transition-colors relative before:absolute before",
+      "text": "Lucky Stories",
+      "rect": {
+        "w": 75,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 76,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 117.6875,
+        "right": 192.6875,
+        "top": 6.625,
+        "bottom": 29.625
+      }
+    },
+    {
+      "label": "homepage header link",
+      "tag": "a",
+      "className": "text-white/80 hover:text-white transition-colors relative before:absolute before",
+      "text": "Consult the Crystal Ball",
+      "rect": {
+        "w": 135,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 136,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 210.9375,
+        "right": 345.9375,
+        "top": 6.625,
+        "bottom": 29.625
+      }
+    },
+    {
+      "label": "homepage header link",
+      "tag": "a",
+      "className": "text-white/80 hover:text-white transition-colors relative before:absolute before",
+      "text": "Daily Card Reveal",
+      "rect": {
+        "w": 102,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 102,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 144,
+        "right": 245,
+        "top": 36.25,
+        "bottom": 59.25
+      }
+    },
+    {
+      "label": "footer nav link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "Home",
+      "rect": {
+        "w": 32,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 32,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 30.5,
+        "right": 61.5,
+        "top": 535.765625,
+        "bottom": 558.765625
+      }
+    },
+    {
+      "label": "footer nav link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "Lucky Meter",
+      "rect": {
+        "w": 66,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 66,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 73.75,
+        "right": 138.75,
+        "top": 535.765625,
+        "bottom": 558.765625
+      }
+    },
+    {
+      "label": "footer nav link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "Crystal Ball",
+      "rect": {
+        "w": 61,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 62,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 150.5,
+        "right": 211.5,
+        "top": 535.765625,
+        "bottom": 558.765625
+      }
+    },
+    {
+      "label": "footer social link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "Facebook Community",
+      "rect": {
+        "w": 117,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 118,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 21.125,
+        "right": 138.125,
+        "top": 602.515625,
+        "bottom": 625.515625
+      }
+    },
+    {
+      "label": "footer social link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "Facebook Page",
+      "rect": {
+        "w": 79,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 80,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 149.375,
+        "right": 228.375,
+        "top": 602.515625,
+        "bottom": 625.515625
+      }
+    },
+    {
+      "label": "footer social link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 ",
+      "text": "X (Twitter)",
+      "rect": {
+        "w": 59,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 60,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 239.625,
+        "right": 298.625,
+        "top": 602.515625,
+        "bottom": 625.515625
+      }
+    },
+    {
+      "label": "footer legal link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 ",
+      "text": "Privacy Policy",
+      "rect": {
+        "w": 73,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 74,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 107,
+        "right": 180,
+        "top": 685.265625,
+        "bottom": 708.265625
+      }
+    },
+    {
+      "label": "footer legal link",
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 ",
+      "text": "Terms of Service",
+      "rect": {
+        "w": 87,
+        "h": 24
+      },
+      "hitArea": {
+        "width": 88,
+        "height": 24
+      },
+      "hitBox": {
+        "left": 195,
+        "right": 282,
+        "top": 685.265625,
+        "bottom": 708.265625
+      }
+    }
+  ],
+  "tapOverlaps": [],
+  "mapMarkers": {
+    "count": 1,
+    "injected": true,
+    "rect": {
+      "w": 22.5,
+      "h": 22.5
+    },
+    "hitArea": {
+      "width": 28,
+      "height": 28
+    },
+    "overlaps": []
+  },
+  "focusWalkMap": [
+    {
+      "tag": "a",
+      "className": "skip-link",
+      "text": "Skip to main content",
+      "href": "#main-content",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "home-link",
+      "text": "Back to Home Page",
+      "href": "/",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "story-link gold-3d-btn",
+      "text": "🍀 View Lucky Stories",
+      "href": "#lucky-story-map",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "story-link gold-3d-btn",
+      "text": "✍️Share your lucky story",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "",
+      "text": "All-Time",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "",
+      "text": "Last 24 Hours",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "province-marker has-stories",
+      "text": "ON",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "select",
+      "className": "",
+      "text": "Yukon (0)Northwest Territories",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Home",
+      "href": "/",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Lucky Meter",
+      "href": "/lucky-meter",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Crystal Ball",
+      "href": "/crystal-ball",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Daily Reveal",
+      "href": "/reveal",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Lucky Map",
+      "href": "/map",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "About",
+      "href": "/about",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Facebook Community",
+      "href": "https://www.facebook.com/groups/1060808069624999/",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Facebook Page",
+      "href": "https://www.facebook.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "X (Twitter)",
+      "href": "https://x.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Instagram",
+      "href": "https://www.instagram.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "TikTok",
+      "href": "https://www.tiktok.com/@luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Privacy Policy",
+      "href": "/privacy",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Terms of Service",
+      "href": "/terms",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "skip-link",
+      "text": "Skip to main content",
+      "href": "#main-content",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "home-link",
+      "text": "Back to Home Page",
+      "href": "/",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "story-link gold-3d-btn",
+      "text": "🍀 View Lucky Stories",
+      "href": "#lucky-story-map",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "story-link gold-3d-btn",
+      "text": "✍️Share your lucky story",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "",
+      "text": "All-Time",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "",
+      "text": "Last 24 Hours",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "button",
+      "className": "province-marker has-stories",
+      "text": "ON",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "select",
+      "className": "",
+      "text": "Yukon (0)Northwest Territories",
+      "href": null,
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Home",
+      "href": "/",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Lucky Meter",
+      "href": "/lucky-meter",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Crystal Ball",
+      "href": "/crystal-ball",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Daily Reveal",
+      "href": "/reveal",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Lucky Map",
+      "href": "/map",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "About",
+      "href": "/about",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Facebook Community",
+      "href": "https://www.facebook.com/groups/1060808069624999/",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Facebook Page",
+      "href": "https://www.facebook.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "X (Twitter)",
+      "href": "https://x.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Instagram",
+      "href": "https://www.instagram.com/luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "TikTok",
+      "href": "https://www.tiktok.com/@luckypickcanada",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Privacy Policy",
+      "href": "/privacy",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "hover:text-amber-400 transition-colors relative before:absol",
+      "text": "Terms of Service",
+      "href": "/terms",
+      "inFooter": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    },
+    {
+      "tag": "a",
+      "className": "skip-link",
+      "text": "Skip to main content",
+      "href": "#main-content",
+      "inFooter": false,
+      "outlineStyle": "solid",
+      "outlineWidth": "3px"
+    }
+  ],
+  "skipLink": {
+    "before": {
+      "tag": "a",
+      "text": "Skip to main content",
+      "href": "#main-content",
+      "onScreen": true,
+      "rect": {
+        "top": 11,
+        "height": 42
+      },
+      "outlineStyle": "solid"
+    },
+    "afterEnter": {
+      "tag": "main",
+      "id": "main-content",
+      "isMain": true,
+      "scrollY": 0
+    }
+  }
+}

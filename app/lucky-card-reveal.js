@@ -2182,7 +2182,7 @@ export default function LuckyCardReveal() {
             transition={{ duration: shouldReduceMotion ? 0 : 0.55, delay: shouldReduceMotion ? 0 : 0.12, ease: 'easeOut' }}
           >
             <span
-              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.22em]"
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-[0.8rem] font-bold uppercase tracking-[0.22em]"
               style={{
                 color: tierPresentation.chipText,
                 backgroundColor: `rgba(${tierPresentation.accentRgb}, 0.12)`,
@@ -2193,7 +2193,7 @@ export default function LuckyCardReveal() {
               {tierPresentation.label} Tier
             </span>
             <h2 className="text-2xl font-black tracking-tight text-white drop-shadow-lg">{selectedCard.title}</h2>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/50">Series 1 · Added to your collection</p>
+            <p className="text-[0.8rem] font-semibold uppercase tracking-[0.18em] text-white/50">Series 1 · Added to your collection</p>
           </motion.div>
           <motion.div
             className="w-full p-6 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 text-center relative overflow-hidden"
