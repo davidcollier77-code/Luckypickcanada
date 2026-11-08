@@ -135,3 +135,18 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - Only the leading [dev-seed] marker was removed from the owner-identified demo rows as part of the reported cleanup; the remaining narrative wording, dates, approval state and province assignments were preserved. No further story text changes are authorized.
 - This workspace cannot reach the Neon SQL endpoint with write credentials, so the author-presentation data correction may require an owner-run statement; that limitation is tracked rather than simulated in application code.
 - The 495 MB production build ceiling and all existing verification gates remain in force.
+
+## Follow-up: Approved homepage responsive visual QA
+
+The existing homepage hero composition is an approved design and must remain intact. This follow-up verifies that the same composition remains usable on narrow phones, standard phones, tablets and desktop widths. It is not a redesign request: preserve the existing artwork, wording, navigation destinations, animation, reduced-motion behavior and page content.
+
+### Additional acceptance scenarios
+
+1. Given a visitor opens the homepage on a narrow phone, standard phone, tablet or desktop, when the first screen renders, then the primary navigation, hero artwork, welcome panel and Explore interaction remain within the viewport without horizontal page overflow or clipped text.
+2. Given the visitor changes orientation or uses a different supported viewport width, when the responsive layout reflows, then navigation links remain visible and usable and the welcome text wraps naturally.
+3. Given a visitor uses keyboard navigation or reduced-motion preferences, when they reach the hero interaction, then the existing focus indicator and reduced-motion behavior remain available.
+
+### Additional measurable success criteria
+
+- **SC-009**: The homepage first-screen responsive checks pass at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels with no horizontal page overflow, clipped hero text or navigation links outside their navigation surface.
+- **SC-010**: The approved 1440x900, 390x844 and 412x915 Playwright screenshot baselines match the current approved rendering after regeneration from the actual browser output.
