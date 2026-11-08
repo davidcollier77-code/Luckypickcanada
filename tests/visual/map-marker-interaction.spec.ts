@@ -114,15 +114,15 @@ async function openPopulatedMap(page: Page) {
     const url = new URL(route.request().url());
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildMapPayload(url)) });
   });
-  const initialFeedResponse = page.waitForResponse((response) => {
+  const initialSummaryResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
     return url.pathname === '/api/lucky-stories'
       && response.request().method() === 'GET'
       && url.searchParams.get('summary') === '1';
   });
   await page.goto('/map', { waitUntil: 'domcontentloaded' });
-  const feedResponse = await initialFeedResponse;
-  expect(feedResponse.status()).toBe(200);
+  const summaryResponse = await initialSummaryResponse;
+  expect(summaryResponse.status()).toBe(200);
 
   // Interaction is what is under test, not the smooth-scroll animation: with it
   // enabled the artwork keeps moving while Playwright clicks and the click can
