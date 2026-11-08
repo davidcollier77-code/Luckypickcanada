@@ -17,3 +17,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 
 - **NOTE — DS162092** — `artifacts/browser-testing-tooling/out/tool-probes.json:74` — Do not leave debug code in production <!-- devskim-id:cb71f4f282439896e64e -->
 - **NOTE — DS162092** — `artifacts/browser-testing-tooling/out/tool-probes.json:53` — Do not leave debug code in production <!-- devskim-id:9dfe2eae4e3aad0ae895 -->
+
+- **NOTE — DS172411** — `tests/visual/mobile-accessibility.spec.ts:116` — Review setTimeout for untrusted data <!-- devskim-id:3c9f238c7946acfad7dc -->
