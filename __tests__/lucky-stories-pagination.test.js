@@ -243,4 +243,14 @@ describe('getLuckyStoryMap paging', () => {
     expect(recentQuery[1]).toContain('(^|[^a-z])ns([^a-z]|$)');
     expect(recentQuery[1]).toContain('(^|[^a-z])on([^a-z]|$)');
   });
-});
+
+  it('applies the 24-hour window before ranking recent stories per province', async () => {
+    await getLuckyStoryMap({ province: 'ON', limit: 0, hours: 24 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain("ls.created_at >= now() - ($1::int * interval '1 hour')");
+    expect(recentQuery[1][0]).toBe(24);
+    expect(recentQuery[0]).toContain('partition by case');
+  });
+}
