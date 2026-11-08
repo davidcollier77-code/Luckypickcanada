@@ -70,7 +70,13 @@ the same audit and master request.
 - [X] T028 [US5] Re-measured at 1440, 1024, 768, 621, 620, 619, 412 and 390 px: 13 markers at every width, 0 covered centres, 0 close pairs, 0 pointer-click failures, 0 handler failures, keyboard Enter activates the marker, 0 px horizontal overflow. Evidence: `artifacts/map-marker-fix/after-wide.json`, `after-narrow.json`, screenshots beside them.
 - [X] T029 Add `tests/visual/map-marker-interaction.spec.ts` (fixture-served map; unforced clicks on all 13 markers, panel heading per province, keyboard activation, hit-target geometry and per-band Maritime fan).
 - [X] T030 Extend `__tests__/first-screen-and-naming.test.js` with the wide fan, the narrow fan, the active-marker stacking order and the 48rem artwork cap.
-- [ ] T031 Run the focused guards, the full Vitest suite, `tsc --noEmit`, the complete Playwright suite, `./freebuff-verify.sh` and the production build size check; record the real results in the PR body.
+- [X] T031 Run the focused guards, the full Vitest suite, `tsc --noEmit`, the complete Playwright suite, `./freebuff-verify.sh` and the production build size check; record the real results in the PR body.
+  - Focused guards: `__tests__/first-screen-and-naming.test.js` + `__tests__/mobile-accessibility.test.js` PASS (25/25); `tests/visual/map-marker-interaction.spec.ts` PASS (6/6 in each of the 3 projects).
+  - `pnpm exec vitest run` (full) PASS — 421/421 tests.
+  - `tsc --noEmit` PASS (exit 0, inside the gate).
+  - Playwright (full) 138 tests: 131 passed, 4 skipped, 3 failed — two Crystal Ball tests BLOCKED (no API key in this workspace, `.env.local` is empty) and one Suggestion Box 120 s timeout under full-suite load that passes in isolation.
+  - `SPEC_KIT_BASE_REF=4f0e60f0 ./freebuff-verify.sh` PASS (exit 0, refresh-docs 36/36). The base ref is required because this clone has no local `main`, and the gate fails closed without a comparison base.
+  - Build: `.next` 430,436,953 B + `public` 33,834,328 B = 464,271,281 B (442.76 MiB), below the 495 MB hard maximum.
 
 ## Dependencies (Phase 8)
 
