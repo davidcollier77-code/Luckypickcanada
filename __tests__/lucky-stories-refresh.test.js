@@ -44,7 +44,7 @@ describe('Lucky Stories GET freshness', () => {
       isConfigured: true,
     });
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/lucky-stories'));
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -83,7 +83,7 @@ describe('Lucky Stories GET freshness', () => {
       isConfigured: false,
     });
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/lucky-stories'));
 
     expect(response.status).toBe(500);
     expect(response.headers.get('cache-control')).toContain('no-store');

@@ -253,4 +253,4 @@ describe('getLuckyStoryMap paging', () => {
     expect(recentQuery[1][0]).toBe(24);
     expect(recentQuery[0]).toContain('partition by case');
   });
-}
+});
