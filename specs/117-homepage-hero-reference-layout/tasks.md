@@ -28,7 +28,7 @@
 
 ## Phase 5 — User story 3: preserved behaviour (P1)
 
-- [X] T013 [US3] Keep the single AVIF preload, AVIF-first/WebP-second `<picture>`, `srcset`/`sizes` and `fetchPriority` unchanged in every window.
+- [X] T013 [US3] Keep the single AVIF preload, AVIF-first/WebP-second `<picture>` and `srcset`/`sizes`; give only the emblem eager/high priority and defer the three repeated decorative crops with lazy/auto.
 - [X] T014 [US3] Map the gold shimmer frames to the emblem slice (ring + wordmark) and the Explore slice (line + chevron) with the same measured band percentages; keep `aria-hidden`, `pointer-events: none` and the reduced-motion hide rule.
 - [X] T015 [US3] Keep `<ExploreLuckButton />` at the bottom of the Explore window with its accessible name, hit target, confetti, sound, eased scroll, cooldown, interrupt handlers and reduced-motion path; `.hero-image-container` stays the Explore window so its browser contract is preserved.
 - [X] T016 [US3] Confirm navigation labels/destinations, all copy and every section below the hero are unchanged.
@@ -43,6 +43,9 @@
 - [X] T022 Capture desktop and mobile screenshots, compare them with the reference, and correct any composition defect. PASS — 1440 × 900, 1024 × 768, 412 × 915 and 390 × 844 all show the reference order with 0 px horizontal overflow; the tighter caption sizes initially added for the one-line note broke the repository's 12 px mobile caption floor and were raised back (`h1` 12.9 px, note 12 px).
 - [X] T023 Inspect the complete final diff, then open/update the single PR with the canonical summary, leaving it open and unmerged.
 - [X] T024 Repair the `/map` skip-link Playwright flake found during T020: the check sampled the link during its own 160 ms focus transition, so it now polls for the settled viewport position with the same assertion. PASS — repeated five times per project and the full mobile-accessibility file passes.
+- [X] T025 [US3] Restore the Explore hit target to the full visible Explore crop and keep its keyboard focus outline visible inside the crop's overflow boundary.
+- [X] T026 [US3] Add Playwright assertions for the crop-row geometry and Explore hit-target coverage, plus a source guard for the single high-priority/eager artwork policy.
+- [X] T027 [P] Replace fixed waits in the reference probe with image decode, font readiness and stable-geometry conditions.
 
 ## Dependencies
 

@@ -193,6 +193,10 @@ html { scroll-behavior: smooth; }
 .hero-art-slice--divider { aspect-ratio: 1024 / 84; --hero-art-offset: calc(-1222 / 84 * 100%); }
 .hero-art-slice--explore { aspect-ratio: 1024 / 200; --hero-art-offset: calc(-1306 / 200 * 100%); }
 
+/* The interactive target fills this cropped window; keep its focus ring inside
+   the slice so the parent's overflow clip cannot hide the keyboard indicator. */
+.hero-art-slice--explore button:focus-visible { outline-offset: -4px; }
+
 .hero-art-picture { position: absolute; inset: 0; display: block; }
 
 .hero-art-image {

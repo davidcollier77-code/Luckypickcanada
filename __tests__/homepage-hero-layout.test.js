@@ -17,6 +17,7 @@ const read = (relativePath) => readFileSync(join(process.cwd(), relativePath), '
 
 const heroSource = read('app/homepage/Hero.js');
 const heroCss = read('themes/default/hero.css');
+const exploreSource = read('app/homepage/ExploreLuckButton.js');
 
 /** Returns the index of the first match, failing loudly when it is absent. */
 function indexOfOrFail(haystack, needle) {
@@ -73,6 +74,20 @@ describe('Reference hero composition', () => {
     // The panel is the reference's bordered surface, not a transparent wrapper.
     expect(heroCss).toContain('border: 1px solid rgba(246, 202, 95, .72);');
     expect(heroCss).toContain('border-radius: clamp(18px, 2.6vw, 26px);');
+  });
+
+  it('prioritizes only the lead artwork and defers the repeated decorative crops', () => {
+    expect(heroSource).toContain("function HeroArtwork({ alt = '', fetchPriority = 'auto', loading = 'lazy' })");
+    expect(heroSource).toContain('loading={loading}');
+    expect(heroSource).toContain('fetchPriority={fetchPriority}');
+    expect(heroSource).toContain('loading="eager"');
+    expect(heroSource.match(/fetchPriority="high"/g) ?? []).toHaveLength(1);
+  });
+
+  it('makes the complete Explore crop clickable and keeps its focus indicator inside the crop', () => {
+    expect(exploreSource).toContain('absolute inset-0 z-30 flex items-end justify-center');
+    expect(exploreSource).not.toContain('h-[30%] min-h-24 max-h-[300px]');
+    expect(heroCss).toContain('.hero-art-slice--explore button:focus-visible { outline-offset: -4px; }');
   });
 
   it('keeps one artwork source, one preload and no new image asset', () => {

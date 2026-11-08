@@ -14,6 +14,24 @@ const VIEWPORTS = [
 
 mkdirSync(OUT, { recursive: true });
 
+/** Wait for an element's viewport rectangle to stop moving before measuring it. */
+async function waitForStableRect(locator) {
+  await locator.evaluate(async (element) => {
+    const nextFrame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+    let previous = null;
+    let stableFrames = 0;
+    for (let frame = 0; frame < 120 && stableFrames < 3; frame += 1) {
+      await nextFrame();
+      const rect = element.getBoundingClientRect();
+      const current = [rect.x, rect.y, rect.width, rect.height];
+      if (previous && current.every((value, index) => Math.abs(value - previous[index]) < 0.5)) stableFrames += 1;
+      else stableFrames = 0;
+      previous = current;
+    }
+    if (stableFrames < 3) throw new Error('Hero geometry did not settle before the probe measurement.');
+  });
+}
+
 const browser = await chromium.launch({ args: ['--no-sandbox'] });
 const results = [];
 
@@ -33,7 +51,17 @@ for (const vp of VIEWPORTS) {
   );
 
   await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-  await page.waitForTimeout(2_500);
+  const emblemImage = page.locator('.hero-art-slice--emblem img');
+  await emblemImage.waitFor({ state: 'visible', timeout: 30_000 });
+  await page.waitForFunction(() => {
+    const image = document.querySelector('.hero-art-slice--emblem img');
+    return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+  }, null, { timeout: 30_000 });
+  await emblemImage.evaluate((image) => image.decode());
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
 
   const measured = await page.evaluate(() => {
     const rect = (el) => {
@@ -112,7 +140,7 @@ for (const vp of VIEWPORTS) {
   // Hit-test the Explore control after scrolling its window into the viewport.
   const stageLocator = page.locator('.hero-image-container');
   await stageLocator.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(250);
+  await waitForStableRect(stageLocator);
   const liveStage = await stageLocator.boundingBox();
   measured.exploreStageLiveBox = liveStage
     ? { x: Math.round(liveStage.x), y: Math.round(liveStage.y), width: Math.round(liveStage.width), height: Math.round(liveStage.height) }
@@ -124,14 +152,15 @@ for (const vp of VIEWPORTS) {
       )
     : null;
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await waitForStableRect(page.locator('.homepage-hero-welcome'));
 
   const heroScreenshot = join(OUT, `hero-${vp.name}.png`);
   await page.locator('.homepage-hero-welcome').screenshot({ path: heroScreenshot, animations: 'disabled' });
   await page.screenshot({ path: join(OUT, `viewport-${vp.name}.png`), animations: 'disabled' });
 
-  // Full-height hero once the sticky/animated layers settle.
+  // Full-height hero after the viewport is returned to its starting position.
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-  await page.waitForTimeout(300);
+  await waitForStableRect(page.locator('.homepage-hero-welcome'));
 
   results.push({ viewport: vp, measured, heroScreenshot });
   await context.close();

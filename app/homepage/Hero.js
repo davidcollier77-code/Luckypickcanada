@@ -16,11 +16,11 @@ import ExploreLuckButton from './ExploreLuckButton';
  * emblem/tagline/wordmark 14-1085, divider 1222-1306, Explore line 1325-1502;
  * the windows cut on the near-empty rows between them.
  *
- * @param {{ alt?: string }} props Decorative slices omit `alt`; the emblem slice
- *   keeps the artwork's description.
+ * @param {{ alt?: string, fetchPriority?: 'high' | 'low' | 'auto', loading?: 'eager' | 'lazy' }} props
+ *   The emblem is eager/high priority; repeated decorative crops default to lazy/auto.
  * @returns {import('react').ReactElement} One artwork window.
  */
-function HeroArtwork({ alt = '' }) {
+function HeroArtwork({ alt = '', fetchPriority = 'auto', loading = 'lazy' }) {
   return (
     <picture className="hero-art-picture">
       <source type="image/avif" srcSet="/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
@@ -31,7 +31,8 @@ function HeroArtwork({ alt = '' }) {
         srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w"
         sizes="(max-width: 768px) 100vw, 1024px"
         alt={alt}
-        fetchPriority="high"
+        loading={loading}
+        fetchPriority={fetchPriority}
       />
     </picture>
   );
@@ -104,7 +105,11 @@ export default function Hero() {
             fixed screen height. */}
         <div className="hero-artwork-column">
           <div className="hero-art-slice hero-art-slice--emblem">
-            <HeroArtwork alt="Lucky Pick Canada emblem with a maple leaf and clover set against a starry sky." />
+            <HeroArtwork
+              alt="Lucky Pick Canada emblem with a maple leaf and clover set against a starry sky."
+              loading="eager"
+              fetchPriority="high"
+            />
             {/* Decorative gold shimmer (specs/089-homepage-nav-gold-shimmer):
                 masked light bands that drift across the emblem's gold ring and
                 the gold wordmark. The frame reproduces the painted artwork box,

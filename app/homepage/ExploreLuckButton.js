@@ -288,7 +288,7 @@ export default function ExploreLuckButton() {
   }, [activateExplore]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-[300px] items-end justify-center">
+    <div className="pointer-events-none absolute inset-0 z-30 flex items-end justify-center">
       <button
         type="button"
         onClick={handleClick}

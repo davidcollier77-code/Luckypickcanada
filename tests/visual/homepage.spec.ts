@@ -113,6 +113,36 @@ test.describe("Homepage Visual", () => {
     });
   });
 
+  test('hero artwork windows render the measured source rows', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    const crops = [
+      { selector: '.hero-art-slice--emblem', sourceStartRow: 0, sourceRows: 1090 },
+      { selector: '.hero-art-divider--top', sourceStartRow: 1222, sourceRows: 84 },
+      { selector: '.hero-art-divider--bottom', sourceStartRow: 1222, sourceRows: 84 },
+      { selector: '.hero-art-slice--explore', sourceStartRow: 1306, sourceRows: 200 },
+    ];
+    for (const crop of crops) {
+      const slice = page.locator(crop.selector);
+      await slice.scrollIntoViewIfNeeded();
+      const image = slice.locator('img');
+      await expect.poll(
+        () => image.evaluate((element) => (element as HTMLImageElement).naturalWidth),
+        { timeout: 15_000 }
+      ).toBeGreaterThan(0);
+      const geometry = await slice.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const imageElement = element.querySelector('img');
+        return {
+          width: box.width,
+          height: box.height,
+          imageTop: imageElement ? Number.parseFloat(getComputedStyle(imageElement).top) : Number.NaN,
+        };
+      });
+      expect(Math.abs(geometry.height - (geometry.width * crop.sourceRows) / 1024)).toBeLessThanOrEqual(1);
+      expect(Math.abs(geometry.imageTop + (geometry.width * crop.sourceStartRow) / 1024)).toBeLessThanOrEqual(1);
+    }
+  });
+
   test('hero navigation is correct and the gold shimmer moves across all three regions', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
@@ -240,7 +270,9 @@ test.describe("Homepage Visual", () => {
     expect(stageBox).not.toBeNull();
 
     expect(Math.abs((buttonBox!.x + buttonBox!.width / 2) - (stageBox!.x + stageBox!.width / 2))).toBeLessThanOrEqual(1);
-    expect(buttonBox!.y + buttonBox!.height).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
+    expect(Math.abs(buttonBox!.y - stageBox!.y)).toBeLessThanOrEqual(1);
+    expect(Math.abs(buttonBox!.height - stageBox!.height)).toBeLessThanOrEqual(1);
+    expect(buttonBox!.height).toBeGreaterThanOrEqual(44);
     expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
 
     const computedStagePointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);

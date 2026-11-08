@@ -81,8 +81,9 @@ the Explore control, the gold CTAs and mobile accessibility, and diff the files 
   panel, divider, "EXPLORE YOUR LUCK" line with chevron.
 - **FR-002**: The existing artwork file(s) are the only hero imagery; no new raster asset, no
   redraw, no distortion, and the reference image is never used as site imagery.
-- **FR-003**: The AVIF-first / WebP-second `<picture>` delivery, the single AVIF preload hint and the
-  `srcset`/`sizes` values stay exactly as they are.
+- **FR-003**: Keep the AVIF-first / WebP-second `<picture>` delivery, the single AVIF preload hint
+  and the `srcset`/`sizes` values. The emblem image is eager/high priority; the three repeated
+  decorative crops are lazy/auto so only the lead visual receives high fetch priority.
 - **FR-004**: The welcome panel keeps its existing content and elements: the `h1` brand line, the
   "A fun, free place to explore what luck means to you." heading, the "more than fortune and fame"
   explanation, the gold `#play-explore` CTA and the entertainment-only note.
@@ -93,8 +94,9 @@ the Explore control, the gold CTAs and mobile accessibility, and diff the files 
 - **FR-007**: Gold shimmer keeps sweeping the emblem ring, the wordmark and the "EXPLORE YOUR LUCK"
   line/chevron, stays decorative (`pointer-events: none`, `aria-hidden`), and is hidden for reduced
   motion.
-- **FR-008**: The Explore control keeps its hit target at the bottom of the artwork, its accessible
-  name, its confetti, sound, eased scroll, cooldown, keyboard interruption and reduced-motion path.
+- **FR-008**: The Explore control's hit target covers the full visible Explore slice and is at least
+  44 px tall, while retaining its accessible name, confetti, sound, eased scroll, cooldown, keyboard
+  interruption and reduced-motion path.
 - **FR-009**: Navigation labels/destinations, all copy, and every section below the hero are
   unchanged; no route, API, dependency, payment, database or deployment configuration changes.
 - **FR-010**: No horizontal overflow at 1440 × 900, 1024 × 768, 412 × 915 and 390 × 844, and no new
@@ -106,8 +108,8 @@ the Explore control, the gold CTAs and mobile accessibility, and diff the files 
   renders with a height/width ratio equal to its measured artwork rows (±1 px rounding).
 - **SC-002**: Screenshots at both sizes show the composition of the reference: emblem, tagline,
   wordmark, divider, bordered panel, divider, Explore line and chevron.
-- **SC-003**: `scrollWidth === clientWidth` at both sizes; the Explore hit target is at least 44 px
-  tall and is centred at the bottom of the artwork column.
+- **SC-003**: `scrollWidth === clientWidth` at both sizes; the Explore hit target spans the full
+  Explore slice, remains centred, and is at least 44 px tall.
 - **SC-004**: The click/confetti/sound/scroll and reduced-motion behaviour passes the existing
   browser coverage.
 - **SC-005**: `./freebuff-verify.sh` exits 0, Vitest passes, `tsc --noEmit` exits 0 and the production

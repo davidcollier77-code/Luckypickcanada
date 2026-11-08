@@ -1,4 +1,16 @@
-# Current Task — Homepage hero rebuilt to the supplied reference composition (2026-11-08)
+# Current Task — PR #1780 independent review follow-up (2026-11-08)
+
+- **Scope:** independent review of PR #1780 against the supplied homepage reference; preserve the Milky Way backdrop, animated star canvas, three gold shimmer regions (ring, wordmark and Explore line), AVIF-first/WebP fallback, navigation, confetti, chime, scroll behavior, and all content below the hero.
+- **Verified review outcome:** Amazon Q and Graphite both identified the shared high-fetch-priority hint on all four identical artwork instances. Graphite's claim that the layout test should expect four bare HeroArtwork calls is a false positive: the emblem instance has props, so exactly three bare calls is correct. Pullfrog's configurable source, magic-number, fallback, and viewport-unit findings are not confirmed defects in this fixed-asset composition; its suggestion for runtime crop validation is addressed with a browser geometry test.
+- **Confirmed regression:** the old Explore button wrapper used 30% of the original full-height artwork; moving that wrapper into the 200-row Explore crop reduced its effective hit area and left part of the desktop Explore lettering outside the target. The correction makes the button cover the full Explore crop and insets its keyboard focus outline within the crop's overflow boundary.
+- **Performance correction:** only the emblem crop now has loading="eager" and fetchPriority="high"; the three repeated decorative windows default to lazy/auto. The original single AVIF preload, AVIF/WebP sources, responsive candidates and sizes remain unchanged.
+- **Verification additions:** browser assertions validate the rendered crop heights and image offsets against source rows, plus full-slice Explore hit coverage. The reference probe now waits for image decode, font readiness and stable geometry instead of fixed sleeps.
+- **Current verification status:** the prior PR head 77628f3124d7697220176149ea3fc54ae62d2b61 had 14/14 GitHub check runs successful, including full Vitest, TypeScript, Spec Kit gate, Playwright visual QA, CodeQL, DevSkim, OpenNext build validation and updater verification. New follow-up code is not yet verified; current-head checks must run before any verified-completion claim.
+- **Brand positioning:** Lucky Pick Canada remains an independent community-based entertainment experience, not affiliated with, endorsed by, or connected to any lottery, lottery corporation or gambling organization. No copy implying such an affiliation is introduced; the existing entertainment-only disclaimer is retained.
+
+---
+
+# Original implementation context — Homepage hero rebuilt to the supplied reference composition (2026-11-08)
 
 - **Task groups:** `creation` (the hero itself is rebuilt to an approved design) + `polishing` (existing AVIF/WebP artwork reused and served unchanged) + `testing` (composition guard, refreshed baselines, executed browser checks).
 - **Feature / branch:** `specs/117-homepage-hero-reference-layout`; branch `freebuff/c2fffecd2a96680aacf6147e`.

@@ -603,3 +603,15 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - The `/map` artwork was left untouched: its 569 px source is smaller than its 704 px box and its AVIF/WebP derivatives were already correct.
 - Verification: focused Vitest 16/16, full suite 396 tests, TypeScript, `./freebuff-verify.sh` exit 0, build 334,596,786 B (319.10 MiB) < 495 MB, production delivery probe and in-VM Chromium candidate/fallback checks.
 - Blocked: remote Browserbase/Browserless inspection of the changed build (Browserbase tools not exposed; the preview is owner-gated).
+
+
+## 2026-11-08 — PR #1780 independent review follow-up
+
+- Reviewed all nine inline review threads, all three formal reviewer submissions (Amazon Q, Graphite and Pullfrog), the two PR conversation summaries, and the current-head GitHub check runs. Recovered Pullfrog's four inline comments that GitHub dropped because they did not anchor to changed diff lines.
+- Confirmed the gold ring, wordmark and Explore shimmer animations remain in separate masks; homepage Playwright coverage samples all three animations and checks reduced-motion removal. The star canvas remains in HomePage.js and its twinkle test is unaffected; shared sky backdrop checks cover the homepage, Crystal Ball and Lucky Map.
+- Found and corrected the Explore hit-area regression: the old 30%-of-full-artwork wrapper was moved into a short 200-row crop, leaving part of the visible Explore title outside the click target on desktop. The target now covers the full visible Explore crop; its keyboard focus outline is inset to remain visible within the crop's overflow boundary.
+- Corrected image priority: only the emblem crop is eager/high priority; the three repeated decorative image instances are lazy/auto. AVIF-first, WebP fallback, the existing responsive candidates and the single AVIF preload remain intact.
+- Added browser-level crop geometry assertions and strengthened the Explore target assertion. Replaced fixed waits in the reference probe with image decode, document-font readiness and stable-rectangle waits.
+- Pullfrog's hardcoded-URL, magic-number, missing-fallback and viewport-unit claims were not confirmed as actionable defects for this fixed-asset crop implementation; the runtime crop-test suggestion was accepted and addressed. Its eager-loading comment is addressed by explicitly eager-loading only the emblem crop. Graphite's test-count claim is false: the three prop-free instances are correctly counted, because the emblem instance has attributes.
+- The prior PR head 77628f3124d7697220176149ea3fc54ae62d2b61 had 14 successful GitHub check runs. This follow-up commit's Vitest, TypeScript, Spec Kit, Playwright, OpenNext/size, CodeQL and DevSkim results remain pending until CI completes; do not claim verified completion beforehand.
+- No changes were made to lottery affiliation/endorsement wording or the site's entertainment-only positioning.

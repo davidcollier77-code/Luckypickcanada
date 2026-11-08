@@ -32,7 +32,10 @@ PR stays open and unmerged
   proportions are preserved and nothing is redrawn or stretched.
 - Preserved behaviour: navigation, copy, gold shimmer regions, star canvas, Explore control
   (confetti, sound, eased scroll, cooldown, interrupt, reduced motion) and every section below the
-  hero are untouched.
+  hero are unchanged. The Explore hit target fills its visible crop, with an inset focus outline to
+  remain visible inside the crop's overflow boundary.
+- Image priority: only the emblem crop is eager/high priority; the three repeated decorative
+  crops are lazy/auto while retaining the same AVIF/WebP sources and single AVIF preload.
 - Accessibility: `aria-hidden` decorative slices, unchanged button accessible name and hit target,
   44 px+ targets, `prefers-reduced-motion` preserved.
 - Documentation: `.docs/` stays read-only.
@@ -61,6 +64,15 @@ PR stays open and unmerged
 6. **Panel design**: the existing welcome block gains a gold hairline border, dark navy translucent
    fill, inner top highlight and gold glow; the heading becomes gold display caps as in the reference.
    All existing elements, wording and the gold `#play-explore` CTA are kept.
+
+## Independent review follow-up
+
+- Browser-level regression coverage checks each crop's rendered height and computed image offset
+  against the measured source rows, rather than relying only on source-string assertions.
+- The Explore hit target fills the complete Explore crop; its focus outline is inset so the crop's
+  overflow clipping does not conceal keyboard focus.
+- The reference probe waits for the lead image to decode, fonts to settle and measured geometry to
+  stabilize instead of relying on fixed sleep durations.
 
 ## Project Structure
 
