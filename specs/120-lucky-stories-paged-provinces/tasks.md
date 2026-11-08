@@ -89,3 +89,20 @@ Deliver the data path first, then the paged client feed and its browser/unit evi
 - Source and regression-test changes are committed on the existing PR branch. They have not yet been executed in a repository checkout from this connected workspace.
 - Current-head `./freebuff-verify.sh`, focused Vitest, TypeScript, Visual QA, OpenNext, DevSkim, CodeQL, build-size measurement and fresh final review are **PENDING**.
 - T020 remains **PENDING** until the three homepage screenshot baselines are regenerated from the current approved rendering and pass on all configured Playwright projects.
+
+## Follow-up responsive QA tasks
+
+- [x] T022 Independently compare the current Playwright expected/actual/diff screenshots for desktop, mobile-390 and mobile-412 and inspect the approved hero source/composition. Result: mobile baselines depict the older hero layout; current rendering corresponds to the later approved hero composition. Desktop is a small pixel delta. Ghost Invasion local-only execution is blocked because this session has no local disposable app/reset fixture; no Ghost Invasion execution is claimed.
+- [ ] T023 Add Playwright responsive first-screen coverage at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS pixels. Verify no horizontal overflow, clipped welcome text, hidden navigation links or missing Explore control.
+- [ ] T024 Fix the sitewide gold CTA assertion to wait for the settled pressed-edge state and verify its measured depth is 1 CSS pixel without relaxing the intended appearance.
+- [ ] T025 Regenerate only the desktop, mobile-390 and mobile-412 homepage viewport PNG baselines from actual Playwright output and commit them.
+- [ ] T026 Run current-head Playwright visual QA, `pnpm exec vitest run`, `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; measure build size against the 495 MB cap, inspect the full diff and update the canonical PR summary.
+
+## Follow-up verification status
+
+- Screenshot/source inspection: **PASS** (evidence limited to the Playwright workflow artifact and repository source at the recorded head).
+- Ghost Invasion local-only reviewer: **BLOCKED / NOT RUN** (no local repository checkout, disposable application or same-origin reset endpoint available in this session).
+- Expanded responsive Playwright matrix: **PENDING**.
+- CTA transition assertion correction: **PENDING**.
+- Three screenshot baseline regeneration: **PENDING**.
+- Current-head full verification: **PENDING**.
