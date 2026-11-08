@@ -13,7 +13,7 @@
 ## Phase 0 — Research
 - Read the PR-branch `AGENTS.md`, Memory Bank context, `.docs/manifest.json`, `.freebuff/testing.md`, and the four Spec Kit command definitions.
 - Inspected the current Visual QA workflow and change classifier on `main`. The workflow always runs its unit, TypeScript, and Spec Kit checks; its browser steps are conditional. The classifier skips only documented documentation-only paths and fails closed for unknown, empty, mixed, or unclassifiable input.
-- Reviewed the existing Visual QA/Playwright specifications (098 and 109) to preserve their coverage, projects, assertions, and baseline behavior.
+- Reviewed existing Visual QA/Playwright specifications 098 and 109 to preserve their coverage, projects, assertions, and baseline behavior.
 - Consulted `.docs/testing/_google_eng-practices.md`, `.docs/testing/_microsoft_playwright.md`, and `.docs/testing/_dequelabs_axe-core.md` for task-appropriate testing, real browser assertions, and the distinction between violations, incomplete results, and inapplicable checks. No other library documents were needed.
 
 ## Phase 1 — Design
