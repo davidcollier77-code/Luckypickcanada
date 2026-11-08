@@ -368,17 +368,11 @@ export default function LuckyMapOfCanada({ mapData }) {
           ) : null}
         </header>
 
-        <section aria-label="Lucky Community Stories statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
-          {[
-            ['Total lucky stories shared (All-time)', currentMapData?.totalStories || 0],
-            ['Provinces with lucky moments (All-time)', currentMapData?.provincesWithStories || 0],
-            ['Mapped story markers', stories.length],
-          ].map(([label, value]) => (
-            <div key={label} className="premium-surface map-statistic" style={{ ...cardStyle, padding: '1.2rem 1.4rem' }}>
-              <p style={{ margin: 0, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.8rem', opacity: 0.9 }}>{label}</p>
-              <strong style={{ display: 'block', marginTop: '0.45rem', fontSize: 'clamp(2rem, 6vw, 2.8rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 10px rgba(255, 255, 255, 0.1)' }}>{value}</strong>
-            </div>
-          ))}
+        <section aria-label="Lucky Community Stories statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'minmax(190px, 1fr)', gap: '1rem', marginTop: '1.25rem' }}>
+          <div className="premium-surface map-statistic" style={{ ...cardStyle, padding: '1.2rem 1.4rem' }}>
+            <p style={{ margin: 0, color: '#fde68a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.8rem', opacity: 0.9 }}>Total lucky stories shared (All-time)</p>
+            <strong style={{ display: 'block', marginTop: '0.45rem', fontSize: 'clamp(2rem, 6vw, 2.8rem)', lineHeight: 1, color: '#fff', textShadow: '0 2px 10px rgba(255, 255, 255, 0.1)' }}>{currentMapData?.totalStories || 0}</strong>
+          </div>
         </section>
 
         <p style={{ ...cardStyle, margin: '1rem 0 0', padding: '1rem 1.15rem', lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 750 }}>
