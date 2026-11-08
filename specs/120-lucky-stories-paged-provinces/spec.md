@@ -57,7 +57,7 @@ A visitor only ever sees stories that belong to the selected province, and the s
 
 ### User Story 4 - Present demonstration stories naturally (Priority: P1)
 
-A visitor reading the existing demonstration stories sees natural first-name-only authors instead of developer-style labels, while every story's text, date, creation date and province stay exactly as they are.
+A visitor reading the existing demonstration stories sees natural first-name-only authors instead of developer-style labels. Only the leading demo seed marker may be removed from positively identified demonstration stories; the remaining story wording, dates, creation dates and province assignments stay unchanged.
 
 **Why this priority**: Developer identifiers are visible on the public page today and undermine the community presentation. The records are demonstration content, not real contributor submissions.
 
@@ -66,7 +66,7 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 **Acceptance Scenarios**:
 
 1. **Given** the demonstration records with developer-style author names, **when** their author presentation is corrected, **then** each shows a natural, fictional, first-name-only display name.
-2. **Given** a demonstration record, **when** it is corrected, **then** its story text, creation date, published date and province assignment are unchanged and it is still visible.
+2. **Given** a demonstration record, **when** it is corrected, **then** only the leading [dev-seed] marker is removed from its story text; the remaining wording, creation date, published date and province assignment are unchanged and it is still visible.
 3. **Given** a genuine contributor record, **when** the demonstration authors are corrected, **then** that record is untouched.
 4. **Given** a record that cannot be positively identified as demonstration content, **when** the correction is applied, **then** the record is left unchanged and reported instead of rewritten.
 
@@ -100,7 +100,7 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - **FR-013**: Shared story links MUST continue to open the referenced story, its province and its full text.
 - **FR-014**: The existing card, panel, marker, province-control, modal, celebration, sharing, submission and navigation presentation MUST remain unchanged in design and behaviour.
 - **FR-015**: Demonstration story authors identified positively by developer-style display names and seed markers MUST be changed only in author display name, to natural fictional first names without surnames or developer wording.
-- **FR-016**: Every existing story MUST be preserved; no story may be deleted, replaced, recreated or lost, and story text, creation date, displayed date and province assignment MUST NOT change.
+- **FR-016**: Every existing story MUST be preserved; no story may be deleted, replaced, recreated or lost. For positively identified demo rows only, the leading [dev-seed] marker may be removed; the remaining story wording, dates and province assignment MUST remain unchanged.
 - **FR-017**: Genuine contributor records and any uncertain record MUST NOT be modified.
 
 ### Key Entities *(include if feature involves data)*
@@ -120,7 +120,7 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - **SC-003**: The count displayed for the selected province equals its published total while as few as three cards are loaded.
 - **SC-004**: Switching provinces produces zero story cards from any other province.
 - **SC-005**: A fresh visit selects the province with the highest published count; a visit after a manual choice restores that choice.
-- **SC-006**: The set of published story identifiers, story texts, creation timestamps and province assignments is identical before and after the author-presentation correction.
+- **SC-006**: The set of published story identifiers, narrative wording after removal of only the leading demo marker, creation timestamps and province assignments is identical before and after the author-presentation correction.
 - **SC-007**: No genuine contributor author name changes.
 - **SC-008**: The existing Lucky Stories page layout, controls and unrelated behaviour show no visible change.
 

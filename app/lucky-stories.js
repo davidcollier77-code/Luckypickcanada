@@ -316,7 +316,7 @@ async function fetchProvinceCounts(database, { hours = null } = {}) {
 
 /**
  * Reads the newest published stories for the Recent Canadian Activity section.
- * The result is bounded by RECENT_STORIES_LIMIT and is independent of paging.
+ * The result is bounded to three stories per province and is independent of paging.
  *
  * @param {Function} database - Neon SQL client.
  * @param {{ hours?: number|null }} [options] - Restrict to a rolling time window.

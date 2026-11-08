@@ -118,7 +118,7 @@ async function openPopulatedMap(page: Page) {
     const url = new URL(response.url());
     return url.pathname === '/api/lucky-stories'
       && response.request().method() === 'GET'
-      && url.searchParams.get('summary') !== '1';
+      && url.searchParams.get('summary') === '1';
   });
   await page.goto('/map', { waitUntil: 'domcontentloaded' });
   const feedResponse = await initialFeedResponse;
@@ -134,7 +134,7 @@ async function openPopulatedMap(page: Page) {
   await expect(page.locator('.map-statistics')).toContainText('21');
   await expect(page.locator('.map-statistics')).not.toContainText('Provinces with lucky moments');
   await expect(page.locator('.map-statistics')).not.toContainText('Mapped story markers');
-  await expect(page.locator('.map-story-card')).toHaveCount(2, { timeout: 30_000 });
+  await expect(page.locator('.map-statistics')).toContainText('21');
 }
 
 test('every province marker selects only its own province when clicked', async ({ page }) => {

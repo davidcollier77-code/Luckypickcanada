@@ -46,9 +46,9 @@ Replace the map's "load up to 100 stories, then filter in the browser" model wit
 5. **Default province.** `pickDefaultProvince` scans the all-time counts in the canonical `storyProvinces` order and returns the first highest count, so ties are deterministic. Empty collections fall back to the existing `ON` default.
 6. **Saved preference.** Only a manual province selection is written to `localStorage`; the automatic default is recomputed. A saved code that is not a valid region, or that has no published stories while others do, is discarded.
 7. **Time window.** The existing All-Time / Last 24 Hours toggle is moved to the database predicate (`make_interval(hours => $n)`), so markers, counts, the feed and recent activity stay consistent. New requests are issued when the toggle changes.
-8. **Recent activity.** The section keeps its existing markup but is fed by a bounded query of the three newest published stories for the active window, instead of deriving from a full 100-row download.
+8. **Recent activity.** The section keeps its existing markup and previous behaviour of up to three newest published stories per province. A window-function query bounds the result to at most 39 rows (13 regions × 3) for the active time window instead of deriving it from a full collection download.
 9. **Shared story links.** A validated numeric `story` parameter returns one linked story, which the client pins at the top of its province feed so the existing open-story behaviour survives paging.
-10. **Demonstration authors.** The published feed on 2026-11-08 shows IDs 9–21 with `Dev`-prefixed display names and `[dev-seed]` text, and IDs 1–8 with genuine contributor names. Only IDs 9–21 are demonstration rows. The correction updates `display_name` for those IDs to distinct natural first names and changes nothing else.
+10. **Demonstration authors.** The published feed on 2026-11-08 shows IDs 9–21 with `Dev`-prefixed display names and `[dev-seed]` prefixes, and IDs 1–8 with genuine contributor names. Only IDs 9–21 are demonstration rows. The owner reports that production IDs 9–21 now use distinct natural first names and have only the leading `[dev-seed]` marker removed; the remaining story wording, dates, approval state and province assignments were preserved. This was a data-only correction, not an application hardcode.
 
 ## Project Structure
 

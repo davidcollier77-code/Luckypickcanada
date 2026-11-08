@@ -44,13 +44,20 @@
 **Goal**: Only positively identified demonstration rows get natural first-name-only authors; all other fields and records are untouched.
 **Independent Test**: Compare the published rows before and after the correction and confirm only demonstration author display names differ.
 
-- [ ] T013 [US4] Apply the author-display-name correction to published demonstration story IDs 9–21 and read back the unchanged story text, dates and provinces. **Blocked**: this workspace has no Neon SQL credentials; the statement and read-back are recorded in the PR summary for the owner.
+- [x] T013 [US4] Apply the author-display-name correction to published demonstration story IDs 9–21 and read back the unchanged narrative wording, dates and provinces. **Owner-reported complete (2026-11-08)**: the PR owner reports 21 rows retained, 13 demo authors corrected, 0 seed markers remaining, and contributor IDs 1–8 preserved. The owner also reports that only the leading [dev-seed] marker was removed; this workspace has not independently re-run the production read-back.
 - [x] T014 [US4] Verify genuine contributor rows (IDs 1–8) are unchanged and report any uncertain record.
 
 ## Phase 7: Verification and handoff
 
 - [x] T015 Run focused Vitest, Playwright (map interaction and pagination), `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; measure the production build size.
 - [x] T016 Inspect the complete diff, update this task list and the canonical PR summary, and confirm the PR is open and unmerged. Done: the 16-file diff was reviewed, the canonical body was updated, and PR #1783 remains open and unmerged.
+
+## Follow-up QA repair tasks
+
+- [x] T017 [US3] Restore the bounded Recent Canadian Activity behaviour of up to three stories per province in `app/lucky-stories.js` and cover it in `__tests__/lucky-stories-pagination.test.js`.
+- [x] T018 [US3] Make the map interaction browser test wait for the actual summary API response and hydrated province markers in `tests/visual/map-marker-interaction.spec.ts`.
+- [x] T019 [US3] Wait for the final pressed-edge transition in `tests/visual/gold-cta.spec.ts` and replace the fixed pagination sleep with a network-idle condition in `tests/visual/lucky-stories-pagination.spec.ts`.
+- [ ] T020 Refresh the three homepage screenshot baselines in `tests/visual/__screenshots__/{desktop,mobile-390,mobile-412}/homepage-viewport.png` from the current approved homepage rendering. **Pending**: the CI artifact proves the committed screenshots are stale, but this workspace cannot execute Playwright's snapshot update command or publish binary screenshot blobs through the available repository interface.
 
 ## Verification evidence (2026-11-08)
 
@@ -59,7 +66,7 @@
 - `pnpm exec tsc --noEmit`: exit 0 **PASS**.
 - `./freebuff-verify.sh`: exit 0 **PASS** (Spec Kit gate, verification-integrity tests, TypeScript, production build, docs-refresh suite 36/36).
 - Production build measured `.next` + `public` = 426.44 MB, below the 495 MB ceiling **PASS**.
-- T013 is **BLOCKED**: this workspace has no Neon SQL credential and the connected Neon integration exposes no SQL execution tool. The owner-run statement and required read-back are recorded in the PR summary; no story text, date, creation date, province or genuine author was modified.
+- T013 is **OWNER-REPORTED COMPLETE**: the owner reports the production correction and read-back for IDs 9–21, with IDs 1–8 preserved. The leading [dev-seed] marker was removed; the remaining story wording was preserved. This workspace has not independently queried production.
 - Live-database browser verification is **NOT RUN** (no database configured in this workspace); Playwright answers `/api/lucky-stories` from a local fixture.
 
 - PR #1783: https://github.com/davidcollier77-code/Luckypickcanada/pull/1783 — open and unmerged.
