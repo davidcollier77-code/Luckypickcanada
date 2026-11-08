@@ -17,16 +17,16 @@ describe('AboutSection', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders the interactive Lucky Meter generator link', () => {
+  it('renders the interactive Luck Generator link', () => {
     render(<AboutSection />);
-    const link = screen.getByRole('link', { name: /interactive Lucky Meter generator/i });
+    const link = screen.getByRole('link', { name: /interactive Luck Generator/i });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/lucky-meter');
   });
 
-  it('renders the Community Lucky Stories section link to the homepage stories section', () => {
+  it('renders the Lucky Community Stories section link to the homepage stories section', () => {
     render(<AboutSection />);
-    const link = screen.getByRole('link', { name: /Community Lucky Stories section/i });
+    const link = screen.getByRole('link', { name: /Lucky Community Stories section/i });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/#community-stories');
   });
@@ -37,9 +37,9 @@ describe('AboutSection', () => {
     expect(hrefs).not.toContain('/stories');
   });
 
-  it('renders the Canadian Lucky Map link', () => {
+  it('renders the Lucky Community Stories map link', () => {
     render(<AboutSection />);
-    const link = screen.getByRole('link', { name: /Canadian Lucky Map/i });
+    const link = screen.getByRole('link', { name: /Lucky Community Stories map/i });
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute('href', '/map');
   });

@@ -541,7 +541,7 @@ export default function CrystalBall({
             Back to Home
           </Link>
           <Link href={luckMeterHref} className={styles.navButton}>
-            Luck Meter
+            Luck Generator
           </Link>
           <Link href={communityMapHref} className={styles.navButton}>
             Community Map

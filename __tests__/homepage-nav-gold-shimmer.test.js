@@ -6,7 +6,7 @@ import { join } from 'node:path';
  * Source guard for `specs/089-homepage-nav-gold-shimmer`.
  *
  * The homepage hero primary navigation must offer one stories link, labelled
- * "Lucky Stories", and no "Lucky Map" entry, while the map page and the
+ * "Lucky Community Stories", and no legacy "Lucky Map" entry, while the map page and the
  * homepage call to action that reaches it stay in place. The gold wordmark,
  * the Explore Your Luck line/arrow and the emblem's gold ring are painted into
  * one artwork, so the shimmer must be a decorative layer above it: masked,
@@ -21,11 +21,11 @@ const homePageSource = read('app/homepage/HomePage.js');
 const exploreSource = read('app/homepage/ExploreLuckButton.js');
 
 describe('Homepage hero navigation', () => {
-  it('offers exactly one stories link, labelled Lucky Stories', () => {
+  it('offers exactly one stories link, labelled Lucky Community Stories', () => {
     const storiesLinks = heroSource.match(/href="#community-stories"/g) ?? [];
 
     expect(storiesLinks).toHaveLength(1);
-    expect(heroSource).toMatch(/href="#community-stories"[\s\S]{0,220}Lucky Stories/);
+    expect(heroSource).toMatch(/href="#community-stories"[\s\S]{0,220}Lucky Community Stories/);
   });
 
   it('no longer carries the redundant Lucky Map navigation link', () => {
@@ -36,8 +36,8 @@ describe('Homepage hero navigation', () => {
   it('keeps the map route and the homepage call to action that reaches it', () => {
     expect(existsSync(join(process.cwd(), 'app/map/page.js'))).toBe(true);
     expect(homePageSource).toMatch(/<Link href="\/map"/);
-    expect(homePageSource).toContain('EXPLORE LUCKY STORIES');
-    expect(read('app/layout.js')).toMatch(/href="\/map"[^>]*>Lucky Map</);
+    expect(homePageSource).toContain('EXPLORE LUCKY COMMUNITY STORIES');
+    expect(read('app/layout.js')).toMatch(/href="\/map"[^>]*>Lucky Community Stories</);
   });
 });
 

@@ -13,7 +13,7 @@ export default function AboutSection() {
           href="/lucky-meter"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
-          interactive Lucky Meter generator
+          interactive Luck Generator
         </Link>
         . It's designed to bring a fast, fun spark of optimism coast to coast.
       </p>
@@ -25,14 +25,14 @@ export default function AboutSection() {
           href="/#community-stories"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
-          Community Lucky Stories section
+          Lucky Community Stories section
         </Link>{' '}
         or discover regional highlights on the{' '}
         <Link
           href="/map"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
-          Canadian Lucky Map
+          Lucky Community Stories map
         </Link>
         .
       </p>

@@ -23,7 +23,7 @@ export async function createLuckyStory({ name, location, story }) {
 
   const sql = getSql();
   if (!sql) {
-    return { error: 'The Lucky Stories database is not configured yet.' };
+    return { error: 'The Lucky Community Stories database is not configured yet.' };
   }
 
   try {

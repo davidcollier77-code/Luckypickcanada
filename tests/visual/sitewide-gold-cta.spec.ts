@@ -17,11 +17,11 @@ const MAIN_GOLD = 'rgb(220, 174, 78)';
 const HOMEPAGE_EMOJI = ['✨', '♠', '🔮', '🍀', '🎁', '❤️', '💡', 'ℹ️'];
 
 const HOMEPAGE_WORDING = [
-  'Check Lucky Meter',
+  'Check Luck Generator',
   "Reveal Today's Card",
-  'CONSULT THE ORACLE',
-  'EXPLORE LUCKY STORIES',
-  'Choose a Lucky Pick',
+  'ASK THE CRYSTAL BALL',
+  'EXPLORE LUCKY COMMUNITY STORIES',
+  'Choose Your Reveal',
   'Open the tip jar',
   'Share Your Idea',
   'Read Our Story',
@@ -154,7 +154,7 @@ test.describe('Site-wide gold CTA', () => {
     await page.goto('/map', { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await expect(page.locator('main, .lucky-map-shell').first()).toBeVisible({ timeout: 30_000 });
 
-    const viewStories = page.locator('a.gold-3d-btn:has-text("View Lucky Stories")').first();
+    const viewStories = page.locator('a.gold-3d-btn:has-text("View Lucky Community Stories")').first();
     await expect(viewStories).toBeVisible();
     await expect(viewStories.locator('.gold-cta-emoji')).toHaveText('🍀');
     await expect(viewStories).toHaveCSS('background-image', /rgb\(220, 174, 78\)/);

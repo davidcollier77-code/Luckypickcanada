@@ -413,10 +413,10 @@ export default function HomePage() {
         <div className="homepage-community-grid">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
-          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">How's your luck looking today? Give the Lucky Meter a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!</p>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCK GENERATOR</h2>
+          <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">How's your luck looking today? Give the Luck Generator a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!</p>
           <div className="flex flex-col items-center gap-2">
-            <Link href="/lucky-meter" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">✨</span>Check Lucky Meter <span aria-hidden="true">→</span></Link>
+            <Link href="/lucky-meter" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">✨</span>Check Luck Generator <span aria-hidden="true">→</span></Link>
             {totalVisits !== null && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs font-medium tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -432,10 +432,10 @@ export default function HomePage() {
           <Link href="/reveal" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">♠</span>Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
+          <p className="homepage-offer-kicker">MYSTICAL CRYSTAL BALL</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Crystal Ball</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Have something on your mind? Take a moment, focus on your question, and let the Crystal Ball reveal a little mystery. You never know what kind of unexpected message might be waiting for you!</p>
-          <Link href="/crystal-ball" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔮</span>CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
+          <Link href="/crystal-ball" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔮</span>ASK THE CRYSTAL BALL <span aria-hidden="true">→</span></Link>
         </article>
         </div>
       </section>
@@ -446,28 +446,28 @@ export default function HomePage() {
           <img src="/community-stars-bg.webp" alt="" className="absolute inset-0 z-0 object-cover opacity-40 mix-blend-screen" sizes="(max-width: 1000px) 100vw, 1000px" />
           <div className="relative z-10">
           <p className="homepage-offer-kicker">COMMUNITY</p>
-          <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
+          <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Community Stories</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-3">Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.</p>
           <p className="homepage-offer-note">Please note: these are not business reviews or testimonials.</p>
-          <Link href="/map" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🍀</span>EXPLORE LUCKY STORIES →</Link>
+          <Link href="/map" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🍀</span>EXPLORE LUCKY COMMUNITY STORIES →</Link>
           </div>
         </article>
       </div>
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
-        <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Pick — Your Little Touch of Luck">
+        <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Reveals — Your Little Touch of Luck">
           Get ready to discover your own little touch of luck! Enjoy a fun and exciting reveal featuring your special set of lucky numbers, a colour to wear for a little extra luck, and a lucky day to look forward to. Who knows what little surprises the day might bring? Enjoy it yourself or share a little luck with someone special!
         </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article className="homepage-offer homepage-offer-featured">
             <picture><source type="image/avif" srcSet="/1784889264858-352w.avif 352w, /1784889264858.avif 704w" sizes="(max-width: 768px) 352px, 704px" /><source type="image/webp" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" /><img className="homepage-offer-image" src="/1784889264858.png" srcSet="/1784889264858-352w.webp 352w, /1784889264858.webp 704w" sizes="(max-width: 768px) 352px, 704px" alt="" width="704" height="1524" loading="lazy" suppressHydrationWarning={true} /></picture>
-            <p className="homepage-offer-kicker">Lucky Reveal · CAD $1.00 or CAD $1.99</p>
-            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveal</h3>
+            <p className="homepage-offer-kicker">Lucky Reveals · CAD $1.00 or CAD $1.99</p>
+            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Lucky Reveals</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">One reveal, and you choose how it reaches you. Pick 6 Pick or 7 Pick for your numbers, lucky color, and lucky day — then keep it for yourself on the website, or send the very same reveal to someone by email.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span><span>Personal Reveal</span><span>Gift Reveal</span></div>
             <p className="homepage-offer-note">Personal Reveal · CAD $1.00 — no email delivery. Gift Reveal · CAD $1.99 — same reveal, email delivery included.</p>
-            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyRevealCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose a Lucky Pick</button>
+            <button type="button" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyRevealCheckout(e); }}><span className="gold-cta-emoji" aria-hidden="true">🎁</span>Choose Your Reveal</button>
           </article>
         </div>
       </section>

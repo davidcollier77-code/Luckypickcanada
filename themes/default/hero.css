@@ -166,4 +166,71 @@ html { scroll-behavior: smooth; }
   .hero-gold-shimmer { display: none; }
 }
 
+/* ---- First-screen introduction (specs/115-first-screen-clarity-naming-csp) --
+   The visitor learns what Lucky Pick Canada offers, why it is fun, and gets a
+   free way in before scrolling. The block uses the established night-sky/gold
+   identity; the artwork, navigation and animations are untouched. */
+.hero-welcome {
+  position: relative;
+  z-index: 20;
+  width: min(100%, 46rem);
+  margin: clamp(.35rem, 1.2vw, .9rem) auto 0;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.hero-welcome-title {
+  margin: 0 0 .4rem;
+  color: #ffe9a8;
+  font-family: var(--lpc-display, sans-serif);
+  font-size: clamp(.86rem, 2vw, 1.05rem);
+  font-weight: 900;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .85);
+}
+
+.hero-welcome-lede {
+  margin: 0 0 .45rem;
+  color: #fff;
+  font-family: var(--lpc-display, sans-serif);
+  font-size: clamp(1.18rem, 2.9vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, .85);
+}
+
+.hero-welcome-copy {
+  max-width: 38rem;
+  margin: 0 auto .8rem;
+  color: rgba(255, 251, 236, .92);
+  font-size: clamp(.9rem, 1.5vw, 1rem);
+  line-height: 1.55;
+}
+
+.hero-welcome-cta {
+  min-height: 46px;
+  padding: .65rem 1.35rem;
+  border-radius: 999px;
+  font-size: clamp(.78rem, 1.4vw, .9rem);
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.hero-welcome-note {
+  margin: .55rem 0 0;
+  color: rgba(255, 240, 200, .8);
+  font-size: .8rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 620px) {
+  .hero-welcome { margin-top: .2rem; padding: 0 .75rem; }
+  .hero-welcome-copy { font-size: .9rem; line-height: 1.5; }
+  .hero-welcome-cta { width: min(100%, 18rem); min-height: 48px; }
+}
+
 

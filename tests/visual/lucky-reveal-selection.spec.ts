@@ -14,7 +14,7 @@ import { test, expect, type Page } from '@playwright/test';
  * no real charge can occur; the submitted form payload is inspected directly.
  */
 
-const OPEN_LABEL = 'Choose a Lucky Pick';
+const OPEN_LABEL = 'Choose Your Reveal';
 
 const COMBINATIONS = [
   { game: '6', delivery: 'Personal Reveal', checkoutType: 'lucky_pick', amount: 'CAD $1.00' },

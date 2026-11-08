@@ -119,7 +119,7 @@ test.describe("Homepage Visual", () => {
 
     const nav = page.getByRole('navigation', { name: 'Primary navigation' });
     await expect(nav.getByRole('link')).toHaveCount(4);
-    await expect(nav.getByRole('link', { name: 'Lucky Stories' })).toHaveAttribute('href', '#community-stories');
+    await expect(nav.getByRole('link', { name: 'Lucky Community Stories' })).toHaveAttribute('href', '#community-stories');
     await expect(nav.getByRole('link', { name: 'Lucky Map' })).toHaveCount(0);
 
     const selectors = [

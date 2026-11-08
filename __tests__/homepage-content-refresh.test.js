@@ -20,7 +20,7 @@ const pageSource = read('app/page.js');
 const mapSource = read('app/lucky-map-of-canada/lucky-map-of-canada.js');
 
 const LUCKY_METER_COPY =
-  "How's your luck looking today? Give the Lucky Meter a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!";
+  "How's your luck looking today? Give the Luck Generator a try and discover your daily reading. Sit back and enjoy the show as your result comes to life with a little sparkle and Canadian inspiration!";
 const DAILY_CARD_COPY =
   "A little surprise is waiting for you! Discover today's Lucky Card, enjoy the reveal, and add another special card to your collection. Keep collecting, because you never know when new cards might be added!";
 const CRYSTAL_BALL_COPY =
@@ -51,10 +51,10 @@ const MAP_INTRO_PARAGRAPHS = [
 
 describe('Homepage section wording', () => {
   it.each([
-    ['Lucky Meter', LUCKY_METER_COPY],
+    ['Luck Generator', LUCKY_METER_COPY],
     ['Daily Lucky Card Reveal', DAILY_CARD_COPY],
     ['Crystal Ball', CRYSTAL_BALL_COPY],
-    ['Lucky Pick', LUCKY_PICK_COPY],
+    ['Lucky Reveals', LUCKY_PICK_COPY],
   ])('renders the approved %s copy verbatim', (_label, copy) => {
     expect(homePageSource).toContain(copy);
   });
@@ -120,21 +120,21 @@ describe('Suggestion Box copy and form contract', () => {
   });
 });
 
-describe('Lucky Stories and Community Map', () => {
+describe('Lucky Community Stories and Community Map', () => {
   it('uses the approved introduction verbatim', () => {
     for (const paragraph of MAP_INTRO_PARAGRAPHS) {
       expect(mapSource).toContain(paragraph);
     }
   });
 
-  it('aligns the homepage Lucky Stories card with the approved wording', () => {
+  it('aligns the homepage Lucky Community Stories card with the approved wording', () => {
     expect(homePageSource).toContain(STORIES_CARD_COPY);
     expect(homePageSource).not.toContain(
       'A community space to share your own experiences of luck and good fortune',
     );
     // The existing non-testimonial note is preserved, not replaced.
     expect(homePageSource).toContain('these are not business reviews or testimonials');
-    expect(homePageSource).toMatch(/<Link href="\/map"[^>]*>[\s\S]{0,200}EXPLORE LUCKY STORIES/);
+    expect(homePageSource).toMatch(/<Link href="\/map"[^>]*>[\s\S]{0,200}EXPLORE LUCKY COMMUNITY STORIES/);
   });
 
   it('preserves story reading, celebration and the running tally', () => {
@@ -156,11 +156,11 @@ describe('Lucky Stories and Community Map', () => {
 describe('FAQ content and structured data', () => {
   const expectedQuestions = [
     'How does the Daily Lucky Card generator work?',
-    'What is the Lucky Meter, and how does it work?',
+    'What is the Luck Generator, and how does it work?',
     'Is Lucky Pick Canada free to use?',
-    'What are Lucky Stories and the Community Map?',
+    'What are Lucky Community Stories and the Community Map?',
     'Is Lucky Pick Canada intended for entertainment?',
-    'How do the Lucky Pick gift experiences work?',
+    'How does the Gift Reveal work?',
     'What is the Lucky Crystal Ball, and how does it work?',
     'When do the daily experiences reset?',
     'What are the activity counters?',

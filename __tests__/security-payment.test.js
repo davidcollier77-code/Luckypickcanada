@@ -104,7 +104,7 @@ describe('Unified Lucky Reveal purchase options', () => {
     expect(modalSource).toContain("title: 'Lucky Reveal Gift Edition'");
     expect(modalSource).toContain("label: 'Personal Reveal — CAD $1.00'");
     expect(modalSource).toContain("label: 'Gift Reveal — CAD $1.99'");
-    expect(homepageSource).toContain('Choose a Lucky Pick');
+    expect(homepageSource).toContain('Choose Your Reveal');
     expect(homepageSource).toContain('no email delivery');
   });
 
@@ -172,10 +172,10 @@ describe('Unified Lucky Reveal homepage card', () => {
     homepageSource.indexOf('<LuckyRevealsCounter'),
   );
 
-  it('replaces the two purchase cards with one Lucky Reveal card', () => {
+  it('replaces the two purchase cards with one Lucky Reveals card', () => {
     expect(revealSection.match(/<article/g)).toHaveLength(1);
     expect(revealSection.match(/homepage-offer-featured/g)).toHaveLength(1);
-    expect(revealSection.match(/Choose a Lucky Pick/g)).toHaveLength(1);
+    expect(revealSection.match(/Choose Your Reveal/g)).toHaveLength(1);
     expect(homepageSource).not.toContain('Gift the Gift Edition');
     expect(homepageSource).not.toContain('Choose Lucky Reveal<');
   });

@@ -68,7 +68,7 @@ export default function AboutPage() {
           </p>
 
           <p>
-            The Lucky Meter, daily cards, numbers, and other experiences are strictly for amusement. They're meant to be playful and entertaining — nothing more.
+            The Luck Generator, daily cards, numbers, and other experiences are strictly for amusement. They're meant to be playful and entertaining — nothing more.
           </p>
 
           <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Growing Together Through Community Stories</h2>
@@ -138,7 +138,7 @@ export default function AboutPage() {
           </p>
 
           <p>
-            Whether someone visits for the numbers, the Lucky Meter, the cards, the stories, the maps, or simply to see what has been created, every visitor is appreciated.
+            Whether someone visits for the numbers, the Luck Generator, the cards, the stories, the maps, or simply to see what has been created, every visitor is appreciated.
           </p>
 
           <p>
