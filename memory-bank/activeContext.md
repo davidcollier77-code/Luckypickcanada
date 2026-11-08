@@ -1,3 +1,13 @@
+# Current Task — Connected integrations and mandatory QA contract (2026-11-08)
+
+- **Branch / PR:** `docs/integration-usage-policy` / [PR #1782](https://github.com/davidcollier77-code/Luckypickcanada/pull/1782).
+- **Scope:** Preserve Firecrawl as the primary crawling provider and Crawlbase as fallback; add a concise, mandatory QA contract to `AGENTS.md`. No application code or QA workflow changes.
+- **QA boundaries:** Spec Kit remains mandatory for every task. The existing classifier decides when automatic Visual QA runs. This PR also changes `.specify/feature.json`, which is outside the documentation-only allowlist and therefore requests Playwright QA under the fail-closed rule. Browserless and Browserbase remain direct-agent fallbacks only, under their existing approval rules; they are not automatic PR-checker services. Firecrawl/Crawlbase do not replace browser interaction tests.
+- **Implementation:** Updated `AGENTS.md` and the existing `specs/119-connected-crawling-integrations/{spec,plan,tasks}.md` records. `.docs/` remains read-only.
+- **Verification:** The GitHub API editing session did not execute local `./freebuff-verify.sh`. Repository/PR-head verification remains pending; do not claim verified completion until the mandatory current-head checks actually pass.
+
+---
+
 # Current Task — Homepage welcome panel cleanup (2026-11-08)
 
 - **Scope:** Remove only the oversized gold “Explore free experiences” link and the gold “Free to enjoy · For fun and entertainment only” note from the welcome card. Keep its dark navy/gold frame, heading, lede and explanatory copy. Tighten card padding and the two adjacent divider margins so the painted Explore title/down arrows sit closer beneath it.
