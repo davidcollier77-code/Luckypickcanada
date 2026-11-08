@@ -24,20 +24,30 @@ const PROVINCES = [
   { code: 'NL', name: 'Newfoundland and Labrador' },
 ];
 
-const mapData = {
-  stories: PROVINCES.map((province, index) => ({
+const mapStories = Array.from({ length: 21 }, (_, index) => {
+  const province = PROVINCES[index % PROVINCES.length];
+  return {
     id: String(index + 1),
-    firstName: `Tester${province.code}`,
+    firstName: index < 2 ? `Recent${index + 1}` : `Tester${province.code}`,
     province: province.code,
     provinceName: province.name,
     preview: `Preview for ${province.name}.`,
     story: `Full story for ${province.name}.`,
-    createdAt: new Date(Date.now() - index * 3_600_000).toISOString(),
+    createdAt: new Date(Date.now() - (index < 2 ? (index + 1) * 3_600_000 : (48 + index) * 3_600_000)).toISOString(),
     reactionCount: 0,
-  })),
-  provinceCounts: Object.fromEntries(PROVINCES.map((province) => [province.code, 1])),
-  totalStories: PROVINCES.length,
-  provincesWithStories: PROVINCES.length,
+  };
+});
+
+const provinceCounts = mapStories.reduce<Record<string, number>>((counts, story) => {
+  counts[story.province] = (counts[story.province] || 0) + 1;
+  return counts;
+}, {});
+
+const mapData = {
+  stories: mapStories,
+  provinceCounts,
+  totalStories: mapStories.length,
+  provincesWithStories: Object.keys(provinceCounts).length,
   isConfigured: true,
 };
 
@@ -58,6 +68,11 @@ async function openPopulatedMap(page: Page) {
   // land beside the marker.
   await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' });
   await expect(page.locator('.province-marker')).toHaveCount(PROVINCES.length);
+  await expect(page.locator('.map-statistics .map-statistic')).toHaveCount(1);
+  await expect(page.locator('.map-statistics')).toContainText('Total lucky stories shared (All-time)');
+  await expect(page.locator('.map-statistics')).toContainText('21');
+  await expect(page.locator('.map-statistics')).not.toContainText('Provinces with lucky moments');
+  await expect(page.locator('.map-statistics')).not.toContainText('Mapped story markers');
   // The client refresh replaces the empty server payload, which changes the
   // panel and statistic heights; let that layout settle before clicking.
   await page.waitForTimeout(500);
@@ -83,6 +98,15 @@ test('every province marker selects only its own province when clicked', async (
   await page.keyboard.press('Enter');
   await expect(page.locator('.province-marker[data-province="BC"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(panelHeading).toHaveText('British Columbia');
+});
+
+test('the rolling 24-hour filter shows only the two recent stories', async ({ page }) => {
+  await openPopulatedMap(page);
+  await page.getByRole('button', { name: 'Last 24 Hours' }).click();
+  const recentStoryCards = page.locator('.map-community-section section[aria-label$="recent stories"] button');
+  await expect(recentStoryCards).toHaveCount(2);
+  await expect(page.getByText('Recent1', { exact: true })).toBeVisible();
+  await expect(page.getByText('Recent2', { exact: true })).toBeVisible();
 });
 
 test('province marker centres are their own hit targets and the Maritime fan is intact', async ({ page }) => {
