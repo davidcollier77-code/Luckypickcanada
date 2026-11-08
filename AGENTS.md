@@ -43,6 +43,12 @@ Complete these steps in order before implementation:
 - Do not redesign, replace, or remove existing product behavior or assets to satisfy an unrelated checklist.
 - Never expose or commit secrets.
 - Never weaken validation, sanitization, authentication, authorization, CAPTCHA/Turnstile, rate limiting, duplicate protection, or environment handling.
+- **Code quality and functional integrity are mandatory.** Keep code maintainable, reliable, secure, efficient, and consistent with the existing architecture and project standards.
+- Preserve existing behaviour and system integrity. Changes MUST NOT break, weaken, bypass, or compromise existing features, services, integrations, data, or safeguards.
+- Assess the impact on interconnected components, APIs, shared utilities, and dependent workflows before changing them.
+- Avoid unnecessary complexity, duplicated logic, fragile workarounds, dependencies, and preventable technical debt.
+- Prevent regressions by testing new functionality and existing behaviour that could be affected. A successful build alone does NOT prove functional correctness.
+- If a requested change conflicts with existing functionality, security, or system integrity, preserve existing safeguards and report the conflict rather than compromising them.
 - Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
 - **Browser QA is mandatory.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval. Diagnose failures briefly. Never skip required browser QA because a tool fails.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
