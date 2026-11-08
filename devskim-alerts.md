@@ -31,3 +31,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:4` — Do not leave debug code in production <!-- devskim-id:9b39194c1d34d58e2c4b -->
 
 - **NOTE — DS172411** — `tests/visual/map-marker-interaction.spec.ts:82` — Review setTimeout for untrusted data <!-- devskim-id:1581a1022b3d277b6b57 -->
+
+- **NOTE — DS172411** — `tests/visual/mobile-accessibility.spec.ts:123` — Review setTimeout for untrusted data <!-- devskim-id:7668862f4f74a47af63d -->
