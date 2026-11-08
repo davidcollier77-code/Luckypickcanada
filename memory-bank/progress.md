@@ -661,3 +661,17 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Generated three current homepage viewport snapshots with the existing Playwright Chromium workflow. All three snapshot update projects passed; only the three approved PNG paths were staged and committed in `3203f086be8eb841eca7ee20e61389cbe05c0741`.
 - The snapshot-refresh-only Visual QA run passed full Vitest, standalone TypeScript and `./freebuff-verify.sh`, then intentionally skipped the full regression step after committing the PNGs. A normal full Playwright run on the current branch remains required.
 - Ghost Invasion was not run because its installed local-only mode requires a disposable localhost app/reset endpoint that this connected session cannot provide. No Ghost Invasion independent review is claimed. Firecrawl was not used.
+
+
+## 2026-11-08 — PR #1783 responsive QA verified
+
+- Full current-head Playwright Visual QA run `42536190088` completed successfully: **147 passed, 6 skipped, 0 failed** across desktop, mobile-390 and mobile-412 projects (7.7 minutes). All three homepage viewport screenshot comparisons passed.
+- The new homepage geometry matrix passed at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS px; the matrix runs once in desktop Chromium. Existing mobile-specific accessibility and touch tests passed in the mobile projects.
+- The settled 1px pressed gold-edge assertion passed; province map marker, 24-hour filter and paged-story browser tests passed.
+- Full Vitest: 54 files / 447 tests passed. Standalone TypeScript passed. `./freebuff-verify.sh` passed, including Spec Kit artifact validation, verification-integrity tests and documentation refresh 36/36.
+- OpenNext Cloudflare build, compiled Tailwind, worker/assets and Wrangler no-deploy validation passed. `.next + public` measured 335,370,994 bytes / **319.83 MiB**, below the 495 MiB limit.
+- CodeQL passed. DevSkim passed: 301 SARIF results, 281 verified false positives suppressed, 20 existing findings remained (not represented as zero alerts). Updater scheduler governance/tests and Wrangler dry run passed. Verification Integrity passed.
+- The temporary one-time screenshot-refresh workflow capability was removed; normal Visual QA is read-only and uses the existing Playwright path.
+- The local Playwright server lacked `DATABASE_URL`; observed API 500 log lines were the configured-unavailable test-environment case. Browser assertions still passed. This does not establish a production 500, and production Neon read-back remains separately unverified.
+- Ghost Invasion was not run because its local-only runner requires a disposable localhost app and same-origin reset fixture not available in this session. Firecrawl was not used.
+- PR #1783 remains open and unmerged. Verification evidence above is for tested head `fadad69efc167a5fd06443e04f0453fc7813490d`; this Memory Bank / Spec Kit status update is a documentation-only follow-up commit and triggers a fresh CI run.
