@@ -34,7 +34,7 @@
 - [ ] T012 Run focused Vitest and Playwright map tests at mobile and desktop viewports (NOT RUN in this connector-only workspace).
 - [ ] T013 Run pnpm exec tsc --noEmit and ./freebuff-verify.sh; record build size against 495 MB (NOT RUN in this connector-only workspace).
 - [X] T014 Review full diff and confirm no homepage files, unrelated routes or non-map behavior changed; update task list and Memory Bank.
-- [ ] T015 Create one canonical PR with implementation, data migration evidence, checks and full HEAD SHA; leave it OPEN and UNMERGED.
+- [X] T015 Create one canonical PR with implementation, data migration evidence, checks and full HEAD SHA; leave it OPEN and UNMERGED.
 
 ## Dependencies
 - T001–T004 precede the production transaction.
