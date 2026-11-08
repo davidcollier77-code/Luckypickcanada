@@ -87,6 +87,7 @@ describe('Reference hero composition', () => {
   it('makes the complete Explore crop clickable and keeps its focus indicator inside the crop', () => {
     expect(exploreSource).toContain('absolute inset-0 z-30 flex items-end justify-center');
     expect(exploreSource).not.toContain('h-[30%] min-h-24 max-h-[300px]');
+    expect(exploreSource).toContain('w-full max-w-full');
     expect(heroCss).toContain('.hero-art-slice--explore button:focus-visible { outline-offset: -4px; }');
   });
 

@@ -272,8 +272,8 @@ test.describe("Homepage Visual", () => {
     expect(Math.abs((buttonBox!.x + buttonBox!.width / 2) - (stageBox!.x + stageBox!.width / 2))).toBeLessThanOrEqual(1);
     expect(Math.abs(buttonBox!.y - stageBox!.y)).toBeLessThanOrEqual(1);
     expect(Math.abs(buttonBox!.height - stageBox!.height)).toBeLessThanOrEqual(1);
+    expect(Math.abs(buttonBox!.width - stageBox!.width)).toBeLessThanOrEqual(1);
     expect(buttonBox!.height).toBeGreaterThanOrEqual(44);
-    expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
 
     const computedStagePointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);
     const computedButtonPointerEvents = await exploreButton.evaluate((element) => getComputedStyle(element).pointerEvents);

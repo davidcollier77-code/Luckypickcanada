@@ -294,7 +294,7 @@ export default function ExploreLuckButton() {
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
-        className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+        className="pointer-events-auto h-full w-full max-w-full cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
         data-hydrated={isHydrated ? 'true' : 'false'}
         data-confetti-pop-ready={isConfettiPopReady ? 'true' : 'false'}
