@@ -128,7 +128,7 @@ Use the connected integrations below when they materially support the assigned t
 - **Browserbase:** Last-resort fallback when Playwright and Browserless are unavailable or unsuitable. Requires explicit owner approval.
 - **Neon:** Available for relevant PostgreSQL database inspection and task-scoped database work. Use it sparingly to conserve usage. Owner approval remains required before database or schema changes, as stated above.
 
-Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Any other connected integration not listed above requires owner approval before use unless separately authorized. A connection or initialization alone does not count as actual integration use.
+Browserless and Browserbase are for Freebuff's direct browser-based task work. Do not add either service to, or trigger either service from, automatic PR-checker workflows. Other connected integrations may be used when they materially help the assigned task and fall within the user's authorization and the integration's permissions. Obtain explicit approval before external side effects, paid usage, destructive actions, or sharing sensitive data beyond the authorized task. Existing approval rules for repository, database, security, and deployment changes still apply. A connection or initialization alone does not count as actual integration use.
 
 ### PR ownership
 
