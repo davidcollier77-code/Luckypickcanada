@@ -40,7 +40,7 @@ describe('main landmark structure', () => {
       return matches.map(() => relative(ROOT, join(ROOT, file)));
     });
 
-    expect(mains).toEqual(['app/layout.js']);
+    expect(mains).toEqual([join('app', 'layout.js')]);
   });
 
   it('does not import an unmarked component that adds a second main landmark', () => {
