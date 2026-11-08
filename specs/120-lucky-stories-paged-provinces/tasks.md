@@ -50,7 +50,7 @@
 ## Phase 7: Verification and handoff
 
 - [x] T015 Run focused Vitest, Playwright (map interaction and pagination), `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; measure the production build size.
-- [ ] T016 Inspect the complete diff, update this task list and the canonical PR summary, and confirm the PR is open and unmerged.
+- [x] T016 Inspect the complete diff, update this task list and the canonical PR summary, and confirm the PR is open and unmerged. Done: the 16-file diff was reviewed, the canonical body was updated, and PR #1783 remains open and unmerged.
 
 ## Verification evidence (2026-11-08)
 
@@ -61,6 +61,8 @@
 - Production build measured `.next` + `public` = 426.44 MB, below the 495 MB ceiling **PASS**.
 - T013 is **BLOCKED**: this workspace has no Neon SQL credential and the connected Neon integration exposes no SQL execution tool. The owner-run statement and required read-back are recorded in the PR summary; no story text, date, creation date, province or genuine author was modified.
 - Live-database browser verification is **NOT RUN** (no database configured in this workspace); Playwright answers `/api/lucky-stories` from a local fixture.
+
+- PR #1783: https://github.com/davidcollier77-code/Luckypickcanada/pull/1783 — open and unmerged.
 
 ## Dependencies
 
