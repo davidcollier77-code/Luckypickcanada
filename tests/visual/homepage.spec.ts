@@ -2,10 +2,6 @@ import { test, expect } from '@playwright/test';
 
 const EXPLORE_COOLDOWN_MS = 15_000;
 
-/**
- * Builds a short, valid silent PCM WAV so interaction coverage can verify
- * local audio loading deterministically without playing the real sound in CI.
- */
 /** Wait until a scrolled element's viewport rectangle is stable across animation frames. */
 async function waitForStableRect(locator) {
   await locator.evaluate(async (element) => {
