@@ -1168,8 +1168,19 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
       <picture className="absolute inset-0 w-full h-full -z-20 pointer-events-none">
-        <source srcSet="/images/lucky-meter-night-sky.avif" type="image/avif" />
-        <Image src="/images/lucky-meter-night-sky.webp" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} fill loading="eager" fetchPriority="high" />
+
+        <source
+          srcSet="/images/lucky-meter-night-sky-640w.avif 640w, /images/lucky-meter-night-sky-1024w.avif 1024w, /images/lucky-meter-night-sky.avif 1400w"
+          sizes="100vw"
+          type="image/avif"
+        />
+        <source
+          srcSet="/images/lucky-meter-night-sky-640w.webp 640w, /images/lucky-meter-night-sky-1024w.webp 1024w, /images/lucky-meter-night-sky.webp 1400w"
+          sizes="100vw"
+          type="image/webp"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/lucky-meter-night-sky.webp" srcSet="/images/lucky-meter-night-sky-640w.webp 640w, /images/lucky-meter-night-sky-1024w.webp 1024w, /images/lucky-meter-night-sky.webp 1400w" sizes="100vw" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} loading="eager" fetchPriority="high" decoding="async" />
       </picture>
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />

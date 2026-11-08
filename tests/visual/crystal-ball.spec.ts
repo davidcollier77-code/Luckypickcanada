@@ -7,7 +7,7 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   await expect(artwork).toBeVisible({ timeout: 10_000 });
   await expect.poll(() => artwork.evaluate((element) => {
     const image = element as HTMLImageElement;
-    return image.complete && image.naturalWidth === 716 && image.naturalHeight === 875;
+    return image.complete && /crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/.test(image.currentSrc);
   })).toBe(true);
 
   const metrics = await page.evaluate(() => {
@@ -26,6 +26,7 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
       declaredHeight: image.getAttribute('height'),
       imageRatio: imageBox.width / imageBox.height,
       isConnected: image.isConnected,
+      currentSrc: image.currentSrc,
       sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
         type: source.type,
         srcSet: source.srcset,
@@ -42,18 +43,33 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
   expect(metrics.isConnected).toBe(true);
-  expect(metrics.imageWidth).toBe(716);
-  expect(metrics.imageHeight).toBe(875);
+  // `sizes` resolves to a viewport-dependent slot width (75vw below 560px,
+  // 420px above), so Chromium picks the 420w candidate on small screens and the
+  // 716w candidate on wide ones. It then reports naturalWidth density-corrected,
+  // so the reported width varies with the viewport instead of staying 420 or
+  // 716. Both candidates share the same intrinsic aspect ratio, which is the
+  // property the layout actually depends on.
+  expect(metrics.currentSrc).toMatch(/crystal-ball-pedestal(-420w)?\.(avif|webp|png)$/);
+  expect(metrics.imageWidth).toBeGreaterThan(0);
+  expect(metrics.imageHeight / metrics.imageWidth).toBeCloseTo(875 / 716, 1);
   expect(metrics.declaredWidth).toBe('716');
   expect(metrics.declaredHeight).toBe('875');
   expect(metrics.imageRatio).toBeCloseTo(716 / 875, 2);
   expect(metrics.sources).toEqual([
-    { type: 'image/avif', srcSet: '/assets/crystal-ball-pedestal.avif' },
-    { type: 'image/webp', srcSet: '/assets/crystal-ball-pedestal.webp' },
+    {
+      type: 'image/avif',
+      srcSet:
+        '/assets/crystal-ball-pedestal-420w.avif 420w, /assets/crystal-ball-pedestal.avif 716w',
+    },
+    {
+      type: 'image/webp',
+      srcSet:
+        '/assets/crystal-ball-pedestal-420w.webp 420w, /assets/crystal-ball-pedestal.webp 716w',
+    },
   ]);
   expect(metrics.fallbackSrc).toBe('/assets/crystal-ball-pedestal.png');
-  expect(Math.abs(metrics.glowWidth - metrics.glowHeight)).toBeLessThanOrEqual(1);
 
+  expect(Math.abs(metrics.glowWidth - metrics.glowHeight)).toBeLessThanOrEqual(1);
   const glowCenterY = metrics.glowTop + metrics.glowHeight / 2;
   const expectedGlowCenterY = metrics.wrapperTop + metrics.wrapperHeight * 0.32;
   expect(Math.abs(glowCenterY - expectedGlowCenterY)).toBeLessThanOrEqual(1.5);

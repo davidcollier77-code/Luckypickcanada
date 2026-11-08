@@ -1825,12 +1825,22 @@ export default function LuckyCardReveal() {
       {/* Cinematic Deep Space Background */}
       <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
         <picture className="absolute inset-0 w-full h-full">
-          <source type="image/avif" srcSet="/NGC4216_crawford.avif" sizes="100vw" />
-          <source type="image/webp" srcSet="/NGC4216_crawford.webp" sizes="100vw" />
+          <source
+            type="image/avif"
+            srcSet="/NGC4216_crawford-1280w.avif 1280w, /NGC4216_crawford-1920w.avif 1920w, /NGC4216_crawford.avif 2949w"
+            sizes="100vw"
+          />
+          <source
+            type="image/webp"
+            srcSet="/NGC4216_crawford-1280w.webp 1280w, /NGC4216_crawford-1920w.webp 1920w, /NGC4216_crawford.webp 2949w"
+            sizes="100vw"
+          />
           <source type="image/jpeg" srcSet="/NGC4216_crawford.jpg" sizes="100vw" />
           <img
             src="/NGC4216_crawford.jpg"
             alt="Cosmic Space Background"
+            width={2949}
+            height={2847}
             className="w-full h-full object-cover object-center"
             aria-hidden="true"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}

@@ -182,7 +182,9 @@ describe('Lucky Card reveal presentation markup', () => {
     expect(source).toContain('srcSet={selectedCard.image}');
     expect(source).toContain("selectedCard.image.replace('.avif', '.webp')");
     expect(source).toContain('srcSet="/IMG_20260728_220305_112042.avif"');
-    expect(source).toContain('srcSet="/NGC4216_crawford.avif"');
+    expect(source).toContain('/NGC4216_crawford-1280w.avif 1280w');
+    expect(source).toContain('/NGC4216_crawford-1920w.avif 1920w');
+    expect(source).toContain('/NGC4216_crawford.avif 2949w');
 
     // Sharing, the collection binder and the return-home link still render.
     expect(source).toContain('<LuckyCardShare card={selectedCard}/>');

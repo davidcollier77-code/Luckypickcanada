@@ -14,12 +14,12 @@ export const metadata = {
     title: 'Lucky Map | LuckyPickCanada.ca',
     description: 'Explore the Lucky Map of Canada to read community stories of luck and everyday magic from across the country.',
     url: '/map',
-    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
+    images: [{ url: '/luckypickcanada-share-1200x630.jpg', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Lucky Map | LuckyPickCanada.ca',
     description: 'Explore the Lucky Map of Canada to read community stories of luck and everyday magic from across the country.',
-    images: ['/1785347037732.png'],
+    images: ['/luckypickcanada-share-1200x630.jpg'],
   },
 };
 
