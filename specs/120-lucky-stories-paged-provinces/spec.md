@@ -61,7 +61,7 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 
 **Why this priority**: Developer identifiers are visible on the public page today and undermine the community presentation. The records are demonstration content, not real contributor submissions.
 
-**Independent Test**: Inspect the published records identified as demonstration stories and verify only their author display names changed; verify genuine contributor records and every other field are unchanged.
+**Independent Test**: Inspect the published records identified as demonstration stories and verify only their author display names and leading [dev-seed] markers changed; verify genuine contributor records and every other field are unchanged.
 
 **Acceptance Scenarios**:
 
@@ -99,8 +99,9 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - **FR-012**: The existing All-Time and Last 24 Hours filter MUST continue to scope the feed, the marker counts and recent activity consistently.
 - **FR-013**: Shared story links MUST continue to open the referenced story, its province and its full text.
 - **FR-014**: The existing card, panel, marker, province-control, modal, celebration, sharing, submission and navigation presentation MUST remain unchanged in design and behaviour.
-- **FR-015**: Demonstration story authors identified positively by developer-style display names and seed markers MUST be changed only in author display name, to natural fictional first names without surnames or developer wording.
+- **FR-015**: Demonstration story authors identified positively by developer-style display names and seed markers MUST be changed to natural fictional first names without surnames or developer wording; only their display name and leading [dev-seed] marker may change.
 - **FR-016**: Every existing story MUST be preserved; no story may be deleted, replaced, recreated or lost. For positively identified demo rows only, the leading [dev-seed] marker may be removed; the remaining story wording, dates and province assignment MUST remain unchanged.
+- **FR-017**: Recent Canadian Activity MUST display up to three newest published stories for each province or territory in the active time window, with a maximum of 39 entries across all 13 regions.
 - **FR-017**: Genuine contributor records and any uncertain record MUST NOT be modified.
 
 ### Key Entities *(include if feature involves data)*
@@ -121,6 +122,7 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - **SC-004**: Switching provinces produces zero story cards from any other province.
 - **SC-005**: A fresh visit selects the province with the highest published count; a visit after a manual choice restores that choice.
 - **SC-006**: The set of published story identifiers, narrative wording after removal of only the leading demo marker, creation timestamps and province assignments is identical before and after the author-presentation correction.
+- **SC-007**: Recent Canadian Activity displays no more than three stories per province or territory, never exceeds 39 entries, and respects the selected All-Time or Last 24 Hours window.
 - **SC-007**: No genuine contributor author name changes.
 - **SC-008**: The existing Lucky Stories page layout, controls and unrelated behaviour show no visible change.
 
@@ -130,6 +132,6 @@ A visitor reading the existing demonstration stories sees natural first-name-onl
 - "Published" means the existing approved state, which the page already treats as public.
 - The existing location-to-province resolver remains the authority for province membership.
 - The demonstration records are the rows whose author display names begin with the developer prefix `Dev` and whose story text carries the seed marker; the genuine contributors are the remaining rows. This identification was checked against the live published story feed on 2026-11-08.
-- Story text, including any seed wording inside it, is preserved exactly because the request explicitly requires existing story text to stay unchanged; only the public author display name is corrected.
+- Only the leading [dev-seed] marker was removed from the owner-identified demo rows as part of the reported cleanup; the remaining narrative wording, dates, approval state and province assignments were preserved. No further story text changes are authorized.
 - This workspace cannot reach the Neon SQL endpoint with write credentials, so the author-presentation data correction may require an owner-run statement; that limitation is tracked rather than simulated in application code.
 - The 495 MB production build ceiling and all existing verification gates remain in force.

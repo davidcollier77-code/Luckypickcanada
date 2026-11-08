@@ -6,7 +6,7 @@
 
 ## Summary
 
-Replace the map's "load up to 100 stories, then filter in the browser" model with a database-backed, province-scoped page of three stories, reached through the existing Lucky Stories API and extended with automatic loading near the feed's end. Province counts come from an aggregate query over all published rows so the heading and map controls stay correct while only a few cards are loaded. The visitor's manual province choice is stored locally; the first visit derives the highest-count province from all-time counts. Existing demonstration rows are identified from the live published feed and corrected only in author display name once database write access is available.
+Replace the map's "load up to 100 stories, then filter in the browser" model with a database-backed, province-scoped page of three stories, reached through the existing Lucky Stories API and extended with automatic loading near the feed's end. Province counts come from an aggregate query over all published rows so the heading and map controls stay correct while only a few cards are loaded. The visitor's manual province choice is stored locally; the first visit derives the highest-count province from all-time counts. The owner reports that the identified demo rows have been corrected in production: author names are natural first names and only the leading [dev-seed] marker was removed.
 
 ## Technical Context
 
@@ -80,7 +80,7 @@ No schema change. Existing `lucky_stories` columns (`id`, `display_name`, `locat
   allTimeProvinceCounts: { [code]: number }, // used for the automatic default
   totalStories: number,        // all-time published total (existing statistic)
   provincesWithStories: number,
-  recentStories: Story[],      // three newest published, active window
+  recentStories: Story[],      // up to three newest per province, at most 39 total, active window
   defaultProvince: string,
   selectedProvince: string,
   provinceTotal: number,       // full count for the selected province
