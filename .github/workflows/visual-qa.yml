@@ -177,14 +177,14 @@ jobs:
             tests/visual/__screenshots__/mobile-412/homepage-viewport.png
 
           changed_files="$(git diff --cached --name-only | sort)"
-          expected_files="$(printf '%s\\n' \
+          expected_files="$(printf '%s\n' \
             tests/visual/__screenshots__/desktop/homepage-viewport.png \
             tests/visual/__screenshots__/mobile-390/homepage-viewport.png \
             tests/visual/__screenshots__/mobile-412/homepage-viewport.png | sort)"
 
           if [[ "$changed_files" != "$expected_files" ]]; then
             echo "::error::Snapshot refresh did not produce exactly the three approved PNG baselines."
-            printf 'Expected:\\n%s\\nActual:\\n%s\\n' "$expected_files" "$changed_files"
+            printf 'Expected:\n%s\nActual:\n%s\n' "$expected_files" "$changed_files"
             exit 1
           fi
 
