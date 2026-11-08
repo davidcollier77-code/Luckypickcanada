@@ -2111,3 +2111,14 @@
 - **Confirmed defects fixed:** `writeDocumentationLink` and the `runRefresh` symlink fallback each generated a symlink temp path and a fallback copy temp path with separate `Date.now()` calls in the same synchronous block, so a same-millisecond failure could reuse the just-deleted path. Both now use distinct `.tmp.symlink.` and `.tmp.copy.` suffixes. `escapeTableCell` now escapes backslashes before pipes and newlines, with a regression assertion.
 - **Dispositions:** the DevSkim `setTimeout` alert is test-only mock code; the CodeQL URL-substring alert is a test assertion; neither is a production defect. Pullfrog's failure is an exhausted Google AI Studio free-tier quota, not a code failure.
 - **Verification:** `node scripts/test-refresh-docs.js` 31/31, `pnpm exec vitest run` 354/354, `SPEC_KIT_BASE_REF=269ea014 ./freebuff-verify.sh` exit 0, build 349,905,235 B (333.70 MiB). PR-head CI result is recorded in the PR body once the run completes; PR #1748 stays open and unmerged.
+
+
+# Current Task — Community Stories map population and statistics cleanup (2026-11-08)
+
+- **Scope**: Lucky Community Stories page only; homepage explicitly excluded.
+- **Feature**: `specs/116-community-stories-map-population`; branch `fix/community-stories-map-21-20261108`.
+- **Production Neon**: safely snapshotted as `backup-before-community-stories-20261108`; preserved matching IDs 1–8, updated their prepared timestamps, inserted IDs 9–21, and synchronized the serial sequence in one transaction. Transaction guards require exactly 8 matching original rows and 13 new inserts or roll back.
+- **Verified at 2026-11-08T13:01:53Z**: 21 total, 21 approved, 2 within rolling 24 hours. Intended recent rows are ID 20 (DevLee, Northwest Territories, Nov 7 14:30 UTC) and ID 21 (DevMorgan, Nunavut, Nov 8 08:15 UTC). Prepared locations cover all 13 provinces/territories.
+- **Code**: only the all-time total statistic remains in `app/lucky-map-of-canada/lucky-map-of-canada.js`; the two redundant cards are removed. `tests/visual/map-marker-interaction.spec.ts` now uses a 21-story fixture and checks one statistic card and exactly two recent stories. No homepage files changed.
+- **Cache**: story-map KV uses a 60-second fresh TTL plus 300-second stale-while-revalidate; a stale response may persist for up to approximately six minutes. The data transaction itself does not invalidate Cloudflare KV.
+- **Verification limitation**: repository connector session has no local checkout/runtime, so Vitest, Playwright, TypeScript, build and Browser QA have not been executed here; report them honestly as NOT RUN/PENDING.
