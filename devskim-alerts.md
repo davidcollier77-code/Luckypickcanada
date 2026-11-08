@@ -19,3 +19,13 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `artifacts/browser-testing-tooling/out/tool-probes.json:53` — Do not leave debug code in production <!-- devskim-id:9dfe2eae4e3aad0ae895 -->
 
 - **NOTE — DS172411** — `tests/visual/mobile-accessibility.spec.ts:116` — Review setTimeout for untrusted data <!-- devskim-id:3c9f238c7946acfad7dc -->
+
+- **NOTE — DS172411** — `tests/visual/map-marker-interaction.spec.ts:67` — Review setTimeout for untrusted data <!-- devskim-id:bc9a26106527b46674a9 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:1283` — Do not leave debug code in production <!-- devskim-id:6355a38eed66ec26c57e -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:1282` — Do not leave debug code in production <!-- devskim-id:fa6a394db0f7ece0d4f9 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:1281` — Do not leave debug code in production <!-- devskim-id:deb2949857890257af30 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:1280` — Do not leave debug code in production <!-- devskim-id:e9786fe02aa1417b4dc7 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:7` — Do not leave debug code in production <!-- devskim-id:a661773ef4753eadc028 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:6` — Do not leave debug code in production <!-- devskim-id:13fe4678e67796b3383e -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:5` — Do not leave debug code in production <!-- devskim-id:c2f81020d244f32385f1 -->
+- **NOTE — DS162092** — `artifacts/map-marker-fix/after-wide.json:4` — Do not leave debug code in production <!-- devskim-id:9b39194c1d34d58e2c4b -->
