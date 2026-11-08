@@ -49,8 +49,8 @@
 
 ## Phase 7: Verification and handoff
 
-- [x] T015 Run focused Vitest, Playwright (map interaction and pagination), `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`; measure the production build size.
-- [x] T016 Inspect the complete diff, update this task list and the canonical PR summary, and confirm the PR is open and unmerged. Done: the 16-file diff was reviewed, the canonical body was updated, and PR #1783 remains open and unmerged.
+- [ ] T015 Re-run focused Vitest, Playwright (map interaction and pagination), `pnpm exec tsc --noEmit` and `./freebuff-verify.sh` against the repaired PR HEAD; measure the production build size.
+- [ ] T016 Inspect the complete final diff, update the canonical PR summary with current-head evidence, and confirm the PR is open and unmerged.
 
 ## Follow-up QA repair tasks
 
@@ -82,3 +82,9 @@
 ## Implementation Strategy
 
 Deliver the data path first, then the paged client feed and its browser/unit evidence. The author-presentation correction is a data-only change that must not be emulated in application code; it is reported with its exact statement until credentials are available.
+
+## Current-head repair status
+
+- Source and regression-test changes are committed on the existing PR branch. They have not yet been executed in a repository checkout from this connected workspace.
+- Current-head `./freebuff-verify.sh`, focused Vitest, TypeScript, Visual QA, OpenNext, DevSkim, CodeQL, build-size measurement and fresh final review are **PENDING**.
+- T020 remains **PENDING** until the three homepage screenshot baselines are regenerated from the current approved rendering and pass on all configured Playwright projects.
