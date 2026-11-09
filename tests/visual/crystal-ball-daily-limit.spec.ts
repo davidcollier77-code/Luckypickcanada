@@ -97,6 +97,57 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
   await expect(page.locator('div[class*="fortunePanel"]')).toHaveCount(0);
 });
 
+
+test('simultaneous fortune requests from two tabs consume only one daily allowance', async ({ context }) => {
+  test.setTimeout(120_000);
+
+  const fortune = 'One shared reading is waiting in the glass.';
+  let requests = 0;
+  let releaseResponse;
+  const responseGate = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+
+  await context.route('**/api/oracle', async (route) => {
+    requests += 1;
+    await responseGate;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ reading: fortune, source: 'ai' }),
+    });
+  });
+
+  const firstTab = await context.newPage();
+  const secondTab = await context.newPage();
+  await Promise.all([firstTab.goto('/crystal-ball'), secondTab.goto('/crystal-ball')]);
+
+  const firstButton = firstTab.getByRole('button', { name: /Generate My Fortune/i });
+  const secondButton = secondTab.getByRole('button', { name: /Generate My Fortune/i });
+  await Promise.all([expect(firstButton).toBeVisible(), expect(secondButton).toBeVisible()]);
+
+  // Hold the first provider response open while the second tab competes for
+  // the same local-day allowance. The Web Lock must serialize the requests.
+  await Promise.all([firstButton.click(), secondButton.click()]);
+  releaseResponse();
+
+  await expect.poll(() => requests).toBe(1);
+  await expect(firstTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune, {
+    timeout: 15000,
+  });
+  await expect(secondTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune, {
+    timeout: 15000,
+  });
+
+  const saved = await firstTab.evaluate((key) => {
+    return JSON.parse(window.localStorage.getItem(key) || '{}');
+  }, STORAGE_KEY);
+  expect(saved.fortuneUsed).toBe(true);
+  expect(saved.fortune).toBe(fortune);
+
+  await Promise.all([firstTab.close(), secondTab.close()]);
+});
+
 test('Card Reveal, Crystal Ball and Lucky Meter read the same local-midnight countdown', async ({ context }) => {
   test.setTimeout(120_000);
 
