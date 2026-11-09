@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(new URL('.', import.meta.url).pathname, '..');
+const root = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const skillRoot = path.join(root, '.agents/skills/playwright-cli');
 const upstreamReferences = [
   'element-attributes.md',
@@ -56,7 +57,7 @@ describe('Playwright CLI agent toolkit', () => {
     const setup = readFileSync(path.join(root, 'scripts/setup-playwright-agent.sh'), 'utf8');
     const pkgPath = path.join(root, 'package.json');
     if (!existsSync(pkgPath)) {
-      expect.fail('package.json not found at expected repository root: ' + pkgPath);
+      throw new Error('package.json not found at expected repository root: ' + pkgPath);
     }
     const manifest = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
