@@ -86,6 +86,7 @@ AUTOMATION_ID=""
 WEBHOOK_CREATED=false
 POLICY_CREATED=false
 AUTOMATION_CREATED=false
+PREFLIGHT_FAILED=false
 
 # ---------------------------------------------------------------------------
 # Colors
@@ -330,50 +331,99 @@ unset HISTFILE 2>/dev/null || true
 history -c 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# Preflight: check for existing resources (prevent duplicates)
+# Preflight: check existing resources (fail closed on uncertainty)
 # ---------------------------------------------------------------------------
 
 print_header "Preflight: checking for existing resources"
 
-# Check existing webhooks
+# Reuse a webhook only when the returned URL and secret exactly match.
+# If Cloudflare masks/omits the secret, fail closed rather than assume.
 cf_api GET "/alerting/v3/destinations/webhooks"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  WEBHOOK_ID=$(echo "$RESP_BODY" | jq -r --arg name "$WEBHOOK_NAME" '.result[] | select(.name == $name) | .id' 2>/dev/null | head -1)
-  if [ -n "$WEBHOOK_ID" ] && [ "$WEBHOOK_ID" != "null" ]; then
-    echo -e "  ${YELLOW}⚠ EXISTS${NC} — Webhook '$WEBHOOK_NAME' already exists (ID: $WEBHOOK_ID). Will reuse."
+  WEBHOOK_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$WEBHOOK_NAME" '[.result[]? | select(.name == $name)] | length')
+  if [ "$WEBHOOK_MATCH_COUNT" -gt 1 ]; then
+    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching webhooks exist. Resolve them manually."
+    PREFLIGHT_FAILED=true
+  elif [ "$WEBHOOK_MATCH_COUNT" -eq 1 ]; then
+    WEBHOOK_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$WEBHOOK_NAME" '.result[] | select(.name == $name)')
+    EXISTING_WEBHOOK_URL=$(echo "$WEBHOOK_MATCH" | jq -r '.url // ""')
+    EXISTING_WEBHOOK_SECRET=$(echo "$WEBHOOK_MATCH" | jq -r '.secret // ""')
+    if [ "$EXISTING_WEBHOOK_URL" = "$WEBHOOK_URL" ] && [ -n "$EXISTING_WEBHOOK_SECRET" ] && [ "$EXISTING_WEBHOOK_SECRET" = "$WEBHOOK_SECRET" ]; then
+      WEBHOOK_ID=$(echo "$WEBHOOK_MATCH" | jq -r '.id // ""')
+      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing webhook URL and secret match (ID: $WEBHOOK_ID)."
+    else
+      echo -e "  \${RED}✗ FAIL\${NC} — Existing webhook URL/secret cannot be verified as matching. No resources will be changed."
+      PREFLIGHT_FAILED=true
+    fi
   else
-    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing webhook named '$WEBHOOK_NAME'. Will create."
+    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing webhook named '$WEBHOOK_NAME'."
   fi
 else
-  echo -e "  ${YELLOW}⚠ WARN${NC} — Could not list webhooks (HTTP $RESP_STATUS). Will attempt creation."
+  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list webhooks (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  PREFLIGHT_FAILED=true
 fi
 
-# Check existing policies
+# Reuse a policy only when alert type and webhook destination both match.
 cf_api GET "/alerting/v3/policies"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  POLICY_ID=$(echo "$RESP_BODY" | jq -r --arg name "$POLICY_NAME" '.result[] | select(.name == $name) | .id' 2>/dev/null | head -1)
-  if [ -n "$POLICY_ID" ] && [ "$POLICY_ID" != "null" ]; then
-    echo -e "  ${YELLOW}⚠ EXISTS${NC} — Policy '$POLICY_NAME' already exists (ID: $POLICY_ID). Will reuse."
+  POLICY_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$POLICY_NAME" '[.result[]? | select(.name == $name)] | length')
+  if [ "$POLICY_MATCH_COUNT" -gt 1 ]; then
+    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching policies exist. Resolve them manually."
+    PREFLIGHT_FAILED=true
+  elif [ "$POLICY_MATCH_COUNT" -eq 1 ]; then
+    POLICY_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$POLICY_NAME" '.result[] | select(.name == $name)')
+    EXISTING_POLICY_ALERT=$(echo "$POLICY_MATCH" | jq -r '.alert_type // ""')
+    EXISTING_POLICY_WEBHOOK=$(echo "$POLICY_MATCH" | jq -r '[.mechanisms.webhooks[]?.id] | join(",")')
+    if [ -n "$WEBHOOK_ID" ] && [ "$EXISTING_POLICY_ALERT" = "$ALERT_TYPE" ] && [ "$EXISTING_POLICY_WEBHOOK" = "$WEBHOOK_ID" ]; then
+      POLICY_ID=$(echo "$POLICY_MATCH" | jq -r '.id // ""')
+      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing policy alert type and webhook match (ID: $POLICY_ID)."
+    else
+      echo -e "  \${RED}✗ FAIL\${NC} — Existing policy does not match the intended alert type/webhook."
+      PREFLIGHT_FAILED=true
+    fi
   else
-    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing policy named '$POLICY_NAME'. Will create."
+    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing policy named '$POLICY_NAME'."
   fi
 else
-  echo -e "  ${YELLOW}⚠ WARN${NC} — Could not list policies (HTTP $RESP_STATUS). Will attempt creation."
+  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list policies (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  PREFLIGHT_FAILED=true
 fi
 
-# Check existing automations
+# Reuse an automation only when every material setting matches.
 cf_api GET "/workers/observability/issues/automations"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  AUTOMATION_ID=$(echo "$RESP_BODY" | jq -r --arg svc "$WORKER_SERVICE" '.result.automations[]? | select(.service == $svc) | .id' 2>/dev/null | head -1)
-  if [ -n "$AUTOMATION_ID" ] && [ "$AUTOMATION_ID" != "null" ]; then
-    echo -e "  ${YELLOW}⚠ EXISTS${NC} — Automation for '$WORKER_SERVICE' already exists (ID: $AUTOMATION_ID). Will reuse."
+  AUTOMATION_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '[.result.automations[]? | select(.name == $name or .service == $svc)] | length')
+  if [ "$AUTOMATION_MATCH_COUNT" -gt 1 ]; then
+    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching automations exist. Resolve them manually."
+    PREFLIGHT_FAILED=true
+  elif [ "$AUTOMATION_MATCH_COUNT" -eq 1 ]; then
+    AUTOMATION_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '.result.automations[] | select(.name == $name or .service == $svc)')
+    EXISTING_AUTOMATION_NAME=$(echo "$AUTOMATION_MATCH" | jq -r '.name // ""')
+    EXISTING_AUTOMATION_SERVICE=$(echo "$AUTOMATION_MATCH" | jq -r '.service // ""')
+    EXISTING_AUTOMATION_POLICY=$(echo "$AUTOMATION_MATCH" | jq -r '.policyId // ""')
+    EXISTING_AUTOMATION_ENABLED=$(echo "$AUTOMATION_MATCH" | jq -r '.enabled // false')
+    EXISTING_AUTOMATION_OCCURRENCES=$(echo "$AUTOMATION_MATCH" | jq -r '.afterOccurrences // ""')
+    if [ -n "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_NAME" = "$AUTOMATION_NAME" ] && [ "$EXISTING_AUTOMATION_SERVICE" = "$WORKER_SERVICE" ] && [ "$EXISTING_AUTOMATION_POLICY" = "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_ENABLED" = "true" ] && [ "$EXISTING_AUTOMATION_OCCURRENCES" = "$OCCURRENCE_THRESHOLD" ]; then
+      AUTOMATION_ID=$(echo "$AUTOMATION_MATCH" | jq -r '.id // ""')
+      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing automation settings match (ID: $AUTOMATION_ID)."
+    else
+      echo -e "  \${RED}✗ FAIL\${NC} — Existing automation settings do not match the intended configuration."
+      PREFLIGHT_FAILED=true
+    fi
   else
-    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing automation for '$WORKER_SERVICE'. Will create."
+    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing automation for '$WORKER_SERVICE'."
   fi
 else
-  echo -e "  ${YELLOW}⚠ WARN${NC} — Could not list automations (HTTP $RESP_STATUS). Will attempt creation."
+  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list automations (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  PREFLIGHT_FAILED=true
 fi
 
+if [ "$PREFLIGHT_FAILED" = true ]; then
+  echo ""
+  echo -e "  \${RED}Preflight failed. No Cloudflare resources were created. Correct the issue(s) and rerun.\${NC}"
+  unset CF_API_TOKEN WEBHOOK_SECRET GH_TOKEN 2>/dev/null || true
+  exit 1
+fi
 # ---------------------------------------------------------------------------
 # Step 1: Create webhook destination (if not exists)
 # ---------------------------------------------------------------------------
@@ -495,8 +545,10 @@ cf_api POST "/workers/observability/issues/${TEST_ISSUE_1}/notification-runs" "$
 
 RUN_STATUS_1="unknown"
 RUN_ERROR_1=""
+RUN_REQUEST_OK_1=false
 
 if [ "$RESP_SUCCESS" = "true" ]; then
+  RUN_REQUEST_OK_1=true
   RUN_ID_1=$(echo "$RESP_BODY" | jq -r '.result.run.id // "N/A"')
   RUN_STATUS_1=$(echo "$RESP_BODY" | jq -r '.result.run.status // "unknown"')
   RUN_ERROR_1=$(echo "$RESP_BODY" | jq -r '.result.run.lastError // ""')
@@ -539,24 +591,16 @@ for attempt in $(seq 1 $GITHUB_POLL_RETRIES); do
   fi
 done
 
-# Determine pass/fail based on actual verification
-if [ "$COUNT_AFTER_1" = "-1" ]; then
-  # Could not query GitHub — fall back to notification run status
-  if [ "$RUN_STATUS_1" = "succeeded" ]; then
-    record_result "E2E test #1 (new issue)" "PASS" "notification run succeeded (ID: ${RUN_ID_1}); GitHub verification unavailable"
-  elif [ "$RUN_STATUS_1" = "failed" ]; then
-    record_result "E2E test #1 (new issue)" "FAIL" "notification run failed: ${RUN_ERROR_1}"
-  else
-    record_result "E2E test #1 (new issue)" "FAIL" "notification run status: ${RUN_STATUS_1}; GitHub verification unavailable"
-  fi
+# PASS requires successful notification status and independently verified GitHub issue creation.
+if [ "$COUNT_BEFORE_1" = "-1" ] || [ "$COUNT_AFTER_1" = "-1" ]; then
+  record_result "E2E test #1 (new issue)" "FAIL" "GitHub verification unavailable; no PASS can be claimed"
+elif [ "$RUN_REQUEST_OK_1" != true ] || [ "$RUN_STATUS_1" != "succeeded" ]; then
+  record_result "E2E test #1 (new issue)" "FAIL" "notification request/status not successful (request: $RUN_REQUEST_OK_1, status: $RUN_STATUS_1, error: $RUN_ERROR_1)"
 elif [ "$NEW_ISSUE_COUNT" -gt 0 ]; then
-  record_result "E2E test #1 (new issue)" "PASS" "GitHub issue #${NEW_ISSUE_LIST} created (run status: ${RUN_STATUS_1})"
-elif [ "$RUN_STATUS_1" = "failed" ]; then
-  record_result "E2E test #1 (new issue)" "FAIL" "notification run failed: ${RUN_ERROR_1}; no new GitHub issue"
+  record_result "E2E test #1 (new issue)" "PASS" "GitHub confirmed new issue #${NEW_ISSUE_LIST} and notification run succeeded"
 else
-  record_result "E2E test #1 (new issue)" "FAIL" "no new GitHub issue after ${GITHUB_POLL_RETRIES} attempts (run status: ${RUN_STATUS_1}, before: ${COUNT_BEFORE_1}, after: ${COUNT_AFTER_1})"
+  record_result "E2E test #1 (new issue)" "FAIL" "GitHub did not confirm a new issue after ${GITHUB_POLL_RETRIES} attempts"
 fi
-
 # ---------------------------------------------------------------------------
 # Step 5: Dedup test — trigger SAME issue again, verify NO duplicate
 # ---------------------------------------------------------------------------
@@ -575,8 +619,10 @@ cf_api POST "/workers/observability/issues/${TEST_ISSUE_1}/notification-runs" "$
 
 RUN_STATUS_2="unknown"
 RUN_ERROR_2=""
+RUN_REQUEST_OK_2=false
 
 if [ "$RESP_SUCCESS" = "true" ]; then
+  RUN_REQUEST_OK_2=true
   RUN_ID_2=$(echo "$RESP_BODY" | jq -r '.result.run.id // "N/A"')
   RUN_STATUS_2=$(echo "$RESP_BODY" | jq -r '.result.run.status // "unknown"')
   RUN_ERROR_2=$(echo "$RESP_BODY" | jq -r '.result.run.lastError // ""')
@@ -617,19 +663,16 @@ for attempt in $(seq 1 $GITHUB_POLL_RETRIES); do
   fi
 done
 
-# Determine pass/fail — dedup means NO new issue should appear
-if [ "$COUNT_AFTER_2" = "-1" ]; then
-  if [ "$RUN_STATUS_2" = "succeeded" ]; then
-    record_result "Dedup test (same issue)" "PASS" "notification run succeeded; GitHub verification unavailable"
-  else
-    record_result "Dedup test (same issue)" "FAIL" "notification run status: ${RUN_STATUS_2}; GitHub verification unavailable"
-  fi
+# PASS requires a successful notification run and successful GitHub before/after queries.
+if [ "$COUNT_BEFORE_2" = "-1" ] || [ "$COUNT_AFTER_2" = "-1" ]; then
+  record_result "Dedup test (same issue)" "FAIL" "GitHub verification unavailable; dedup cannot be confirmed"
+elif [ "$RUN_REQUEST_OK_2" != true ] || [ "$RUN_STATUS_2" != "succeeded" ]; then
+  record_result "Dedup test (same issue)" "FAIL" "notification request/status not successful (request: $RUN_REQUEST_OK_2, status: $RUN_STATUS_2, error: $RUN_ERROR_2)"
 elif [ "$DEDUP_NEW_COUNT" -eq 0 ]; then
-  record_result "Dedup test (same issue)" "PASS" "no duplicate GitHub issue created (run status: ${RUN_STATUS_2})"
+  record_result "Dedup test (same issue)" "PASS" "GitHub confirmed no duplicate issue and notification run succeeded"
 else
   record_result "Dedup test (same issue)" "FAIL" "${DEDUP_NEW_COUNT} duplicate issue(s) created: #${NEW_ISSUE_LIST} — dedup failed"
 fi
-
 # ---------------------------------------------------------------------------
 # Step 6: End-to-end test #2 — trigger second unique issue
 # ---------------------------------------------------------------------------
@@ -648,8 +691,10 @@ cf_api POST "/workers/observability/issues/${TEST_ISSUE_2}/notification-runs" "$
 
 RUN_STATUS_3="unknown"
 RUN_ERROR_3=""
+RUN_REQUEST_OK_3=false
 
 if [ "$RESP_SUCCESS" = "true" ]; then
+  RUN_REQUEST_OK_3=true
   RUN_ID_3=$(echo "$RESP_BODY" | jq -r '.result.run.id // "N/A"')
   RUN_STATUS_3=$(echo "$RESP_BODY" | jq -r '.result.run.status // "unknown"')
   RUN_ERROR_3=$(echo "$RESP_BODY" | jq -r '.result.run.lastError // ""')
@@ -691,23 +736,16 @@ for attempt in $(seq 1 $GITHUB_POLL_RETRIES); do
   fi
 done
 
-# Determine pass/fail
-if [ "$COUNT_AFTER_3" = "-1" ]; then
-  if [ "$RUN_STATUS_3" = "succeeded" ]; then
-    record_result "E2E test #2 (new issue)" "PASS" "notification run succeeded (ID: ${RUN_ID_3}); GitHub verification unavailable"
-  elif [ "$RUN_STATUS_3" = "failed" ]; then
-    record_result "E2E test #2 (new issue)" "FAIL" "notification run failed: ${RUN_ERROR_3}"
-  else
-    record_result "E2E test #2 (new issue)" "FAIL" "notification run status: ${RUN_STATUS_3}; GitHub verification unavailable"
-  fi
+# PASS requires successful notification status and independently verified GitHub issue creation.
+if [ "$COUNT_BEFORE_3" = "-1" ] || [ "$COUNT_AFTER_3" = "-1" ]; then
+  record_result "E2E test #2 (new issue)" "FAIL" "GitHub verification unavailable; no PASS can be claimed"
+elif [ "$RUN_REQUEST_OK_3" != true ] || [ "$RUN_STATUS_3" != "succeeded" ]; then
+  record_result "E2E test #2 (new issue)" "FAIL" "notification request/status not successful (request: $RUN_REQUEST_OK_3, status: $RUN_STATUS_3, error: $RUN_ERROR_3)"
 elif [ "$NEW_ISSUE_COUNT" -gt 0 ]; then
-  record_result "E2E test #2 (new issue)" "PASS" "GitHub issue #${NEW_ISSUE_LIST} created (run status: ${RUN_STATUS_3})"
-elif [ "$RUN_STATUS_3" = "failed" ]; then
-  record_result "E2E test #2 (new issue)" "FAIL" "notification run failed: ${RUN_ERROR_3}; no new GitHub issue"
+  record_result "E2E test #2 (new issue)" "PASS" "GitHub confirmed new issue #${NEW_ISSUE_LIST} and notification run succeeded"
 else
-  record_result "E2E test #2 (new issue)" "FAIL" "no new GitHub issue after ${GITHUB_POLL_RETRIES} attempts (run status: ${RUN_STATUS_3}, before: ${COUNT_BEFORE_3}, after: ${COUNT_AFTER_3})"
+  record_result "E2E test #2 (new issue)" "FAIL" "GitHub did not confirm a new issue after ${GITHUB_POLL_RETRIES} attempts"
 fi
-
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
