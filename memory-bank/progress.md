@@ -1,3 +1,10 @@
+## 2026-11-09 — Playwright CLI agent toolkit (PR #1786)
+
+- Opened [PR #1786](https://github.com/davidcollier77-code/Luckypickcanada/pull/1786) with Microsoft's official Playwright CLI skill v0.1.23, all ten reference guides and the retained Apache-2.0 license.
+- Added project instructions for all eight browser-work capability areas and a local CLI setup/probe script using the existing Playwright 1.64.1 packages.
+- Added Vitest integrity coverage; no separate CLI package, app code, package manifest, lockfile, Playwright config, CI workflow, MCP configuration or `.docs/` file changed.
+- PR remains open and unmerged. This connected session could not run repository shell commands; the setup script, Vitest, `./freebuff-verify.sh`, browser launch, build and git diff check remain NOT RUN pending a shell-capable environment/CI evidence.
+
 ## 2026-11-09 — Playwright CLI agent toolkit
 
 - Vendored Microsoft's official Playwright CLI skill v0.1.23, all ten reference guides and Apache-2.0 license under `.agents/skills/playwright-cli/`; recorded upstream tag and commit.
