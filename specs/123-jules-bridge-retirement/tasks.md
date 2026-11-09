@@ -8,14 +8,14 @@
 - [x] T002 Inspect the default branch for the Worker, workflow, scanner exceptions, and existing retirement work.
 
 ## Phase 2 — Removal
-- [ ] T003 Delete the dedicated `workers/jules-bridge/` source, test, and Wrangler configuration.
-- [ ] T004 Delete `.github/workflows/deploy-jules-bridge.yml`.
-- [ ] T005 Remove the Worker-specific DevSkim suppression path, helper, unit test, and justification without changing other rules.
-- [ ] T006 Replace stale active `.amazonq` folder inventory reference from `.jules/` to `.freebuff/`.
-- [ ] T007 Update Memory Bank current context and progress to record retirement; preserve history.
+- [x] T003 Delete the dedicated `workers/jules-bridge/` source, test, and Wrangler configuration.
+- [x] T004 Delete `.github/workflows/deploy-jules-bridge.yml`.
+- [x] T005 Remove the Worker-specific DevSkim suppression path, helper, unit test, and justification without changing other rules.
+- [x] T006 Replace stale active `.amazonq` folder inventory reference from `.jules/` to `.freebuff/`.
+- [x] T007 Update Memory Bank current context and progress to record retirement; preserve history.
 
 ## Phase 3 — Verification
-- [ ] T008 Search for remaining active Jules Bridge/API/deployment references and classify historical matches.
-- [ ] T009 Confirm only the intended Worker-related paths and task artifacts changed; confirm the three remaining Workers are untouched.
-- [ ] T010 Run focused Python tests, full required repository verification, and relevant CI checks; report actual results and blockers.
-- [ ] T011 Inspect the complete PR diff and ensure it remains open and unmerged.
+- [x] T008 Search for remaining active Jules Bridge/API/deployment references and classify historical matches.
+- [x] T009 Confirm only the intended Worker-related paths and task artifacts changed; confirm the three remaining Workers are untouched.
+- [ ] T010 **PENDING CI:** Run the focused Python tests, full Vitest, `./freebuff-verify.sh`, and any applicable workflow checks on the submitted PR head. This API-only session cannot execute repository shell commands.
+- [ ] T011 **PENDING PR:** Inspect the published complete diff and confirm the PR remains open and unmerged.
