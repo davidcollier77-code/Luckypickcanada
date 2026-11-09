@@ -52,12 +52,12 @@ fi
 printf 'Project Playwright version: '
 pnpm exec playwright --version
 printf 'Checking local CLI entrypoint...\n'
-pnpm exec playwright cli --help >/dev/null
+
 if ! pnpm exec playwright cli --help >/dev/null 2>&1; then
-  printf 'FAIL: pnpm exec playwright cli is not available. Ensure Playwright 1.x is installed with CLI support (pnpm install --frozen-lockfile).
+  printf 'FAIL: pnpm exec playwright cli is not available. Ensure Playwright 1.x is installed with CLI support (pnpm install --frozen-lockfile).\n' >&2
   exit 1
 fi
-printf 'PASS: pnpm exec playwright cli is available.
+printf 'PASS: pnpm exec playwright cli is available.\n'
 
 # Exit codes: 0 = success, 1 = environment/setup failure,
 # 2 = invalid usage (unknown option), 3 = Chromium launch blocked.
