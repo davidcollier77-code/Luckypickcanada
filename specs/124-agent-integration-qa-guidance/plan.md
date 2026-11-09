@@ -31,6 +31,8 @@ Make a narrow, documentation-only update to the existing authoritative AGENTS.md
 - Confirmed main HEAD and PR #1788 merge; reuse the merged Playwright CLI skill and existing eight-area project guide.
 - Inspected DevSkim, OpenNext validation, Visual QA, Verification Integrity and Protected File Authorization workflows.
 - Confirmed pullfrog.yml is manually dispatched and is not an automatic PR gate.
+- Confirmed Verify Updater Scheduler is path-conditional; this task's .specify/feature.json and Memory Bank changes trigger its isolated tests, safe Spec Kit upgrade, repository verification, 495 MiB guard and Wrangler dry-run. The deploy job is push-to-main only and does not run for a PR.
+- Confirmed GitHub Code Scanning runs dynamic Analyze jobs for Actions, JavaScript/TypeScript and Python; Pullfrog and Amazon Q appear as separate external PR review apps.
 - Branch-protection endpoint returned HTTP 403; formal required status-check configuration cannot be asserted.
 - No individual .docs reference document was needed; .docs/manifest.json was inspected for routing context.
 
