@@ -5,6 +5,7 @@ import {
   getLocalDateKey,
   readDailyUsage,
   writeDailyUsage,
+  withDailyUsageLock,
 } from '../app/crystal-ball-client/daily-usage.js';
 
 function createStorage(initial = null) {
@@ -109,4 +110,64 @@ describe('Crystal Ball visitor-local daily allowance', () => {
       followUpAnswer: null,
     });
   });
+  it('serializes same-day allowance operations through the Web Locks API', async () => {
+    const queues = new Map();
+    const lockManager = {
+      request(name, options, callback) {
+        expect(name).toBe(`${DAILY_STORAGE_KEY}:2026-11-09`);
+        expect(options).toEqual({ mode: 'exclusive' });
+        const previous = queues.get(name) || Promise.resolve();
+        let release;
+        const current = new Promise((resolve) => {
+          release = resolve;
+        });
+        const queued = previous.then(() => current);
+        queues.set(name, queued);
+
+        return previous.then(callback).finally(() => {
+          release();
+          if (queues.get(name) === queued) queues.delete(name);
+        });
+      },
+    };
+
+    let active = 0;
+    let maximumActive = 0;
+    const run = (label) => withDailyUsageLock(
+      '2026-11-09',
+      async () => {
+        active += 1;
+        maximumActive = Math.max(maximumActive, active);
+        await Promise.resolve();
+        active -= 1;
+        return label;
+      },
+      lockManager,
+    );
+
+    await expect(Promise.all([run('fortune'), run('follow-up')])).resolves.toEqual([
+      'fortune',
+      'follow-up',
+    ]);
+    expect(maximumActive).toBe(1);
+  });
+
+  it('serializes same-tab operations when Web Locks are unavailable', async () => {
+    let active = 0;
+    let maximumActive = 0;
+    const run = () => withDailyUsageLock(
+      '2026-11-09',
+      async () => {
+        active += 1;
+        maximumActive = Math.max(maximumActive, active);
+        await Promise.resolve();
+        active -= 1;
+      },
+      null,
+    );
+
+    await Promise.all([run(), run()]);
+    expect(maximumActive).toBe(1);
+  });
+
 });
