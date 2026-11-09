@@ -35,3 +35,7 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `tests/visual/mobile-accessibility.spec.ts:123` — Review setTimeout for untrusted data <!-- devskim-id:7668862f4f74a47af63d -->
 
 - **ERROR — DS173237** — `scripts/cloudflare/workers-issues-to-github-setup.sh:51` — Do not store tokens or keys in source code. <!-- devskim-id:a1a167af2cfdbb9b83b9 -->
+
+- **NOTE — DS172411** — `tests/visual/homepage-content-refresh.spec.ts:280` — Review setTimeout for untrusted data <!-- devskim-id:2ddd86268dec4d4f74c9 -->
+- **NOTE — DS172411** — `tests/visual/homepage-content-refresh.spec.ts:255` — Review setTimeout for untrusted data <!-- devskim-id:6869704d56c4126ae99e -->
+- **NOTE — DS176209** — `__tests__/homepage-content-refresh.test.js:182` — Suspicious comment <!-- devskim-id:83da13bf91eaeede3ad5 -->
