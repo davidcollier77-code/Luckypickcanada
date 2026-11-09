@@ -1,3 +1,12 @@
+## 2026-11-09 — PR #1785 independent review repairs
+
+- Independent review found a cross-tab race: simultaneous fortune or follow-up requests could both observe an unused local allowance before either persisted its response. Added same-origin Web Locks serialization per local date, a per-tab promise queue fallback, and post-lock re-reads/duplicate-delivery guards in `CrystalBallClient.js`.
+- Fixed an Oracle error-path defect: malformed provider JSON or another unexpected exception during a follow-up could fall through to a fortune-mode fallback. The route now retains the validated request mode and calendar context through the outer catch; added a regression asserting malformed follow-up provider JSON returns a follow-up fallback.
+- Added unit coverage for lock serialization and a Playwright two-tab concurrent-fortune regression. Replaced the DevSkim-annotated `test.setTimeout(90_000)` call with equivalent suite-level timeout configuration; the 90-second test budget is unchanged.
+- Updated existing Spec Kit feature 121 artifacts in order: `spec.md`, `plan.md`, `tasks.md`; T024–T026 are implemented and T027 remains pending.
+- Source/patch audit completed. Current repair-head `./freebuff-verify.sh`, full Vitest, Playwright, production build/495 MiB measurement and final runtime verification are pending; they were not run in this connected session. Prior-head passes are not carried forward. Live Groq quality and manual accessibility checks remain unverified.
+- PR #1785 remains open and unmerged; the canonical PR body records the current full HEAD SHA and pending verification.
+
 ## 2026-11-09 — Crystal Ball daily fortune and shared daily-reset clock
 
 - Replaced the three-question Crystal Ball flow with a daily fortune: one of three approved greetings, **Generate My Fortune**, an optional one-question follow-up that receives the original fortune, and one fortune plus one follow-up per local calendar day.
