@@ -53,8 +53,14 @@ printf 'Project Playwright version: '
 pnpm exec playwright --version
 printf 'Checking local CLI entrypoint...\n'
 pnpm exec playwright cli --help >/dev/null
-printf 'PASS: pnpm exec playwright cli is available.\n'
+if ! pnpm exec playwright cli --help >/dev/null 2>&1; then
+  printf 'FAIL: pnpm exec playwright cli is not available. Ensure Playwright 1.x is installed with CLI support (pnpm install --frozen-lockfile).
+  exit 1
+fi
+printf 'PASS: pnpm exec playwright cli is available.
 
+# Exit codes: 0 = success, 1 = environment/setup failure,
+# 2 = invalid usage (unknown option), 3 = Chromium launch blocked.
 if [[ "$install_browser" == true ]]; then
   printf 'Installing the matching Chromium browser...\n'
   pnpm exec playwright install chromium
@@ -80,7 +86,7 @@ try {
 NODE
   then
     printf 'BLOCKED: Chromium could not launch in this environment. Check the reported host-library error; do not use sudo or install OS packages through this script. Follow AGENTS.md browser fallback guidance.\n' >&2
-    exit 2
+    exit 3
   fi
 fi
 
