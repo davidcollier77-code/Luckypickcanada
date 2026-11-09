@@ -26,7 +26,7 @@ app/
 
 - **.amazonq/rules/** - Amazon Q configuration and guidelines
 - **.docs/** - Documentation organized by task type (audio, creation, deep-dive, polishing, security, seo, testing, troubleshooting)
-- **.jules/** - Jules AI configuration and commands
+- **.freebuff/** - Freebuff coding-agent instructions and commands
 - **.specify/** - Specification workflow tools and templates
 - **components/** - Reusable React components (Aurora, CosmicBackground, DailyResonance, LuckyGenerator, etc.)
 - **public/** - Static assets (images, sounds, themes, logos)
