@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DAILY_QUESTION_LIMIT,
   DAILY_STORAGE_KEY,
+  createFreshUsage,
   getLocalDateKey,
-  getNextLocalMidnight,
   readDailyUsage,
   writeDailyUsage,
 } from '../app/crystal-ball-client/daily-usage.js';
@@ -25,41 +24,89 @@ function createStorage(initial = null) {
 }
 
 describe('Crystal Ball visitor-local daily allowance', () => {
-  it('uses the visitor local calendar date and resets at the next local midnight', () => {
-    const date = new Date(2026, 9, 17, 23, 30, 0, 0);
-    expect(getLocalDateKey(date)).toBe(
-      '2026-10-17'
-    );
-
-    const expectedMidnight = new Date(2026, 9, 18, 0, 0, 0, 0);
-    expect(getNextLocalMidnight(date).getTime()).toBe(expectedMidnight.getTime());
+  it('starts a fresh state with one fortune and one follow-up available', () => {
+    const date = new Date(2026, 10, 9, 12, 0, 0, 0);
+    expect(createFreshUsage(date)).toEqual({
+      date: getLocalDateKey(date),
+      fortuneUsed: false,
+      fortune: null,
+      followUpUsed: false,
+      followUpQuestion: null,
+      followUpAnswer: null,
+    });
   });
 
-  it('starts a fresh three-question allowance when stored usage is from yesterday', () => {
-    const yesterday = new Date(2026, 9, 16, 23, 59, 0, 0);
-    const today = new Date(2026, 9, 17, 0, 1, 0, 0);
+  it('does not reuse a stored fortune from a previous local day', () => {
+    const yesterday = new Date(2026, 10, 8, 23, 59, 0, 0);
+    const today = new Date(2026, 10, 9, 0, 1, 0, 0);
     const storage = createStorage(JSON.stringify({
       date: getLocalDateKey(yesterday),
-      used: DAILY_QUESTION_LIMIT,
+      fortuneUsed: true,
+      fortune: 'Yesterday’s fortune.',
+      followUpUsed: true,
+      followUpQuestion: 'Yesterday’s question?',
+      followUpAnswer: 'Yesterday’s answer.',
     }));
 
-    expect(readDailyUsage(storage, today)).toEqual({ date: getLocalDateKey(today), used: 0 });
+    expect(readDailyUsage(storage, today)).toEqual(createFreshUsage(today));
   });
 
-  it('persists a valid count and clamps saved usage to the configured limit', () => {
-    const today = new Date(2026, 9, 17, 12, 0, 0, 0);
+  it('persists the fortune and follow-up allowances independently', () => {
+    const today = new Date(2026, 10, 9, 12, 0, 0, 0);
     const storage = createStorage();
-    const saved = writeDailyUsage({ date: getLocalDateKey(today), used: 99 }, storage);
 
-    expect(DAILY_QUESTION_LIMIT).toBe(3);
-    expect(saved).toEqual({ date: getLocalDateKey(today), used: 3 });
-    expect(JSON.parse(storage.getItem(DAILY_STORAGE_KEY))).toEqual(saved);
-    expect(readDailyUsage(storage, today)).toEqual(saved);
+    const afterFortune = writeDailyUsage(
+      { ...createFreshUsage(today), fortuneUsed: true, fortune: 'A steady, warm day.' },
+      storage,
+    );
+    expect(afterFortune.fortuneUsed).toBe(true);
+    expect(afterFortune.followUpUsed).toBe(false);
+    expect(readDailyUsage(storage, today)).toEqual(afterFortune);
+
+    const afterFollowUp = writeDailyUsage(
+      {
+        ...afterFortune,
+        followUpUsed: true,
+        followUpQuestion: 'Should I take the long way home?',
+        followUpAnswer: 'The long way has the better view.',
+      },
+      storage,
+    );
+    expect(afterFollowUp.followUpUsed).toBe(true);
+    expect(readDailyUsage(storage, today)).toEqual(afterFollowUp);
   });
 
-  it('keeps the count for the current page lifetime when browser storage is unavailable', () => {
-    const today = new Date(2026, 9, 17, 12, 0, 0, 0);
-    writeDailyUsage({ date: getLocalDateKey(today), used: 2 }, null);
-    expect(readDailyUsage(null, today)).toEqual({ date: getLocalDateKey(today), used: 2 });
+  it('does not consume an allowance when the stored reading is unusable', () => {
+    const today = new Date(2026, 10, 9, 12, 0, 0, 0);
+    const storage = createStorage(JSON.stringify({
+      date: getLocalDateKey(today),
+      fortuneUsed: true,
+      fortune: '   ',
+      followUpUsed: true,
+      followUpQuestion: 'A question?',
+      followUpAnswer: '',
+    }));
+
+    const usage = readDailyUsage(storage, today);
+    expect(usage.fortuneUsed).toBe(false);
+    expect(usage.fortune).toBeNull();
+    expect(usage.followUpUsed).toBe(false);
+    expect(usage.followUpAnswer).toBeNull();
+  });
+
+  it('keeps the state for the current page lifetime when storage is unavailable', () => {
+    const today = new Date(2026, 10, 9, 12, 0, 0, 0);
+    writeDailyUsage(
+      { ...createFreshUsage(today), fortuneUsed: true, fortune: 'In-memory fortune.' },
+      null,
+    );
+    expect(readDailyUsage(null, today)).toEqual({
+      date: getLocalDateKey(today),
+      fortuneUsed: true,
+      fortune: 'In-memory fortune.',
+      followUpUsed: false,
+      followUpQuestion: null,
+      followUpAnswer: null,
+    });
   });
 });

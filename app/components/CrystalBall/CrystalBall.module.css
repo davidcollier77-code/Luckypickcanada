@@ -522,6 +522,66 @@
 }
 
 /* =========================================================================
+   GREETING + OPTIONAL FOLLOW-UP
+   ========================================================================= */
+.greeting {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-fortune);
+  font-style: italic;
+  font-size: clamp(0.98rem, 3.6vw, 1.1rem);
+  color: var(--brass-300);
+  line-height: 1.5;
+}
+
+.followUp {
+  margin-top: 1.35rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(232, 196, 101, 0.22);
+  text-align: center;
+}
+
+.followUpPrompt {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-fortune);
+  font-size: clamp(1rem, 3.4vw, 1.1rem);
+  color: var(--ink-100);
+  line-height: 1.55;
+}
+
+.followUpQuestion {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-300);
+}
+
+.followUpAnswer {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-fortune);
+  font-size: clamp(1.05rem, 3.8vw, 1.2rem);
+  color: var(--ink-100);
+  line-height: 1.55;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.followUpNote {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-300);
+}
+
+.followUpError {
+  margin: 0.75rem 0 0;
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #ffb4a8;
+}
+
+/* =========================================================================
    ACCESSIBILITY / LOW-END FALLBACK
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {

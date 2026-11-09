@@ -40,14 +40,34 @@ export const faqItems = [
       "Our Gift Reveal lets you send someone a little touch of luck! Once purchased, the recipient receives an email with a special link to their own interactive reveal. They can enjoy discovering their lucky numbers and other personalized lucky details through an animated experience. It's a fun little surprise to share with someone special!",
   },
   {
-    question: 'What is the Lucky Crystal Ball, and how does it work?',
+    question: 'How does the Crystal Ball work?',
     answer:
-      "Have a question on your mind? Our Crystal Ball offers playful, AI-powered readings with a little Canadian magic, mystery, and imagination. Simply enter your question, enjoy the reveal, and see what unexpected message appears! You can ask up to three questions each day. It's all about having fun and enjoying a little Canadian-inspired mystery!",
+      'The Crystal Ball gives you a fun, personalized daily fortune! Just press Generate My Fortune and let the magic unfold. No question is needed to get started.',
+  },
+  {
+    question: 'How many fortunes can I get each day?',
+    answer:
+      'You can generate one daily fortune per day. Your next fortune becomes available at midnight in your local time zone.',
+  },
+  {
+    question: 'Can I ask the Crystal Ball a question?',
+    answer:
+      'Yes! After receiving your daily fortune, you can ask the Crystal Ball one optional follow-up question related to your reading. Your follow-up question is also available once per day.',
+  },
+  {
+    question: 'When does my daily Crystal Ball allowance reset?',
+    answer:
+      'Your daily allowance resets at midnight based on your local time zone. Come back tomorrow for a fresh fortune and another opportunity to ask a follow-up question.',
+  },
+  {
+    question: 'Are the fortunes guaranteed to come true?',
+    answer:
+      'Not at all! The Crystal Ball is here for entertainment, a little mystery and a bit of Canadian fun. Enjoy your fortune, but remember that nothing is guaranteed and it cannot predict lottery results or promise winnings.',
   },
   {
     question: 'When do the daily experiences reset?',
     answer:
-      "Your Daily Lucky Card, Luck Generator, and Crystal Ball question allowance reset once a day at midnight local time. That means there's always another opportunity to discover a new card, enjoy another daily reading, or ask the Crystal Ball another question!",
+      "Your Daily Lucky Card, Luck Generator, Crystal Ball fortune, and Crystal Ball follow-up allowance reset once a day at midnight local time. That means there's always another opportunity to discover a new card, enjoy another daily reading, receive a fresh fortune, or ask a follow-up question!",
   },
   {
     question: 'What are the activity counters?',

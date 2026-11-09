@@ -1,29 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useDailyResetCountdown } from './daily-reset-countdown';
 
+/**
+ * Card Reveal's countdown display. It keeps its existing wording and fallback
+ * while reading the shared next-local-midnight clock used by every daily
+ * feature.
+ */
 export default function MidnightCountdown({ fallback = '00h 00m 00s', render }) {
-  const [timeLeft, setTimeLeft] = useState('');
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
-
-      const h = Math.floor(diff / (1000 * 60 * 60));
-      const m = Math.floor((diff / 1000 / 60) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const displayTime = timeLeft || fallback;
+  const { ready, formatted } = useDailyResetCountdown();
+  const displayTime = ready ? formatted : fallback;
 
   if (render) {
     return render(displayTime);

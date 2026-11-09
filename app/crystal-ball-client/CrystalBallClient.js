@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import CrystalBall from '../../app/components/CrystalBall/CrystalBall';
+import CrystalBall from '../components/CrystalBall/CrystalBall';
+import { useDailyResetCountdown } from '../../components/daily-reset-countdown';
+import { getLocalDateKey } from '../lib/daily-reset';
 import {
-  DAILY_QUESTION_LIMIT,
   DAILY_STORAGE_KEY,
   createFreshUsage,
-  getLocalDateKey,
-  getNextLocalMidnight,
   readDailyUsage,
   writeDailyUsage,
 } from './daily-usage';
@@ -20,88 +19,168 @@ function getBrowserStorage() {
   }
 }
 
+function getLocalCalendarContext() {
+  let timeZone = 'UTC';
+  try {
+    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    // Keep the safe fallback.
+  }
+  return { localDate: getLocalDateKey(), timeZone };
+}
+
+function normalizeReading(value) {
+  return typeof value === 'string' ? value.trim().replace(/[*_]{1,2}/g, '') : '';
+}
+
 export default function CrystalBallClient() {
+  const { dateKey } = useDailyResetCountdown();
   const [usage, setUsage] = useState(null);
   const usageRef = useRef(null);
 
+  const applyUsage = (next) => {
+    usageRef.current = next;
+    setUsage(next);
+  };
+
   useEffect(() => {
     const storage = getBrowserStorage();
-    const initial = readDailyUsage(storage);
-    usageRef.current = initial;
-    setUsage(initial);
-    writeDailyUsage(initial, storage);
-
-    const refreshForLocalDate = () => {
-      const today = getLocalDateKey();
-      if (usageRef.current?.date !== today) {
-        const next = createFreshUsage();
-        usageRef.current = next;
-        setUsage(next);
-        writeDailyUsage(next, getBrowserStorage());
-      }
-    };
+    const initial = writeDailyUsage(readDailyUsage(storage), storage);
+    applyUsage(initial);
 
     const handleStorage = (event) => {
       if (event.key !== null && event.key !== DAILY_STORAGE_KEY) return;
-      const next = readDailyUsage(getBrowserStorage());
-      usageRef.current = next;
-      setUsage(next);
+      applyUsage(readDailyUsage(getBrowserStorage()));
     };
 
-    const intervalId = window.setInterval(refreshForLocalDate, 1000);
     window.addEventListener('storage', handleStorage);
-
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener('storage', handleStorage);
-    };
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  const dailyQuota = usage
-    ? {
-        limit: DAILY_QUESTION_LIMIT,
-        remaining: Math.max(0, DAILY_QUESTION_LIMIT - usage.used),
-        resetAt: getNextLocalMidnight().toISOString(),
-      }
-    : null;
+  // A fresh local date starts a fresh fortune and follow-up allowance. The
+  // underlying shared clock is also what renders every countdown on the page.
+  useEffect(() => {
+    if (!dateKey || !usageRef.current) return;
+    if (usageRef.current.date === dateKey) return;
 
-  const handleSeekFortune = async (question) => {
+    const storage = getBrowserStorage();
+    applyUsage(writeDailyUsage(createFreshUsage(), storage));
+  }, [dateKey]);
+
+  const handleGenerateFortune = async () => {
     const storage = getBrowserStorage();
     const current = readDailyUsage(storage);
-    usageRef.current = current;
-    setUsage(current);
+    applyUsage(current);
 
-    if (current.used >= DAILY_QUESTION_LIMIT) {
-      throw new Error(`You've used all 3 questions for today. Come back after the daily reset.`);
+    if (current.fortuneUsed) {
+      throw new Error('You’ve already received today’s fortune. Come back after your next local midnight.');
     }
 
     const response = await fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ mode: 'fortune', ...getLocalCalendarContext() }),
     });
-    const data = await response.json().catch(() => ({ error: 'API Error' }));
+    const data = await response.json().catch(() => ({}));
 
-    if (!response.ok) throw new Error(data.error || 'API Error');
-    if (typeof data?.reading !== 'string' || data.reading.trim() === '') {
-      throw new Error(data?.error || 'The Crystal Ball could not find an answer. Please try again.');
+    if (!response.ok) {
+      throw new Error(data.error || 'The Crystal Ball could not reach the mists. Please try again.');
     }
 
-    // Preserve the prior behavior: only a successful AI-backed answer uses a slot.
-    // Fallback fortunes are still available during provider outages without a charge.
-    if (data.source === 'ai') {
-      const latest = readDailyUsage(getBrowserStorage());
-      const next = {
-        date: latest.date,
-        used: Math.min(DAILY_QUESTION_LIMIT, latest.used + 1),
-      };
-      const saved = writeDailyUsage(next, getBrowserStorage());
-      usageRef.current = saved;
-      setUsage(saved);
+    const reading = normalizeReading(data.reading);
+    if (!reading) {
+      throw new Error(data.error || 'The Crystal Ball could not find a fortune. Please try again.');
     }
 
-    return data.reading;
+    const latest = readDailyUsage(storage);
+    if (latest.date !== current.date) {
+      throw new Error('The clock has turned. A fresh fortune is ready for today.');
+    }
+
+    applyUsage(
+      writeDailyUsage(
+        {
+          ...latest,
+          fortuneUsed: true,
+          fortune: reading,
+        },
+        storage,
+      ),
+    );
+
+    return reading;
   };
 
-  return <CrystalBall onSeekFortune={handleSeekFortune} dailyQuota={dailyQuota} />;
+  const handleAskFollowUp = async (question) => {
+    const storage = getBrowserStorage();
+    const current = readDailyUsage(storage);
+    applyUsage(current);
+
+    if (!current.fortuneUsed || !current.fortune) {
+      throw new Error('Generate today’s fortune before asking a follow-up question.');
+    }
+    if (current.followUpUsed) {
+      throw new Error('You’ve already used today’s follow-up question. Come back after your next local midnight.');
+    }
+
+    const response = await fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'follow-up',
+        question,
+        fortune: current.fortune,
+        ...getLocalCalendarContext(),
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(data.error || 'The Crystal Ball could not answer that follow-up. Please try again.');
+    }
+
+    const answer = normalizeReading(data.reading);
+    if (!answer) {
+      throw new Error(data.error || 'The Crystal Ball could not find a follow-up answer. Please try again.');
+    }
+
+    const latest = readDailyUsage(storage);
+    if (latest.date !== current.date) {
+      throw new Error('The clock has turned. A fresh fortune is ready for today.');
+    }
+
+    applyUsage(
+      writeDailyUsage(
+        {
+          ...latest,
+          followUpUsed: true,
+          followUpQuestion: question,
+          followUpAnswer: answer,
+        },
+        storage,
+      ),
+    );
+
+    return answer;
+  };
+
+  const savedFollowUp =
+    usage?.followUpUsed && usage?.followUpAnswer
+      ? {
+          question: usage.followUpQuestion || '',
+          answer: usage.followUpAnswer,
+        }
+      : null;
+
+  return (
+    <CrystalBall
+      key={usage?.date || 'pending'}
+      initialFortune={usage?.fortune || null}
+      initialFollowUp={savedFollowUp}
+      fortuneUsed={Boolean(usage?.fortuneUsed)}
+      followUpUsed={Boolean(usage?.followUpUsed)}
+      onGenerateFortune={handleGenerateFortune}
+      onAskFollowUp={handleAskFollowUp}
+    />
+  );
 }

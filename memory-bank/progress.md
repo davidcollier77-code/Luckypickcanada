@@ -1,3 +1,13 @@
+## 2026-11-09 — Crystal Ball daily fortune and shared daily-reset clock
+
+- Replaced the three-question Crystal Ball flow with a daily fortune: one of three approved greetings, **Generate My Fortune**, an optional one-question follow-up that receives the original fortune, and one fortune plus one follow-up per local calendar day.
+- Persisted the reading under `luckyPickCanada:crystalBallDailyFortune:v1` with validated storage, in-memory fallback, cross-tab storage adoption and local-date reset. Failed or empty responses leave the relevant allowance unused; successful fallbacks count.
+- Adapted `/api/oracle` for `fortune` and `follow-up` modes with validated local date/time zone, deterministic weekday/season/movable-holiday context, Canadian voice prompts, expanded seasonal/holiday fallbacks and preserved rate limiting, sanitization, injection checks, timeout and CORS behavior.
+- Added one shared DST-safe local-midnight countdown store used by Card Reveal, Crystal Ball and Lucky Meter, with focus/visibility/page-show recovery and separate feature allowances.
+- Added the five approved FAQ entries and updated the existing daily-reset answer; homepage wording was not changed.
+- Checks: full Vitest 55 files / 457 tests PASS; `./freebuff-verify.sh` exit 0; final build 389,776,186 B (371.72 MiB) < 495 MB; `git diff --check` clean. Cloud-browser QA passed greetings, failure-no-charge, fortune/follow-up, persistence, date reset, cross-tab sync, three-countdown deadline agreement (0.921 s spread), 390 px layout, keyboard activation, reduced motion and rendered FAQ. Playwright is BLOCKED by missing Chromium system libraries; Browserless is BLOCKED by the private-preview 403; Browserbase was not used.
+- PR submission is pending; the PR body is the single canonical summary.
+
 ## 2026-11-08 — PR #1783 QA repair follow-up
 
 - Restored Recent Canadian Activity to up to three newest stories per province using a SQL window-function partition derived from the existing province alias rules. The result is bounded at 39 rows maximum (13 provinces/territories × 3).

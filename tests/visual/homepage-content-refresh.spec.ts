@@ -5,7 +5,7 @@ import { test, expect, type Page, type TestInfo } from '@playwright/test';
  *
  * The unit guard proves the approved wording exists in source. This suite proves
  * it actually reaches the rendered page: the four Experience cards, the aligned
- * Lucky Community Stories card, the Tip Jar and Suggestion Box passages, the ten-question
+ * Lucky Community Stories card, the Tip Jar and Suggestion Box passages, the fourteen-question
  * FAQ (expanded by a real click, never clipped), the Community Map introduction,
  * and no horizontal overflow at every configured viewport.
  *
@@ -203,12 +203,18 @@ test.describe('Homepage content refresh', () => {
     await attachSection(page, '#suggestion-box', 'homepage-suggestion-box', testInfo);
   });
 
-  test('expands the ten-question FAQ by click without clipping the longest answer', async ({ page }, testInfo) => {
+  test('expands the fourteen-question FAQ by click without clipping the longest answer', async ({ page }, testInfo) => {
     test.setTimeout(120_000);
     await openHomepage(page);
 
     const questions = page.locator('.faq-accordion .faq-item > button');
-    await expect(questions).toHaveCount(10);
+    await expect(questions).toHaveCount(14);
+
+    await expect(page.locator('#faq-btn-6')).toContainText('How does the Crystal Ball work?');
+    await expect(page.locator('#faq-btn-7')).toContainText('How many fortunes can I get each day?');
+    await expect(page.locator('#faq-btn-9')).toContainText(
+      'When does my daily Crystal Ball allowance reset?',
+    );
 
     const communityButton = page.locator('#faq-btn-3');
     await expect(communityButton).toContainText('What are Lucky Community Stories and the Community Map?');
