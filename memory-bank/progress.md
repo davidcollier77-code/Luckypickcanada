@@ -1,3 +1,11 @@
+## 2026-11-09 — PR #1785 review follow-up
+
+- Applied the persisted usage snapshot before rejecting a duplicate fortune response, so a tab that missed the storage event adopts the already-saved reading instead of leaving a stale Generate button. Removed the unused calendar `context` from the Oracle success payload.
+- Strengthened the two-tab browser proof: the first request is confirmed in flight and held, the second tab competes while the Web Lock is held, and the test proves one request, one persisted reading, no competing reading, and adoption in both tabs. Added a fallback-path regression that disables Web Locks and suppresses the second tab's storage event.
+- Investigated the claimed lock-queue deadlock and initial-fortune infinite loop. Neither reproduced; added synchronous-throw and rejected-operation queue regressions and left the production queue and effect unchanged.
+- Checks: focused Vitest 25/25 PASS; full Vitest 55 files / 462 tests PASS; review-specific Playwright 6/6 PASS across three projects; `./freebuff-verify.sh` PASS; build 464,179,431 B (442.68 MiB) < 495 MB; `git diff --check` clean. BLOCKED: the pre-existing three-page countdown case cannot navigate `/reveal` in this VM's headless Chromium (browser closes during `page.goto`; isolated probe reproduces).
+- Spec Kit feature 121 updated in Specify → Plan → Tasks → Implement order. PR #1785 remains open and unmerged.
+
 ## 2026-11-09 — PR #1785 independent review repairs
 
 - Independent review found a cross-tab race: simultaneous fortune or follow-up requests could both observe an unused local allowance before either persisted its response. Added same-origin Web Locks serialization per local date, a per-tab promise queue fallback, and post-lock re-reads/duplicate-delivery guards in `CrystalBallClient.js`.

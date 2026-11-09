@@ -589,7 +589,7 @@ export async function POST(request) {
     }
 
     return NextResponse.json(
-      { prediction: reading, fortune: reading, reading, source: 'ai', context },
+      { prediction: reading, fortune: reading, reading, source: 'ai' },
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {

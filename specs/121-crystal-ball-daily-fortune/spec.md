@@ -95,6 +95,25 @@ The homepage FAQ explains the daily fortune, the separate daily follow-up, the l
 - Reduced motion is enabled: decorative pulse and leaf flight are skipped while the full text remains available.
 - A 25-hour or 23-hour local day: the countdown reflects the real duration until the next local midnight.
 
+## PR Review Follow-up (2026-11-09)
+
+An independent review of PR #1785 raised five follow-up findings. Only reproducible defects are changed; claims that do not reproduce are covered by regression tests rather than speculative production edits.
+
+### Additional Acceptance Scenarios
+
+1. **Given** another tab saves today's fortune while this tab's request is still in flight, **When** this tab's duplicate response is rejected, **Then** the UI immediately reflects the already-saved fortune, hides **Generate My Fortune**, and does not remain in a stale no-fortune state.
+2. **Given** two tabs request a fortune at the same time with Web Locks available, **When** the first response is held open and the second tab competes for the same local day, **Then** exactly one Oracle request succeeds, both tabs display the same saved reading, and storage contains only that reading.
+3. **Given** a tab that misses the storage event and has no Web Locks support, **When** a second response arrives after another tab has already delivered today's fortune, **Then** the second response is rejected, the already-saved reading is adopted, and the second reading is never stored.
+4. **Given** a successful Oracle response, **When** the client receives it, **Then** the payload contains only fields the client consumes and does not expose the server's internal calendar context.
+5. **Given** the fallback promise queue, **When** an operation throws synchronously or rejects, **Then** the queue releases and a later caller for the same local day still runs.
+6. **Given** the initial-fortune adoption effect, **When** the saved reading is adopted, **Then** the effect settles without an infinite render loop; no production change is made without a reproduced loop.
+
+### Additional Functional Requirements
+
+- **FR-021**: A duplicate successful fortune response MUST NOT overwrite the delivered reading; the client state MUST reflect the persisted reading before reporting the duplicate.
+- **FR-022**: The Oracle success response MUST NOT include the internal calendar `context` object because the client does not consume it.
+- **FR-023**: The daily-usage fallback queue MUST recover after synchronous throws and rejected operations.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
@@ -139,7 +158,8 @@ The homepage FAQ explains the daily fortune, the separate daily follow-up, the l
 - **SC-007**: The FAQ answers match the implemented one-fortune, one-follow-up daily limits.
 - **SC-008**: Existing Crystal Ball artwork, animations, audio and reduced-motion support remain intact.
 - **SC-009**: All required checks pass and the production build stays below the 495 MB hard maximum.
-- **SC-010**: Simultaneous same-day requests from two tabs result in no more than one delivered fortune and one delivered follow-up.
+- **SC-010**: Simultaneous same-day requests from two tabs result in no more than one delivered fortune and one delivered follow-up, including a tab that misses the storage event.
+- **SC-011**: A successful Oracle response contains no unused calendar context.
 
 ## Assumptions
 

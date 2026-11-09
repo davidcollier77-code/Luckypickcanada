@@ -16,7 +16,7 @@ Replace the Crystal Ball's question-first, three-answer flow with one daily fort
 
 **Storage**: Browser `localStorage` for the visitor's daily Crystal Ball state and existing feature-specific keys. The browser Web Locks API serializes same-origin tabs for each local date; a per-tab promise queue preserves ordering where Web Locks are unavailable. No database, server quota, schema or payment change.
 
-**Testing**: Vitest for pure date/usage/API contracts; Playwright for the browser experience and countdown synchronization; repository `./freebuff-verify.sh` for the governance gate, type check, build and docs tests.
+**Testing**: Vitest for pure date/usage/API contracts, including fallback lock recovery; Playwright for the browser experience, two-tab allowance races and countdown synchronization; repository `./freebuff-verify.sh` for the governance gate, type check, build and docs tests.
 
 **Target Platform**: Cloudflare Pages/Workers through OpenNext; modern browsers with `localStorage` and `Intl`.
 
@@ -89,6 +89,16 @@ No external research was needed. The existing implementation already establishes
 - `data-model.md` records the persisted daily state, transitions and reset-clock shape.
 - No external interface contract document was added: the Oracle route's request/response shape is small and is covered directly by route tests in `__tests__/oracle-route-validation.test.js`.
 - No quickstart was added: the executable Playwright and Vitest checks in `tasks.md` cover the end-to-end flow.
+
+## Review Follow-up (2026-11-09)
+
+- **Stale duplicate state:** In `CrystalBallClient.js`, the post-response duplicate check reads `latest` but previously threw without applying it. Apply the persisted snapshot before rejecting the duplicate so the component adopts the reading already saved by the other tab. This is the smallest fix and does not change the duplicate policy.
+- **Two-tab reliability:** The existing Playwright test clicks both tabs before either request is known to be in flight and only polls for a request count. Hold the first request open, confirm it arrived, click the second tab while the first holds the Web Lock, release the response, and assert one request, one persisted reading, and both tabs showing that reading.
+- **Missed storage event:** Add a second browser regression that disables Web Locks and suppresses the second tab's `storage` event. Both requests are intentionally allowed; the post-response duplicate guard must reject the second and the UI must adopt the first persisted reading. Without the state fix, the second tab remains stale.
+- **API minimal disclosure:** `context` is only used server-side to build the provider prompt. Remove it from the success JSON and assert its absence; no client code reads it.
+- **Lock-queue investigation:** The claimed deadlock would require `release()` never to run or the queue gate never to resolve. In the current fallback, `release()` runs in `.finally()` for synchronous throws and rejections, and `queued` resolves from that release. Add unit regressions for both failure modes; do not change the working queue unless a test reproduces a failure.
+- **Infinite-loop claim:** The adoption effect returns when `initialFortune === currentFortune` and only sets state to that same value. No loop is demonstrated; leave the effect unchanged unless a regression reproduces one.
+- No visual, wording, audio, artwork or layout changes are part of this follow-up.
 
 ## Complexity Tracking
 

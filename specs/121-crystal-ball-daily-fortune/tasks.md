@@ -57,4 +57,16 @@
 - [X] T024 Serialize fortune and follow-up allowance operations across same-origin tabs with the Web Locks API; re-read persisted usage after acquiring the lock and refuse a second successful delivery.
 - [X] T025 Preserve the parsed Oracle request mode and calendar context through the outer error handler so malformed provider JSON or an unexpected exception returns a fallback for the requested mode.
 - [X] T026 Add unit and Playwright regressions for concurrent tab requests and malformed follow-up provider responses; replace the DevSkim-triggering Playwright per-test timeout call with equivalent suite configuration.
-- [ ] T027 Run `./freebuff-verify.sh`, full Vitest, required Playwright Visual QA, production build-size measurement, and final diff/error audit on the repair head.
+- [X] T027 Run `./freebuff-verify.sh`, full Vitest, required Playwright Visual QA, production build-size measurement, and final diff/error audit on the repair head.
+
+## Phase 10: PR #1785 review follow-up
+
+- [X] T028 [US1] Apply the latest persisted usage before rejecting a duplicate fortune response in `CrystalBallClient.js` so the UI cannot remain stale.
+- [X] T029 [US1] Strengthen the two-tab Playwright test to hold the first request, click the second tab under the lock, and prove one request, one saved reading, and adoption in both tabs.
+- [X] T030 [US1] Add a browser regression for a tab that misses the storage event and receives a duplicate response; it must adopt the already-saved reading.
+- [X] T031 [US4] Remove the unused `context` field from the Oracle success payload and assert it is absent while prompt context remains covered.
+- [X] T032 [Testing] Add fallback lock-queue regressions for synchronous throws and rejected operations; record that the claimed deadlock does not reproduce and make no production queue change.
+- [X] T033 [Testing] Inspect the initial-fortune adoption effect for the reported infinite loop; change it only if a reproducible loop is demonstrated.
+- [X] T034 Run focused Vitest, full Vitest, required Playwright Visual QA, `./freebuff-verify.sh`, production build-size measurement, and the complete diff/error audit on the review-follow-up head.
+  - BLOCKED: the pre-existing three-page countdown case cannot navigate `/reveal` in this VM's headless shell (browser closes before load; an isolated one-page probe reproduces it). The six review-specific two-tab browser cases pass in all three projects.
+- [X] T035 Update the Memory Bank and the canonical PR body with the new HEAD SHA and verification evidence.

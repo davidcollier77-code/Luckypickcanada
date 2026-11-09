@@ -48,7 +48,7 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
 
   // First attempt fails and must not consume the fortune.
   await page.getByRole('button', { name: /Generate My Fortune/i }).click();
-  await expect(page.getByText('The mists are busy.')).toBeVisible();
+  await expect(page.locator('#main-content').getByText('The mists are busy.')).toBeVisible();
   await expect(page.getByRole('button', { name: /Generate My Fortune/i })).toBeEnabled();
   expect(fortuneRequests).toBe(1);
 
@@ -99,7 +99,8 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
 
 
 test('simultaneous fortune requests from two tabs consume only one daily allowance', async ({ context }) => {
-  const fortune = 'One shared reading is waiting in the glass.';
+  const firstReading = 'One shared reading is waiting in the glass.';
+  const rejectedReading = 'A second reading must never replace the first.';
   let requests = 0;
   let releaseResponse: () => void = () => {};
   const responseGate = new Promise<void>((resolve) => {
@@ -108,11 +109,12 @@ test('simultaneous fortune requests from two tabs consume only one daily allowan
 
   await context.route('**/api/oracle', async (route) => {
     requests += 1;
+    const reading = requests === 1 ? firstReading : rejectedReading;
     await responseGate;
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ reading: fortune, source: 'ai' }),
+      body: JSON.stringify({ reading, source: 'ai' }),
     });
   });
 
@@ -124,24 +126,112 @@ test('simultaneous fortune requests from two tabs consume only one daily allowan
   const secondButton = secondTab.getByRole('button', { name: /Generate My Fortune/i });
   await Promise.all([expect(firstButton).toBeVisible(), expect(secondButton).toBeVisible()]);
 
-  // Hold the first provider response open while the second tab competes for
-  // the same local-day allowance. The Web Lock must serialize the requests.
-  await Promise.all([firstButton.click(), secondButton.click()]);
+  // Confirm the first request is actually in flight and holding the Web Lock
+  // before the second tab competes for the same local-day allowance.
+  await firstButton.click();
+  await expect.poll(() => requests).toBe(1);
+  await secondButton.click();
   releaseResponse();
 
-  await expect.poll(() => requests).toBe(1);
-  await expect(firstTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune, {
+  await expect(firstTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(firstReading, {
     timeout: 15000,
   });
-  await expect(secondTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune, {
+  await expect(secondTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(firstReading, {
     timeout: 15000,
   });
+  await expect(secondTab.getByRole('button', { name: /Generate My Fortune/i })).toHaveCount(0);
+
+  // Give any unsynchronized late request time to surface before asserting that
+  // the allowance was consumed exactly once.
+  await secondTab.waitForTimeout(500);
+  expect(requests).toBe(1);
 
   const saved = await firstTab.evaluate((key) => {
     return JSON.parse(window.localStorage.getItem(key) || '{}');
   }, STORAGE_KEY);
   expect(saved.fortuneUsed).toBe(true);
-  expect(saved.fortune).toBe(fortune);
+  expect(saved.fortune).toBe(firstReading);
+  expect(saved.fortune).not.toBe(rejectedReading);
+
+  await Promise.all([firstTab.close(), secondTab.close()]);
+});
+
+test('a tab that misses the storage event adopts a fortune delivered elsewhere', async ({ context }) => {
+  const firstReading = 'The first tab already delivered this fortune.';
+  const secondReading = 'This competing reading must be rejected.';
+  let requests = 0;
+  let releaseFirst: () => void = () => {};
+  let releaseSecond: () => void = () => {};
+  const firstGate = new Promise<void>((resolve) => {
+    releaseFirst = resolve;
+  });
+  const secondGate = new Promise<void>((resolve) => {
+    releaseSecond = resolve;
+  });
+
+  // Exercise the older-browser fallback queue, which serializes within a tab
+  // but relies on the post-response re-read for cross-tab protection.
+  await context.addInitScript(() => {
+    Object.defineProperty(Navigator.prototype, 'locks', {
+      configurable: true,
+      get: () => undefined,
+    });
+  });
+
+  await context.route('**/api/oracle', async (route) => {
+    requests += 1;
+    const index = requests;
+    const reading = index === 1 ? firstReading : secondReading;
+    await (index === 1 ? firstGate : secondGate);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ reading, source: 'ai' }),
+    });
+  });
+
+  const firstTab = await context.newPage();
+  const secondTab = await context.newPage();
+  await secondTab.addInitScript(() => {
+    const nativeAddEventListener = window.addEventListener.bind(window);
+    window.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) => {
+      if (type === 'storage') return;
+      nativeAddEventListener(type, listener, options);
+    }) as typeof window.addEventListener;
+  });
+
+  await Promise.all([firstTab.goto('/crystal-ball'), secondTab.goto('/crystal-ball')]);
+
+  const firstButton = firstTab.getByRole('button', { name: /Generate My Fortune/i });
+  const secondButton = secondTab.getByRole('button', { name: /Generate My Fortune/i });
+  await Promise.all([expect(firstButton).toBeVisible(), expect(secondButton).toBeVisible()]);
+
+  await firstButton.click();
+  await expect.poll(() => requests).toBe(1);
+  await secondButton.click();
+  await expect.poll(() => requests).toBe(2);
+
+  releaseFirst();
+  await expect(firstTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(firstReading, {
+    timeout: 15000,
+  });
+
+  // The second tab has deliberately missed the storage event, so it cannot
+  // adopt the first reading until its duplicate response resolves.
+  await expect(secondTab.locator('div[class*="fortunePanel"]')).toHaveCount(0);
+  releaseSecond();
+
+  await expect(secondTab.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(firstReading, {
+    timeout: 15000,
+  });
+  await expect(secondTab.getByText(secondReading)).toHaveCount(0);
+  await expect(secondTab.getByRole('button', { name: /Generate My Fortune/i })).toHaveCount(0);
+
+  const saved = await secondTab.evaluate((key) => {
+    return JSON.parse(window.localStorage.getItem(key) || '{}');
+  }, STORAGE_KEY);
+  expect(saved.fortuneUsed).toBe(true);
+  expect(saved.fortune).toBe(firstReading);
 
   await Promise.all([firstTab.close(), secondTab.close()]);
 });

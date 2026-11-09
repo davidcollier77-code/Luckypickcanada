@@ -73,6 +73,7 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(response.status).toBe(200);
     expect(body.source).toBe('ai');
     expect(body.reading).toBe('A clear answer.');
+    expect(body).not.toHaveProperty('context');
 
     const requestBody = providerRequest();
     const systemPrompt = requestBody.messages[0].content;
@@ -121,6 +122,7 @@ describe('Oracle route validates before calling the AI provider', () => {
 
     expect(response.status).toBe(200);
     expect(body.source).toBe('ai');
+    expect(body).not.toHaveProperty('context');
 
     const requestBody = providerRequest();
     const systemPrompt = requestBody.messages[0].content;

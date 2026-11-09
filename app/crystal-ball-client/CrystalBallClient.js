@@ -104,6 +104,10 @@ export default function CrystalBallClient() {
         throw new Error('The clock has turned. A fresh fortune is ready for today.');
       }
       if (latest.fortuneUsed) {
+        // The other tab's reading is already authoritative. Apply it before
+        // reporting the duplicate so this tab cannot remain in a stale
+        // no-fortune state when its storage event was missed or delayed.
+        applyUsage(latest);
         throw new Error('You’ve already received today’s fortune. Refresh to see the saved reading.');
       }
 

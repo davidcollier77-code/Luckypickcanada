@@ -170,4 +170,40 @@ describe('Crystal Ball visitor-local daily allowance', () => {
     expect(maximumActive).toBe(1);
   });
 
+  it('releases the fallback queue after a synchronous throw', async () => {
+    const first = withDailyUsageLock(
+      '2026-11-09',
+      () => {
+        throw new Error('synchronous failure');
+      },
+      null,
+    );
+    const second = withDailyUsageLock(
+      '2026-11-09',
+      async () => 'next caller runs',
+      null,
+    );
+
+    await expect(first).rejects.toThrow('synchronous failure');
+    await expect(second).resolves.toBe('next caller runs');
+  });
+
+  it('releases the fallback queue after a rejected operation', async () => {
+    const first = withDailyUsageLock(
+      '2026-11-09',
+      async () => {
+        throw new Error('asynchronous failure');
+      },
+      null,
+    );
+    const second = withDailyUsageLock(
+      '2026-11-09',
+      async () => 'next caller still runs',
+      null,
+    );
+
+    await expect(first).rejects.toThrow('asynchronous failure');
+    await expect(second).resolves.toBe('next caller still runs');
+  });
+
 });
