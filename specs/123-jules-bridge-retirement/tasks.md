@@ -18,4 +18,4 @@
 - [x] T008 Search for remaining active Jules Bridge/API/deployment references and classify historical matches.
 - [x] T009 Confirm only the intended Worker-related paths and task artifacts changed; confirm the three remaining Workers are untouched.
 - [ ] T010 **PENDING CI:** Run the focused Python tests, full Vitest, `./freebuff-verify.sh`, and any applicable workflow checks on the submitted PR head. This API-only session cannot execute repository shell commands.
-- [ ] T011 **PENDING PR:** Inspect the published complete diff and confirm the PR remains open and unmerged.
+- [x] T011 PASS — inspected the published 12-path compare; PR #1787 exists and is open and unmerged.
