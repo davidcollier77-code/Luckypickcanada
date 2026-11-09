@@ -23,6 +23,7 @@ A visitor opens the Crystal Ball, sees one of three playful greetings, presses *
 1. **Given** no saved fortune for today, **When** the page loads, **Then** exactly one of the three approved greetings is displayed and **Generate My Fortune** is enabled without any question text.
 2. **Given** the visitor presses **Generate My Fortune**, **When** the response contains a usable reading, **Then** the reading is revealed with the existing pulse, golden maple-leaf, progressive-text and completion effects and saved for the rest of the local day.
 3. **Given** today's fortune was already delivered, **When** the visitor refreshes or opens another tab, **Then** the saved fortune is shown again and no additional fortune is requested.
+5. **Given** two tabs request today's fortune at nearly the same time, **When** both requests compete for the daily allowance, **Then** same-origin tabs serialize the operation and only one provider request can deliver and persist a fortune.
 4. **Given** the request fails or returns no usable reading, **When** the visitor tries again, **Then** no daily allowance was consumed.
 
 ### User Story 2 - Ask one optional follow-up about the fortune (Priority: P1)
@@ -38,6 +39,7 @@ After the daily fortune is revealed, the visitor may submit one question related
 1. **Given** a fortune has been revealed, **When** the reveal finishes, **Then** the prompt "Curious about your fortune? Ask the Crystal Ball one follow-up question." and the **Ask the Crystal Ball** button are displayed.
 2. **Given** a non-empty follow-up, **When** it is submitted, **Then** the original fortune is included as context and the answer appears without replaying the full fortune animation.
 3. **Given** today's follow-up was already delivered, **When** the visitor refreshes or opens another tab, **Then** the saved question and answer remain and no second follow-up can be submitted.
+4. **Given** two tabs submit a follow-up at nearly the same time, **When** both compete for the daily allowance, **Then** only one follow-up request can deliver and persist an answer.
 4. **Given** a failed or empty follow-up response, **When** the visitor retries, **Then** the follow-up allowance was not consumed.
 
 ### User Story 3 - Read one accurate daily reset across three features (Priority: P2)
@@ -87,9 +89,9 @@ The homepage FAQ explains the daily fortune, the separate daily follow-up, the l
 
 - Browser storage is unavailable: the current page lifetime keeps a usable in-memory allowance and reading.
 - Storage contains yesterday's state, malformed JSON, an empty fortune or an out-of-range date: a fresh day starts with no fortune.
-- A second tab changes the stored state: the first tab updates through the `storage` event.
+- A second tab changes the stored state: the first tab updates through the `storage` event; Web Locks serialize simultaneous same-origin fortune/follow-up requests before either provider call starts.
 - A response arrives after the visitor leaves: timers, audio and animation state are cleaned up without consuming an allowance.
-- The AI provider is missing, times out, fails or returns blank content: a seasonal fallback is delivered and counts as the day's fortune.
+- The AI provider is missing, times out, fails, returns blank content or malformed JSON: a usable fallback for the requested mode is delivered and counts as that day's fortune or follow-up; a follow-up failure must never receive a fortune-mode fallback.
 - Reduced motion is enabled: decorative pulse and leaf flight are skipped while the full text remains available.
 - A 25-hour or 23-hour local day: the countdown reflects the real duration until the next local midnight.
 
@@ -103,9 +105,9 @@ The homepage FAQ explains the daily fortune, the separate daily follow-up, the l
 - **FR-004**: After the fortune is revealed, the system MUST offer exactly one optional follow-up question per visitor per local calendar day.
 - **FR-005**: A follow-up request MUST include the original fortune as context and MUST NOT become an open-ended conversation.
 - **FR-006**: The daily fortune, follow-up question, follow-up answer and both usage flags MUST persist in browser-local storage for the local date.
-- **FR-007**: Refreshing the page or opening a second tab MUST restore the saved state without generating or consuming another allowance.
+- **FR-007**: Refreshing the page or opening a second tab MUST restore the saved state without generating or consuming another allowance. Same-origin tabs MUST serialize same-day allowance operations so simultaneous requests cannot deliver multiple fortunes or follow-ups.
 - **FR-008**: A failed request or a response without a usable reading MUST NOT consume the relevant allowance.
-- **FR-009**: A successfully delivered fallback reading MUST count as that day's delivered experience.
+- **FR-009**: A successfully delivered fallback reading MUST count as that day's delivered experience, and the fallback MUST match the requested fortune or follow-up mode.
 - **FR-010**: The experience MUST reset at the visitor's next local midnight.
 - **FR-011**: The existing short-window API rate limit, validation, sanitization, prompt-injection checks, CORS behavior, error handling and fallback path MUST remain in force.
 - **FR-012**: The API MUST distinguish an initial fortune request from a follow-up request.
@@ -137,6 +139,7 @@ The homepage FAQ explains the daily fortune, the separate daily follow-up, the l
 - **SC-007**: The FAQ answers match the implemented one-fortune, one-follow-up daily limits.
 - **SC-008**: Existing Crystal Ball artwork, animations, audio and reduced-motion support remain intact.
 - **SC-009**: All required checks pass and the production build stays below the 495 MB hard maximum.
+- **SC-010**: Simultaneous same-day requests from two tabs result in no more than one delivered fortune and one delivered follow-up.
 
 ## Assumptions
 
