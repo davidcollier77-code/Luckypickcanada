@@ -342,7 +342,7 @@ cf_api GET "/alerting/v3/destinations/webhooks"
 if [ "$RESP_SUCCESS" = "true" ]; then
   WEBHOOK_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$WEBHOOK_NAME" '[.result[]? | select(.name == $name)] | length')
   if [ "$WEBHOOK_MATCH_COUNT" -gt 1 ]; then
-    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching webhooks exist. Resolve them manually."
+    echo -e "  ${RED}✗ FAIL${NC} — Multiple matching webhooks exist. Resolve them manually."
     PREFLIGHT_FAILED=true
   elif [ "$WEBHOOK_MATCH_COUNT" -eq 1 ]; then
     WEBHOOK_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$WEBHOOK_NAME" '.result[] | select(.name == $name)')
@@ -350,16 +350,16 @@ if [ "$RESP_SUCCESS" = "true" ]; then
     EXISTING_WEBHOOK_SECRET=$(echo "$WEBHOOK_MATCH" | jq -r '.secret // ""')
     if [ "$EXISTING_WEBHOOK_URL" = "$WEBHOOK_URL" ] && [ -n "$EXISTING_WEBHOOK_SECRET" ] && [ "$EXISTING_WEBHOOK_SECRET" = "$WEBHOOK_SECRET" ]; then
       WEBHOOK_ID=$(echo "$WEBHOOK_MATCH" | jq -r '.id // ""')
-      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing webhook URL and secret match (ID: $WEBHOOK_ID)."
+      echo -e "  ${GREEN}✓ MATCH${NC} — Existing webhook URL and secret match (ID: $WEBHOOK_ID)."
     else
-      echo -e "  \${RED}✗ FAIL\${NC} — Existing webhook URL/secret cannot be verified as matching. No resources will be changed."
+      echo -e "  ${RED}✗ FAIL${NC} — Existing webhook URL/secret cannot be verified as matching. No resources will be changed."
       PREFLIGHT_FAILED=true
     fi
   else
-    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing webhook named '$WEBHOOK_NAME'."
+    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing webhook named '$WEBHOOK_NAME'."
   fi
 else
-  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list webhooks (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  echo -e "  ${RED}✗ FAIL${NC} — Cannot list webhooks (HTTP $RESP_STATUS). Refusing to risk duplicates."
   PREFLIGHT_FAILED=true
 fi
 
@@ -368,7 +368,7 @@ cf_api GET "/alerting/v3/policies"
 if [ "$RESP_SUCCESS" = "true" ]; then
   POLICY_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$POLICY_NAME" '[.result[]? | select(.name == $name)] | length')
   if [ "$POLICY_MATCH_COUNT" -gt 1 ]; then
-    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching policies exist. Resolve them manually."
+    echo -e "  ${RED}✗ FAIL${NC} — Multiple matching policies exist. Resolve them manually."
     PREFLIGHT_FAILED=true
   elif [ "$POLICY_MATCH_COUNT" -eq 1 ]; then
     POLICY_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$POLICY_NAME" '.result[] | select(.name == $name)')
@@ -376,16 +376,16 @@ if [ "$RESP_SUCCESS" = "true" ]; then
     EXISTING_POLICY_WEBHOOK=$(echo "$POLICY_MATCH" | jq -r '[.mechanisms.webhooks[]?.id] | join(",")')
     if [ -n "$WEBHOOK_ID" ] && [ "$EXISTING_POLICY_ALERT" = "$ALERT_TYPE" ] && [ "$EXISTING_POLICY_WEBHOOK" = "$WEBHOOK_ID" ]; then
       POLICY_ID=$(echo "$POLICY_MATCH" | jq -r '.id // ""')
-      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing policy alert type and webhook match (ID: $POLICY_ID)."
+      echo -e "  ${GREEN}✓ MATCH${NC} — Existing policy alert type and webhook match (ID: $POLICY_ID)."
     else
-      echo -e "  \${RED}✗ FAIL\${NC} — Existing policy does not match the intended alert type/webhook."
+      echo -e "  ${RED}✗ FAIL${NC} — Existing policy does not match the intended alert type/webhook."
       PREFLIGHT_FAILED=true
     fi
   else
-    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing policy named '$POLICY_NAME'."
+    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing policy named '$POLICY_NAME'."
   fi
 else
-  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list policies (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  echo -e "  ${RED}✗ FAIL${NC} — Cannot list policies (HTTP $RESP_STATUS). Refusing to risk duplicates."
   PREFLIGHT_FAILED=true
 fi
 
@@ -394,7 +394,7 @@ cf_api GET "/workers/observability/issues/automations"
 if [ "$RESP_SUCCESS" = "true" ]; then
   AUTOMATION_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '[.result.automations[]? | select(.name == $name or .service == $svc)] | length')
   if [ "$AUTOMATION_MATCH_COUNT" -gt 1 ]; then
-    echo -e "  \${RED}✗ FAIL\${NC} — Multiple matching automations exist. Resolve them manually."
+    echo -e "  ${RED}✗ FAIL${NC} — Multiple matching automations exist. Resolve them manually."
     PREFLIGHT_FAILED=true
   elif [ "$AUTOMATION_MATCH_COUNT" -eq 1 ]; then
     AUTOMATION_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '.result.automations[] | select(.name == $name or .service == $svc)')
@@ -405,22 +405,22 @@ if [ "$RESP_SUCCESS" = "true" ]; then
     EXISTING_AUTOMATION_OCCURRENCES=$(echo "$AUTOMATION_MATCH" | jq -r '.afterOccurrences // ""')
     if [ -n "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_NAME" = "$AUTOMATION_NAME" ] && [ "$EXISTING_AUTOMATION_SERVICE" = "$WORKER_SERVICE" ] && [ "$EXISTING_AUTOMATION_POLICY" = "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_ENABLED" = "true" ] && [ "$EXISTING_AUTOMATION_OCCURRENCES" = "$OCCURRENCE_THRESHOLD" ]; then
       AUTOMATION_ID=$(echo "$AUTOMATION_MATCH" | jq -r '.id // ""')
-      echo -e "  \${GREEN}✓ MATCH\${NC} — Existing automation settings match (ID: $AUTOMATION_ID)."
+      echo -e "  ${GREEN}✓ MATCH${NC} — Existing automation settings match (ID: $AUTOMATION_ID)."
     else
-      echo -e "  \${RED}✗ FAIL\${NC} — Existing automation settings do not match the intended configuration."
+      echo -e "  ${RED}✗ FAIL${NC} — Existing automation settings do not match the intended configuration."
       PREFLIGHT_FAILED=true
     fi
   else
-    echo -e "  \${GREEN}✓ CLEAR\${NC} — No existing automation for '$WORKER_SERVICE'."
+    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing automation for '$WORKER_SERVICE'."
   fi
 else
-  echo -e "  \${RED}✗ FAIL\${NC} — Cannot list automations (HTTP $RESP_STATUS). Refusing to risk duplicates."
+  echo -e "  ${RED}✗ FAIL${NC} — Cannot list automations (HTTP $RESP_STATUS). Refusing to risk duplicates."
   PREFLIGHT_FAILED=true
 fi
 
 if [ "$PREFLIGHT_FAILED" = true ]; then
   echo ""
-  echo -e "  \${RED}Preflight failed. No Cloudflare resources were created. Correct the issue(s) and rerun.\${NC}"
+  echo -e "  ${RED}Preflight failed. No Cloudflare resources were created. Correct the issue(s) and rerun.${NC}"
   unset CF_API_TOKEN WEBHOOK_SECRET GH_TOKEN 2>/dev/null || true
   exit 1
 fi
