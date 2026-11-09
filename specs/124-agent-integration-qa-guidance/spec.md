@@ -63,8 +63,8 @@ An agent plans and scopes work so the production build remains below the hard si
 - FR-003: Playwright MUST remain the primary CLI and Playwright Test path; Browserless MUST be available for direct browser tasks and as a remote-browser fallback.
 - FR-004: The instructions MUST remove obsolete Browserbase and Neon tool guidance without changing the production application's database configuration.
 - FR-005: Supabase and Turso MUST be explicitly excluded as production application storage/database providers.
-- FR-006: The QA contract MUST describe DevSkim, OpenNext validation, Visual QA, Verification Integrity and Protected File Authorization according to their checked-in workflow conditions.
-- FR-007: The QA contract MUST distinguish workflow triggers from branch-protection-required statuses and state when branch-protection settings cannot be verified.
+- FR-006: The QA contract MUST describe DevSkim, OpenNext validation, Visual QA, Verification Integrity, Protected File Authorization and path-conditional updater-scheduler validation according to their checked-in workflow conditions.
+- FR-007: The QA contract MUST distinguish repository workflow checks, GitHub Code Scanning analysis, external AI review apps and branch-protection-required statuses, and state when branch-protection settings cannot be verified.
 - FR-008: The Playwright instructions MUST summarize the eight existing capability areas without duplicating the full skill reference.
 - FR-009: The build-size rule MUST state that production build output remains strictly below 495 MiB and work likely to exceed the cap is split into independently reviewable PRs.
 - FR-010: Existing governance, Spec Kit, Memory Bank, documentation-library, updater and deployment instructions MUST remain intact.
