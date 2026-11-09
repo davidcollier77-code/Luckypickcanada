@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ timeout: 90_000 });
+
 test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and one context-aware follow-up', async ({ page }) => {
   // This end-to-end flow includes a cold Next.js dev-server compile plus two
   // complete, intentionally animated responses; keep the test budget realistic.
-  test.setTimeout(90_000);
-
   const requests: Record<string, unknown>[] = [];
   const fortune = 'A promising opportunity is approaching. Trust your instincts.';
   const followUp = 'The follow-up mists see a warm answer.';
