@@ -135,7 +135,7 @@ record_resource() {
 cf_api() {
   local method="$1" endpoint="$2" payload="${3:-}"
   local curl_args=(
-    -s -w "\\n%{http_code}"
+    -s -w "\n%{http_code}"
     -X "$method"
     "${API_BASE}/accounts/${ACCOUNT_ID}${endpoint}"
     -H "Authorization: Bearer ${CF_API_TOKEN}"
@@ -155,7 +155,7 @@ cf_api() {
 gh_api() {
   local method="$1" endpoint="$2"
   local gh_args=(
-    -s -w "\\n%{http_code}"
+    -s -w "\n%{http_code}"
     -X "$method"
     "${GITHUB_API}${endpoint}"
     -H "Accept: application/vnd.github+json"
