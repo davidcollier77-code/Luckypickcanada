@@ -180,4 +180,25 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(body.reading.trim().length).toBeGreaterThan(20);
     expect(body.reading).not.toMatch(/guaranteed|winning numbers|jackpot/i);
   });
+  it('returns a follow-up fallback when the provider response is malformed JSON', async () => {
+    mocks.fetch.mockResolvedValue(new Response('not-json', {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }));
+
+    const response = await POST(makeRequest({
+      mode: 'follow-up',
+      question: 'What should I watch for?',
+      fortune: 'A warm surprise is waiting near the water.',
+      localDate: '2026-11-11',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.source).toBe('fallback');
+    expect(body.reading).toMatch(
+      /The mists keep|The glass shows|A familiar Canadian answer|The mists see|There is a promising|The fortune is not finished/,
+    );
+  });
+
 });
