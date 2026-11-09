@@ -456,6 +456,8 @@ export async function OPTIONS(request) {
 export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
   const clientIp = getClientIp(request) || 'anonymous';
+  let requestMode = 'fortune';
+  let calendarContext = null;
 
   try {
     // Keep the short-window abuse limit, independent of the visitor-side daily counter.
@@ -480,6 +482,7 @@ export async function POST(request) {
     // Requests without a mode keep the old question-only behaviour; the Crystal
     // Ball client explicitly sends `fortune` for the daily reading.
     const mode = body.mode || (rawQuestion !== undefined ? 'follow-up' : 'fortune');
+    requestMode = mode;
 
     let question = '';
     if (mode === 'follow-up') {
@@ -525,6 +528,7 @@ export async function POST(request) {
     const localDate =
       parseCalendarDate(body.localDate) || parseCalendarDate(getServerDateKey());
     const context = getCalendarContext(localDate.key);
+    calendarContext = context;
     const timeZone = sanitizeTimeZone(body.timeZone);
     const calendarFacts = describeCalendar(context, timeZone);
 
@@ -590,6 +594,6 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error('Oracle Route Exception:', error);
-    return NextResponse.json(fallbackPayload(null, 'fortune'), { status: 200, headers: corsHeaders });
+    return NextResponse.json(fallbackPayload(calendarContext, requestMode), { status: 200, headers: corsHeaders });
   }
 }
