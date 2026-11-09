@@ -9,6 +9,7 @@ import {
   createFreshUsage,
   readDailyUsage,
   writeDailyUsage,
+  withDailyUsageLock,
 } from './daily-usage';
 
 function getBrowserStorage() {
@@ -69,99 +70,119 @@ export default function CrystalBallClient() {
 
   const handleGenerateFortune = async () => {
     const storage = getBrowserStorage();
-    const current = readDailyUsage(storage);
-    applyUsage(current);
+    const lockDate = getLocalDateKey();
 
-    if (current.fortuneUsed) {
-      throw new Error('You’ve already received today’s fortune. Come back after your next local midnight.');
-    }
+    return withDailyUsageLock(lockDate, async () => {
+      const current = readDailyUsage(storage);
+      applyUsage(current);
 
-    const response = await fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'fortune', ...getLocalCalendarContext() }),
+      if (current.date !== lockDate) {
+        throw new Error('The clock has turned. A fresh fortune is ready for today.');
+      }
+      if (current.fortuneUsed) {
+        throw new Error('You’ve already received today’s fortune. Come back after your next local midnight.');
+      }
+
+      const response = await fetch('/api/oracle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'fortune', ...getLocalCalendarContext() }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'The Crystal Ball could not reach the mists. Please try again.');
+      }
+
+      const reading = normalizeReading(data.reading);
+      if (!reading) {
+        throw new Error(data.error || 'The Crystal Ball could not find a fortune. Please try again.');
+      }
+
+      const latest = readDailyUsage(storage);
+      if (latest.date !== current.date) {
+        throw new Error('The clock has turned. A fresh fortune is ready for today.');
+      }
+      if (latest.fortuneUsed) {
+        throw new Error('You’ve already received today’s fortune. Refresh to see the saved reading.');
+      }
+
+      applyUsage(
+        writeDailyUsage(
+          {
+            ...latest,
+            fortuneUsed: true,
+            fortune: reading,
+          },
+          storage,
+        ),
+      );
+
+      return reading;
     });
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.error || 'The Crystal Ball could not reach the mists. Please try again.');
-    }
-
-    const reading = normalizeReading(data.reading);
-    if (!reading) {
-      throw new Error(data.error || 'The Crystal Ball could not find a fortune. Please try again.');
-    }
-
-    const latest = readDailyUsage(storage);
-    if (latest.date !== current.date) {
-      throw new Error('The clock has turned. A fresh fortune is ready for today.');
-    }
-
-    applyUsage(
-      writeDailyUsage(
-        {
-          ...latest,
-          fortuneUsed: true,
-          fortune: reading,
-        },
-        storage,
-      ),
-    );
-
-    return reading;
   };
 
   const handleAskFollowUp = async (question) => {
     const storage = getBrowserStorage();
-    const current = readDailyUsage(storage);
-    applyUsage(current);
+    const lockDate = getLocalDateKey();
 
-    if (!current.fortuneUsed || !current.fortune) {
-      throw new Error('Generate today’s fortune before asking a follow-up question.');
-    }
-    if (current.followUpUsed) {
-      throw new Error('You’ve already used today’s follow-up question. Come back after your next local midnight.');
-    }
+    return withDailyUsageLock(lockDate, async () => {
+      const current = readDailyUsage(storage);
+      applyUsage(current);
 
-    const response = await fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        mode: 'follow-up',
-        question,
-        fortune: current.fortune,
-        ...getLocalCalendarContext(),
-      }),
+      if (current.date !== lockDate) {
+        throw new Error('The clock has turned. Refresh for today’s Crystal Ball experience.');
+      }
+      if (!current.fortuneUsed || !current.fortune) {
+        throw new Error('Generate today’s fortune before asking a follow-up question.');
+      }
+      if (current.followUpUsed) {
+        throw new Error('You’ve already used today’s follow-up question. Come back after your next local midnight.');
+      }
+
+      const response = await fetch('/api/oracle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'follow-up',
+          question,
+          fortune: current.fortune,
+          ...getLocalCalendarContext(),
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || 'The Crystal Ball could not answer that follow-up. Please try again.');
+      }
+
+      const answer = normalizeReading(data.reading);
+      if (!answer) {
+        throw new Error(data.error || 'The Crystal Ball could not find a follow-up answer. Please try again.');
+      }
+
+      const latest = readDailyUsage(storage);
+      if (latest.date !== current.date) {
+        throw new Error('The clock has turned. A fresh fortune is ready for today.');
+      }
+      if (latest.followUpUsed) {
+        throw new Error('You’ve already used today’s follow-up question. Refresh to see the saved answer.');
+      }
+
+      applyUsage(
+        writeDailyUsage(
+          {
+            ...latest,
+            followUpUsed: true,
+            followUpQuestion: question,
+            followUpAnswer: answer,
+          },
+          storage,
+        ),
+      );
+
+      return answer;
     });
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(data.error || 'The Crystal Ball could not answer that follow-up. Please try again.');
-    }
-
-    const answer = normalizeReading(data.reading);
-    if (!answer) {
-      throw new Error(data.error || 'The Crystal Ball could not find a follow-up answer. Please try again.');
-    }
-
-    const latest = readDailyUsage(storage);
-    if (latest.date !== current.date) {
-      throw new Error('The clock has turned. A fresh fortune is ready for today.');
-    }
-
-    applyUsage(
-      writeDailyUsage(
-        {
-          ...latest,
-          followUpUsed: true,
-          followUpQuestion: question,
-          followUpAnswer: answer,
-        },
-        storage,
-      ),
-    );
-
-    return answer;
   };
 
   const savedFollowUp =
