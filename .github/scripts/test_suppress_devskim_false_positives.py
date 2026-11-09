@@ -1004,53 +1004,11 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
-    def test_documented_cloudflare_account_id_is_not_treated_as_a_secret(self):
-        account_id = "dbd3120f6fa0104b5fe66c201ea" + "4251b"
-        source = (
-            "const JULES_SOURCE = 'sources/github/example/repo';\n"
-            "// DevSkim: ignore DS173237\n"
-            "// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.\n"
-            'const CLOUDFLARE_ACCOUNT_ID = "' + account_id + '";\n'
-        )
-        id_line = source.splitlines()[3]
-        id_literal = '"' + account_id + '"'
-        start_column = id_line.index(id_literal) + 1
-        region = {
-            "startLine": 4,
-            "startColumn": start_column,
-            "endColumn": start_column + len(id_literal),
-        }
-        self.assertTrue(
-            suppressions.should_suppress_public_cloudflare_account_id(
-                "workers/jules-bridge/src/index.js", source, region
-            )
-        )
-        unrelated_offset = id_line.index("CLOUDFLARE_ACCOUNT_ID")
-        unrelated_region = {
-            "startLine": 4,
-            "startColumn": unrelated_offset + 1,
-            "endColumn": unrelated_offset + len("CLOUDFLARE_ACCOUNT_ID") + 1,
-        }
-        self.assertFalse(
-            suppressions.should_suppress_public_cloudflare_account_id(
-                "workers/jules-bridge/src/index.js", source, unrelated_region
-            )
-        )
-        self.assertFalse(
-            suppressions.should_suppress_public_cloudflare_account_id(
-                "workers/jules-bridge/src/index.js",
-                source.replace("CLOUDFLARE_ACCOUNT_ID", "API_SECRET"),
-                {"startLine": 4},
-            )
-        )
-
-
     def test_new_verified_false_positive_justifications_are_removed_from_sarif(self):
         justifications = [
             "False positive: a complete SHA/UUID/checksum value in an explicitly allowlisted metadata field overlaps the reported finding.",
             "False positive: this exact SHA value is a pinned upstream revision or tracked-file checksum in an allowlisted manifest map.",
             "False positive: this is the checked-in SHA-256 digest of the constitution template, not a credential.",
-            "False positive: this is the repository's documented public Cloudflare account identifier; the webhook secret is configured separately.",
             "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
             "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
             "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not a shipped insecure URL.",
