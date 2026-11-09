@@ -103,7 +103,7 @@ test('simultaneous fortune requests from two tabs consume only one daily allowan
 
   const fortune = 'One shared reading is waiting in the glass.';
   let requests = 0;
-  let releaseResponse;
+  let releaseResponse: () => void = () => {};
   const responseGate = new Promise<void>((resolve) => {
     releaseResponse = resolve;
   });
