@@ -392,12 +392,12 @@ fi
 # Reuse an automation only when every material setting matches.
 cf_api GET "/workers/observability/issues/automations"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  AUTOMATION_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '[.result.automations[]? | select(.name == $name or .service == $svc)] | length')
+  AUTOMATION_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '[.result.automations[]? | select(.name == $name and .service == $svc)] | length')
   if [ "$AUTOMATION_MATCH_COUNT" -gt 1 ]; then
     echo -e "  ${RED}✗ FAIL${NC} — Multiple matching automations exist. Resolve them manually."
     PREFLIGHT_FAILED=true
   elif [ "$AUTOMATION_MATCH_COUNT" -eq 1 ]; then
-    AUTOMATION_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '.result.automations[] | select(.name == $name or .service == $svc)')
+    AUTOMATION_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '.result.automations[] | select(.name == $name and .service == $svc)')
     EXISTING_AUTOMATION_NAME=$(echo "$AUTOMATION_MATCH" | jq -r '.name // ""')
     EXISTING_AUTOMATION_SERVICE=$(echo "$AUTOMATION_MATCH" | jq -r '.service // ""')
     EXISTING_AUTOMATION_POLICY=$(echo "$AUTOMATION_MATCH" | jq -r '.policyId // ""')
