@@ -6,7 +6,7 @@
 
 ## Summary
 
-Replace the Crystal Ball's question-first, three-answer flow with one daily fortune and one optional follow-up while preserving the existing client component, artwork, reveal sequence and audio. Add a browser-local state module for the fortune and follow-up, adapt `app/api/oracle/route.js` to accept a fortune mode and a follow-up mode with validated calendar context, expand the Canadian fallbacks, and route all three reset countdowns through one shared local-midnight store. Update the homepage FAQ content and its regression tests.
+Replace the Crystal Ball's question-first, three-answer flow with one daily fortune and one optional follow-up while preserving the existing client component, artwork, reveal sequence and audio. Add a browser-local state module for the fortune and follow-up, serialize same-day allowance operations across tabs with the Web Locks API, adapt `app/api/oracle/route.js` to accept a fortune mode and a follow-up mode with validated calendar context and mode-correct fallback handling, expand the Canadian fallbacks, and route all three reset countdowns through one shared local-midnight store. Update the homepage FAQ content and its regression tests.
 
 ## Technical Context
 
@@ -14,7 +14,7 @@ Replace the Crystal Ball's question-first, three-answer flow with one daily fort
 
 **Primary Dependencies**: Existing Next.js, React, Howler, Framer Motion and Tailwind/CSS modules only. No dependency changes.
 
-**Storage**: Browser `localStorage` for the visitor's daily Crystal Ball state and existing feature-specific keys. No database, server quota, schema or payment change.
+**Storage**: Browser `localStorage` for the visitor's daily Crystal Ball state and existing feature-specific keys. The browser Web Locks API serializes same-origin tabs for each local date; a per-tab promise queue preserves ordering where Web Locks are unavailable. No database, server quota, schema or payment change.
 
 **Testing**: Vitest for pure date/usage/API contracts; Playwright for the browser experience and countdown synchronization; repository `./freebuff-verify.sh` for the governance gate, type check, build and docs tests.
 
@@ -22,7 +22,7 @@ Replace the Crystal Ball's question-first, three-answer flow with one daily fort
 
 **Project Type**: Web application (Next.js App Router, single project).
 
-**Performance Goals**: One shared one-second interval per tab while any countdown is mounted; no additional network calls beyond the existing Oracle route; no new image or audio assets.
+**Performance Goals**: One shared one-second interval per tab while any countdown is mounted; no additional network calls beyond the existing Oracle route; one exclusive same-origin lock per local date during a fortune/follow-up request; no new image or audio assets.
 
 **Constraints**: Preserve the existing Crystal Ball artwork, CSS identity, animation sequence and audio; keep the 495 MB build maximum; do not alter payments, Stripe, gift email, authentication, hosting or unrelated pages.
 
@@ -78,11 +78,11 @@ memory-bank/progress.md                      # completed milestone record
 .specify/feature.json                        # active feature pointer
 ```
 
-**Structure Decision**: Keep the existing Crystal Ball component and route. Add only one small shared date module and one shared countdown store so the three displays cannot drift.
+**Structure Decision**: Keep the existing Crystal Ball component and route. Add only one small shared date module and one shared countdown store so the three displays cannot drift. Reuse the browser Web Locks API rather than adding a dependency or server quota service to prevent simultaneous same-origin tabs from spending the same daily allowance.
 
 ## Phase 0: Research
 
-No external research was needed. The existing implementation already establishes the date utilities, audio helpers, animation states, Oracle provider and test harness. The only material decision is to move the authoritative deadline calculation into a pure module and expose it through a single `useSyncExternalStore`-backed hook, which avoids duplicate timers and keeps each display's wording independent.
+No external research was needed. The existing implementation already establishes the date utilities, audio helpers, animation states, Oracle provider and test harness. The material decisions are to move the authoritative deadline calculation into a pure module and expose it through a single `useSyncExternalStore`-backed hook, and to serialize same-day allowance transitions with Web Locks. This prevents duplicate timers and concurrent tabs from racing to consume the same daily allowance.
 
 ## Phase 1: Design
 
