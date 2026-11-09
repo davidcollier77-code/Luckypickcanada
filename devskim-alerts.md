@@ -33,3 +33,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `tests/visual/map-marker-interaction.spec.ts:82` — Review setTimeout for untrusted data <!-- devskim-id:1581a1022b3d277b6b57 -->
 
 - **NOTE — DS172411** — `tests/visual/mobile-accessibility.spec.ts:123` — Review setTimeout for untrusted data <!-- devskim-id:7668862f4f74a47af63d -->
+
+- **ERROR — DS173237** — `scripts/cloudflare/workers-issues-to-github-setup.sh:51` — Do not store tokens or keys in source code. <!-- devskim-id:a1a167af2cfdbb9b83b9 -->
