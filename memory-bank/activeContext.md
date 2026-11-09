@@ -1,3 +1,17 @@
+# Current Task — Playwright CLI agent toolkit (2026-11-09)
+
+- **Branch:** `freebuff/playwright-cli-agent-toolkit-20261109`; Spec Kit feature `specs/122-playwright-cli-agent-toolkit`.
+- **PR:** [#1786](https://github.com/davidcollier77-code/Luckypickcanada/pull/1786) — open and unmerged.
+- **Task groups:** `deep-dive` (evaluate official CLI/skill and environment boundaries) + `testing` (protect the vendored bundle and verify the local CLI setup contract).
+- **Scope:** Vendor Microsoft's Playwright CLI skill v0.1.23 and ten official references; add the Lucky Pick Canada guide for eight capability areas, local setup/probe script and static integrity test.
+- **Dependency decision:** Reuse the existing local Playwright 1.64.1 packages through `pnpm exec playwright cli`. No separate `@playwright/cli` dependency, global install, MCP server, workflow or application configuration change.
+- **Browser policy:** Existing desktop, mobile-390 and mobile-412 projects remain authoritative. If local Chromium cannot launch because Linux libraries are missing, follow `AGENTS.md` and use Browserless; no sudo/system-package changes.
+- **Credential handling:** Cookies, auth state, tokens and persistent profiles stay outside tracked files.
+- **Verification:** The connected GitHub API session had no repository shell. Setup script, Vitest, `./freebuff-verify.sh`, Chromium launch, build and `git diff --check` are not claimed as executed; PR CI results must be recorded from actual checks.
+- **Upstream:** Microsoft `microsoft/playwright-cli` v0.1.23, commit `0a808078d96496cf2a8fa725143c870354f63cda`; Apache-2.0 license retained.
+
+---
+
 # Current Task — PR #1785 independent review follow-up (2026-11-09)
 
 - **Branch / PR:** `freebuff/312cb61fb800667e9da40810`; Spec Kit feature `specs/121-crystal-ball-daily-fortune`; PR [#1785](https://github.com/davidcollier77-code/Luckypickcanada/pull/1785). The canonical PR body records the final HEAD SHA.
