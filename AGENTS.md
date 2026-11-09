@@ -189,3 +189,5 @@ Before reporting **verified completion**, confirm:
 🔴 **NO EVIDENCE = NO CLAIM.**
 
 🔴 **NO VERIFIED RESULT = NO VERIFIED COMPLETION.**
+
+🔴 **NO ACCURATE PR SUMMARY = NO COMPLETION.**
