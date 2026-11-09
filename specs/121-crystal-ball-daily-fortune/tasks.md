@@ -50,3 +50,11 @@
 - [X] T021 Add minimal greeting/follow-up styles that reuse the existing Crystal Ball design language.
 - [X] T022 Run `./freebuff-verify.sh`, Vitest, focused Playwright tests, measure the production build, and audit the final diff.
 - [X] T023 Update `memory-bank/activeContext.md` and `memory-bank/progress.md`, then publish one open, unmerged PR with the canonical evidence summary.
+
+
+## Phase 9: Independent review repairs
+
+- [ ] T024 Serialize fortune and follow-up allowance operations across same-origin tabs with the Web Locks API; re-read persisted usage after acquiring the lock and refuse a second successful delivery.
+- [ ] T025 Preserve the parsed Oracle request mode and calendar context through the outer error handler so malformed provider JSON or an unexpected exception returns a fallback for the requested mode.
+- [ ] T026 Add unit and Playwright regressions for concurrent tab requests and malformed follow-up provider responses; replace the DevSkim-triggering Playwright per-test timeout call with equivalent suite configuration.
+- [ ] T027 Run `./freebuff-verify.sh`, full Vitest, required Playwright Visual QA, production build-size measurement, and final diff/error audit on the repair head.
