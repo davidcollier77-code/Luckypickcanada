@@ -1,3 +1,19 @@
+# Current Task — PR #1785 independent review follow-up (2026-11-09)
+
+- **Branch / PR:** `freebuff/312cb61fb800667e9da40810`; Spec Kit feature `specs/121-crystal-ball-daily-fortune`; PR [#1785](https://github.com/davidcollier77-code/Luckypickcanada/pull/1785). The canonical PR body records the final HEAD SHA.
+- **Task groups:** `troubleshooting` (stale duplicate-fortune UI state and the claimed daily-usage lock-queue deadlock); `testing` (two-tab allowance proof, missed-storage-event fallback, duplicate-response adoption, lock-queue failure recovery, and response-shape regressions).
+- **Skills materially applied:** `systematic-debugging` for the headless `/reveal` failure; repository guidance, the Spec Kit artifacts and the existing tests covered the review repairs.
+- **Repairs implemented:** In `CrystalBallClient.js`, the post-response duplicate branch now calls `applyUsage(latest)` before throwing, so a tab that missed the storage event adopts the persisted reading instead of remaining in a stale no-fortune state. The Oracle success payload no longer exposes the server-only calendar `context`; the client never read it.
+- **Deadlock finding:** No reproducible deadlock was found. The fallback queue already releases in `.finally()` for synchronous throws and rejected operations; two new unit regressions verify that the next caller runs. No production queue change was made.
+- **Infinite-loop finding:** The initial-fortune adoption effect returns when the values already match and does not demonstrate a loop. It was inspected and left unchanged because no reproducible defect was shown.
+- **Spec Kit:** Reused and updated existing feature 121 in order: Specify (`spec.md`), Plan (`plan.md`), Tasks Phase 10 (`tasks.md`), then Implement. T027–T036 are recorded complete; T034 now records the countdown pass.
+- **`/reveal` environment failure resolved:** The VM has no `/etc/fonts/fonts.conf`, no font directories and no system fonts. Chromium aborted in `SkFontMgr_FontConfigInterface.cpp` (`FATAL ... Not implemented`) before the page loaded. `tests/visual/playwright-fontconfig.ts` now creates a temporary fontconfig file pointing at Next's bundled `Geist-Regular.ttf`, only on Linux when no fontconfig file and no system fonts exist. `playwright.config.ts` calls it before browser launch; normal CI and production code are unchanged.
+- **Verification:** Full Vitest 55 files / 462 tests PASS. `tests/visual/crystal-ball-daily-limit.spec.ts` 12/12 PASS across desktop, mobile-390 and mobile-412, including the three-page local-midnight countdown. The isolated `/reveal` probe passed before removal. `tsc --noEmit` exit 0. `./freebuff-verify.sh` PASS (Spec Kit gate, integrity tests, TypeScript, production build, refresh-docs 36/36). Build `.next` 434,147,887 B + `public` 33,834,328 B = 467,982,215 B (446.30 MiB), below 495 MB. `git diff --check` clean.
+- **Environment note:** Playwright in this VM also needs `LD_LIBRARY_PATH=/tmp/chromium-libs/root/usr/lib/x86_64-linux-gnu`; without it Chromium cannot find `libnspr4.so`. This is separate from the font fix and is not committed into the repository.
+- **Remaining:** Live Groq response quality and manual assistive-technology checks remain unverified on this head; no `/reveal` browser blocker remains.
+
+---
+
 # Current Task — PR #1783 Lucky Stories QA repair follow-up (2026-11-08)
 
 - **Branch / PR:** `freebuff/40867abcd68f1e53d3356b9f`; Spec Kit feature `specs/120-lucky-stories-paged-provinces`. PR link and HEAD are recorded in `progress.md` after submission.

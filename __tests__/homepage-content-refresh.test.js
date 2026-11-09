@@ -161,14 +161,18 @@ describe('FAQ content and structured data', () => {
     'What are Lucky Community Stories and the Community Map?',
     'Is Lucky Pick Canada intended for entertainment?',
     'How does the Gift Reveal work?',
-    'What is the Lucky Crystal Ball, and how does it work?',
+    'How does the Crystal Ball work?',
+    'How many fortunes can I get each day?',
+    'Can I ask the Crystal Ball a question?',
+    'When does my daily Crystal Ball allowance reset?',
+    'Are the fortunes guaranteed to come true?',
     'When do the daily experiences reset?',
     'What are the activity counters?',
     'What do the purchase counters mean?',
   ];
 
-  it('exposes exactly the ten approved questions in order', () => {
-    expect(faqItems).toHaveLength(10);
+  it('exposes exactly the fourteen approved questions in order', () => {
+    expect(faqItems).toHaveLength(14);
     expect(faqItems.map((item) => item.question)).toEqual(expectedQuestions);
   });
 
@@ -184,10 +188,14 @@ describe('FAQ content and structured data', () => {
     expect(faqItems[3].answer).toContain('see each story\'s celebration count');
     expect(faqItems[4].answer).toContain('not a lottery operator or gambling service');
     expect(faqItems[5].answer).toContain('recipient receives an email with a special link');
-    expect(faqItems[6].answer).toContain('up to three questions each day');
-    expect(faqItems[7].answer).toContain('midnight local time');
-    expect(faqItems[8].answer).toContain('activity counters');
-    expect(faqItems[9].answer).toContain('how many times that experience has been purchased');
+    expect(faqItems[6].answer).toContain('No question is needed');
+    expect(faqItems[7].answer).toContain('one daily fortune per day');
+    expect(faqItems[8].answer).toContain('one optional follow-up question');
+    expect(faqItems[9].answer).toContain('midnight based on your local time zone');
+    expect(faqItems[10].answer).toContain('cannot predict lottery results');
+    expect(faqItems[11].answer).toContain('midnight local time');
+    expect(faqItems[12].answer).toContain('activity counters');
+    expect(faqItems[13].answer).toContain('how many times that experience has been purchased');
   });
 
   it('feeds both the visible accordion and the FAQPage structured data from one module', () => {

@@ -1,33 +1,95 @@
-export const DAILY_QUESTION_LIMIT = 3;
-export const DAILY_STORAGE_KEY = 'luckyPickCanada:crystalBallDailyQuestions:v1';
+import { getLocalDateKey } from '../lib/daily-reset';
+
+export { getLocalDateKey };
+
+export const DAILY_STORAGE_KEY = 'luckyPickCanada:crystalBallDailyFortune:v1';
+export const MAX_FORTUNE_LENGTH = 2000;
+export const MAX_FOLLOW_UP_QUESTION_LENGTH = 120;
 
 let inMemoryUsage = null;
+const dailyUsageQueues = new Map();
 
-export function getLocalDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return year + '-' + month + '-' + day;
+/**
+ * Serialize same-day allowance transitions across tabs with the browser's
+ * same-origin Web Locks API. Older browsers still serialize callers in this
+ * tab; storage events continue to synchronize completed changes across tabs.
+ */
+export function withDailyUsageLock(
+  date,
+  operation,
+  lockManager = globalThis.navigator?.locks,
+) {
+  const lockName = `${DAILY_STORAGE_KEY}:${date}`;
+
+  if (typeof lockManager?.request === 'function') {
+    return lockManager.request(lockName, { mode: 'exclusive' }, operation);
+  }
+
+  const previous = dailyUsageQueues.get(lockName) || Promise.resolve();
+  let release;
+  const current = new Promise((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  dailyUsageQueues.set(lockName, queued);
+
+  return previous.then(operation).finally(() => {
+    release();
+    if (dailyUsageQueues.get(lockName) === queued) {
+      dailyUsageQueues.delete(lockName);
+    }
+  });
 }
 
-export function getNextLocalMidnight(date = new Date()) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1, 0, 0, 0, 0);
+function cleanText(value, maxLength) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, maxLength);
+}
+
+function cleanFlag(value) {
+  return value === true || value === 1;
 }
 
 export function createFreshUsage(date = new Date()) {
-  return { date: getLocalDateKey(date), used: 0 };
+  return {
+    date: getLocalDateKey(date),
+    fortuneUsed: false,
+    fortune: null,
+    followUpUsed: false,
+    followUpQuestion: null,
+    followUpAnswer: null,
+  };
 }
 
-function isValidUsage(value, today) {
-  return value?.date === today &&
-    Number.isInteger(value?.used) &&
-    value.used >= 0 &&
-    value.used <= DAILY_QUESTION_LIMIT;
+function normalizeUsage(value, today) {
+  if (!value || typeof value !== 'object' || value.date !== today) return null;
+
+  const fortune = cleanText(value.fortune, MAX_FORTUNE_LENGTH);
+  const followUpAnswer = cleanText(value.followUpAnswer, MAX_FORTUNE_LENGTH);
+  const followUpQuestion = cleanText(
+    value.followUpQuestion,
+    MAX_FOLLOW_UP_QUESTION_LENGTH,
+  );
+
+  return {
+    date: today,
+    // A flag only counts when the matching usable reading is actually stored,
+    // so an unusable response can never consume the visitor's allowance.
+    fortuneUsed: cleanFlag(value.fortuneUsed) && Boolean(fortune),
+    fortune,
+    followUpUsed:
+      cleanFlag(value.followUpUsed) && Boolean(fortune) && Boolean(followUpAnswer),
+    followUpQuestion: followUpQuestion || null,
+    followUpAnswer,
+  };
 }
 
 /**
- * Read the visitor's local-day counter. The in-memory fallback keeps the cap
- * usable for this page lifetime when browser storage is disabled or blocked.
+ * Read the visitor's local-day Crystal Ball state. The in-memory fallback
+ * keeps the experience usable for this page lifetime when browser storage is
+ * disabled or blocked.
  */
 export function readDailyUsage(storage, date = new Date()) {
   const fresh = createFreshUsage(date);
@@ -41,9 +103,10 @@ export function readDailyUsage(storage, date = new Date()) {
       }
 
       const parsed = JSON.parse(raw);
-      if (isValidUsage(parsed, fresh.date)) {
-        inMemoryUsage = { date: fresh.date, used: parsed.used };
-        return { ...inMemoryUsage };
+      const normalized = normalizeUsage(parsed, fresh.date);
+      if (normalized) {
+        inMemoryUsage = normalized;
+        return { ...normalized };
       }
 
       inMemoryUsage = fresh;
@@ -53,7 +116,7 @@ export function readDailyUsage(storage, date = new Date()) {
     }
   }
 
-  if (inMemoryUsage?.date === fresh.date && isValidUsage(inMemoryUsage, fresh.date)) {
+  if (inMemoryUsage?.date === fresh.date) {
     return { ...inMemoryUsage };
   }
 
@@ -62,10 +125,9 @@ export function readDailyUsage(storage, date = new Date()) {
 }
 
 export function writeDailyUsage(usage, storage) {
-  const safeUsage = {
-    date: String(usage?.date || getLocalDateKey()),
-    used: Math.max(0, Math.min(DAILY_QUESTION_LIMIT, Math.floor(Number(usage?.used) || 0))),
-  };
+  const today = getLocalDateKey();
+  const safeUsage =
+    normalizeUsage({ ...usage, date: today }, today) || createFreshUsage();
   inMemoryUsage = safeUsage;
 
   try {

@@ -1,3 +1,31 @@
+## 2026-11-09 — PR #1785 review follow-up
+
+- Applied the persisted usage snapshot before rejecting a duplicate fortune response, so a tab that missed the storage event adopts the already-saved reading instead of leaving a stale Generate button. Removed the unused calendar `context` from the Oracle success payload.
+- Strengthened the two-tab browser proof: the first request is confirmed in flight and held, the second tab competes while the Web Lock is held, and the test proves one request, one persisted reading, no competing reading, and adoption in both tabs. Added a fallback-path regression that disables Web Locks and suppresses the second tab's storage event.
+- Investigated the claimed lock-queue deadlock and initial-fortune infinite loop. Neither reproduced; added synchronous-throw and rejected-operation queue regressions and left the production queue and effect unchanged.
+- Diagnosed the blocked `/reveal` browser case as an environment failure, not an app defect: the VM has no fontconfig file and no system fonts, so Chromium aborts in Skia's fontconfig font manager before navigation. Added a Playwright-only bootstrap that points fontconfig at Next's bundled Geist TTF only when no system font support exists; normal CI and production rendering are unchanged.
+- Checks: full Vitest 55 files / 462 tests PASS; `crystal-ball-daily-limit.spec.ts` 12/12 PASS across desktop, mobile-390 and mobile-412, including the three-page countdown; isolated `/reveal` probe PASS; `tsc --noEmit` exit 0; `./freebuff-verify.sh` PASS; build 467,982,215 B (446.30 MiB) < 495 MB; `git diff --check` clean.
+- Spec Kit feature 121 updated in Specify → Plan → Tasks → Implement order; T036 records the fontconfig repair. PR #1785 remains open and unmerged.
+
+## 2026-11-09 — PR #1785 independent review repairs
+
+- Independent review found a cross-tab race: simultaneous fortune or follow-up requests could both observe an unused local allowance before either persisted its response. Added same-origin Web Locks serialization per local date, a per-tab promise queue fallback, and post-lock re-reads/duplicate-delivery guards in `CrystalBallClient.js`.
+- Fixed an Oracle error-path defect: malformed provider JSON or another unexpected exception during a follow-up could fall through to a fortune-mode fallback. The route now retains the validated request mode and calendar context through the outer catch; added a regression asserting malformed follow-up provider JSON returns a follow-up fallback.
+- Added unit coverage for lock serialization and a Playwright two-tab concurrent-fortune regression. Replaced the DevSkim-annotated `test.setTimeout(90_000)` call with equivalent suite-level timeout configuration; the 90-second test budget is unchanged.
+- Updated existing Spec Kit feature 121 artifacts in order: `spec.md`, `plan.md`, `tasks.md`; T024–T026 are implemented and T027 remains pending.
+- Source/patch audit completed. Current repair-head `./freebuff-verify.sh`, full Vitest, Playwright, production build/495 MiB measurement and final runtime verification are pending; they were not run in this connected session. Prior-head passes are not carried forward. Live Groq quality and manual accessibility checks remain unverified.
+- PR #1785 remains open and unmerged; the canonical PR body records the current full HEAD SHA and pending verification.
+
+## 2026-11-09 — Crystal Ball daily fortune and shared daily-reset clock
+
+- Replaced the three-question Crystal Ball flow with a daily fortune: one of three approved greetings, **Generate My Fortune**, an optional one-question follow-up that receives the original fortune, and one fortune plus one follow-up per local calendar day.
+- Persisted the reading under `luckyPickCanada:crystalBallDailyFortune:v1` with validated storage, in-memory fallback, cross-tab storage adoption and local-date reset. Failed or empty responses leave the relevant allowance unused; successful fallbacks count.
+- Adapted `/api/oracle` for `fortune` and `follow-up` modes with validated local date/time zone, deterministic weekday/season/movable-holiday context, Canadian voice prompts, expanded seasonal/holiday fallbacks and preserved rate limiting, sanitization, injection checks, timeout and CORS behavior.
+- Added one shared DST-safe local-midnight countdown store used by Card Reveal, Crystal Ball and Lucky Meter, with focus/visibility/page-show recovery and separate feature allowances.
+- Added the five approved FAQ entries and updated the existing daily-reset answer; homepage wording was not changed.
+- Checks: full Vitest 55 files / 457 tests PASS; `./freebuff-verify.sh` exit 0; final build 389,776,186 B (371.72 MiB) < 495 MB; `git diff --check` clean. Cloud-browser QA passed greetings, failure-no-charge, fortune/follow-up, persistence, date reset, cross-tab sync, three-countdown deadline agreement (0.921 s spread), 390 px layout, keyboard activation, reduced motion and rendered FAQ. Playwright is BLOCKED by missing Chromium system libraries; Browserless is BLOCKED by the private-preview 403; Browserbase was not used.
+- PR [#1785](https://github.com/davidcollier77-code/Luckypickcanada/pull/1785) is open and unmerged; its body is the single canonical summary and records the final HEAD SHA.
+
 ## 2026-11-08 — PR #1783 QA repair follow-up
 
 - Restored Recent Canadian Activity to up to three newest stories per province using a SQL window-function partition derived from the existing province alias rules. The result is bounded at 39 rows maximum (13 provinces/territories × 3).

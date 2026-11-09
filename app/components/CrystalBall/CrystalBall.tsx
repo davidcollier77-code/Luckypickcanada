@@ -5,80 +5,100 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
 import GoldenLeaf from './GoldenLeaf';
+import { useDailyResetCountdown } from '../../../components/daily-reset-countdown';
 
-type Reading = {
-  id: string;
-  question: string;
-  answer: string;
-};
+type Status =
+  | 'idle'
+  | 'loading'
+  | 'preRevealPulse'
+  | 'leafFalling'
+  | 'error'
+  | 'revealing'
+  | 'completionPulse';
+
+type FollowUpStatus = 'idle' | 'loading' | 'error' | 'done';
 
 type LeafFlight = { fromX: number; fromY: number; dx: number; dy: number };
-type DailyQuota = { limit: number; remaining: number; resetAt: string } | null;
 
-function formatCountdown(milliseconds: number): string {
-  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  return hours + ':' + minutes + ':' + seconds;
-}
-
-function DailyQuotaCountdown({ resetAt }: { resetAt: string }) {
-  const [now, setNow] = useState<number | null>(null);
-
-  useEffect(() => {
-    setNow(Date.now());
-    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(intervalId);
-  }, []);
-
-  if (now === null) return null;
-
-  return (
-    <p className={styles.dailyQuotaCountdown} aria-label="Time until daily allowance resets">
-      Allowance resets in {formatCountdown(Date.parse(resetAt) - now)}
-    </p>
-  );
-}
+const GREETINGS = [
+  "Well, look who's feeling lucky today.",
+  "Let's see what the universe has up its sleeve, eh?",
+  "I've been waiting for you. Not that I'm keeping track or anything.",
+];
 
 const PLACEHOLDER_FORTUNES = [
-  'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
+  'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favour.',
   'A path once uncertain begins to clear. What you have been waiting for is closer than the mist lets on.',
   'The mists show patience rewarded. Hold steady — the answer you seek arrives on its own schedule, not yours.',
 ];
 
-async function defaultFortuneGenerator(question: string): Promise<string> {
+function pickGreeting(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    return GREETINGS[randomBuffer[0] % GREETINGS.length];
+  }
+  return GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+}
+
+async function defaultFortuneGenerator(): Promise<string> {
   await new Promise((resolve) => setTimeout(resolve, 900));
   const randomBuffer = new Uint32Array(1);
   crypto.getRandomValues(randomBuffer);
-  const pick = PLACEHOLDER_FORTUNES[randomBuffer[0] % PLACEHOLDER_FORTUNES.length];
-  return question.trim() ? pick : 'Ask the mists a question first.';
+  return PLACEHOLDER_FORTUNES[randomBuffer[0] % PLACEHOLDER_FORTUNES.length];
+}
+
+async function defaultFollowUpGenerator(): Promise<string> {
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  return 'The mists lean closer: the answer you are looking for is already forming in the small choices you make today.';
 }
 
 export interface CrystalBallProps {
-  onSeekFortune?: (question: string) => Promise<string>;
+  onGenerateFortune?: () => Promise<string>;
+  onAskFollowUp?: (question: string) => Promise<string>;
+  initialFortune?: string | null;
+  initialFollowUp?: { question: string; answer: string } | null;
+  fortuneUsed?: boolean;
+  followUpUsed?: boolean;
   backHref?: string;
   luckMeterHref?: string;
   communityMapHref?: string;
-  dailyQuota?: DailyQuota;
 }
 
 export default function CrystalBall({
-  onSeekFortune = defaultFortuneGenerator,
+  onGenerateFortune = defaultFortuneGenerator,
+  onAskFollowUp = defaultFollowUpGenerator,
+  initialFortune = null,
+  initialFollowUp = null,
+  fortuneUsed = false,
+  followUpUsed = false,
   backHref = '/',
   luckMeterHref = '/lucky-meter',
   communityMapHref = '/map',
-  dailyQuota = null,
 }: CrystalBallProps) {
-  const [question, setQuestion] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
+  const { ready: resetReady, formatted: resetCountdown } = useDailyResetCountdown();
+
+  const [greeting, setGreeting] = useState('');
+  const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currentFortune, setCurrentFortune] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [readings, setReadings] = useState<Reading[]>([]);
+  const [currentFortune, setCurrentFortune] = useState<string | null>(initialFortune);
+  const [showResult, setShowResult] = useState(Boolean(initialFortune));
+  const [followUpQuestion, setFollowUpQuestion] = useState('');
+  const [followUpAnswer, setFollowUpAnswer] = useState<string | null>(
+    initialFollowUp?.answer || null,
+  );
+  const [savedFollowUpQuestion, setSavedFollowUpQuestion] = useState(
+    initialFollowUp?.question || '',
+  );
+  const [followUpStatus, setFollowUpStatus] = useState<FollowUpStatus>(
+    initialFollowUp?.answer ? 'done' : 'idle',
+  );
+  const [followUpError, setFollowUpError] = useState<string | null>(null);
 
   // Progressive reveal state
-  const [revealedCharCount, setRevealedCharCount] = useState<number>(0);
+  const [revealedCharCount, setRevealedCharCount] = useState<number>(
+    initialFortune ? Array.from(initialFortune).length : 0,
+  );
   const [isRevealPaused, setIsRevealPaused] = useState(false);
   const [leafFlight, setLeafFlight] = useState<LeafFlight | null>(null);
   const fortuneChars = useMemo(() => currentFortune ? Array.from(currentFortune) : [], [currentFortune]);
@@ -116,7 +136,10 @@ export default function CrystalBall({
   const leafFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  const isBusy = status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse';
+
   useEffect(() => {
+    setGreeting(pickGreeting());
     void preloadCrystalBallAudio();
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
@@ -135,6 +158,24 @@ export default function CrystalBall({
       stopCrystalBallEnergy();
     };
   }, []);
+
+  // Adopt a fortune saved by this tab or another tab once the current reveal is
+  // not busy, so a storage event can never interrupt the animation.
+  useEffect(() => {
+    if (!initialFortune || initialFortune === currentFortune || isBusy) return;
+    setCurrentFortune(initialFortune);
+    setShowResult(true);
+    setStatus('idle');
+    setRevealedCharCount(Array.from(initialFortune).length);
+  }, [initialFortune, currentFortune, isBusy]);
+
+  // Adopt a saved follow-up without replaying the fortune sequence.
+  useEffect(() => {
+    if (!initialFollowUp || followUpAnswer === initialFollowUp.answer) return;
+    setSavedFollowUpQuestion(initialFollowUp.question);
+    setFollowUpAnswer(initialFollowUp.answer);
+    setFollowUpStatus('done');
+  }, [initialFollowUp, followUpAnswer]);
 
   // Handle progressive text reveal
   useEffect(() => {
@@ -229,13 +270,12 @@ export default function CrystalBall({
     if (status !== 'revealing') setStatus('revealing');
   }, [prefersReducedMotion, status, currentFortune]);
 
-  const handleSeekFortune = useCallback(async () => {
+  const handleGenerateFortune = useCallback(async () => {
+    if (isBusy || fortuneUsed) return;
+
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-
-    const trimmed = question.trim();
-    if (!trimmed || status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse') return;
 
     // Scroll scene into view immediately so it starts while loading
     if (ballSceneRef.current && !prefersReducedMotion) {
@@ -248,12 +288,18 @@ export default function CrystalBall({
     setRevealedCharCount(0);
     setIsRevealPaused(true);
     setShowResult(false);
+    setLeafFlight(null);
+    setFollowUpQuestion('');
+    setFollowUpAnswer(null);
+    setSavedFollowUpQuestion('');
+    setFollowUpStatus('idle');
+    setFollowUpError(null);
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
 
     try {
-      const answer = await onSeekFortune(trimmed);
+      const answer = await onGenerateFortune();
       stopCrystalBallEnergy();
       if (!answer || answer.trim() === '') {
         throw new Error('Received an empty fortune.');
@@ -264,11 +310,6 @@ export default function CrystalBall({
       const normalizedAnswer = answer.replace(/[*_]{1,2}/g, '');
 
       setCurrentFortune(normalizedAnswer);
-      setReadings((prev) => [
-        { id: crypto.randomUUID(), question: trimmed, answer },
-        ...prev,
-      ]);
-      setQuestion('');
       setShowResult(true);
       setRevealedCharCount(0);
       setLeafFlight(null);
@@ -293,7 +334,36 @@ export default function CrystalBall({
       setStatus('error');
       setErrorMessage(error instanceof Error ? error.message : null);
     }
-  }, [question, status, onSeekFortune, prefersReducedMotion]);
+  }, [isBusy, fortuneUsed, onGenerateFortune, prefersReducedMotion]);
+
+  const handleAskFollowUp = useCallback(async () => {
+    const trimmed = followUpQuestion.trim();
+    if (!trimmed || followUpStatus === 'loading' || followUpUsed || !currentFortune) return;
+
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    setFollowUpStatus('loading');
+    setFollowUpError(null);
+
+    try {
+      const answer = await onAskFollowUp(trimmed);
+      stopCrystalBallEnergy();
+      if (!answer || answer.trim() === '') {
+        throw new Error('Received an empty follow-up answer.');
+      }
+      playCrystalBallReveal();
+      setSavedFollowUpQuestion(trimmed);
+      setFollowUpAnswer(answer.replace(/[*_]{1,2}/g, ''));
+      setFollowUpQuestion('');
+      setFollowUpStatus('done');
+    } catch (error: unknown) {
+      stopCrystalBallEnergy();
+      setFollowUpStatus('error');
+      setFollowUpError(error instanceof Error ? error.message : null);
+    }
+  }, [followUpQuestion, followUpStatus, followUpUsed, currentFortune, onAskFollowUp]);
 
   const statusHeadline =
     status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling'
@@ -301,10 +371,19 @@ export default function CrystalBall({
       : status === 'error'
         ? errorMessage || 'The connection to the ethereal realm was lost. Please try again.'
         : currentFortune
-          ? 'Ask another question…'
-          : 'Awaiting your question…';
+          ? 'Your daily fortune'
+          : fortuneUsed
+            ? 'Today’s fortune has already been revealed.'
+            : 'The mists are waiting…';
 
-  const isBusy = status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse';
+  const busyLabel =
+    status === 'loading'
+      ? 'Consulting the Mists…'
+      : status === 'preRevealPulse'
+        ? 'Gathering Energy…'
+        : status === 'leafFalling'
+          ? 'Guiding the Leaf…'
+          : 'Revealing Fortune…';
 
   return (
     <div className={styles.page}>
@@ -336,8 +415,9 @@ export default function CrystalBall({
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
           <p className={styles.subtitle}>
-            Focus on a question, set your intention, and see what the Crystal Ball reveals.
+            A fresh Canadian fortune is waiting in the glass. Press the button and let the mists do the rest.
           </p>
+          <p className={styles.greeting}>{greeting || '\u00A0'}</p>
         </header>
 
         <div className={styles.ballScene} ref={ballSceneRef}>
@@ -429,112 +509,137 @@ export default function CrystalBall({
         </div>
 
         <section className={styles.card}>
-          <p className={styles.cardStatus}>{statusHeadline}</p>
-          {(!showResult || !currentFortune) && (
-            <>
-              {dailyQuota && (
-                <p className={styles.dailyQuota} role="status" aria-live="polite">
-                  {dailyQuota.remaining > 0
-                    ? `${dailyQuota.remaining} of ${dailyQuota.limit} questions remaining today`
-                    : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
-                </p>
+          <p
+            className={styles.cardStatus}
+            role={status === 'error' ? 'alert' : undefined}
+          >
+            {statusHeadline}
+          </p>
+
+          <p className={styles.dailyQuotaCountdown} aria-label="Time until daily reset">
+            Daily reset in {resetReady ? resetCountdown : '--:--:--'}
+          </p>
+
+          {!currentFortune && !fortuneUsed && (
+            <button
+              type="button"
+              className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
+              onClick={() => {
+                playButtonClick();
+                playCrystalBallEnergy();
+                void handleGenerateFortune();
+              }}
+              disabled={isBusy}
+            >
+              {isBusy ? (
+                <>
+                  <svg
+                    aria-hidden="true"
+                    className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {busyLabel}
+                </>
+              ) : (
+                <>
+                  <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
+                  Generate My Fortune
+                </>
               )}
-              {dailyQuota && <DailyQuotaCountdown resetAt={dailyQuota.resetAt} />}
-
-              <label htmlFor="crystal-ball-question" className="sr-only">
-                Your question for the crystal ball
-              </label>
-              <textarea
-                id="crystal-ball-question"
-                className={styles.input}
-                placeholder="What’s on your mind?"
-                rows={2}
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                disabled={isBusy}
-              />
-
-              <button
-                type="button"
-                className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
-                onClick={() => {
-                  playButtonClick();
-                  playCrystalBallEnergy();
-                  void handleSeekFortune();
-                }}
-                disabled={isBusy || question.trim() === "" || dailyQuota?.remaining === 0}
-                aria-disabled={undefined}
-              >
-                {isBusy ? (
-                  <>
-                    <svg
-                      aria-hidden="true"
-                      className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {status === 'loading'
-                      ? 'Consulting the Mists…'
-                      : status === 'preRevealPulse'
-                        ? 'Gathering Energy…'
-                        : status === 'leafFalling'
-                          ? 'Guiding the Leaf…'
-                          : 'Revealing Fortune…'}
-                  </>
-                ) : (
-                  <>
-                    <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
-                    Seek Fortune
-                  </>
-                )}
-              </button>
-            </>
+            </button>
           )}
 
-          {showResult && currentFortune && status === 'idle' && (
-            <div className={`mt-4 flex flex-col items-center animate-in fade-in duration-500`}>
-              {dailyQuota && (
-                <p className={`${styles.dailyQuota} mb-4 text-center`} role="status" aria-live="polite">
-                  {dailyQuota.remaining > 0
-                    ? `${dailyQuota.remaining} of ${dailyQuota.limit} questions remaining today`
-                    : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
+          {!currentFortune && fortuneUsed && (
+            <p className={styles.dailyQuota} role="status">
+              Today’s fortune has already been delivered. Come back after your next local midnight for a fresh one.
+            </p>
+          )}
+
+          {currentFortune && status === 'idle' && (
+            <section className={styles.followUp} aria-labelledby="crystal-ball-followup-prompt">
+              <p id="crystal-ball-followup-prompt" className={styles.followUpPrompt}>
+                Curious about your fortune? Ask the Crystal Ball one follow-up question.
+              </p>
+
+              {followUpAnswer ? (
+                <div aria-live="polite">
+                  {savedFollowUpQuestion && (
+                    <p className={styles.followUpQuestion}>
+                      You asked: “{savedFollowUpQuestion}”
+                    </p>
+                  )}
+                  <p className={styles.followUpAnswer}>{followUpAnswer}</p>
+                  <p className={styles.followUpNote}>
+                    That’s your follow-up for today. The Crystal Ball is quiet until the next local midnight.
+                  </p>
+                </div>
+              ) : followUpUsed ? (
+                <p className={styles.followUpNote}>
+                  You’ve used today’s follow-up question. Come back after your next local midnight for another one.
                 </p>
+              ) : (
+                <>
+                  <label htmlFor="crystal-ball-followup" className="sr-only">
+                    Your follow-up question for the crystal ball
+                  </label>
+                  <textarea
+                    id="crystal-ball-followup"
+                    className={styles.input}
+                    placeholder="Ask about your fortune…"
+                    rows={2}
+                    maxLength={120}
+                    value={followUpQuestion}
+                    onChange={(event) => setFollowUpQuestion(event.target.value)}
+                    disabled={followUpStatus === 'loading'}
+                  />
+
+                  <button
+                    type="button"
+                    className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
+                    onClick={() => {
+                      playButtonClick();
+                      playCrystalBallEnergy();
+                      void handleAskFollowUp();
+                    }}
+                    disabled={followUpStatus === 'loading' || followUpQuestion.trim() === ''}
+                  >
+                    {followUpStatus === 'loading' ? (
+                      <>
+                        <svg
+                          aria-hidden="true"
+                          className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Consulting the Mists…
+                      </>
+                    ) : (
+                      <>
+                        <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
+                        Ask the Crystal Ball
+                      </>
+                    )}
+                  </button>
+
+                  {followUpStatus === 'error' && (
+                    <p className={styles.followUpError} role="alert">
+                      {followUpError || 'The Crystal Ball could not answer that follow-up. Please try again.'}
+                    </p>
+                  )}
+                </>
               )}
-              <button
-                type="button"
-                className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
-                onClick={() => {
-                  playButtonClick();
-                  setShowResult(false);
-                  setCurrentFortune(null);
-                  setQuestion('');
-                  setStatus('idle');
-                }}
-              >
-                <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
-                Ask Another Question
-              </button>
-            </div>
+            </section>
           )}
         </section>
-
-        {readings.length > 0 && (
-          <section className={styles.readings}>
-            <h2 className={styles.readingsTitle}>Session Readings</h2>
-            <ul className={styles.readingsList}>
-              {readings.map((reading) => (
-                <li key={reading.id} className={styles.readingItem}>
-                  <p className={styles.readingQ}>Q: {reading.question}</p>
-                  <p className={styles.readingA}>{reading.answer}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         <nav className={styles.nav} aria-label="Crystal Ball navigation">
           <Link href={backHref} className={styles.navButton}>

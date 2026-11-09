@@ -11,6 +11,7 @@ import Image from 'next/image';
 
 import ResonanceButton from './ResonanceButton';
 import { playButtonClick } from '../app/lib/audio';
+import { useDailyResetCountdown } from './daily-reset-countdown';
 
 
 const LUCKY_QUOTES = [
@@ -89,7 +90,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [isRevealing, setIsRevealing] = useState(false);
   const [tier, setTier] = useState<string>("");
   const [isLockedOut, setIsLockedOut] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState('');
+  const { formatted: resetCountdown } = useDailyResetCountdown();
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
@@ -140,29 +141,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }
   }, []);
 
-  // Timer logic for countdown until midnight local time
-  useEffect(() => {
-    if (!isLockedOut && !isRevealed) return;
-
-    const calculateTimeRemaining = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0); // Midnight tonight
-
-      const diff = midnight.getTime() - now.getTime();
-
-      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeRemaining(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-    };
-
-    calculateTimeRemaining(); // initial call
-    const timer = setInterval(calculateTimeRemaining, 1000);
-
-    return () => clearInterval(timer);
-  }, [isLockedOut, isRevealed]);
 
   const handleReveal = async () => {
     // Prevent concurrent sequences
@@ -1244,7 +1222,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
               <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
               <div className="text-3xl font-mono text-cyan-300 tracking-wider shadow-cyan-500/20 drop-shadow-md">
-                {timeRemaining}
+                {resetCountdown}
               </div>
             </div>
           </div>
