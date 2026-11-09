@@ -1,3 +1,25 @@
+## 2026-11-08 — PR #1783 QA repair follow-up
+
+- Restored Recent Canadian Activity to up to three newest stories per province using a SQL window-function partition derived from the existing province alias rules. The result is bounded at 39 rows maximum (13 provinces/territories × 3).
+- Added unit coverage for per-province activity limits, made the map browser test wait for the actual summary API response and hydrated markers, and made the gold CTA assertion wait for the final pressed-edge transition rather than sampling mid-transition.
+- Replaced the fixed Playwright idle sleep with a network-idle condition and removed a production localhost URL fallback from the Lucky Stories API route. The localhost pattern was a scanner pattern match, not an exploitable remote access path; the route receives a framework-provided request URL.
+- Reconciled the Spec Kit data-correction requirement with the owner-reported production cleanup: IDs 9–21 were renamed, only the leading [dev-seed] marker was removed, and the owner reports 21 rows retained with contributor IDs 1–8 preserved. This workspace could not independently query production.
+- Current CI evidence at the pre-repair PR head: Vitest 446/446, TypeScript, Spec Kit gate, OpenNext, DevSkim and updater passed; Visual QA failed on three stale homepage baselines and one map hydration timeout, with one flaky gold-edge timing assertion. The homepage screenshots show the newer approved welcome panel versus the older committed baselines.
+- Pending: regenerate the three approved homepage baselines using Playwright on the repository runner, execute current-head `./freebuff-verify.sh` and full Visual QA, re-audit all scanner results, and complete a fresh final diff review.
+- PR #1783 remains open and unmerged: https://github.com/davidcollier77-code/Luckypickcanada/pull/1783.
+
+## 2026-11-08 — Lucky Stories paged province feed (implementation, data correction blocked)
+
+- Replaced the full-collection `/api/lucky-stories` GET with a province-scoped page request (`province`, `offset`, `limit`, `hours`, `summary`, `story`) and SQL-level province matching built from the same alias table as `getStoryProvince`, so other provinces' rows are never returned to the page.
+- The feed renders three stories, appends the next three near the sentinel, deduplicates ids and ignores stale responses after a province switch; the panel heading, province controls and markers use independent `count(*) filter` aggregates and refresh through a `summary=1` poll that no longer replaces the feed.
+- First visits select the highest-count province with deterministic ties; only a manual choice is stored (`luckyStoriesProvince`) and restored, and a saved province with no published stories falls back to the computed default.
+- Shared links resolve through a single-story query and pin that story above the province's first page; the 24-hour filter is applied in SQL for the feed, counts and recent slice.
+- Checks: full Vitest 54 files / 446 tests PASS, Playwright pagination + map markers 15/15 across three viewports, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, build 426.44 MB < 495 MB.
+- BLOCKED: renaming demonstration authors for IDs 9–21 needs the production database; this workspace has no credential and the Neon integration has no SQL tool, so no row was changed. The prepared mapping and guarded statement are in the PR summary; genuine IDs 1–8 and all story text, dates and provinces remain untouched.
+- Known reduction: Recent Canadian Activity is now the three newest published stories overall (previously up to three per province) so the first payload stays bounded.
+
+---
+
 ## 2026-11-08 — Homepage welcome panel cleanup (implementation candidate)
 
 - Removed the oversized “Explore free experiences” link and the gold entertainment-only line from the welcome card while retaining its dark navy/gold frame, heading, lede and explanatory paragraph.
@@ -629,3 +651,27 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 
 
 - **Mobile touch verification hardening:** the mobile Explore test now reloads between the click-path/cooldown checks and the touch-path check. It records `scrollY` after bringing the Explore stage into view, verifies the tap point resolves to the Explore button, then requires further scroll movement after the touch. This prevents `scrollIntoViewIfNeeded()` itself from satisfying the activation assertion.
+
+
+## 2026-11-08 — PR #1783 homepage responsive QA and visual baseline refresh
+
+- Inspected the failed desktop, mobile-390 and mobile-412 Playwright screenshot comparisons and the current approved hero implementation. The mobile expected PNGs represented an older layout; the current rendering used the later approved hero composition. No production CSS/design changes were justified by that screenshot comparison alone.
+- Added a Playwright first-screen responsive geometry matrix for 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS px. Added containment, overflow, navigation, text-fit and Explore control checks.
+- Corrected the sitewide gold CTA pressed-state test to wait for the settled 1px shadow depth rather than reading a fractional transition frame.
+- Generated three current homepage viewport snapshots with the existing Playwright Chromium workflow. All three snapshot update projects passed; only the three approved PNG paths were staged and committed in `3203f086be8eb841eca7ee20e61389cbe05c0741`.
+- The snapshot-refresh-only Visual QA run passed full Vitest, standalone TypeScript and `./freebuff-verify.sh`, then intentionally skipped the full regression step after committing the PNGs. A normal full Playwright run on the current branch remains required.
+- Ghost Invasion was not run because its installed local-only mode requires a disposable localhost app/reset endpoint that this connected session cannot provide. No Ghost Invasion independent review is claimed. Firecrawl was not used.
+
+
+## 2026-11-08 — PR #1783 responsive QA verified
+
+- Full current-head Playwright Visual QA run `42536190088` completed successfully: **147 passed, 6 skipped, 0 failed** across desktop, mobile-390 and mobile-412 projects (7.7 minutes). All three homepage viewport screenshot comparisons passed.
+- The new homepage geometry matrix passed at 320, 360, 390, 412, 768, 820, 1024, 1180 and 1440 CSS px; the matrix runs once in desktop Chromium. Existing mobile-specific accessibility and touch tests passed in the mobile projects.
+- The settled 1px pressed gold-edge assertion passed; province map marker, 24-hour filter and paged-story browser tests passed.
+- Full Vitest: 54 files / 447 tests passed. Standalone TypeScript passed. `./freebuff-verify.sh` passed, including Spec Kit artifact validation, verification-integrity tests and documentation refresh 36/36.
+- OpenNext Cloudflare build, compiled Tailwind, worker/assets and Wrangler no-deploy validation passed. `.next + public` measured 335,370,994 bytes / **319.83 MiB**, below the 495 MiB limit.
+- CodeQL passed. DevSkim passed: 301 SARIF results, 281 verified false positives suppressed, 20 existing findings remained (not represented as zero alerts). Updater scheduler governance/tests and Wrangler dry run passed. Verification Integrity passed.
+- The temporary one-time screenshot-refresh workflow capability was removed; normal Visual QA is read-only and uses the existing Playwright path.
+- The local Playwright server lacked `DATABASE_URL`; observed API 500 log lines were the configured-unavailable test-environment case. Browser assertions still passed. This does not establish a production 500, and production Neon read-back remains separately unverified.
+- Ghost Invasion was not run because its local-only runner requires a disposable localhost app and same-origin reset fixture not available in this session. Firecrawl was not used.
+- PR #1783 remains open and unmerged. Verification evidence above is for tested head `fadad69efc167a5fd06443e04f0453fc7813490d`; this Memory Bank / Spec Kit status update is a documentation-only follow-up commit and triggers a fresh CI run.

@@ -34,6 +34,11 @@ function translateY(transform: string): number {
   return values.length === 16 ? values[13] : values[5];
 }
 
+function pressedGoldEdgeDepth(boxShadow: string): number {
+  const match = boxShadow.match(/rgb\(138,\s*85,\s*12\)\s+0px\s+([\d.]+)px\s+0px/);
+  return match ? Number(match[1]) : Number.NaN;
+}
+
 async function capture(page: Page, name: string, testInfo: TestInfo) {
   const path = testInfo.outputPath(`${name}-${testInfo.project.name}.png`);
   await page.screenshot({ path, animations: 'disabled' });
@@ -140,8 +145,13 @@ test.describe('Site-wide gold CTA', () => {
     await expect
       .poll(async () => translateY(await button.evaluate((el) => getComputedStyle(el).transform)), { timeout: 5_000 })
       .toBeGreaterThanOrEqual(1.5);
-    const pressed = await button.evaluate((el) => getComputedStyle(el).boxShadow);
-    expect(pressed).toContain(`${EDGE} 0px 1px 0px`);
+    // box-shadow transitions continuously alongside transform. Wait for the
+    // pressed gold edge to reach its settled 1px depth instead of sampling an
+    // arbitrary fractional frame (which is especially visible at mobile DPRs).
+    await expect.poll(
+      async () => pressedGoldEdgeDepth(await button.evaluate((el) => getComputedStyle(el).boxShadow)),
+      { timeout: 5_000, intervals: [50, 100, 150, 250] },
+    ).toBeCloseTo(1, 1);
     await capture(page, 'sitewide-gold-pressed', testInfo);
 
     await page.mouse.move(x, Math.max(y - 200, 1));

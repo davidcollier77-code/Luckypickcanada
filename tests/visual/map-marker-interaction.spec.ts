@@ -43,13 +43,64 @@ const provinceCounts = mapStories.reduce<Record<string, number>>((counts, story)
   return counts;
 }, {});
 
-const mapData = {
-  stories: mapStories,
-  provinceCounts,
-  totalStories: mapStories.length,
-  provincesWithStories: Object.keys(provinceCounts).length,
-  isConfigured: true,
-};
+const PROVINCE_ORDER = PROVINCES.map((province) => province.code);
+
+function pickDefaultProvince(counts: Record<string, number>) {
+  let code = 'ON';
+  let best = 0;
+  for (const candidate of PROVINCE_ORDER) {
+    const count = counts[candidate] || 0;
+    if (count > best) {
+      best = count;
+      code = candidate;
+    }
+  }
+  return code;
+}
+
+const defaultProvince = pickDefaultProvince(provinceCounts);
+
+function buildMapPayload(url: URL) {
+  const summaryOnly = url.searchParams.get('summary') === '1';
+  const hours = url.searchParams.get('hours') === '24';
+  const now = Date.now();
+  const scopedStories = hours
+    ? mapStories.filter((story) => now - Date.parse(story.createdAt) < 24 * 60 * 60 * 1000)
+    : mapStories;
+  const scopedCounts = scopedStories.reduce<Record<string, number>>((counts, story) => {
+    counts[story.province] = (counts[story.province] || 0) + 1;
+    return counts;
+  }, {});
+  const requestedProvince = url.searchParams.get('province');
+  const selectedProvince = requestedProvince && PROVINCE_ORDER.includes(requestedProvince)
+    ? requestedProvince
+    : defaultProvince;
+  const provinceStories = scopedStories
+    .filter((story) => story.province === selectedProvince)
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  const limit = Number(url.searchParams.get('limit') ?? 3);
+  const offset = Number(url.searchParams.get('offset') ?? 0);
+  const stories = summaryOnly ? [] : provinceStories.slice(offset, offset + limit);
+  const storyParam = url.searchParams.get('story');
+
+  return {
+    stories,
+    linkedStory: mapStories.find((story) => story.id === storyParam) ?? null,
+    provinceCounts: scopedCounts,
+    allTimeProvinceCounts: provinceCounts,
+    totalStories: mapStories.length,
+    provincesWithStories: Object.keys(provinceCounts).length,
+    recentStories: PROVINCES.flatMap((province) => scopedStories
+      .filter((story) => story.province === province.code)
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+      .slice(0, 3)),
+    defaultProvince,
+    selectedProvince,
+    provinceTotal: provinceStories.length,
+    hasMore: offset + stories.length < provinceStories.length,
+    isConfigured: true,
+  };
+}
 
 /** The Maritime fan-out that the stylesheet applies at each width band. */
 const MARITIME_FAN = {
@@ -60,22 +111,30 @@ const MARITIME_FAN = {
 async function openPopulatedMap(page: Page) {
   await page.route('**/api/lucky-stories*', async (route) => {
     if (route.request().method() !== 'GET') return route.continue();
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mapData) });
+    const url = new URL(route.request().url());
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(buildMapPayload(url)) });
+  });
+  const initialSummaryResponse = page.waitForResponse((response) => {
+    const url = new URL(response.url());
+    return url.pathname === '/api/lucky-stories'
+      && response.request().method() === 'GET'
+      && url.searchParams.get('summary') === '1';
   });
   await page.goto('/map', { waitUntil: 'domcontentloaded' });
+  const summaryResponse = await initialSummaryResponse;
+  expect(summaryResponse.status()).toBe(200);
+
   // Interaction is what is under test, not the smooth-scroll animation: with it
   // enabled the artwork keeps moving while Playwright clicks and the click can
   // land beside the marker.
   await page.addStyleTag({ content: 'html { scroll-behavior: auto !important; }' });
-  await expect(page.locator('.province-marker')).toHaveCount(PROVINCES.length);
+  await expect(page.locator('.province-marker')).toHaveCount(PROVINCES.length, { timeout: 30_000 });
   await expect(page.locator('.map-statistics .map-statistic')).toHaveCount(1);
   await expect(page.locator('.map-statistics')).toContainText('Total lucky stories shared (All-time)');
   await expect(page.locator('.map-statistics')).toContainText('21');
   await expect(page.locator('.map-statistics')).not.toContainText('Provinces with lucky moments');
   await expect(page.locator('.map-statistics')).not.toContainText('Mapped story markers');
-  // The client refresh replaces the empty server payload, which changes the
-  // panel and statistic heights; let that layout settle before clicking.
-  await page.waitForTimeout(500);
+  await expect(page.locator('.map-statistics')).toContainText('21');
 }
 
 test('every province marker selects only its own province when clicked', async ({ page }) => {
