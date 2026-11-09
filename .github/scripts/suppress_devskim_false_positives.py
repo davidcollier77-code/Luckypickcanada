@@ -156,7 +156,6 @@ JSON_STRING_PAIR_PATTERN = re.compile(
     r"""^\s*"(?P<key>(?:\\.|[^"\\])*)"\s*:\s*"(?P<value>(?:\\.|[^"\\])*)"\s*,?\s*$"""
 )
 KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
-    "workers/jules-bridge/src/index.js",
     "app/checkout-modal.js",
     "app/lucky-card-reveal.js",
     "app/lib/audio.js",
@@ -805,45 +804,6 @@ def should_suppress_constitution_template_checksum(
     )
 
 
-def should_suppress_public_cloudflare_account_id(
-    relative_path: str,
-    source_text: str,
-    region: dict,
-    context: "SourceContext | None" = None,
-) -> bool:
-    """Suppress the documented public Cloudflare account identifier, not credentials."""
-    context = context or SourceContext.from_text(source_text)
-    if relative_path != "workers/jules-bridge/src/index.js":
-        return False
-    line_number = region.get("startLine")
-    if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
-        return False
-    lines = context.lines
-    if line_number > len(lines):
-        return False
-    line = lines[line_number - 1]
-    match = re.fullmatch(
-        r"""[ \t]*const\s+CLOUDFLARE_ACCOUNT_ID\s*=\s*["']([0-9a-fA-F]{32})["'];?\s*""",
-        line,
-    )
-    if not match:
-        return False
-    # DevSkim reports the account literal, including quotes; never let another
-    # finding on this declaration line inherit the account-ID exception.
-    region_span = _source_region_span_on_line(
-        region, line_number, line, source_text, context=context
-    )
-    literal_span = (match.start(1) - 1, match.end(1) + 1)
-    surrounding_context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
-    return (
-        region_span is not None
-        and region_span[0] >= literal_span[0]
-        and region_span[1] <= literal_span[1]
-        and "account ID is an identifier, not an authentication credential" in surrounding_context
-        and "CF_WEBHOOK_SECRET authenticates requests" in surrounding_context
-    )
-
-
 def _loopback_origin_spans(line: str) -> list[tuple[int, int]]:
     """Return the spans of JSON string values whose URL host is loopback."""
     spans = []
@@ -1083,7 +1043,6 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 if not (
                     relative_path == ".docs/manifest.json"
                     or relative_path.startswith(".specify/")
-                    or relative_path == "workers/jules-bridge/src/index.js"
                 ):
                     continue
             elif rule_id == "DS126858":
@@ -1139,13 +1098,6 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 justification = (
                     "False positive: this is the checked-in SHA-256 digest of the constitution "
                     "template, not a credential."
-                )
-            elif rule_id == "DS173237" and should_suppress_public_cloudflare_account_id(
-                relative_path, source_text, region, context=context
-            ):
-                justification = (
-                    "False positive: this is the repository's documented public Cloudflare "
-                    "account identifier; the webhook secret is configured separately."
                 )
             elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(
                 source_line, region, source_text, context=context

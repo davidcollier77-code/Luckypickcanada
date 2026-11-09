@@ -1,3 +1,14 @@
+# Current Task — Jules Bridge retirement (2026-11-09)
+
+- **Branch:** `chore/retire-jules-bridge-20261109`; Spec Kit feature `specs/123-jules-bridge-retirement`.
+- **Scope:** Remove the retired Jules Bridge Worker source/configuration, dedicated GitHub deployment workflow, and Worker-specific DevSkim suppression. Update only stale current agent-folder inventory and Memory Bank status.
+- **Cloudflare status:** The owner reports `jules-bridge` was deleted and a follow-up lookup returned HTTP 404. This repository task removes the GitHub-side code and deployment connection; it does not modify Cloudflare.
+- **Protected resources:** `luckypickcanada-app`, `workers-issues-to-github`, and `luckypickcanada-updater-scheduler` remain out of scope, as do their workflows, routes, bindings, secrets, and configuration. Shared GitHub deployment credentials remain untouched.
+- **History:** Retain historical Jules specs, completed task records, prior PR summaries, and branch history. They are historical records, not active integration code.
+- **Verification:** GitHub source inspection is available; this connected session has no repository shell. Focused Python tests, full Vitest, `./freebuff-verify.sh`, and build measurement must be reported from CI or a shell-capable environment, not claimed as locally run.
+
+---
+
 # Current Task — Playwright CLI agent toolkit (2026-11-09)
 
 - **Branch:** `freebuff/playwright-cli-agent-toolkit-20261109`; Spec Kit feature `specs/122-playwright-cli-agent-toolkit`.

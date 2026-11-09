@@ -1,3 +1,12 @@
+## 2026-11-09 — Jules Bridge retirement
+
+- Removed the retired Jules Bridge Worker implementation, its Wrangler configuration and dedicated GitHub deployment workflow from the repository.
+- Removed the DevSkim suppression special case and tests that applied only to the retired Worker; other scanner rules remain unchanged.
+- Updated the stale active agent-folder inventory from `.jules/` to `.freebuff/`.
+- The owner reports the Cloudflare Worker was deleted and verified absent (HTTP 404). The remaining three Workers and their configuration are outside this task and remain unchanged in this PR.
+- Historical Jules specifications, old PR summaries, and verification records are retained as project history.
+- Local shell verification is unavailable in this connected GitHub API session; focused Python tests, full Vitest, `./freebuff-verify.sh`, and production build-size verification must be confirmed by PR CI before verified completion.
+
 ## 2026-11-09 — Playwright CLI agent toolkit (PR #1786)
 
 - Opened [PR #1786](https://github.com/davidcollier77-code/Luckypickcanada/pull/1786) with Microsoft's official Playwright CLI skill v0.1.23, all ten reference guides and the retained Apache-2.0 license.
