@@ -6,7 +6,7 @@
 - Added one shared DST-safe local-midnight countdown store used by Card Reveal, Crystal Ball and Lucky Meter, with focus/visibility/page-show recovery and separate feature allowances.
 - Added the five approved FAQ entries and updated the existing daily-reset answer; homepage wording was not changed.
 - Checks: full Vitest 55 files / 457 tests PASS; `./freebuff-verify.sh` exit 0; final build 389,776,186 B (371.72 MiB) < 495 MB; `git diff --check` clean. Cloud-browser QA passed greetings, failure-no-charge, fortune/follow-up, persistence, date reset, cross-tab sync, three-countdown deadline agreement (0.921 s spread), 390 px layout, keyboard activation, reduced motion and rendered FAQ. Playwright is BLOCKED by missing Chromium system libraries; Browserless is BLOCKED by the private-preview 403; Browserbase was not used.
-- PR submission is pending; the PR body is the single canonical summary.
+- PR [#1785](https://github.com/davidcollier77-code/Luckypickcanada/pull/1785) is open and unmerged; its body is the single canonical summary and records the final HEAD SHA.
 
 ## 2026-11-08 — PR #1783 QA repair follow-up
 
