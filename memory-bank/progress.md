@@ -1,3 +1,12 @@
+## 2026-11-09 — Playwright CLI agent toolkit
+
+- Vendored Microsoft's official Playwright CLI skill v0.1.23, all ten reference guides and Apache-2.0 license under `.agents/skills/playwright-cli/`; recorded upstream tag and commit.
+- Added project instructions covering all eight browser-work capability areas: browser interaction, responsive/mobile QA, test generation/run/debug/repair, network/API inspection, console/traces, visual screenshots, cookies/storage/auth state, and PDF/video/PR evidence.
+- Reused the existing local Playwright 1.64.1 packages through `pnpm exec playwright cli`; no separate `@playwright/cli`, package/lockfile change or MCP configuration.
+- Added `scripts/setup-playwright-agent.sh` with opt-in browser download and headless launch probe, plus a Vitest integrity test.
+- Preserved existing visual projects/workflow; `.docs/` remains read-only. Browser/system-library failures remain environment blockers subject to existing Browserless fallback policy.
+- Connected session could not run repository shell commands. Setup script, Vitest, `./freebuff-verify.sh`, browser launch and production build are not claimed as run; current PR CI must provide those results.
+
 ## 2026-11-09 — PR #1785 review follow-up
 
 - Applied the persisted usage snapshot before rejecting a duplicate fortune response, so a tab that missed the storage event adopts the already-saved reading instead of leaving a stale Generate button. Removed the unused calendar `context` from the Oracle success payload.
