@@ -42,7 +42,7 @@
 
 - [x] T011 Update `.specify/feature.json` to `specs/122-playwright-cli-agent-toolkit`.
 - [x] T012 Record verified task context in `memory-bank/activeContext.md` and `memory-bank/progress.md`.
-- [x] T013 Review the diff, run available verification and submit one canonical-summary PR that stays open and unmerged.
+- [x] T013 Review the repository diff and submit one canonical-summary PR that stays open and unmerged; report unavailable local shell checks as NOT RUN and let PR CI provide runtime evidence.
 
 ## Dependencies & Execution Order
 

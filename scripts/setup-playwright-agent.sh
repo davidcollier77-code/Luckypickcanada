@@ -36,8 +36,8 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
-if [[ "$node_major" -lt 20 ]]; then
-  printf 'Playwright CLI requires Node.js 20 or newer; repository expects Node.js 22.x (found %s).\n' "$(node --version)" >&2
+if [[ "$node_major" -ne 22 ]]; then
+  printf 'This repository requires Node.js 22.x (found %s).\n' "$(node --version)" >&2
   exit 1
 fi
 
@@ -62,7 +62,7 @@ fi
 
 if [[ "$probe_browser" == true ]]; then
   printf 'Probing a real headless Chromium launch...\n'
-  node --input-type=module <<'NODE'
+  if ! node --input-type=module <<'NODE'
 import { chromium } from 'playwright';
 
 const browser = await chromium.launch({ headless: true });
@@ -78,6 +78,10 @@ try {
   await browser.close();
 }
 NODE
+  then
+    printf 'BLOCKED: Chromium could not launch in this environment. Check the reported host-library error; do not use sudo or install OS packages through this script. Follow AGENTS.md browser fallback guidance.\n' >&2
+    exit 2
+  fi
 fi
 
 printf 'Playwright CLI setup checks completed.\n'
