@@ -749,3 +749,5 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Strengthened the production build limit to strictly below 495 MiB and directed agents to split work into independently reviewable PRs when a change risks the cap.
 - No application, production database, hosting, workflow or scheduled updater files were changed.
 - Local shell verification and Spec Kit setup/resolver commands are unavailable in the GitHub API-only session; PR CI must provide the remaining evidence.
+
+- Follow-up workflow inspection also identified path-conditional Verify Updater Scheduler validation, GitHub Code Scanning Analyze jobs and separate Pullfrog/Amazon Q PR review apps; scheduler deployment remains push-to-main only and was not changed.
