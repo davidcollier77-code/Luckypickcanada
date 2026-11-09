@@ -68,5 +68,6 @@
 - [X] T032 [Testing] Add fallback lock-queue regressions for synchronous throws and rejected operations; record that the claimed deadlock does not reproduce and make no production queue change.
 - [X] T033 [Testing] Inspect the initial-fortune adoption effect for the reported infinite loop; change it only if a reproducible loop is demonstrated.
 - [X] T034 Run focused Vitest, full Vitest, required Playwright Visual QA, `./freebuff-verify.sh`, production build-size measurement, and the complete diff/error audit on the review-follow-up head.
-  - BLOCKED: the pre-existing three-page countdown case cannot navigate `/reveal` in this VM's headless shell (browser closes before load; an isolated one-page probe reproduces it). The six review-specific two-tab browser cases pass in all three projects.
+  - The three-page countdown case now passes on desktop, mobile-390 and mobile-412 after the fontconfig bootstrap in T036.
 - [X] T035 Update the Memory Bank and the canonical PR body with the new HEAD SHA and verification evidence.
+- [X] T036 Add a Playwright Linux fontconfig bootstrap that uses Next's bundled Geist TTF only when the host has no fontconfig file and no system fonts; verify the `/reveal` countdown case on all three projects.

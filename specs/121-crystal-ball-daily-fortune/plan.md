@@ -98,6 +98,7 @@ No external research was needed. The existing implementation already establishes
 - **API minimal disclosure:** `context` is only used server-side to build the provider prompt. Remove it from the success JSON and assert its absence; no client code reads it.
 - **Lock-queue investigation:** The claimed deadlock would require `release()` never to run or the queue gate never to resolve. In the current fallback, `release()` runs in `.finally()` for synchronous throws and rejections, and `queued` resolves from that release. Add unit regressions for both failure modes; do not change the working queue unless a test reproduces a failure.
 - **Infinite-loop claim:** The adoption effect returns when `initialFortune === currentFortune` and only sets state to that same value. No loop is demonstrated; leave the effect unchanged unless a regression reproduces one.
+- **Browser-test font fallback:** Chromium on Linux aborted in `SkFontMgr_FontConfigInterface` when the test image had no `/etc/fonts/fonts.conf` and no system font files. The Playwright config now creates a temporary fontconfig file pointing at Next's bundled Geist TTF only when both conditions are true. Normal developer machines and CI images with system fonts are unchanged, and no production code or dependency is added.
 - No visual, wording, audio, artwork or layout changes are part of this follow-up.
 
 ## Complexity Tracking

@@ -1,4 +1,7 @@
 import { defineConfig } from '@playwright/test';
+import { configurePlaywrightFonts } from './tests/visual/playwright-fontconfig';
+
+configurePlaywrightFonts();
 
 const PORT = 3000;
 

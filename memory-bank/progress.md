@@ -3,8 +3,9 @@
 - Applied the persisted usage snapshot before rejecting a duplicate fortune response, so a tab that missed the storage event adopts the already-saved reading instead of leaving a stale Generate button. Removed the unused calendar `context` from the Oracle success payload.
 - Strengthened the two-tab browser proof: the first request is confirmed in flight and held, the second tab competes while the Web Lock is held, and the test proves one request, one persisted reading, no competing reading, and adoption in both tabs. Added a fallback-path regression that disables Web Locks and suppresses the second tab's storage event.
 - Investigated the claimed lock-queue deadlock and initial-fortune infinite loop. Neither reproduced; added synchronous-throw and rejected-operation queue regressions and left the production queue and effect unchanged.
-- Checks: focused Vitest 25/25 PASS; full Vitest 55 files / 462 tests PASS; review-specific Playwright 6/6 PASS across three projects; `./freebuff-verify.sh` PASS; build 464,179,431 B (442.68 MiB) < 495 MB; `git diff --check` clean. BLOCKED: the pre-existing three-page countdown case cannot navigate `/reveal` in this VM's headless Chromium (browser closes during `page.goto`; isolated probe reproduces).
-- Spec Kit feature 121 updated in Specify → Plan → Tasks → Implement order. PR #1785 remains open and unmerged.
+- Diagnosed the blocked `/reveal` browser case as an environment failure, not an app defect: the VM has no fontconfig file and no system fonts, so Chromium aborts in Skia's fontconfig font manager before navigation. Added a Playwright-only bootstrap that points fontconfig at Next's bundled Geist TTF only when no system font support exists; normal CI and production rendering are unchanged.
+- Checks: full Vitest 55 files / 462 tests PASS; `crystal-ball-daily-limit.spec.ts` 12/12 PASS across desktop, mobile-390 and mobile-412, including the three-page countdown; isolated `/reveal` probe PASS; `tsc --noEmit` exit 0; `./freebuff-verify.sh` PASS; build 467,982,215 B (446.30 MiB) < 495 MB; `git diff --check` clean.
+- Spec Kit feature 121 updated in Specify → Plan → Tasks → Implement order; T036 records the fontconfig repair. PR #1785 remains open and unmerged.
 
 ## 2026-11-09 — PR #1785 independent review repairs
 

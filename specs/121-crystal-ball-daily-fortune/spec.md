@@ -113,6 +113,11 @@ An independent review of PR #1785 raised five follow-up findings. Only reproduci
 - **FR-021**: A duplicate successful fortune response MUST NOT overwrite the delivered reading; the client state MUST reflect the persisted reading before reporting the duplicate.
 - **FR-022**: The Oracle success response MUST NOT include the internal calendar `context` object because the client does not consume it.
 - **FR-023**: The daily-usage fallback queue MUST recover after synchronous throws and rejected operations.
+- **FR-024**: The Playwright Linux harness MUST provide a usable font fallback when the host has no fontconfig configuration or system fonts, without adding a production dependency or changing production rendering.
+
+### Test Environment Note
+
+The `/reveal` countdown case originally could not navigate in the minimal Linux browser image because Chromium's fontconfig interface aborted when no system font was available. Playwright now creates a temporary fontconfig file pointing at the Geist TTF already bundled with Next, but only when the host has neither a fontconfig file nor a system font directory. This is test-environment setup only.
 
 ## Requirements *(mandatory)*
 
