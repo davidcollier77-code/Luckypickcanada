@@ -23,8 +23,8 @@ A visitor opens the Crystal Ball, sees one of three playful greetings, presses *
 1. **Given** no saved fortune for today, **When** the page loads, **Then** exactly one of the three approved greetings is displayed and **Generate My Fortune** is enabled without any question text.
 2. **Given** the visitor presses **Generate My Fortune**, **When** the response contains a usable reading, **Then** the reading is revealed with the existing pulse, golden maple-leaf, progressive-text and completion effects and saved for the rest of the local day.
 3. **Given** today's fortune was already delivered, **When** the visitor refreshes or opens another tab, **Then** the saved fortune is shown again and no additional fortune is requested.
-5. **Given** two tabs request today's fortune at nearly the same time, **When** both requests compete for the daily allowance, **Then** same-origin tabs serialize the operation and only one provider request can deliver and persist a fortune.
 4. **Given** the request fails or returns no usable reading, **When** the visitor tries again, **Then** no daily allowance was consumed.
+5. **Given** two tabs request today's fortune at nearly the same time, **When** both requests compete for the daily allowance, **Then** same-origin tabs serialize the operation and only one provider request can deliver and persist a fortune.
 
 ### User Story 2 - Ask one optional follow-up about the fortune (Priority: P1)
 
