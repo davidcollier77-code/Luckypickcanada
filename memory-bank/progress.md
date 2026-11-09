@@ -739,3 +739,15 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Initial PR-head checks: DevSkim PASS; OpenNext validation PASS; unit tests FAIL at the Vitest module-URL error above; subsequent TypeScript and repository verification steps were skipped. The docs-only classifier passed and therefore browser visual regression tests did not run on that head.
 - No local repository shell is available in this connected session. Updated-head `pnpm run test`, `./freebuff-verify.sh`, TypeScript, Playwright visual QA, build-size measurement and `git diff --check` remain pending; no successful result is claimed.
 - PR [#1788](https://github.com/davidcollier77-code/Luckypickcanada/pull/1788) remains open and unmerged.
+
+
+## 2026-11-09 — Agent integration and QA guidance
+
+- Updated the existing authoritative AGENTS.md to list the seven owner-confirmed connected integrations and distinguish Playwright CLI from Browserless.
+- Summarized all eight existing Playwright capability areas and clarified that Browserless supports direct browser tasks as well as remote-browser fallback.
+- Documented actual DevSkim, OpenNext validation, Visual QA, Verification Integrity and conditional Protected File Authorization behavior without asserting unverified branch-protection settings.
+- Strengthened the production build limit to strictly below 495 MiB and directed agents to split work into independently reviewable PRs when a change risks the cap.
+- No application, production database, hosting, workflow or scheduled updater files were changed.
+- Local shell verification and Spec Kit setup/resolver commands are unavailable in the GitHub API-only session; PR CI must provide the remaining evidence.
+
+- Follow-up workflow inspection also identified path-conditional Verify Updater Scheduler validation, GitHub Code Scanning Analyze jobs and separate Pullfrog/Amazon Q PR review apps; scheduler deployment remains push-to-main only and was not changed.

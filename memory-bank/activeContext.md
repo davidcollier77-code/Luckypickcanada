@@ -1,4 +1,14 @@
-# Current Task — Playwright CLI guidance and checker repair (2026-11-09)
+# Current Task — Agent integration and QA guidance (2026-11-09)
+
+- **Branch:** `docs/agent-integration-qa-guidance-20261109`; Spec Kit feature `specs/124-agent-integration-qa-guidance`.
+- **Scope:** Update the existing authoritative `AGENTS.md` integration inventory, Playwright/Browserless guidance, workflow-backed PR gatekeeper descriptions and strict 495 MiB build-size rule.
+- **Connected integrations:** Browserless, Crawlbase, Firecrawl, GitHub, Penpot, Supabase and Turso. Supabase/Turso are tooling only, not production storage. Playwright CLI is a project-local CLI, not a connected integration.
+- **Preservation:** No application code, production database, Cloudflare deployment configuration, GitHub workflows, secrets or scheduled updaters changed.
+- **Verification limitation:** GitHub API access is available; repository shell execution is not. Spec Kit resolver/setup scripts, `./freebuff-verify.sh`, local `git diff --check` and production build measurement are not claimed as run. PR CI results remain pending.
+
+---
+
+## Recent Work — Playwright CLI guidance and checker repair (2026-11-09)
 
 - **Branch:** `docs/agent-playwright-cli-guidance-20261109`; Spec Kit feature `specs/122-playwright-cli-agent-toolkit`.
 - **PR:** [#1788](https://github.com/davidcollier77-code/Luckypickcanada/pull/1788) — open and unmerged.
