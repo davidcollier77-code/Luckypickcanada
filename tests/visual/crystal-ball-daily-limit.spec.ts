@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
+test.describe.configure({ timeout: 120_000 });
+
 const STORAGE_KEY = 'luckyPickCanada:crystalBallDailyFortune:v1';
 
 test('Crystal Ball keeps one fortune and one follow-up per local day and never charges a failed request', async ({ page }) => {
-  test.setTimeout(120_000);
-
   const fortune = 'A steady day is unfolding in your favour.';
   const followUp = 'A follow-up answer is waiting.';
   let fortuneRequests = 0;
@@ -99,8 +99,6 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
 
 
 test('simultaneous fortune requests from two tabs consume only one daily allowance', async ({ context }) => {
-  test.setTimeout(120_000);
-
   const fortune = 'One shared reading is waiting in the glass.';
   let requests = 0;
   let releaseResponse: () => void = () => {};
@@ -149,8 +147,6 @@ test('simultaneous fortune requests from two tabs consume only one daily allowan
 });
 
 test('Card Reveal, Crystal Ball and Lucky Meter read the same local-midnight countdown', async ({ context }) => {
-  test.setTimeout(120_000);
-
   const cardPage = await context.newPage();
   const crystalPage = await context.newPage();
   const meterPage = await context.newPage();
