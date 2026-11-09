@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
+const root = path.resolve(process.cwd());
+const packageManifestPath = path.join(root, 'package.json');
+if (!existsSync(packageManifestPath)) {
+  throw new Error(
+    `Expected Vitest to run from the repository root; package.json not found at ${packageManifestPath}`,
+  );
+}
 const skillRoot = path.join(root, '.agents/skills/playwright-cli');
 const upstreamReferences = [
   'element-attributes.md',
@@ -55,11 +59,7 @@ describe('Playwright CLI agent toolkit', () => {
       'utf8',
     );
     const setup = readFileSync(path.join(root, 'scripts/setup-playwright-agent.sh'), 'utf8');
-    const pkgPath = path.join(root, 'package.json');
-    if (!existsSync(pkgPath)) {
-      throw new Error('package.json not found at expected repository root: ' + pkgPath);
-    }
-    const manifest = JSON.parse(readFileSync(pkgPath, 'utf8'));
+    const manifest = JSON.parse(readFileSync(packageManifestPath, 'utf8'));
 
     expect(guide).toContain('pnpm exec playwright cli');
     expect(setup).toContain('pnpm exec playwright cli --help');

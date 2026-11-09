@@ -9,7 +9,7 @@
 - **Payments:** Stripe Checkout.
 - **Email:** Resend.
 - **Security:** Cloudflare Turnstile (public forms).
-- **Testing:** Playwright, Vitest, and Testing Library. (Note: The `pytest` test suite mentioned in README.md is not currently present in the codebase).
+- **Testing:** Playwright, Vitest, and Testing Library. For direct agent browser interaction, use the vendored Microsoft Playwright CLI skill through `pnpm exec playwright cli`; it supplements rather than replaces Playwright Test, the configured desktop/mobile projects, visual baselines and CI checks. (Note: The `pytest` test suite mentioned in README.md is not currently present in the codebase).
 - **Linting/Formatting:** ESLint, Prettier.
 - **Package Manager:** `pnpm` (specifically `pnpm@10.30.3`). The runtime is Node.js 22.x. **Do not use `npm ci`** as it will fail due to peer dependencies. Use `pnpm install --frozen-lockfile`.
 

@@ -44,6 +44,15 @@
 - [x] T012 Record verified task context in `memory-bank/activeContext.md` and `memory-bank/progress.md`.
 - [x] T013 Review the repository diff and submit one canonical-summary PR that stays open and unmerged; report unavailable local shell checks as NOT RUN and let PR CI provide runtime evidence.
 
+## Phase 6: Agent guidance and checker repair
+
+**Goal**: Make the local CLI workflow explicit in repository governance and repair the failing integrity test without weakening coverage.
+
+- [x] T014 [US4] Add the direct-agent Playwright CLI instructions to `AGENTS.md`, preserve the existing Playwright Test/CI gates, restore the final PR-summary governance rule, and keep the file below 300 lines.
+- [x] T015 [US3] Fix repository-root discovery in `__tests__/playwright-agent-toolkit.test.js` by using `process.cwd()` with an explicit `package.json` guard instead of `fileURLToPath(new URL('.', import.meta.url))`.
+- [x] T016 Update the existing feature 122 specification, plan, task list, and relevant Memory Bank context/progress/technical notes; do not create a duplicate feature directory.
+- [ ] T017 Run `pnpm run test`, `./freebuff-verify.sh`, TypeScript, required Playwright visual QA, build-size measurement and `git diff --check` on the updated PR head; record actual results before calling the task verified.
+
 ## Dependencies & Execution Order
 
 Setup and provenance precede the official skill. The upstream references and local guide are independent after the skill directory exists. Setup script and integrity test are separate files. Memory Bank and final audit follow implementation.

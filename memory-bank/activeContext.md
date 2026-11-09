@@ -1,4 +1,16 @@
-# Current Task — Jules Bridge retirement (2026-11-09)
+# Current Task — Playwright CLI guidance and checker repair (2026-11-09)
+
+- **Branch:** `docs/agent-playwright-cli-guidance-20261109`; Spec Kit feature `specs/122-playwright-cli-agent-toolkit`.
+- **PR:** [#1788](https://github.com/davidcollier77-code/Luckypickcanada/pull/1788) — open and unmerged.
+- **Task groups:** `deep-dive` (confirm browser-tool boundaries and reuse the existing CLI decisions) + `testing` (diagnose and repair the failed toolkit integrity test).
+- **Scope:** Clarify direct-agent Playwright CLI usage in `AGENTS.md`; retain the Playwright Test/CI gates; restore the final PR-summary governance line removed accidentally; repair the test's repository-root resolution; update feature 122 and relevant Memory Bank records.
+- **CI finding on original PR head `a414b5a063844e7162867450c8fd572778f558be`:** DevSkim PASS and OpenNext validation PASS. The Visual QA job's unit-test step failed in `__tests__/playwright-agent-toolkit.test.js` with `TypeError: The URL must be of scheme file`; later steps were skipped. The docs-only classifier passed, so browser visual tests did not run on that head.
+- **Implementation:** T014–T016 are recorded complete. The integrity test now uses the CI repository working directory (`process.cwd()`) and checks for root `package.json`; it no longer assumes Vitest's `import.meta.url` is a file URL.
+- **Verification:** The connected GitHub API session has no repository shell. T017 remains pending until updated-head CI provides full unit, Spec Kit, TypeScript, visual QA and build-size results. No local command is claimed as run.
+
+---
+
+## Recent Work — Jules Bridge retirement (2026-11-09)
 
 - **Branch:** `chore/retire-jules-bridge-20261109`; Spec Kit feature `specs/123-jules-bridge-retirement`.
 - **Scope:** Remove the retired Jules Bridge Worker source/configuration, dedicated GitHub deployment workflow, and Worker-specific DevSkim suppression. Update only stale current agent-folder inventory and Memory Bank status.
@@ -9,10 +21,10 @@
 
 ---
 
-# Current Task — Playwright CLI agent toolkit (2026-11-09)
+## Recent Work — Playwright CLI agent toolkit (2026-11-09)
 
 - **Branch:** `freebuff/playwright-cli-agent-toolkit-20261109`; Spec Kit feature `specs/122-playwright-cli-agent-toolkit`.
-- **PR:** [#1786](https://github.com/davidcollier77-code/Luckypickcanada/pull/1786) — open and unmerged.
+- **PR:** [#1786](https://github.com/davidcollier77-code/Luckypickcanada/pull/1786) — merged; the vendored skill and toolkit are now on `main`.
 - **Task groups:** `deep-dive` (evaluate official CLI/skill and environment boundaries) + `testing` (protect the vendored bundle and verify the local CLI setup contract).
 - **Scope:** Vendor Microsoft's Playwright CLI skill v0.1.23 and ten official references; add the Lucky Pick Canada guide for eight capability areas, local setup/probe script and static integrity test.
 - **Dependency decision:** Reuse the existing local Playwright 1.64.1 packages through `pnpm exec playwright cli`. No separate `@playwright/cli` dependency, global install, MCP server, workflow or application configuration change.

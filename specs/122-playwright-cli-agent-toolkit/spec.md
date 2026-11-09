@@ -2,7 +2,7 @@
 
 **Feature Branch**: `freebuff/playwright-cli-agent-toolkit-20261109`
 **Created**: 2026-11-09
-**Status**: Implemented
+**Status**: Implemented — follow-up verification pending
 **Input**: Owner-authorized request to make a reusable official Playwright CLI skill available in the Luckypickcanada repository for Freebuff, covering all eight browser-work capability areas.
 
 ## User Scenarios & Testing
@@ -40,6 +40,18 @@ Freebuff has a repeatable setup/probe command that uses the already pinned local
 2. Given an explicit browser-download option, when the script is run, then it installs Chromium with the project-pinned Playwright version without attempting privileged OS installation.
 3. Given a missing Linux browser library, when a real launch probe is run, then the error is surfaced as an environment blocker and the existing Browserless fallback policy remains in force.
 
+### User Story 4 — Agent uses the CLI through repository guidance (Priority: P1)
+
+Freebuff can choose and launch the repository's Playwright CLI consistently for direct browser interaction while preserving the existing Playwright Test and Visual QA workflows.
+
+**Independent Test**: `AGENTS.md` points to the vendored skill and local CLI command, describes the documented setup check and evidence-based fallback, and keeps the full Playwright Test suite and CI checks authoritative.
+
+**Acceptance Scenarios**:
+1. Given direct browser work, when Freebuff reads repository governance, then it is directed to `.agents/skills/playwright-cli/SKILL.md` and `pnpm exec playwright cli`.
+2. Given the CLI command is unavailable, when Freebuff checks prerequisites, then it follows the repository setup script and verifies availability before proceeding.
+3. Given a real browser-launch failure blocks the task, when the documented fallback is needed, then Freebuff records the actual error and uses Browserless under the existing policy rather than assuming a Linux issue in advance.
+4. Given a task requires automated browser or visual regression coverage, when the CLI is used for direct interaction, then the existing Playwright Test suite, configured viewport projects and CI baselines still run.
+
 ## Requirements
 
 - **FR-001**: Store Microsoft's full CLI skill and every linked upstream reference under `.agents/skills/playwright-cli/`.
@@ -53,6 +65,8 @@ Freebuff has a repeatable setup/probe command that uses the already pinned local
 - **FR-009**: Add automated static integrity coverage for every upstream reference, license, eight capability sections and dependency reuse.
 - **FR-010**: Follow existing browser order: Playwright primary, Browserless fallback, Browserbase only with owner approval.
 - **FR-011**: Do not alter MCP configuration, application behavior, existing Playwright config, workflows, package dependencies or lockfile.
+- **FR-012**: Document the repository's direct-agent browser workflow in `AGENTS.md`, including the vendored skill, local CLI command, setup check and evidence-based Browserless fallback.
+- **FR-013**: State explicitly that direct CLI interaction supplements and does not replace Playwright Test, configured desktop/mobile projects, visual baselines or CI checks.
 
 ## Success Criteria
 
@@ -62,6 +76,8 @@ Freebuff has a repeatable setup/probe command that uses the already pinned local
 - **SC-004**: Automated integrity coverage protects the skill bundle and the no-extra-dependency decision.
 - **SC-005**: Application files, package manifest, lockfile, Playwright config and Visual QA workflow remain unchanged.
 - **SC-006**: PR remains open and unmerged; local and CI statuses are accurately reported.
+- **SC-007**: `AGENTS.md` gives Freebuff an unambiguous local CLI path and preserves the full Playwright Test/CI verification contract.
+- **SC-008**: The toolkit integrity test runs under the repository's Vitest invocation without depending on `import.meta.url` having a `file:` scheme.
 
 ## Assumptions
 

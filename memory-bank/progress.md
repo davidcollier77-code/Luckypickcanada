@@ -728,3 +728,14 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - The local Playwright server lacked `DATABASE_URL`; observed API 500 log lines were the configured-unavailable test-environment case. Browser assertions still passed. This does not establish a production 500, and production Neon read-back remains separately unverified.
 - Ghost Invasion was not run because its local-only runner requires a disposable localhost app and same-origin reset fixture not available in this session. Firecrawl was not used.
 - PR #1783 remains open and unmerged. Verification evidence above is for tested head `fadad69efc167a5fd06443e04f0453fc7813490d`; this Memory Bank / Spec Kit status update is a documentation-only follow-up commit and triggers a fresh CI run.
+
+## 2026-11-09 — PR #1788 Playwright CLI guidance and checker repair
+
+- Updated `AGENTS.md` to direct Freebuff to the vendored Playwright CLI skill and local `pnpm exec playwright cli` command, require a verified setup check before fallback, record real launch errors, avoid assumed Linux failures/privileged package changes, and preserve the existing Playwright Test and CI visual gates.
+- Restored the final `NO ACCURATE PR SUMMARY = NO COMPLETION` governance rule that was accidentally removed in the first PR commit. `AGENTS.md` remains below the requested 300-line limit.
+- Investigated the original PR-head CI failure: `__tests__/playwright-agent-toolkit.test.js` called `fileURLToPath(new URL('.', import.meta.url))`; Vitest supplied a non-file module URL and Node threw `TypeError: The URL must be of scheme file`. Changed repository-root discovery to `process.cwd()` with an explicit root `package.json` guard; the assertions are retained.
+- Reused and updated Spec Kit feature 122 in Specify → Plan → Tasks → Implement order. T014–T016 are implemented; T017 remains pending for current-head CI evidence.
+- Updated `memory-bank/activeContext.md`, `memory-bank/progress.md` and `memory-bank/techContext.md`. `.docs/` remains read-only.
+- Initial PR-head checks: DevSkim PASS; OpenNext validation PASS; unit tests FAIL at the Vitest module-URL error above; subsequent TypeScript and repository verification steps were skipped. The docs-only classifier passed and therefore browser visual regression tests did not run on that head.
+- No local repository shell is available in this connected session. Updated-head `pnpm run test`, `./freebuff-verify.sh`, TypeScript, Playwright visual QA, build-size measurement and `git diff --check` remain pending; no successful result is claimed.
+- PR [#1788](https://github.com/davidcollier77-code/Luckypickcanada/pull/1788) remains open and unmerged.
