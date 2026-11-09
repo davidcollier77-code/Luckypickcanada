@@ -51,6 +51,8 @@ Complete these steps in order before implementation:
 - If a requested change conflicts with existing functionality, security, or system integrity, preserve existing safeguards and report the conflict rather than compromising them.
 - Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
 - **Browser QA is mandatory for changes that affect browser-visible behavior or end-to-end user workflows.** Use this order: **1. Playwright** (primary); **2. Browserless** if Playwright is unavailable or fails; **3. Browserbase** only if both are unavailable or unsuitable, with explicit owner approval. For backend-only, infrastructure-only, or documentation-only work with no affected browser workflow, run the relevant automated or integration checks instead. Diagnose failures briefly. Never skip applicable browser QA because a tool fails.
+- For direct browser work, use the repository's Microsoft Playwright CLI skill when it is present: read `.agents/skills/playwright-cli/SKILL.md` and invoke the locally installed CLI with `pnpm exec playwright cli`. Do not add a global install or separate CLI package. If the command is unavailable, check the repository's documented setup script and follow it if present; verify availability before proceeding. Use Browserless only when a real CLI/browser launch failure blocks the task, and record the actual error. Do not assume a Linux dependency problem in advance or install system packages with elevated privileges.
+- The CLI is for direct agent browser interaction; it does not replace the existing Playwright Test suite, configured desktop/mobile projects, visual baselines, or CI checks.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
@@ -187,5 +189,3 @@ Before reporting **verified completion**, confirm:
 🔴 **NO EVIDENCE = NO CLAIM.**
 
 🔴 **NO VERIFIED RESULT = NO VERIFIED COMPLETION.**
-
-🔴 **NO ACCURATE PR SUMMARY = NO COMPLETION.**
