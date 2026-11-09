@@ -7,6 +7,39 @@ export const MAX_FORTUNE_LENGTH = 2000;
 export const MAX_FOLLOW_UP_QUESTION_LENGTH = 120;
 
 let inMemoryUsage = null;
+const dailyUsageQueues = new Map();
+
+/**
+ * Serialize same-day allowance transitions across tabs with the browser's
+ * same-origin Web Locks API. Older browsers still serialize callers in this
+ * tab; storage events continue to synchronize completed changes across tabs.
+ */
+export function withDailyUsageLock(
+  date,
+  operation,
+  lockManager = globalThis.navigator?.locks,
+) {
+  const lockName = `${DAILY_STORAGE_KEY}:${date}`;
+
+  if (typeof lockManager?.request === 'function') {
+    return lockManager.request(lockName, { mode: 'exclusive' }, operation);
+  }
+
+  const previous = dailyUsageQueues.get(lockName) || Promise.resolve();
+  let release;
+  const current = new Promise((resolve) => {
+    release = resolve;
+  });
+  const queued = previous.then(() => current);
+  dailyUsageQueues.set(lockName, queued);
+
+  return previous.then(operation).finally(() => {
+    release();
+    if (dailyUsageQueues.get(lockName) === queued) {
+      dailyUsageQueues.delete(lockName);
+    }
+  });
+}
 
 function cleanText(value, maxLength) {
   if (typeof value !== 'string') return null;
