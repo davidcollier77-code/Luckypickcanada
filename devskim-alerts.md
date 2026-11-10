@@ -41,3 +41,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS176209** — `__tests__/homepage-content-refresh.test.js:182` — Suspicious comment <!-- devskim-id:83da13bf91eaeede3ad5 -->
 
 - **ERROR — DS173237** — `__tests__/playwright-agent-toolkit.test.js:77` — Do not store tokens or keys in source code. <!-- devskim-id:2972f22d007dcd632e2c -->
+
+- **ERROR — DS173237** — `app/lib/cloudflare-observability-issues.ts:26` — Do not store tokens or keys in source code. <!-- devskim-id:deb1831b8ed2068f8349 -->
