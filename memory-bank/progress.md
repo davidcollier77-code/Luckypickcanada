@@ -1,11 +1,11 @@
-## 2026-11-09 — PR #1795 browser-tool and non-rendering Visual QA correction
+## 2026-11-10 — PR #1795 one-feature Spec Kit governance correction
 
-- Confirmed the current authoritative main AGENTS.md browser setup: project-local Playwright CLI/Test plus Browserless as the only connected remote-browser integration. Browserbase is not a retained integration; removed its accidental entry from the PR branch and aligned the single-source governance test to Playwright + Browserless only.
-- Confirmed existing Visual QA workflow behavior: all unit tests, TypeScript and repository verification run for every PR; Chromium provisioning, baseline verification and Playwright visual regression are conditional on the fail-closed changed-path classifier.
-- Extended the classifier's non-rendering allowlist narrowly for .specify/feature.json, .github/scripts/classify-visual-changes.sh, and direct-child __tests__/*.test.{js,jsx,ts,tsx} unit-test files. Visual/e2e paths under tests/, app/theme/assets, other scripts/workflows, unknown paths, empty input and mixed changes remain visual-required.
-- Extended the executed classifier tests for those non-rendering paths and for visual/e2e paths. No workflow file, application runtime, UI, artwork, dependency, database, hosting configuration, secret or updater schedule changed.
-- Updated PR #1795 canonical summary. Current HEAD at this entry: 051180786edc33bec8ff61aecc08e2185ccfe099; PR remains OPEN and UNMERGED.
-- Current-head CI was queued/in progress at the time of this entry. Do not claim the full suite or the intended browser-step skip until the run's classifier output and step results are inspected. Local ./freebuff-verify.sh and git diff --check remain BLOCKED because this session has no repository shell.
+- Inspected updater scheduler run 42736790393, job 129568071489. The Spec Kit task-artifact verifier's unit tests passed; the repository gate failed because the PR modified both specs/098-visual-qa-chromium-cache and specs/125-agent-skill-routing.
+- Restored specs/098-visual-qa-chromium-cache/spec.md, plan.md and tasks.md exactly to their current main-branch contents. Kept the supporting visual-classifier scope documented only in specs/125-agent-skill-routing/spec.md, plan.md and tasks.md.
+- Confirmed .specify/feature.json points to specs/125-agent-skill-routing. The changed-file list now contains only one Spec Kit feature directory.
+- The classifier remains fail-closed. This non-rendering PR can skip browser provisioning, baseline verification and Playwright visual regression; unit tests, TypeScript and repository verification still run. Browser/e2e, app/assets/themes, workflows, other scripts, unknown, empty and mixed changes remain visual-required.
+- The failed run was on the prior head and is not evidence that the correction passed. Current-head Spec Kit governance and CI remain pending.
+- No updater schedules or workflow definitions were changed.
 
 ---
 
