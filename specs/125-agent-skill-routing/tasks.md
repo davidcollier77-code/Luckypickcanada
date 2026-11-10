@@ -29,6 +29,8 @@
 
 - [x] T013 Freeze Vitest system time to the fixed fixture date in the two affected `__tests__/crystal-ball-daily-usage.test.js` cases; restore real timers after each test. Do not change production date handling.
 - [ ] T014 Re-run the targeted Crystal Ball allowance and Oracle tests, then confirm all applicable updated-head PR CI gates (PENDING: GitHub Actions must run on the latest HEAD).
+- [x] T015 Restore Browserbase in the Connected Integrations section with explicit owner-approval and tool-availability safeguards; retain the prohibition on using Browserless or Browserbase in automatic PR-checker workflows.
+- [ ] T016 Confirm the full unit suite, including `agent-governance-single-source.test.js`, passes on the updated PR HEAD.
 
 ## Dependencies and execution order
 
