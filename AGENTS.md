@@ -14,7 +14,7 @@ Complete these steps in order before implementation:
 4. **Load project context.** Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once. Use the context relevant to the task.
 5. **Select task groups.** Choose the applicable groups: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. Read only the selected groups' `.freebuff/<group>.md` guidance. If none clearly fit (for example, a governance-only or documentation-only task), do not force an unrelated group; follow this file and the relevant task instructions.
 6. **Route reference documents.** Read `.docs/manifest.json`. Use it to identify and consult library documents that materially help with the request and selected task groups.
-7. **Discover and use relevant skills.** Check the skills currently available to the agent and select only those that materially help the task. Read each selected skill's instructions and any required references before applying it. Useful examples, when installed, include `frontend-design`, `web-design-guidelines`, `image-to-code`, `shadcn-ui`, `wrangler`, `verification-before-completion`, `executing-plans`, `security-review`, `github-actions-docs`, `canvas-design`, `systematic-debugging`, `workers-best-practices`, `extract-design-system`, `mcp-builder`, and `performance`. This list is not exhaustive or a guarantee that a skill is installed. Do not load or invoke every skill by default, and never claim a skill was used unless it was actually used.
+7. **Discover and use relevant skills.** Check the skills actually available to the agent and load only those that materially help the task. Use the specialist routing guide below to select among the 14 listed skills; other installed skills (including `image-to-code` or `mcp-builder`) may also be used when directly relevant. A listed skill is not proof that it is installed. Read selected skill instructions and required references before applying them, and never claim a skill was used unless it was.
 
 ### Project document library
 
@@ -24,6 +24,79 @@ Complete these steps in order before implementation:
 - Do not load unrelated specialist files, command definitions, or library snapshots.
 - Keep `.docs/` read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
 - Mention only library documents that materially informed the work in the PR summary.
+
+### Specialist skill routing
+
+These entries help select specialist guidance; they do not create a second governance system. Apply only the skills relevant to the task, and verify that each selected skill is installed and its required tools are available.
+
+**Instruction priority and conflict resolution**
+
+- Follow this `AGENTS.md`, applicable task-group instructions, required Spec Kit stages, and the approved task scope. Project configuration and authorized integrations determine what can actually be used; skills provide task-specific guidance only.
+- When skill instructions conflict or appear incompatible, do not guess or stop automatically. Troubleshoot the disagreement: compare each instruction's purpose, scope, assumptions and version; inspect the actual repository configuration and relevant authoritative documentation; then choose the safest, least disruptive approach that complies with repository governance and existing architecture. Record the reason for the decision.
+- If the conflict cannot be reconciled safely, or the best solution requires new permissions, a new integration, an architectural change or scope expansion, pause only the affected action and ask the owner. Do not silently ignore the conflict or make an unauthorized change.
+- Never assume a skill-mentioned CLI, MCP, browser, service or integration is installed, connected, authenticated or available. Verify it first. Do not let a skill override the established Playwright/Browserless routing, project configuration, Spec Kit sequence, gatekeepers or approval requirements.
+
+**Design and interface**
+
+- **`frontend-design`**
+  - **What it's used for:** Creates and improves distinctive, accessible, responsive website interfaces, including visual direction, layout, typography, colour and interaction.
+  - **When to use it:** Building new frontend UI or substantially redesigning or polishing an existing interface.
+- **`web-design-guidelines`**
+  - **What it's used for:** Audits existing interfaces against current web usability, accessibility and interface-design guidance.
+  - **When to use it:** Reviewing UI quality, accessibility, usability or design consistency; retrieve the current guideline source before auditing.
+- **`shadcn-ui`**
+  - **What it's used for:** Finds, installs, builds and customizes shadcn/ui components and blocks.
+  - **When to use it:** Only when the project uses shadcn/ui or the owner explicitly requests it; inspect the existing stack and verify component/tool availability first.
+- **`canvas-design`**
+  - **What it's used for:** Creates original, static, design-led artwork and visual compositions such as posters or PNG/PDF pieces.
+  - **When to use it:** When the requested deliverable is original artwork or a static visual design, not website UI or application components.
+- **`extract-design-system`**
+  - **What it's used for:** Extracts a public website's visual tokens and produces starter design-system files.
+  - **When to use it:** When the owner requests design-token extraction from a public reference site; confirm the URL and deliverable, and never overwrite existing tokens or app styling without approval.
+
+**Cloudflare and backend**
+
+- **`wrangler`**
+  - **What it's used for:** Guides Cloudflare Wrangler CLI configuration and operations for Workers, bindings, environments, local development and deployment.
+  - **When to use it:** When the project has applicable Wrangler configuration or the owner explicitly requests Wrangler; verify the local CLI, version, authentication and target before use. This skill does not grant Cloudflare account access.
+- **`workers-best-practices`**
+  - **What it's used for:** Provides current, documentation-backed engineering, security, performance and production-readiness guidance for Cloudflare Workers.
+  - **When to use it:** Creating, modifying, configuring or reviewing Worker code and runtime behavior. Use alongside Wrangler only when both engineering guidance and CLI operations are needed.
+- **`neon-postgres`**
+  - **What it's used for:** Guides work on an existing Neon PostgreSQL database, including SQL, schema, migrations, connections, branches, pooling and query performance.
+  - **When to use it:** When working with the project's existing Neon database, `DATABASE_URL`, SQL or PostgreSQL behavior; do not treat it as authorization to migrate providers or create a new production database.
+
+**Engineering, debugging and security**
+
+- **`verification-before-completion`**
+  - **What it's used for:** Requires fresh, direct evidence before claiming a fix, test, build, requirement or task is complete.
+  - **When to use it:** Whenever reporting completion, verification, test/build results, bug fixes or PR readiness; follow the repository's stricter QA contract where applicable.
+- **`executing-plans`**
+  - **What it's used for:** Executes an already-approved implementation plan inline, task by task, with progress tracking and validation.
+  - **When to use it:** Only when inline plan execution is the authorized approach; it must not replace, skip or reorder Specify → Plan → Tasks → Implement or override repository execution controls.
+- **`systematic-debugging`**
+  - **What it's used for:** Finds technical root causes through reproduction, evidence collection, hypothesis testing and focused fixes.
+  - **When to use it:** Investigating bugs, failed tests, unexpected behavior, build/deployment failures or performance problems before attempting a fix.
+- **`security-review`**
+  - **What it's used for:** Reviews code and system paths for credible, exploitable security vulnerabilities and actionable remediation.
+  - **When to use it:** Security audits or changes involving authentication, authorization, input handling, APIs, secrets, uploads, dependencies or CI/CD security.
+
+**Automation and performance**
+
+- **`github-actions-docs`**
+  - **What it's used for:** Provides current official GitHub Actions documentation guidance for workflow syntax, triggers, jobs, permissions, reusable workflows, artifacts and security.
+  - **When to use it:** Creating, updating or explaining GitHub Actions workflows; use actual workflow files and current official documentation as the source of truth.
+- **`performance`**
+  - **What it's used for:** Measures and improves real website performance, including Core Web Vitals, loading, responsiveness, assets, caching and runtime work.
+  - **When to use it:** Investigating slow pages, jank, resource delivery or performance regressions; establish a comparable baseline and change only evidence-supported bottlenecks.
+
+**Overlap and routing notes**
+
+- `frontend-design` creates or improves interfaces; `web-design-guidelines` audits them; `shadcn-ui` implements components only where that library is already in use; `canvas-design` creates static artwork; `extract-design-system` extracts reference-site tokens.
+- `wrangler` covers CLI operations; `workers-best-practices` covers Worker engineering. `security-review` is the general security review; Worker-specific security guidance belongs to `workers-best-practices`.
+- `systematic-debugging` investigates root causes; `verification-before-completion` establishes evidence for the result. `performance` adds measured performance-specific diagnosis.
+- `executing-plans` is an execution aid, not an alternative governance or Spec Kit workflow. `github-actions-docs` explains workflow authoring and configuration; actual repository workflow definitions remain authoritative for gate behavior.
+- The Neon skill applies to the existing production database only within the owner's authorized task scope. It does not approve a provider change, new service or storage migration.
 
 ## 2. SPEC KIT AND EXECUTION
 
