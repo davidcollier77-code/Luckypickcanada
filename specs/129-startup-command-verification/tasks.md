@@ -29,14 +29,14 @@
 
 ## Phase 4: Verify
 
-- [ ] T010 Run `bash -n scripts/verify-startup.sh`; positive runs from the repository root and another directory.
-- [ ] T011 Run the negative startup-check cases: missing file, empty file, oversized `AGENTS.md` (restore after).
-- [ ] T012 Run `pnpm exec vitest run __tests__/freebuff-startup-command.test.js`.
-- [ ] T013 Run the corrected startup command verbatim and record the exit status and elapsed time.
-- [ ] T014 Run `./freebuff-verify.sh`, measure `.next` + `public` against 495 MiB, run `git diff --check`.
-- [ ] T015 Audit the complete final diff; confirm `AGENTS.md`, application code, dependencies, workflows,
+- [x] T010 Run `bash -n scripts/verify-startup.sh`; positive runs from the repository root and another directory.
+- [x] T011 Run the negative startup-check cases: missing file, empty file, oversized `AGENTS.md` (restore after).
+- [x] T012 Run `pnpm exec vitest run __tests__/freebuff-startup-command.test.js`.
+- [x] T013 Run the corrected startup command verbatim and record the exit status and elapsed time.
+- [x] T014 Run `./freebuff-verify.sh`, measure `.next` + `public` against 495 MiB, run `git diff --check`.
+- [x] T015 Audit the complete final diff; confirm `AGENTS.md`, application code, dependencies, workflows,
   integrations, deployment configuration and `.docs/` are untouched.
-- [ ] T016 Publish the PR with the exact replacement command, PR link and full HEAD SHA; confirm OPEN and UNMERGED.
+- [x] T016 Publish the PR with the exact replacement command, PR link and full HEAD SHA; confirm OPEN and UNMERGED.
 
 ## Phase 5: Owner action
 
