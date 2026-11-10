@@ -1,6 +1,6 @@
 # Tasks: Startup Readiness Verification
 
-**Input**: Design documents from specs/127-startup-readiness-verification/
+**Input**: Design documents from specs/128-startup-readiness-verification/
 
 **Prerequisites**: plan.md and spec.md.
 

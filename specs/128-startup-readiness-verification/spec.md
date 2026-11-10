@@ -1,6 +1,6 @@
 # Feature Specification: Startup Readiness Verification
 
-**Feature Branch**: `127-startup-readiness-verification`
+**Feature Branch**: `128-startup-readiness-verification`
 **Created**: 2026-11-10
 **Status**: Draft
 

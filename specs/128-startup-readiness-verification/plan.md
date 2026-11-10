@@ -1,8 +1,8 @@
 # Implementation Plan: Startup Readiness Verification
 
-**Branch**: `127-startup-readiness-verification` | **Date**: 2026-11-10 | **Spec**: spec.md
+**Branch**: `128-startup-readiness-verification` | **Date**: 2026-11-10 | **Spec**: spec.md
 
-**Input**: Feature specification from specs/127-startup-readiness-verification/spec.md
+**Input**: Feature specification from specs/128-startup-readiness-verification/spec.md
 
 ## Summary
 
@@ -48,7 +48,7 @@ No AGENTS.md change is needed because its existing initialization section alread
 ```text
 scripts/verify-startup.sh
 .specify/feature.json
-specs/127-startup-readiness-verification/
+specs/128-startup-readiness-verification/
   spec.md
   plan.md
   tasks.md
