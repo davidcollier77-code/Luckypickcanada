@@ -1,10 +1,13 @@
-# Current Task — Agent integration and QA guidance (2026-11-09)
+# Current Task — Specialist Skill Routing (2026-11-09)
 
-- **Branch:** `docs/agent-integration-qa-guidance-20261109`; Spec Kit feature `specs/124-agent-integration-qa-guidance`.
-- **Scope:** Update the existing authoritative `AGENTS.md` integration inventory, Playwright/Browserless guidance, workflow-backed PR gatekeeper descriptions and strict 495 MiB build-size rule.
-- **Connected integrations:** Browserless, Crawlbase, Firecrawl, GitHub, Penpot, Supabase and Turso. Supabase/Turso are tooling only, not production storage. Playwright CLI is a project-local CLI, not a connected integration.
-- **Preservation:** No application code, production database, Cloudflare deployment configuration, GitHub workflows, secrets or scheduled updaters changed.
-- **Verification limitation:** GitHub API access is available; repository shell execution is not. Spec Kit resolver/setup scripts, `./freebuff-verify.sh`, local `git diff --check` and production build measurement are not claimed as run. PR CI results remain pending.
+- **Branch:** `docs/agent-skill-routing-20261109`; Spec Kit feature `specs/125-agent-skill-routing`.
+- **Authorization:** Owner explicitly authorized direct implementation in this ChatGPT session; this task is not being handed off to Freebuff.
+- **Scope:** Add concise routing guidance for 14 specialist skills to the existing authoritative `AGENTS.md`, with two fields per skill and an explicit conflict-investigation rule.
+- **Task group:** None selected. This is a governance/documentation-only task, and `AGENTS.md` says not to force an unrelated task group.
+- **Conflict handling:** Investigate differences in purpose, scope, assumptions, versions and actual repository state; reconcile against governance and authoritative docs; choose the safest least-disruptive supported solution and record why. Escalate only when irreconcilable or requiring approval.
+- **Preservation:** Existing Spec Kit, Playwright-first/Browserless-fallback, Cloudflare, Neon, PR gatekeeper, updater and approval rules remain in force. No application code, integrations, workflows, dependencies, secrets, database or deployment configuration is in scope.
+- **QA workflow:** Used the Web App QA & Release Copilot Get Started workflow to classify this as a documentation/governance change, not a release candidate.
+- **Verification limitation:** This session has GitHub API access but no repository shell. Spec Kit setup scripts, `./freebuff-verify.sh`, `git diff --check` and local tests cannot be claimed as run. PR CI evidence remains pending.
 
 ---
 
