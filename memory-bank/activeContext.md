@@ -1,4 +1,14 @@
-# Current Task — PR #1795 Visual QA follow-up (2026-11-09)
+# Current Task — PR #1795 Visual QA governance follow-up (2026-11-09)
+
+- **PR:** https://github.com/davidcollier77-code/Luckypickcanada/pull/1795 (OPEN; do not merge before required checks pass).
+- **Latest failure:** Visual QA run 42734210768, job 129562708782. Targeted Crystal Ball allowance and Oracle tests passed; full unit suite reported 462 passed and 1 failed.
+- **Confirmed cause:** `__tests__/agent-governance-single-source.test.js` failed because `AGENTS.md` omitted Browserbase from `### Connected Integrations` and did not preserve the explicit direct-browser-use / no-automatic-PR-checker policy for both Browserless and Browserbase.
+- **Repair committed:** `AGENTS.md` now restores Browserbase with explicit owner approval and actual tool availability requirements. It states Browserless and Browserbase are for Freebuff's direct browser-based task work and neither may be added to or triggered from automatic PR-checker workflows. Playwright remains the project-local primary CLI/Test path; Browserless remains fallback. No workflow was changed.
+- **Next:** Verify the new PR HEAD and confirm the full unit suite and all required CI checks pass. Do not claim completion before updated-head evidence.
+
+---
+
+# Recent Work — PR #1795 Visual QA test-clock follow-up (2026-11-09)
 
 - **Branch / PR:** `docs/agent-skill-routing-20261109` / [PR #1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795); OPEN and UNMERGED.
 - **Task:** Repair the failing date-dependent Crystal Ball unit tests surfaced by PR Visual QA, without changing visitor-facing behavior.
