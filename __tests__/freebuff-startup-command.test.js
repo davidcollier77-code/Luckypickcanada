@@ -12,14 +12,22 @@ import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-// The tested, shell-safe form. The README documents exactly this command and the
-// assertions below execute it, so documentation drift fails the suite.
+// The tested, shell-safe form. README.md documents exactly this command as the value for the Freebuff project
+// startup setting, and the assertions below execute it, so documentation drift fails the suite.
+//
+//   bash -lc        - the login profile supplies node/npm, which the bootstrap needs under a minimal PATH.
+//   verify-startup  - reports context availability before any dependency work, so a later failure cannot hide it.
+//   source ...      - keeps the bootstrap PATH export in the shell that runs the install.
+//   CI=true install - keeps pnpm non-interactive with the frozen lockfile.
+//   playwright cli  - proves the repository-local Playwright agent CLI is runnable.
 const EXPECTED_STARTUP_COMMAND =
-  "bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'";
+  "bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help'";
 
-// The two rejected forms, kept so the guard explains why the wrapper exists.
-const PATH_LOSING_COMMAND = 'bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile';
-const SHELL_DEPENDENT_COMMAND = 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile';
+// The rejected forms, kept so the guard explains why the wrapper exists.
+const PATH_LOSING_COMMAND =
+  "bash -lc 'bash scripts/verify-startup.sh && bash scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help'";
+const SHELL_DEPENDENT_COMMAND =
+  'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help';
 
 const readme = readFileSync(join(process.cwd(), 'README.md'), 'utf8');
 
@@ -59,6 +67,13 @@ function createFixture() {
       'export PATH="$FREE_BUFF_TEST_BIN:$PATH"',
       'printf "bootstrap-ran\\n"',
     ].join('\n')
+  );
+
+  // Stand-in for scripts/verify-startup.sh: it must run before the bootstrap and
+  // the install, so its output order is what the assertions check.
+  writeFileSync(
+    join(scripts, 'verify-startup.sh'),
+    ['#!/usr/bin/env bash', '# Test fixture only.', 'printf "verify-startup-ran\\n"'].join('\n')
   );
 
   const callLog = join(root, 'pnpm.log');
@@ -112,32 +127,50 @@ describe('documented Freebuff startup command', () => {
   it('creates no dependency on the platform shell supporting `source`', () => {
     const [command] = documentedStartupCommands(readme);
 
-    expect(command.startsWith("bash -c '")).toBe(true);
+    expect(command.startsWith("bash -lc '")).toBe(true);
     expect(command).toContain('source scripts/bootstrap-pnpm.sh');
+  });
+
+  it('checks startup context before installing dependencies or the Playwright CLI', () => {
+    const [command] = documentedStartupCommands(readme);
+
+    const contextCheck = command.indexOf('bash scripts/verify-startup.sh');
+    const bootstrap = command.indexOf('source scripts/bootstrap-pnpm.sh');
+    const install = command.indexOf('pnpm install --frozen-lockfile');
+    const playwright = command.indexOf('pnpm exec playwright cli --help');
+
+    expect(contextCheck).toBeGreaterThanOrEqual(0);
+    expect(contextCheck).toBeLessThan(bootstrap);
+    expect(bootstrap).toBeLessThan(install);
+    expect(install).toBeLessThan(playwright);
+  });
+
+  it('keeps the frozen install non-interactive', () => {
+    const [command] = documentedStartupCommands(readme);
+
+    expect(command).toContain('CI=true pnpm install --frozen-lockfile');
   });
 });
 
 describe('documented startup command behaviour (executed)', () => {
-  it('installs with pnpm absent from PATH when the outer shell is Bash', () => {
-    const fixture = createFixture();
-    const [command] = documentedStartupCommands(readme);
+  for (const shell of ['bash', 'sh']) {
+    it(`reports context first and installs with pnpm absent from PATH under ${shell}`, () => {
+      const fixture = createFixture();
+      const [command] = documentedStartupCommands(readme);
 
-    const result = runInFixture(fixture, 'bash', command);
+      const result = runInFixture(fixture, shell, command);
 
-    expect(result.status, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`).toBe(0);
-    expect(result.stdout).toContain('bootstrap-ran');
-    expect(readFileSync(fixture.callLog, 'utf8')).toContain('install --frozen-lockfile');
-  });
-
-  it('installs with pnpm absent from PATH when the outer shell is a POSIX sh', () => {
-    const fixture = createFixture();
-    const [command] = documentedStartupCommands(readme);
-
-    const result = runInFixture(fixture, 'sh', command);
-
-    expect(result.status, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`).toBe(0);
-    expect(readFileSync(fixture.callLog, 'utf8')).toContain('install --frozen-lockfile');
-  });
+      expect(result.status, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`).toBe(0);
+      expect(result.stdout.indexOf('verify-startup-ran')).toBeGreaterThanOrEqual(0);
+      expect(result.stdout.indexOf('verify-startup-ran')).toBeLessThan(
+        result.stdout.indexOf('bootstrap-ran')
+      );
+      expect(readFileSync(fixture.callLog, 'utf8').trim().split('\n')).toEqual([
+        'install --frozen-lockfile',
+        'exec playwright cli --help',
+      ]);
+    });
+  }
 
   it('proves the rejected `bash scripts/...` form loses the bootstrap PATH', () => {
     const fixture = createFixture();
@@ -145,6 +178,7 @@ describe('documented startup command behaviour (executed)', () => {
     const result = runInFixture(fixture, 'bash', PATH_LOSING_COMMAND);
 
     expect(result.status).toBe(127);
+    expect(result.stdout).toContain('verify-startup-ran');
     expect(result.stdout).toContain('bootstrap-ran');
     expect(result.stderr).toContain('pnpm: command not found');
     expect(existsSync(fixture.callLog)).toBe(false);

@@ -39,6 +39,17 @@ done
 grep -Fq '.docs/manifest.json' AGENTS.md || fail "AGENTS.md does not reference .docs/manifest.json"
 grep -Fq 'Read all four Memory Bank files once' AGENTS.md || fail "AGENTS.md is missing the four-file initialization instruction"
 
+# AGENTS.md is the only file Freebuff injects into the agent context at chat start
+# (Freebuff Cloud reads it up to about 64 KiB). If it outgrows that budget the
+# initialization instruction can be truncated, which would silently stop the Memory
+# Bank from reaching the agent. Fail closed instead of assuming it was loaded.
+agents_context_limit=65536
+agents_size="$(wc -c < AGENTS.md)"
+agents_size="${agents_size//[[:space:]]/}"
+if (( agents_size > agents_context_limit )); then
+  fail "AGENTS.md is ${agents_size} bytes, over the ~${agents_context_limit}-byte Freebuff context budget; the Memory Bank initialization instruction may be truncated"
+fi
+
 command -v node >/dev/null 2>&1 || fail "Node.js is required to validate .docs/manifest.json"
 
 node - "$REPO_ROOT/.docs/manifest.json" <<'NODE'
@@ -69,4 +80,7 @@ NODE
 
 printf '✅ Startup context check passed.\n'
 printf 'Verified: AGENTS.md, all four Memory Bank files, and a valid .docs/manifest.json.\n'
-printf 'IMPORTANT: This verifies file availability, not model-context loading. Follow AGENTS.md and read all four Memory Bank files, the manifest, and only relevant reference documents before task work.\n'
+printf 'AGENTS.md is %s bytes, inside the %s-byte Freebuff context budget.\n' "$agents_size" "$agents_context_limit"
+printf 'IMPORTANT: This verifies file availability, not model-context loading. Freebuff injects AGENTS.md only;\n'
+printf 'follow its initialization step and read all four Memory Bank files, the manifest, and only relevant\n'
+printf 'reference documents before task work.\n'
