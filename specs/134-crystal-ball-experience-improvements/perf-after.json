@@ -1,0 +1,55 @@
+{
+  "label": "after",
+  "base": "http://127.0.0.1:3007",
+  "throttled": true,
+  "measuredAt": "2026-11-10T21:02:56.478Z",
+  "profiles": [
+    {
+      "profile": "desktop-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "wallClockToLoadMs": 4698,
+      "lcpMs": 2644,
+      "cls": 0.0011,
+      "domContentLoadedMs": 1105,
+      "loadEventMs": 4694,
+      "resourceCount": 20,
+      "transferBytes": 852723,
+      "transferByExtension": {
+        "woff2": 138416,
+        "css": 51289,
+        "js": 165104,
+        "avif": 69622,
+        "webp": 428292
+      },
+      "domNodes": 108,
+      "audioResources": []
+    },
+    {
+      "profile": "mobile-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "wallClockToLoadMs": 4008,
+      "lcpMs": 2628,
+      "cls": 0.0077,
+      "domContentLoadedMs": 1106,
+      "loadEventMs": 4006,
+      "resourceCount": 32,
+      "transferBytes": 758301,
+      "transferByExtension": {
+        "woff2": 138416,
+        "css": 54300,
+        "js": 176770,
+        "avif": 197542,
+        "webp": 179020,
+        "other": 12253
+      },
+      "domNodes": 111,
+      "audioResources": []
+    }
+  ]
+}

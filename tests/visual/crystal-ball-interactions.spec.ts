@@ -25,10 +25,11 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
 
   await page.goto('/crystal-ball');
 
-  const greeting = page.getByText(
-    /Well, look who's feeling lucky today\.|Let's see what the universe has up its sleeve, eh\?|I've been waiting for you\./,
+  const greeting = page.getByTestId('crystal-ball-greeting');
+  await expect(greeting.locator('.sr-only')).toHaveText(
+    /Well, look who's feeling lucky today\.|Let's see what the universe has up its sleeve, eh\?|I've been waiting for you\.|Pull up a chair, friend/,
+    { timeout: 10_000 },
   );
-  await expect(greeting).toBeVisible();
 
   await expect(page.getByLabel('Time until daily reset')).toContainText(
     /Daily reset in \d{2}:\d{2}:\d{2}/,
@@ -37,6 +38,7 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
   const generateButton = page.getByRole('button', { name: /Generate My Fortune/i });
   await expect(generateButton).toBeEnabled();
   await expect(page.getByRole('textbox')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Ask a Follow-up Question/i })).toHaveCount(0);
 
   await generateButton.click();
 
@@ -108,26 +110,46 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
   // The completion pulse follows the final typed character.
   await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 15000 });
 
-  const followUpPrompt = page.getByText(
-    'Curious about your fortune? Ask the Crystal Ball one follow-up question.',
-  );
-  await expect(followUpPrompt).toBeVisible({ timeout: 15000 });
+  // The follow-up is offered only after the reveal finishes, initially as a button.
+  await expect(
+    page.getByText('Curious about your fortune? Ask the Crystal Ball one follow-up question.'),
+  ).toBeVisible({ timeout: 15000 });
+  const openFollowUp = page.getByRole('button', { name: /Ask a Follow-up Question/i });
+  await expect(openFollowUp).toBeVisible();
+  await expect(page.getByRole('textbox')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Generate My Fortune/i })).toHaveCount(0);
 
-  const followUpInput = page.getByRole('textbox', {
-    name: 'Your follow-up question for the crystal ball',
-  });
+  // The button is replaced by the designed input panel.
+  await openFollowUp.click();
+  await expect(openFollowUp).toHaveCount(0);
+  const followUpPanel = page.locator('div[class*="followUpPanel"]');
+  await expect(followUpPanel).toBeVisible();
+
+  const followUpInput = page.getByRole('textbox', { name: 'Your follow-up question' });
+  await expect(followUpInput).toBeVisible();
+  await expect(followUpInput).toHaveAttribute('maxlength', '120');
+  await expect(followUpInput).toHaveAttribute('rows', '5');
+
   const followUpButton = page.getByRole('button', { name: /Ask the Crystal Ball/i });
   await expect(followUpButton).toBeDisabled();
 
   await followUpInput.fill('Should I take the scenic route?');
+  await expect(followUpPanel).toContainText('31/120');
   await expect(followUpButton).toBeEnabled();
   await followUpButton.click();
 
-  await expect(page.getByText(followUp)).toBeVisible({ timeout: 10000 });
-  await expect(
-    page.getByText('You asked: “Should I take the scenic route?”'),
-  ).toBeVisible();
+  // The panel is replaced by the question and the typed answer, and the
+  // original fortune stays visible above them.
+  const answer = page.getByTestId('crystal-ball-followup-answer');
+  await expect(answer).toBeVisible({ timeout: 10000 });
+  await expect(answer.locator('.sr-only')).toHaveText(followUp);
+  await expect(answer).toContainText('You asked:');
+  await expect(answer).toContainText('“Should I take the scenic route?”');
+  await expect(answer.locator('[class*="goldenLeafCursor"]').first()).toBeVisible();
+  await expect(followUpPanel).toHaveCount(0);
+  await expect(page.getByRole('textbox')).toHaveCount(0);
+  await expect(fortuneResult.locator('.sr-only')).toHaveText(fortune);
+  await expect(answer).toContainText('That’s your follow-up for today.');
 
   expect(requests).toHaveLength(2);
   expect(requests[0]).toMatchObject({ mode: 'fortune' });
@@ -137,13 +159,14 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
     fortune,
   });
 
-  // A refresh restores the reading and the follow-up without another request.
+  // A refresh restores the reading, question and answer without another request.
   await page.reload();
   await expect(page.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune);
-  await expect(page.getByText(followUp)).toBeVisible();
-  await expect(page.getByRole('button', { name: /Generate My Fortune/i })).toHaveCount(0);
-  await expect(
-    page.getByRole('textbox', { name: 'Your follow-up question for the crystal ball' }),
-  ).toHaveCount(0);
+  const restoredAnswer = page.getByTestId('crystal-ball-followup-answer').locator('.sr-only');
+  await expect(restoredAnswer).toHaveText(followUp);
+  await expect(page.getByText('You asked:', { exact: false })).toBeVisible();
+  await expect(page.getByRole('textbox')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Ask a Follow-up Question/i })).toHaveCount(0);
+  await expect(page.getByText('That’s your follow-up for today.')).toBeVisible();
   expect(requests).toHaveLength(2);
 });

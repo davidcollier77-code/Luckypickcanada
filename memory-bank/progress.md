@@ -2,6 +2,19 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-10 — Crystal Ball experience and loading performance
+- Added a fourth greeting and a dedicated daily greeting selector that keeps the day stable and never repeats the previous
+  day's greeting, typed above the title with the existing golden maple-leaf cursor.
+- Replaced the always-visible follow-up form with a designed gold/glass panel opened from a button after the reveal; the
+  answer types with the same leaf treatment and the fortune, question and answer stay visible together.
+- Confirmed the Crystal Ball shows no separate Canadian quote and left the Lucky Generator quote collections and daily
+  behaviour untouched.
+- Compressed the three Crystal Ball WAVs to MP3 (923,210 → 169,610 bytes) with WAV fallback, deferred audio until
+  interaction intent, added immutable audio caching and high artwork fetch priority, and memoized reading words.
+- Measured `/crystal-ball` on a production build: desktop transfer 2,012,776 → 852,723 bytes and load 8,732 → 4,698 ms;
+  mobile 995,069 → 758,301 bytes and load 4,554 → 4,008 ms; artwork sources and dimensions unchanged.
+- Evidence is recorded in `specs/134-crystal-ball-experience-improvements/`.
+
 ## 2026-11-10 — Security alert ledger remediated
 - Verified all 29 `devskim-alerts.md` entries and every open code-scanning and Dependabot alert against current source.
 - Extended the audited DevSkim SARIF filter for five reviewed false-positive families, with positive/negative regression tests and replay coverage; emptied the ledger only after each family was covered.
