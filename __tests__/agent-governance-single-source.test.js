@@ -59,7 +59,7 @@ describe('single-source agent governance', () => {
       'Penpot:** Available whenever useful',
     );
     expect(connectedIntegrations).toContain(
-      'Use it sparingly to conserve usage.',
+      'Penpot:** Available whenever useful for UI design, layout exploration, visual concepts and prototyping.',
     );
   });
 
