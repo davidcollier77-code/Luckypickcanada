@@ -82,7 +82,7 @@
 - [X] T023 [US3] Run `./freebuff-verify.sh`; record each stage's real result.
 - [X] T024 [US3] Measure the production build output (`.next` + `public`) and report against the 495 MiB cap.
 - [X] T025 [US3] Inspect the complete final diff and run the final error check (`git diff --check`).
-- [ ] T026 [US3] Create the PR with the one canonical summary, confirm it is OPEN and UNMERGED, and record the full HEAD SHA.
+- [X] T026 [US3] Created PR #1809 (https://github.com/davidcollier77-code/Luckypickcanada/pull/1809), confirmed it is OPEN and UNMERGED, and recorded the full PR HEAD SHA in the canonical summary.
 
 **Checkpoint**: Audit record is reproducible and the product is provably unchanged.
 
