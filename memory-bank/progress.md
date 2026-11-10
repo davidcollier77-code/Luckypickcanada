@@ -1,3 +1,14 @@
+## 2026-11-09 — PR #1795 Visual QA test-clock repair
+
+- Inspected Visual QA workflow run `42732428053` and job log `129553573840`. The targeted suite had 2 failures in `__tests__/crystal-ball-daily-usage.test.js` and 23 passing tests overall; `oracle-route-validation.test.js` passed 16/16.
+- Both failures compared a fixed 2026-11-09 test fixture with `writeDailyUsage()` using the runner's live date (2026-11-10 UTC). This is test-clock nondeterminism, not a defect in production local-midnight handling.
+- Updated the two affected tests to use Vitest fake timers set to the fixture date and added `afterEach` cleanup to restore real timers. No production runtime code changed.
+- Updated the feature 125 spec, plan and task records to document the scope and verification follow-up. T013 is complete; T014 and updated-head CI remain pending.
+- Local `./freebuff-verify.sh` and `git diff --check` are BLOCKED because this session has GitHub API access but no repository shell. Do not report them as passes.
+- PR [#1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795) remains OPEN and UNMERGED; current-head CI must provide the required verification evidence.
+
+---
+
 ## 2026-11-09 — Jules Bridge retirement
 
 - Removed the retired Jules Bridge Worker implementation, its Wrangler configuration and dedicated GitHub deployment workflow from the repository.
