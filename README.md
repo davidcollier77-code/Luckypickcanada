@@ -66,18 +66,37 @@ pnpm dev
 
 ### Freebuff Workspace Startup
 
-The Freebuff project startup command is stored in Freebuff Project Settings, outside this repository. The
-documented command is kept here so it can be verified:
+The Freebuff project startup command is stored in Freebuff Project Settings, outside this repository. This is the
+exact value to paste there; the repository cannot read or change that setting:
 
 ```bash
-bash -c 'source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile'
+bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help'
 ```
 
-`scripts/bootstrap-pnpm.sh` resolves the exact `pnpm` version pinned in `package.json#packageManager` and exports
-its directory on `PATH`. Because that export only survives in the shell that sources it, the command wraps the
-bootstrap and the install in one explicit Bash process — the export reaches the `pnpm` call even when the
-platform shell is not Bash. Do not replace it with `bash scripts/bootstrap-pnpm.sh && …` (the export dies with
-the child process) or a bare `source …` (it fails under a POSIX `sh`).
+Each step is chained with `&&`, so it runs in this order and stops the rest of the command on failure:
+
+1. `bash scripts/verify-startup.sh` — reports whether `AGENTS.md`, all four Memory Bank files and
+   `.docs/manifest.json` exist, are readable and are non-empty, that `AGENTS.md` still names them, that the manifest
+   parses with the expected structure, and that `AGENTS.md` fits Freebuff's ~64 KiB project-instructions budget.
+   Running it first means the context answer is visible even when the install or the Playwright check later fails.
+2. `source scripts/bootstrap-pnpm.sh` — resolves the exact `pnpm` version pinned in `package.json#packageManager`
+   and exports its directory on `PATH`. Because that export only survives in the shell that sources it, the
+   bootstrap and the install share one explicit Bash process. Do not replace it with
+   `bash scripts/bootstrap-pnpm.sh && …` (the export dies with the child process) or a bare `source …` (it fails
+   under a POSIX `sh`).
+3. `CI=true pnpm install --frozen-lockfile` — installs the committed dependency tree and fails when the tree or the
+   lockfile is out of date. `CI=true` keeps pnpm non-interactive during startup.
+4. `pnpm exec playwright cli --help` — proves the repository-local Playwright agent CLI used for browser QA is
+   installed and runnable, without launching a browser.
+
+`bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
+`PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.
+
+**The four Memory Bank files are checked, not preloaded.** Freebuff injects only the project-root `AGENTS.md` (or
+`CLAUDE.md`) into the agent's context; terminal output from the startup command is not added to it. The supported
+approach is the one in `AGENTS.md` §1 step 4 — the agent reads all four Memory Bank files and
+`.docs/manifest.json` before task work. Keep that instruction in `AGENTS.md`.
 
 `__tests__/freebuff-startup-command.test.js` fails if this block is removed, duplicated, edited away from that
-tested form, or stops working with `pnpm` absent from `PATH` under Bash and a POSIX shell.
+tested form or reordered, and it executes the documented command with `pnpm` absent from `PATH` under both Bash
+and a POSIX `sh`.

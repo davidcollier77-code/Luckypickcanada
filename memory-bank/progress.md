@@ -2,6 +2,15 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-10 — Freebuff startup command and context availability
+- Corrected the startup command order so the context check reports before the pnpm bootstrap, frozen install and
+  Playwright CLI check, and restored `CI=true` on the install.
+- Documented the exact command as the Freebuff project-settings value and extended the guard test to execute the
+  documented command, including ordering, the frozen install and the Playwright CLI invocation.
+- Recorded that Freebuff injects only `AGENTS.md`, so the four Memory Bank files are checked by the startup script
+  but not preloaded; `AGENTS.md` §1 step 4 remains the supported loading path. Added a 64 KiB `AGENTS.md` budget
+  guard to the startup verifier.
+
 ## 2026-11-09 — Specialist skill routing and agent governance
 - Added concise routing guidance for 14 specialist skills to the existing authoritative AGENTS.md, including instruction precedence, conflict investigation and tool-availability safeguards.
 - Preserved the existing Spec Kit sequence, Playwright/Browserless boundaries, Cloudflare and Neon rules, PR gatekeepers and updater requirements.
