@@ -136,3 +136,132 @@ jobs:
 
           echo "Cloudflare API remained rate-limited after bounded retries."
           exit 1
+
+  # 🔴 CLOUDFLARE OBSERVABILITY ISSUE RESOLUTION — AUTHORIZATION REQUIRED
+  #
+  # Runs only after the deploy job succeeded for a push to main. It resolves the
+  # Cloudflare Workers Observability issue(s) that the deployed fix names with an
+  # explicit `Cloudflare-Issue: <uuid>` trailer in its commit message or pull
+  # request body, using the `CLOUDFLARE_API_TOKEN` Worker secret held by the
+  # deployed Worker. It fails the run when Cloudflare does not confirm the
+  # resolved status, leaving the issue unresolved. It never runs on pull
+  # requests, never resolves an unreferenced issue, and does not touch the
+  # Workers Observability scanner, webhook, GitHub issue creation, duplicate
+  # protection or notification policy.
+  resolve-observability-issues:
+    name: Resolve Cloudflare observability issues
+    needs: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Collect Cloudflare issue references from the deployed fix
+        id: references
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${BEFORE_SHA:-}" || "${BEFORE_SHA}" =~ ^0+$ ]]; then
+            commit_log="$(git log -1 --format=%B "${HEAD_SHA}")"
+          else
+            commit_log="$(git log --format=%B "${BEFORE_SHA}..${HEAD_SHA}")"
+          fi
+
+          commits_json="$(printf '%s' "$commit_log" | jq -R -s 'split("\n\n") | map(select(length > 0))')"
+          first_pass="$(jq -cn --argjson commits "$commits_json" '{commitMessages: $commits}' \
+            | node .github/scripts/cloudflare-issue-references.mjs)"
+
+          bodies='[]'
+          while IFS= read -r pr_number; do
+            [[ -z "$pr_number" ]] && continue
+            pr_body="$(gh api "repos/${REPOSITORY}/pulls/${pr_number}" --jq '.body // ""')"
+            bodies="$(jq --arg body "$pr_body" '. + [$body]' <<<"$bodies")"
+          done < <(printf '%s' "$first_pass" | jq -r '.pullRequestNumbers[]?')
+
+          references="$(jq -cn --argjson commits "$commits_json" --argjson bodies "$bodies" \
+            '{commitMessages: $commits, pullRequestBodies: $bodies}' \
+            | node .github/scripts/cloudflare-issue-references.mjs)"
+
+          issue_ids="$(printf '%s' "$references" | jq -r '.issueIds | join(",")')"
+          if [[ -z "$issue_ids" ]]; then
+            echo "::notice::No 'Cloudflare-Issue: <id>' reference found in the deployed commits or their pull requests. Nothing was resolved."
+            exit 0
+          fi
+
+          echo "issue_ids=${issue_ids}" >> "$GITHUB_OUTPUT"
+          printf 'Cloudflare issue reference(s) from the deployed fix: `%s`\n' "$issue_ids" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ask the deployed Worker to resolve the referenced issues
+        if: steps.references.outputs.issue_ids != ''
+        shell: bash
+        env:
+          RESOLVE_TOKEN: ${{ secrets.CLOUDFLARE_ISSUE_RESOLVE_TOKEN }}
+          ISSUE_IDS: ${{ steps.references.outputs.issue_ids }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${RESOLVE_TOKEN:-}" ]]; then
+            echo "::error::Repository secret CLOUDFLARE_ISSUE_RESOLVE_TOKEN is not configured. The Cloudflare issue was left unresolved."
+            exit 1
+          fi
+
+          payload="$(jq -cn --arg ids "$ISSUE_IDS" '{issueIds: ($ids | split(","))}')"
+          endpoint="https://luckypickcanada.ca/api/cloudflare-issues/resolve"
+          attempt=1
+          max_attempts=5
+
+          while :; do
+            response_file="$(mktemp)"
+            status="$(curl -sS -o "$response_file" -w '%{http_code}' \
+              --max-time 30 \
+              -X POST "$endpoint" \
+              -H "Authorization: Bearer ${RESOLVE_TOKEN}" \
+              -H 'Content-Type: application/json' \
+              --data "$payload" 2>/dev/null || printf '000')"
+            response_body="$(cat "$response_file")"
+            rm -f "$response_file"
+
+            if [[ "$status" == "200" ]] && [[ "$(printf '%s' "$response_body" | jq -r '.resolved // false' 2>/dev/null || printf 'false')" == "true" ]]; then
+              printf '%s\n' "$response_body" | jq -c '.results' || true
+              echo "::notice::Cloudflare confirmed the resolved status for: ${ISSUE_IDS}"
+              exit 0
+            fi
+
+            if [[ "$attempt" -ge "$max_attempts" ]]; then
+              echo "::error::Cloudflare did not confirm the resolved status (HTTP ${status}). The issue(s) ${ISSUE_IDS} remain unresolved."
+              printf '%s\n' "$response_body" | jq -c '.results? // .' || printf '%s\n' "$response_body"
+              exit 1
+            fi
+
+            echo "Resolution not confirmed yet (HTTP ${status}); retrying in 15s (attempt ${attempt}/${max_attempts})."
+            attempt=$((attempt + 1))
+            sleep 15
+          done
+
+      - name: Record the unresolved issue in the run summary
+        if: failure()
+        shell: bash
+        env:
+          ISSUE_IDS: ${{ steps.references.outputs.issue_ids }}
+        run: |
+          {
+            echo "## 🔴 Cloudflare observability issue resolution failed"
+            echo
+            echo "Cloudflare did not confirm a \`resolved\` status for: \`${ISSUE_IDS:-unknown}\`."
+            echo
+            echo "The issue(s) were left unresolved. Resolve them manually in the Cloudflare dashboard after verifying the deployed fix."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Cloudflare issue resolution was not confirmed; ${ISSUE_IDS:-the referenced issue} remains unresolved."
