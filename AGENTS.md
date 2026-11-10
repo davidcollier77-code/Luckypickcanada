@@ -92,11 +92,11 @@ These entries help select specialist guidance; they do not create a second gover
 
 **Overlap and routing notes**
 
-- `frontend-design` creates or improves interfaces; `web-design-guidelines` audits them; `shadcn-ui` implements components only where that library is already in use; `canvas-design` creates static artwork; `extract-design-system` extracts reference-site tokens.
-- `wrangler` covers CLI operations; `workers-best-practices` covers Worker engineering. `security-review` is the general security review; Worker-specific security guidance belongs to `workers-best-practices`.
-- `systematic-debugging` investigates root causes; `verification-before-completion` establishes evidence for the result. `performance` adds measured performance-specific diagnosis.
-- `executing-plans` is an execution aid, not an alternative governance or Spec Kit workflow. `github-actions-docs` explains workflow authoring and configuration; actual repository workflow definitions remain authoritative for gate behavior.
-- The Neon skill applies to the existing production database only within the owner's authorized task scope. It does not approve a provider change, new service or storage migration.
+- Choose design guidance by the requested deliverable: website interface, interface audit, existing component library, static artwork or reference-site token extraction.
+- Keep Cloudflare CLI operations distinct from Worker engineering guidance. General security reviews and platform-specific security practices may complement one another without replacing either.
+- Root-cause investigation, completion evidence and performance measurement are complementary responsibilities, not competing definitions of "done."
+- Inline plan execution is an execution aid, not an alternative governance or Spec Kit workflow. Workflow documentation does not override the repository's actual workflow definitions.
+- Database guidance applies only within the owner's authorized task scope; it does not approve a provider change, new service or storage migration.
 
 ## 2. SPEC KIT AND EXECUTION
 
