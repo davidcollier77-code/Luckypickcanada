@@ -56,7 +56,7 @@ When the changed-file list cannot be read, is empty, or contains a path the clas
 ### Functional Requirements
 
 - **FR-001**: The workflow MUST classify the pull request change set before deciding whether to install a browser.
-- **FR-002**: Documentation-only changes (Markdown at any depth, `specs/`, `memory-bank/`, `.docs/`) MUST skip the Chromium install, cache step, baseline verification, and visual regression run.
+- **FR-002**: Non-rendering changes (Markdown at any depth, `specs/`, `memory-bank/`, `.docs/`, `.specify/feature.json`, and `__tests__/*.test.{js,jsx,ts,tsx}` unit tests) MUST skip the Chromium install, cache step, baseline verification, and visual regression run.
 - **FR-003**: Any other changed path MUST run the existing Chromium and Playwright visual QA.
 - **FR-004**: A failed file listing, an empty change set, or an unexpected classification value MUST be treated as visual QA required.
 - **FR-005**: The Chromium cache key MUST include both the resolved Playwright version and the runner operating system.
@@ -87,3 +87,8 @@ When the changed-file list cannot be read, is empty, or contains a path the clas
 - System libraries are not cacheable; the cache-hit path therefore still runs `playwright install-deps chromium`, which installs OS packages without downloading browsers.
 - Only the Visual QA workflow's browser handling changes; the application, its scripts, dependencies, and deployment configuration are untouched.
 - Playwright's own documentation discourages browser caching on general performance grounds; the requested outcome is explicitly to cache it, so the cache is retained and measured rather than removed.
+
+
+## Non-rendering test and metadata paths
+
+The classifier may skip browser provisioning for the exact Spec Kit feature pointer (`.specify/feature.json`) and unit-test files directly under `__tests__/` using the supported `.test.js`, `.test.jsx`, `.test.ts` and `.test.tsx` extensions. This does not include browser/e2e tests under `tests/`, visual baselines, application code, assets, themes, workflows, scripts or unknown paths; those continue to require Playwright visual QA. Unit tests, TypeScript checks and repository verification continue to run on every pull request.
