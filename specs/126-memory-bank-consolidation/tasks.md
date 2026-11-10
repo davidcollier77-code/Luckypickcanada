@@ -22,7 +22,8 @@
 
 ## Phase 4: Update initialization and verify
 - [x] T011 Change only the project-context initialization instruction in AGENTS.md to name all four Memory Bank files.
-- [ ] T012 Run content/line-count assertions, inspect the complete diff, run ./freebuff-verify.sh and git diff --check, and confirm current-head PR CI. Local shell checks are BLOCKED in this GitHub API-only session; CI evidence is pending.
+- [x] T012 Verify Memory Bank line counts, the four-file AGENTS.md initialization instruction, the 495 MiB build-cap correction, the significant milestone count and current PR status using GitHub source inspection.
+- [ ] T013 Run ./freebuff-verify.sh, git diff --check and confirm all current-head PR CI gates. Local shell checks are BLOCKED in this GitHub API-only session; CI evidence is pending.
 
 ## Dependencies & Execution Order
 - T001–T004 establish source facts and specification.

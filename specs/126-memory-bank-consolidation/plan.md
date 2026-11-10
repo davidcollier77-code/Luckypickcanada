@@ -35,6 +35,8 @@ Consolidate the four Memory Bank documents into distinct, concise references; re
 - No task group applies: this is documentation-only and AGENTS.md says not to force an unrelated group.
 - Applied the Web App QA & Release Copilot Get Started routing workflow; this is a documentation change, not an application release audit.
 
+Implementation order: Specify → Plan → Tasks → Implement. The artifacts were authored in that order using the repository's command definitions and templates.
+
 ## Phase 1 — Design
 - Keep projectBrief stable and product-focused.
 - Replace activeContext's concatenated task log with a short current-state and current-task record.

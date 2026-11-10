@@ -10,8 +10,8 @@
 ## Current Repository State
 - Main includes the specialist skill-routing update from PR #1795; PR #1795 is merged.
 - Recent completed work includes the daily Crystal Ball fortune/reset experience (PR #1785), Lucky Stories province feed work (PR #1783), and Playwright CLI guidance/toolkit work (PR #1788); these are merged.
-- The only open pull request found during this inspection is PR #1765, an automated DevSkim alert-report update. It is unrelated to this Memory Bank task.
-- No other active feature PR was found in the repository's open-PR listing at the time of inspection.
+- At initial inspection, the only unrelated open pull request was PR #1765, an automated DevSkim alert-report update.
+- This task's PR #1796 is now open and unmerged.
 
 ## Current Task
 Consolidate all four Memory Bank files so agents can load useful, accurate project context without wading through repeated historical task logs. The largest file, previously 2,289 lines, is being reduced substantially. AGENTS.md receives only the requested initialization correction to read all four files.
