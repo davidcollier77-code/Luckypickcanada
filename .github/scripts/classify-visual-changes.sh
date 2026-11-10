@@ -11,8 +11,8 @@
 #
 # The classifier fails closed. Only known non-rendering paths may skip visual QA:
 # Markdown files, the specs/, memory-bank/ and .docs/ trees, the Spec Kit feature
-# pointer, and unit tests directly under __tests__/. Browser/e2e tests under
-# tests/ and all unknown paths still request visual QA.
+# pointer, the classifier implementation itself, and unit tests directly under
+# __tests__/. Browser/e2e tests under tests/ and all unknown paths still request visual QA.
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ documentation_only() {
   case "$1" in
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
-    .specify/feature.json) return 0 ;;
+    .specify/feature.json | .github/scripts/classify-visual-changes.sh) return 0 ;;
     __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
   esac
   return 1
