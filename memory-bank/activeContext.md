@@ -6,6 +6,7 @@
 - **Task group:** None selected. This is a governance/documentation-only task, and `AGENTS.md` says not to force an unrelated task group.
 - **Conflict handling:** Investigate differences in purpose, scope, assumptions, versions and actual repository state; reconcile against governance and authoritative docs; choose the safest least-disruptive supported solution and record why. Escalate only when irreconcilable or requiring approval.
 - **Preservation:** Existing Spec Kit, Playwright-first/Browserless-fallback, Cloudflare, Neon, PR gatekeeper, updater and approval rules remain in force. No application code, integrations, workflows, dependencies, secrets, database or deployment configuration is in scope.
+- **PR:** [#1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795) — open and unmerged; the canonical PR body records the current full HEAD SHA.
 - **QA workflow:** Used the Web App QA & Release Copilot Get Started workflow to classify this as a documentation/governance change, not a release candidate.
 - **Verification limitation:** This session has GitHub API access but no repository shell. Spec Kit setup scripts, `./freebuff-verify.sh`, `git diff --check` and local tests cannot be claimed as run. PR CI evidence remains pending.
 
