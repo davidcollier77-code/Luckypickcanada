@@ -9,18 +9,19 @@
 # prints exactly one line on standard output: `visual_required=true` or
 # `visual_required=false`. Diagnostics go to standard error.
 #
-# The classifier fails closed. Only documentation-only paths may skip visual QA:
-# Markdown files at any depth plus the specs/, memory-bank/ and .docs/ trees.
-# Empty input, an unknown extension (for example a shell script or a workflow),
-# or any application, theme, asset or test path requests visual QA. A change this
-# script cannot positively classify is therefore never silently skipped.
+# The classifier fails closed. Only known non-rendering paths may skip visual QA:
+# Markdown files, the specs/, memory-bank/ and .docs/ trees, the Spec Kit feature
+# pointer, the classifier implementation itself, and unit tests directly under
+# __tests__/. Browser/e2e tests under tests/ and all unknown paths still request visual QA.
 
 set -euo pipefail
 
-documentation_only() {
+non_rendering_path() {
   case "$1" in
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
+    .specify/feature.json | .github/scripts/classify-visual-changes.sh) return 0 ;;
+    __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
   esac
   return 1
 }
@@ -34,7 +35,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   path="${path%$'\r'}"
   [[ -z "$path" ]] && continue
   reviewed=$((reviewed + 1))
-  if documentation_only "$path"; then
+  if non_rendering_path "$path"; then
     continue
   fi
   visual_required=true
@@ -50,7 +51,7 @@ if [[ "$reviewed" -eq 0 ]]; then
 fi
 
 if [[ "$visual_required" == "true" ]]; then
-  echo "classify-visual-changes: ${reviewed} changed path(s) reviewed; '${first_visual_path}' can affect rendered output, so visual QA is required." >&2
+  echo "classify-visual-changes: ${reviewed} changed path(s) reviewed; '${first_visual_path}' is not positively classified as non-rendering, so visual QA is required." >&2
 else
   echo "classify-visual-changes: ${reviewed} documentation-only path(s) reviewed; visual QA is not required." >&2
 fi

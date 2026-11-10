@@ -1,3 +1,35 @@
+## 2026-11-10 — PR #1795 Visual QA run and assertion correction
+
+- Inspected Visual QA run 42737280254, job 129569554534. The change classifier succeeded; Chromium restore/install, baseline verification and Playwright visual regression were all skipped as intended for this non-rendering PR.
+- Targeted Crystal Ball allowance and Oracle tests passed. Full suite: 462 passed, 1 failed (55 test files; 1 failing test file).
+- Confirmed sole failure: `__tests__/agent-governance-single-source.test.js` expected the literal `Do not add or invoke Browserless`, but authoritative AGENTS.md says `MUST NOT add or invoke Browserless`. This is a stale test assertion, not a governance-policy defect.
+- Updated the assertion to match the exact current AGENTS.md wording. New commit is pushed; the full suite and remaining non-visual gates must be rerun on the new HEAD.
+- TypeScript and Spec Kit verification were skipped because the all-unit-tests step failed earlier in the job. No workflow, updater schedule, application code or UI was changed.
+
+---
+
+## 2026-11-10 — PR #1795 one-feature Spec Kit governance correction
+
+- Inspected updater scheduler run 42736790393, job 129568071489. The Spec Kit task-artifact verifier's unit tests passed; the repository gate failed because the PR modified both specs/098-visual-qa-chromium-cache and specs/125-agent-skill-routing.
+- Restored specs/098-visual-qa-chromium-cache/spec.md, plan.md and tasks.md exactly to their current main-branch contents. Kept the supporting visual-classifier scope documented only in specs/125-agent-skill-routing/spec.md, plan.md and tasks.md.
+- Confirmed .specify/feature.json points to specs/125-agent-skill-routing. The changed-file list now contains only one Spec Kit feature directory.
+- The classifier remains fail-closed. This non-rendering PR can skip browser provisioning, baseline verification and Playwright visual regression; unit tests, TypeScript and repository verification still run. Browser/e2e, app/assets/themes, workflows, other scripts, unknown, empty and mixed changes remain visual-required.
+- The failed run was on the prior head and is not evidence that the correction passed. Current-head Spec Kit governance and CI remain pending.
+- No updater schedules or workflow definitions were changed.
+
+---
+
+## 2026-11-09 — PR #1795 Visual QA test-clock repair
+
+- Inspected Visual QA workflow run `42732428053` and job log `129553573840`. The targeted suite had 2 failures in `__tests__/crystal-ball-daily-usage.test.js` and 23 passing tests overall; `oracle-route-validation.test.js` passed 16/16.
+- Both failures compared a fixed 2026-11-09 test fixture with `writeDailyUsage()` using the runner's live date (2026-11-10 UTC). This is test-clock nondeterminism, not a defect in production local-midnight handling.
+- Updated the two affected tests to use Vitest fake timers set to the fixture date and added `afterEach` cleanup to restore real timers. No production runtime code changed.
+- Updated the feature 125 spec, plan and task records to document the scope and verification follow-up. T013 is complete; T014 and updated-head CI remain pending.
+- Local `./freebuff-verify.sh` and `git diff --check` are BLOCKED because this session has GitHub API access but no repository shell. Do not report them as passes.
+- PR [#1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795) remains OPEN and UNMERGED; current-head CI must provide the required verification evidence.
+
+---
+
 ## 2026-11-09 — Jules Bridge retirement
 
 - Removed the retired Jules Bridge Worker implementation, its Wrangler configuration and dedicated GitHub deployment workflow from the repository.
@@ -751,3 +783,13 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Local shell verification and Spec Kit setup/resolver commands are unavailable in the GitHub API-only session; PR CI must provide the remaining evidence.
 
 - Follow-up workflow inspection also identified path-conditional Verify Updater Scheduler validation, GitHub Code Scanning Analyze jobs and separate Pullfrog/Amazon Q PR review apps; scheduler deployment remains push-to-main only and was not changed.
+
+
+## 2026-11-09 — Specialist skill routing
+
+- Updated the existing authoritative `AGENTS.md` skill-discovery guidance and added one concise routing section for all 14 requested specialist skills. Each entry has exactly two fields: what it is used for and when to use it.
+- Added a conflict-resolution rule requiring the agent to investigate purpose, scope, assumptions, versions and actual project state; reconcile instructions against repository governance and authoritative documentation; choose the safest, least-disruptive supported solution; and record the rationale. Only unresolved or approval-dependent conflicts require pausing the affected action.
+- Preserved the established Spec Kit, Playwright/Browserless, Cloudflare, Neon, PR gatekeeper, updater and approval instructions. No application or integration configuration was changed.
+
+- `AGENTS.md` appeared to be 271 lines on manual inspection. By manual inspection only, the 14 requested skill names each occur exactly once in the routing section, and each entry has the two required fields. This has not been confirmed by automated checks: the shell-based verification (`./freebuff-verify.sh`, `git diff --check`; tasks T010/T011) has not been run, and CI results are still pending.
+- Spec Kit feature 125 records the specification, plan and task breakdown. The GitHub API-only session cannot execute the repository setup scripts, `./freebuff-verify.sh`, `git diff --check` or local tests; those results are not claimed. PR CI remains pending.

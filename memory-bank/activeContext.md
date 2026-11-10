@@ -1,10 +1,40 @@
-# Current Task — Agent integration and QA guidance (2026-11-09)
+# Current Task — PR #1795 skill routing and Visual QA scope (2026-11-10)
 
-- **Branch:** `docs/agent-integration-qa-guidance-20261109`; Spec Kit feature `specs/124-agent-integration-qa-guidance`.
-- **Scope:** Update the existing authoritative `AGENTS.md` integration inventory, Playwright/Browserless guidance, workflow-backed PR gatekeeper descriptions and strict 495 MiB build-size rule.
-- **Connected integrations:** Browserless, Crawlbase, Firecrawl, GitHub, Penpot, Supabase and Turso. Supabase/Turso are tooling only, not production storage. Playwright CLI is a project-local CLI, not a connected integration.
-- **Preservation:** No application code, production database, Cloudflare deployment configuration, GitHub workflows, secrets or scheduled updaters changed.
-- **Verification limitation:** GitHub API access is available; repository shell execution is not. Spec Kit resolver/setup scripts, `./freebuff-verify.sh`, local `git diff --check` and production build measurement are not claimed as run. PR CI results remain pending.
+- PR #1795 remains OPEN and UNMERGED.
+- Authoritative browser setup from main AGENTS.md: project-local Playwright CLI/Test plus Browserless as the only connected remote-browser integration. Browserbase is not retained.
+- The previous governance failure in Visual QA run 42734210768 was the stale Browserbase expectation; the governance test and AGENTS.md now match Playwright + Browserless.
+- The updater scheduler run 42736790393 then failed the repository governance gate because this PR changed two Spec Kit feature directories (098 and 125). Corrected by restoring all three specs/098-visual-qa-chromium-cache artifacts exactly to main and keeping the supporting classifier scope in the single PR feature directory specs/125-agent-skill-routing.
+- .specify/feature.json points to specs/125-agent-skill-routing. Only this one Spec Kit feature directory should be changed by this PR.
+- Visual classification: this PR changes governance/docs, the Spec Kit pointer, the classifier and unit tests; it does not change rendered app output. The fail-closed classifier recognizes the exact Spec Kit pointer, its own implementation, and direct-child unit tests as non-rendering. Unit tests, TypeScript and repository verification remain required. Only browser provisioning, baseline verification and Playwright visual regression are skipped for positively classified non-rendering changes. Browser/e2e, app/assets/themes, workflows, other scripts, unknown, empty and mixed changes remain visual-required.
+- Latest Visual QA run 42737280254 confirmed the classifier correctly skipped browser-specific steps (Chromium setup, baseline verification and Playwright visual regression). Targeted tests passed; the full suite had 462 passed and one failure: the governance test expected `Do not add or invoke Browserless`, while AGENTS.md correctly says `MUST NOT add or invoke Browserless`. Updated the single stale assertion in `__tests__/agent-governance-single-source.test.js`; new-head CI is pending.
+- No production runtime or visitor-facing UI changed.
+
+---
+
+# Recent Work — PR #1795 Visual QA test-clock follow-up (2026-11-09)
+
+- **Branch / PR:** `docs/agent-skill-routing-20261109` / [PR #1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795); OPEN and UNMERGED.
+- **Task:** Repair the failing date-dependent Crystal Ball unit tests surfaced by PR Visual QA, without changing visitor-facing behavior.
+- **Confirmed cause:** Visual QA run `42732428053` ran on 2026-11-10 UTC. Two tests used a fixed 2026-11-09 fixture, but `writeDailyUsage()` correctly uses the live local date. The mismatched clocks caused two assertion failures; the Oracle validation tests passed (16/16).
+- **Repair:** `__tests__/crystal-ball-daily-usage.test.js` now freezes Vitest system time to the fixture date in both affected tests and restores real timers with `afterEach`. Production date helpers and Crystal Ball behavior are unchanged.
+- **Spec Kit:** Follow-up recorded in `specs/125-agent-skill-routing/{spec,plan,tasks}.md`. T013 complete; T014 and current-head CI verification pending. Existing feature pointer remains unchanged.
+- **Verification:** The earlier Visual QA run failed 2 of 25 targeted tests (23 passed). The updated-head CI run has not yet been confirmed. Repository shell is unavailable in this session, so `./freebuff-verify.sh` and local `git diff --check` are BLOCKED, not passed.
+- **Scope:** No application runtime code, workflow, dependency, database, hosting, secret or updater schedule changed. Only the targeted test and relevant Spec Kit/Memory Bank records were updated.
+- **Next:** Evaluate the actual checks on the updated PR HEAD; do not claim verified completion until required checks pass.
+
+---
+
+## Recent Work — Specialist Skill Routing (2026-11-09)
+
+- **Branch:** `docs/agent-skill-routing-20261109`; Spec Kit feature `specs/125-agent-skill-routing`.
+- **Authorization:** Owner explicitly authorized direct implementation in this ChatGPT session; this task is not being handed off to Freebuff.
+- **Scope:** Add concise routing guidance for 14 specialist skills to the existing authoritative `AGENTS.md`, with two fields per skill and an explicit conflict-investigation rule.
+- **Task group:** None selected. This is a governance/documentation-only task, and `AGENTS.md` says not to force an unrelated task group.
+- **Conflict handling:** Investigate differences in purpose, scope, assumptions, versions and actual repository state; reconcile against governance and authoritative docs; choose the safest least-disruptive supported solution and record why. Escalate only when irreconcilable or requiring approval.
+- **Preservation:** Existing Spec Kit, Playwright-first/Browserless-fallback, Cloudflare, Neon, PR gatekeeper, updater and approval rules remain in force. No application code, integrations, workflows, dependencies, secrets, database or deployment configuration is in scope.
+- **PR:** [#1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795) — open and unmerged; the canonical PR body records the current full HEAD SHA.
+- **QA workflow:** Used the Web App QA & Release Copilot Get Started workflow to classify this as a documentation/governance change, not a release candidate.
+- **Verification limitation:** This session has GitHub API access but no repository shell. Spec Kit setup scripts, `./freebuff-verify.sh`, `git diff --check` and local tests cannot be claimed as run. PR CI evidence remains pending.
 
 ---
 

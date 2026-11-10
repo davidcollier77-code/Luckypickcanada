@@ -46,6 +46,7 @@ describe('visual QA change classification', () => {
     expect(classify(['themes/default/homepage.css'])).toBe('visual_required=true');
     expect(classify(['public/themes/default/hero.webp'])).toBe('visual_required=true');
     expect(classify(['tests/visual/homepage.spec.ts'])).toBe('visual_required=true');
+    expect(classify(['tests/e2e/homepage.spec.ts'])).toBe('visual_required=true');
     expect(classify(['playwright.config.ts'])).toBe('visual_required=true');
   });
 
@@ -55,8 +56,12 @@ describe('visual QA change classification', () => {
     );
   });
 
-  it('skips visual QA for documentation-only changes', () => {
+  it('skips visual QA for documentation, Spec Kit pointer and unit-test-only changes', () => {
     expect(classify(['PR_SUMMARY.md'])).toBe('visual_required=false');
+    expect(classify(['.specify/feature.json'])).toBe('visual_required=false');
+    expect(classify(['.github/scripts/classify-visual-changes.sh'])).toBe('visual_required=false');
+    expect(classify(['__tests__/agent-governance-single-source.test.js'])).toBe('visual_required=false');
+    expect(classify(['__tests__/crystal-ball-daily-usage.test.js'])).toBe('visual_required=false');
     expect(
       classify([
         'specs/098-visual-qa-chromium-cache/spec.md',

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   DAILY_STORAGE_KEY,
   createFreshUsage,
@@ -7,6 +7,10 @@ import {
   writeDailyUsage,
   withDailyUsageLock,
 } from '../app/crystal-ball-client/daily-usage.js';
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function createStorage(initial = null) {
   const values = new Map();
@@ -54,6 +58,8 @@ describe('Crystal Ball visitor-local daily allowance', () => {
 
   it('persists the fortune and follow-up allowances independently', () => {
     const today = new Date(2026, 10, 9, 12, 0, 0, 0);
+    vi.useFakeTimers();
+    vi.setSystemTime(today);
     const storage = createStorage();
 
     const afterFortune = writeDailyUsage(
@@ -97,6 +103,8 @@ describe('Crystal Ball visitor-local daily allowance', () => {
 
   it('keeps the state for the current page lifetime when storage is unavailable', () => {
     const today = new Date(2026, 10, 9, 12, 0, 0, 0);
+    vi.useFakeTimers();
+    vi.setSystemTime(today);
     writeDailyUsage(
       { ...createFreshUsage(today), fortuneUsed: true, fortune: 'In-memory fortune.' },
       null,
