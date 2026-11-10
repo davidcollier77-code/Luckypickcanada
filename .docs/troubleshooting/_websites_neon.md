@@ -22,6 +22,7 @@ Neon docs are available as markdown. Append `.md` to any doc URL or set `Accept:
 
 - [Need a Neon account and the user is not around: provision one now; they claim it later](https://neon.com/auth.md)
 - [Pricing and plans](https://neon.com/pricing.md)
+- [Customer case studies by use case, with results quoted from each story](https://neon.com/case-studies.md)
 - [Declare a whole backend in one file](https://neon.com/docs/reference/neon-ts.md)
 - [Add users and authentication](https://neon.com/docs/auth/overview.md)
 - [Explore the full platform: functions, object storage, AI Gateway, and more](https://neon.com/docs/get-started/backend-overview.md)
@@ -87,7 +88,7 @@ Drivers, connection strings, pooling, local dev tooling, and troubleshooting.
 
 Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI/CD automation with `neon`.
 
-- [All 50 Neon CLI pages](https://neon.com/docs/cli/llms.txt) — key pages below
+- [All 51 Neon CLI pages](https://neon.com/docs/cli/llms.txt) — key pages below
 
 - [Neon CLI](https://neon.com/docs/cli.md): The Neon command-line interface: every command, with options and examples
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
@@ -291,6 +292,7 @@ Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701,
 - [HIPAA Compliance](https://neon.com/docs/security/hipaa.md)
 - [Security overview](https://neon.com/docs/security/security-overview.md)
 - [Security reporting](https://neon.com/docs/security/security-reporting.md)
+- [SOC 3 report](https://neon.com/docs/security/soc-3-report.md): Controls relevant to security, availability, and confidentiality
 
 ## Extensions
 
