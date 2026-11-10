@@ -1,41 +1,44 @@
-# Active Context — Freebuff Startup Command Runtime Verification
+# Active Context — Keep Cloudflare Workers Issues Enabled Across Deployments
 
 - **Updated:** 2026-11-10
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Base branch:** main (`d09f945f`, the merged startup-command fix #1802)
-- **Task branch:** freebuff/33958ac019917e6d9cfec2d4
-- **Spec Kit feature:** specs/130-startup-command-runtime-verification
-- **Pull request:** created for this task
+- **Base branch:** main
+- **Task branch:** fix/keep-cloudflare-issues-enabled
+- **Pull request:** [#1805](https://github.com/davidcollier77-code/Luckypickcanada/pull/1805)
+- **Spec Kit feature:** specs/131-cloudflare-workers-issues-persistence
 
 ## Current Task
-Verify the newly installed Freebuff startup command at runtime, demonstrate each expected behaviour with
-executed evidence, and report anything it does not do. This is an evidence task: no application, script,
-governance, dependency or `.docs/` change is expected unless the evidence exposes a defect.
 
-## Verified findings
-- The installed command exited 0 in ~7.4 s from the repository root; `package.json` and `pnpm-lock.yaml`
-  hashes were unchanged before and after, so the frozen install did not modify the lockfile.
-- Output order is the documented order: startup context check, pnpm resolution, frozen install, Playwright help.
-- `scripts/verify-startup.sh` fails closed before any pnpm work for a missing, empty or 71,760-byte
-  `AGENTS.md`, and for an invalid `.docs/manifest.json`; later steps never ran in those fixtures.
-- `scripts/bootstrap-pnpm.sh` installs the exact `pnpm@10.30.3` pin into `$HOME/.local` when no matching
-  `pnpm` is on `PATH`, and exports that directory for the same shell. A matching pin is reused as-is.
-- `CI=true` reaches the install process. The install completed with stdin not a TTY and no prompt; this
-  environment did not produce an interactive prompt even without `CI=true`, so prompt suppression was not
-  isolated.
-- `pnpm exec playwright cli --help` exited 0 in ~1.7 s and printed 136 lines of usage. No browser process
-  existed before or after, so availability is proven and browser launch is not.
-- The workspace reports Node.js 26.13.0 against the `22.x` engine pin; pnpm emits a warning and continues.
-- Freebuff injects only `AGENTS.md` into agent context; the four Memory Bank files are checked by the
-  startup script but must still be read by the agent via `AGENTS.md` §1 step 4.
-- The Freebuff project setting is outside the repository and cannot be read; the quoted command equals the
-  `README.md`/guard-test value, but the stored setting itself is not directly verifiable from here.
+Keep Cloudflare Workers Issues detection enabled across normal Wrangler deployments so the existing Cloudflare Notifications/Automations route can continue forwarding detected issues to the existing `workers-issues-to-github` Worker.
+
+## Verified Findings
+
+- PR #1805 changes only `wrangler.jsonc`, adding `observability.issues.enabled: true` while retaining `observability.enabled: true`.
+- The initial DevSkim workflow passed.
+- The initial Validate OpenNext Repair workflow passed.
+- The initial Visual QA run passed all unit tests and the standalone TypeScript check, then failed at the Spec Kit governance step because the PR had no changed `spec.md`, `plan.md`, and `tasks.md` feature artifacts.
+- Browser visual regression steps were skipped by the existing classifier for this configuration-only change.
+- Amazon Q and Pullfrog reviewed the one-file configuration change and reported no blocking defects. Pullfrog reported successful Wrangler schema validation, 481 tests across 56 files, and successful `wrangler types` generation; these are reviewer-reported results, not independently rerun here.
+- The owner manually tested the existing Cloudflare route and confirmed issues reached GitHub.
+- No Cloudflare account credentials, API keys, tokens, new destinations, automations, webhooks, separate resolver, or updater scheduler changes are part of this task.
 
 ## Scope and Boundaries
-- Change set limited to this feature's Spec Kit artifacts, `.specify/feature.json` and this Memory Bank record.
-- No `AGENTS.md`, application, UI, asset, dependency, workflow, integration, deployment or `.docs/` change.
-- The startup command and its scripts were exercised, not modified.
+
+- Implementation is limited to `wrangler.jsonc` plus this task's Spec Kit and Memory Bank records.
+- Preserve existing observability logging and existing issue forwarding.
+- Do not modify `AGENTS.md`, workflow gatekeepers, the updater scheduler, Cloudflare account settings, or existing resolver implementation as part of this PR.
+- No merge or deployment has been performed.
 
 ## Verification Status
-- Focused guard/bootstrap tests, `bash -n`, the fixture matrix, `./freebuff-verify.sh`, the measured build
-  size and the final diff audit are recorded with the task results and PR summary.
+
+- **PASS:** Initial DevSkim workflow.
+- **PASS:** Initial Validate OpenNext Repair workflow.
+- **PASS:** Initial Visual QA unit tests and TypeScript check.
+- **FAIL:** Initial Visual QA Spec Kit governance step; the PR lacked changed feature artifacts. The required feature artifacts have now been added to the PR for a fresh current-head run.
+- **PENDING:** Fresh `./freebuff-verify.sh` and current-head Verification Integrity evidence.
+- **PENDING:** Merge and deployment.
+- **PENDING:** Live Cloudflare detector and existing issue-forwarding route confirmation after deployment.
+
+## Next Action
+
+Run all applicable PR gatekeepers against the updated PR head. Do not merge until the required checks pass and the owner authorizes the merge.
