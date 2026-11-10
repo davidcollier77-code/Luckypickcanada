@@ -2,6 +2,13 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-10 — Cloudflare scan alerts triaged and resolved
+- Verified all five open Cloudflare Workers Issues (#1789–#1793) against their retained occurrences and live production
+  responses: every request was a 404 to a path the site does not serve, with no outbound fetch.
+- Classified the wordpress, secret-files, source-control, debug-endpoints and known-scanner-path alerts as inbound scan
+  noise, resolved the five issues with evidence, and made no application or deployment change.
+- Evidence is recorded in `specs/132-cloudflare-scan-issue-triage/evidence.md`.
+
 ## 2026-11-10 — Freebuff startup command and context availability
 - Corrected the startup command order so the context check reports before the pnpm bootstrap, frozen install and
   Playwright CLI check, and restored `CI=true` on the install.
