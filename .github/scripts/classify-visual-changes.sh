@@ -9,11 +9,10 @@
 # prints exactly one line on standard output: `visual_required=true` or
 # `visual_required=false`. Diagnostics go to standard error.
 #
-# The classifier fails closed. Only documentation-only paths may skip visual QA:
-# Markdown files at any depth plus the specs/, memory-bank/ and .docs/ trees.
-# Empty input, an unknown extension (for example a shell script or a workflow),
-# or any application, theme, asset or test path requests visual QA. A change this
-# script cannot positively classify is therefore never silently skipped.
+# The classifier fails closed. Only known non-rendering paths may skip visual QA:
+# Markdown files, the specs/, memory-bank/ and .docs/ trees, the Spec Kit feature
+# pointer, and unit tests directly under __tests__/. Browser/e2e tests under
+# tests/ and all unknown paths still request visual QA.
 
 set -euo pipefail
 
@@ -21,6 +20,8 @@ documentation_only() {
   case "$1" in
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
+    .specify/feature.json) return 0 ;;
+    __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
   esac
   return 1
 }
