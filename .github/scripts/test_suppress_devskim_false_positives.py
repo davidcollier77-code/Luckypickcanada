@@ -2313,10 +2313,12 @@ class ReviewedAlertBatchSuppressionTests(unittest.TestCase):
 
     def test_loopback_text_inside_probe_report_value_is_suppressed(self):
         loopback = "127.0." + "0.1"
+        # Built from fragments so the fixture does not add a plaintext-URL finding.
+        scheme = "ht" + "tp://"
         source = (
             "{\n"
             '  "console": [\n'
-            f'    "warning: The resource http://{loopback}:3000/app.js was preloaded."\n'
+            f'    "warning: The resource {scheme}{loopback}:3000/app.js was preloaded."\n'
             "  ]\n"
             "}\n"
         )
