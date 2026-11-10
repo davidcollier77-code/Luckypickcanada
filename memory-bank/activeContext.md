@@ -1,4 +1,16 @@
-# Current Task — PR #1795 Visual QA governance follow-up (2026-11-09)
+# Current Task — PR #1795 Visual QA scope and integration correction (2026-11-09)
+
+- PR #1795 remains OPEN and UNMERGED.
+- Browser tools confirmed from main AGENTS.md: Playwright CLI/Test is the project-local browser QA tool; Browserless is the only connected remote-browser integration. Browserbase is not in the authoritative integration list and must not be reintroduced.
+- Previous Visual QA run 42734210768, job 129562708782: targeted Crystal Ball tests passed; full unit suite had 462 passed and one failed because the governance test expected stale Browserbase entries.
+- Repair: AGENTS.md now lists Browserless only and keeps automatic PR-checker workflows on Playwright when visual QA is required. The governance test now expects Playwright and Browserless only.
+- Visual classification: this PR changes docs/governance, .specify/feature.json and unit tests under __tests__/; it does not change rendered output. The fail-closed classifier now recognizes the exact Spec Kit pointer and direct-child unit-test files as non-rendering. Unit tests, TypeScript and repository verification remain required. Chromium install, baseline verification and Playwright visual regression should be skipped for this PR. Browser/e2e tests under tests/, application/assets/theme paths, workflows, scripts, unknown paths, empty or mixed sets still require Playwright.
+- Next: confirm latest PR HEAD classifies visual_required=false; verify browser steps are skipped while all non-visual checks run, then confirm the full unit suite passes.
+- No production runtime or user-facing UI changed.
+
+---
+
+# Recent Work — PR #1795 Visual QA governance follow-up (2026-11-09)
 
 - **PR:** https://github.com/davidcollier77-code/Luckypickcanada/pull/1795 (OPEN; do not merge before required checks pass).
 - **Latest failure:** Visual QA run 42734210768, job 129562708782. Targeted Crystal Ball allowance and Oracle tests passed; full unit suite reported 462 passed and 1 failed.
