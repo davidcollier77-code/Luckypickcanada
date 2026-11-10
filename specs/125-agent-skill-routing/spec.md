@@ -104,3 +104,8 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 - The task changes governance documentation, the Spec Kit feature pointer, and repository unit tests; it does not change rendered output or browser workflows.
 - The existing fail-closed visual classifier now explicitly recognizes `.specify/feature.json` and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` unit tests as non-rendering. The Visual QA workflow must continue to run all unit tests, TypeScript and repository verification, while skipping Chromium provisioning, baseline verification and Playwright visual regression for this non-rendering change set.
 - Browser/e2e tests under `tests/`, application/assets/theme changes, workflows, scripts, unknown paths, empty input and mixed changes still require visual QA.
+
+
+## Visual QA Scope for This Governance Change
+
+This PR changes governance documentation, the Spec Kit feature pointer, the visual-change classifier and repository unit tests; it does not change rendered application output. The existing fail-closed classifier recognizes the exact `.specify/feature.json` pointer, its own implementation (`.github/scripts/classify-visual-changes.sh`), and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` unit tests as non-rendering. For these paths, browser provisioning, baseline verification and Playwright visual regression may be skipped, but unit tests, TypeScript and repository verification remain mandatory. Browser/e2e tests under `tests/`, application/assets/theme changes, workflows, other scripts, unknown paths, empty listings and mixed changes continue to require Playwright visual QA.
