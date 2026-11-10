@@ -61,7 +61,10 @@
     }
   ],
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "issues": {
+      "enabled": true
+    }
   },
   "vars": {
     "GIFT_FROM_EMAIL": "gifts@luckypickcanada.ca"
