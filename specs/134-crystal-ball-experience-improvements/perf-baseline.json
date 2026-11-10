@@ -1,0 +1,80 @@
+{
+  "label": "baseline",
+  "base": "http://127.0.0.1:3007",
+  "throttled": true,
+  "measuredAt": "2026-11-10T20:53:46.119Z",
+  "profiles": [
+    {
+      "profile": "desktop-1440",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "wallClockToLoadMs": 8732,
+      "lcpMs": 2696,
+      "cls": 0,
+      "domContentLoadedMs": 1143,
+      "loadEventMs": 8729,
+      "resourceCount": 35,
+      "transferBytes": 2012776,
+      "transferByExtension": {
+        "woff2": 138416,
+        "css": 53615,
+        "js": 185451,
+        "avif": 270633,
+        "webp": 428292,
+        "other": 12259,
+        "wav": 924110
+      },
+      "domNodes": 109,
+      "audioResources": [
+        {
+          "name": "http://127.0.0.1:3007/sounds/crystal-ball-energy.wav",
+          "bytes": 692730
+        },
+        {
+          "name": "http://127.0.0.1:3007/sounds/crystal-ball-reveal.wav",
+          "bytes": 141146
+        },
+        {
+          "name": "http://127.0.0.1:3007/sounds/crystal-ball-leaf.wav",
+          "bytes": 90234
+        }
+      ]
+    },
+    {
+      "profile": "mobile-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "wallClockToLoadMs": 4554,
+      "lcpMs": 2636,
+      "cls": 0.0185,
+      "domContentLoadedMs": 1113,
+      "loadEventMs": 4552,
+      "resourceCount": 34,
+      "transferBytes": 995069,
+      "transferByExtension": {
+        "woff2": 138416,
+        "css": 53615,
+        "js": 185451,
+        "avif": 194926,
+        "webp": 179020,
+        "other": 12261,
+        "wav": 231380
+      },
+      "domNodes": 109,
+      "audioResources": [
+        {
+          "name": "http://127.0.0.1:3007/sounds/crystal-ball-reveal.wav",
+          "bytes": 141146
+        },
+        {
+          "name": "http://127.0.0.1:3007/sounds/crystal-ball-leaf.wav",
+          "bytes": 90234
+        }
+      ]
+    }
+  ]
+}

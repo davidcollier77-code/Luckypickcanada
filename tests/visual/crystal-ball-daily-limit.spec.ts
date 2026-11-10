@@ -70,19 +70,20 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
   expect(fortuneRequests).toBe(2);
 
   // One follow-up is available, then persists.
-  const followUpInput = page.getByRole('textbox', {
-    name: 'Your follow-up question for the crystal ball',
-  });
+  await page.getByRole('button', { name: /Ask a Follow-up Question/i }).click();
+  const followUpInput = page.getByRole('textbox', { name: 'Your follow-up question' });
   await followUpInput.fill('What should I watch for?');
   await page.getByRole('button', { name: /Ask the Crystal Ball/i }).click();
-  await expect(page.getByText(followUp)).toBeVisible({ timeout: 10000 });
+  const answer = page.getByTestId('crystal-ball-followup-answer');
+  await expect(answer.locator('.sr-only')).toHaveText(followUp, { timeout: 10000 });
   expect(followUpRequests).toBe(1);
 
   await page.reload();
-  await expect(page.getByText(followUp)).toBeVisible();
   await expect(
-    page.getByRole('textbox', { name: 'Your follow-up question for the crystal ball' }),
-  ).toHaveCount(0);
+    page.getByTestId('crystal-ball-followup-answer').locator('.sr-only'),
+  ).toHaveText(followUp);
+  await expect(page.getByRole('textbox', { name: 'Your follow-up question' })).toHaveCount(0);
+  await expect(page.getByText('That’s your follow-up for today.')).toBeVisible();
   expect(followUpRequests).toBe(1);
 
   // A stored state from an earlier local date starts a fresh allowance.

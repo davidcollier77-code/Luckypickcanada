@@ -312,15 +312,27 @@ export function playRevealApplause(sessionId) {
 
 /*
  * Crystal Ball sound design.
- * Same-origin sounds are preloaded on entry; playback is limited to the
- * question action and reveal transitions. Howler is already a project dependency.
+ * Same-origin sounds are prepared when the visitor shows intent to generate a
+ * fortune, so the initial page load does not download audio it may never need.
+ * The compressed MP3 is preferred and the original WAV remains the fallback
+ * source; both are the same recording, so the sound is unchanged.
  */
 let crystalBallAudioLoadPromise = null;
 
 const CRYSTAL_BALL_SOUNDS = {
-  crystalEnergy: { src: ['/sounds/crystal-ball-energy.wav'], volume: 0.16, loop: true },
-  crystalReveal: { src: ['/sounds/crystal-ball-reveal.wav'], volume: 0.28 },
-  crystalLeaf: { src: ['/sounds/crystal-ball-leaf.wav'], volume: 0.26 },
+  crystalEnergy: {
+    src: ['/sounds/crystal-ball-energy.mp3', '/sounds/crystal-ball-energy.wav'],
+    volume: 0.16,
+    loop: true,
+  },
+  crystalReveal: {
+    src: ['/sounds/crystal-ball-reveal.mp3', '/sounds/crystal-ball-reveal.wav'],
+    volume: 0.28,
+  },
+  crystalLeaf: {
+    src: ['/sounds/crystal-ball-leaf.mp3', '/sounds/crystal-ball-leaf.wav'],
+    volume: 0.26,
+  },
 };
 
 export function preloadCrystalBallAudio() {
