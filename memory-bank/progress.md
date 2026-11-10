@@ -1,3 +1,13 @@
+## 2026-11-10 — PR #1795 Visual QA run and assertion correction
+
+- Inspected Visual QA run 42737280254, job 129569554534. The change classifier succeeded; Chromium restore/install, baseline verification and Playwright visual regression were all skipped as intended for this non-rendering PR.
+- Targeted Crystal Ball allowance and Oracle tests passed. Full suite: 462 passed, 1 failed (55 test files; 1 failing test file).
+- Confirmed sole failure: `__tests__/agent-governance-single-source.test.js` expected the literal `Do not add or invoke Browserless`, but authoritative AGENTS.md says `MUST NOT add or invoke Browserless`. This is a stale test assertion, not a governance-policy defect.
+- Updated the assertion to match the exact current AGENTS.md wording. New commit is pushed; the full suite and remaining non-visual gates must be rerun on the new HEAD.
+- TypeScript and Spec Kit verification were skipped because the all-unit-tests step failed earlier in the job. No workflow, updater schedule, application code or UI was changed.
+
+---
+
 ## 2026-11-10 — PR #1795 one-feature Spec Kit governance correction
 
 - Inspected updater scheduler run 42736790393, job 129568071489. The Spec Kit task-artifact verifier's unit tests passed; the repository gate failed because the PR modified both specs/098-visual-qa-chromium-cache and specs/125-agent-skill-routing.
