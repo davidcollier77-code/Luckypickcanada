@@ -40,3 +40,10 @@
 ## Completion Conditions
 
 Implementation is complete when the classifier, the conditional workflow steps, the cache key, and the guard tests are present and the local gates pass. Verified completion additionally requires PR-head Visual QA evidence for the runtime cache and skip paths; until that exists those paths are reported as NOT RUN rather than passed.
+
+
+## Follow-up: Non-rendering metadata and unit-test paths
+
+- [x] T011 Recognize `.specify/feature.json` and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` as non-rendering paths while preserving fail-closed behavior for browser/e2e tests and unknown paths.
+- [x] T012 Extend the executed classifier tests for the Spec Kit pointer, unit-test files, browser/e2e test paths and mixed change sets.
+- [ ] T013 Verify current-head Visual QA: unit tests and repository gates must still run; Chromium install, baseline verification and Playwright regression must be skipped for this non-rendering PR. Confirm visual changes still trigger the full Playwright path.
