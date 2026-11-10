@@ -4,7 +4,7 @@
 - **Repository:** davidcollier77-code/Luckypickcanada
 - **Base branch:** main
 - **Task branch:** freebuff/68fa75a8cf62b1b555921275
-- **Pull request:** created at handoff; see the PR body for the canonical summary
+- **Pull request:** [#1806](https://github.com/davidcollier77-code/Luckypickcanada/pull/1806)
 - **Spec Kit feature:** specs/132-cloudflare-scan-issue-triage
 
 ## Current Task
@@ -27,13 +27,19 @@ Review the five open Cloudflare Workers Issues GitHub issues (#1789–#1793), de
 - Resolution covers exactly the five named GitHub issues and their five matching Cloudflare observability records.
 - No merge or deployment is performed.
 
+## Resolution
+
+- All five GitHub issues (#1789–#1793) were closed with individual evidence comments; all five matching Cloudflare observability records returned `status: resolved`.
+
 ## Verification Status
 
-- **PASS (evidence):** Cloudflare occurrence review and live production path checks.
-- **PENDING:** `./freebuff-verify.sh` on the final head.
-- **PENDING:** Production build-size measurement.
-- **PENDING:** Final diff audit and PR handoff.
+- **PASS:** Cloudflare occurrence review and live production path checks.
+- **PASS:** `./freebuff-verify.sh` exit 0 on the final head.
+- **PASS:** Production build size 301,268,992 bytes (287.31 MiB), below the 495 MiB cap.
+- **PASS:** Final diff audit (`git diff --check` clean, records-only diff).
+- **OPEN / UNMERGED:** PR #1806; final HEAD SHA recorded in the PR summary.
+- **PENDING (post-submission):** External PR gatekeepers run after submission and are not claimed as passed.
 
 ## Next Action
 
-Run the repository verification gate, measure the build, audit the final diff, and complete the PR handoff without merging.
+Leave PR #1806 open for owner review. Do not merge or deploy.

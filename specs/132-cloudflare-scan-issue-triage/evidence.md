@@ -85,7 +85,19 @@ The body size is identical for every path and matches the application's normal N
 
 **All five issues are false positives.** They are Cloudflare's "Potential vulnerability scan" detections of inbound requests from external hosts probing for software the site does not run. In every retained occurrence the application answered **404**, produced the standard not-found page, and made **no outbound fetch**. There is no `2xx` response, no secret or source disclosure, and no application route involved, so no application fix is warranted.
 
-**Resolution**: each GitHub issue receives an evidence-based comment and is closed; each matching Cloudflare observability issue is marked `resolved`. No application code, dependency, credential, Cloudflare configuration or deployment change is made.
+**Resolution**: each GitHub issue received an evidence-based comment and was closed; each matching Cloudflare observability issue was marked `resolved`. No application code, dependency, credential, Cloudflare configuration or deployment change was made.
+
+## Resolution results
+
+| GitHub issue | Evidence comment | GitHub state | Cloudflare status |
+|---|---|---|---|
+| #1789 | [comment](https://github.com/davidcollier77-code/Luckypickcanada/issues/1789#issuecomment-6773677354) | closed — `not_planned` | `resolved` (PATCH 200) |
+| #1790 | [comment](https://github.com/davidcollier77-code/Luckypickcanada/issues/1790#issuecomment-6773677628) | closed — `not_planned` | `resolved` (PATCH 200) |
+| #1791 | [comment](https://github.com/davidcollier77-code/Luckypickcanada/issues/1791#issuecomment-6773677421) | closed — `not_planned` | `resolved` (PATCH 200) |
+| #1792 | [comment](https://github.com/davidcollier77-code/Luckypickcanada/issues/1792#issuecomment-6773677344) | closed — `not_planned` | `resolved` (PATCH 200) |
+| #1793 | [comment](https://github.com/davidcollier77-code/Luckypickcanada/issues/1793#issuecomment-6773677315) | closed — `not_planned` | `resolved` (PATCH 200) |
+
+All five issue threads were closed on 2026-11-10 with reason `not_planned`. Each Cloudflare PATCH returned `success: true`, no errors, and `result.status: "resolved"`.
 
 ## Residual risk
 

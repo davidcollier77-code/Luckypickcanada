@@ -81,7 +81,7 @@ Web application plus GitHub/Cloudflare automation at the repository root.
 - [X] T015 Run `./freebuff-verify.sh` and record each check's actual result
 - [X] T016 Measure the production build size and confirm it remains strictly below 495 MiB
 - [X] T017 Inspect the complete final diff and perform the final error check
-- [ ] T018 Commit, push the task branch, open the PR, and record the full HEAD SHA while keeping the PR open and unmerged
+- [X] T018 Commit, push the task branch, open PR #1806, and record the full HEAD SHA in the PR summary while keeping the PR open and unmerged
 
 ## Dependencies & Execution Order
 
