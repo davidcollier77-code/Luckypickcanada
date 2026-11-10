@@ -2,7 +2,7 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
-## 2026-11-10 — Specialist skill routing and agent governance
+## 2026-11-09 — Specialist skill routing and agent governance
 - Added concise routing guidance for 14 specialist skills to the existing authoritative AGENTS.md, including instruction precedence, conflict investigation and tool-availability safeguards.
 - Preserved the existing Spec Kit sequence, Playwright/Browserless boundaries, Cloudflare and Neon rules, PR gatekeepers and updater requirements.
 - PR #1795 is merged to main. Follow-up Visual QA and governance-test corrections were included before merge.

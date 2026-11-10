@@ -21,7 +21,7 @@ Consolidate the four Memory Bank documents into distinct, concise references; re
 ## Constitution Check
 - Single source of truth: PASS — AGENTS.md remains authoritative; Memory Bank contains context only.
 - Verify before acting: PASS — inspected main, all four Memory Bank files, AGENTS.md, Spec Kit constitution/templates/commands, manifest and open PR state.
-- Required sequence: PASS by authored artifacts — Specify, Plan and Tasks are recorded before implementation. Native setup scripts cannot run in this GitHub API-only session; this limitation is recorded.
+- Required sequence: PARTIAL — the specification, plan, task list and implementation were authored in the required order using the repository command definitions and templates. Native Spec Kit setup/resolver scripts cannot run in this GitHub API-only session; full command-level validation remains pending.
 - Protect core systems: PASS — no runtime, database, deployment, secrets or integrations changed.
 - Resource conservation: PASS — documentation-only; no dependencies or build changes.
 
