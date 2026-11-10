@@ -92,3 +92,10 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 - The first current-head Visual QA run exposed two date-dependent unit-test failures. The tests used a fixed November 9 fixture while `writeDailyUsage` correctly used the runner's live local date, which was November 10 in CI.
 - Freeze Vitest's system time to each fixed fixture in the two affected tests and restore real timers after each test. Do not change production date handling or the visitor's local-midnight reset behavior.
 - Re-run the required PR CI on the updated HEAD; no passing result is assumed until the updated run reports it.
+
+
+## Governance Test Follow-up
+
+- The full Visual QA unit suite exposed a governance regression: the `Connected Integrations` section omitted Browserbase, although the single-source governance test requires Playwright, Browserless and Browserbase to be represented.
+- Restore Browserbase as a connected integration with explicit owner approval and require actual tool availability before use. Clarify that Browserless and Browserbase are for Freebuff's direct browser-based task work and neither may be added to or triggered from automatic PR-checker workflows.
+- This is a documentation-only correction. It does not add Browserbase to CI or alter the Playwright-first / Browserless-fallback workflow.
