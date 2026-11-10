@@ -96,6 +96,11 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 
 ## Governance Test Follow-up
 
-- The full Visual QA unit suite exposed a governance regression: the `Connected Integrations` section omitted Browserbase, although the single-source governance test requires Playwright, Browserless and Browserbase to be represented.
-- Restore Browserbase as a connected integration with explicit owner approval and require actual tool availability before use. Clarify that Browserless and Browserbase are for Freebuff's direct browser-based task work and neither may be added to or triggered from automatic PR-checker workflows.
-- This is a documentation-only correction. It does not add Browserbase to CI or alter the Playwright-first / Browserless-fallback workflow.
+- The full Visual QA unit suite exposed a stale governance test that expected Browserbase, although the current authoritative integration list retains Browserless as the sole connected browser service and Playwright as the project-local CLI/Test tool. Update the governance test to match the actual supported tools; do not restore Browserbase.
+
+
+## Visual QA Scope Follow-up
+
+- The task changes governance documentation, the Spec Kit feature pointer, and repository unit tests; it does not change rendered output or browser workflows.
+- The existing fail-closed visual classifier now explicitly recognizes `.specify/feature.json` and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` unit tests as non-rendering. The Visual QA workflow must continue to run all unit tests, TypeScript and repository verification, while skipping Chromium provisioning, baseline verification and Playwright visual regression for this non-rendering change set.
+- Browser/e2e tests under `tests/`, application/assets/theme changes, workflows, scripts, unknown paths, empty input and mixed changes still require visual QA.
