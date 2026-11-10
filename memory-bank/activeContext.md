@@ -1,11 +1,11 @@
 # Active Context — Automatic Cloudflare Issue Resolution
 
-**Updated:** 2026-11-10  
-**Repository:** davidcollier77-code/Luckypickcanada  
-**Base branch:** main  
-**Task branch:** freebuff/2720ca13a80dbbb863d410bc  
-**Spec Kit feature:** specs/127-cloudflare-issue-auto-resolution  
-**Pull request:** pending creation for this task
+- **Updated:** 2026-11-10
+- **Repository:** davidcollier77-code/Luckypickcanada
+- **Base branch:** main
+- **Task branch:** freebuff/2720ca13a80dbbb863d410bc
+- **Spec Kit feature:** specs/127-cloudflare-issue-auto-resolution
+- **Pull request:** pending creation for this task
 
 ## Current Repository State
 - Main at task start: `20fa45d9` (Spec Kit update #1797); the Memory Bank consolidation (#1796) and specialist skill routing (#1795) are merged.
