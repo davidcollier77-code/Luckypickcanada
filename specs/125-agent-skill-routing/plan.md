@@ -96,3 +96,8 @@ The full Visual QA suite found a stale test expectation for Browserbase. The cur
 ## Visual QA Classification Follow-up
 
 The PR is non-rendering: changed paths are governance/docs, the Spec Kit feature pointer and unit tests under __tests__/. The existing fail-closed classifier is extended to recognize only the exact feature pointer and direct-child unit-test extensions as non-rendering. The full unit suite, TypeScript and repository checks remain required; only Chromium provisioning, baseline verification and Playwright visual regression are skipped. Browser/e2e and unknown paths remain visual-required.
+
+
+## Supporting Visual QA Classification
+
+To ensure this governance-only PR does not launch a browser unnecessarily, the existing fail-closed classifier is narrowly extended for `.specify/feature.json`, `.github/scripts/classify-visual-changes.sh`, and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` unit tests. This is supporting CI classification within this PR, not a second Spec Kit feature. All non-visual gates remain required; visual/e2e, application, asset, theme, workflow, other script, unknown, empty and mixed changes still trigger Playwright.
