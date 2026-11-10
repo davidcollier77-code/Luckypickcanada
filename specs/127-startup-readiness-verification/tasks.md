@@ -16,8 +16,8 @@
 
 ## Phase 3: Implement
 
-- [ ] T005 Add scripts/verify-startup.sh to check required files, AGENTS.md references, and manifest structure.
-- [ ] T006 Update .specify/feature.json to point to this active feature.
+- [x] T005 Add scripts/verify-startup.sh to check required files, AGENTS.md references, and manifest structure.
+- [x] T006 Update .specify/feature.json to point to this active feature.
 
 ## Phase 4: Verify
 
