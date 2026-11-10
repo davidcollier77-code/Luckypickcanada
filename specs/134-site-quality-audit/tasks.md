@@ -122,3 +122,7 @@
 - [P] tasks touch different sections/files or independent evidence workstreams.
 - No application behaviour changes are permitted in any task.
 - Any blocked tool is recorded with its real error and a governed fallback.
+
+## Completion (2026-11-10)
+
+All 26 tasks are complete. The audit is delivered as documentation only, with no application change and no implemented recommendation. PR #1809 is open and unmerged for owner review and approval.

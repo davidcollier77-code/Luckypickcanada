@@ -90,3 +90,9 @@ Not applicable. This is a report deliverable with no data model, interface contr
 ## Post-Design Constitution Re-check
 
 All gates remain PASS: no protected system is changed, the deliverable is documentation-only, and the PR is review-only.
+
+## Verification outcome (2026-11-10)
+
+`./freebuff-verify.sh` exited 0: frozen pnpm install, Spec Kit task-artifact gate plus 25 regression tests, verification-status integrity tests, `tsc --noEmit`, `next build --webpack` (20 pages) and 36/36 refresh-docs tests. Build output measured 335,110,439 bytes = 319.59 MiB, strictly below the 495 MiB limit.
+
+Browser evidence for the audit came from Browserless at 1440×900 and 390×844; Playwright CLI screenshots were blocked in this environment and are reported as blocked, not passed. PR #1809 remains open and unmerged.
