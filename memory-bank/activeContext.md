@@ -35,7 +35,7 @@ Review the five open Cloudflare Workers Issues GitHub issues (#1789–#1793), de
 
 - **PASS:** Cloudflare occurrence review and live production path checks.
 - **PASS:** `./freebuff-verify.sh` exit 0 on the final head.
-- **PASS:** Production build size 301,268,992 bytes (287.31 MiB), below the 495 MiB cap.
+- **PASS:** Production build size 318,536,371 bytes (303.78 MiB), below the 495 MiB cap.
 - **PASS:** Final diff audit (`git diff --check` clean, records-only diff).
 - **OPEN / UNMERGED:** PR #1806; final HEAD SHA recorded in the PR summary.
 - **PENDING (post-submission):** External PR gatekeepers run after submission and are not claimed as passed.
