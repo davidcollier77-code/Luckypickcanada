@@ -16,7 +16,7 @@ Update the existing authoritative `AGENTS.md` skill-discovery guidance with conc
 
 **Storage**: N/A; no application data or database changes.
 
-**Testing**: Exact skill-name/field-count inspection, line count, final diff review, Vitest targeted Crystal Ball/Oracle tests, repository verification and PR CI. The date-sensitive allowance tests use Vitest fake time tied to their fixed fixture and restore real timers after each test. This session has GitHub API access but no repository shell, so shell-based checks cannot be claimed locally.
+**Testing**: Exact skill-name/field-count inspection, line count, final diff review, Vitest targeted Crystal Ball/Oracle tests, the full unit suite including the single-source governance test, repository verification and PR CI. The date-sensitive allowance tests use Vitest fake time tied to their fixed fixture and restore real timers after each test. This session has GitHub API access but no repository shell, so shell-based checks cannot be claimed locally.
 
 **Target Platform**: GitHub repository governance documentation.
 
@@ -86,3 +86,8 @@ The repository's actual configuration and workflow files remain authoritative fo
 The initial PR #1795 Visual QA run (workflow 42732428053) reached the targeted unit-test step and failed two assertions in `__tests__/crystal-ball-daily-usage.test.js`. Both tests fixed the fixture date at November 9, while `writeDailyUsage()` used the CI runner's current date (November 10 UTC). The tests now freeze Vitest system time to the fixture date and restore real timers in `afterEach`. Production date and local-midnight behavior remain unchanged.
 
 **Updated verification:** the GitHub API session cannot run repository shell commands, so `./freebuff-verify.sh` and local `git diff --check` remain BLOCKED. The updated PR HEAD must pass its newly triggered targeted unit tests and all applicable CI checks before verified completion. Because a test path changed, the Visual QA classifier and any required browser checks must be allowed to run; do not assume a docs-only skip.
+
+
+## Governance Regression Follow-up
+
+The full Visual QA suite found that the Connected Integrations section no longer named Browserbase. Restore its entry with explicit owner approval and actual-tool-availability safeguards. Keep Browserless/Browserbase restricted to Freebuff's direct browser-based work; do not add or trigger either from automatic PR-checker workflows. This changes governance documentation only.
