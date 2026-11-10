@@ -6,7 +6,7 @@
 
 ## Summary
 
-Audit all 29 `devskim-alerts.md` entries and every open code-scanning and Dependabot alert. The 22 open DevSkim alerts are reviewed false positives from four heuristics: Playwright `test.setTimeout` configuration, a callable zero-delay timer in a test-only mock transport, a test assertion containing a placeholder word, public identifiers (Cloudflare account ID and a pinned upstream commit), and loopback text inside committed probe-report JSON strings. Extend the repository's existing fail-closed SARIF filter for exactly those reviewed paths, lines and tokens, add positive/negative regression tests and real-SARIF replay coverage, empty the ledger, and fix the one genuine CodeQL finding by declaring workflow token permissions. Attempt the single Dependabot alert with a verified transitive override.
+Audit all 29 `devskim-alerts.md` entries and every open code-scanning and Dependabot alert. The 23 open DevSkim alerts are reviewed false positives from five heuristics: Playwright `test.setTimeout` configuration, a callable zero-delay timer in a test-only mock transport, a test assertion containing a placeholder word, public identifiers (Cloudflare account ID and a pinned upstream commit), and loopback text inside committed probe-report JSON strings. Extend the repository's existing fail-closed SARIF filter for exactly those reviewed paths, lines and tokens, add positive/negative regression tests and real-SARIF replay coverage, empty the ledger, and fix the one genuine CodeQL finding by declaring workflow token permissions. Attempt the single Dependabot alert with a verified transitive override.
 
 ## Technical Context
 
@@ -24,7 +24,7 @@ Audit all 29 `devskim-alerts.md` entries and every open code-scanning and Depend
 
 **Constraints**: 495 MiB production build cap; no scanner rule, workflow trigger, secret, deployment or application behaviour change; `.docs/` read-only.
 
-**Scale/Scope**: 29 ledger entries, 22 open DevSkim alerts, 1 CodeQL alert, 1 Dependabot alert; 2 filter/replay scripts plus tests, 1 workflow, 1 manifest.
+**Scale/Scope**: 29 ledger entries, 23 open DevSkim alerts, 1 CodeQL alert, 1 Dependabot alert; 2 filter/replay scripts plus tests, 1 workflow, 1 manifest.
 
 ## Constitution Check
 

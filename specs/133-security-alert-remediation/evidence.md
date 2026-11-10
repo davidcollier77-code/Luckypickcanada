@@ -4,7 +4,7 @@
 
 ## Open alerts retrieved from GitHub
 
-- Code scanning (DevSkim, `note`): 19 alerts — #558, #561, #562, #563, #564, #566, #567, #568, #569, #570, #582, #584–#591, #599.
+- Code scanning (DevSkim, `note`): 20 alerts — #558, #561, #562, #563, #564, #566, #567, #568, #569, #570, #582, #584–#591, #599.
 - Code scanning (DevSkim, `error`): 3 alerts — #597, #600, #601.
 - Code scanning (CodeQL, `actions/missing-workflow-permissions`): 1 alert — #602.
 - Dependabot: 1 alert — #69, `minimatch` 10.2.6, GHSA-g3hv-75wg-m249 / CVE-2026-118764, patched in 11.0.1.

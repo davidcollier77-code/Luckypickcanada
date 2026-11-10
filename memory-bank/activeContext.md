@@ -12,7 +12,7 @@ Resolve the outstanding findings in `devskim-alerts.md`, inspect GitHub code-sca
 
 ## Verified Findings
 
-- The ledger holds 29 entries. GitHub's open list is the authoritative current state: 19 DevSkim notes, 3 DevSkim errors, 1 CodeQL workflow-permission alert and 1 Dependabot alert.
+- The ledger holds 29 entries. GitHub's open list is the authoritative current state: 20 DevSkim notes, 3 DevSkim errors, 1 CodeQL workflow-permission alert and 1 Dependabot alert.
 - Every open DevSkim alert is a reviewed false positive from one of five heuristics: Playwright `test.setTimeout(<number>)` configuration, a callable zero-delay timer in the test-only documentation-refresh mock transport, a test assertion containing a placeholder word, the public Cloudflare account identifier or pinned upstream revision, and loopback text inside committed probe-report JSON strings.
 - The CodeQL alert is genuine: `.github/workflows/deploy-open-next.yml` declared no `permissions` block.
 - The Dependabot alert is genuine for the pinned build tooling: `minimatch` 10.2.6 is below the patched 11.0.1.
