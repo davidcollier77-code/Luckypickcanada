@@ -1,4 +1,17 @@
-# Current Task — Specialist Skill Routing (2026-11-09)
+# Current Task — PR #1795 Visual QA follow-up (2026-11-09)
+
+- **Branch / PR:** `docs/agent-skill-routing-20261109` / [PR #1795](https://github.com/davidcollier77-code/Luckypickcanada/pull/1795); OPEN and UNMERGED.
+- **Task:** Repair the failing date-dependent Crystal Ball unit tests surfaced by PR Visual QA, without changing visitor-facing behavior.
+- **Confirmed cause:** Visual QA run `42732428053` ran on 2026-11-10 UTC. Two tests used a fixed 2026-11-09 fixture, but `writeDailyUsage()` correctly uses the live local date. The mismatched clocks caused two assertion failures; the Oracle validation tests passed (16/16).
+- **Repair:** `__tests__/crystal-ball-daily-usage.test.js` now freezes Vitest system time to the fixture date in both affected tests and restores real timers with `afterEach`. Production date helpers and Crystal Ball behavior are unchanged.
+- **Spec Kit:** Follow-up recorded in `specs/125-agent-skill-routing/{spec,plan,tasks}.md`. T013 complete; T014 and current-head CI verification pending. Existing feature pointer remains unchanged.
+- **Verification:** The earlier Visual QA run failed 2 of 25 targeted tests (23 passed). The updated-head CI run has not yet been confirmed. Repository shell is unavailable in this session, so `./freebuff-verify.sh` and local `git diff --check` are BLOCKED, not passed.
+- **Scope:** No application runtime code, workflow, dependency, database, hosting, secret or updater schedule changed. Only the targeted test and relevant Spec Kit/Memory Bank records were updated.
+- **Next:** Evaluate the actual checks on the updated PR HEAD; do not claim verified completion until required checks pass.
+
+---
+
+## Recent Work — Specialist Skill Routing (2026-11-09)
 
 - **Branch:** `docs/agent-skill-routing-20261109`; Spec Kit feature `specs/125-agent-skill-routing`.
 - **Authorization:** Owner explicitly authorized direct implementation in this ChatGPT session; this task is not being handed off to Freebuff.
