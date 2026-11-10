@@ -87,4 +87,4 @@ PR_SUMMARY.md                              # canonical PR report
 
 ## Non-rendering classification extension
 
-The classifier recognizes `.specify/feature.json` and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` files as non-rendering paths. This allows metadata-only and unit-test-only changes to retain unit tests and repository checks without provisioning Chromium or running browser regression. The classification remains fail-closed for empty input, errors, mixed visual/non-visual changes and unrecognized paths. Browser/e2e test paths under `tests/` continue to require Playwright.
+The classifier recognizes `.specify/feature.json`, `.github/scripts/classify-visual-changes.sh`, and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` files as non-rendering paths. This allows metadata-only and unit-test-only changes to retain unit tests and repository checks without provisioning Chromium or running browser regression. The classification remains fail-closed for empty input, errors, mixed visual/non-visual changes and unrecognized paths. Browser/e2e test paths under `tests/` continue to require Playwright.
