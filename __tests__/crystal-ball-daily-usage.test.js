@@ -1,8 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-afterEach(() => {
-  vi.useRealTimers();
-});
 import {
   DAILY_STORAGE_KEY,
   createFreshUsage,
@@ -11,6 +7,10 @@ import {
   writeDailyUsage,
   withDailyUsageLock,
 } from '../app/crystal-ball-client/daily-usage.js';
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 function createStorage(initial = null) {
   const values = new Map();
