@@ -751,3 +751,12 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Local shell verification and Spec Kit setup/resolver commands are unavailable in the GitHub API-only session; PR CI must provide the remaining evidence.
 
 - Follow-up workflow inspection also identified path-conditional Verify Updater Scheduler validation, GitHub Code Scanning Analyze jobs and separate Pullfrog/Amazon Q PR review apps; scheduler deployment remains push-to-main only and was not changed.
+
+
+## 2026-11-09 — Specialist skill routing
+
+- Updated the existing authoritative `AGENTS.md` skill-discovery guidance and added one concise routing section for all 14 requested specialist skills. Each entry has exactly two fields: what it is used for and when to use it.
+- Added a conflict-resolution rule requiring the agent to investigate purpose, scope, assumptions, versions and actual project state; reconcile instructions against repository governance and authoritative documentation; choose the safest, least-disruptive supported solution; and record the rationale. Only unresolved or approval-dependent conflicts require pausing the affected action.
+- Preserved the established Spec Kit, Playwright/Browserless, Cloudflare, Neon, PR gatekeeper, updater and approval instructions. No application or integration configuration was changed.
+- `AGENTS.md` is 271 lines. The 14 requested skill names each occur exactly once in the routing section; each entry has the two required fields.
+- Spec Kit feature 125 records the specification, plan and task breakdown. The GitHub API-only session cannot execute the repository setup scripts, `./freebuff-verify.sh`, `git diff --check` or local tests; those results are not claimed. PR CI remains pending.
