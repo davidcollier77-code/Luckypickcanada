@@ -23,7 +23,7 @@
 - [x] T009 Create the required feature specification, plan and task records and update the feature pointer.
 - [ ] T010 Run ./freebuff-verify.sh, git diff --check and available local checks (BLOCKED: this session has GitHub API access but no repository shell).
 - [ ] T011 Confirm PR CI results for the new PR HEAD (PENDING until GitHub workflows complete).
-- [ ] T012 Complete final PR diff audit, publish one canonical PR summary, and confirm the PR remains OPEN and UNMERGED.
+- [x] T012 Complete the final PR diff audit, publish the canonical PR summary, and confirm PR #1795 is OPEN and UNMERGED.
 
 ## Dependencies and execution order
 
