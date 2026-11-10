@@ -59,6 +59,7 @@ describe('visual QA change classification', () => {
   it('skips visual QA for documentation, Spec Kit pointer and unit-test-only changes', () => {
     expect(classify(['PR_SUMMARY.md'])).toBe('visual_required=false');
     expect(classify(['.specify/feature.json'])).toBe('visual_required=false');
+    expect(classify(['.github/scripts/classify-visual-changes.sh'])).toBe('visual_required=false');
     expect(classify(['__tests__/agent-governance-single-source.test.js'])).toBe('visual_required=false');
     expect(classify(['__tests__/crystal-ball-daily-usage.test.js'])).toBe('visual_required=false');
     expect(
