@@ -973,7 +973,6 @@ def should_suppress_local_probe_origin(
                 return True
         return False
 
-    if not is_local_probe_artifact_path(relative_path):
     if not is_local_probe_artifact_path(relative_path) and not is_local_specs_benchmark_path(relative_path):
         return False
     # The file must still be valid JSON data, so a renamed script cannot qualify.
