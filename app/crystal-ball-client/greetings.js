@@ -14,6 +14,9 @@ export const GREETINGS = [
   'Pull up a chair, friend — the mists kept the good seat warm for you.',
 ];
 
+// Client-only: do not import this module in server components. The module-level
+// `inMemoryGreeting` variable is shared across the process lifetime; importing
+// on the server would leak one visitor's greeting to the next request.
 let inMemoryGreeting = null;
 
 function getBrowserStorage() {

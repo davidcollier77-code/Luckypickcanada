@@ -28,7 +28,12 @@ describe('Crystal Ball audio assets', () => {
   it.each(compressed)('%s is a real, non-empty MP3 file', (name) => {
     const path = new URL('../public/sounds/' + name, import.meta.url);
     const bytes = readFileSync(path);
-    expect(bytes.subarray(0, 3).toString('ascii')).toBe('ID3');
+    // Accept either an ID3v2 tag header ('ID3') or a valid MPEG frame-sync byte
+    // sequence (0xFF 0xE0–0xFF 0xFF). A re-encode that strips the ID3 tag
+    // produces a bare MPEG stream that is still a valid MP3.
+    const hasId3Header = bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33;
+    const hasMpegSync = bytes[0] === 0xFF && (bytes[1] & 0xE0) === 0xE0;
+    expect(hasId3Header || hasMpegSync).toBe(true);
     expect(bytes.length).toBeGreaterThan(4096);
     expect(bytes.some((byte) => byte !== 0)).toBe(true);
   });

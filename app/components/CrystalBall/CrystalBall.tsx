@@ -327,16 +327,24 @@ export default function CrystalBall({
   // Focus the native keyboard on open and keep the panel in view on mobile.
   useEffect(() => {
     if (!followUpPanelOpen) return;
-    const focusTimer = setTimeout(() => {
-      const field = followUpTextareaRef.current;
-      if (!field) return;
-      field.focus({ preventScroll: true });
-      field.scrollIntoView({
-        block: 'center',
-        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    let cancelled = false;
+    let raf1: ReturnType<typeof requestAnimationFrame>;
+    let raf2: ReturnType<typeof requestAnimationFrame>;
+    // Double-rAF ensures the panel is committed to the DOM and any CSS transition
+    // has started before we focus the textarea. A fixed 80 ms was too short on slow devices.
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        if (cancelled) return;
+        const field = followUpTextareaRef.current;
+        if (!field) return;
+        field.focus({ preventScroll: true });
+        field.scrollIntoView({
+          block: 'center',
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
       });
-    }, 80);
-    return () => clearTimeout(focusTimer);
+    });
+    return () => { cancelled = true; cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, [followUpPanelOpen, prefersReducedMotion]);
 
   // Handle progressive text reveal
@@ -426,6 +434,7 @@ export default function CrystalBall({
 
     if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
     if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
+    if (revealTimeoutRef.current) { clearTimeout(revealTimeoutRef.current); revealTimeoutRef.current = null; }
     setLeafFlight(null);
     setIsRevealPaused(false);
     setRevealedCharCount(fortuneChars.length);
@@ -526,6 +535,10 @@ export default function CrystalBall({
       setSavedFollowUpQuestion(trimmed);
       setFollowUpAnswer(answer.replace(/[*_]{1,2}/g, ''));
       setAnswerRevealedCount(0);
+      // NOTE: ordering matters. The typing effect (which depends on `followUpAnswer`)
+      // reads `answerShouldTypeRef` when it runs after this handler's batched state
+      // updates are committed. The ref must be set synchronously here, in the same
+      // handler, so it is already true when the effect fires.
       answerShouldTypeRef.current = true;
       setFollowUpQuestion('');
       setFollowUpPanelOpen(false);
@@ -753,7 +766,15 @@ export default function CrystalBall({
                   You’ve used today’s follow-up question. Come back after your next local midnight for another one.
                 </p>
               ) : followUpPanelOpen ? (
-                <div className={styles.followUpPanel}>
+                <div
+                  className={styles.followUpPanel}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape' && followUpStatus !== 'loading') {
+                      followUpTextareaRef.current?.blur();
+                      setFollowUpPanelOpen(false);
+                    }
+                  }}
+                >
                   <p className={styles.panelEyebrow}>One question, whispered into the glass</p>
                   <label htmlFor="crystal-ball-followup" className={styles.panelLabel}>
                     Your follow-up question

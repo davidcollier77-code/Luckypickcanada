@@ -126,9 +126,12 @@ describe('Crystal Ball daily greeting', () => {
         throw new Error('blocked');
       },
     };
-
-    const first = readDailyGreeting(blocked, '2030-01-01', () => 0.4);
-    const sameDay = readDailyGreeting(blocked, '2030-01-01', () => 0.9);
+    // Use a date key that is unique to this test to avoid cross-test bleed
+    // through the module-level inMemoryGreeting fallback.
+    const uniqueDate = '2099-12-31';
+    const first = readDailyGreeting(blocked, uniqueDate, () => 0.4);
+    const sameDay = readDailyGreeting(blocked, uniqueDate, () => 0.9);
+    const nextDay = readDailyGreeting(blocked, '2099-12-30', () => 0.999999);
     const nextDay = readDailyGreeting(blocked, '2030-01-02', () => 0.4);
 
     expect(sameDay).toEqual({ index: first.index, text: first.text, reused: true });
