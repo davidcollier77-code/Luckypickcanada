@@ -68,7 +68,7 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 - **FR-007**: Existing Spec Kit, Playwright/Browserless, Cloudflare, Neon, PR gatekeeper and updater rules MUST remain intact.
 - **FR-008**: `executing-plans` MUST NOT replace or bypass the required Specify → Plan → Tasks → Implement sequence.
 - **FR-009**: The guide MUST remain within approximately 285 lines where practical, without removing existing governance to meet the target.
-- **FR-010**: No application code, integration configuration, workflows, dependencies, secrets, database or deployment settings may be changed.
+- **FR-010**: No application runtime code, integration configuration, workflows, dependencies, secrets, database or deployment settings may be changed. A narrowly scoped test-only correction is allowed when required PR CI exposes a reproducible verification defect.
 
 ## Success Criteria
 
@@ -77,7 +77,7 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 - **SC-003**: Conflict handling requires investigation and a reasoned decision, not arbitrary selection.
 - **SC-004**: Existing governance and integration policies remain unchanged outside the intended routing update.
 - **SC-005**: The updated `AGENTS.md` remains at or below approximately 285 lines.
-- **SC-006**: The complete final diff contains only the approved governance, Spec Kit and Memory Bank files.
+- **SC-006**: The complete final diff contains only the approved governance, Spec Kit, Memory Bank and any narrowly scoped test-only verification repair.
 
 ## Assumptions
 
@@ -85,3 +85,10 @@ The agent uses the new skill guide without changing established Spec Kit, browse
 - Skills are optional specialist guidance, not a guarantee of tool availability or permission.
 - The existing repository rules and project configuration remain authoritative.
 - This is a documentation/governance task; no browser-visible application behavior changes.
+
+
+## CI Verification Follow-up
+
+- The first current-head Visual QA run exposed two date-dependent unit-test failures. The tests used a fixed November 9 fixture while `writeDailyUsage` correctly used the runner's live local date, which was November 10 in CI.
+- Freeze Vitest's system time to each fixed fixture in the two affected tests and restore real timers after each test. Do not change production date handling or the visitor's local-midnight reset behavior.
+- Re-run the required PR CI on the updated HEAD; no passing result is assumed until the updated run reports it.
