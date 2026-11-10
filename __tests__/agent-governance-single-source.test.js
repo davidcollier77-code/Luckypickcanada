@@ -54,7 +54,7 @@ describe('single-source agent governance', () => {
     // Playwright is the project-local CLI/Test path; Browserless is the sole connected browser fallback.
     expect(connectedIntegrations).toContain('Browserless:** Connected remote-browser capability');
     expect(connectedIntegrations).not.toContain('Browserbase');
-    expect(connectedIntegrations).toContain('Do not add or invoke Browserless');
+    expect(connectedIntegrations).toContain('MUST NOT add or invoke Browserless');
     expect(connectedIntegrations).toContain(
       'Penpot:** Available whenever useful',
     );
