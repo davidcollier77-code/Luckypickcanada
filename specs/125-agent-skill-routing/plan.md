@@ -64,6 +64,7 @@ Update the existing authoritative `AGENTS.md` skill-discovery guidance with conc
 - `specs/125-agent-skill-routing/`: specification, plan and task artifacts.
 - `memory-bank/activeContext.md`: identify the active task and environment limitations.
 - `memory-bank/progress.md`: append the completed implementation milestone and verification status.
+- `__tests__/crystal-ball-daily-usage.test.js`: stabilize two date-sensitive unit tests with Vitest fake time; no production runtime code changes.
 
 ### Source of truth
 
@@ -78,3 +79,10 @@ The repository's actual configuration and workflow files remain authoritative fo
 - Review the complete PR diff and ensure no unrelated files changed.
 - Run `./freebuff-verify.sh`, `git diff --check` and applicable checks in a shell-capable CI runner. These cannot be executed through the current GitHub API-only session.
 - No browser tests or production build are needed for a documentation-only change if the Visual QA classifier positively classifies it as documentation-only; other required workflow checks still apply.
+
+
+## CI Verification Follow-up — 2026-11-09
+
+The initial PR #1795 Visual QA run (workflow 42732428053) reached the targeted unit-test step and failed two assertions in `__tests__/crystal-ball-daily-usage.test.js`. Both tests fixed the fixture date at November 9, while `writeDailyUsage()` used the CI runner's current date (November 10 UTC). The tests now freeze Vitest system time to the fixture date and restore real timers in `afterEach`. Production date and local-midnight behavior remain unchanged.
+
+**Updated verification:** the GitHub API session cannot run repository shell commands, so `./freebuff-verify.sh` and local `git diff --check` remain BLOCKED. The updated PR HEAD must pass its newly triggered targeted unit tests and all applicable CI checks before verified completion. Because a test path changed, the Visual QA classifier and any required browser checks must be allowed to run; do not assume a docs-only skip.
