@@ -3,7 +3,7 @@
 **Date**: 2026-11-10
 **Repository**: `davidcollier77-code/Luckypickcanada`
 **Worker**: `luckypickcanada-app`
-**Cloudflare account**: `<cloudflare-account-id>`
+**Cloudflare account**: `<cloudflare-account-id>` *(account ID intentionally redacted from this public repository; it is not a secret, but is omitted to avoid tying the repo to a specific account — verify via the Cloudflare dashboard if needed)*
 
 ## Method
 
