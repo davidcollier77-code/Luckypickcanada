@@ -222,8 +222,8 @@ Step-by-step integration guides for frameworks, ORMs, auth providers, and deploy
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
 - [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Learn how to connect to Neon from Drizzle
-- [Neon integration guides](https://neon.com/docs/guides/integrations.md): Find detailed instructions for integration across various platforms and services.
-- [Integrating Neon with Vercel](https://neon.com/docs/guides/vercel-overview.md): Choose the right connection path in seconds
+- [Neon integration guides](https://neon.com/docs/guides/integrations.md): Find setup instructions for connecting Neon to platforms and services.
+- [Integrating Neon with Vercel](https://neon.com/docs/guides/vercel-overview.md): Choose the right connection path
 - [Integrating with Neon](https://neon.com/docs/guides/platform-integration-overview.md): Choose the right integration path for your platform or application
 - [Row-Level Security with Neon](https://neon.com/docs/guides/row-level-security.md): How Neon features use Postgres Row-Level Security
 
