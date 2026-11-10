@@ -1,3 +1,14 @@
+## 2026-11-09 — PR #1795 browser-tool and non-rendering Visual QA correction
+
+- Confirmed the current authoritative main AGENTS.md browser setup: project-local Playwright CLI/Test plus Browserless as the only connected remote-browser integration. Browserbase is not a retained integration; removed its accidental entry from the PR branch and aligned the single-source governance test to Playwright + Browserless only.
+- Confirmed existing Visual QA workflow behavior: all unit tests, TypeScript and repository verification run for every PR; Chromium provisioning, baseline verification and Playwright visual regression are conditional on the fail-closed changed-path classifier.
+- Extended the classifier's non-rendering allowlist narrowly for .specify/feature.json, .github/scripts/classify-visual-changes.sh, and direct-child __tests__/*.test.{js,jsx,ts,tsx} unit-test files. Visual/e2e paths under tests/, app/theme/assets, other scripts/workflows, unknown paths, empty input and mixed changes remain visual-required.
+- Extended the executed classifier tests for those non-rendering paths and for visual/e2e paths. No workflow file, application runtime, UI, artwork, dependency, database, hosting configuration, secret or updater schedule changed.
+- Updated PR #1795 canonical summary. Current HEAD at this entry: 051180786edc33bec8ff61aecc08e2185ccfe099; PR remains OPEN and UNMERGED.
+- Current-head CI was queued/in progress at the time of this entry. Do not claim the full suite or the intended browser-step skip until the run's classifier output and step results are inspected. Local ./freebuff-verify.sh and git diff --check remain BLOCKED because this session has no repository shell.
+
+---
+
 ## 2026-11-09 — PR #1795 Visual QA test-clock repair
 
 - Inspected Visual QA workflow run `42732428053` and job log `129553573840`. The targeted suite had 2 failures in `__tests__/crystal-ball-daily-usage.test.js` and 23 passing tests overall; `oracle-route-validation.test.js` passed 16/16.
