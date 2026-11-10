@@ -16,7 +16,7 @@
 
 set -euo pipefail
 
-documentation_only() {
+non_rendering_path() {
   case "$1" in
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
@@ -35,7 +35,7 @@ while IFS= read -r path || [[ -n "$path" ]]; do
   path="${path%$'\r'}"
   [[ -z "$path" ]] && continue
   reviewed=$((reviewed + 1))
-  if documentation_only "$path"; then
+  if non_rendering_path "$path"; then
     continue
   fi
   visual_required=true
@@ -51,7 +51,7 @@ if [[ "$reviewed" -eq 0 ]]; then
 fi
 
 if [[ "$visual_required" == "true" ]]; then
-  echo "classify-visual-changes: ${reviewed} changed path(s) reviewed; '${first_visual_path}' can affect rendered output, so visual QA is required." >&2
+  echo "classify-visual-changes: ${reviewed} changed path(s) reviewed; '${first_visual_path}' is not positively classified as non-rendering, so visual QA is required." >&2
 else
   echo "classify-visual-changes: ${reviewed} documentation-only path(s) reviewed; visual QA is not required." >&2
 fi
