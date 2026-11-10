@@ -131,7 +131,6 @@ describe('Crystal Ball daily greeting', () => {
     const uniqueDate = '2099-12-31';
     const first = readDailyGreeting(blocked, uniqueDate, () => 0.4);
     const sameDay = readDailyGreeting(blocked, uniqueDate, () => 0.9);
-    const nextDay = readDailyGreeting(blocked, '2099-12-30', () => 0.999999);
     const nextDay = readDailyGreeting(blocked, '2030-01-02', () => 0.4);
 
     expect(sameDay).toEqual({ index: first.index, text: first.text, reused: true });
