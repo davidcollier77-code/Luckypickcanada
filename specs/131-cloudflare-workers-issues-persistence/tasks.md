@@ -25,8 +25,8 @@
 **Independent Test**: Validate the Wrangler configuration and confirm the PR diff is limited to the intended setting.
 
 - [X] T003 [US1] Add `observability.issues.enabled: true` while retaining `observability.enabled: true` in `wrangler.jsonc`.
-- [ ] T004 [US1] Pass current-head repository verification, including `./freebuff-verify.sh`, DevSkim and OpenNext validation for this PR.
-- [ ] T005 [US1] After merge and deployment, confirm Workers Issues remains enabled in Cloudflare and verify a test issue reaches GitHub through the existing route.
+- [ ] T004 [US1] Pass current-head repository verification through `./freebuff-verify.sh` and the applicable checks in `.github/workflows/visual-qa.yml`, `.github/workflows/devskim.yml`, and the existing OpenNext validation workflow.
+- [ ] T005 [US1] After deployment of `wrangler.jsonc`, confirm Workers Issues remains enabled in the Cloudflare dashboard and verify a test issue reaches GitHub through the existing route.
 
 ## Dependencies & Execution Order
 
