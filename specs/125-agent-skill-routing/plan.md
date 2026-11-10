@@ -16,17 +16,17 @@ Update the existing authoritative `AGENTS.md` skill-discovery guidance with conc
 
 **Storage**: N/A; no application data or database changes.
 
-**Testing**: Exact skill-name/field-count inspection, line count, final diff review, repository verification and PR CI. This session has GitHub API access but no repository shell, so shell-based checks cannot be claimed locally.
+**Testing**: Exact skill-name/field-count inspection, line count, final diff review, Vitest targeted Crystal Ball/Oracle tests, repository verification and PR CI. The date-sensitive allowance tests use Vitest fake time tied to their fixed fixture and restore real timers after each test. This session has GitHub API access but no repository shell, so shell-based checks cannot be claimed locally.
 
 **Target Platform**: GitHub repository governance documentation.
 
-**Project Type**: Documentation-only repository instruction update.
+**Project Type**: Repository instruction update with a narrowly scoped unit-test stability repair.
 
 **Performance Goals**: No application runtime or build output changes.
 
-**Constraints**: Preserve AGENTS.md as the single authoritative governance source. Retain the existing Playwright-first/Browserless-fallback policy, Spec Kit sequence, Cloudflare/Workers boundaries, existing Neon database scope, PR gatekeepers, updater rules and approval requirements. Do not change application code, integrations, workflow files, dependencies, secrets, database or deployment configuration.
+**Constraints**: Preserve AGENTS.md as the single authoritative governance source. Retain the existing Playwright-first/Browserless-fallback policy, Spec Kit sequence, Cloudflare/Workers boundaries, existing Neon database scope, PR gatekeepers, updater rules and approval requirements. Do not change application runtime code, integrations, workflow files, dependencies, secrets, database or deployment configuration; allow only the scoped test-only clock fix documented in the spec.
 
-**Scale/Scope**: `AGENTS.md`, `.specify/feature.json`, this feature's Spec Kit artifacts, and the two required Memory Bank records.
+**Scale/Scope**: `AGENTS.md`, `.specify/feature.json`, this feature's Spec Kit artifacts, `__tests__/crystal-ball-daily-usage.test.js`, and the two required Memory Bank records.
 
 ## Constitution Check
 
