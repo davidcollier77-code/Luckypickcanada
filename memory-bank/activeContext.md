@@ -1,45 +1,41 @@
-# Active Context — Freebuff Startup Command Verification
+# Active Context — Freebuff Startup Command Runtime Verification
 
 - **Updated:** 2026-11-10
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Base branch:** main
-- **Task branch:** freebuff/2c75b8a266dccd2efd39936d
-- **Spec Kit feature:** specs/129-startup-command-verification
-- **Pull request:** pending creation for this task
-
-## Current Repository State
-- Main at task start: `5b444878` (startup readiness verification, PR #1800); the Memory Bank consolidation (#1796) and
-  specialist skill routing (#1795) are merged.
-- The only unrelated open pull request at task start was #1765, the automated DevSkim report update.
-- The Freebuff startup command lives in Freebuff project settings, outside this repository. `README.md` documents the
-  single canonical value and `__tests__/freebuff-startup-command.test.js` pins and executes it.
+- **Base branch:** main (`d09f945f`, the merged startup-command fix #1802)
+- **Task branch:** freebuff/33958ac019917e6d9cfec2d4
+- **Spec Kit feature:** specs/130-startup-command-runtime-verification
+- **Pull request:** created for this task
 
 ## Current Task
-Verify the live startup command and its scripts, establish whether the four Memory Bank files are genuinely loaded
-early or only checked, correct the verified ordering/flag defects, and document the exact replacement value for the
-project setting.
+Verify the newly installed Freebuff startup command at runtime, demonstrate each expected behaviour with
+executed evidence, and report anything it does not do. This is an evidence task: no application, script,
+governance, dependency or `.docs/` change is expected unless the evidence exposes a defect.
 
 ## Verified findings
-- The live command (`bash -lc 'source scripts/bootstrap-pnpm.sh && pnpm install --frozen-lockfile && pnpm exec
-  playwright cli --help && bash scripts/verify-startup.sh'`) exited 0 in 7 s, but it ran the context check last, so
-  any earlier failure hid it, and it dropped the `CI=true` from the previously audited and guarded form.
-- `README.md` and the guard test still documented the older, shorter form, so the live command had drifted outside
-  the guarded documentation.
-- `scripts/verify-startup.sh` checks existence, readability, non-emptiness, AGENTS.md references and manifest
-  structure. It does not load content into model context.
-- Freebuff injects only the project-root `AGENTS.md` into the agent context (observed in this session: `AGENTS.md`
-  arrived as project instructions and the four Memory Bank files still needed explicit reads). Terminal output is not
-  injected, so the four Memory Bank files are checked, not preloaded; AGENTS.md §1 step 4 is the supported path.
-- `bash -lc` is load-bearing (`node`/`npm` come from the login profile under a minimal PATH), and
-  `pnpm exec playwright cli --help` is a real local command that launches no browser.
+- The installed command exited 0 in ~7.4 s from the repository root; `package.json` and `pnpm-lock.yaml`
+  hashes were unchanged before and after, so the frozen install did not modify the lockfile.
+- Output order is the documented order: startup context check, pnpm resolution, frozen install, Playwright help.
+- `scripts/verify-startup.sh` fails closed before any pnpm work for a missing, empty or 71,760-byte
+  `AGENTS.md`, and for an invalid `.docs/manifest.json`; later steps never ran in those fixtures.
+- `scripts/bootstrap-pnpm.sh` installs the exact `pnpm@10.30.3` pin into `$HOME/.local` when no matching
+  `pnpm` is on `PATH`, and exports that directory for the same shell. A matching pin is reused as-is.
+- `CI=true` reaches the install process. The install completed with stdin not a TTY and no prompt; this
+  environment did not produce an interactive prompt even without `CI=true`, so prompt suppression was not
+  isolated.
+- `pnpm exec playwright cli --help` exited 0 in ~1.7 s and printed 136 lines of usage. No browser process
+  existed before or after, so availability is proven and browser launch is not.
+- The workspace reports Node.js 26.13.0 against the `22.x` engine pin; pnpm emits a warning and continues.
+- Freebuff injects only `AGENTS.md` into agent context; the four Memory Bank files are checked by the
+  startup script but must still be read by the agent via `AGENTS.md` §1 step 4.
+- The Freebuff project setting is outside the repository and cannot be read; the quoted command equals the
+  `README.md`/guard-test value, but the stored setting itself is not directly verifiable from here.
 
 ## Scope and Boundaries
-- Changed only the startup verifier, `README.md`, the startup-command guard test, this feature's Spec Kit artifacts
-  and this Memory Bank record.
+- Change set limited to this feature's Spec Kit artifacts, `.specify/feature.json` and this Memory Bank record.
 - No `AGENTS.md`, application, UI, asset, dependency, workflow, integration, deployment or `.docs/` change.
-- The Freebuff project setting remains an owner action; the exact command is reported in the PR.
+- The startup command and its scripts were exercised, not modified.
 
 ## Verification Status
-- Focused guard test, `bash -n`, positive and negative startup-check runs, and the corrected command executed
-  verbatim are recorded with the task results.
-- `./freebuff-verify.sh` and the production build size measurement are recorded with the task results.
+- Focused guard/bootstrap tests, `bash -n`, the fixture matrix, `./freebuff-verify.sh`, the measured build
+  size and the final diff audit are recorded with the task results and PR summary.
