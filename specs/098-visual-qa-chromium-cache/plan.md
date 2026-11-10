@@ -38,7 +38,7 @@ Add a fail-closed change classifier and split the existing Visual QA workflow in
 
 ### Change classification
 
-`.github/scripts/classify-visual-changes.sh` reads changed paths from stdin and prints exactly `visual_required=true|false`, with diagnostics on stderr. Only Markdown files at any depth, the `specs/`, `memory-bank/` and `.docs/` trees, `.specify/feature.json`, and supported unit-test files directly under `__tests__/` are classified as non-rendering. Browser/e2e tests, application files, assets, themes, scripts, workflows and unknown paths still require visual QA. Empty input also requires visual QA.
+`.github/scripts/classify-visual-changes.sh` reads changed paths from stdin and prints exactly `visual_required=true|false`, with diagnostics on stderr. Only Markdown files at any depth and the `specs/`, `memory-bank/` and `.docs/` trees are documentation-only. Everything else — including unrecognised file types such as shell scripts — requires visual QA. Empty input also requires visual QA.
 
 The new `changes` job feeds it the GitHub file listing (`gh api` on the pull request files endpoint, paginated). A failed listing, a failed or unexpected classification value, and an empty list all write `visual_required=true`, so a classification problem can only add a visual run, never remove one.
 
@@ -83,8 +83,3 @@ PR_SUMMARY.md                              # canonical PR report
 - `pnpm exec vitest run` — full suite.
 - `pnpm exec tsc --noEmit` and `./freebuff-verify.sh`, with the measured build size against the 495 MB maximum.
 - Inspect the complete diff. The workflow cannot be executed locally (no GitHub Actions runner or `gh` pull request context), so the workflow-level cache-hit/miss and version-change behaviour is reported as validated by static wiring plus real classifier execution, and is NOT RUN in GitHub Actions until the pushed PR head reports a Visual QA run.
-
-
-## Non-rendering classification extension
-
-The classifier recognizes `.specify/feature.json`, `.github/scripts/classify-visual-changes.sh`, and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` files as non-rendering paths. This allows metadata-only and unit-test-only changes to retain unit tests and repository checks without provisioning Chromium or running browser regression. The classification remains fail-closed for empty input, errors, mixed visual/non-visual changes and unrecognized paths. Browser/e2e test paths under `tests/` continue to require Playwright.
