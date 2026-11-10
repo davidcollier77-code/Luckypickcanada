@@ -29,8 +29,9 @@
 
 - [x] T013 Freeze Vitest system time to the fixed fixture date in the two affected `__tests__/crystal-ball-daily-usage.test.js` cases; restore real timers after each test. Do not change production date handling.
 - [ ] T014 Re-run the targeted Crystal Ball allowance and Oracle tests, then confirm all applicable updated-head PR CI gates (PENDING: GitHub Actions must run on the latest HEAD).
-- [x] T015 Restore Browserbase in the Connected Integrations section with explicit owner-approval and tool-availability safeguards; retain the prohibition on using Browserless or Browserbase in automatic PR-checker workflows.
-- [ ] T016 Confirm the full unit suite, including `agent-governance-single-source.test.js`, passes on the updated PR HEAD.
+- [x] T015 Align the governance test and AGENTS.md with the actual supported browser tools: project-local Playwright CLI/Test and connected Browserless only; do not list Browserbase.
+- [x] T016 Extend the existing fail-closed visual classifier to skip browser provisioning only for .specify/feature.json and direct-child __tests__/*.test.{js,jsx,ts,tsx} unit tests; retain Playwright for visual/e2e and unknown paths.
+- [ ] T017 Confirm the full unit suite and updated-head CI; verify the non-rendering PR skips Chromium/baseline/visual regression but still runs unit tests, TypeScript and repository verification.
 
 ## Dependencies and execution order
 
