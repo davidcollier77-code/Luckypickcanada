@@ -58,9 +58,17 @@ export function isCloudflareIssueId(value: unknown): value is string {
 /**
  * Validate a caller-supplied issue list.
  *
- * Returns de-duplicated, lower-cased identifiers, or null when the list is not
- * usable. An empty list is rejected: resolving "nothing" must not look like a
- * successful run.
+ * Validation is all-or-nothing: if the input is not an array, is empty, has
+ * more than MAX_ISSUES_PER_REQUEST entries (counted before de-duplication), or
+ * contains ANY entry that is not a valid Cloudflare issue UUID, the entire
+ * batch is rejected and `null` is returned. Invalid entries are never silently
+ * dropped and no partial results are ever returned.
+ *
+ * On success, IDs are trimmed and lowercased, and duplicates are removed while
+ * preserving first-seen order.
+ *
+ * @returns the normalized, distinct issue IDs, or `null` if the input is
+ * invalid (callers should respond with HTTP 400).
  */
 export function normalizeIssueIds(value: unknown): string[] | null {
   if (!Array.isArray(value)) return null;

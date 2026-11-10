@@ -63,8 +63,12 @@ async function secureEquals(provided: string, expected: string): Promise<boolean
 }
 
 export async function POST(request: Request): Promise<Response> {
+  // Both Worker secrets are checked upfront so the route returns HTTP 503 when
+  // either is absent, regardless of authentication. This prevents an
+  // unauthenticated caller from probing which secret is configured (CWE-200).
   const resolveToken = (process.env.CLOUDFLARE_ISSUE_RESOLVE_TOKEN || '').trim();
-  if (resolveToken === '') {
+  const apiToken = (process.env.CLOUDFLARE_API_TOKEN || '').trim();
+  if (resolveToken === '' || apiToken === '') {
     return jsonResponse(
       { resolved: false, error: 'Cloudflare issue resolver is not configured on this Worker.' },
       503,
@@ -91,14 +95,6 @@ export async function POST(request: Request): Promise<Response> {
         error: 'Body must contain `issueIds` with 1-10 distinct Cloudflare issue UUIDs.',
       },
       400,
-    );
-  }
-
-  const apiToken = (process.env.CLOUDFLARE_API_TOKEN || '').trim();
-  if (apiToken === '') {
-    return jsonResponse(
-      { resolved: false, error: 'Cloudflare API token is not configured on this Worker.' },
-      503,
     );
   }
 
