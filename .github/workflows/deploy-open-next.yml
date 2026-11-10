@@ -176,9 +176,10 @@ jobs:
 
 
           if [[ -z "${BEFORE_SHA:-}" || "${BEFORE_SHA}" =~ ^0+$ ]]; then
-            commit_log="$(git log --format=%B "${HEAD_SHA}")"
+
+            commit_log="$(git --no-pager log --format=%B "${HEAD_SHA}")"
           else
-            commit_log="$(git log --format=%B "${BEFORE_SHA}..${HEAD_SHA}")"
+            commit_log="$(git --no-pager log --format=%B "${BEFORE_SHA}..${HEAD_SHA}")"
           fi
 
           commits_json="$(printf '%s' "$commit_log" | jq -R -s 'split("\n\n") | map(select(length > 0))')"
