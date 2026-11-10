@@ -1,22 +1,13 @@
-# Current Task — PR #1795 Visual QA scope and integration correction (2026-11-09)
+# Current Task — PR #1795 skill routing and Visual QA scope (2026-11-10)
 
 - PR #1795 remains OPEN and UNMERGED.
-- Browser tools confirmed from main AGENTS.md: Playwright CLI/Test is the project-local browser QA tool; Browserless is the only connected remote-browser integration. Browserbase is not in the authoritative integration list and must not be reintroduced.
-- Previous Visual QA run 42734210768, job 129562708782: targeted Crystal Ball tests passed; full unit suite had 462 passed and one failed because the governance test expected stale Browserbase entries.
-- Repair: AGENTS.md now lists Browserless only and keeps automatic PR-checker workflows on Playwright when visual QA is required. The governance test now expects Playwright and Browserless only.
-- Visual classification: this PR changes docs/governance, .specify/feature.json and unit tests under __tests__/; it does not change rendered output. The fail-closed classifier now recognizes the exact Spec Kit pointer and direct-child unit-test files as non-rendering. Unit tests, TypeScript and repository verification remain required. Chromium install, baseline verification and Playwright visual regression should be skipped for this PR. Browser/e2e tests under tests/, application/assets/theme paths, workflows, scripts, unknown paths, empty or mixed sets still require Playwright.
-- Next: confirm latest PR HEAD classifies visual_required=false; verify browser steps are skipped while all non-visual checks run, then confirm the full unit suite passes.
-- No production runtime or user-facing UI changed.
-
----
-
-# Recent Work — PR #1795 Visual QA governance follow-up (2026-11-09)
-
-- **PR:** https://github.com/davidcollier77-code/Luckypickcanada/pull/1795 (OPEN; do not merge before required checks pass).
-- **Latest failure:** Visual QA run 42734210768, job 129562708782. Targeted Crystal Ball allowance and Oracle tests passed; full unit suite reported 462 passed and 1 failed.
-- **Confirmed cause:** `__tests__/agent-governance-single-source.test.js` failed because `AGENTS.md` omitted Browserbase from `### Connected Integrations` and did not preserve the explicit direct-browser-use / no-automatic-PR-checker policy for both Browserless and Browserbase.
-- **Repair committed:** `AGENTS.md` now restores Browserbase with explicit owner approval and actual tool availability requirements. It states Browserless and Browserbase are for Freebuff's direct browser-based task work and neither may be added to or triggered from automatic PR-checker workflows. Playwright remains the project-local primary CLI/Test path; Browserless remains fallback. No workflow was changed.
-- **Next:** Verify the new PR HEAD and confirm the full unit suite and all required CI checks pass. Do not claim completion before updated-head evidence.
+- Authoritative browser setup from main AGENTS.md: project-local Playwright CLI/Test plus Browserless as the only connected remote-browser integration. Browserbase is not retained.
+- The previous governance failure in Visual QA run 42734210768 was the stale Browserbase expectation; the governance test and AGENTS.md now match Playwright + Browserless.
+- The updater scheduler run 42736790393 then failed the repository governance gate because this PR changed two Spec Kit feature directories (098 and 125). Corrected by restoring all three specs/098-visual-qa-chromium-cache artifacts exactly to main and keeping the supporting classifier scope in the single PR feature directory specs/125-agent-skill-routing.
+- .specify/feature.json points to specs/125-agent-skill-routing. Only this one Spec Kit feature directory should be changed by this PR.
+- Visual classification: this PR changes governance/docs, the Spec Kit pointer, the classifier and unit tests; it does not change rendered app output. The fail-closed classifier recognizes the exact Spec Kit pointer, its own implementation, and direct-child unit tests as non-rendering. Unit tests, TypeScript and repository verification remain required. Only browser provisioning, baseline verification and Playwright visual regression are skipped for positively classified non-rendering changes. Browser/e2e, app/assets/themes, workflows, other scripts, unknown, empty and mixed changes remain visual-required.
+- Latest fix commits have been pushed. Recheck current-head Spec Kit governance and all CI; do not claim completion until required checks pass.
+- No production runtime or visitor-facing UI changed.
 
 ---
 
