@@ -52,4 +52,6 @@ Keep the change within the approved governance documentation plus the single tar
 - [x] T018 Align the browser-tool governance test and `AGENTS.md` with the actual supported tools: project-local Playwright CLI/Test and connected Browserless only; do not list Browserbase.
 - [x] T019 Extend the existing fail-closed visual classifier for `.specify/feature.json`, `.github/scripts/classify-visual-changes.sh`, and direct-child `__tests__/*.test.{js,jsx,ts,tsx}` unit tests so this non-rendering governance PR can skip browser provisioning without skipping unit tests, TypeScript or repository verification.
 - [x] T020 Add classifier tests for the new non-rendering paths and preserve visual-required behavior for browser/e2e, application, asset, theme, workflow, other script, unknown, empty and mixed changes.
-- [ ] T021 Confirm current-head CI passes the one-feature Spec Kit gate and that Visual QA skips only browser-specific steps while all non-visual checks run.
+- [x] T021 Confirm run 42737280254 classified this change set as non-rendering and skipped Chromium, baseline and Playwright visual-regression steps; all 462 other unit tests passed.
+- [x] T022 Correct the stale governance-test assertion to match the exact authoritative AGENTS.md wording: `MUST NOT add or invoke Browserless`.
+- [ ] T023 Confirm the full unit suite, Spec Kit gate, TypeScript and repository checks pass on the new commit.
