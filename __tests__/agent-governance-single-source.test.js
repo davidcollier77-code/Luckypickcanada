@@ -44,22 +44,17 @@ describe('single-source agent governance', () => {
       'GitHub:** Always available for normal authorized repository work',
     );
     // Recognize every supported browser QA provider without hard-coding tool order or descriptions.
-    const supportedBrowserQaTools = ['Playwright', 'Browserless', 'Browserbase'];
+    const supportedBrowserQaTools = ['Playwright', 'Browserless'];
 
     for (const toolName of supportedBrowserQaTools) {
       expect(connectedIntegrations).toContain(toolName);
     }
 
     expect(agents).toContain('**Browser QA is mandatory for changes that affect browser-visible behavior or end-to-end user workflows.**');
-    expect(connectedIntegrations).toContain('Requires explicit owner approval.');
-
-    // These tools support Freebuff's direct browser work, not automatic PR-checker workflows.
-    expect(connectedIntegrations).toContain(
-      "Browserless and Browserbase are for Freebuff's direct browser-based task work.",
-    );
-    expect(connectedIntegrations).toContain(
-      'Do not add either service to, or trigger either service from, automatic PR-checker workflows.',
-    );
+    // Playwright is the project-local CLI/Test path; Browserless is the sole connected browser fallback.
+    expect(connectedIntegrations).toContain('Browserless:** Connected remote-browser capability');
+    expect(connectedIntegrations).not.toContain('Browserbase');
+    expect(connectedIntegrations).toContain('Do not add or invoke Browserless');
     expect(connectedIntegrations).toContain(
       'Penpot:** Available whenever useful',
     );
