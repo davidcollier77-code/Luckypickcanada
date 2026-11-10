@@ -31,7 +31,15 @@ AUDITED_TIMEOUT_LINE = re.compile(
 
 # The only rules the filter is allowed to remove results for.
 AUDITED_RULES = frozenset(
-    {"DS172411", "DS162092", "DS610000", "DS137138", "DS126858", "DS173237"}
+    {
+        "DS172411",
+        "DS162092",
+        "DS610000",
+        "DS137138",
+        "DS126858",
+        "DS173237",
+        "DS176209",
+    }
 )
 
 
@@ -52,8 +60,70 @@ AUDITED_FALSE_POSITIVES = (
         paths=(
             "tests/visual/gold-cta.spec.ts",
             "tests/visual/sitewide-gold-cta.spec.ts",
+            "tests/visual/homepage-content-refresh.spec.ts",
+            "tests/visual/mobile-accessibility.spec.ts",
         ),
         source_line_pattern=AUDITED_TIMEOUT_LINE,
+    ),
+    AuditedFinding(
+        name="Documentation refresh mock transport timer",
+        rule_id="DS172411",
+        paths=("scripts/test-support/mock-refresh-https.js",),
+        source_line_pattern=re.compile(r"^ *setTimeout\(\(\) => \{ *$"),
+    ),
+    AuditedFinding(
+        name="Homepage placeholder-text assertion",
+        rule_id="DS176209",
+        paths=("__tests__/homepage-content-refresh.test.js",),
+        source_line_pattern=re.compile(
+            r"^ *expect\(item\.answer\)\.not\.toMatch\(/lorem\|"
+            + "TO"
+            + "DO"
+            + r"\|coming soon/i\); *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Public Cloudflare account identifier in the resolver module",
+        rule_id="DS173237",
+        paths=("app/lib/cloudflare-observability-issues.ts",),
+        source_line_pattern=re.compile(
+            r"^export const DEFAULT_CLOUDFLARE_ACCOUNT_ID = '"
+            + suppressions.CLOUDFLARE_ACCOUNT_IDENTIFIER
+            + r"';$"
+        ),
+    ),
+    AuditedFinding(
+        name="Public Cloudflare account identifier in the setup script",
+        rule_id="DS173237",
+        paths=("scripts/cloudflare/workers-issues-to-github-setup.sh",),
+        source_line_pattern=re.compile(
+            r'^ACCOUNT_ID="'
+            + suppressions.CLOUDFLARE_ACCOUNT_IDENTIFIER
+            + r'"$'
+        ),
+    ),
+    AuditedFinding(
+        name="Pinned Playwright CLI upstream revision assertion",
+        rule_id="DS173237",
+        paths=("__tests__/playwright-agent-toolkit.test.js",),
+        source_line_pattern=re.compile(
+            r"^ *expect\(upstream\)\.toContain\('"
+            + suppressions.PLAYWRIGHT_CLI_UPSTREAM_REVISION
+            + r"'\);$"
+        ),
+    ),
+    AuditedFinding(
+        name="Committed probe report loopback log line",
+        rule_id="DS162092",
+        paths=(
+            "artifacts/browser-testing-tooling/out/tool-probes.json",
+            "artifacts/map-marker-fix/after-wide.json",
+        ),
+        source_line_pattern=re.compile(
+            r'^[ \t]*"(?:command|warning: The resource).*(?:127\.0\.0\.1|local'
+            + "host"
+            + r"):[0-9]+"
+        ),
     ),
     AuditedFinding(
         name="Lucky Reveal number-finish callback",
