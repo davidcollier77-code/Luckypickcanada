@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
 
+# Least privilege for the workflow token. Cloudflare authentication uses
+# repository secrets, so the GitHub token only needs to read the repository.
+permissions:
+  contents: read
+
 # 🔴 PROTECTED DEPLOYMENT SAFEGUARD — AUTHORIZATION REQUIRED
 #
 # Do not remove or change this concurrency protection unless the task

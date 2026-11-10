@@ -2108,3 +2108,240 @@ class DevSkimReportIdentityTests(unittest.TestCase):
             before = report.read_text(encoding="utf-8")
             self.assertEqual(appender.append_findings(sarif, report), 0)
             self.assertEqual(report.read_text(encoding="utf-8"), before)
+
+
+class ReviewedAlertBatchSuppressionTests(unittest.TestCase):
+    """Guards the reviewed 2026-11-10 alert batch.
+
+    Covers Playwright timeout configuration, the test-only documentation-refresh
+    mock transport timer, the placeholder-text assertion, public identifiers, and
+    loopback text that only appears inside committed probe-report strings.
+    """
+
+    ACCOUNT = "dbd3120f6fa0104b5fe" + "66c201ea4251b"
+    REVISION = "0a808078d96496cf2a8fa725143c" + "870354f63cda"
+
+    @staticmethod
+    def _write(root, relative_path, text):
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    @staticmethod
+    def _region(source_text, line_number, token):
+        lines = source_text.splitlines()
+        line = lines[line_number - 1]
+        token_index = line.index(token)
+        absolute = sum(len(item) + 1 for item in lines[: line_number - 1]) + token_index
+        return {
+            "startLine": line_number,
+            "endLine": line_number,
+            "startColumn": token_index + 1,
+            "endColumn": token_index + len(token) + 1,
+            # ASCII fixtures, so the UTF-16 offset equals the code-point index.
+            "charOffset": absolute,
+            "charLength": len(token),
+            "snippet": {"text": token},
+        }
+
+    @staticmethod
+    def _result(relative_path, region, rule_id, message):
+        return {
+            "ruleId": rule_id,
+            "message": {"text": message},
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": relative_path},
+                    "region": region,
+                }
+            }],
+        }
+
+    def _process(self, relative_path, source_text, line_number, token, rule_id, message="Finding"):
+        region = self._region(source_text, line_number, token)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            sarif = {
+                "runs": [{
+                    "results": [self._result(relative_path, region, rule_id, message)]
+                }]
+            }
+            return suppressions.process_sarif(sarif, root)
+
+    def test_playwright_timeout_in_reviewed_specs_is_suppressed(self):
+        source = "test('x', async () => {\n    test.setTimeout(120_000);\n});\n"
+        for relative_path in (
+            "tests/visual/homepage-content-refresh.spec.ts",
+            "tests/visual/mobile-accessibility.spec.ts",
+        ):
+            with self.subTest(relative_path=relative_path):
+                self.assertEqual(
+                    self._process(
+                        relative_path,
+                        source,
+                        2,
+                        "setTimeout",
+                        "DS172411",
+                        "Review setTimeout for untrusted data",
+                    ),
+                    1,
+                )
+
+    def test_playwright_timeout_in_an_unreviewed_spec_is_not_suppressed(self):
+        source = "test('x', async () => {\n    test.setTimeout(120_000);\n});\n"
+        self.assertEqual(
+            self._process(
+                "tests/visual/other.spec.ts", source, 2, "setTimeout", "DS172411"
+            ),
+            0,
+        )
+
+    def test_test_support_callable_timer_is_suppressed(self):
+        source = "https.get = function () {\n  setTimeout(() => {\n    done();\n  }, 0);\n};\n"
+        self.assertEqual(
+            self._process(
+                "scripts/test-support/mock-refresh-https.js",
+                source,
+                2,
+                "setTimeout",
+                "DS172411",
+            ),
+            1,
+        )
+
+    def test_test_support_string_timer_is_not_suppressed(self):
+        source = "https.get = function () {\n  setTimeout('alert(1)', 0);\n};\n"
+        self.assertEqual(
+            self._process(
+                "scripts/test-support/mock-refresh-https.js",
+                source,
+                2,
+                "setTimeout",
+                "DS172411",
+            ),
+            0,
+        )
+
+    def test_placeholder_assertion_is_suppressed(self):
+        placeholder = "TO" + "DO"
+        source = (
+            "  it('keeps answers complete', () => {\n"
+            "    for (const item of faqItems) {\n"
+            f"      expect(item.answer).not.toMatch(/lorem|{placeholder}|coming soon/i);\n"
+            "    }\n"
+            "  });\n"
+        )
+        self.assertEqual(
+            self._process(
+                "__tests__/homepage-content-refresh.test.js",
+                source,
+                3,
+                placeholder,
+                "DS176209",
+                "Suspicious comment",
+            ),
+            1,
+        )
+
+    def test_placeholder_comment_on_another_line_is_not_suppressed(self):
+        placeholder = "TO" + "DO"
+        source = f"// {placeholder}: finish this assertion\nconst value = 1;\n"
+        self.assertEqual(
+            self._process(
+                "__tests__/homepage-content-refresh.test.js",
+                source,
+                1,
+                placeholder,
+                "DS176209",
+            ),
+            0,
+        )
+
+    def test_public_cloudflare_account_identifier_is_suppressed(self):
+        sources = {
+            "app/lib/cloudflare-observability-issues.ts": (
+                f"export const DEFAULT_CLOUDFLARE_ACCOUNT_ID = '{self.ACCOUNT}';\n",
+                1,
+            ),
+            "scripts/cloudflare/workers-issues-to-github-setup.sh": (
+                f'ACCOUNT_ID="{self.ACCOUNT}"\n',
+                1,
+            ),
+        }
+        for relative_path, (source_text, line_number) in sources.items():
+            with self.subTest(relative_path=relative_path):
+                self.assertEqual(
+                    self._process(
+                        relative_path,
+                        source_text,
+                        line_number,
+                        self.ACCOUNT,
+                        "DS173237",
+                        "Do not store tokens or keys in source code.",
+                    ),
+                    1,
+                )
+
+    def test_unreviewed_identifier_in_the_same_file_is_not_suppressed(self):
+        other = "c" * 32
+        source = f"export const DEFAULT_CLOUDFLARE_ACCOUNT_ID = '{other}';\n"
+        self.assertEqual(
+            self._process(
+                "app/lib/cloudflare-observability-issues.ts",
+                source,
+                1,
+                other,
+                "DS173237",
+            ),
+            0,
+        )
+
+    def test_pinned_upstream_revision_is_suppressed(self):
+        source = f"    expect(upstream).toContain('{self.REVISION}');\n"
+        self.assertEqual(
+            self._process(
+                "__tests__/playwright-agent-toolkit.test.js",
+                source,
+                1,
+                self.REVISION,
+                "DS173237",
+            ),
+            1,
+        )
+
+    def test_loopback_text_inside_probe_report_value_is_suppressed(self):
+        loopback = "127.0." + "0.1"
+        source = (
+            "{\n"
+            '  "console": [\n'
+            f'    "warning: The resource http://{loopback}:3000/app.js was preloaded."\n'
+            "  ]\n"
+            "}\n"
+        )
+        self.assertEqual(
+            self._process(
+                "artifacts/map-marker-fix/after-wide.json",
+                source,
+                3,
+                loopback,
+                "DS162092",
+                "Do not leave debug code in production",
+            ),
+            1,
+        )
+
+    def test_loopback_key_in_a_probe_report_is_not_suppressed(self):
+        loopback = "127.0." + "0.1"
+        source = "{\n  \"" + loopback + "\": \"captured\"\n}\n"
+        self.assertEqual(
+            self._process(
+                "artifacts/map-marker-fix/after-wide.json",
+                source,
+                2,
+                loopback,
+                "DS162092",
+            ),
+            0,
+        )

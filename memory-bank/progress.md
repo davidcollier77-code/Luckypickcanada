@@ -2,6 +2,12 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-10 — Security alert ledger remediated
+- Verified all 29 `devskim-alerts.md` entries and every open code-scanning and Dependabot alert against current source.
+- Extended the audited DevSkim SARIF filter for five reviewed false-positive families, with positive/negative regression tests and replay coverage; emptied the ledger only after each family was covered.
+- Fixed the genuine CodeQL workflow-permission finding and pinned the vulnerable transitive `minimatch` range to its patched release.
+- Evidence is recorded in `specs/133-security-alert-remediation/evidence.md`.
+
 ## 2026-11-10 — Cloudflare scan alerts triaged and resolved
 - Verified all five open Cloudflare Workers Issues (#1789–#1793) against their retained occurrences and live production
   responses: every request was a 404 to a path the site does not serve, with no outbound fetch.

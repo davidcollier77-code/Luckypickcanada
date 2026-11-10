@@ -1,45 +1,47 @@
-# Active Context — Triage and Resolve Five Cloudflare Scan Issues
+# Active Context — Security Alert Ledger Remediation
 
 - **Updated:** 2026-11-10
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Base branch:** main
-- **Task branch:** freebuff/68fa75a8cf62b1b555921275
-- **Pull request:** [#1806](https://github.com/davidcollier77-code/Luckypickcanada/pull/1806)
-- **Spec Kit feature:** specs/132-cloudflare-scan-issue-triage
+- **Base branch:** main (base commit `94cb6194`)
+- **Task branch:** freebuff/6b10109631c978f16411d5d3
+- **Spec Kit feature:** specs/133-security-alert-remediation
 
 ## Current Task
 
-Review the five open Cloudflare Workers Issues GitHub issues (#1789–#1793), determine whether each reports a genuine problem, and resolve each appropriately.
+Resolve the outstanding findings in `devskim-alerts.md`, inspect GitHub code-scanning and Dependabot alerts for additional unresolved findings, and fix genuine issues with the smallest safe change.
 
 ## Verified Findings
 
-- The five open issues are all `Potential vulnerability scan` alerts: wordpress (#1789), secret-files (#1790), source-control (#1791), debug-endpoints (#1792) and known-scanner-path (#1793).
-- Cloudflare's authoritative records for the same five issue IDs are `type: security`, `status: active`.
-- Every retained occurrence is a `GET` returning **404** to a path the application does not serve (for example `/wp-login.php`, `/.env`, `/.git/HEAD`, `/actuator/env`, `/wp-content/debug.log`). Every message states "No matching outbound fetch was observed."
-- Live production checks on 2026-11-10 returned the normal 22,369-byte Next.js 404 page for all 16 representative paths; the homepage returned 200.
-- The repository has no matching routes, public assets or tracked deployment files; `productionBrowserSourceMaps` remains `false`.
-- Conclusion: all five are false positives caused by inbound internet scanning, not application defects. No application fix is warranted.
+- The ledger holds 29 entries. GitHub's open list is the authoritative current state: 19 DevSkim notes, 3 DevSkim errors, 1 CodeQL workflow-permission alert and 1 Dependabot alert.
+- Every open DevSkim alert is a reviewed false positive from one of five heuristics: Playwright `test.setTimeout(<number>)` configuration, a callable zero-delay timer in the test-only documentation-refresh mock transport, a test assertion containing a placeholder word, the public Cloudflare account identifier or pinned upstream revision, and loopback text inside committed probe-report JSON strings.
+- The CodeQL alert is genuine: `.github/workflows/deploy-open-next.yml` declared no `permissions` block.
+- The Dependabot alert is genuine for the pinned build tooling: `minimatch` 10.2.6 is below the patched 11.0.1.
 
 ## Scope and Boundaries
 
-- Implementation is limited to the Spec Kit evidence/records and Memory Bank updates.
-- No application code, configuration, dependency, credential, Cloudflare deployment or Workflow change is made.
-- Resolution covers exactly the five named GitHub issues and their five matching Cloudflare observability records.
-- No merge or deployment is performed.
+- Implementation is limited to the DevSkim filter/replay/tests, one workflow permission block, one pnpm override with its lockfile entry, the ledger, Spec Kit artifacts and Memory Bank records.
+- No application route, component, styling, payment, email, database, storage, security control or deployment setting changes.
+- No alert is dismissed directly and no scanner rule, path coverage or workflow trigger is weakened.
 
 ## Resolution
 
-- All five GitHub issues (#1789–#1793) were closed with individual evidence comments; all five matching Cloudflare observability records returned `status: resolved`.
+- Exact reviewed families were added to the existing fail-closed SARIF filter with positive and negative regression tests and replay coverage.
+- The deployment workflow now declares `permissions: contents: read`; the job-level permissions of the observability job are unchanged.
+- The transitive `minimatch@10` range is pinned to the patched 11.0.1 and must be proven by the frozen-lockfile install, type check, build and tests.
+- Verified entries were removed from `devskim-alerts.md`, leaving its header and append marker.
 
 ## Verification Status
 
-- **PASS:** Cloudflare occurrence review and live production path checks.
-- **PASS:** `./freebuff-verify.sh` exit 0 on the final head.
-- **PASS:** Production build size 318,536,371 bytes (303.78 MiB), below the 495 MiB cap.
-- **PASS:** Final diff audit (`git diff --check` clean, records-only diff).
-- **OPEN / UNMERGED:** PR #1806; final HEAD SHA recorded in the PR summary.
-- **PENDING (post-submission):** External PR gatekeepers run after submission and are not claimed as passed.
+- **PASS:** Python syntax checks (warnings fatal) and the 97-test DevSkim suppression suite.
+- **PASS:** Filter replay over synthetic SARIF for all 23 reviewed locations — 23 suppressed, 0 remaining, nothing removed outside the allowlist.
+- **PASS:** `pnpm exec tsc --noEmit`; `pnpm test` (56 files / 481 tests).
+- **PASS:** `./freebuff-verify.sh` exit 0.
+- **PASS:** Combined `.next` + `public` build 335,101,411 bytes (319.58 MiB), below the 495 MiB cap.
+- **PASS:** `minimatch@10` no longer resolves; patched 11.0.1 verified against its real consumers.
+- **PASS:** Final diff audit (`git diff --check` clean; only the reported files changed).
+- **OPEN / UNMERGED:** task PR; HEAD SHA recorded in the PR summary.
+- **PENDING (post-merge):** DevSkim and CodeQL re-scans are the authoritative alert-closure signal and are not claimed as local evidence.
 
 ## Next Action
 
-Leave PR #1806 open for owner review. Do not merge or deploy.
+Leave the task PR open for owner review. Do not merge, deploy or dismiss alerts.
