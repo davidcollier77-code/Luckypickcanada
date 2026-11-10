@@ -90,4 +90,9 @@ The initial PR #1795 Visual QA run (workflow 42732428053) reached the targeted u
 
 ## Governance Regression Follow-up
 
-The full Visual QA suite found that the Connected Integrations section no longer named Browserbase. Restore its entry with explicit owner approval and actual-tool-availability safeguards. Keep Browserless/Browserbase restricted to Freebuff's direct browser-based work; do not add or trigger either from automatic PR-checker workflows. This changes governance documentation only.
+The full Visual QA suite found a stale test expectation for Browserbase. The current authoritative main AGENTS.md retains Playwright CLI and Browserless only; align the governance test and branch guidance with that supported configuration.
+
+
+## Visual QA Classification Follow-up
+
+The PR is non-rendering: changed paths are governance/docs, the Spec Kit feature pointer and unit tests under __tests__/. The existing fail-closed classifier is extended to recognize only the exact feature pointer and direct-child unit-test extensions as non-rendering. The full unit suite, TypeScript and repository checks remain required; only Chromium provisioning, baseline verification and Playwright visual regression are skipped. Browser/e2e and unknown paths remain visual-required.
