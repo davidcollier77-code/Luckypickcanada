@@ -4,7 +4,8 @@
 **Repository:** davidcollier77-code/Luckypickcanada  
 **Base branch:** main  
 **Task branch:** docs/memory-bank-consolidation-20261109  
-**Spec Kit feature:** specs/126-memory-bank-consolidation
+**Spec Kit feature:** specs/126-memory-bank-consolidation  
+**Pull request:** [#1796](https://github.com/davidcollier77-code/Luckypickcanada/pull/1796) — OPEN and UNMERGED
 
 ## Current Repository State
 - Main includes the specialist skill-routing update from PR #1795; PR #1795 is merged.
