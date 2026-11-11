@@ -82,10 +82,10 @@ jobs:
         with:
           version: 10.30.3
 
-      - name: Use Node.js 22
+      - name: Use Node.js 26
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: '22'
+          node-version: '26'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 

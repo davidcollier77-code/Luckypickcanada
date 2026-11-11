@@ -172,12 +172,12 @@ describe('visual QA workflow wiring', () => {
 
   it('restores the pnpm store before frozen-lockfile installation', () => {
     const pnpmSetupIndex = workflow.indexOf('      - name: Setup pnpm');
-    const nodeSetupIndex = workflow.indexOf('      - name: Use Node.js 22');
+    const nodeSetupIndex = workflow.indexOf('      - name: Use Node.js 26');
     expect(pnpmSetupIndex).toBeGreaterThan(-1);
     expect(nodeSetupIndex).toBeGreaterThan(-1);
     expect(pnpmSetupIndex).toBeLessThan(nodeSetupIndex);
 
-    const nodeStep = stepBlock('Use Node.js 22');
+    const nodeStep = stepBlock('Use Node.js 26');
     expect(nodeStep).not.toBeNull();
     expect(nodeStep).toContain('cache: pnpm');
     expect(nodeStep).toContain('cache-dependency-path: pnpm-lock.yaml');
