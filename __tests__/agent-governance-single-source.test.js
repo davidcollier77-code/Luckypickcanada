@@ -32,6 +32,26 @@ describe('single-source agent governance', () => {
     expect(agents).toContain('C — VERIFY AND SUBMIT');
   });
 
+  it('requires PR submission to complete repository-changing tasks without forcing PRs for read-only work', () => {
+    const agents = readAgents();
+    const handoffStart = agents.indexOf('4. Submit the PR.');
+    const handoffEnd = agents.indexOf('\n\nREPOSITORY QA AND VALIDATION', handoffStart);
+
+    expect(handoffStart).toBeGreaterThanOrEqual(0);
+    expect(handoffEnd).toBeGreaterThan(handoffStart);
+
+    const handoff = agents.slice(handoffStart, handoffEnd);
+    expect(handoff).toContain(
+      'Every task in which the owner authorizes repository changes must proceed directly',
+    );
+    expect(handoff).toContain('Opening the PR is mandatory task completion, not an optional follow-up.');
+    expect(handoff).toContain('do not wait for the owner to request the PR or give separate permission.');
+    expect(handoff).toContain('Read-only investigations, audits, recommendations and advice do not require a PR.');
+    expect(handoff).toContain('If the owner explicitly directs that no PR be opened, follow that instruction.');
+    expect(handoff).toContain('If a PR cannot safely be opened, report the exact blocker');
+    expect(handoff).toContain('A repository-changing task is not complete until its PR has been successfully opened and handed off.');
+  });
+
   it('checks the current repository QA and implementation requirements', () => {
     const agents = readAgents();
 
