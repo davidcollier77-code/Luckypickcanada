@@ -19,6 +19,9 @@ on:
       - '.github/workflows/refresh-docs.yml'
       - 'scripts/refresh-docs.js'
       - '.github/workflows/protected-files.yml'
+      - '.github/scripts/agents_md_protection.py'
+      - '.github/scripts/test_agents_md_protection.py'
+      - '__tests__/agent-governance-single-source.test.js'
 
 permissions:
   contents: read
@@ -28,10 +31,22 @@ jobs:
   detect:
     name: Detect protected file changes
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       protected_changed: ${{ steps.detect.outputs.protected_changed }}
       protected_files: ${{ steps.detect.outputs.protected_files }}
+      agents_md_mode: ${{ steps.detect.outputs.agents_md_mode }}
     steps:
+      # pull_request_target runs this workflow from the trusted base branch.
+      # Check out that exact base commit, never the pull request head, so the
+      # classifier is trusted code and the PR cannot rewrite the check.
+      - name: Checkout trusted base revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
       - name: Inspect changed paths from GitHub
         id: detect
         shell: bash
@@ -39,6 +54,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
+          BASE_REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
@@ -57,6 +76,9 @@ jobs:
             ".github/workflows/refresh-docs.yml"
             "scripts/refresh-docs.js"
             ".github/workflows/protected-files.yml"
+            ".github/scripts/agents_md_protection.py"
+            ".github/scripts/test_agents_md_protection.py"
+            "__tests__/agent-governance-single-source.test.js"
           )
 
           protected_changed=()
@@ -64,11 +86,12 @@ jobs:
           TAB=$(printf '\t')
 
           api_output="$(mktemp)"
-          trap 'rm -f "$api_output"' EXIT
+          changed_paths="$(mktemp)"
+          trap 'rm -f "$api_output" "$changed_paths"' EXIT
 
           if ! gh api --paginate \
             "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
-            --jq '.[] | [.filename, (.previous_filename // "")] | @tsv' \
+            --jq '.[] | [.filename, (.previous_filename // ""), .status] | @tsv' \
             >"$api_output"; then
             echo "::error::Failed to query the GitHub API for pull request files."
             {
@@ -81,7 +104,12 @@ jobs:
             exit 1
           fi
 
-          while IFS="$TAB" read -r new_path old_path; do
+          agents_status=""
+          agents_new_path=""
+
+          while IFS="$TAB" read -r new_path old_path status; do
+            printf '%s\t%s\n' "$new_path" "$old_path" >> "$changed_paths"
+
             for candidate in "$new_path" "$old_path"; do
               [[ -z "$candidate" ]] && continue
 
@@ -93,7 +121,57 @@ jobs:
                 fi
               done
             done
+
+            if [[ "$new_path" == "AGENTS.md" || "$old_path" == "AGENTS.md" ]]; then
+              agents_status="$status"
+              agents_new_path="$new_path"
+            fi
           done < "$api_output"
+
+          agents_md_mode=""
+          if [[ -n "${seen[AGENTS.md]+x}" ]]; then
+            # The baseline is the AGENTS.md committed on the pull request base.
+            # A governance change that has already been approved and merged is
+            # therefore the baseline for every later pull request and is not
+            # reported again. Missing baseline data fails closed.
+            if ! base_agents_sha="$(gh api \
+              "repos/${BASE_REPOSITORY}/contents/AGENTS.md?ref=${BASE_SHA}" \
+              --jq '.sha')"; then
+              echo "::error::Could not read the base-branch AGENTS.md identity; failing closed."
+              exit 1
+            fi
+
+            head_agents_sha=""
+            if [[ "$agents_new_path" == "AGENTS.md" && "$agents_status" != "removed" ]]; then
+              if ! head_agents_sha="$(gh api \
+                "repos/${HEAD_REPOSITORY}/contents/AGENTS.md?ref=${HEAD_SHA}" \
+                --jq '.sha')"; then
+                echo "::error::Could not read the head AGENTS.md identity; failing closed."
+                exit 1
+              fi
+            fi
+
+            set +e
+            python3 .github/scripts/agents_md_protection.py \
+              --changed-files "$changed_paths" \
+              --agents-md-status "${agents_status:-modified}" \
+              --base-agents-sha "$base_agents_sha" \
+              --head-agents-sha "$head_agents_sha" \
+              --summary "$GITHUB_STEP_SUMMARY" \
+              --json "$RUNNER_TEMP/agents-md-protection.json"
+            agents_exit=$?
+            set -e
+
+            if [[ "$agents_exit" -eq 1 ]]; then
+              echo "::error::AGENTS.md changed in a pull request that is not a dedicated governance change. Move the governance edit to its own dedicated pull request that also carries any directly related governance tests and protection changes."
+              exit 1
+            elif [[ "$agents_exit" -ne 0 ]]; then
+              echo "::error::AGENTS.md protection could not be determined from the changed-file list and baseline; failing closed."
+              exit 1
+            fi
+
+            agents_md_mode="$(jq -r '.mode // ""' "$RUNNER_TEMP/agents-md-protection.json" 2>/dev/null || true)"
+          fi
 
           found=false
           if (("${#protected_changed[@]}" > 0)); then
@@ -107,6 +185,7 @@ jobs:
               printf '%s\n' "${protected_changed[@]}"
             fi
             echo "EOF"
+            echo "agents_md_mode=$agents_md_mode"
           } >> "$GITHUB_OUTPUT"
 
           if [[ "$found" == "false" ]]; then
@@ -146,6 +225,7 @@ jobs:
         shell: bash
         env:
           PROTECTED_FILES: ${{ needs.detect.outputs.protected_files }}
+          AGENTS_MD_MODE: ${{ needs.detect.outputs.agents_md_mode }}
         run: |
           set -euo pipefail
           echo "Human authorization received for the protected-file change."
@@ -158,4 +238,8 @@ jobs:
             echo "The configured human reviewer approved this protected-file change."
             echo
             printf '%s\n' "$PROTECTED_FILES" | sed 's/^/- /'
+            if [[ -n "${AGENTS_MD_MODE:-}" ]]; then
+              echo
+              echo "AGENTS.md classification: \`${AGENTS_MD_MODE}\`."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

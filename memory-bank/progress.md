@@ -2,6 +2,17 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-11 — PR checker reliability, performance and AGENTS.md protection
+- Repaired the governance suite's parse error and stale AGENTS.md assertions that made every
+  recent Visual QA run fail in about a minute, then verified all 503 unit tests and the full
+  `./freebuff-verify.sh` gate.
+- Added a path-based AGENTS.md classifier: a dedicated governance PR may change AGENTS.md with
+  its protection code, tests and task records; an AGENTS.md edit in an unrelated PR is refused;
+  the base-branch AGENTS.md is the approved baseline; titles and descriptions cannot bypass it.
+- Removed duplicated Visual QA steps, sharded Playwright into two required jobs, made the
+  integrity audit aggregate shards, and added pnpm caching, timeouts and superseded-run
+  cancellation to the build validators. Production build measured 386.72 MiB.
+
 ## 2026-11-11 — Cloudflare Issues → GitHub automatic forwarding
 - Verified the live automation was an occurrence-threshold trigger that runs once per issue; the five active security
   issues pre-dated it, so only manual runs ever forwarded them. A new log issue fired automatically and created #1810.

@@ -43,6 +43,14 @@ if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_veri
   exit 1
 fi
 
+echo -e "\n--- Testing AGENTS.md Protection Classifier ---"
+# Proves a dedicated governance pull request is allowed, an AGENTS.md edit in
+# an unrelated pull request is refused, and a title or body cannot bypass it.
+if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_agents_md_protection.py'; then
+  echo "❌ AGENTS.md protection classifier tests failed; remaining verification was not run." >&2
+  exit 1
+fi
+
 # Type Check (TypeScript)
 echo -e "\n--- Running Type Check ---"
 if ! pnpm exec tsc --noEmit; then
