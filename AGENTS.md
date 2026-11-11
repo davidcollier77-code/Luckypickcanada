@@ -59,7 +59,7 @@ C — VERIFY AND SUBMIT
 
 3. Confirm build size. Measure the production build and confirm it remains strictly below 495 MiB, as required by B.5.
 
-4. Submit the PR. Once implementation and pre-submission verification are complete, follow "PR_SUBMISSION.md" for the complete verification report, final review, PR preparation, submission and handoff.
+4. Submit the PR. Every task that authorizes repository changes must proceed directly from implementation and pre-submission verification to PR preparation and submission, following "PR_SUBMISSION.md". Opening the PR is a mandatory part of completing the task—not an optional follow-up. Do not stop after implementation, testing or a completion report, and do not wait for the owner to ask for a PR or give separate permission to open one. If a PR cannot safely be opened, report the exact blocker and preserve the completed work for owner direction. A repository-changing task is not complete until its PR has been successfully opened and handed off.
 
 REPOSITORY QA AND VALIDATION
 
