@@ -64,7 +64,10 @@ jobs:
           printf '%s\n' "$classification" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$classification" >> "$GITHUB_STEP_SUMMARY"
 
-  visual:
+  # Application verification that every pull request needs, independent of
+  # whether a browser is involved. This keeps one stable "Visual QA" check for
+  # documentation-only pull requests and for the verification-integrity audit.
+  verify:
     name: Visual QA
     needs: changes
     runs-on: ubuntu-latest
@@ -92,15 +95,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run targeted Crystal Ball allowance and Oracle validation unit tests
-        run: pnpm exec vitest run __tests__/crystal-ball-daily-usage.test.js __tests__/oracle-route-validation.test.js
-
+      # The full suite includes the Crystal Ball allowance and Oracle validation
+      # files that used to run here again as a separate targeted step.
       - name: Run all unit tests
         run: pnpm run test
 
-      - name: Run standalone TypeScript check
-        run: pnpm tsc --noEmit
-
+      # freebuff-verify.sh runs the Spec Kit governance tests, the TypeScript
+      # check, the production build and the refresh-docs tests. The standalone
+      # tsc step that used to run here duplicated that same type check.
       - name: Run AGENTS.md Spec Kit verification
         env:
           # GitHub-reported pull request author. This is the only trusted input for
@@ -109,6 +111,40 @@ jobs:
           SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         run: ./freebuff-verify.sh
 
+  # Browser verification runs in two Playwright-native shards. Sharding splits
+  # spec files across runners, so every test still runs and every committed
+  # baseline is still compared. Both shards must pass; the verification-integrity
+  # audit treats any failed shard as a failed Visual QA group.
+  visual:
+    name: Visual QA (shard ${{ matrix.shard }}/2)
+    needs: changes
+    if: needs.changes.outputs.visual_required == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # setup-node's pnpm cache requires pnpm to be available on PATH first.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          version: 10.30.3
+
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '26'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       # The Chromium build Playwright downloads is a function of the Playwright
       # version, so the cache key is the runner OS plus that exact version. A
       # version change misses the cache and downloads a matching browser instead
@@ -116,7 +152,6 @@ jobs:
       # projects in playwright.config.ts all use Chromium.
       - name: Resolve installed Playwright version
         id: playwright-version
-        if: needs.changes.outputs.visual_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -130,22 +165,20 @@ jobs:
 
       - name: Restore cached Playwright Chromium
         id: playwright-cache
-        if: needs.changes.outputs.visual_required == 'true'
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright Chromium (cache miss)
-        if: needs.changes.outputs.visual_required == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Install Playwright system dependencies (cache hit)
-        if: needs.changes.outputs.visual_required == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
       - name: Verify committed visual baselines
-        if: needs.changes.outputs.visual_required == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -159,15 +192,14 @@ jobs:
           fi
           echo "Committed visual baselines: $snapshot_count PNG files."
 
-      - name: Run visual regression tests
-        if: needs.changes.outputs.visual_required == 'true'
-        run: pnpm exec playwright test
+      - name: Run visual regression tests (shard ${{ matrix.shard }} of 2)
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/2
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: playwright-visual-report
+          name: playwright-visual-report-shard-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/

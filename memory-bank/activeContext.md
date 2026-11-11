@@ -1,49 +1,61 @@
-# Active Context — Cloudflare Issues → GitHub Automatic Forwarding
+# Active Context — PR Checker Reliability, Performance and AGENTS.md Protection
 
 - **Updated:** 2026-11-11
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** freebuff/76e10f03b7c69d37bc5b1dba
-- **Spec Kit feature:** specs/139-cloudflare-issues-auto-forwarding
+- **Branch:** `fix/141-pr-checker-governance-protection`
+- **Spec Kit feature:** `specs/141-pr-checker-reliability-and-governance-protection`
 - **Pull request:** not submitted
 
 ## Current Task
 
-Diagnose and repair the existing `workers-issues-to-github` integration so Cloudflare Workers Issues forward to GitHub
-automatically, without rotating credentials, replacing the bridge Worker, duplicating automations or weakening
-authentication.
+Audit the GitHub-native pull-request checkers (excluding AI review bots), improve their speed
+and reliability without removing any quality gate, and correct the AGENTS.md protection checker
+so governance has a dedicated pull-request path.
 
-## Root Cause (verified live)
+## Evidence
 
-- The only issue automation was an occurrence-threshold automation (`threshold: 1`) created 2026-11-10T07:08:08Z.
-  Cloudflare runs that trigger **once per issue**, when its occurrence count crosses the threshold.
-- The five active security issues were first observed 2026-11-09, before the automation, so they had already crossed
-  the threshold and have only `manual` activity entries despite continuing occurrences.
-- A new log issue created after the automation fired automatically (`62ddc528…`, succeeded) and created GitHub #1810,
-  proving the webhook, secret and bridge worked all along.
+- Recorded workflow durations: Visual QA 12–15 min on success and 58 s–1 m 22 s on recent
+  failures; Validate OpenNext Repair 1 m 44 s–2 m 49 s; DevSkim 40 s–1 m 20 s; Verification
+  Integrity 17 s–3 m 7 s with 10–12 min waits; Protected File Changes 10–56 s. The 13 h 18 m
+  values recur on the same docs-refresh PR across three workflows, so they are queue/wait time.
+- Local reproduction: `pnpm run test` failed on `main` head `62615d1c` because
+  `__tests__/agent-governance-single-source.test.js:108` had a missing parenthesis. That parse
+  error explains the fast Visual QA failures, including both "Update AGENTS.md" PRs.
+- The same governance suite still asserted superseded AGENTS.md wording, so a merged governance
+  update kept producing false failures. The assertions now track the approved merged baseline.
+- Playwright cannot launch in this sandbox (`libnspr4.so` missing), so browser timing comes from
+  the recorded workflow runs, not a local timing.
 
 ## Implementation
 
-- Added one complementary recurrence-after-inactivity automation (`ecda5e06-ae7f-4cf5-b848-58b0a2908f35`,
-  3600 s, enabled, service `luckypickcanada-app`, same policy `91cf4237…`) through the Cloudflare API. The existing
-  occurrence automation `8cbf45b7…` is unchanged.
-- Repaired `scripts/cloudflare/workers-issues-to-github-setup.sh`: webhook identity without reading the write-only
-  secret, policy identity by alert type and destination, automation identity by service/policy/trigger using the read
-  schema, idempotent reconciliation of both triggers, and 14 normalized shell continuation lines that made `jq`
-  payload construction fail at runtime.
-- `wrangler.jsonc` is unchanged: Wrangler 4.148.0 accepts `observability.issues.enabled` (dry-run exit 0), and
-  Cloudflare does not support destinations/automations in Wrangler configuration.
+- Added `.github/scripts/agents_md_protection.py` and 25 regression tests: dedicated governance
+  PRs are allowed; AGENTS.md alongside application code, dependencies, other workflows or general
+  docs is refused and the files are named; deletion/rename-away is refused; missing data fails
+  closed; the base-branch AGENTS.md is the approved baseline; no title/body argument exists.
+- Wired the classifier into `protected-files.yml` on a trusted base checkout, keeping the
+  `protected-file-authorization` environment gate.
+- Verification Integrity now aggregates every Visual QA shard (`FAIL` if any shard failed).
+- Visual QA: removed the duplicated two-file Vitest subset and standalone TypeScript step,
+  split the stable verification job from Playwright, and sharded Playwright into two required
+  jobs with `fail-fast: false`.
+- Validate OpenNext Repair: pnpm-store cache, 20-minute timeout, superseded-run cancellation.
+  Deploy Updater Scheduler verifier: pnpm-store cache. DevSkim: bounded timeouts.
+- `freebuff-verify.sh` now runs the protection regression suite.
 
 ## Verification and Delivery Status
 
-- **PASS:** live delivery runs `40b57c40…` and `7aa6ec27…` succeeded; GitHub #1821 and #1822 were created by the bridge.
-- **PASS:** automatic path recorded as automatic run `62ddc528…` → GitHub #1810 with matching correlation ID.
-- **PASS:** unauthenticated bridge POST returns HTTP 401; no credential was read, changed or rotated.
-- **PASS:** `bash -n`, `git diff --check`, `./freebuff-verify.sh` (exit 0), build 320.38 MiB (< 495 MiB).
-- **NOT OBSERVED:** a fresh automatic recurrence run; it needs a new occurrence after ≥1 h of inactivity.
-- **FINDING:** the bridge does not deduplicate separate notification runs for the same Cloudflare issue (replaying the
-  Oracle issue created #1821 while #1810 was open).
+- **PASS:** `python3 -m py_compile` on the four changed/new Python modules.
+- **PASS:** `python3 -m unittest discover -s .github/scripts -p 'test_agents_md_protection.py'` — 25 tests.
+- **PASS:** `python3 -m unittest discover -s .github/scripts -p 'test_verify_pr_verification_status.py'` — 28 tests.
+- **PASS:** `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` — 8 tests.
+- **PASS:** `pnpm run test` — 57 files, 503 tests.
+- **PASS:** `./freebuff-verify.sh` — exit 0; documentation tests 36/36.
+- **PASS:** production build `.next + public` = 405,503,226 B (386.72 MiB), below 495 MiB.
+- **NOT RUN:** live Playwright (sandbox host libraries missing); CI run of the new sharded
+  workflow (runs only after PR creation).
+- **PENDING:** GitHub workflow runtimes after merge. No CI speedup is claimed from local timings.
 
 ## Handoff
 
-No PR has been opened. The live Cloudflare automation change is already applied; the repository change is the setup
-script repair plus Spec Kit and Memory Bank artifacts.
+The complete work is on the task branch. PR submission follows `PR_SUBMISSION.md`; this file is
+updated only until the PR is opened.

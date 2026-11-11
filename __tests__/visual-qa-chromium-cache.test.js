@@ -36,8 +36,20 @@ function stepBlock(name) {
   const start = workflow.indexOf(marker);
   if (start === -1) return null;
   const rest = workflow.slice(start + marker.length);
-  const nextStep = rest.search(/\n {6}- /);
-  return rest.slice(0, nextStep === -1 ? rest.length : nextStep);
+  const boundaries = [rest.search(/\n {6}- /), rest.search(/\n {2}[a-zA-Z0-9_-]+:\n/)].filter(
+    (index) => index !== -1,
+  );
+  return rest.slice(0, boundaries.length ? Math.min(...boundaries) : rest.length);
+}
+
+/** Return one top-level job block (`  verify:`), without later jobs. */
+function jobBlock(name) {
+  const marker = `\n  ${name}:\n`;
+  const start = workflow.indexOf(marker);
+  if (start === -1) return null;
+  const rest = workflow.slice(start + marker.length);
+  const nextJob = rest.search(/\n {2}[a-zA-Z0-9_-]+:\n/);
+  return rest.slice(0, nextJob === -1 ? rest.length : nextJob);
 }
 
 describe('visual QA change classification', () => {
@@ -99,24 +111,31 @@ describe('visual QA workflow wiring', () => {
     expect(classifyStep).toContain('case "$classification" in');
   });
 
-  it('runs the visual job only after the classifier and keeps the unrelated QA steps', () => {
-    const dependsOnClassifier = /name: Visual QA\n {4}needs: changes/.test(workflow);
-    expect(dependsOnClassifier).toBe(true);
+  it('runs verification for every pull request and the browser job only after the classifier', () => {
+    const verify = jobBlock('verify');
+    expect(verify, 'the stable Visual QA verification job must exist').not.toBeNull();
+    expect(verify).toMatch(/name: Visual QA\n {4}needs: changes/);
+    expect(verify).not.toContain('visual_required');
+
+    const visual = jobBlock('visual');
+    expect(visual, 'the Playwright job must exist').not.toBeNull();
+    expect(visual).toContain("if: needs.changes.outputs.visual_required == 'true'");
 
     // These checks must keep running for every pull request, visual or not.
-    for (const step of [
-      'Run targeted Crystal Ball allowance and Oracle validation unit tests',
-      'Run all unit tests',
-      'Run standalone TypeScript check',
-      'Run AGENTS.md Spec Kit verification',
-    ]) {
+    // The full suite also contains the two files the former targeted step ran.
+    for (const step of ['Run all unit tests', 'Run AGENTS.md Spec Kit verification']) {
       const block = stepBlock(step);
       expect(block, `${step} must remain in the workflow`).not.toBeNull();
       expect(block, `${step} must not be gated on visual changes`).not.toContain('visual_required');
     }
+    expect(stepBlock('Run all unit tests')).toContain('pnpm run test');
+    expect(stepBlock('Run AGENTS.md Spec Kit verification')).toContain('./freebuff-verify.sh');
     expect(stepBlock('Run AGENTS.md Spec Kit verification')).toContain(
       'SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}',
     );
+    // freebuff-verify.sh runs the TypeScript check and the production build.
+    expect(workflow).not.toContain('Run standalone TypeScript check');
+    expect(workflow).not.toContain('Run targeted Crystal Ball allowance');
   });
 
   it('caches Chromium under a Playwright-version and OS key', () => {
@@ -137,16 +156,20 @@ describe('visual QA workflow wiring', () => {
     expect(versionStep).toContain('exit 1');
   });
 
-  it('installs only Chromium, and only when visual QA is required', () => {
+  it('installs only Chromium, and only in the classifier-gated visual job', () => {
+    // The whole visual job is gated, so its steps do not repeat the job-level
+    // condition. Chromium cache-hit branching stays step-level.
+    expect(jobBlock('visual')).toContain(
+      "if: needs.changes.outputs.visual_required == 'true'",
+    );
+
     const missInstall = stepBlock('Install Playwright Chromium (cache miss)');
     expect(missInstall).not.toBeNull();
-    expect(missInstall).toContain("visual_required == 'true'");
     expect(missInstall).toContain("steps.playwright-cache.outputs.cache-hit != 'true'");
     expect(missInstall).toContain('pnpm exec playwright install --with-deps chromium');
 
     const hitDeps = stepBlock('Install Playwright system dependencies (cache hit)');
     expect(hitDeps).not.toBeNull();
-    expect(hitDeps).toContain("visual_required == 'true'");
     expect(hitDeps).toContain("steps.playwright-cache.outputs.cache-hit == 'true'");
     expect(hitDeps).toContain('pnpm exec playwright install-deps chromium');
 
@@ -156,12 +179,20 @@ describe('visual QA workflow wiring', () => {
   });
 
   it('gates baseline verification and the visual regression run on the classifier', () => {
+    const visual = jobBlock('visual');
+    expect(visual).toContain("if: needs.changes.outputs.visual_required == 'true'");
     for (const step of ['Verify committed visual baselines', 'Run visual regression tests']) {
-      const block = stepBlock(step);
-      expect(block, `${step} must remain in the workflow`).not.toBeNull();
-      expect(block).toContain("if: needs.changes.outputs.visual_required == 'true'");
+      expect(stepBlock(step), `${step} must remain in the workflow`).not.toBeNull();
     }
     expect(stepBlock('Run visual regression tests')).toContain('pnpm exec playwright test');
+  });
+
+  it('runs the complete Playwright suite in two required shards', () => {
+    const visual = jobBlock('visual');
+    expect(visual).toMatch(/strategy:\n {6}fail-fast: false/);
+    expect(visual).toMatch(/shard: \[1, 2\]/);
+    expect(visual).toContain('--shard=${{ matrix.shard }}/2');
+    expect(visual).toContain('name: Visual QA (shard ${{ matrix.shard }}/2)');
   });
 
   it('runs independent spec files with two CI workers while keeping in-file tests ordered', () => {
