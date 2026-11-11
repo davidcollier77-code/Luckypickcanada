@@ -1015,6 +1015,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "False positive: the finding is on a static source-matching regex in a security test; the test verifies the real route has rel protections.",
             "False positive: this finding is in a specifically allowlisted dependency package name, not a weak-hash implementation.",
             "False positive: the reported substring is inside a valid, canonical SHA-512 package-integrity digest, not a hash algorithm invocation.",
+            "False positive: this loopback origin appears only in local Playwright server configuration or a committed browser-probe/performance report, not in shipped production code.",
         ]
         data = {
             "runs": [{
@@ -1905,6 +1906,11 @@ class LocalProbeOriginSuppressionTests(unittest.TestCase):
                         sarif["runs"][0]["results"][0]["suppressions"][0]["kind"],
                         "external",
                     )
+                    self.assertEqual(
+                        suppressions.remove_verified_false_positive_results(sarif),
+                        1,
+                    )
+                    self.assertEqual(sarif["runs"][0]["results"], [])
 
     def test_specs_performance_benchmark_rejects_unreviewed_content_and_paths(self):
         cases = (

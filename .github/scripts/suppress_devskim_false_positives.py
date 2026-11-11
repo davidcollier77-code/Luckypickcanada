@@ -1368,7 +1368,7 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
     ),
     (
         "False positive: this loopback origin appears only in local Playwright "
-        "server configuration or a committed browser-probe measurement report, "
+        "server configuration or a committed browser-probe/performance report, "
         "not in shipped production code."
     ),
 })
