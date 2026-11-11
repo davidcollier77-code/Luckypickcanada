@@ -4,6 +4,8 @@
 
 This is the repository's single authoritative workflow and safety policy for every coding agent, including Freebuff. No separate general-purpose Freebuff entrypoint is used. The user's task request defines the requested outcome and scope. Follow this file and the task request; pause only the affected action when a genuine blocker, required approval, prerequisite, or safety issue remains.
 
+Keep this file concise (target: 300 lines maximum). Put detailed procedures in dedicated referenced files instead of duplicating them here; preserve every required safeguard.
+
 ## 1. INITIALIZE ONCE
 
 Complete these steps in order before implementation:
@@ -129,83 +131,42 @@ These entries help select specialist guidance; they do not create a second gover
 - The CLI is for direct agent browser interaction; it does not replace the existing Playwright Test suite, configured desktop/mobile projects, visual baselines, or CI checks.
 - For audio work, follow `.freebuff/audio.md` and applicable repository guidance.
 
-## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
+## 4. VERIFICATION AND PR READINESS
 
 ### QA contract [MANDATORY]
 
 - **Scope [REQUIRED]:** Select checks from acceptance criteria, changed paths, and affected user workflows. Every applicable required check MUST run; an irrelevant check is `N/A` with a brief reason, not a failure. `N/A` never waives Spec Kit or another explicit gate.
 - **Spec Kit [GATED]:** Complete all four stages in §2 and pass repository verification. This applies to every task, including documentation and governance work.
-- **Browser/visual [CONDITIONAL GATE]:** Changes that can affect rendered output or browser workflows MUST pass the existing Visual QA/Playwright checks, including configured projects and committed baselines. The existing classifier is authoritative: only positively classified documentation-only changes skip browser steps; empty, unknown, mixed, or unclassifiable changes fail closed and request visual QA. Other workflow gates still run.
+- **Browser/visual [CONDITIONAL GATE]:** Changes that can affect rendered output or browser workflows MUST pass the existing Visual QA/Playwright checks, including configured projects and committed baselines. Only positively classified documentation-only changes skip browser steps; empty, unknown, mixed, or unclassifiable changes fail closed and request visual QA. Other workflow gates still run.
 - **Browser tools [RESTRICTED]:** Playwright is the primary CLI and test path; Browserless is available for direct browser tasks and as the remote-browser fallback. Automatic PR-checker workflows MUST use the existing Playwright path when visual QA is required and MUST NOT add or invoke Browserless.
-- **PR gatekeepers [WORKFLOW-DEFINED]:** Treat checked-in workflow definitions as the evidence for what runs. DevSkim scans pull requests except changes limited to devskim-alerts.md; its workflow also validates the suppression filter and uploads SARIF. Validate OpenNext runs for pull requests and merge groups, builds the app, enforces the 495 MiB size guard, and validates Cloudflare/OpenNext artifacts. Visual QA runs on pull requests: its unit tests, TypeScript check and ./freebuff-verify.sh run; browser visual-regression steps run only when the change classifier says rendered output may be affected. The classifier fails closed when it cannot classify changes. Verification Integrity audits current-HEAD check evidence on every PR open/update/reopen; skipped or unrun checks are not passes. Protected File Authorization is conditional and applies only when the workflow's listed protected paths change; it then requires human authorization before merge.
-- **Updater scheduler validation [PATH-CONDITIONAL]:** Verify Updater Scheduler runs on pull requests that change its listed scheduler, Spec Kit updater, documentation-updater or related feature/memory paths. It tests the scheduler mapping and safe dispatch behavior, tests the Spec Kit customization rebase, exercises the safe Spec Kit upgrade in the isolated PR checkout, runs repository verification, enforces the 495 MiB build-size guard and performs a Wrangler dry-run. Its deployment job runs only on pushes to main; it is skipped for pull requests. Do not alter updater schedules or deploy the scheduler as part of unrelated tasks.
-- **GitHub Code Scanning:** The repository currently receives GitHub Code Scanning Analyze jobs for Actions, JavaScript/TypeScript and Python through GitHub's dynamic code-scanning workflow. Keep these security-analysis results distinct from the named repository workflow checks. Pullfrog and Amazon Q may also appear as external PR review apps; treat their feedback as reviewer input, not as proof that tests or builds passed.
+- **Gatekeeper preflight [REQUIRED]:** Before implementation, inspect every applicable checked-in Gatekeeper workflow and its referenced scripts/configuration. Identify event and path filters, required artifacts, commands, thresholds, evidence, and failure conditions. Shape the changes and local verification to satisfy those requirements, then compare the final diff against them. Workflow files and their scripts are authoritative; the summaries below are an index, not a substitute for inspection.
+- **DevSkim:** Scans pull requests except changes limited to devskim-alerts.md; its workflow also validates the suppression filter and uploads SARIF.
+- **Validate OpenNext:** Runs for pull requests and merge groups, builds the app, enforces the 495 MiB size guard, and validates Cloudflare/OpenNext artifacts.
+- **Visual QA:** Runs unit tests, TypeScript checking, and ./freebuff-verify.sh on pull requests. Browser visual-regression steps run only when the change classifier says rendered output may be affected. The classifier fails closed when it cannot classify changes.
+- **Verification Integrity:** Audits current-HEAD check evidence on PR open/update/reopen. Skipped or unrun checks are not passes.
+- **Protected File Authorization:** Applies only when the workflow's listed protected paths change; it requires human authorization before merge.
+- **Updater Scheduler validation [PATH-CONDITIONAL]:** Runs on pull requests changing its listed scheduler, Spec Kit updater, documentation-updater, or related feature/memory paths. It tests scheduler mapping and safe dispatch, the Spec Kit customization rebase and safe upgrade in the isolated PR checkout, repository verification, the 495 MiB size guard, and a Wrangler dry-run. Its deployment job runs only on pushes to main; it is skipped for pull requests. Do not alter updater schedules or deploy the scheduler as part of unrelated tasks.
+- **GitHub Code Scanning:** The repository receives GitHub Code Scanning Analyze jobs for Actions, JavaScript/TypeScript, and Python through GitHub's dynamic code-scanning workflow. Keep these results distinct from the named repository workflow checks. External review apps are advisory feedback, not proof that tests or builds passed.
 - Do not describe workflow triggers as branch-protection-required statuses unless repository rules confirm that separately. The connected GitHub session could not read branch-protection settings, so that configuration remains unverified.
 - **Integrations [WHEN USED/CHANGED]:** Verify a real result and relevant failure/fallback behavior, following §5's provider order and approvals. Firecrawl/Crawlbase retrieve page content; they do not replace browser rendering, interaction, or end-to-end checks.
 - **Functional/accessibility/security/performance [WHEN AFFECTED]:** Test changed behavior and affected dependencies; preserve keyboard access, labels, contrast, reduced motion, security, and performance requirements where relevant. Do not fail a task for checks unrelated to its scope.
 - **Failure diagnosis [REQUIRED]:** Distinguish a confirmed product defect from a flaky/invalid assertion or tool/environment failure. Do not dismiss a test failure as flaky without evidence; a required check blocked by tooling remains unresolved, not passed or a product defect.
-- **Reporting [MANDATORY]:** Report each check as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, `NOT RUN`, or `N/A` with a reason; include concise evidence for failures and blockers in the canonical PR summary.
+- **Reporting [MANDATORY]:** Record each check as PASS, FAIL, BLOCKED, PENDING, NOT RUN, or N/A, with a reason and concise evidence. Put the complete task report in the PR description by following PR_SUBMISSION.md.
 
 ### Verification requirements
 
-- Run `./freebuff-verify.sh` and the checks required by every selected task group.
+- Run ./freebuff-verify.sh and the checks required by every selected task group.
 - Record the actual commands run and their real results.
 - Inspect the complete final diff before submission.
-- If a check fails, fix the in-scope cause or report the exact failure.
-- If a required check is unavailable, explain why and run an applicable documented alternative where practical.
-- Keep implementation status separate from verification status.
-- Mark implementation `COMPLETE` only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains.
-- Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, `NOT RUN`, or `N/A` with a brief reason. Use N/A only when a check is out of scope; never use it to waive a mandatory gate or present an unresolved check as passed.
-- A failed, blocked, or pending mandatory check prevents claiming **verified completion** or `USEFUL RESULT: YES`. It does not by itself prevent reporting implementation as complete or opening/updating an otherwise safe, reviewable PR.
+- If a check fails, fix the in-scope cause or record the exact failure.
+- If a required check is unavailable, explain why and run an applicable documented alternative where practical. A mandatory pre-submission check that remains failed or blocked prevents PR submission.
+- Keep implementation status separate from verification status. Mark implementation COMPLETE only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains.
+- A check that can only be triggered by PR creation may be recorded as PENDING — runs automatically when the PR is created; never describe it as passed or use that exception to skip an equivalent local check.
 - State exactly what remains unverified.
 
-### Canonical PR summary
+### PR handoff
 
-The PR body is the **single canonical summary**. Draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Do not create duplicate reports or ask whether the required summary should be created or updated.
-
-Keep the summary concise and aligned with the Master Work Request. Include:
-
-- Task goal, selected task group(s), and a brief reason for each.
-- Skills materially used (only those actually applied).
-- Short implementation result and exact files changed.
-- Required Spec Kit stages and artifact paths.
-- Keep the existing Spec Kit, Memory Bank, task-group, and skill reporting unchanged.
-- Report `.docs/` library-document usefulness separately using the concise table defined below.
-- Actual verification commands and results, including failures, blockers, pending checks, and checks not run.
-- Behavior preserved, remaining issues/risks, and final diff/error-check results.
-- `USEFUL RESULT: YES/NO`; use YES only when the requested result is verified.
-
-Do not create a separate report or inventory of irrelevant documents. The PR summary is complete when it accurately records the current work and evidence, including pending items. **Verified completion** still requires every mandatory gate to pass. A safe PR may remain open for review while clearly identified checks are pending.
-
-### `.docs/` library document usefulness
-
-Include a small Markdown table in the canonical PR body, separate from all Spec Kit, Memory Bank, task-group, and skill reporting. This table applies **only** to individual reference documents in `.docs/`; it does not apply to Spec Kit artifacts, Memory Bank files, `.freebuff/` task-group guidance, skills, or other workflow resources. Do not change their existing reporting.
-
-List only `.docs/` documents that Freebuff actually opened or consulted for the task. For each document, identify whether it materially helped and give one brief, task-specific explanation (a short phrase or sentence) of what it contributed. Use `Useful` or `Not useful` in the status column. If a consulted document did not contribute, say so briefly; do not list documents that were not consulted or unrelated documents. Keep the table concise, with no lengthy reviews, scoring, version tracking, or separate report. Do not modify `.docs/` documents as part of this reporting requirement.
-
-Example:
-
-| `.docs/` library document | Usefulness | Brief reason |
-|---|---|---|
-| `responsive-design.md` | Useful | Guided the mobile layout checks. |
-| `testing-guide.md` | Not useful | Consulted, but its guidance did not apply to this change. |
-
-### PR submission and handoff
-
-- After completing the in-scope implementation, running the required local checks, and reviewing the complete final diff, create or update the PR for owner and tracker review.
-- Do not wait for external CI trackers, automated reviewers, or other post-submission checks to finish before submitting the PR. Let those checks run after submission.
-- The PR may be submitted while external checks are pending. Report every check's actual status accurately; never describe a pending or failed check as passed or claim verified completion when a mandatory check has not passed.
-- After submission, confirm the PR exists and is **OPEN and UNMERGED**. Retrieve its actual `head.sha` and include the full PR HEAD SHA in the canonical PR summary.
-- Report the PR link, full PR HEAD SHA, and any outstanding checks or issues. This completes the agent's handoff.
-- After handing off the PR, stop. Do not wait for, monitor, or act on later tracker/reviewer results, and do not make further changes unless the owner requests them. If an owner-requested update adds commits, refresh the reported PR HEAD SHA.
-
-### Branch and PR recovery
-
-- If branch history, merge-base checks, or push permissions block publishing, diagnose the actual state first and preserve all work.
-- Never force-push, discard commits, or ask the owner to force-push as a routine workaround.
-- When safe, recover using a clean branch and only identifiable intended changes.
-- If the issue cannot be resolved safely, report the exact command/error, branch/ref, and relevant commit SHA.
-- Ask one focused question only when owner action is genuinely required.
+When implementation, Spec Kit artifacts, applicable pre-submission checks, and the complete diff review are finished, follow PR_SUBMISSION.md. It is the single procedure for preparing the complete PR description, confirming the correct head and base, submitting one non-draft PR, and stopping. Do not duplicate that procedure here.
 
 ## 5. APPROVALS, CONNECTED INTEGRATIONS, AND PR OWNERSHIP
 

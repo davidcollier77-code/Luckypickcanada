@@ -1,45 +1,36 @@
-# Active Context — Node.js 26 Migration
+# Active Context — PR Submission Governance Consolidation
 
 - **Updated:** 2026-11-11
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Base branch:** main (base commit `bee5dec9`)
-- **Task branch:** freebuff/261525f05a3f083e00c056f2
-- **Spec Kit feature:** specs/135-nodejs-26-migration
+- **Base branch:** main (base commit e15fd89db006421f7719af037c7f47eae6976854)
+- **Task branch:** docs/pr-submission-governance-20261111
+- **Spec Kit feature:** specs/136-pr-submission-governance
 
 ## Current Task
 
-Migrate the repository's declared local and CI Node.js runtime from 22 to 26, including package metadata, `.nvmrc`, GitHub Actions workflows, repository tooling, the updater-scheduler package, and the related workflow assertion. No dependency upgrades, no application or visual changes, and no deployment-path or integration changes.
+Move detailed PR description and submission instructions from AGENTS.md into PR_SUBMISSION.md. Keep AGENTS.md at or below 300 lines, retain Gatekeeper awareness as pre-implementation guidance, and make the PR handoff reference explicit. Preserve the existing root PR_SUMMARY.md task report.
 
-## Verified Findings
+## Verified Repository Context
 
-- Active Node.js 22 declarations were in `package.json`, `.nvmrc`, six GitHub Actions workflows, `scripts/setup-playwright-agent.sh`, the updater-scheduler package and README, the Visual QA workflow assertion test, and the Memory Bank technical context.
-- Installed tooling supports Node.js 26: Next.js 16.4.3 (`node >=20.9.0`), Wrangler 4.148.0 (`node >=22.0.0`), Playwright 1.64.1 (`node >=20`), Vitest 5.0.0 (`>=26.0.0`), Sharp 0.35.5 (`node >=20.9.0`).
-- Historical `specs/` and `artifacts/` records that mention Node.js 22 are evidence of earlier tasks and are intentionally unchanged.
-- Cloudflare hosting deploys through GitHub Actions and Wrangler/OpenNext; the Workers runtime is controlled by `compatibility_date` and `nodejs_compat`, which are unchanged.
+- AGENTS.md was 271 lines before this change.
+- Root PR_SUMMARY.md is an existing completed report for a documentation-updater task, not a reusable submission procedure.
+- No root PR_SUBMISSION.md existed at the inspected base.
+- AGENTS.md already listed Gatekeeper workflows but did not explicitly require inspecting applicable workflow definitions and referenced scripts before implementation.
+- The existing governance test checks the authoritative governance entrypoint and Connected Integrations rules.
 
 ## Implementation
 
-- `package.json` declares `engines.node: "26.x"`; `.nvmrc` contains `26`.
-- All six Node-configured workflows use Node.js 26 with updated step labels; pinned action SHAs, ordering, and workflow behaviour are unchanged.
-- `scripts/setup-playwright-agent.sh` requires Node.js major 26; the updater-scheduler package declares `>=26` and its README states Node.js 26.
-- The Visual QA workflow assertion test and `memory-bank/techContext.md` reflect Node.js 26.
+- Added Gatekeeper preflight guidance and retained the workflow-specific Gatekeeper index in AGENTS.md.
+- Moved detailed PR-body/reporting, head/base, submission, hard-stop and recovery instructions to PR_SUBMISSION.md.
+- Replaced the detailed AGENTS.md handoff with a direct PR_SUBMISSION.md reference.
+- Preserved root PR_SUMMARY.md and unrelated governance.
 
 ## Verification Status
 
-- **PASS:** `node --test workers/updater-scheduler/test/index.node-test.mjs` — 17/17.
-- **PASS:** `pnpm exec vitest run __tests__/visual-qa-chromium-cache.test.js` — 13/13.
-- **PASS:** `pnpm exec tsc --noEmit`.
-- **PASS:** `bash scripts/setup-playwright-agent.sh`.
-- **PASS:** `pnpm test` — 57 files, 497 tests.
-- **PASS:** `./freebuff-verify.sh` — Spec Kit gate, integrity tests, type check, production build, docs tests 36/36.
-- **PASS:** `pnpm exec opennextjs-cloudflare build` — worker and assets generated.
-- **PASS:** `pnpm exec wrangler deploy --dry-run --config ./wrangler.jsonc` — all bindings resolved.
-- **PASS:** Size guard — production 358.16 MiB after Next build (369.27 MiB after OpenNext rebuild), OpenNext 97.57 MiB, all below 495 MiB.
-- **N/A:** Playwright visual regression — no rendered file changed; unit tests and both builds passed.
-- **NOT RUN:** Live Neon/Stripe/Resend calls — require production credentials and create external side effects; no deployment was performed.
-
-Evidence: `artifacts/node26-migration/verification.md`.
+- **PASS (static review):** AGENTS.md line count and required content assertions checked during document preparation.
+- **BLOCKED:** Repository governance tests and ./freebuff-verify.sh were not run; this session has GitHub API access but no repository shell or checkout.
+- **NOT SUBMITTED:** No PR was opened because repository verification and final runtime diff review remain outstanding.
 
 ## Next Action
 
-Complete the tasks in `specs/135-nodejs-26-migration/tasks.md`, record exact verification evidence, and leave any repository submission open and unmerged for owner review.
+Run the governance tests and ./freebuff-verify.sh on this branch, inspect the complete diff, and follow PR_SUBMISSION.md only after all applicable pre-submission checks pass. Do not submit while mandatory pre-submission checks remain unverified.
