@@ -25,7 +25,6 @@ Complete these steps in order before implementation:
 - Documents are reference material, not automatic instructions. No document has automatic priority based only on its name or subject.
 - Do not load unrelated specialist files, command definitions, or library snapshots.
 - Keep `.docs/` read-only unless the owner explicitly authorizes adding, removing, or materially updating library documents in the task request.
-- Mention only library documents that materially informed the work in the PR summary.
 
 ### Specialist skill routing
 
@@ -221,11 +220,11 @@ Before reporting **verified completion**, confirm:
 2. `./freebuff-verify.sh` and all mandatory task-group checks passed.
 3. The complete final diff matches the reported files.
 4. Verification statuses are accurate and unresolved risks are stated.
-5. The PR summary reflects the actual work and evidence.
+5. The PR handoff follows PR_SUBMISSION.md.
 6. The PR remains **OPEN and UNMERGED**.
 
 🔴 **NO EVIDENCE = NO CLAIM.**
 
 🔴 **NO VERIFIED RESULT = NO VERIFIED COMPLETION.**
 
-🔴 **NO ACCURATE PR SUMMARY = NO COMPLETION.**
+🔴 **NO ACCURATE PR HANDOFF = NO COMPLETION.**
