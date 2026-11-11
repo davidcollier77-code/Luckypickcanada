@@ -1,0 +1,23 @@
+path	status	content_type	bytes
+/.env	404	text/html;	charset=utf-8 22584
+/.env.production	404	text/html;	charset=utf-8 22584
+/.git/config	404	text/html;	charset=utf-8 22584
+/.git/HEAD	404	text/html;	charset=utf-8 22584
+/.git-credentials	404	text/html;	charset=utf-8 22584
+/.gitlab-ci.yml	404	text/html;	charset=utf-8 22584
+/.svn/entries	404	text/html;	charset=utf-8 22584
+/.hg/hgrc	404	text/html;	charset=utf-8 22584
+/.netrc	404	text/html;	charset=utf-8 22584
+/credentials.json	404	text/html;	charset=utf-8 22584
+/database.sql	404	text/html;	charset=utf-8 22584
+/backup/.env	404	text/html;	charset=utf-8 22584
+/sendgrid.env	404	text/html;	charset=utf-8 22584
+/web.config	404	text/html;	charset=utf-8 22584
+/wp-login.php	404	text/html;	charset=utf-8 22584
+/wp-content/debug.log	404	text/html;	charset=utf-8 22584
+/phpinfo.php	404	text/html;	charset=utf-8 22584
+/api/phpinfo.php	404	text/html;	charset=utf-8 22584
+/actuator/env	404	text/html;	charset=utf-8 22584
+/api/actuator/env	404	text/html;	charset=utf-8 22584
+/_profiler/phpinfo	404	text/html;	charset=utf-8 22584
+/storage/logs/laravel.log	404	text/html;	charset=utf-8 22584

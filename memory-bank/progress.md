@@ -2,6 +2,12 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-11 — Six Cloudflare issues: scan evidence and Oracle fix
+- Verified the five vulnerability-scan issues against all retained Cloudflare occurrences (every response 404, no outbound fetch) and against 22 live production probes.
+- Fixed the genuine Oracle empty-content error by moving gpt-oss-20b to `max_completion_tokens: 1024` with low reasoning effort and a structured missing-content diagnostic; the safe fallback was preserved.
+- Added the visitor's local time and the missing Labour Day and National Day for Truth and Reconciliation to the Crystal Ball calendar facts.
+- Evidence: `specs/141-cloudflare-issue-remediation/evidence.md`; 38 targeted tests, the Playwright Crystal Ball flow, `./freebuff-verify.sh` exit 0 and a 355.73 MiB build.
+
 ## 2026-11-11 — PR checker reliability, performance and AGENTS.md protection
 - Repaired the governance suite's parse error and stale AGENTS.md assertions that made every
   recent Visual QA run fail in about a minute, then verified all 503 unit tests and the full
