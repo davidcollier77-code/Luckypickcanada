@@ -20,8 +20,11 @@ import { spawnSync } from 'node:child_process';
 //   source ...      - keeps the bootstrap PATH export in the shell that runs the install.
 //   CI=true install - keeps pnpm non-interactive with the frozen lockfile.
 //   playwright cli  - proves the repository-local Playwright agent CLI is runnable.
+//   chromium libs   - provisions Chromium's Linux runtime libraries without root, only when the check fails.
+//   --env           - exports the library and font paths in the shell that runs the launch probe.
+//   probe           - installs the project-pinned Chromium and proves a real headless launch.
 const EXPECTED_STARTUP_COMMAND =
-  "bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help'";
+  "bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && (bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval \"$(bash scripts/setup-chromium-libs.sh --env)\" && bash scripts/setup-playwright-agent.sh --install-browser --probe-browser'";
 
 // The rejected forms, kept so the guard explains why the wrapper exists.
 const PATH_LOSING_COMMAND =
@@ -76,7 +79,37 @@ function createFixture() {
     ['#!/usr/bin/env bash', '# Test fixture only.', 'printf "verify-startup-ran\\n"'].join('\n')
   );
 
+  // Stand-in for scripts/setup-chromium-libs.sh: --check reports the unavailable
+  // libraries so the provisioning branch runs, and --env must reach the shell that
+  // launches the probe.
+  writeFileSync(
+    join(scripts, 'setup-chromium-libs.sh'),
+    [
+      '#!/usr/bin/env bash',
+      '# Test fixture only.',
+      'case "${1:-}" in',
+      '  --check) printf "check\\n" >> "$FREE_BUFF_TEST_LIBS_LOG"; exit 1 ;;',
+      '  --env) printf "env\\n" >> "$FREE_BUFF_TEST_LIBS_LOG"; printf \'export FIXTURE_CHROMIUM_LIBS=1\\n\' ;;',
+      '  *) printf "provision\\n" >> "$FREE_BUFF_TEST_LIBS_LOG" ;;',
+      'esac',
+    ].join('\n')
+  );
+
+  // Stand-in for scripts/setup-playwright-agent.sh: the launch probe itself is not
+  // executed in the fixture, only its place in the chain and its arguments are.
+  writeFileSync(
+    join(scripts, 'setup-playwright-agent.sh'),
+    [
+      '#!/usr/bin/env bash',
+      '# Test fixture only.',
+      'printf "probe-ran\\n"',
+      'printf "%s\\n" "$*" > "$FREE_BUFF_TEST_PROBE_LOG"',
+    ].join('\n')
+  );
+
   const callLog = join(root, 'pnpm.log');
+  const probeLog = join(root, 'probe.log');
+  const libsLog = join(root, 'libs.log');
   const fakePnpm = join(fakeBin, 'pnpm');
   writeFileSync(
     fakePnpm,
@@ -91,13 +124,15 @@ function createFixture() {
     HOME: home,
     FREE_BUFF_TEST_BIN: fakeBin,
     FREE_BUFF_TEST_LOG: callLog,
+    FREE_BUFF_TEST_PROBE_LOG: probeLog,
+    FREE_BUFF_TEST_LIBS_LOG: libsLog,
     PATH: ['/usr/bin', '/bin'].join(delimiter),
   };
   delete env.CI;
   delete env.PNPM_HOME;
   delete env.COREPACK_HOME;
 
-  return { root, callLog, env };
+  return { root, callLog, probeLog, libsLog, env };
 }
 
 function runInFixture(fixture, shell, command) {
@@ -145,6 +180,21 @@ describe('documented Freebuff startup command', () => {
     expect(install).toBeLessThan(playwright);
   });
 
+  it('provisions Chromium libraries before exporting them and probing a launch', () => {
+    const [command] = documentedStartupCommands(readme);
+
+    const libsCheck = command.indexOf('setup-chromium-libs.sh --check');
+    const libsProvision = command.indexOf('|| bash scripts/setup-chromium-libs.sh)');
+    const libsEnv = command.indexOf('setup-chromium-libs.sh --env');
+    const probe = command.indexOf('setup-playwright-agent.sh --install-browser --probe-browser');
+    const cli = command.indexOf('pnpm exec playwright cli --help');
+
+    expect(libsCheck).toBeGreaterThan(cli);
+    expect(libsCheck).toBeLessThan(libsProvision);
+    expect(libsProvision).toBeLessThan(libsEnv);
+    expect(libsEnv).toBeLessThan(probe);
+  });
+
   it('keeps the frozen install non-interactive', () => {
     const [command] = documentedStartupCommands(readme);
 
@@ -164,6 +214,19 @@ describe('documented startup command behaviour (executed)', () => {
       expect(result.stdout.indexOf('verify-startup-ran')).toBeGreaterThanOrEqual(0);
       expect(result.stdout.indexOf('verify-startup-ran')).toBeLessThan(
         result.stdout.indexOf('bootstrap-ran')
+      );
+      expect(result.stdout.indexOf('probe-ran')).toBeGreaterThan(
+        result.stdout.indexOf('bootstrap-ran')
+      );
+      // The check is silenced by the documented command, so the fixture records each
+      // Chromium step in a log: check, provision when the check fails, then export.
+      expect(readFileSync(fixture.libsLog, 'utf8').trim().split('\n')).toEqual([
+        'check',
+        'provision',
+        'env',
+      ]);
+      expect(readFileSync(fixture.probeLog, 'utf8').trim()).toBe(
+        '--install-browser --probe-browser'
       );
       expect(readFileSync(fixture.callLog, 'utf8').trim().split('\n')).toEqual([
         'install --frozen-lockfile',
