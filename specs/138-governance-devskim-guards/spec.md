@@ -1,6 +1,6 @@
 # Feature Specification: Protect Agent Governance and Repair DevSkim Benchmark Filtering
 
-**Feature Branch**: `138-governance-devskim-guards`
+**Feature Branch**: `fix/138-governance-devskim-guards`
 **Created**: 2026-11-11
 **Status**: In progress
 **Input**: Owner-authorized correction of stale governance QA assertions, missing AGENTS.md protection and the failing DevSkim local benchmark path check.

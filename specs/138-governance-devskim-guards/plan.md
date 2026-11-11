@@ -1,6 +1,6 @@
 # Implementation Plan: Protect Agent Governance and Repair DevSkim Benchmark Filtering
 
-**Branch**: `138-governance-devskim-guards` | **Date**: 2026-11-11 | **Spec**: [spec.md](spec.md)
+**Branch**: `fix/138-governance-devskim-guards` | **Date**: 2026-11-11 | **Spec**: [spec.md](spec.md)
 
 **Input**: Owner-authorized correction of the governance protection gap, stale governance assertions and DevSkim's missing benchmark-path helper.
 
