@@ -13,7 +13,8 @@
 - [X] T006 Keep AGENTS.md at or below 300 lines and remove the obsolete root PR_SUMMARY.md; confirm PR_SUBMISSION.md is the active reusable procedure.
 
 ## Phase 3: Verify and hand off
-- [ ] T007 Run agent-governance and Spec Kit governance tests plus ./freebuff-verify.sh. BLOCKED in this connected session because no repository shell/checkout is available; do not claim these checks passed.
-- [ ] T008 Review the complete branch diff, complete all mandatory pre-submission checks, prepare the full PR body, and submit one regular, non-draft PR only when the checks are verified. Leave it open and unmerged.
+- [ ] T007 Run the repository governance tests and ./freebuff-verify.sh when a repository shell is available. BLOCKED in this connected session; neither check is claimed as passed.
+- [X] T008 Review the GitHub branch diff, record verification limitations accurately, prepare the complete PR description, and open regular non-draft PR #1815 against main. Leave it open and unmerged for the owner.
 
-T007 is a hard prerequisite for T008. Do not submit while required pre-submission checks remain unverified.
+## Verification note
+The PR was opened at the owner's direction with the unavailable local checks explicitly disclosed in its description. PR-triggered checks are separate from the local checks above.
