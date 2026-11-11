@@ -1,47 +1,49 @@
-# Active Context — Freebuff Startup Chromium Readiness
+# Active Context — Cloudflare Issues → GitHub Automatic Forwarding
 
 - **Updated:** 2026-11-11
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** freebuff/5a4ef38f3323a2930a7d92c1
-- **Spec Kit feature:** specs/137-startup-chromium-readiness
+- **Branch:** freebuff/76e10f03b7c69d37bc5b1dba
+- **Spec Kit feature:** specs/139-cloudflare-issues-auto-forwarding
 - **Pull request:** not submitted
 
 ## Current Task
 
-Make the Freebuff startup command provision Chromium's Linux runtime libraries and prove a real headless launch, and
-make `scripts/setup-playwright-agent.sh` executable, with `README.md` and its guard test kept in sync.
+Diagnose and repair the existing `workers-issues-to-github` integration so Cloudflare Workers Issues forward to GitHub
+automatically, without rotating credentials, replacing the bridge Worker, duplicating automations or weakening
+authentication.
 
-## Verified Baseline
+## Root Cause (verified live)
 
-- Node.js v26.13.0, pnpm 10.30.3 and the frozen lockfile install pass; Playwright 1.64.1 downloads Chromium 1248.
-- The workspace image ships none of Chromium's shared libraries and refuses `sudo`; a cold launch failed on
-  `libnspr4.so`, and `./scripts/setup-playwright-agent.sh --probe-browser` exited 126 because the file was `100644`.
-- `scripts/setup-chromium-libs.sh` provisions the libraries without root into `~/.local/chromium-libs` (10.9 s, 27 MB)
-  and its `--check` costs 0.06 s once provisioned.
+- The only issue automation was an occurrence-threshold automation (`threshold: 1`) created 2026-11-10T07:08:08Z.
+  Cloudflare runs that trigger **once per issue**, when its occurrence count crosses the threshold.
+- The five active security issues were first observed 2026-11-09, before the automation, so they had already crossed
+  the threshold and have only `manual` activity entries despite continuing occurrences.
+- A new log issue created after the automation fired automatically (`62ddc528…`, succeeded) and created GitHub #1810,
+  proving the webhook, secret and bridge worked all along.
 
 ## Implementation
 
-- Added three steps to the documented startup command after the guarded prefix: gated library provisioning, the
-  `--env` export in the probe's shell, and `setup-playwright-agent.sh --install-browser --probe-browser`.
-- Updated the documented steps in `README.md` and noted that later shells need the export plus `--browser=chromium`.
-- Extended `__tests__/freebuff-startup-command.test.js` to the new string, the new order, and fixture stand-ins for the
-  Chromium and probe scripts.
-- Marked `scripts/setup-playwright-agent.sh` executable in the Git index (`100755`).
+- Added one complementary recurrence-after-inactivity automation (`ecda5e06-ae7f-4cf5-b848-58b0a2908f35`,
+  3600 s, enabled, service `luckypickcanada-app`, same policy `91cf4237…`) through the Cloudflare API. The existing
+  occurrence automation `8cbf45b7…` is unchanged.
+- Repaired `scripts/cloudflare/workers-issues-to-github-setup.sh`: webhook identity without reading the write-only
+  secret, policy identity by alert type and destination, automation identity by service/policy/trigger using the read
+  schema, idempotent reconciliation of both triggers, and 14 normalized shell continuation lines that made `jq`
+  payload construction fail at runtime.
+- `wrangler.jsonc` is unchanged: Wrangler 4.148.0 accepts `observability.issues.enabled` (dry-run exit 0), and
+  Cloudflare does not support destinations/automations in Wrangler configuration.
 
 ## Verification and Delivery Status
 
-- **PASS (guard tests):** focused startup and bootstrap Vitest suites.
-- **PASS (documented command):** verbatim run exits 0 with `PASS: pnpm exec playwright cli is available.` and
-  `PASS: Chromium launched and rendered a probe page.`
-- **PASS (provisioning branch):** forced with a throwaway library prefix.
-- **PASS (`./freebuff-verify.sh`):** exit 0, including the Spec Kit gate, verification-integrity tests, `tsc --noEmit`,
-  the production build and the docs tests.
-- **PASS (build size):** `.next` 305 MiB + `public` 33 MiB = 338 MiB, strictly below the 495 MiB cap.
-- **PASS (diff audit):** `README.md`, the guard test, `memory-bank/activeContext.md`, the ignored Spec Kit pointer,
-  this feature's artifacts, and the `100755` mode change on `scripts/setup-playwright-agent.sh`; no dependency,
-  lockfile, workflow, application, integration or deployment change. `git diff --check` is clean.
+- **PASS:** live delivery runs `40b57c40…` and `7aa6ec27…` succeeded; GitHub #1821 and #1822 were created by the bridge.
+- **PASS:** automatic path recorded as automatic run `62ddc528…` → GitHub #1810 with matching correlation ID.
+- **PASS:** unauthenticated bridge POST returns HTTP 401; no credential was read, changed or rotated.
+- **PASS:** `bash -n`, `git diff --check`, `./freebuff-verify.sh` (exit 0), build 320.38 MiB (< 495 MiB).
+- **NOT OBSERVED:** a fresh automatic recurrence run; it needs a new occurrence after ≥1 h of inactivity.
+- **FINDING:** the bridge does not deduplicate separate notification runs for the same Cloudflare issue (replaying the
+  Oracle issue created #1821 while #1810 was open).
 
 ## Handoff
 
-No PR has been opened for this task. The Freebuff project startup setting remains an owner action; `README.md`
-documents the exact value.
+No PR has been opened. The live Cloudflare automation change is already applied; the repository change is the setup
+script repair plus Spec Kit and Memory Bank artifacts.
