@@ -70,7 +70,7 @@ The Freebuff project startup command is stored in Freebuff Project Settings, out
 exact value to paste there; the repository cannot read or change that setting:
 
 ```bash
-bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help'
+bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && (bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval "$(bash scripts/setup-chromium-libs.sh --env)" && bash scripts/setup-playwright-agent.sh --install-browser --probe-browser'
 ```
 
 Each step is chained with `&&`, so it runs in this order and stops the rest of the command on failure:
@@ -88,6 +88,20 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    lockfile is out of date. `CI=true` keeps pnpm non-interactive during startup.
 4. `pnpm exec playwright cli --help` — proves the repository-local Playwright agent CLI used for browser QA is
    installed and runnable, without launching a browser.
+5. `bash scripts/setup-chromium-libs.sh --check || bash scripts/setup-chromium-libs.sh` — the check is a 0.06 s
+   `ldd` against the Playwright Chromium binary, so provisioning only runs when the libraries are missing. The image
+   ships none of them and refuses `sudo`, so the script downloads the official Ubuntu packages with `apt-get` as an
+   unprivileged downloader and unpacks them into `~/.local/chromium-libs`; nothing is written system-wide. A
+   provisioned workspace takes about 11 s once.
+6. `eval "$(bash scripts/setup-chromium-libs.sh --env)"` — exports the `LD_LIBRARY_PATH` and `FONTCONFIG_*` values in
+   the shell that runs the probe, because the provisioning step's environment does not outlive its own process.
+7. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — installs the project-pinned Chromium
+   (a no-op when the cache already matches Playwright 1.64.1) and launches it headlessly, so startup ends with
+   `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
+
+Browser commands in later shells need the same two lines before the browser starts: run
+`eval "$(bash scripts/setup-chromium-libs.sh --env)"` and pass `--browser=chromium` to `pnpm exec playwright cli
+open`, because the CLI's default channel is a system Chrome that this image does not have.
 
 `bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
 `PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.
