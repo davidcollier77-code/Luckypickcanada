@@ -6,6 +6,8 @@ PROJECT PLATFORMS
 
 Lucky Pick Canada uses GitHub for source control, repository management and pull requests, and Cloudflare for its production hosting and deployment. Follow the existing configurations and workflows for both platforms.
 
+Production website: https://luckypickcanada.ca
+
 PR submission: "PR_SUBMISSION.md" is mandatory. Read and follow it whenever preparing or submitting a pull request. It is the single source of truth for PR preparation, reporting, submission, handoff and the hard stop after submission. Do not duplicate its procedures in this file.
 
 A — PREPARE AND PLAN
