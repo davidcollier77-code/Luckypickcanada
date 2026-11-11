@@ -2,6 +2,16 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-11 — Cloudflare Issues → GitHub automatic forwarding
+- Verified the live automation was an occurrence-threshold trigger that runs once per issue; the five active security
+  issues pre-dated it, so only manual runs ever forwarded them. A new log issue fired automatically and created #1810.
+- Added a recurrence-after-inactivity automation (3600 s, same service and policy) and left the original automation,
+  webhook, policy and every credential unchanged.
+- Repaired the setup script's idempotent identity checks for webhooks, policies and automations and normalized 14
+  doubled continuation lines that made its `jq` payloads fail at runtime.
+- Verified live deliveries (#1821, #1822), the recorded automatic run (#1810), the 401 rejection contract,
+  `./freebuff-verify.sh` and a 320.38 MiB build. Evidence is in `specs/139-cloudflare-issues-auto-forwarding/`.
+
 ## 2026-11-11 — Node.js 26 migration
 - Moved the declared local/CI runtime from Node.js 22 to 26 across `package.json`, `.nvmrc`, six GitHub Actions workflows,
   the Playwright agent setup guard, and the updater-scheduler package and README.

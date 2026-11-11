@@ -4,10 +4,29 @@
 #
 # Workers Issues → GitHub integration setup script (corrected version)
 #
-# Creates:
+# Creates (idempotently — an existing matching resource is always reused):
 #   1. A Cloudflare Generic Webhook destination ("Workers Issues to GitHub")
 #   2. A notification policy for the "workers_observability_real_time_issue" alert type
-#   3. An occurrence-threshold issue automation on the "luckypickcanada-app" Worker
+#   3. Two complementary issue automations on the "luckypickcanada-app" Worker:
+#        - occurrence threshold: forwards the first occurrence of every new issue
+#        - recurrence after inactivity: forwards an existing issue when it returns
+#          after the configured quiet period. Cloudflare's occurrence-threshold
+#          trigger runs only once per issue, so without this second trigger an
+#          issue that was created before the automation, or that reopens after
+#          resolution, is never forwarded automatically again.
+#
+# Configuration ownership:
+#   - Wrangler manages only the Worker. wrangler.jsonc enables the detector with
+#     observability.issues.enabled; Cloudflare does not support notification
+#     destinations, policies or issue automations in Wrangler configuration, so
+#     they are reconciled here through the dashboard/API and must never be added
+#     to wrangler.jsonc.
+#   - Cloudflare's read and write payloads differ: writes use policyId,
+#     afterOccurrences and afterInactivitySeconds; reads return ansPolicyId,
+#     threshold, inactivitySeconds and triggerType. Identity checks below use
+#     the read shape.
+#   - A webhook secret is write-only. It is never returned by the API, so this
+#     script reuses the destination without reading, comparing or rewriting it.
 #
 # Then runs end-to-end tests with real verification:
 #   4. Triggers a notification for one real issue → verifies GitHub issue was created
@@ -27,8 +46,10 @@
 #   - Optionally prompts for a GitHub token (for private repos / higher rate limits).
 #
 # Preserves:
-#   - The existing "Jules Bridge" webhook and its Worker (untouched).
-#   - All existing Worker bindings (GITHUB_TOKEN, WEBHOOK_SECRET, ISSUE_DEDUPE).
+#   - The existing "workers-issues-to-github" Worker and every binding
+#     (GITHUB_TOKEN, WEBHOOK_SECRET, ISSUE_DEDUPE) (untouched).
+#   - The existing webhook destination, notification policy, occurrence-threshold
+#     automation and every credential (never rotated or rewritten).
 #
 # Prerequisites:
 #   - bash 4+
@@ -59,8 +80,10 @@ POLICY_NAME="Workers Issues to GitHub Policy"
 POLICY_DESCRIPTION="Routes Workers Observability real-time issues to the GitHub bridge webhook"
 ALERT_TYPE="workers_observability_real_time_issue"
 AUTOMATION_NAME="Luckypickcanada App Issues to GitHub"
+RECURRENCE_AUTOMATION_NAME="Luckypickcanada App Issue Recurrence to GitHub"
 WORKER_SERVICE="luckypickcanada-app"
 OCCURRENCE_THRESHOLD=1
+RECURRENCE_INACTIVITY_SECONDS=3600
 
 # Real active issue IDs on luckypickcanada-app (for end-to-end testing)
 TEST_ISSUE_1="a94d47c2-d9e8-468d-ae61-c966c9ab7199"   # wordpress scan
@@ -81,6 +104,7 @@ declare -a CREATED_RESOURCES=()
 WEBHOOK_ID=""
 POLICY_ID=""
 AUTOMATION_ID=""
+RECURRENCE_AUTOMATION_ID=""
 
 # Flags for whether each resource was newly created vs pre-existing
 WEBHOOK_CREATED=false
@@ -244,6 +268,7 @@ print_summary() {
   [ -n "$WEBHOOK_ID" ]    && echo "    Webhook ID:      $WEBHOOK_ID    ($([ "$WEBHOOK_CREATED" = true ] && echo 'newly created' || echo 'pre-existing'))"
   [ -n "$POLICY_ID" ]     && echo "    Policy ID:       $POLICY_ID     ($([ "$POLICY_CREATED" = true ] && echo 'newly created' || echo 'pre-existing'))"
   [ -n "$AUTOMATION_ID" ] && echo "    Automation ID:   $AUTOMATION_ID ($([ "$AUTOMATION_CREATED" = true ] && echo 'newly created' || echo 'pre-existing'))"
+  [ -n "$RECURRENCE_AUTOMATION_ID" ] && echo "    Recurrence ID:   $RECURRENCE_AUTOMATION_ID"
 
   if [ "${#CREATED_RESOURCES[@]}" -gt 0 ]; then
     echo ""
@@ -347,12 +372,14 @@ if [ "$RESP_SUCCESS" = "true" ]; then
   elif [ "$WEBHOOK_MATCH_COUNT" -eq 1 ]; then
     WEBHOOK_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$WEBHOOK_NAME" '.result[] | select(.name == $name)')
     EXISTING_WEBHOOK_URL=$(echo "$WEBHOOK_MATCH" | jq -r '.url // ""')
-    EXISTING_WEBHOOK_SECRET=$(echo "$WEBHOOK_MATCH" | jq -r '.secret // ""')
-    if [ "$EXISTING_WEBHOOK_URL" = "$WEBHOOK_URL" ] && [ -n "$EXISTING_WEBHOOK_SECRET" ] && [ "$EXISTING_WEBHOOK_SECRET" = "$WEBHOOK_SECRET" ]; then
+    # Cloudflare never returns a webhook secret (it is write-only). Reuse the
+    # destination by name and URL and leave the stored secret untouched;
+    # rewriting it would rotate a credential that already works.
+    if [ "$EXISTING_WEBHOOK_URL" = "$WEBHOOK_URL" ]; then
       WEBHOOK_ID=$(echo "$WEBHOOK_MATCH" | jq -r '.id // ""')
-      echo -e "  ${GREEN}✓ MATCH${NC} — Existing webhook URL and secret match (ID: $WEBHOOK_ID)."
+      echo -e "  ${GREEN}✓ MATCH${NC} — Existing webhook URL matches (ID: $WEBHOOK_ID); secret left unchanged."
     else
-      echo -e "  ${RED}✗ FAIL${NC} — Existing webhook URL/secret cannot be verified as matching. No resources will be changed."
+      echo -e "  ${RED}✗ FAIL${NC} — Existing webhook URL does not match $WEBHOOK_URL. No resources will be changed."
       PREFLIGHT_FAILED=true
     fi
   else
@@ -366,53 +393,65 @@ fi
 # Reuse a policy only when alert type and webhook destination both match.
 cf_api GET "/alerting/v3/policies"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  POLICY_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$POLICY_NAME" '[.result[]? | select(.name == $name)] | length')
+  # Identify the policy by what actually routes the event: its alert type and its
+  # webhook destination. The dashboard names this policy differently from the
+  # historical POLICY_NAME, so a name-only match would create a duplicate policy.
+  POLICY_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg alert "$ALERT_TYPE" --arg wid "$WEBHOOK_ID" \
+    '[.result[]? | select(.alert_type == $alert)
+       | select([.mechanisms.webhooks[]?.id] | index($wid) != null)] | length')
   if [ "$POLICY_MATCH_COUNT" -gt 1 ]; then
-    echo -e "  ${RED}✗ FAIL${NC} — Multiple matching policies exist. Resolve them manually."
+    echo -e "  ${RED}✗ FAIL${NC} — Multiple policies already target this alert type and webhook. Resolve them manually."
     PREFLIGHT_FAILED=true
   elif [ "$POLICY_MATCH_COUNT" -eq 1 ]; then
-    POLICY_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$POLICY_NAME" '.result[] | select(.name == $name)')
-    EXISTING_POLICY_ALERT=$(echo "$POLICY_MATCH" | jq -r '.alert_type // ""')
-    EXISTING_POLICY_WEBHOOK=$(echo "$POLICY_MATCH" | jq -r '[.mechanisms.webhooks[]?.id] | join(",")')
-    if [ -n "$WEBHOOK_ID" ] && [ "$EXISTING_POLICY_ALERT" = "$ALERT_TYPE" ] && [ "$EXISTING_POLICY_WEBHOOK" = "$WEBHOOK_ID" ]; then
-      POLICY_ID=$(echo "$POLICY_MATCH" | jq -r '.id // ""')
-      echo -e "  ${GREEN}✓ MATCH${NC} — Existing policy alert type and webhook match (ID: $POLICY_ID)."
-    else
-      echo -e "  ${RED}✗ FAIL${NC} — Existing policy does not match the intended alert type/webhook."
-      PREFLIGHT_FAILED=true
-    fi
+    POLICY_MATCH=$(echo "$RESP_BODY" | jq -c --arg alert "$ALERT_TYPE" --arg wid "$WEBHOOK_ID" \
+      '.result[] | select(.alert_type == $alert) | select([.mechanisms.webhooks[]?.id] | index($wid) != null)')
+    POLICY_ID=$(echo "$POLICY_MATCH" | jq -r '.id // ""')
+    EXISTING_POLICY_NAME=$(echo "$POLICY_MATCH" | jq -r '.name // ""')
+    echo -e "  ${GREEN}✓ MATCH${NC} — Existing policy '$EXISTING_POLICY_NAME' already targets this webhook (ID: $POLICY_ID)."
   else
-    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing policy named '$POLICY_NAME'."
+    echo -e "  ${GREEN}✓ CLEAR${NC} — No policy targets this alert type and webhook."
   fi
 else
   echo -e "  ${RED}✗ FAIL${NC} — Cannot list policies (HTTP $RESP_STATUS). Refusing to risk duplicates."
   PREFLIGHT_FAILED=true
 fi
 
-# Reuse an automation only when every material setting matches.
+# Reuse automations by service, policy and trigger type. Reads return
+# ansPolicyId/threshold/inactivitySeconds/triggerType, and the dashboard names
+# its automation "Issue notification", so names are not an identity check.
 cf_api GET "/workers/observability/issues/automations"
 if [ "$RESP_SUCCESS" = "true" ]; then
-  AUTOMATION_MATCH_COUNT=$(echo "$RESP_BODY" | jq --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '[.result.automations[]? | select(.name == $name and .service == $svc)] | length')
-  if [ "$AUTOMATION_MATCH_COUNT" -gt 1 ]; then
-    echo -e "  ${RED}✗ FAIL${NC} — Multiple matching automations exist. Resolve them manually."
-    PREFLIGHT_FAILED=true
-  elif [ "$AUTOMATION_MATCH_COUNT" -eq 1 ]; then
-    AUTOMATION_MATCH=$(echo "$RESP_BODY" | jq -c --arg name "$AUTOMATION_NAME" --arg svc "$WORKER_SERVICE" '.result.automations[] | select(.name == $name and .service == $svc)')
-    EXISTING_AUTOMATION_NAME=$(echo "$AUTOMATION_MATCH" | jq -r '.name // ""')
-    EXISTING_AUTOMATION_SERVICE=$(echo "$AUTOMATION_MATCH" | jq -r '.service // ""')
-    EXISTING_AUTOMATION_POLICY=$(echo "$AUTOMATION_MATCH" | jq -r '.policyId // ""')
-    EXISTING_AUTOMATION_ENABLED=$(echo "$AUTOMATION_MATCH" | jq -r '.enabled // false')
-    EXISTING_AUTOMATION_OCCURRENCES=$(echo "$AUTOMATION_MATCH" | jq -r '.afterOccurrences // ""')
-    if [ -n "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_NAME" = "$AUTOMATION_NAME" ] && [ "$EXISTING_AUTOMATION_SERVICE" = "$WORKER_SERVICE" ] && [ "$EXISTING_AUTOMATION_POLICY" = "$POLICY_ID" ] && [ "$EXISTING_AUTOMATION_ENABLED" = "true" ] && [ "$EXISTING_AUTOMATION_OCCURRENCES" = "$OCCURRENCE_THRESHOLD" ]; then
-      AUTOMATION_ID=$(echo "$AUTOMATION_MATCH" | jq -r '.id // ""')
-      echo -e "  ${GREEN}✓ MATCH${NC} — Existing automation settings match (ID: $AUTOMATION_ID)."
-    else
-      echo -e "  ${RED}✗ FAIL${NC} — Existing automation settings do not match the intended configuration."
+  for TRIGGER in occurrence_threshold recurrence_after_inactivity; do
+    TRIGGER_MATCHES=$(echo "$RESP_BODY" | jq -c --arg svc "$WORKER_SERVICE" --arg trig "$TRIGGER" --arg pid "$POLICY_ID" \
+      '[.result.automations[]? | select(.service == $svc and .triggerType == $trig and .ansPolicyId == $pid)]')
+    TRIGGER_COUNT=$(echo "$TRIGGER_MATCHES" | jq 'length')
+    if [ "$TRIGGER_COUNT" -gt 1 ]; then
+      echo -e "  ${RED}✗ FAIL${NC} — Multiple '$TRIGGER' automations exist for '$WORKER_SERVICE'. Resolve them manually."
       PREFLIGHT_FAILED=true
+    elif [ "$TRIGGER_COUNT" -eq 1 ]; then
+      MATCH=$(echo "$TRIGGER_MATCHES" | jq -c '.[0]')
+      MATCH_ID=$(echo "$MATCH" | jq -r '.id // ""')
+      MATCH_NAME=$(echo "$MATCH" | jq -r '.name // ""')
+      MATCH_ENABLED=$(echo "$MATCH" | jq -r '.enabled // false')
+      if [ "$TRIGGER" = "occurrence_threshold" ]; then
+        MATCH_SETTING=$(echo "$MATCH" | jq -r '.threshold // ""')
+        EXPECTED_SETTING="$OCCURRENCE_THRESHOLD"
+        AUTOMATION_ID="$MATCH_ID"
+      else
+        MATCH_SETTING=$(echo "$MATCH" | jq -r '.inactivitySeconds // ""')
+        EXPECTED_SETTING="$RECURRENCE_INACTIVITY_SECONDS"
+        RECURRENCE_AUTOMATION_ID="$MATCH_ID"
+      fi
+      if [ "$MATCH_ENABLED" = "true" ] && [ "$MATCH_SETTING" = "$EXPECTED_SETTING" ]; then
+        echo -e "  ${GREEN}✓ MATCH${NC} — Existing '$TRIGGER' automation '$MATCH_NAME' matches (ID: $MATCH_ID)."
+      else
+        echo -e "  ${RED}✗ FAIL${NC} — Existing '$TRIGGER' automation '$MATCH_NAME' is disabled or has setting '$MATCH_SETTING' (expected '$EXPECTED_SETTING')."
+        PREFLIGHT_FAILED=true
+      fi
+    else
+      echo -e "  ${GREEN}✓ CLEAR${NC} — No '$TRIGGER' automation for '$WORKER_SERVICE'."
     fi
-  else
-    echo -e "  ${GREEN}✓ CLEAR${NC} — No existing automation for '$WORKER_SERVICE'."
-  fi
+  done
 else
   echo -e "  ${RED}✗ FAIL${NC} — Cannot list automations (HTTP $RESP_STATUS). Refusing to risk duplicates."
   PREFLIGHT_FAILED=true
@@ -433,10 +472,10 @@ print_header "Step 1/6: Create webhook destination"
 if [ -n "$WEBHOOK_ID" ] && [ "$WEBHOOK_ID" != "null" ]; then
   record_result "Webhook destination" "PASS" "reusing existing (ID: ${WEBHOOK_ID})"
 else
-  PAYLOAD=$(jq -n \\
-    --arg name "$WEBHOOK_NAME" \\
-    --arg url "$WEBHOOK_URL" \\
-    --arg secret "$WEBHOOK_SECRET" \\
+  PAYLOAD=$(jq -n \
+    --arg name "$WEBHOOK_NAME" \
+    --arg url "$WEBHOOK_URL" \
+    --arg secret "$WEBHOOK_SECRET" \
     '{name: $name, url: $url, secret: $secret}')
 
   cf_api POST "/alerting/v3/destinations/webhooks" "$PAYLOAD"
@@ -465,11 +504,11 @@ if [ -n "$POLICY_ID" ] && [ "$POLICY_ID" != "null" ]; then
   record_result "Notification policy" "PASS" "reusing existing (ID: ${POLICY_ID})"
 else
   # CORRECTED: webhook IDs go inside "mechanisms.webhooks", not top-level "webhooks"
-  PAYLOAD=$(jq -n \\
-    --arg name "$POLICY_NAME" \\
-    --arg desc "$POLICY_DESCRIPTION" \\
-    --arg alert "$ALERT_TYPE" \\
-    --arg wid "$WEBHOOK_ID" \\
+  PAYLOAD=$(jq -n \
+    --arg name "$POLICY_NAME" \
+    --arg desc "$POLICY_DESCRIPTION" \
+    --arg alert "$ALERT_TYPE" \
+    --arg wid "$WEBHOOK_ID" \
     '{name: $name, description: $desc, enabled: true, alert_type: $alert, mechanisms: {webhooks: [{id: $wid}]}}')
 
   cf_api POST "/alerting/v3/policies" "$PAYLOAD"
@@ -492,16 +531,16 @@ fi
 # Step 3: Create issue automation (if not exists)
 # ---------------------------------------------------------------------------
 
-print_header "Step 3/6: Create issue automation"
+print_header "Step 3/6: Reconcile issue automations (occurrence + recurrence)"
 
 if [ -n "$AUTOMATION_ID" ] && [ "$AUTOMATION_ID" != "null" ]; then
-  record_result "Issue automation" "PASS" "reusing existing (ID: ${AUTOMATION_ID})"
+  record_result "Occurrence-threshold automation" "PASS" "reusing existing (ID: ${AUTOMATION_ID})"
 else
-  PAYLOAD=$(jq -n \\
-    --arg name "$AUTOMATION_NAME" \\
-    --arg service "$WORKER_SERVICE" \\
-    --arg pid "$POLICY_ID" \\
-    --argjson occ "$OCCURRENCE_THRESHOLD" \\
+  PAYLOAD=$(jq -n \
+    --arg name "$AUTOMATION_NAME" \
+    --arg service "$WORKER_SERVICE" \
+    --arg pid "$POLICY_ID" \
+    --argjson occ "$OCCURRENCE_THRESHOLD" \
     '{name: $name, enabled: true, service: $service, afterOccurrences: $occ, policyId: $pid}')
 
   cf_api POST "/workers/observability/issues/automations" "$PAYLOAD"
@@ -510,12 +549,40 @@ else
     # CORRECTED: automation ID is at .result.automation.id, not .result.id
     AUTOMATION_ID=$(echo "$RESP_BODY" | jq -r '.result.automation.id')
     AUTOMATION_CREATED=true
-    record_result "Issue automation" "PASS" "created (ID: ${AUTOMATION_ID})"
-    record_resource "Issue automation: ${AUTOMATION_NAME} on ${WORKER_SERVICE} (ID: ${AUTOMATION_ID})"
+    record_result "Occurrence-threshold automation" "PASS" "created (ID: ${AUTOMATION_ID})"
+    record_resource "Occurrence-threshold automation: ${AUTOMATION_NAME} on ${WORKER_SERVICE} (ID: ${AUTOMATION_ID})"
   else
     ERR=$(echo "$RESP_BODY" | jq -r '.errors[0].message // "unknown error"')
-    record_result "Issue automation" "FAIL" "HTTP ${RESP_STATUS}: ${ERR}"
-    echo -e "  ${RED}Cannot continue without an automation. Aborting.${NC}"
+    record_result "Occurrence-threshold automation" "FAIL" "HTTP ${RESP_STATUS}: ${ERR}"
+    echo -e "  ${RED}Cannot continue without an occurrence automation. Aborting.${NC}"
+    print_summary
+    exit 1
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+# Step 3b: Reconcile the recurrence automation
+# ---------------------------------------------------------------------------
+# The occurrence-threshold automation runs once per issue. This second
+# automation forwards an existing issue that returns after the configured quiet
+# period, which is what makes forwarding reliable for recurring or reopened
+# issues. It reuses the same policy and destination, so no credential changes.
+
+if [ -n "$RECURRENCE_AUTOMATION_ID" ] && [ "$RECURRENCE_AUTOMATION_ID" != "null" ]; then
+  record_result "Recurrence automation" "PASS" "reusing existing (ID: ${RECURRENCE_AUTOMATION_ID})"
+else
+  PAYLOAD=$(jq -n --arg name "$RECURRENCE_AUTOMATION_NAME" --arg service "$WORKER_SERVICE" --arg pid "$POLICY_ID" --argjson inactivity "$RECURRENCE_INACTIVITY_SECONDS" '{name: $name, enabled: true, service: $service, afterInactivitySeconds: $inactivity, policyId: $pid}')
+
+  cf_api POST "/workers/observability/issues/automations" "$PAYLOAD"
+
+  if [ "$RESP_SUCCESS" = "true" ]; then
+    RECURRENCE_AUTOMATION_ID=$(echo "$RESP_BODY" | jq -r '.result.automation.id')
+    record_result "Recurrence automation" "PASS" "created (ID: ${RECURRENCE_AUTOMATION_ID})"
+    record_resource "Recurrence automation: ${RECURRENCE_AUTOMATION_NAME} on ${WORKER_SERVICE} (ID: ${RECURRENCE_AUTOMATION_ID})"
+  else
+    ERR=$(echo "$RESP_BODY" | jq -r '.errors[0].message // "unknown error"')
+    record_result "Recurrence automation" "FAIL" "HTTP ${RESP_STATUS}: ${ERR}"
+    echo -e "  ${RED}Cannot continue without a recurrence automation. Aborting.${NC}"
     print_summary
     exit 1
   fi
