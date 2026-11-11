@@ -6,7 +6,7 @@
 
 **Status**: In progress
 
-**Input**: Consolidate PR submission governance into one dedicated procedure, retain concise pre-work Gatekeeper guidance in AGENTS.md, remove duplicate/conflicting submission details from AGENTS.md, and keep AGENTS.md at or below the 300-line target.
+**Input**: Consolidate PR submission governance into one dedicated procedure, retain concise pre-work Gatekeeper guidance in AGENTS.md, remove duplicate/conflicting submission details from AGENTS.md, remove the obsolete root PR_SUMMARY.md, and keep AGENTS.md at or below the 300-line target.
 
 ## User Scenarios & Testing
 
@@ -35,11 +35,11 @@ Before making changes, an agent understands what each applicable repository Gate
 
 The repository keeps AGENTS.md concise and authoritative while avoiding repeated procedural instructions.
 
-**Independent Test**: Count AGENTS.md lines and inspect its PR handoff reference and the existing root PR_SUMMARY.md.
+**Independent Test**: Count AGENTS.md lines and inspect its PR handoff reference and the active PR_SUBMISSION.md procedure.
 
 **Acceptance Scenarios**:
 1. AGENTS.md contains a direct reference to PR_SUBMISSION.md, not a duplicate procedure.
-2. The existing root PR_SUMMARY.md remains unchanged as a completed task report.
+2. The obsolete root PR_SUMMARY.md is removed; PR_SUBMISSION.md is the reusable submission procedure.
 3. AGENTS.md is no longer than 300 lines.
 
 ## Requirements
@@ -53,7 +53,7 @@ The repository keeps AGENTS.md concise and authoritative while avoiding repeated
 - **FR-007**: PR creation MUST create one regular, non-draft PR against the intended source and base, leaving it open and unmerged for the human owner.
 - **FR-008**: After successful creation, the agent MUST stop; no later commits, pushes, description edits, comments, status reports, polling, monitoring, or review-response activity is allowed.
 - **FR-009**: Later gatekeeper/reviewer findings MUST become a separately authorized follow-up task and PR.
-- **FR-010**: The existing root PR_SUMMARY.md MUST remain unchanged; it is a completed task report, not the reusable submission procedure.
+- **FR-010**: The obsolete root PR_SUMMARY.md MUST be removed; PR_SUBMISSION.md replaces its former procedural role.
 - **FR-011**: Historical Spec Kit records and unrelated governance content MUST remain unchanged.
 
 ## Key Entities
@@ -68,11 +68,11 @@ The repository keeps AGENTS.md concise and authoritative while avoiding repeated
 - **SC-002**: AGENTS.md has one clear handoff reference and no copied PR submission procedure.
 - **SC-003**: Gatekeeper preflight explicitly requires workflow inspection before implementation.
 - **SC-004**: PR_SUBMISSION.md covers all required description fields, correct head/base, non-draft creation, and the immediate hard stop.
-- **SC-005**: The existing root PR_SUMMARY.md is unchanged.
+- **SC-005**: Root PR_SUMMARY.md is absent and PR_SUBMISSION.md is the active submission procedure.
 - **SC-006**: No unrelated application, workflow, integration, secret, or deployment changes are introduced.
 
 ## Assumptions
 
-- Root PR_SUMMARY.md is a completed task report and must not be overwritten.
-- The new reusable PR procedure is named PR_SUBMISSION.md, as previously agreed.
+- Root PR_SUMMARY.md was an obsolete procedural report and has been intentionally removed.
+- The reusable PR procedure is named PR_SUBMISSION.md.
 - Repository automation runs PR-triggered Gatekeepers after creation; the agent does not monitor or modify the submitted PR in response.
