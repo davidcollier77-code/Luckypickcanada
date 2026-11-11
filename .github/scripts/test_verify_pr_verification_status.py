@@ -256,6 +256,48 @@ class CurrentHeadAuditTests(unittest.TestCase):
         self.assertEqual(conditional["status"], "NOT RUN")
         self.assertIn("NOT RUN", auditor.render_markdown(report))
 
+    def test_parallel_visual_qa_shards_must_all_pass(self):
+        runs = green_checks() + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run("Visual QA (shard 2/2)", run_id=22),
+        ]
+        report = auditor.audit_verification(
+            pull_request(), [commit(HEAD, "test: visual change")], runs
+        )
+
+        conditional = report["conditional_checks"][0]
+        self.assertEqual(conditional["status"], "PASS")
+        self.assertEqual(report["other_checks"], [])
+
+    def test_one_failed_visual_qa_shard_cannot_hide_behind_a_green_sibling(self):
+        runs = green_checks() + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run(
+                "Visual QA (shard 2/2)", conclusion="failure", run_id=22
+            ),
+        ]
+        report = auditor.audit_verification(
+            pull_request(), [commit(HEAD, "test: visual change")], runs
+        )
+
+        conditional = report["conditional_checks"][0]
+        self.assertEqual(conditional["status"], "FAIL")
+        self.assertIn("shard 2/2", conditional["detail"])
+        self.assertEqual(report["other_checks"], [])
+
+    def test_a_pending_visual_qa_shard_is_not_reported_as_passed(self):
+        runs = green_checks() + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run(
+                "Visual QA (shard 2/2)", status="in_progress", conclusion="", run_id=22
+            ),
+        ]
+        report = auditor.audit_verification(
+            pull_request(), [commit(HEAD, "test: visual change")], runs
+        )
+
+        self.assertEqual(report["conditional_checks"][0]["status"], "PENDING")
+
     def test_head_absent_from_commit_list_fails_closed(self):
         report = auditor.audit_verification(
             pull_request(),

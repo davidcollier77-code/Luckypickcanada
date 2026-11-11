@@ -12,3 +12,6 @@
 /.github/workflows/validate-open-next-repair.yml @davidcollier77-code
 /.github/workflows/refresh-docs.yml @davidcollier77-code
 /scripts/refresh-docs.js @davidcollier77-code
+/.github/scripts/agents_md_protection.py @davidcollier77-code
+/.github/scripts/test_agents_md_protection.py @davidcollier77-code
+/__tests__/agent-governance-single-source.test.js @davidcollier77-code

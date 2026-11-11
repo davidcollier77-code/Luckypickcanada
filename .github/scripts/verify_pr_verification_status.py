@@ -61,7 +61,12 @@ REQUIRED_CHECKS = (
 # Visual QA, whose own workflow classifies documentation-only changes). They are
 # always audited and reported as NOT RUN when they did not run, but they never
 # count as a passed verification or silently satisfy a requirement.
+#
+# Visual QA runs Playwright in parallel shards. Each shard is a separate check
+# named after the group, so every shard is audited and any failed shard is
+# reported as FAIL instead of hiding behind a green sibling.
 CONDITIONAL_CHECKS = ("Visual QA",)
+CONDITIONAL_CHECK_PREFIXES = ("Visual QA",)
 
 REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 SKIP_CHECKS_TRAILER = re.compile(r"^\s*skip-checks:\s*true\s*$", re.IGNORECASE)
@@ -129,6 +134,69 @@ def _latest_run(runs):
             int(run.get("id") or 0),
         ),
     )
+
+
+def is_conditional_check_name(name):
+    """Match a conditional check or one of its parallel shards by prefix."""
+    if name in CONDITIONAL_CHECKS:
+        return True
+    return any(name.startswith(prefix) for prefix in CONDITIONAL_CHECK_PREFIXES)
+
+
+def is_audited_check_name(name):
+    return name in REQUIRED_CHECKS or is_conditional_check_name(name)
+
+
+def _audit_conditional(name, head_runs, stale_runs, head_directives):
+    """Audit a conditional check and every shard that reports under its name.
+
+    A single green shard must never stand in for the whole group: one failed or
+    still-running shard makes the group FAIL or PENDING.
+    """
+    if not head_runs:
+        return _audit_check(name, head_runs, stale_runs, head_directives)
+
+    evaluated = [(run, check_status(run)) for run in head_runs]
+    failures = [
+        (run, detail)
+        for run, (status, detail) in evaluated
+        if status == "FAIL"
+    ]
+    pending = [
+        (run, detail)
+        for run, (status, detail) in evaluated
+        if status == "PENDING"
+    ]
+    if failures:
+        status = "FAIL"
+        detail = "matching check(s) failed: %s" % "; ".join(
+            "%s (%s)" % (run.get("name") or name, why) for run, why in failures
+        )
+    elif pending:
+        status = "PENDING"
+        detail = "matching check(s) still running: %s" % "; ".join(
+            "%s (%s)" % (run.get("name") or name, why) for run, why in pending
+        )
+    elif all(why == "PASS" for _, (why, _detail) in evaluated):
+        status = "PASS"
+        detail = "all %d matching check(s) succeeded" % len(evaluated)
+    else:
+        status = "NOT RUN"
+        detail = "matching check(s) did not produce verification: %s" % "; ".join(
+            "%s (%s)" % (run.get("name") or name, why) for run, (why, _detail) in evaluated
+        )
+
+    latest = _latest_run(head_runs)
+    conclusions = sorted(
+        {(run.get("conclusion") or "").lower() for run in head_runs if run.get("conclusion")}
+    )
+    return {
+        "name": name,
+        "status": status,
+        "conclusion": ",".join(conclusions),
+        "head_sha": latest.get("head_sha") or "",
+        "detail": detail,
+    }
 
 
 def _audit_check(name, head_runs, stale_runs, head_directives):
@@ -207,6 +275,9 @@ def audit_verification(pr, commits, check_runs):
     def runs_named(name, collection):
         return [run for run in collection if (run.get("name") or "") == name]
 
+    def runs_in_group(name, collection):
+        return [run for run in collection if is_conditional_check_name(run.get("name") or "")]
+
     required = []
     for name in REQUIRED_CHECKS:
         record = _audit_check(
@@ -220,20 +291,19 @@ def audit_verification(pr, commits, check_runs):
 
     conditional = []
     for name in CONDITIONAL_CHECKS:
-        record = _audit_check(
+        record = _audit_conditional(
             name,
-            runs_named(name, on_head),
-            runs_named(name, stale),
+            runs_in_group(name, on_head),
+            runs_in_group(name, stale),
             head_directives,
         )
         record["blocking"] = False
         conditional.append(record)
 
-    audited_names = set(REQUIRED_CHECKS) | set(CONDITIONAL_CHECKS)
     other_checks = []
     for run in on_head:
         name = run.get("name") or ""
-        if name in audited_names:
+        if is_audited_check_name(name):
             continue
         status, detail = check_status(run)
         other_checks.append(
@@ -556,8 +626,7 @@ def wait_for_current_head(
         unsettled = [
             run
             for run in on_head
-            if (run.get("name") or "")
-            in set(REQUIRED_CHECKS) | set(CONDITIONAL_CHECKS)
+            if is_audited_check_name(run.get("name") or "")
             and (run.get("status") or "").lower() != "completed"
         ]
         all_required_observed = set(REQUIRED_CHECKS).issubset(

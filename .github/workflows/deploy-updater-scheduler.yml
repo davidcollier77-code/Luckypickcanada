@@ -49,6 +49,10 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: '26'
+          # Reuse the pnpm content-addressed store; the frozen lockfile still
+          # decides exactly which packages are linked.
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v4.0.0
@@ -108,6 +112,10 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: '26'
+          # Reuse the pnpm content-addressed store; the frozen lockfile still
+          # decides exactly which packages are linked.
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Setup pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v4.0.0
         with:

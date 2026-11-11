@@ -31,6 +31,7 @@ jobs:
   lint:
     name: DevSkim scan and Security upload
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read
@@ -90,6 +91,7 @@ jobs:
     needs: lint
     if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Write permissions are confined to the trusted main/schedule-only job.
     permissions:
       contents: write

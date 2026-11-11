@@ -5,10 +5,22 @@ on:
   pull_request:
   merge_group:
 
+permissions:
+  contents: read
+
+# A newer commit supersedes an in-flight build validation for the same pull
+# request. The newest commit is the one that must be validated, and cancelling
+# the superseded run frees the runner for it. The validation steps themselves
+# are unchanged.
+concurrency:
+  group: validate-open-next-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Validate OpenNext build artifacts
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -17,6 +29,10 @@ jobs:
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: '26'
+          # Reuse the pnpm content-addressed store between runs. The frozen
+          # lockfile still decides exactly which packages are linked.
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup pnpm
         uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
@@ -55,24 +71,24 @@ jobs:
           if [ ! -d "$css_dir" ]; then
             echo "COMPILED CSS DIR MISSING";
             find .open-next/assets -maxdepth 4 -type d | sort | head -100 || true;
-            exit 1;
+            exit 1
           fi
 
           css_file="$(find "$css_dir" -type f -name '*.css' -print -quit)"
           if [ -z "$css_file" ]; then
             echo "NO GENERATED CSS FILE FOUND";
             find "$css_dir" -maxdepth 2 -type f -print | sort | head -100 || true;
-            exit 1;
+            exit 1
           fi
 
           if grep -R -n -F '@tailwind base;' "$css_dir"; then
             echo "UNPROCESSED TAILWIND DIRECTIVE DETECTED";
-            exit 1;
+            exit 1
           else
             grep_status=$?
             if [ "$grep_status" -gt 1 ]; then
               echo "TAILWIND CSS SCAN FAILED (grep exit $grep_status)";
-              exit "$grep_status";
+              exit "$grep_status"
             fi
           fi
 
@@ -85,7 +101,7 @@ jobs:
           else
             echo "WORKER MISSING";
             ls -la .open-next || true;
-            exit 1;
+            exit 1
           fi
 
       - name: Verify .open-next/assets directory exists
@@ -95,7 +111,7 @@ jobs:
           else
             echo "ASSETS DIR MISSING";
             ls -la .open-next || true;
-            exit 1;
+            exit 1
           fi
 
       - name: Wrangler build validation (no deploy)
