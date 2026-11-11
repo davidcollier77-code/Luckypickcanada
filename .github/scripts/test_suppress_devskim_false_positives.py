@@ -1846,6 +1846,102 @@ class LocalProbeOriginSuppressionTests(unittest.TestCase):
             sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
             self.assertEqual(suppressions.process_sarif(sarif, root), 0)
 
+    def test_specs_performance_benchmark_path_allowlist_is_exact(self):
+        accepted = (
+            "specs/134-crystal-ball-experience-improvements/perf-baseline.json",
+            "specs/134-crystal-ball-experience-improvements/perf-after.json",
+        )
+        rejected = (
+            "specs/134-crystal-ball-experience-improvements/other.json",
+            "specs/134-crystal-ball-experience-improvements/perf-current.json",
+            "specs/134-crystal-ball-experience-improvements/nested/perf-after.json",
+            "specs/experimental-feature/perf-after.json",
+            "specs/perf-after.json",
+            "specs/134-crystal-ball-experience-improvements/perf-after.json.bak",
+            "artifacts/specs/134-crystal-ball-experience-improvements/perf-after.json",
+        )
+
+        for relative_path in accepted:
+            with self.subTest(relative_path=relative_path):
+                self.assertTrue(suppressions.is_local_specs_benchmark_path(relative_path))
+                self.assertTrue(suppressions.is_local_probe_origin_path(relative_path))
+                self.assertTrue(suppressions.is_allowed_relative_path(Path(relative_path)))
+
+        for relative_path in rejected:
+            with self.subTest(relative_path=relative_path):
+                self.assertFalse(suppressions.is_local_specs_benchmark_path(relative_path))
+                self.assertFalse(suppressions.is_local_probe_origin_path(relative_path))
+                self.assertFalse(suppressions.is_allowed_relative_path(Path(relative_path)))
+
+    def test_specs_performance_benchmark_loopback_urls_are_suppressed(self):
+        for filename in ("perf-baseline.json", "perf-after.json"):
+            relative_path = (
+                "specs/134-crystal-ball-experience-improvements/" + filename
+            )
+            source_text = (
+                "{\n"
+                f'  "base": "{self._loopback_url(3007)}",\n'
+                '  "label": "measurement"\n'
+                "}\n"
+            )
+            line = source_text.splitlines()[1]
+            token_index = line.index(self.LOOPBACK)
+            region = self._region(source_text, 2, self.LOOPBACK, token_index)
+
+            with self.subTest(relative_path=relative_path):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    self._write(root, relative_path, source_text)
+                    self.assertEqual(
+                        suppressions.resolve_safe_artifact_uri(relative_path, root),
+                        (root / relative_path).resolve(),
+                    )
+                    sarif = {
+                        "runs": [{
+                            "results": [self._result(relative_path, region)]
+                        }]
+                    }
+                    self.assertEqual(suppressions.process_sarif(sarif, root), 1)
+                    self.assertEqual(
+                        sarif["runs"][0]["results"][0]["suppressions"][0]["kind"],
+                        "external",
+                    )
+
+    def test_specs_performance_benchmark_rejects_unreviewed_content_and_paths(self):
+        cases = (
+            (
+                "specs/134-crystal-ball-experience-improvements/perf-after.json",
+                '{\n  "measuredIp": "' + self.LOOPBACK + '"\n}\n',
+            ),
+            (
+                "specs/134-crystal-ball-experience-improvements/other.json",
+                '{\n  "base": "' + self._loopback_url(3007) + '"\n}\n',
+            ),
+            (
+                "specs/134-crystal-ball-experience-improvements/perf-baseline.json",
+                '{\n  "base": "' + self._loopback_url(3007) + '"\n',
+            ),
+        )
+        for relative_path, source_text in cases:
+            line_number = 2
+            line = source_text.splitlines()[line_number - 1]
+            token_index = line.index(self.LOOPBACK)
+            region = self._region(source_text, line_number, self.LOOPBACK, token_index)
+
+            with self.subTest(relative_path=relative_path, source_text=source_text):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    self._write(root, relative_path, source_text)
+                    sarif = {
+                        "runs": [{
+                            "results": [self._result(relative_path, region)]
+                        }]
+                    }
+                    self.assertEqual(suppressions.process_sarif(sarif, root), 0)
+                    self.assertNotIn(
+                        "suppressions", sarif["runs"][0]["results"][0]
+                    )
+
     def test_share_image_revoke_timer_is_suppressed_only_for_the_exact_statement(self):
         positive_line = "    window.setTimeout(() => URL.revokeObjectURL(url), 1000);"
         negative_line = "    window.setTimeout(() => refresh(), 100);"
