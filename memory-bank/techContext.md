@@ -2,7 +2,7 @@
 
 ## Application Stack
 - **Framework:** Next.js App Router 16.4.3, React 19.3.1 and TypeScript.
-- **Runtime:** Node.js 22.x.
+- **Runtime:** Node.js 26.x.
 - **Package manager:** pnpm 10.30.3. Use the committed lockfile and pnpm; never use npm ci.
 - **Styling and motion:** Tailwind CSS 4, Framer Motion, GSAP and existing Canvas-based visual effects.
 - **Audio:** Howler and browser Web Audio API where already used.

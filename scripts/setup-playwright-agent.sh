@@ -32,12 +32,12 @@ USAGE
 done
 
 if ! command -v node >/dev/null 2>&1; then
-  printf 'Node.js is required; this repository expects Node.js 22.x.\n' >&2
+  printf 'Node.js is required; this repository expects Node.js 26.x.\n' >&2
   exit 1
 fi
 node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
-if [[ "$node_major" -ne 22 ]]; then
-  printf 'This repository requires Node.js 22.x (found %s).\n' "$(node --version)" >&2
+if [[ "$node_major" -ne 26 ]]; then
+  printf 'This repository requires Node.js 26.x (found %s).\n' "$(node --version)" >&2
   exit 1
 fi
 

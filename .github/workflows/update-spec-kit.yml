@@ -96,7 +96,7 @@ jobs:
         if: steps.daily_guard.outputs.skip != 'true'
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: '22.x'
+          node-version: '26.x'
 
       - name: Install pnpm
         if: steps.daily_guard.outputs.skip != 'true'

@@ -2,6 +2,15 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-11 — Node.js 26 migration
+- Moved the declared local/CI runtime from Node.js 22 to 26 across `package.json`, `.nvmrc`, six GitHub Actions workflows,
+  the Playwright agent setup guard, and the updater-scheduler package and README.
+- Updated the Visual QA workflow assertion and Memory Bank technical context; left historical Spec Kit and artifact records intact.
+- Verified on Node.js 26.13.0: 497 unit tests, type check, `./freebuff-verify.sh`, production build, Cloudflare/OpenNext build,
+  and a Wrangler dry-run. Production measured 358.16 MiB after the Next build and OpenNext 97.57 MiB, both below the 495 MiB cap.
+- No dependency, lockfile, application, visual, integration, secret, binding, or deployment-trigger change. Evidence is in
+  `specs/135-nodejs-26-migration/` and `artifacts/node26-migration/verification.md`.
+
 ## 2026-11-10 — Crystal Ball experience and loading performance
 - Added a fourth greeting and a dedicated daily greeting selector that keeps the day stable and never repeats the previous
   day's greeting, typed above the title with the existing golden maple-leaf cursor.

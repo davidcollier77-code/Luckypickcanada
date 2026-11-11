@@ -29,7 +29,7 @@
     "stripe": "^22.5.0"
   },
   "engines": {
-    "node": "22.x"
+    "node": "26.x"
   },
   "devDependencies": {
     "@axe-core/react": "^4.14.0",

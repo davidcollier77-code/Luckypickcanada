@@ -56,7 +56,7 @@ The body is redacted (the Worker token, `Bearer` values and credential-shaped st
 
 ## Verification
 
-Requires Node.js 22 or newer; no runtime dependencies are added.
+Requires Node.js 26 or newer; no runtime dependencies are added.
 
 ```sh
 node --test workers/updater-scheduler/test/index.node-test.mjs

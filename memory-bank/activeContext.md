@@ -1,43 +1,45 @@
-# Active Context — Crystal Ball Experience Improvements and Performance
+# Active Context — Node.js 26 Migration
 
-- **Updated:** 2026-11-10
+- **Updated:** 2026-11-11
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Base branch:** main (base commit `f4128c15`)
-- **Task branch:** freebuff/262545961f9e30358501fc70
-- **Spec Kit feature:** specs/134-crystal-ball-experience-improvements
+- **Base branch:** main (base commit `bee5dec9`)
+- **Task branch:** freebuff/261525f05a3f083e00c056f2
+- **Spec Kit feature:** specs/135-nodejs-26-migration
 
 ## Current Task
 
-Improve the daily Crystal Ball experience — four daily greetings with no consecutive-day repeat, a polished follow-up panel/answer, preserved fortune and storage behaviour, no separate Canadian quote — and reduce its loading cost without reducing artwork, audio or animation quality.
+Migrate the repository's declared local and CI Node.js runtime from 22 to 26, including package metadata, `.nvmrc`, GitHub Actions workflows, repository tooling, the updater-scheduler package, and the related workflow assertion. No dependency upgrades, no application or visual changes, and no deployment-path or integration changes.
 
 ## Verified Findings
 
-- The Crystal Ball rendered no separate Canadian quote before this task; source and history were checked and the Luck Generator quote collections (`components/LuckyGenerator.tsx`, `components/DailyResonance.tsx`) are untouched.
-- The three Crystal Ball WAVs (923,210 bytes total) were preloaded on mount, before the visitor showed any intent to generate.
-- The fortune reveal re-rendered every character span on each typing tick.
-- The artwork already ships AVIF first (716w/420w) with WebP and PNG fallbacks at 716×875; only fetch priority changed.
+- Active Node.js 22 declarations were in `package.json`, `.nvmrc`, six GitHub Actions workflows, `scripts/setup-playwright-agent.sh`, the updater-scheduler package and README, the Visual QA workflow assertion test, and the Memory Bank technical context.
+- Installed tooling supports Node.js 26: Next.js 16.4.3 (`node >=20.9.0`), Wrangler 4.148.0 (`node >=22.0.0`), Playwright 1.64.1 (`node >=20`), Vitest 5.0.0 (`>=26.0.0`), Sharp 0.35.5 (`node >=20.9.0`).
+- Historical `specs/` and `artifacts/` records that mention Node.js 22 are evidence of earlier tasks and are intentionally unchanged.
+- Cloudflare hosting deploys through GitHub Actions and Wrangler/OpenNext; the Workers runtime is controlled by `compatibility_date` and `nodejs_compat`, which are unchanged.
 
 ## Implementation
 
-- New `app/crystal-ball-client/greetings.js`: four greetings, a separate greeting storage key, same-day reuse, and uniform selection among the three greetings that differ from the previous day's.
-- `CrystalBall.tsx`/CSS: greeting moved above the title in a high-contrast panel and typed with the existing `GoldenLeaf` cursor; follow-up offered as a button after the reveal, opening a gold/glass panel with a roomy labelled textarea, character count, gold submit and dismiss; the answer types with the same leaf cursor; original fortune, question and answer remain visible.
-- `app/lib/audio.js`: compressed MP3 first with the WAV as fallback; audio preparation now starts on interaction intent instead of page load.
-- `next.config.mjs`: audio files join the existing immutable asset cache header.
-- The fortune/answer reading now memoizes words so only the active word re-renders.
-- Daily-usage storage and every allowance rule are unchanged.
+- `package.json` declares `engines.node: "26.x"`; `.nvmrc` contains `26`.
+- All six Node-configured workflows use Node.js 26 with updated step labels; pinned action SHAs, ordering, and workflow behaviour are unchanged.
+- `scripts/setup-playwright-agent.sh` requires Node.js major 26; the updater-scheduler package declares `>=26` and its README states Node.js 26.
+- The Visual QA workflow assertion test and `memory-bank/techContext.md` reflect Node.js 26.
 
 ## Verification Status
 
+- **PASS:** `node --test workers/updater-scheduler/test/index.node-test.mjs` — 17/17.
+- **PASS:** `pnpm exec vitest run __tests__/visual-qa-chromium-cache.test.js` — 13/13.
 - **PASS:** `pnpm exec tsc --noEmit`.
-- **PASS:** Focused Vitest — greetings, audio assets and daily usage (29 tests).
-- **PASS:** Full Vitest — 57 files / 497 tests.
-- **PASS:** Focused Playwright on desktop, mobile-390 and mobile-412 — Crystal Ball artwork, greeting, interactions and daily-limit specs (27 tests, after the assertion fix).
-- **PASS:** `./freebuff-verify.sh` exit 0 (install, Spec Kit gate, verification-integrity tests, type check, build, docs tests: 36 passed).
-- **PASS:** Production build 426,066,966 bytes (406.33 MiB) on the verify run; a clean build measured 335,899,824 bytes (320.34 MiB). Both are below the 495 MiB cap.
-- **PASS:** Production page check — background art present, greeting above the title, AVIF artwork served, zero audio requests on load, no HTTP responses ≥ 400.
-- **PASS:** Final diff audit (`git diff --check` clean; only the reported paths changed).
-- **PENDING (post-submission):** the repository's external visual-regression and security workflows run after the PR is opened and are not claimed as local evidence.
+- **PASS:** `bash scripts/setup-playwright-agent.sh`.
+- **PASS:** `pnpm test` — 57 files, 497 tests.
+- **PASS:** `./freebuff-verify.sh` — Spec Kit gate, integrity tests, type check, production build, docs tests 36/36.
+- **PASS:** `pnpm exec opennextjs-cloudflare build` — worker and assets generated.
+- **PASS:** `pnpm exec wrangler deploy --dry-run --config ./wrangler.jsonc` — all bindings resolved.
+- **PASS:** Size guard — production 358.16 MiB after Next build (369.27 MiB after OpenNext rebuild), OpenNext 97.57 MiB, all below 495 MiB.
+- **N/A:** Playwright visual regression — no rendered file changed; unit tests and both builds passed.
+- **NOT RUN:** Live Neon/Stripe/Resend calls — require production credentials and create external side effects; no deployment was performed.
+
+Evidence: `artifacts/node26-migration/verification.md`.
 
 ## Next Action
 
-Leave the task PR open and unmerged for owner review. Do not merge, deploy or enable auto-merge.
+Complete the tasks in `specs/135-nodejs-26-migration/tasks.md`, record exact verification evidence, and leave any repository submission open and unmerged for owner review.
