@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened]
     # Only create this workflow/check when a PR touches one of the protected files.
     paths:
+      - 'AGENTS.md'
       - 'next.config.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -42,6 +43,7 @@ jobs:
           set -euo pipefail
 
           protected_files=(
+            "AGENTS.md"
             "next.config.mjs"
             "package.json"
             "pnpm-lock.yaml"

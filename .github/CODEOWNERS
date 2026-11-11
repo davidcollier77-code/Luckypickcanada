@@ -1,4 +1,5 @@
 /.github/CODEOWNERS @davidcollier77-code
+/AGENTS.md @davidcollier77-code
 /next.config.mjs @davidcollier77-code
 /package.json @davidcollier77-code
 /pnpm-lock.yaml @davidcollier77-code

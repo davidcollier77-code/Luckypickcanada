@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 const root = process.cwd();
 const agentsPath = join(root, 'AGENTS.md');
+const prSubmissionPath = join(root, 'PR_SUBMISSION.md');
 const obsoleteEntryPoint = join(root, '.freebuff', 'freebuff.md');
 const readAgents = () => readFileSync(agentsPath, 'utf8');
 const taskGroups = [
@@ -18,49 +19,60 @@ const taskGroups = [
 ];
 
 describe('single-source agent governance', () => {
-  it('uses AGENTS.md as the only general repository-governance entrypoint', () => {
+  it('uses AGENTS.md as the current repository-governance entrypoint', () => {
     const agents = readAgents();
 
-    expect(agents).toContain(
-      'single authoritative workflow and safety policy for every coding agent, including Freebuff',
-    );
+    expect(agents).toContain('This file is the primary repository instruction for Freebuff.');
+    expect(agents).toContain('PR submission: "PR_SUBMISSION.md" is mandatory.');
     expect(agents).not.toContain('.freebuff/freebuff.md');
     expect(existsSync(obsoleteEntryPoint)).toBe(false);
+    expect(existsSync(prSubmissionPath)).toBe(true);
+    expect(agents).toContain('A — PREPARE AND PLAN');
+    expect(agents).toContain('B — IMPLEMENT');
+    expect(agents).toContain('C — VERIFY AND SUBMIT');
   });
 
-  it('defines the Connected Integrations section and preserves its access rules', () => {
+  it('checks the current repository QA and implementation requirements', () => {
     const agents = readAgents();
-    const start = agents.indexOf('### Connected Integrations');
-    const end = agents.indexOf('### PR ownership', start);
-    const connectedIntegrations = agents.slice(start, end);
 
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
-    expect(connectedIntegrations).not.toContain('MCP');
+    expect(agents).toContain('REPOSITORY QA AND VALIDATION');
     expect(agents).toContain(
-      'A connection or initialization alone does not count as actual integration use.',
+      'Inspect the actual repository workflows, scripts, configurations and referenced requirements.',
     );
-    expect(connectedIntegrations).toContain(
-      'GitHub:** Always available for normal authorized repository work',
+    expect(agents).toContain(
+      "Use the repository's Playwright CLI as the primary browser tool.",
     );
-    // Recognize every supported browser QA provider without hard-coding tool order or descriptions.
-    const supportedBrowserQaTools = ['Playwright', 'Browserless'];
+    expect(agents).toContain(
+      'If Playwright remains unavailable, use Browserless as the fallback for direct browser tasks.',
+    );
+    expect(agents).toContain(
+      'Use Firecrawl as the primary content-retrieval tool and Crawlbase as its fallback.',
+    );
+    expect(agents).toContain(
+      'The production build must remain strictly below 495 MiB.',
+    );
+    expect(agents).toContain(
+      'Specify, Plan and Tasks in sequence before implementation.',
+    );
+    expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
+    expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
+  });
 
-    for (const toolName of supportedBrowserQaTools) {
-      expect(connectedIntegrations).toContain(toolName);
-    }
+  it('requires explicit owner authorization before AGENTS.md can change', () => {
+    const workflow = readFileSync(
+      join(root, '.github', 'workflows', 'protected-files.yml'),
+      'utf8',
+    );
+    const codeowners = readFileSync(join(root, '.github', 'CODEOWNERS'), 'utf8');
 
-    expect(agents).toContain('**Browser QA is mandatory for changes that affect browser-visible behavior or end-to-end user workflows.**');
-    // Playwright is the project-local CLI/Test path; Browserless is the sole connected browser fallback.
-    expect(connectedIntegrations).toContain('Browserless:** Connected remote-browser capability');
-    expect(connectedIntegrations).not.toContain('Browserbase');
-    expect(connectedIntegrations).toContain('MUST NOT add or invoke Browserless');
-    expect(connectedIntegrations).toContain(
-      'Penpot:** Available whenever useful',
+    expect(workflow).toMatch(/paths:[\s\S]*?-\s*['"]AGENTS\.md['"]/);
+    expect(workflow).toMatch(/protected_files=\([\s\S]*?"AGENTS\.md"[\s\S]*?\)/);
+    expect(workflow).toContain('name: protected-file-authorization');
+    expect(workflow).toContain(
+      'Explicit human authorization is required before this pull request may merge.',
     );
-    expect(connectedIntegrations).toContain(
-      'Penpot:** Available whenever useful for UI design, layout exploration, visual concepts and prototyping.',
-    );
+    expect(workflow).toContain('Detection is failing closed.');
+    expect(codeowners).toMatch(/^\/AGENTS\.md\s+@davidcollier77-code$/m);
   });
 
   it('retains every specialist task-group instruction', () => {
@@ -73,6 +85,6 @@ describe('single-source agent governance', () => {
     expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.specify.md'))).toBe(true);
     expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.plan.md'))).toBe(true);
     expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.tasks.md'))).toBe(true);
-    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.implement.md'))).toBe(true);
+    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.implement.md')).toBe(true);
   });
 });

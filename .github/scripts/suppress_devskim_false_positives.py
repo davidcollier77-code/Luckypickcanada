@@ -300,11 +300,13 @@ PLAYWRIGHT_LOCAL_SERVER_LINE_PATTERNS = (
 # Next.js build or the public asset directory.
 LOCAL_PROBE_ARTIFACT_DIRECTORY = "artifacts/"
 LOCAL_PROBE_ARTIFACT_SUFFIX = ".json"
+LOCAL_SPECS_BENCHMARK_FILENAMES = frozenset({"perf-baseline.json", "perf-after.json"})
+SPECS_FEATURE_DIRECTORY_PATTERN = re.compile(r"[0-9]{3,}-[a-z0-9]+(?:-[a-z0-9]+)*")
 JSON_STRING_VALUE_PATTERN = re.compile(r'"(?P<value>(?:\\.|[^"\\])*)"')
 LOOPBACK_HOSTNAMES = frozenset({LOOPBACK_TEST_ADDRESS, "local" + "host", "::1"})
 LOCAL_PROBE_ORIGIN_JUSTIFICATION = (
     "False positive: this loopback origin appears only in local Playwright "
-    "server configuration or a committed browser-probe measurement report, "
+    "server configuration or a committed browser-probe/performance report, "
     "not in shipped production code."
 )
 
@@ -339,6 +341,7 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized in PUBLIC_IDENTIFIER_ALLOWLIST
         or normalized == PLAYWRIGHT_LOCAL_SERVER_FILE
         or is_local_probe_artifact_path(normalized)
+        or is_local_specs_benchmark_path(normalized)
         or (len(path.parts) >= 2 and path.parts[0] == ".specify")
     )
 
@@ -351,11 +354,23 @@ def is_local_probe_artifact_path(relative_path: str) -> bool:
     )
 
 
+def is_local_specs_benchmark_path(relative_path: str) -> bool:
+    """Return whether a path is one of the two reviewed Spec Kit performance reports."""
+    parts = relative_path.split("/")
+    return (
+        len(parts) == 3
+        and parts[0] == "specs"
+        and SPECS_FEATURE_DIRECTORY_PATTERN.fullmatch(parts[1]) is not None
+        and parts[2] in LOCAL_SPECS_BENCHMARK_FILENAMES
+    )
+
+
 def is_local_probe_origin_path(relative_path: str) -> bool:
     """Return whether a path is reviewed local-only server/probe configuration."""
     return (
         relative_path == PLAYWRIGHT_LOCAL_SERVER_FILE
         or is_local_probe_artifact_path(relative_path)
+        or is_local_specs_benchmark_path(relative_path)
     )
 
 
@@ -1353,7 +1368,7 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
     ),
     (
         "False positive: this loopback origin appears only in local Playwright "
-        "server configuration or a committed browser-probe measurement report, "
+        "server configuration or a committed browser-probe/performance report, "
         "not in shipped production code."
     ),
 })
