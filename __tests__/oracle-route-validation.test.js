@@ -66,6 +66,7 @@ describe('Oracle route validates before calling the AI provider', () => {
     const response = await POST(makeRequest({
       mode: 'fortune',
       localDate: '2026-11-10',
+      localTime: '19:45',
       timeZone: 'America/Toronto',
     }));
     const body = await response.json();
@@ -84,9 +85,19 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(systemPrompt).toContain('two to four well-written sentences');
     expect(systemPrompt).toContain('Canadian');
     expect(systemPrompt).toContain('never promise a lottery win');
+    expect(systemPrompt).toContain('visitor local time');
     expect(userContent).toContain('Tuesday, November 10, 2026');
     expect(userContent).toContain('Season: autumn');
+    expect(userContent).toContain('Visitor local time: 19:45');
     expect(userContent).toContain('Generate today’s Canadian Crystal Ball fortune now');
+
+    // A reasoning model shares its budget between reasoning and content. The
+    // request must use the supported completion budget with reasoning headroom
+    // instead of the deprecated, too-small max_tokens value that produced the
+    // empty-content Cloudflare issue.
+    expect(requestBody).not.toHaveProperty('max_tokens');
+    expect(requestBody.max_completion_tokens).toBe(1024);
+    expect(requestBody.reasoning_effort).toBe('low');
   });
 
   it('calculates movable Canadian holidays and weekdays accurately', async () => {
@@ -94,6 +105,8 @@ describe('Oracle route validates before calling the AI provider', () => {
       ['2026-04-05', 'Sunday', 'Easter Sunday', 'spring'],
       ['2026-05-18', 'Monday', 'Victoria Day', 'spring'],
       ['2026-07-01', 'Wednesday', 'Canada Day', 'summer'],
+      ['2026-09-07', 'Monday', 'Labour Day', 'summer'],
+      ['2026-09-30', 'Wednesday', 'National Day for Truth and Reconciliation', 'autumn'],
       ['2026-10-12', 'Monday', 'Thanksgiving', 'autumn'],
       ['2026-11-11', 'Wednesday', 'Remembrance Day', 'autumn'],
       ['2026-12-25', 'Friday', 'Christmas Day', 'winter'],
@@ -109,6 +122,21 @@ describe('Oracle route validates before calling the AI provider', () => {
       expect(content).toContain(`Canadian holiday today: ${holiday}`);
       expect(content).toContain(`Season: ${season}`);
     }
+  });
+
+  it('ignores a malformed local time without changing the calendar facts', async () => {
+    const response = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2026-11-11',
+      localTime: 'quarter past seven',
+      timeZone: 'America/Toronto',
+    }));
+    expect(response.status).toBe(200);
+
+    const userContent = providerRequest().messages.at(-1).content;
+    expect(userContent).toContain('Wednesday, November 11, 2026');
+    expect(userContent).toContain('Canadian holiday today: Remembrance Day');
+    expect(userContent).not.toContain('Visitor local time:');
   });
 
   it('sends the original fortune as follow-up context', async () => {
@@ -182,6 +210,34 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(body.reading.trim().length).toBeGreaterThan(20);
     expect(body.reading).not.toMatch(/guaranteed|winning numbers|jackpot/i);
   });
+  it('diagnoses a reasoning-budget response and still returns a fallback', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.fetch.mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { content: '' }, finish_reason: 'length' }],
+      usage: {
+        completion_tokens: 250,
+        completion_tokens_details: { reasoning_tokens: 250 },
+      },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+
+    const response = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2026-11-11',
+      localTime: '20:05',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.source).toBe('fallback');
+    expect(body.reading.trim().length).toBeGreaterThan(20);
+
+    const logged = errorSpy.mock.calls.map((call) => call.join(' ')).join('\n');
+    expect(logged).toContain('Missing content in Groq API response');
+    expect(logged).toContain('"finishReason":"length"');
+    expect(logged).toContain('"reasoningTokens":250');
+    errorSpy.mockRestore();
+  });
+
   it('returns a follow-up fallback when the provider response is malformed JSON', async () => {
     mocks.fetch.mockResolvedValue(new Response('not-json', {
       status: 200,

@@ -1,0 +1,205 @@
+{
+  "generatedAt": "2026-11-11T22:33:44.675Z",
+  "method": "GET /accounts/{account}/workers/observability/issues/{id} and /occurrences?per_page=100",
+  "issues": [
+    {
+      "github": "1829",
+      "cloudflareIssueId": "555015df-36b2-4088-a23d-85e71330d952",
+      "category": "secret-files",
+      "title": "Potential vulnerability scan · secret-files · low risk",
+      "status": "active",
+      "count": 327,
+      "firstObserved": "2026-11-09T01:27:35.749Z",
+      "lastObserved": "2026-11-11T22:28:53.424Z",
+      "retainedOccurrences": 100,
+      "responseStatusCounts": {
+        "404": 100
+      },
+      "occurrenceMessages": [
+        "A request matched secret-files scanning patterns. No matching outbound fetch was observed."
+      ],
+      "samplePaths": [
+        "/.aws/.env",
+        "/.aws/config",
+        "/.aws/credentials",
+        "/.claude/settings.json",
+        "/.claude/settings.local.json",
+        "/.docker/.env",
+        "/.docker/config.json",
+        "/.docker/laravel/app/.env",
+        "/.env",
+        "/.env-example",
+        "/.env-sample",
+        "/.env.anthropic",
+        "/.env.aws",
+        "/.env.backup",
+        "/.env.bak",
+        "/.env.dev",
+        "/.env.development",
+        "/.env.dist",
+        "/.env.docker",
+        "/.env.example",
+        "/.env.live",
+        "/.env.local",
+        "/.env.old",
+        "/.env.openai",
+        "/.env.php",
+        "/.env.prod",
+        "/.env.production",
+        "/.env.sample",
+        "/.env.save",
+        "/.env.staging",
+        "/.env.swp",
+        "/.env.test",
+        "/.env.testing",
+        "/.env~",
+        "/.netrc",
+        "/.npmrc",
+        "/.s3cfg",
+        "/admin/.env",
+        "/api/.env",
+        "/app/.env",
+        "/application/.env",
+        "/back/.env",
+        "/backend/.env",
+        "/backup/.env",
+        "/cms/.env",
+        "/config.env",
+        "/config/.env",
+        "/core/.env",
+        "/credentials.json",
+        "/database.sql",
+        "/demo/.env",
+        "/dev/.env",
+        "/frontend/.env",
+        "/laravel/.env",
+        "/media/.env",
+        "/new/.env",
+        "/old/.env",
+        "/production/.env",
+        "/public/.env",
+        "/sendgrid.env"
+      ]
+    },
+    {
+      "github": "1827",
+      "cloudflareIssueId": "7e965902-ed4e-4a7e-a59b-a5176c230815",
+      "category": "known-scanner-path",
+      "title": "Potential vulnerability scan · known-scanner-path · low risk",
+      "status": "active",
+      "count": 15,
+      "firstObserved": "2026-11-09T10:04:16.374Z",
+      "lastObserved": "2026-11-11T22:28:50.876Z",
+      "retainedOccurrences": 15,
+      "responseStatusCounts": {
+        "404": 15
+      },
+      "occurrenceMessages": [
+        "A request matched known-scanner-path scanning patterns. No matching outbound fetch was observed."
+      ],
+      "samplePaths": [
+        "/api/phpinfo.php",
+        "/phpinfo.php"
+      ]
+    },
+    {
+      "github": "1826",
+      "cloudflareIssueId": "c17a7103-5de8-4df3-a343-4672f7ed3998",
+      "category": "source-control",
+      "title": "Potential vulnerability scan · source-control · low risk",
+      "status": "active",
+      "count": 63,
+      "firstObserved": "2026-11-09T01:27:35.920Z",
+      "lastObserved": "2026-11-11T22:28:46.471Z",
+      "retainedOccurrences": 63,
+      "responseStatusCounts": {
+        "404": 63
+      },
+      "occurrenceMessages": [
+        "A request matched source-control scanning patterns. No matching outbound fetch was observed."
+      ],
+      "samplePaths": [
+        "/.git-credentials",
+        "/.git/HEAD",
+        "/.git/config",
+        "/.git/hooks/post-checkout",
+        "/.git/hooks/post-receive",
+        "/.git/hooks/pre-commit",
+        "/.git/hooks/pre-push",
+        "/.git/hooks/update",
+        "/.git/index",
+        "/.git/info/refs",
+        "/.git/logs/HEAD",
+        "/.git/logs/refs/heads/main",
+        "/.gitlab-ci.yml",
+        "/.hg/hgrc",
+        "/.svn/entries",
+        "/.svn/wc.db"
+      ]
+    },
+    {
+      "github": "1825",
+      "cloudflareIssueId": "f8607191-3b38-4c40-84e3-6ff40a036b1f",
+      "category": "debug-endpoints",
+      "title": "Potential vulnerability scan · debug-endpoints · low risk",
+      "status": "active",
+      "count": 39,
+      "firstObserved": "2026-11-09T05:14:04.488Z",
+      "lastObserved": "2026-11-11T22:28:52.770Z",
+      "retainedOccurrences": 39,
+      "responseStatusCounts": {
+        "404": 39
+      },
+      "occurrenceMessages": [
+        "A request matched debug-endpoints scanning patterns. No matching outbound fetch was observed."
+      ],
+      "samplePaths": [
+        "/_profiler/phpinfo",
+        "/actuator/env",
+        "/api/actuator/env",
+        "/storage/logs/laravel.log",
+        "/wp-content/debug.log"
+      ]
+    },
+    {
+      "github": "1821",
+      "cloudflareIssueId": "9d04f7f8-510c-4719-b8ab-cf17bf7a7e06",
+      "category": "oracle-log",
+      "title": "Oracle Error: Missing content in Groq API response",
+      "status": "active",
+      "count": 1,
+      "firstObserved": "2026-11-10T20:01:44.570Z",
+      "lastObserved": "2026-11-10T20:01:44.570Z",
+      "retainedOccurrences": 1,
+      "responseStatusCounts": {
+        "200": 1
+      },
+      "occurrenceMessages": [
+        "Oracle Error: Missing content in Groq API response"
+      ],
+      "samplePaths": [
+        "/api/oracle"
+      ]
+    },
+    {
+      "github": "1814",
+      "cloudflareIssueId": "a94d47c2-d9e8-468d-ae61-c966c9ab7199",
+      "category": "wordpress",
+      "title": "Potential vulnerability scan · wordpress · low risk",
+      "status": "active",
+      "count": 9,
+      "firstObserved": "2026-11-09T06:20:58.138Z",
+      "lastObserved": "2026-11-11T22:28:49.270Z",
+      "retainedOccurrences": 9,
+      "responseStatusCounts": {
+        "404": 9
+      },
+      "occurrenceMessages": [
+        "A request matched wordpress scanning patterns. No matching outbound fetch was observed."
+      ],
+      "samplePaths": [
+        "/wp-login.php"
+      ]
+    }
+  ]
+}

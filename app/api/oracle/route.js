@@ -35,6 +35,7 @@ const FORTUNE_SYSTEM_PROMPT = [
   SHARED_ORACLE_VOICE,
   'Write today’s fortune without asking the visitor a question. Most fortunes should be two to four well-written sentences: begin with something specific and rewarding, then add meaning, atmosphere or a memorable Canadian detail.',
   'Recognize the current Canadian season and any supplied holiday naturally when it fits; do not force a holiday into an unrelated fortune. Occasionally suggest a promising weekday or upcoming date, but only using the supplied calendar facts.',
+  'Use the supplied visitor local time only to set the atmosphere (morning, afternoon, evening or late night); never state or invent a different time.',
 ].join(' ');
 
 const FOLLOW_UP_SYSTEM_PROMPT = [
@@ -140,6 +141,14 @@ const HOLIDAY_FALLBACK_FORTUNES = {
     'A country-sized celebration is lovely, but your good fortune today is personal: a shared laugh, a familiar song and the feeling of belonging somewhere.',
     'Fireworks are fine, but the real spark today is a conversation that reminds you how much room there is for kindness in this big, weather-confused country.',
   ],
+  'Labour Day': [
+    'The last long weekend of summer has arrived, and your good fortune is a slow morning with nowhere urgent to be. Make the most of the extra day, eh?',
+    'Labour Day is a fine time to notice how much you have carried this season. Put down one unnecessary task and let the afternoon be pleasantly unproductive.',
+  ],
+  'National Day for Truth and Reconciliation': [
+    'Today asks for reflection as much as rest. Honour the history carried by others, listen with care and carry that understanding into something ordinary and good.',
+    'The mists are quiet today. Make room to learn, to listen and to remember that reconciliation is built in small, sincere choices.',
+  ],
   Thanksgiving: [
     'Thanksgiving asks for gratitude, and the mists are pleased to report there is more of it within reach than the busy week suggests. Name three ordinary good things and watch the day soften.',
     'A harvest-sized plate and a generous second helping of patience are the right portions today. Someone at the table has a story worth hearing; make room for it.',
@@ -207,6 +216,8 @@ const HOLIDAY_NAMES = {
   goodFriday: 'Good Friday',
   victoria: 'Victoria Day',
   canada: 'Canada Day',
+  labour: 'Labour Day',
+  truthReconciliation: 'National Day for Truth and Reconciliation',
   thanksgiving: 'Thanksgiving',
   halloween: 'Halloween',
   remembrance: 'Remembrance Day',
@@ -289,6 +300,8 @@ function getHolidayDates(year) {
     { name: HOLIDAY_NAMES.easter, key: toDateKey(year, easter.month, easter.day) },
     { name: HOLIDAY_NAMES.victoria, key: toDateKey(year, 5, victoriaDay(year)) },
     { name: HOLIDAY_NAMES.canada, key: toDateKey(year, 7, 1) },
+    { name: HOLIDAY_NAMES.labour, key: toDateKey(year, 9, nthWeekdayOfMonth(year, 9, 1, 1)) },
+    { name: HOLIDAY_NAMES.truthReconciliation, key: toDateKey(year, 9, 30) },
     { name: HOLIDAY_NAMES.thanksgiving, key: toDateKey(year, 10, thanksgiving) },
     { name: HOLIDAY_NAMES.halloween, key: toDateKey(year, 10, 31) },
     { name: HOLIDAY_NAMES.remembrance, key: toDateKey(year, 11, 11) },
@@ -353,7 +366,7 @@ function getCalendarContext(localDateKey) {
   };
 }
 
-function describeCalendar(context, timeZone) {
+function describeCalendar(context, timeZone, localTime) {
   const dateLabel = `${context.weekday}, ${context.monthName} ${context.day}, ${context.year}`;
   const upcoming = context.upcoming.length
     ? context.upcoming
@@ -373,6 +386,7 @@ function describeCalendar(context, timeZone) {
     `Canadian holiday today: ${context.holiday ? context.holiday.name : 'none'}.`,
     `Upcoming Canadian occasions: ${upcoming}.`,
     timeZone ? `Visitor time zone: ${timeZone}.` : '',
+    localTime ? `Visitor local time: ${localTime}.` : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -447,6 +461,18 @@ function sanitizeTimeZone(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim().slice(0, 64);
   return /^[A-Za-z0-9_+\-/]+$/.test(trimmed) ? trimmed : null;
+}
+
+/**
+ * Accept only a 24-hour wall-clock time sent by the visitor's browser. The
+ * calendar facts (date, weekday, season, holidays) always come from the
+ * already-validated local date, so a malformed or spoofed time can only change
+ * the reading's atmosphere, never a factual calendar claim.
+ */
+function sanitizeLocalTime(value) {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(trimmed) ? trimmed : null;
 }
 
 export async function OPTIONS(request) {
@@ -530,7 +556,8 @@ export async function POST(request) {
     const context = getCalendarContext(localDate.key);
     calendarContext = context;
     const timeZone = sanitizeTimeZone(body.timeZone);
-    const calendarFacts = describeCalendar(context, timeZone);
+    const localTime = sanitizeLocalTime(body.localTime);
+    const calendarFacts = describeCalendar(context, timeZone, localTime);
 
     const userContent =
       mode === 'fortune'
@@ -563,7 +590,15 @@ export async function POST(request) {
             { role: 'user', content: userContent },
           ],
           temperature: mode === 'fortune' ? 0.9 : 0.7,
-          max_tokens: 250,
+          // gpt-oss-20b is a reasoning model: its internal reasoning shares the
+          // completion budget. The old `max_tokens: 250` budget could be spent
+          // entirely on reasoning, which returns HTTP 200 with an empty
+          // `message.content` and produced the Cloudflare "Missing content in
+          // Groq API response" issue. Use the supported `max_completion_tokens`
+          // field, keep effort low for short readings and leave headroom for
+          // reasoning plus the visible fortune.
+          max_completion_tokens: 1024,
+          reasoning_effort: 'low',
         }),
         signal: controller.signal,
       });
@@ -581,10 +616,21 @@ export async function POST(request) {
     }
 
     const data = await groqResponse.json();
-    const reading = data.choices?.[0]?.message?.content?.trim();
+    const content = data.choices?.[0]?.message?.content;
+    const reading = typeof content === 'string' ? content.trim() : '';
 
     if (!reading) {
-      console.error('Oracle Error: Missing content in Groq API response');
+      // Record why the content was empty so a recurrence can be diagnosed from
+      // the log issue itself. Never include the prompt, reading or credentials.
+      console.error(
+        'Oracle Error: Missing content in Groq API response',
+        JSON.stringify({
+          mode,
+          finishReason: data.choices?.[0]?.finish_reason ?? null,
+          completionTokens: data.usage?.completion_tokens ?? null,
+          reasoningTokens: data.usage?.completion_tokens_details?.reasoning_tokens ?? null,
+        }),
+      );
       return NextResponse.json(fallbackPayload(context, mode), { status: 200, headers: corsHeaders });
     }
 

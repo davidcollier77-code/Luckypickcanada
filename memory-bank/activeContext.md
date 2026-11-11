@@ -1,49 +1,58 @@
-# Active Context — Cloudflare Issues → GitHub Automatic Forwarding
+# Active Context — Six Cloudflare Issues: Scan Evidence and Oracle Fix
 
 - **Updated:** 2026-11-11
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** freebuff/76e10f03b7c69d37bc5b1dba
-- **Spec Kit feature:** specs/139-cloudflare-issues-auto-forwarding
-- **Pull request:** not submitted
+- **Branch:** freebuff/a3ef72773064149acdf6c2ce
+- **Spec Kit feature:** specs/141-cloudflare-issue-remediation
+- **Pull request:** submitted from this branch (regular, open, unmerged)
 
 ## Current Task
 
-Diagnose and repair the existing `workers-issues-to-github` integration so Cloudflare Workers Issues forward to GitHub
-automatically, without rotating credentials, replacing the bridge Worker, duplicating automations or weakening
-authentication.
+Investigate six open Cloudflare Workers Issues forwarded to GitHub (#1814,
+#1821, #1825, #1826, #1827, #1829), fix any genuine defect, verify the Crystal
+Ball daily fortune and follow-up, and dispose of the remaining issues with
+evidence rather than an unexplained closure.
 
-## Root Cause (verified live)
+## Findings
 
-- The only issue automation was an occurrence-threshold automation (`threshold: 1`) created 2026-11-10T07:08:08Z.
-  Cloudflare runs that trigger **once per issue**, when its occurrence count crosses the threshold.
-- The five active security issues were first observed 2026-11-09, before the automation, so they had already crossed
-  the threshold and have only `manual` activity entries despite continuing occurrences.
-- A new log issue created after the automation fired automatically (`62ddc528…`, succeeded) and created GitHub #1810,
-  proving the webhook, secret and bridge worked all along.
+- **#1829, #1827, #1826, #1825, #1814** are external vulnerability-scanner
+  probes for `.env`, source-control, debug/PHP, known scanner paths and
+  WordPress. Every retained Cloudflare occurrence returned 404 with “No matching
+  outbound fetch was observed”; live probes confirmed the standard not-found
+  page and no secret disclosure. No application defect.
+- **#1821** is genuine. `openai/gpt-oss-20b` shares its completion budget with
+  its reasoning trace, and the route's deprecated `max_tokens: 250` could be
+  spent before any content was emitted, producing HTTP 200 with empty
+  `message.content`. The retained occurrence is a production `/api/oracle`
+  request returning 200 through the fallback branch.
+- **Crystal Ball** already used the visitor's local date, four seasons,
+  Canadian holidays and Canadian humour. The local wall-clock time never
+  reached the prompt, and Labour Day and the National Day for Truth and
+  Reconciliation were missing from the holiday set.
 
 ## Implementation
 
-- Added one complementary recurrence-after-inactivity automation (`ecda5e06-ae7f-4cf5-b848-58b0a2908f35`,
-  3600 s, enabled, service `luckypickcanada-app`, same policy `91cf4237…`) through the Cloudflare API. The existing
-  occurrence automation `8cbf45b7…` is unchanged.
-- Repaired `scripts/cloudflare/workers-issues-to-github-setup.sh`: webhook identity without reading the write-only
-  secret, policy identity by alert type and destination, automation identity by service/policy/trigger using the read
-  schema, idempotent reconciliation of both triggers, and 14 normalized shell continuation lines that made `jq`
-  payload construction fail at runtime.
-- `wrangler.jsonc` is unchanged: Wrangler 4.148.0 accepts `observability.issues.enabled` (dry-run exit 0), and
-  Cloudflare does not support destinations/automations in Wrangler configuration.
+- `app/api/oracle/route.js`: `max_completion_tokens: 1024` and
+  `reasoning_effort: 'low'`; structured missing-content diagnostics; optional
+  `localTime` (`HH:MM`) validation and calendar fact; Labour Day and National
+  Day for Truth and Reconciliation with holiday fallback readings.
+- `app/crystal-ball-client/CrystalBallClient.js`: sends the visitor's local
+  time with the local date and time zone.
+- `__tests__/oracle-route-validation.test.js`: covers the provider budget, local
+  time, malformed local time, new holidays and the empty reasoning-budget
+  response.
+- Evidence: `specs/141-cloudflare-issue-remediation/evidence.md` and
+  `artifacts/cf-issues-1829-1814/`.
 
 ## Verification and Delivery Status
 
-- **PASS:** live delivery runs `40b57c40…` and `7aa6ec27…` succeeded; GitHub #1821 and #1822 were created by the bridge.
-- **PASS:** automatic path recorded as automatic run `62ddc528…` → GitHub #1810 with matching correlation ID.
-- **PASS:** unauthenticated bridge POST returns HTTP 401; no credential was read, changed or rotated.
-- **PASS:** `bash -n`, `git diff --check`, `./freebuff-verify.sh` (exit 0), build 320.38 MiB (< 495 MiB).
-- **NOT OBSERVED:** a fresh automatic recurrence run; it needs a new occurrence after ≥1 h of inactivity.
-- **FINDING:** the bridge does not deduplicate separate notification runs for the same Cloudflare issue (replaying the
-  Oracle issue created #1821 while #1810 was open).
+- **PASS:** targeted Vitest 38/38; Playwright Crystal Ball flow; `freebuff-verify.sh` exit 0; build 355.73 MiB.
+- **FAIL (pre-existing):** full Vitest, `agent-governance-single-source.test.js` parse error at line 108; unchanged by this task and identical on `HEAD`.
+- **NOT RUN:** live Groq request (no workspace key); deployed behaviour (PR unmerged).
+- **LIMITATION:** scanner traffic will recur; an edge WAF rule needs separate owner authorisation.
 
 ## Handoff
 
-No PR has been opened. The live Cloudflare automation change is already applied; the repository change is the setup
-script repair plus Spec Kit and Memory Bank artifacts.
+GitHub scan issues were closed with occurrence-level evidence; #1821 stays open
+until the fix deploys. The PR body names the Cloudflare Oracle issue so the
+existing post-deploy resolver can mark it resolved after merge.

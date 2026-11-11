@@ -27,7 +27,9 @@ function getLocalCalendarContext() {
   } catch {
     // Keep the safe fallback.
   }
-  return { localDate: getLocalDateKey(), timeZone };
+  const now = new Date();
+  const localTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return { localDate: getLocalDateKey(), localTime, timeZone };
 }
 
 function normalizeReading(value) {
