@@ -58,7 +58,6 @@ First-time setup: org/project creation, connection strings, driver installation,
 
 - [Build a full backend with Next.js and Neon](https://neon.com/docs/get-started/full-backend-quickstart.md): Postgres, Object Storage, and a Neon Function for AI, declared in one neon.ts
 - [Built to scale](https://neon.com/docs/get-started/built-to-scale.md): Neon supports you from prototype to scale-up
-- [Built to scale](https://neon.com/docs/get-started/production-readiness.md): Neon supports you from prototype to scale-up
 - [Connecting Neon to your stack](https://neon.com/docs/get-started/connect-neon.md): Learn how to integrate Neon into your application
 - [Database branching workflow primer](https://neon.com/docs/get-started/workflow-primer.md): An introduction to integrating Postgres branching into your development workflow
 - [Getting ready for production](https://neon.com/docs/get-started/production-checklist.md): Guidelines to optimize price, performance, and reliability
@@ -344,6 +343,7 @@ Contributor guides, component architecture, and documentation standards.
 - [Community Guides](https://neon.com/guides.md): Step-by-step tutorials for frameworks and tools
 - [FAQs](https://neon.com/faqs): Short answers about building on Neon: Postgres, Auth, Object Storage, Functions, AI Gateway, pricing, and comparisons
 - [Glossary](https://neon.com/docs/reference/glossary.md)
+- [Sitemap](https://neon.com/docs/sitemap.md): Every docs page as Markdown links, grouped by the docs navigation
 - [Blog](https://neon.com/blog.md): Engineering, product, and community posts from the Neon team
 - [neondatabase/website](https://github.com/neondatabase/website): Source for neon.com and these docs, with AGENTS.md for coding agents
 - [neondatabase/agent-skills](https://github.com/neondatabase/agent-skills): Source for the Neon agent skills, with AGENTS.md for coding agents
