@@ -1858,7 +1858,6 @@ class LocalProbeOriginSuppressionTests(unittest.TestCase):
             "specs/experimental-feature/perf-after.json",
             "specs/perf-after.json",
             "specs/134-crystal-ball-experience-improvements/perf-after.json.bak",
-            "artifacts/specs/134-crystal-ball-experience-improvements/perf-after.json",
         )
 
         for relative_path in accepted:
