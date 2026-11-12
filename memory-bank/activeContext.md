@@ -1,61 +1,51 @@
-# Active Context — PR Checker Reliability, Performance and AGENTS.md Protection
+# Active Context — Crystal Ball Personality, Local Time and Canadian Seasons
 
-- **Updated:** 2026-11-11
+- **Updated:** 2026-11-12
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `fix/141-pr-checker-governance-protection`
-- **Spec Kit feature:** `specs/141-pr-checker-reliability-and-governance-protection`
-- **Pull request:** not submitted
+- **Branch:** `freebuff/3625a98e3b6b0eab9e6a60b2`
+- **Spec Kit feature:** `specs/142-crystal-ball-personality-seasonal-experience`
+- **Pull request:** pending submission
 
 ## Current Task
 
-Audit the GitHub-native pull-request checkers (excluding AI review bots), improve their speed
-and reliability without removing any quality gate, and correct the AGENTS.md protection checker
-so governance has a dedicated pull-request path.
-
-## Evidence
-
-- Recorded workflow durations: Visual QA 12–15 min on success and 58 s–1 m 22 s on recent
-  failures; Validate OpenNext Repair 1 m 44 s–2 m 49 s; DevSkim 40 s–1 m 20 s; Verification
-  Integrity 17 s–3 m 7 s with 10–12 min waits; Protected File Changes 10–56 s. The 13 h 18 m
-  values recur on the same docs-refresh PR across three workflows, so they are queue/wait time.
-- Local reproduction: `pnpm run test` failed on `main` head `62615d1c` because
-  `__tests__/agent-governance-single-source.test.js:108` had a missing parenthesis. That parse
-  error explains the fast Visual QA failures, including both "Update AGENTS.md" PRs.
-- The same governance suite still asserted superseded AGENTS.md wording, so a merged governance
-  update kept producing false failures. The assertions now track the approved merged baseline.
-- Playwright cannot launch in this sandbox (`libnspr4.so` missing), so browser timing comes from
-  the recorded workflow runs, not a local timing.
+Improve the existing Crystal Ball voice, humour, variety, browser-local time awareness and
+Canadian seasonal/holiday recognition without changing its artwork, visual design, animations,
+daily allowance or follow-up flow.
 
 ## Implementation
 
-- Added `.github/scripts/agents_md_protection.py` and 25 regression tests: dedicated governance
-  PRs are allowed; AGENTS.md alongside application code, dependencies, other workflows or general
-  docs is refused and the files are named; deletion/rename-away is refused; missing data fails
-  closed; the base-branch AGENTS.md is the approved baseline; no title/body argument exists.
-- Wired the classifier into `protected-files.yml` on a trusted base checkout, keeping the
-  `protected-file-authorization` environment gate.
-- Verification Integrity now aggregates every Visual QA shard (`FAIL` if any shard failed).
-- Visual QA: removed the duplicated two-file Vitest subset and standalone TypeScript step,
-  split the stable verification job from Playwright, and sharded Playwright into two required
-  jobs with `fail-fast: false`.
-- Validate OpenNext Repair: pnpm-store cache, 20-minute timeout, superseded-run cancellation.
-  Deploy Updater Scheduler verifier: pnpm-store cache. DevSkim: bounded timeouts.
-- `freebuff-verify.sh` now runs the protection regression suite.
+- Added `app/lib/local-time.js` as the single visitor-local time system used by the greeting,
+  the oracle request context and the server's local-time validation.
+- Added `app/lib/crystal-ball-calendar.js` with fixed and movable Canadian holidays, the exact
+  Canada Day (June 24–30), Christmas (December 1–24), New Year (December 26–January 1) windows,
+  seven-day anticipation for other listed holidays, and respectful-only Remembrance Day and
+  National Day for Truth and Reconciliation handling.
+- Added `app/lib/crystal-ball-fortunes.js` with large curated general, seasonal and occasion
+  fallback pools; respectful/thoughtful pools never mix with everyday humour.
+- Rebuilt `app/api/oracle/route.js` prompts from the occasion tone: regular humour and variety on
+  ordinary days, no humour on solemn days, exact escalation for Canada Day, Christmas and New Year.
+- Expanded the daily greeting pool from 4 to 10 (the approved four stay at indices 0–3), composed
+  each greeting with the local salutation, and added quiet greetings for solemn days.
+- `useDailyResetCountdown` now exposes its shared timestamp; the greeting updates at local period
+  boundaries without a reload or a second interval.
 
-## Verification and Delivery Status
+## Verification
 
-- **PASS:** `python3 -m py_compile` on the four changed/new Python modules.
-- **PASS:** `python3 -m unittest discover -s .github/scripts -p 'test_agents_md_protection.py'` — 25 tests.
-- **PASS:** `python3 -m unittest discover -s .github/scripts -p 'test_verify_pr_verification_status.py'` — 28 tests.
-- **PASS:** `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` — 8 tests.
-- **PASS:** `pnpm run test` — 57 files, 503 tests.
-- **PASS:** `./freebuff-verify.sh` — exit 0; documentation tests 36/36.
-- **PASS:** production build `.next + public` = 405,503,226 B (386.72 MiB), below 495 MiB.
-- **NOT RUN:** live Playwright (sandbox host libraries missing); CI run of the new sharded
-  workflow (runs only after PR creation).
-- **PENDING:** GitHub workflow runtimes after merge. No CI speedup is claimed from local timings.
+- **PASS:** focused Vitest suites — 103 tests across local time, calendar, fallbacks, greetings and
+  the oracle route.
+- **PASS:** `pnpm run test` — 60 files, 579 tests.
+- **PASS:** `pnpm exec tsc --noEmit`.
+- **PASS:** `./freebuff-verify.sh` — exit 0; Spec Kit gate, governance tests, type check, production
+  build and 36/36 docs tests.
+- **PASS:** production build `.next + public` = 447,555,256 B (426.82 MiB), below 495 MiB;
+  `opennextjs-cloudflare build` produced `.open-next/worker.js` with exit 0.
+- **PASS (live):** production build on the reserved preview port; Remembrance Day quiet greeting,
+  respectful fortune and follow-up, refresh persistence, and a live afternoon-to-evening greeting
+  change while the page stayed open.
+- **BLOCKED:** local Playwright browser launch (`libnspr4.so` missing); visual specs were updated but
+  not executed here.
 
 ## Handoff
 
-The complete work is on the task branch. PR submission follows `PR_SUBMISSION.md`; this file is
-updated only until the PR is opened.
+PR submission follows `PR_SUBMISSION.md`. Full evidence is in
+`specs/142-crystal-ball-personality-seasonal-experience/evidence.md`.

@@ -63,8 +63,10 @@ function getServerSnapshot() {
 /**
  * Reads the shared next-local-midnight countdown.
  *
- * @returns {{ ready: boolean, dateKey: string | null, deadlineMs: number, remainingMs: number, formatted: string }}
+ * @returns {{ ready: boolean, now: number, dateKey: string | null, deadlineMs: number, remainingMs: number, formatted: string }}
  *   `ready` is false during server rendering and the first hydration paint.
+ *   `now` is the shared one-second clock timestamp, so time-of-day displays can
+ *   update from the same interval as the countdown instead of starting another.
  */
 export function useDailyResetCountdown() {
   const now = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -72,6 +74,7 @@ export function useDailyResetCountdown() {
   if (now === 0) {
     return {
       ready: false,
+      now: 0,
       dateKey: null,
       deadlineMs: 0,
       remainingMs: 0,
@@ -82,6 +85,7 @@ export function useDailyResetCountdown() {
   const state = getDailyResetState(new Date(now));
   return {
     ready: true,
+    now,
     ...state,
     formatted: formatDailyResetRemaining(state.remainingMs),
   };

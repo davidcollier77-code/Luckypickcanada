@@ -248,7 +248,7 @@ describe('Oracle route validates before calling the AI provider', () => {
       mode: 'follow-up',
       question: 'What should I watch for?',
       fortune: 'A warm surprise is waiting near the water.',
-      localDate: '2026-11-11',
+      localDate: '2026-11-12',
     }));
     const body = await response.json();
 
@@ -257,6 +257,154 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(body.reading).toMatch(
       /The mists keep|The glass shows|A familiar Canadian answer|The mists see|There is a promising|The fortune is not finished/,
     );
+  });
+
+  it.each([
+    ['2026-05-10', "Canadian holiday today: Mother's Day"],
+    ['2026-06-21', "Canadian holiday today: Father's Day"],
+    ['2026-12-26', 'Canadian holiday today: Boxing Day'],
+    ['2026-12-31', "Canadian holiday today: New Year's Eve"],
+    ['2027-01-01', "Canadian holiday today: New Year's Day"],
+  ])('recognises the Canadian occasion on %s', async (localDate, expected) => {
+    const response = await POST(makeRequest({ mode: 'fortune', localDate }));
+    expect(response.status).toBe(200);
+    expect(providerRequest().messages.at(-1).content).toContain(expected);
+  });
+
+  it.each([
+    ['07:15', 'morning', 'Good morning.'],
+    ['12:30', 'afternoon', 'Good afternoon.'],
+    ['19:45', 'evening', 'Good evening.'],
+    ['23:30', 'late night', 'Still up, eh?'],
+    ['02:00', 'late night', 'Still up, eh?'],
+  ])('anchors the %s local time to the %s greeting', async (localTime, label, greeting) => {
+    const response = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2026-11-12',
+      localTime,
+    }));
+    expect(response.status).toBe(200);
+    expect(providerRequest().messages.at(-1).content).toContain(
+      `(${label}; greeting: “${greeting}”)`,
+    );
+  });
+
+  it('escalates Christmas and keeps Christmas Day distinct', async () => {
+    const stages = [
+      ['2026-12-01', 'Stage: subtle'],
+      ['2026-12-15', 'Stage: growing'],
+      ['2026-12-24', 'Stage: the magic is at its height'],
+    ];
+
+    for (const [localDate, expected] of stages) {
+      mocks.fetch.mockClear();
+      const response = await POST(makeRequest({ mode: 'fortune', localDate }));
+      expect(response.status).toBe(200);
+      expect(providerRequest().messages.at(-1).content).toContain(expected);
+    }
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-12-25' }));
+    const request = providerRequest();
+    expect(request.messages.at(-1).content).toContain('Christmas Day');
+    expect(request.messages[0].content).toContain('Today is Christmas Day');
+  });
+
+  it('builds Canada Day from June 24 and returns to summer on July 2', async () => {
+    const buildUpResponse = await POST(makeRequest({ mode: 'fortune', localDate: '2026-06-24' }));
+    expect(buildUpResponse.status).toBe(200);
+    const buildUp = providerRequest();
+    expect(buildUp.messages.at(-1).content).toContain('Canada Day is 7 days away');
+    expect(buildUp.messages[0].content).toContain('Canada Day is 7 days away');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-06-30' }));
+    expect(providerRequest().messages[0].content).toContain('Canada Day is 1 day away');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-07-01' }));
+    expect(providerRequest().messages[0].content).toContain('Canada, baby!');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-07-02' }));
+    const after = providerRequest();
+    expect(after.messages.at(-1).content).toContain('Occasion focus: none');
+    expect(after.messages[0].content).not.toContain('Canada Day build-up');
+  });
+
+  it('moves from Boxing Day into New Year and back to everyday winter', async () => {
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-12-26' }));
+    let request = providerRequest();
+    expect(request.messages[0].content).toContain('Boxing Day');
+    expect(request.messages.at(-1).content).toContain('New Year’s anticipation begins today');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2026-12-31' }));
+    expect(providerRequest().messages[0].content).toContain('Today is New Year’s Eve');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2027-01-01' }));
+    expect(providerRequest().messages[0].content).toContain('Today is New Year’s Day');
+
+    mocks.fetch.mockClear();
+    await POST(makeRequest({ mode: 'fortune', localDate: '2027-01-02' }));
+    request = providerRequest();
+    expect(request.messages[0].content).toContain('This is an ordinary day');
+    expect(request.messages.at(-1).content).toContain('Occasion focus: none');
+  });
+
+  it.each([
+    ['2026-11-11', 'Remembrance Day'],
+    ['2026-09-30', 'Truth and Reconciliation'],
+  ])('removes humour from the prompt on %s', async (localDate, label) => {
+    const response = await POST(makeRequest({ mode: 'fortune', localDate }));
+    expect(response.status).toBe(200);
+    const request = providerRequest();
+    const systemPrompt = request.messages[0].content;
+
+    expect(systemPrompt).toContain('Do not use humour');
+    expect(systemPrompt).not.toContain('Humour is a regular feature');
+    expect(systemPrompt).toContain('not a generic AI assistant');
+    expect(request.messages.at(-1).content).toContain(label);
+  });
+
+  it('returns a respectful fallback with no humour on Remembrance Day', async () => {
+    mocks.fetch.mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { content: '   ' } }],
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+
+    const response = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2026-11-11',
+      localTime: '10:00',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.source).toBe('fallback');
+    expect(body.reading).not.toContain('eh?');
+    expect(body.reading).not.toContain('!');
+    expect(body.reading).not.toMatch(/joke|laugh/i);
+  });
+
+  it('returns a respectful follow-up fallback on Remembrance Day', async () => {
+    mocks.fetch.mockResolvedValue(new Response(JSON.stringify({
+      choices: [{ message: { content: '   ' } }],
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+
+    const response = await POST(makeRequest({
+      mode: 'follow-up',
+      question: 'What should I carry into today?',
+      fortune: 'There is strength in remembering without turning the day into a performance.',
+      localDate: '2026-11-11',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.source).toBe('fallback');
+    expect(body.reading).not.toContain('eh?');
+    expect(body.reading).not.toContain('!');
   });
 
 });

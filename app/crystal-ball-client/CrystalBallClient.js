@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import CrystalBall from '../components/CrystalBall/CrystalBall';
 import { useDailyResetCountdown } from '../../components/daily-reset-countdown';
 import { getLocalDateKey } from '../lib/daily-reset';
+import { getLocalMoment } from '../lib/local-time';
 import {
   DAILY_STORAGE_KEY,
   createFreshUsage,
@@ -20,16 +21,15 @@ function getBrowserStorage() {
   }
 }
 
+// One shared local-time system: the date, wall clock and time zone sent to the
+// oracle come from the same helper that powers the greeting and daily reset.
 function getLocalCalendarContext() {
-  let timeZone = 'UTC';
-  try {
-    timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-  } catch {
-    // Keep the safe fallback.
-  }
-  const now = new Date();
-  const localTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  return { localDate: getLocalDateKey(), localTime, timeZone };
+  const moment = getLocalMoment();
+  return {
+    localDate: moment.dateKey,
+    localTime: moment.localTime,
+    timeZone: moment.timeZone,
+  };
 }
 
 function normalizeReading(value) {
