@@ -126,7 +126,68 @@ exit=0                                   real 0m11.398s
 Second run: exit 0, no download, `PASS 2 Chromium binaries link with 0 missing shared objects`.
 Profile blocks afterwards: `.profile` 1, `.bashrc` 1.
 
-## 3. Checks
+## 3. Rebase onto the merged main, and a syntax repair it required
+
+PR #1846 was squash-merged as `4b577d74`. Rebasing this branch onto it surfaced a real defect in the merged file:
+
+```
+$ git show 4b577d74:scripts/setup-chromium-libs.sh > /tmp/main-script.sh
+$ bash -n /tmp/main-script.sh
+/tmp/main-script.sh: line 186: unexpected EOF while looking for matching `''
+$ echo $?
+2
+```
+
+The merged block opened a brace form and left `printf '%s\n` unterminated:
+
+```bash
+check_output="$(check 2>&1)" && {
+  echo "==> Chromium runtime libraries are already provisioned; skipping download"
+  printf '%s\n   # unterminated quote
+```
+
+`bash /tmp/main-script.sh --check` still printed PASS because the script exits from the argument branch before Bash
+reaches the broken line, so a partial run hides it; any run that reaches provisioning instead fails. The conflict was
+resolved to the browser-independent gate, which is also syntactically valid:
+
+```bash
+if check_libs >/dev/null 2>&1; then
+  echo "==> Chromium runtime libraries are already provisioned; skipping download"
+  check_libs
+  …
+  exit 0
+fi
+```
+
+`bash -n scripts/setup-chromium-libs.sh` → `syntax OK`. The merge had also dropped the executable bit; it is restored
+(`100644 → 100755`) so the `./scripts/setup-chromium-libs.sh` form in the script's own header works.
+
+Re-verified on the rebased tree (`4b577d74` + this work):
+
+```
+$ HOME=/tmp/fresh-home bash scripts/setup-chromium-libs.sh --check-libs  → exit 1 (not provisioned)
+$ time HOME=/tmp/fresh-home bash scripts/setup-chromium-libs.sh
+PASS Chromium runtime libraries present: 15 objects and fonts in /tmp/fresh-home/.local/chromium-libs
+==> Chromium runtime libraries are ready in /tmp/fresh-home/.local/chromium-libs
+    No Playwright browser yet; the startup command installs it next:
+exit=0                                   real 0m9.358s
+$ HOME=/tmp/fresh-home bash scripts/setup-chromium-libs.sh --persist
+PASS persisted the Chromium runtime environment
+     env file: …/.local/chromium-libs/env.sh
+     Playwright CLI config: …/.playwright/cli.config.json
+
+$ bash scripts/setup-chromium-libs.sh --check        # worktree
+PASS Chromium runtime libraries present: 15 objects and fonts in …/.local/chromium-libs
+PASS 2 Chromium binaries link with 0 missing shared objects
+
+$ pnpm exec playwright cli open https://luckypickcanada.ca    # no env, no --browser flag
+### Browser `default` opened with pid 30689.
+$ pnpm exec playwright cli click e13                          → https://luckypickcanada.ca/crystal-ball
+$ pnpm exec playwright cli eval "…h1…"                        → { "text": "Crystal Ball", "width": 520 }
+$ pnpm exec playwright cli close                              → Browser 'default' closed
+```
+
+## 4. Checks
 
 | Check | Result |
 | --- | --- |
@@ -139,6 +200,8 @@ Profile blocks afterwards: `.profile` 1, `.bashrc` 1.
 | Documented startup command ×2 | PASS — exit 0, idempotent |
 | `pnpm exec vitest run __tests__/freebuff-startup-command.test.js` | PASS — 9 tests |
 | `pnpm exec tsc --noEmit` | PASS |
-| `./freebuff-verify.sh` | PASS — `All verification steps passed` (gate, tsc, build, refresh-docs) |
-| Production build size | PASS — 427,764,814 B = 407.95 MiB (`.next` 393,760,876 + `public` 34,003,938) |
+| `./freebuff-verify.sh` (rebased tree, `SPEC_KIT_BASE_REF=4b577d74`) | PASS — `All verification steps passed` |
+| Production build size | PASS — 427,767,728 B = 407.95 MiB, below 495 MiB |
+| Merged-main syntax error | PASS — repaired; `bash -n` reports `syntax OK` |
+| Executable bit | PASS — restored `100644 → 100755` |
 | Empty-home cleanup | `/tmp/fresh-home` removed; nothing in the repository depends on it |
