@@ -3,9 +3,9 @@
 - **Updated:** 2026-11-12
 - **Repository:** davidcollier77-code/Luckypickcanada
 - **Branch:** `freebuff/3625a98e3b6b0eab9e6a60b2-date-preview`
-- **Base:** `freebuff/3625a98e3b6b0eab9e6a60b2` (PR #1842, stacked)
+- **Base:** `main`
 - **Spec Kit feature:** `specs/143-crystal-ball-date-preview`
-- **Pull request:** pending submission
+- **Pull request:** #1843 (open)
 
 ## Current Task
 
@@ -25,21 +25,30 @@ can be reviewed without changing the system clock, while leaving `/crystal-ball`
 - `CrystalBall` gained optional `previewActive`, `previewDateKey` and `previewNow` props. Existing
   callers pass none, so `/crystal-ball` behaviour, artwork, CSS and animations are unchanged.
 
+## Conflict Repair
+
+PR #1842 was squash-merged into `main` as `7563720514b05c5f1be18823f093af7de8070d31`, and its
+feature branch was deleted. GitHub retargeted #1843 to `main`, but the branch still carried the
+pre-squash parent commit, so the two histories conflicted. `main` was merged into this branch:
+
+- kept the preview-aware `CrystalBall` implementation, which already contains the merged #1842
+  greeting and local-time behaviour;
+- retained both the #1843 and #1842 milestone entries in `memory-bank/progress.md`;
+- updated this active-task record to the new `main` base and removed the stale stacked-PR handoff.
+
 ## Verification
 
-- **PASS:** preview model — 11 tests; preview client render — 1 test; full suite — 62 files,
-  591 tests.
-- **PASS:** `./freebuff-verify.sh` with `SPEC_KIT_BASE_REF=freebuff/3625a98e3b6b0eab9e6a60b2` —
-  exit 0, including the Spec Kit gate, governance tests, type check, build and 36/36 docs tests.
-- **PASS:** production build 454,108,456 B = 433.07 MiB, below 495 MiB; OpenNext produced
-  `.open-next/worker.js`.
-- **PASS:** production `/crystal-ball` is 200 with no preview markup; production preview route is
-  404; development preview route is 200.
+- **PASS:** focused Crystal Ball suites — 70 tests across 5 files.
+- **PASS:** full unit suite — 62 files, 591 tests.
+- **PASS:** `pnpm exec tsc --noEmit`.
+- **PASS:** production build — `Build completed successfully`.
 - **BLOCKED:** local Playwright launch (`libnspr4.so`), so no browser visual run for the development
   route. The preview client was mounted and exercised in Vitest instead.
+- Production `/crystal-ball` remains 200 with no preview markup; the production preview route is
+  404 and the development route is 200.
 
 ## Handoff
 
-PR submission follows `PR_SUBMISSION.md` and targets the parent feature branch because the preview
-depends on the calendar module introduced by PR #1842. Evidence is in
-`specs/143-crystal-ball-date-preview/evidence.md`.
+PR #1843 now targets `main`. Evidence is in
+`specs/143-crystal-ball-date-preview/evidence.md`; the merge verification results are recorded in
+the follow-up evidence commit.
