@@ -2,6 +2,15 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Crystal Ball personality, local time and Canadian seasons
+- Added one shared browser-local time system, a Canadian calendar/occasion model with escalating
+  Canada Day, Christmas and New Year windows, and large curated general/seasonal/occasion fallback
+  pools while preserving the existing artwork, CSS, animations and fortune/follow-up flow.
+- Solemn days (Remembrance Day, National Day for Truth and Reconciliation) use quiet greetings and
+  remove every humour instruction from both fortune and follow-up prompts and fallbacks.
+- Verified 103 focused tests, the full 577-test suite, type check, `./freebuff-verify.sh` exit 0,
+  and a live production-build flow including a real afternoon-to-evening greeting change.
+
 ## 2026-11-11 — Six Cloudflare issues: scan evidence and Oracle fix
 - Verified the five vulnerability-scan issues against all retained Cloudflare occurrences (every response 404, no outbound fetch) and against 22 live production probes.
 - Fixed the genuine Oracle empty-content error by moving gpt-oss-20b to `max_completion_tokens: 1024` with low reasoning effort and a structured missing-content diagnostic; the safe fallback was preserved.

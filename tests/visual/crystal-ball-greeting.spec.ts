@@ -25,7 +25,9 @@ test('the daily greeting is stable for the day and never repeats the previous da
   };
 
   const first = await readGreeting();
-  expect(APPROVED_GREETINGS).toContain(first);
+  const firstPersonality = APPROVED_GREETINGS.find((greeting) => first.includes(greeting));
+  expect(firstPersonality, `No approved greeting found in: ${first}`).toBeTruthy();
+  expect(first).toMatch(/^(Good morning\.|Good afternoon\.|Good evening\.|Still up, eh\?) /);
 
   // A refresh keeps the same greeting for the rest of the local day.
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -45,8 +47,9 @@ test('the daily greeting is stable for the day and never repeats the previous da
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   const second = await readGreeting();
-  expect(APPROVED_GREETINGS).toContain(second);
-  expect(second).not.toBe(APPROVED_GREETINGS[0]);
+  const secondPersonality = APPROVED_GREETINGS.find((greeting) => second.includes(greeting));
+  expect(secondPersonality, `No approved greeting found in: ${second}`).toBeTruthy();
+  expect(secondPersonality).not.toBe(APPROVED_GREETINGS[0]);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(greetingText).toHaveText(second);

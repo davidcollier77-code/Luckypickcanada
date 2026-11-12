@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   GREETINGS,
   GREETING_STORAGE_KEY,
+  composeGreeting,
+  getQuietGreeting,
   readDailyGreeting,
 } from '../app/crystal-ball-client/greetings.js';
 
@@ -35,13 +37,16 @@ function seededRandom(seed = 42) {
 }
 
 describe('Crystal Ball daily greeting', () => {
-  it('keeps the three approved greetings and adds a fourth', () => {
-    expect(GREETINGS).toHaveLength(4);
-    expect(new Set(GREETINGS).size).toBe(4);
+  it('keeps the four approved greetings and expands the pool', () => {
+    expect(GREETINGS).toHaveLength(10);
+    expect(new Set(GREETINGS).size).toBe(GREETINGS.length);
     expect(GREETINGS[0]).toBe("Well, look who's feeling lucky today.");
     expect(GREETINGS[1]).toBe("Let's see what the universe has up its sleeve, eh?");
     expect(GREETINGS[2]).toBe(
       "I've been waiting for you. Not that I'm keeping track or anything.",
+    );
+    expect(GREETINGS[3]).toBe(
+      'Pull up a chair, friend — the mists kept the good seat warm for you.',
     );
     for (const greeting of GREETINGS) {
       expect(greeting.trim().length).toBeGreaterThan(10);
@@ -72,7 +77,9 @@ describe('Crystal Ball daily greeting', () => {
       seen.add(selected.index);
     }
 
-    expect([...seen].sort()).toEqual([0, 1, 2, 3]);
+    expect([...seen].sort((left, right) => left - right)).toEqual(
+      GREETINGS.map((_, index) => index),
+    );
   });
 
   it('picks uniformly from the greetings other than the previous one', () => {
@@ -135,5 +142,49 @@ describe('Crystal Ball daily greeting', () => {
 
     expect(sameDay).toEqual({ index: first.index, text: first.text, reused: true });
     expect(nextDay.index).not.toBe(first.index);
+  });
+});
+
+describe('Crystal Ball time-aware greeting', () => {
+  it.each([
+    ['2026-11-12', 'morning', `Good morning. ${GREETINGS[0]}`],
+    ['2026-11-12', 'afternoon', `Good afternoon. ${GREETINGS[0]}`],
+    ['2026-11-12', 'evening', `Good evening. ${GREETINGS[0]}`],
+    ['2026-11-12', 'late-night', `Still up, eh? ${GREETINGS[0]}`],
+  ])('composes %s %s with the local salutation', (dateKey, period, expected) => {
+    expect(composeGreeting(GREETINGS[0], { dateKey, period })).toBe(expected);
+  });
+
+  it('returns no greeting until the daily personality is ready', () => {
+    expect(composeGreeting('', { dateKey: '2026-11-12', period: 'morning' })).toBe('');
+  });
+
+  it('keeps Remembrance Day quiet and free of the playful personality', () => {
+    expect(getQuietGreeting('2026-11-11')).toBe(
+      'Today the glass is quiet. Take a moment to remember.',
+    );
+    const greeting = composeGreeting(GREETINGS[0], {
+      dateKey: '2026-11-11',
+      period: 'morning',
+    });
+    expect(greeting).toBe('Today the glass is quiet. Take a moment to remember.');
+    expect(greeting).not.toContain('Good morning');
+    expect(greeting).not.toContain('lucky');
+  });
+
+  it('keeps the National Day for Truth and Reconciliation reflective', () => {
+    const greeting = composeGreeting(GREETINGS[0], {
+      dateKey: '2026-09-30',
+      period: 'evening',
+    });
+    expect(greeting).toBe('Today the mists are listening. Take a moment to reflect.');
+    expect(greeting).not.toContain('Good evening');
+  });
+
+  it('keeps Good Friday restrained without suppressing ordinary days', () => {
+    expect(getQuietGreeting('2026-04-03')).toBe(
+      'The glass is quiet today. Take the day gently.',
+    );
+    expect(getQuietGreeting('2026-11-12')).toBeNull();
   });
 });

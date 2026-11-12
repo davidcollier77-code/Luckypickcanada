@@ -6,7 +6,8 @@ import Link from 'next/link';
 import styles from './CrystalBall.module.css';
 import GoldenLeaf from './GoldenLeaf';
 import { useDailyResetCountdown } from '../../../components/daily-reset-countdown';
-import { readDailyGreeting } from '../../crystal-ball-client/greetings';
+import { composeGreeting, readDailyGreeting } from '../../crystal-ball-client/greetings';
+import { getLocalMoment } from '../../lib/local-time';
 
 type Status =
   | 'idle'
@@ -178,9 +179,10 @@ export default function CrystalBall({
   luckMeterHref = '/lucky-meter',
   communityMapHref = '/map',
 }: CrystalBallProps) {
-  const { ready: resetReady, formatted: resetCountdown } = useDailyResetCountdown();
+  const { ready: resetReady, formatted: resetCountdown, dateKey, now } =
+    useDailyResetCountdown();
 
-  const [greeting, setGreeting] = useState('');
+  const [dailyGreeting, setDailyGreeting] = useState('');
   const [greetingCharCount, setGreetingCharCount] = useState(0);
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -210,6 +212,23 @@ export default function CrystalBall({
   );
   const [isRevealPaused, setIsRevealPaused] = useState(false);
   const [leafFlight, setLeafFlight] = useState<LeafFlight | null>(null);
+
+  // The daily personality is chosen once per local day, then combined with the
+  // salutation for the current local period. The shared one-second clock lets
+  // the greeting change at a period boundary without a reload.
+  useEffect(() => {
+    if (!dateKey) return;
+    setDailyGreeting(readDailyGreeting(undefined, dateKey).text);
+  }, [dateKey]);
+
+  const greeting = useMemo(
+    () =>
+      dailyGreeting
+        ? composeGreeting(dailyGreeting, getLocalMoment(new Date(now || Date.now())))
+        : '',
+    [dailyGreeting, now],
+  );
+
   const fortuneChars = useMemo(() => currentFortune ? Array.from(currentFortune) : [], [currentFortune]);
   const greetingChars = useMemo(() => (greeting ? Array.from(greeting) : []), [greeting]);
   const answerChars = useMemo(() => (followUpAnswer ? Array.from(followUpAnswer) : []), [followUpAnswer]);
@@ -230,7 +249,6 @@ export default function CrystalBall({
   const isBusy = status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse';
 
   useEffect(() => {
-    setGreeting(readDailyGreeting().text);
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
       setPrefersReducedMotion(event.matches);
