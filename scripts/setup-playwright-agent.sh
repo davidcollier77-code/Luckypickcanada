@@ -49,6 +49,8 @@ fi
 # process and anything it starts, which is exactly the scope the launch needs.
 if [[ -f "$ROOT/scripts/setup-chromium-libs.sh" ]]; then
   if chromium_env="$(bash "$ROOT/scripts/setup-chromium-libs.sh" --env 2>/dev/null)"; then
+    # --env emits each value as a single quoted word, so evaluating it cannot run
+    # anything a path or HOME happens to contain.
     eval "$chromium_env"
     printf 'Chromium runtime environment applied (LD_LIBRARY_PATH, FONTCONFIG_FILE, FONTCONFIG_PATH).\n'
   fi

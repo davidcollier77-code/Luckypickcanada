@@ -30,6 +30,9 @@
 #   scripts/setup-chromium-libs.sh --browser-revision  # print the Chromium revision the installed Playwright pins
 #   eval "$(scripts/setup-chromium-libs.sh --env)" # apply the environment to this shell
 #
+# `--env` prints one POSIX shell word per value, single-quoted, so evaluating or
+# sourcing its output cannot run anything a path or HOME happens to contain.
+#
 # Environment:
 #   CHROMIUM_LIBS_PREFIX       library prefix (default ~/.local/chromium-libs)
 #   CHROMIUM_APT_STATE         apt state/cache root (default ~/.apt-user)
@@ -303,25 +306,49 @@ uses_prebaked_browser() {
   [[ "$(browser_root)" != "$DEFAULT_BROWSERS_DIR" ]]
 }
 
+# Emit one value as a single POSIX shell word. Single quotes stop every expansion —
+# command substitution, backticks, '$', backslash and nested quotes — so a value can
+# never become code when the generated text is evaluated by the wrapper or sourced
+# from ~/.profile, while spaces and every other character a real path may hold survive
+# unchanged. A literal ' is written as '\'' (close, escaped quote, reopen), which both
+# POSIX sh and bash read back as one quote.
+sh_squote() {
+  printf "'%s'" "${1//\'/\'\\\'\'}"
+}
+
 # Idempotent, POSIX-compatible exports. Prepending would clobber a caller's
 # LD_LIBRARY_PATH every time this is sourced from a shell profile, so the prefix
 # is only appended once and existing precedence is kept. A system runtime and the
 # default browser cache need no variables at all, so in that case this prints
 # nothing and `eval` of the empty string is a no-op.
+#
+# Every value is emitted through sh_squote and the dedupe pattern reads a variable
+# instead of a literal, so the output stays correct and inert whatever HOME, the
+# prefix or the browser root contain. The single temporary variable it assigns is
+# unset again on the next line, and a glob character in a path is compared literally
+# instead of widening the pattern.
 print_env() {
+  local quoted_library_path quoted_font_config quoted_font_path quoted_browsers_path
+
   if [[ "$(runtime_mode)" == prefix ]]; then
+    quoted_library_path="$(sh_squote "$LIB_PATH")"
+    quoted_font_config="$(sh_squote "$FONTS_CONF")"
+    quoted_font_path="$(sh_squote "$FONTS_DIR")"
     cat <<EOF
+_lpc_library_path=$quoted_library_path
 case ":\${LD_LIBRARY_PATH:-}:" in
-  *":$LIB_PATH:"*) ;;
-  *) LD_LIBRARY_PATH="$LIB_PATH\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}" ;;
+  *":\$_lpc_library_path:"*) ;;
+  *) LD_LIBRARY_PATH="\$_lpc_library_path\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH}" ;;
 esac
+unset _lpc_library_path
 export LD_LIBRARY_PATH
-export FONTCONFIG_FILE="$FONTS_CONF"
-export FONTCONFIG_PATH="$FONTS_DIR"
+export FONTCONFIG_FILE=$quoted_font_config
+export FONTCONFIG_PATH=$quoted_font_path
 EOF
   fi
   if uses_prebaked_browser; then
-    printf 'export PLAYWRIGHT_BROWSERS_PATH="%s"\n' "$(browser_root)"
+    quoted_browsers_path="$(sh_squote "$(browser_root)")"
+    printf 'export PLAYWRIGHT_BROWSERS_PATH=%s\n' "$quoted_browsers_path"
   fi
 }
 
@@ -494,7 +521,7 @@ NODE
 # depend on the startup command's own process still being alive. Every file is
 # under $HOME and survives restarts; each block is rewritten, never duplicated.
 persist() {
-  local rc
+  local rc quoted_env_file
   if ! check_libs >/dev/null 2>&1; then
     echo "FAIL refusing to persist an incomplete runtime; run: bash scripts/setup-chromium-libs.sh" >&2
     return 1
@@ -503,6 +530,7 @@ persist() {
   mkdir -p "$PREFIX"
   print_env > "$ENV_FILE"
   chmod 0644 "$ENV_FILE"
+  quoted_env_file="$(sh_squote "$ENV_FILE")"
 
   for rc in "$HOME/.profile" "$HOME/.bashrc"; do
     touch "$rc"
@@ -517,7 +545,9 @@ persist() {
     fi
     {
       printf '\n%s\n' "$RC_MARKER_BEGIN"
-      printf 'if [ -f "%s" ]; then . "%s"; fi\n' "$ENV_FILE" "$ENV_FILE"
+      # Quoted as a word: a prefix containing a quote or a substitution stays text,
+      # so a login shell sources this file instead of running it.
+      printf 'if [ -f %s ]; then . %s; fi\n' "$quoted_env_file" "$quoted_env_file"
       printf '%s\n' "$RC_MARKER_END"
     } >> "$rc"
   done
