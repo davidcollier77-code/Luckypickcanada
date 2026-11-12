@@ -408,7 +408,7 @@ pnpm exec playwright --version
 pnpm exec playwright cli --help
 ```
 
-Use `pnpm exec playwright cli` for every CLI command in this repository. For a fresh workspace, follow [references/lucky-pick-canada.md](references/lucky-pick-canada.md) and run `source scripts/bootstrap-pnpm.sh && pnpm install --frozen-lockfile`. The optional project setup script can download Chromium and probe a real browser launch. Do not install OS packages or use sudo through this skill.
+In a Freebuff Cloud workspace, use `./scripts/playwright-cli.sh` for every CLI command instead of a bare `pnpm exec playwright cli`. It prepares the workspace on first use (dependencies, Chromium's system libraries, the pinned browser, the runtime environment) and selects the pinned Chromium channel, so it works from a cold workspace and from the non-interactive shells the agent runs commands in. For a fresh workspace, follow [references/lucky-pick-canada.md](references/lucky-pick-canada.md). The optional project setup script can download Chromium and probe a real browser launch. Do not install OS packages or use sudo through this skill.
 
 ## Example: Form submission
 

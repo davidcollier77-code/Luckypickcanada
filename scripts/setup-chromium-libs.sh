@@ -183,7 +183,7 @@ esac
 # again; a restored workspace usually still has it under $HOME.
 check_output="$(check 2>&1)" && {
   echo "==> Chromium runtime libraries are already provisioned; skipping download"
-  printf '%s
+  printf '%s\n' "$check_output"
   echo
   echo "Environment for this shell:"
   print_env

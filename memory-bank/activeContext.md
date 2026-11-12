@@ -1,51 +1,53 @@
-# Active Context — Playwright Chromium Runtime Environment
+# Active Context — Playwright Reliability in a Cold Cloud Workspace
 
 - **Updated:** 2026-11-12
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/0fe51d9fb70d7d5eedbd7455`
+- **Branch:** `freebuff/db0186c675176d0ca7d8d91e`
 - **Base:** `main`
-- **Spec Kit feature:** `specs/146-playwright-chromium-runtime`
+- **Spec Kit feature:** `specs/147-playwright-cloud-reliability`
 
 ## Current Task
 
-Make the repository's Playwright installation launch Chromium reliably in the Freebuff workspace: fix the missing
-`libnspr4.so`, carry `LD_LIBRARY_PATH`/`FONTCONFIG_FILE`/`FONTCONFIG_PATH` into the shell that launches the browser,
-survive workspace restarts, and document the exact startup configuration for Freebuff's project settings.
+Make Playwright browser work reliable every time it is needed in a Freebuff Cloud workspace, for an owner who only has
+an Android phone: no manual exports, no remembered browser flag, no dependence on a platform startup setting.
 
 ## Root Cause
 
-The libraries and the Chromium 1248 browser were already provisioned in `~/.local/chromium-libs`, so the missing
-`libnspr4.so` was not an install failure. The startup command exported the paths with `eval "$(… --env)"`, which died
-with that process; Freebuff tool shells are non-login, non-interactive `bash -c` processes (`$-` = `hBc`, `BASH_ENV`
-unset) and `$HOME` had no `.profile`/`.bashrc`, so every later launch started with no library path. A second defect:
-`--check` inspected only `chrome`, while a headless `chromium.launch()` runs `chrome-headless-shell`.
+Three independent defects, each sufficient to break a launch:
+
+1. `scripts/setup-chromium-libs.sh` did not parse at HEAD. The reuse branch read `printf '%s\n  echo`; the closing
+   quote and `"$check_output"` argument were lost. Every path that could provision, check, export or persist the
+   Chromium libraries was therefore dead, and the startup command would have stopped there.
+2. Freebuff Cloud did not run the documented startup command for this chat: `$HOME` was created empty, with no
+   `node_modules`, no `~/.local/chromium-libs`, no browser cache and no `.profile`/`.bashrc`. Setup therefore has to be
+   self-healing at first use rather than platform-dependent.
+3. Tool shells are non-interactive `bash -c` processes that never read a profile, so `LD_LIBRARY_PATH` and
+   `FONTCONFIG_*` are absent; and `playwright cli` defaults to the system Chrome channel, which this image lacks.
 
 ## Implementation
 
-- `scripts/setup-chromium-libs.sh`: `--check` validates both Playwright Chromium binaries and the fontconfig files;
-  a plain run reuses a complete 27 MB prefix instead of downloading again; `--env` prints idempotent POSIX exports;
-  new `--persist` writes `$PREFIX/env.sh` and rewires one marked block in `~/.profile` and `~/.bashrc`.
-- `scripts/setup-playwright-agent.sh`: applies `--env` to its own process before the probe, so the probe works with no
-  caller setup.
-- `playwright.config.ts`: adds the prefix's library and fontconfig paths to the browser environment when
-  `libnspr4.so` exists there; a no-op on developer machines and CI runners.
-- `README.md` and `__tests__/freebuff-startup-command.test.js`: startup command gains the persist step; the fixture now
-  proves the probe inherits the exported paths.
+- `scripts/setup-chromium-libs.sh`: restored `printf '%s\n' "$check_output"` so the script parses again.
+- `scripts/playwright-cli.sh` (new): one command that installs missing dependencies, provisions missing libraries,
+  installs the pinned browser when absent, applies the runtime environment and execs `pnpm exec playwright cli`; adds
+  `--browser=chromium` to `open` only when the caller gave no `--browser`; passes `test` through unchanged; supports
+  `--dry-run` for its argument tests.
+- `__tests__/playwright-cli-wrapper.test.js` (new): `bash -n` guard over every `scripts/*.sh` plus the root entrypoints,
+  and the four argument paths. The parse guard is the regression test for defect 1.
+- `README.md`, `.agents/skills/playwright-cli/SKILL.md` and `references/lucky-pick-canada.md`: the wrapper is the
+  documented command for interactive browser work, so later chats find it without being told.
 
 ## Verification
 
-- **PASS:** probe with no library environment — `PASS: Chromium launched and rendered a probe page`.
-- **PASS:** Playwright Test in a bare shell — `tests/visual/gold-cta.spec.ts --project=desktop`, 4/4.
-- **PASS:** real interaction — `playwright cli open/click/screenshot/eval` on the live site, heading `Crystal Ball`.
-- **PASS:** cold provisioning into a throwaway prefix (3.3 s, `libnspr4.so` present); documented startup command twice,
-  exit 0, idempotent profiles.
-- **PASS:** guard test 9/9, `bash -n`, `pnpm exec tsc --noEmit`.
-- **PASS:** `./freebuff-verify.sh`.
-
-Evidence is in `specs/146-playwright-chromium-runtime/evidence.md`.
+- **PASS:** cold library provisioning after moving the prefix aside — `PASS 2 Chromium binaries link with 0 missing
+  shared objects` (27 MB), then the wrapper loaded the live site in 6.3 s.
+- **PASS:** live site through the wrapper, `LD_LIBRARY_PATH` unset — title
+  `Lucky Pick Canada | Daily Lucky Picks, Cards & Stories`.
+- **PASS:** desktop 1280×720 and mobile 390×844 screenshots, inspected: real fonts, correct nav, stacked mobile layout.
+  Evidence in `specs/147-playwright-cloud-reliability/evidence/`.
+- **PASS:** focused suite 5/5.
+- **PASS:** `./freebuff-verify.sh` — governance gate, type check, production build (324.33 MiB), 36/36 docs tests.
 
 ## Durable Locations
 
-- Libraries: `~/.local/chromium-libs` (27 MB, no root); apt cache `~/.apt-user`.
-- Browser: `~/.cache/ms-playwright` (Chromium 1248 + headless shell + ffmpeg).
-- Environment: `~/.local/chromium-libs/env.sh`, sourced from `~/.profile` and `~/.bashrc`.
+- Wrapper: `./scripts/playwright-cli.sh` — the only browser command to use in Freebuff Cloud.
+- Libraries: `~/.local/chromium-libs` (27 MB, no root); browser: `~/.cache/ms-playwright` (Chromium 1248).

@@ -6,6 +6,33 @@ This project-specific guide supplements the upstream Microsoft skill. `AGENTS.md
 
 The repository already pins `playwright`, `@playwright/test` and `playwright-chromium` to 1.64.1, with pnpm 10.30.3. Use this local CLI; do not install a global CLI or a separate `@playwright/cli` dependency.
 
+## Freebuff Cloud: one command, cold workspace or not
+
+Use `./scripts/playwright-cli.sh` for browser interaction. It prepares a cold workspace on first use and works in the
+non-interactive `bash -c` shells commands run in, where a bare `pnpm exec playwright cli` fails: the profile holding
+`LD_LIBRARY_PATH` and `FONTCONFIG_*` is never read, and the CLI's default browser is a system Chrome the image does
+not have.
+
+```bash
+./scripts/playwright-cli.sh open https://luckypickcanada.ca
+./scripts/playwright-cli.sh snapshot
+./scripts/playwright-cli.sh click e5
+./scripts/playwright-cli.sh close
+```
+
+Only the first call in a cold workspace is slow (dependency install, 27 MB of Chromium libraries, the pinned browser
+if missing); later calls are no-ops. Test runs go through the wrapper too, but need no environment help because
+`playwright.config.ts` injects the same paths:
+
+```bash
+./scripts/playwright-cli.sh test --project=desktop
+```
+
+If a launch still fails, report the exact error before changing anything. Common causes, in order: the pinned
+Chromium was not downloaded (the wrapper installs it), the shared libraries are missing (the wrapper provisions
+them), or the browser was addressed without the Chromium channel (the wrapper adds it). Do not add a second browser,
+a second CLI package or a hand-rolled `LD_LIBRARY_PATH` export.
+
 ```bash
 source scripts/bootstrap-pnpm.sh
 pnpm install --frozen-lockfile
