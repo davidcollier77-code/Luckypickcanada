@@ -181,14 +181,14 @@ esac
 
 # Reuse an existing prefix instead of downloading and unpacking the same packages
 # again; a restored workspace usually still has it under $HOME.
-if check >/dev/null 2>&1; then
+check_output="$(check 2>&1)" && {
   echo "==> Chromium runtime libraries are already provisioned; skipping download"
-  check
+  printf '%s
   echo
   echo "Environment for this shell:"
   print_env
   exit 0
-fi
+}
 
 command -v apt-get >/dev/null || { echo "apt-get is required" >&2; exit 1; }
 command -v dpkg-deb >/dev/null || { echo "dpkg-deb is required" >&2; exit 1; }

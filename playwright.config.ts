@@ -30,7 +30,7 @@ function configureChromiumRuntime() {
     (directory) => !currentDirectories.includes(directory),
   );
   if (missingDirectories.length > 0) {
-    process.env.LD_LIBRARY_PATH = [...currentDirectories, ...missingDirectories].join(':');
+    process.env.LD_LIBRARY_PATH = [...missingDirectories, ...currentDirectories].join(':');
   }
 
   const fontConfigDirectory = path.join(prefix, 'etc', 'fonts');
