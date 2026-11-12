@@ -26,7 +26,7 @@ test('the daily greeting is stable for the day and never repeats the previous da
     expect(first).toBe(quietGreeting);
   } else {
     expect(GREETINGS.some((greeting) => first.includes(greeting))).toBe(true);
-    expect(first).toMatch(/^(Good morning\\.|Good afternoon\\.|Good evening\\.|Still up, eh\\?) /);
+    expect(first).toMatch(/^(Good morning\.|Good afternoon\.|Good evening\.|Still up, eh\?) /);
   }
 
   // A refresh keeps the same greeting for the rest of the local day.
