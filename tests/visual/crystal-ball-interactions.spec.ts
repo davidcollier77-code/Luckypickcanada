@@ -27,10 +27,7 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
   await page.goto('/crystal-ball');
 
   const greeting = page.getByTestId('crystal-ball-greeting');
-  await expect(greeting.locator('.sr-only')).toHaveText(
-    /Well, look who's feeling lucky today\.|Let's see what the universe has up its sleeve, eh\?|I've been waiting for you\.|Pull up a chair, friend/,
-    { timeout: 10_000 },
-  );
+  await expectRecognizedCrystalBallGreeting(page, greeting.locator('.sr-only'));
 
   await expect(page.getByLabel('Time until daily reset')).toContainText(
     /Daily reset in \d{2}:\d{2}:\d{2}/,
