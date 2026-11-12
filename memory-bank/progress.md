@@ -8,8 +8,9 @@ This file is a concise record of meaningful completed work, not a chronological 
   and other seasonal window.
 - Preview readings stay in page state, so reviewing a date never consumes the visitor's daily
   fortune or follow-up; `/crystal-ball` itself is unchanged.
-- Verified 591 unit/component tests, the repository gate with the stacked base, a 433.07 MiB build,
-  and production/dev route status over HTTP.
+- Verified 591 unit/component tests, the repository gate with the `main` base, a 433.08 MiB build,
+  and production/dev route status over HTTP; repaired the retarget conflict after #1842 was
+  squash-merged.
 
 ## 2026-11-12 — Crystal Ball personality, local time and Canadian seasons
 - Added one shared browser-local time system, a Canadian calendar/occasion model with escalating

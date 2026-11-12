@@ -42,13 +42,16 @@ pre-squash parent commit, so the two histories conflicted. `main` was merged int
 - **PASS:** full unit suite — 62 files, 591 tests.
 - **PASS:** `pnpm exec tsc --noEmit`.
 - **PASS:** production build — `Build completed successfully`.
+- **PASS:** repository gate with `SPEC_KIT_BASE_REF=7563720514b05c5f1be18823f093af7de8070d31` —
+  exit 0; only `specs/143-crystal-ball-date-preview` differs from `main`.
+- **PASS:** OpenNext bundle produced `.open-next/worker.js`; production build 454,117,035 B =
+  433.08 MiB, below 495 MiB.
+- **PASS:** production `/crystal-ball` 200 with no preview markup; production preview route 404;
+  development preview route 200.
 - **BLOCKED:** local Playwright launch (`libnspr4.so`), so no browser visual run for the development
   route. The preview client was mounted and exercised in Vitest instead.
-- Production `/crystal-ball` remains 200 with no preview markup; the production preview route is
-  404 and the development route is 200.
 
 ## Handoff
 
-PR #1843 now targets `main`. Evidence is in
-`specs/143-crystal-ball-date-preview/evidence.md`; the merge verification results are recorded in
-the follow-up evidence commit.
+PR #1843 now targets `main` and its diff contains only the date-preview work. Evidence is in
+`specs/143-crystal-ball-date-preview/evidence.md`.

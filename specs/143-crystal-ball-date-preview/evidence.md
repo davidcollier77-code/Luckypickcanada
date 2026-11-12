@@ -2,8 +2,8 @@
 
 **Date:** 2026-11-12
 **Branch:** `freebuff/3625a98e3b6b0eab9e6a60b2-date-preview`
-**Base:** `freebuff/3625a98e3b6b0eab9e6a60b2` (stacked on PR #1842)
-**Base SHA:** `f48c0e5a575ef95e3b65820a808ed4aed6b19357`
+**Base:** `main`
+**Base SHA:** `7563720514b05c5f1be18823f093af7de8070d31`
 
 ## What was built
 
@@ -18,6 +18,21 @@
 - `app/components/CrystalBall/CrystalBall.tsx` — optional `previewActive`, `previewDateKey` and
   `previewNow` props. Defaults preserve the production page exactly.
 
+## Conflict repair after the retarget
+
+PR #1842 was squash-merged into `main` as `7563720514b05c5f1be18823f093af7de8070d31`, and its
+feature branch was deleted, so GitHub retargeted #1843 to `main`. The branch still carried the
+pre-squash parent commit, which made the histories conflict. `main` was merged into the branch:
+
+- `app/components/CrystalBall/CrystalBall.tsx`: kept the preview-aware version, which already
+  contains the merged #1842 greeting and local-time changes plus the optional preview props.
+- `memory-bank/progress.md`: retained both the #1843 and #1842 milestone entries.
+- `memory-bank/activeContext.md`: moved the active task record to the `main` base and removed the
+  stale stacked-PR handoff.
+
+The net diff against `main` is exactly the 13 date-preview files; no #1842, scheduler or Spec 144
+changes remain in the pull request diff.
+
 ## Unit and component checks actually run
 
 | Check | Command | Result |
@@ -27,7 +42,10 @@
 | Full unit suite | `pnpm run test` | PASS — 62 files, 591 tests |
 | Type check | via `./freebuff-verify.sh` | PASS — exit 0 |
 | Production build | via `./freebuff-verify.sh` | PASS — `Build completed successfully`; `/crystal-ball/preview` appears in the static route list |
-| Repository gate | `SPEC_KIT_BASE_REF=freebuff/3625a98e3b6b0eab9e6a60b2 ./freebuff-verify.sh` | PASS — exit 0; Spec Kit artifacts verified for `specs/143-crystal-ball-date-preview`, governance tests, type check, build and 36/36 docs tests |
+| Post-merge focused suites | `pnpm exec vitest run __tests__/crystal-ball-preview.test.js __tests__/crystal-ball-preview-client.test.jsx __tests__/crystal-ball-calendar.test.js __tests__/crystal-ball-greetings.test.js __tests__/crystal-ball-local-time.test.js` | PASS — 70 tests, 5 files |
+| Post-merge full suite | `pnpm run test` | PASS — 62 files, 591 tests |
+| Post-merge type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=7563720514b05c5f1be18823f093af7de8070d31 ./freebuff-verify.sh` | PASS — exit 0; only `specs/143-crystal-ball-date-preview` differs from `main`; governance tests, type check, build and 36/36 docs tests |
 | Cloudflare/OpenNext bundle | `pnpm exec opennextjs-cloudflare build` | PASS — `Worker saved in .open-next/worker.js`, `OpenNext build complete`, exit 0 |
 | Diff hygiene | `git diff --check` | PASS — no whitespace errors |
 
@@ -46,14 +64,16 @@ The production 404 response's RSC payload includes the page's metadata title
 ("Crystal Ball date preview"), but the rendered document title is the site default and no preview
 controls or Crystal Ball markup are rendered.
 
+These route checks were repeated after the retarget merge with the same results: production
+`/crystal-ball` 200 with the daily-reset UI and no preview markup, production preview 404, and
+development preview 200 with the loading state.
+
 ## Build size
 
 Measured after the final production build:
 
 ```text
-.next       420,104,518 bytes
-public       34,003,938 bytes
-total       454,108,456 bytes = 433.07 MiB
+total       454,117,035 bytes = 433.08 MiB
 ```
 
 The repository hard cap is strictly below 495 MiB. **PASS.**
