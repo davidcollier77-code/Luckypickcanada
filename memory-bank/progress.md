@@ -2,6 +2,16 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Reliable Playwright browser work in a cold Cloud workspace
+- Found `scripts/setup-chromium-libs.sh` did not parse at HEAD (a mangled `printf` in the reuse branch), so no
+  provisioning, check, export or persist path could ever run; repaired the line and added a `bash -n` guard test over
+  every script so that class of corruption cannot ship again.
+- Added `scripts/playwright-cli.sh`: one command that installs missing dependencies, provisions the libraries, installs
+  the pinned browser when absent, applies the runtime environment and selects the Chromium channel, so browser work no
+  longer depends on the platform startup command (which did not run for this chat) or on remembered manual steps.
+- Verified cold self-heal (prefix removed, 6.3 s to load the live site), a launch with `LD_LIBRARY_PATH` unset, desktop
+  and mobile screenshots, 5 focused tests, and `./freebuff-verify.sh` exit 0 with a 324.33 MiB build.
+
 ## 2026-11-12 — Playwright Chromium runtime environment
 - Diagnosed why Playwright still failed on `libnspr4.so` with the libraries installed: the startup command's
   `eval "$(… --env)"` died with that process, and Freebuff tool shells are `bash -c` with no profile.

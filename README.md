@@ -109,10 +109,21 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
 Playwright config injects the library and font paths when `~/.local/chromium-libs` exists, and the setup script
 applies them to its own process. Other shells load them from the profiles written by `--persist`.
 
-Interactive `pnpm exec playwright cli` commands are the exception: a non-interactive shell does not read a profile, so
-in one of those either run `eval "$(bash scripts/setup-chromium-libs.sh --env)"` first or define the same three
-values in Freebuff's Variables section, and pass `--browser=chromium` to `pnpm exec playwright cli open`, because the
-CLI's default channel is a system Chrome that this image does not have.
+Interactive browser work goes through one command, which installs the dependencies, provisions the libraries,
+installs the pinned browser if it is missing, applies the runtime environment and selects the pinned Chromium:
+
+```bash
+./scripts/playwright-cli.sh open https://luckypickcanada.ca
+./scripts/playwright-cli.sh snapshot
+./scripts/playwright-cli.sh close
+```
+
+The wrapper is required rather than convenient: a non-interactive shell does not read a profile, so
+`LD_LIBRARY_PATH` and `FONTCONFIG_*` are absent, and the CLI's default channel is a system Chrome that this image does
+not have. `./scripts/playwright-cli.sh test ...` passes test runs through to `pnpm exec playwright test`, which needs
+neither workaround because `playwright.config.ts` injects the same paths. A bare `pnpm exec playwright cli` still
+works once the environment is applied and `--browser=chromium` is passed, but nothing should depend on remembering
+that.
 
 `bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
 `PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.
