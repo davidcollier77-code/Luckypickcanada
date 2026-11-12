@@ -32,7 +32,11 @@ browser. Only the first needs provisioning, but the script did the work uncondit
    `~/.cache/ms-playwright` (or a writable prebaked root) suppressed the install that would have repaired it, and the
    probe then failed on the missing pinned revision. `--browser-root` now succeeds only for the pinned revision, which
    covers the default cache and every writable root, and `--check` lists only the pinned binaries. The writable-any
-   rule survives solely for _selecting and exporting_ a root, where the following install repairs it.
+   rule survives solely for _selecting and exporting_ a root, where the following install repairs it. The install is
+   confirmed rather than assumed: `--install-browser` re-runs `--browser-root` afterwards and fails with the pinned
+   revision if the download did not produce it, because otherwise the probe reports a host-library error for what is
+   really a missing browser. Both paths log the resolved revision, so a log answers "which browser did this pick?"
+   without a second command.
 6. **CI prerequisite, not an application change.** The OpenNext validator failed before running any validation step
    because `actions/setup-node` with `cache: pnpm` ran before `pnpm/action-setup`. It now matches the order already
    used by Visual QA and the updater scheduler, and a new guard checks every workflow so the same mistake cannot

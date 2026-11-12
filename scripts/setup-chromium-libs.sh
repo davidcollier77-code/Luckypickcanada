@@ -27,6 +27,7 @@
 #   scripts/setup-chromium-libs.sh --check         # libraries, fonts and every installed Chromium binary
 #   scripts/setup-chromium-libs.sh --persist       # export file, shell profiles and the Playwright CLI config
 #   scripts/setup-chromium-libs.sh --browser-root  # print where Chromium is installed, exit 1 when it is absent
+#   scripts/setup-chromium-libs.sh --browser-revision  # print the Chromium revision the installed Playwright pins
 #   eval "$(scripts/setup-chromium-libs.sh --env)" # apply the environment to this shell
 #
 # Environment:
@@ -547,6 +548,17 @@ case "${1:-}" in
   --persist)
     persist
     exit $?
+    ;;
+  --browser-revision)
+    # The revision the installed Playwright expects, for logs and diagnostics. Exit 1
+    # when the pin cannot be read, which is what an uninstalled workspace looks like.
+    revision="$(pinned_chromium_revision || true)"
+    if [[ -z "$revision" ]]; then
+      echo "FAIL cannot resolve the pinned Chromium revision; run: pnpm install --frozen-lockfile" >&2
+      exit 1
+    fi
+    printf '%s\n' "$revision"
+    exit 0
     ;;
   --browser-root)
     # Success means a launchable browser is already there, which is the only safe

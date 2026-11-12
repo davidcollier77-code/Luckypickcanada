@@ -45,6 +45,9 @@
 - [x] T019 Add `__tests__/workflow-pnpm-setup-order.test.js` covering every workflow.
 - [x] T020 Re-run the detection and guard tests, the real workspace checks, the full suite, the repository gate and
       the production build.
+- [x] T021 Log the pinned revision on both `--install-browser` paths and confirm it after `playwright install`, so a
+      download that does not produce the pinned browser fails as a setup error instead of a later launch error. Covered by
+      a `--browser-revision` test.
 
 ## Dependencies
 

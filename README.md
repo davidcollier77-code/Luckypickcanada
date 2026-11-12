@@ -105,7 +105,9 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
 8. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — applies the same Chromium
    environment to its own shell, installs the project-pinned Chromium only when `--browser-root` reports no browser
    at the pinned revision (an existing matching cache or an environment-provided install costs no download, while a
-   cache left behind by another Playwright version is repaired) and launches it headlessly, so startup ends with
+   cache left behind by another Playwright version is repaired), confirms the pinned revision is installed afterwards
+   — the log names the revision it reused or downloaded, and a download that does not produce it fails here instead of
+   surfacing later as a misleading library error — and launches it headlessly, so startup ends with
    `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
 
 `pnpm exec playwright test` and `bash scripts/setup-playwright-agent.sh --probe-browser` need no manual setup: the

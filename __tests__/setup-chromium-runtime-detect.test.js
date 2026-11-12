@@ -263,6 +263,16 @@ describe("Chromium runtime detection", () => {
     expect(root.stderr).toMatch(/no Chromium at the pinned revision/);
   });
 
+  it("reports the pinned revision for the install log", () => {
+    const fixture = createFixture({ systemRuntime: true });
+
+    // `--install-browser` labels what it reused or installed with this value, so it must
+    // be the revision Playwright will actually run, not the newest directory on disk.
+    const revision = run(fixture, ["--browser-revision"]);
+    expect(revision.status, revision.stderr).toBe(0);
+    expect(revision.stdout.trim()).toBe(PINNED_REVISION);
+  });
+
   it("fails --browser-root when no Chromium is installed anywhere", () => {
     const fixture = createFixture({ systemRuntime: true });
 

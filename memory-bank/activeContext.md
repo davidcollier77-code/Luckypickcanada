@@ -41,7 +41,9 @@ Three Graphite findings and two failing checks were fixed on the same branch. `-
 Playwright version is repaired instead of trusted. The tests cover the pinned read-only root and both wrong-revision
 cases, and no longer assume the host has no system Chrome. Separately, `validate-open-next-repair.yml` now installs
 pnpm before `actions/setup-node` uses `cache: pnpm`, and `__tests__/workflow-pnpm-setup-order.test.js` guards that
-order across every workflow.
+order across every workflow. `--install-browser` now also logs the pinned revision it reused or installed and re-runs
+`--browser-root` afterwards, so a download that does not produce the pinned browser fails as a setup error instead of
+surfacing at the probe as a misleading library problem; `--browser-revision` exposes the pin for that log.
 
 ## Verification
 
