@@ -17,9 +17,11 @@ for arg in "$@"; do
 Usage: ./scripts/setup-playwright-agent.sh [--install-browser] [--probe-browser]
 
 Validates pnpm exec playwright cli.
---install-browser  Downloads the project-pinned Chromium browser.
+--install-browser  Downloads the project-pinned Chromium browser when none is present,
+                   then confirms that the pinned revision is installed.
 --probe-browser    Attempts a real headless Chromium launch.
 
+An existing browser, including a prebaked root provided by the environment, is reused.
 No global npm package, sudo or operating-system package installation is performed.
 USAGE
       exit 0
@@ -72,9 +74,36 @@ printf 'PASS: pnpm exec playwright cli is available.\n'
 
 # Exit codes: 0 = success, 1 = environment/setup failure,
 # 2 = invalid usage (unknown option), 3 = Chromium launch blocked.
+# The Chromium revision the installed Playwright pins, read from playwright-core. Used
+# only as a log label; empty when the pin cannot be resolved, so printing never fails.
+chromium_revision() {
+  bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-revision 2>/dev/null || true
+}
+
 if [[ "$install_browser" == true ]]; then
-  printf 'Installing the matching Chromium browser...\n'
-  pnpm exec playwright install chromium
+  revision="$(chromium_revision)"
+  revision_label=""
+  [[ -z "$revision" ]] || revision_label=" (revision $revision)"
+
+  # A browser that is already present — Playwright's own cache or a prebaked root the
+  # environment provides — is used as it is, so an image that ships one costs no download.
+  if browser_root="$(bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-root 2>/dev/null)"; then
+    printf 'Chromium%s is already installed in %s; skipping the download.\n' \
+      "$revision_label" "$browser_root"
+  else
+    printf 'Installing Chromium%s...\n' "$revision_label"
+    pnpm exec playwright install chromium
+    # A finished download is not proof that the pinned revision landed. Without this
+    # check a partial or stale install would only surface at the probe, whose message
+    # blames the host libraries — the wrong subsystem entirely.
+    if ! browser_root="$(bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-root)"; then
+      printf 'FAIL: the browser install finished, but no Chromium%s is installed.\n' \
+        "$revision_label" >&2
+      printf 'Re-run `pnpm exec playwright install chromium` and read its output, or point PLAYWRIGHT_BROWSERS_PATH at a root that holds the pinned revision.\n' >&2
+      exit 1
+    fi
+    printf 'Chromium%s installed in %s.\n' "$revision_label" "$browser_root"
+  fi
 fi
 
 if [[ "$probe_browser" == true ]]; then

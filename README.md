@@ -92,7 +92,9 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    `ldd` against the Playwright Chromium binary, so provisioning only runs when the libraries are missing. The image
    ships none of them and refuses `sudo`, so the script downloads the official Ubuntu packages with `apt-get` as an
    unprivileged downloader and unpacks them into `~/.local/chromium-libs`; nothing is written system-wide. A
-   provisioned workspace takes about 11 s once.
+   provisioned workspace takes about 11 s once. A system-wide runtime — every required object, `/etc/fonts/fonts.conf`
+   and a system font directory — satisfies the same check, so a machine or image that already installs the packages
+   needs no download and no exports at all.
 6. `eval "$(bash scripts/setup-chromium-libs.sh --env)"` — applies the `LD_LIBRARY_PATH` and `FONTCONFIG_*` values in
    the shell that runs the probe, because the provisioning step's environment does not outlive its own process.
 7. `bash scripts/setup-chromium-libs.sh --persist` — writes `~/.local/chromium-libs/env.sh` and sources it from a
@@ -101,8 +103,11 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    Both files live under `$HOME`, so the wiring survives workspace restarts and is rewritten idempotently, never
    duplicated.
 8. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — applies the same Chromium
-   environment to its own shell, installs the project-pinned Chromium (a no-op when the cache already matches
-   Playwright 1.64.1) and launches it headlessly, so startup ends with
+   environment to its own shell, installs the project-pinned Chromium only when `--browser-root` reports no browser
+   at the pinned revision (an existing matching cache or an environment-provided install costs no download, while a
+   cache left behind by another Playwright version is repaired), confirms the pinned revision is installed afterwards
+   — the log names the revision it reused or downloaded, and a download that does not produce it fails here instead of
+   surfacing later as a misleading library error — and launches it headlessly, so startup ends with
    `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
 
 `pnpm exec playwright test` and `bash scripts/setup-playwright-agent.sh --probe-browser` need no manual setup: the
@@ -124,6 +129,19 @@ not have. `./scripts/playwright-cli.sh test ...` passes test runs through to `pn
 neither workaround because `playwright.config.ts` injects the same paths. A bare `pnpm exec playwright cli` still
 works once the environment is applied and `--browser=chromium` is passed, but nothing should depend on remembering
 that.
+
+**Where the browser comes from.** `scripts/setup-chromium-libs.sh --browser-root` prints the directory a workspace
+will launch. A prebaked Playwright install — `$PLAYWRIGHT_BROWSERS_PATH`, or one of `/opt/ms-playwright`,
+`/usr/local/share/ms-playwright`, `/usr/share/ms-playwright`, `/ms-playwright` — is used as it is and exported, so
+Playwright, the probe and the CLI read it instead of downloading it. A read-only directory is only trusted when it
+holds the revision this repository pins (`chromium-1248`), because Playwright fails on a mismatch instead of falling
+back; a writable one may hold any revision, since `playwright install` can repair it in place. With no prebaked
+install, the default `~/.cache/ms-playwright` is used.
+
+The same revision rule covers Playwright's own `~/.cache/ms-playwright`: `--browser-root` succeeds only when the
+pinned revision is present there, so a cache written by an older or newer Playwright makes
+`setup-playwright-agent.sh --install-browser` download the pinned build instead of skipping it. The strict `--check`
+verifies the pinned binaries too, so `ldd` never reports a launchable browser that Playwright would refuse to start.
 
 `bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
 `PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.
