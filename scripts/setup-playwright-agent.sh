@@ -17,9 +17,10 @@ for arg in "$@"; do
 Usage: ./scripts/setup-playwright-agent.sh [--install-browser] [--probe-browser]
 
 Validates pnpm exec playwright cli.
---install-browser  Downloads the project-pinned Chromium browser.
+--install-browser  Downloads the project-pinned Chromium browser when none is present.
 --probe-browser    Attempts a real headless Chromium launch.
 
+An existing browser, including a prebaked root provided by the environment, is reused.
 No global npm package, sudo or operating-system package installation is performed.
 USAGE
       exit 0
@@ -73,8 +74,14 @@ printf 'PASS: pnpm exec playwright cli is available.\n'
 # Exit codes: 0 = success, 1 = environment/setup failure,
 # 2 = invalid usage (unknown option), 3 = Chromium launch blocked.
 if [[ "$install_browser" == true ]]; then
-  printf 'Installing the matching Chromium browser...\n'
-  pnpm exec playwright install chromium
+  # A browser that is already present — Playwright's own cache or a prebaked root the
+  # environment provides — is used as it is, so an image that ships one costs no download.
+  if browser_root="$(bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-root 2>/dev/null)"; then
+    printf 'Chromium is already installed in %s; skipping the download.\n' "$browser_root"
+  else
+    printf 'Installing the matching Chromium browser...\n'
+    pnpm exec playwright install chromium
+  fi
 fi
 
 if [[ "$probe_browser" == true ]]; then

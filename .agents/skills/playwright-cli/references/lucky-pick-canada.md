@@ -51,7 +51,7 @@ To test an actual headless launch:
 ./scripts/setup-playwright-agent.sh --probe-browser
 ```
 
-The script does not run sudo or install Linux packages. Downloading Chromium does not guarantee the VM has every shared library. Diagnose a real launch error; do not repeatedly reinstall Chromium or introduce undocumented library-path hacks. Follow `AGENTS.md`: Playwright first, Browserless fallback if Playwright is unavailable or fails, and Browserbase only with explicit owner approval. Do not put Browserless/Browserbase into automatic PR-checker workflows.
+The script does not run sudo or install Linux packages. Downloading Chromium does not guarantee the VM has every shared library. Diagnose a real launch error; do not repeatedly reinstall Chromium or introduce undocumented library-path hacks. Both scripts defer to the environment first: a system-wide library set and fontconfig, or a prebaked browser root under `PLAYWRIGHT_BROWSERS_PATH`, are used as they are. Run `bash scripts/setup-chromium-libs.sh --browser-root` to see which browser a workspace will launch before reaching for any setup command. Follow `AGENTS.md`: Playwright first, Browserless fallback if Playwright is unavailable or fails, and Browserbase only with explicit owner approval. Do not put Browserless/Browserbase into automatic PR-checker workflows.
 
 ## Eight capability areas
 
