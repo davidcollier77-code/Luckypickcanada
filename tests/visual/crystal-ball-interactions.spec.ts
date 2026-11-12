@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectRecognizedCrystalBallGreeting } from './crystal-ball-greeting-assertions';
 
 test.describe.configure({ timeout: 90_000 });
 
