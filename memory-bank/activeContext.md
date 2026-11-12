@@ -1,57 +1,51 @@
-# Active Context — Development-Only Crystal Ball Date Preview
+# Active Context — Playwright Chromium Runtime Environment
 
 - **Updated:** 2026-11-12
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/3625a98e3b6b0eab9e6a60b2-date-preview`
+- **Branch:** `freebuff/0fe51d9fb70d7d5eedbd7455`
 - **Base:** `main`
-- **Spec Kit feature:** `specs/143-crystal-ball-date-preview`
-- **Pull request:** #1843 (open)
+- **Spec Kit feature:** `specs/146-playwright-chromium-runtime`
 
 ## Current Task
 
-Add a development-only way to preview the Crystal Ball on any local date so every seasonal window
-can be reviewed without changing the system clock, while leaving `/crystal-ball` unchanged.
+Make the repository's Playwright installation launch Chromium reliably in the Freebuff workspace: fix the missing
+`libnspr4.so`, carry `LD_LIBRARY_PATH`/`FONTCONFIG_FILE`/`FONTCONFIG_PATH` into the shell that launches the browser,
+survive workspace restarts, and document the exact startup configuration for Freebuff's project settings.
+
+## Root Cause
+
+The libraries and the Chromium 1248 browser were already provisioned in `~/.local/chromium-libs`, so the missing
+`libnspr4.so` was not an install failure. The startup command exported the paths with `eval "$(… --env)"`, which died
+with that process; Freebuff tool shells are non-login, non-interactive `bash -c` processes (`$-` = `hBc`, `BASH_ENV`
+unset) and `$HOME` had no `.profile`/`.bashrc`, so every later launch started with no library path. A second defect:
+`--check` inspected only `chrome`, while a headless `chromium.launch()` runs `chrome-headless-shell`.
 
 ## Implementation
 
-- Added `app/lib/crystal-ball-preview.js` for production gating, date/time validation, one local
-  preview moment, URL building, date shifting, page-state usage and 29 occasion presets.
-- Added `/crystal-ball/preview`, which calls `notFound()` when `NODE_ENV === 'production'`.
-- Added the preview client and controls: native date and time inputs, occasion presets (Canada Day
-  build-up and day, Remembrance Day, Truth and Reconciliation, Christmas stages, Boxing Day, New
-  Year stages), time-of-day shortcuts and reset.
-- Preview fortunes and follow-ups live only in page state; the real daily-usage key is never read or
-  written by the preview.
-- `CrystalBall` gained optional `previewActive`, `previewDateKey` and `previewNow` props. Existing
-  callers pass none, so `/crystal-ball` behaviour, artwork, CSS and animations are unchanged.
-
-## Conflict Repair
-
-PR #1842 was squash-merged into `main` as `7563720514b05c5f1be18823f093af7de8070d31`, and its
-feature branch was deleted. GitHub retargeted #1843 to `main`, but the branch still carried the
-pre-squash parent commit, so the two histories conflicted. `main` was merged into this branch:
-
-- kept the preview-aware `CrystalBall` implementation, which already contains the merged #1842
-  greeting and local-time behaviour;
-- retained both the #1843 and #1842 milestone entries in `memory-bank/progress.md`;
-- updated this active-task record to the new `main` base and removed the stale stacked-PR handoff.
+- `scripts/setup-chromium-libs.sh`: `--check` validates both Playwright Chromium binaries and the fontconfig files;
+  a plain run reuses a complete 27 MB prefix instead of downloading again; `--env` prints idempotent POSIX exports;
+  new `--persist` writes `$PREFIX/env.sh` and rewires one marked block in `~/.profile` and `~/.bashrc`.
+- `scripts/setup-playwright-agent.sh`: applies `--env` to its own process before the probe, so the probe works with no
+  caller setup.
+- `playwright.config.ts`: adds the prefix's library and fontconfig paths to the browser environment when
+  `libnspr4.so` exists there; a no-op on developer machines and CI runners.
+- `README.md` and `__tests__/freebuff-startup-command.test.js`: startup command gains the persist step; the fixture now
+  proves the probe inherits the exported paths.
 
 ## Verification
 
-- **PASS:** focused Crystal Ball suites — 70 tests across 5 files.
-- **PASS:** full unit suite — 62 files, 591 tests.
-- **PASS:** `pnpm exec tsc --noEmit`.
-- **PASS:** production build — `Build completed successfully`.
-- **PASS:** repository gate with `SPEC_KIT_BASE_REF=7563720514b05c5f1be18823f093af7de8070d31` —
-  exit 0; only `specs/143-crystal-ball-date-preview` differs from `main`.
-- **PASS:** OpenNext bundle produced `.open-next/worker.js`; production build 454,117,035 B =
-  433.08 MiB, below 495 MiB.
-- **PASS:** production `/crystal-ball` 200 with no preview markup; production preview route 404;
-  development preview route 200.
-- **BLOCKED:** local Playwright launch (`libnspr4.so`), so no browser visual run for the development
-  route. The preview client was mounted and exercised in Vitest instead.
+- **PASS:** probe with no library environment — `PASS: Chromium launched and rendered a probe page`.
+- **PASS:** Playwright Test in a bare shell — `tests/visual/gold-cta.spec.ts --project=desktop`, 4/4.
+- **PASS:** real interaction — `playwright cli open/click/screenshot/eval` on the live site, heading `Crystal Ball`.
+- **PASS:** cold provisioning into a throwaway prefix (3.3 s, `libnspr4.so` present); documented startup command twice,
+  exit 0, idempotent profiles.
+- **PASS:** guard test 9/9, `bash -n`, `pnpm exec tsc --noEmit`.
+- **PASS:** `./freebuff-verify.sh`.
 
-## Handoff
+Evidence is in `specs/146-playwright-chromium-runtime/evidence.md`.
 
-PR #1843 now targets `main` and its diff contains only the date-preview work. Evidence is in
-`specs/143-crystal-ball-date-preview/evidence.md`.
+## Durable Locations
+
+- Libraries: `~/.local/chromium-libs` (27 MB, no root); apt cache `~/.apt-user`.
+- Browser: `~/.cache/ms-playwright` (Chromium 1248 + headless shell + ffmpeg).
+- Environment: `~/.local/chromium-libs/env.sh`, sourced from `~/.profile` and `~/.bashrc`.
