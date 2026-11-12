@@ -2,6 +2,16 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Development-only Crystal Ball date preview
+- Added a separate `/crystal-ball/preview` route that is 404 in production and lets a reviewer pick
+  any local date/time, with occasion presets for every Canada Day, Christmas, New Year, Remembrance
+  and other seasonal window.
+- Preview readings stay in page state, so reviewing a date never consumes the visitor's daily
+  fortune or follow-up; `/crystal-ball` itself is unchanged.
+- Verified 591 unit/component tests, the repository gate with the `main` base, a 433.08 MiB build,
+  and production/dev route status over HTTP; repaired the retarget conflict after #1842 was
+  squash-merged.
+
 ## 2026-11-12 — Crystal Ball personality, local time and Canadian seasons
 - Added one shared browser-local time system, a Canadian calendar/occasion model with escalating
   Canada Day, Christmas and New Year windows, and large curated general/seasonal/occasion fallback

@@ -8,6 +8,7 @@ import GoldenLeaf from './GoldenLeaf';
 import { useDailyResetCountdown } from '../../../components/daily-reset-countdown';
 import { composeGreeting, readDailyGreeting } from '../../crystal-ball-client/greetings';
 import { getLocalMoment } from '../../lib/local-time';
+import { PREVIEW_STORAGE } from '../../lib/crystal-ball-preview';
 
 type Status =
   | 'idle'
@@ -166,6 +167,9 @@ export interface CrystalBallProps {
   backHref?: string;
   luckMeterHref?: string;
   communityMapHref?: string;
+  previewActive?: boolean;
+  previewDateKey?: string | null;
+  previewNow?: Date | null;
 }
 
 export default function CrystalBall({
@@ -178,9 +182,14 @@ export default function CrystalBall({
   backHref = '/',
   luckMeterHref = '/lucky-meter',
   communityMapHref = '/map',
+  previewActive = false,
+  previewDateKey = null,
+  previewNow = null,
 }: CrystalBallProps) {
   const { ready: resetReady, formatted: resetCountdown, dateKey, now } =
     useDailyResetCountdown();
+  const effectiveDateKey = previewDateKey || dateKey;
+  const clockMs = previewNow ? previewNow.getTime() : now;
 
   const [dailyGreeting, setDailyGreeting] = useState('');
   const [greetingCharCount, setGreetingCharCount] = useState(0);
@@ -217,16 +226,18 @@ export default function CrystalBall({
   // salutation for the current local period. The shared one-second clock lets
   // the greeting change at a period boundary without a reload.
   useEffect(() => {
-    if (!dateKey) return;
-    setDailyGreeting(readDailyGreeting(undefined, dateKey).text);
-  }, [dateKey]);
+    if (!effectiveDateKey) return;
+    setDailyGreeting(
+      readDailyGreeting(previewActive ? PREVIEW_STORAGE : undefined, effectiveDateKey).text,
+    );
+  }, [effectiveDateKey, previewActive]);
 
   const greeting = useMemo(
     () =>
       dailyGreeting
-        ? composeGreeting(dailyGreeting, getLocalMoment(new Date(now || Date.now())))
+        ? composeGreeting(dailyGreeting, getLocalMoment(new Date(clockMs || Date.now())))
         : '',
-    [dailyGreeting, now],
+    [dailyGreeting, clockMs],
   );
 
   const fortuneChars = useMemo(() => currentFortune ? Array.from(currentFortune) : [], [currentFortune]);
@@ -704,8 +715,13 @@ export default function CrystalBall({
             {statusHeadline}
           </p>
 
-          <p className={styles.dailyQuotaCountdown} aria-label="Time until daily reset">
-            Daily reset in {resetReady ? resetCountdown : '--:--:--'}
+          <p
+            className={styles.dailyQuotaCountdown}
+            aria-label={previewActive ? 'Preview mode' : 'Time until daily reset'}
+          >
+            {previewActive
+              ? 'Preview mode — daily allowance bypassed'
+              : `Daily reset in ${resetReady ? resetCountdown : '--:--:--'}`}
           </p>
 
           {!currentFortune && !fortuneUsed && (
