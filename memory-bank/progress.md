@@ -2,6 +2,15 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Playwright Chromium runtime environment
+- Diagnosed why Playwright still failed on `libnspr4.so` with the libraries installed: the startup command's
+  `eval "$(… --env)"` died with that process, and Freebuff tool shells are `bash -c` with no profile.
+- Made the existing provisioning script check both Playwright Chromium binaries, reuse a complete prefix, and persist
+  its environment into `~/.local/chromium-libs/env.sh` plus one idempotent block in `~/.profile`/`~/.bashrc`;
+  `setup-playwright-agent.sh` now applies that environment itself and `playwright.config.ts` injects it for tests.
+- Verified a real launch with no library environment, `gold-cta` 4/4 in a bare shell, live `playwright cli`
+  interaction, cold provisioning, and the documented startup command twice.
+
 ## 2026-11-12 — Development-only Crystal Ball date preview
 - Added a separate `/crystal-ball/preview` route that is 404 in production and lets a reviewer pick
   any local date/time, with occasion presets for every Canada Day, Christmas, New Year, Remembrance

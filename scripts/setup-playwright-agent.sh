@@ -41,6 +41,17 @@ if [[ "$node_major" -ne 26 ]]; then
   exit 1
 fi
 
+# Apply the Chromium runtime environment from scripts/setup-chromium-libs.sh to this
+# shell, so a browser launched here finds libnspr4.so and friends without the caller
+# having exported LD_LIBRARY_PATH and FONTCONFIG_* first. The export only reaches this
+# process and anything it starts, which is exactly the scope the launch needs.
+if [[ -f "$ROOT/scripts/setup-chromium-libs.sh" ]]; then
+  if chromium_env="$(bash "$ROOT/scripts/setup-chromium-libs.sh" --env 2>/dev/null)"; then
+    eval "$chromium_env"
+    printf 'Chromium runtime environment applied (LD_LIBRARY_PATH, FONTCONFIG_FILE, FONTCONFIG_PATH).\n'
+  fi
+fi
+
 # shellcheck source=scripts/bootstrap-pnpm.sh
 source "$ROOT/scripts/bootstrap-pnpm.sh"
 
@@ -85,7 +96,7 @@ try {
 }
 NODE
   then
-    printf 'BLOCKED: Chromium could not launch in this environment. Check the reported host-library error; do not use sudo or install OS packages through this script. Follow AGENTS.md browser fallback guidance.\n' >&2
+    printf 'BLOCKED: Chromium could not launch in this environment. Check the reported host-library error; provision it with `bash scripts/setup-chromium-libs.sh` (no sudo, no OS packages). Follow AGENTS.md browser fallback guidance.\n' >&2
     exit 3
   fi
 fi
