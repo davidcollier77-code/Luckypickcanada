@@ -2,6 +2,17 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Playwright workspace hardening
+- Closed the three failure points found while verifying that browser work survives a reopened workspace: the wrapper
+  now resolves the pinned pnpm even when dependencies are already installed and `$HOME/.local/bin` is missing from
+  `PATH` (previously `exec: pnpm: not found`, exit 127), and it decides whether to download Chromium through
+  `setup-chromium-libs.sh --browser-root` instead of a `chromium-*` glob that matched any revision.
+- `playwright.config.ts` now trusts an inherited `FONTCONFIG_FILE`/`FONTCONFIG_PATH` only when the path exists, so a
+  workspace shell carrying another chat's stale font path no longer drops the provisioned fonts from test runs.
+- Verified: scrubbed-`PATH` wrapper exit 0, foreign-revision cache repaired (191 MiB download, launch 11 s), warm launch
+  4 s with no download, 9 focused tests, 66 unit-test files, `./freebuff-verify.sh` exit 0, production build 291.90 MiB,
+  and a live 1280 × 9366 full-page capture. Evidence is in `artifacts/playwright-verification/`.
+
 ## 2026-11-12 — Reliable Playwright browser work in a cold Cloud workspace
 - Found `scripts/setup-chromium-libs.sh` did not parse at HEAD (a mangled `printf` in the reuse branch), so no
   provisioning, check, export or persist path could ever run; repaired the line and added a `bash -n` guard test over

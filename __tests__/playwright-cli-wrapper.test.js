@@ -62,4 +62,27 @@ describe('playwright-cli wrapper', () => {
       'pnpm exec playwright test --project=desktop',
     );
   });
+
+  // The wrapper always executes a pnpm command, so it must resolve the pinned
+  // pnpm even when the dependency tree is already installed and $HOME/.local/bin
+  // is missing from PATH - otherwise it dies with `pnpm: not found` (exit 127).
+  it('resolves the pinned pnpm before deciding dependencies are installed', () => {
+    const source = fs.readFileSync(wrapper, 'utf8');
+    const bootstrap = source.indexOf('source "$ROOT/scripts/bootstrap-pnpm.sh"');
+    const dependencyGuard = source.indexOf('if [[ ! -x "$ROOT/node_modules/.bin/playwright" ]]');
+
+    expect(bootstrap).toBeGreaterThan(-1);
+    expect(dependencyGuard).toBeGreaterThan(-1);
+    expect(bootstrap).toBeLessThan(dependencyGuard);
+  });
+
+  // A `chromium-*` glob matches a cache left by any Playwright version, so a
+  // dependency bump would skip the install and fail at launch. The revision
+  // decision belongs to `--browser-root`, which checks the pinned revision.
+  it('skips the browser download only when the pinned revision is present', () => {
+    const source = fs.readFileSync(wrapper, 'utf8');
+
+    expect(source).toContain('setup-chromium-libs.sh" --browser-root');
+    expect(source).not.toContain('compgen -G "$HOME/.cache/ms-playwright/chromium-*"');
+  });
 });
