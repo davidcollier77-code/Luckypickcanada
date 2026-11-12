@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectRecognizedCrystalBallGreeting } from './crystal-ball-greeting-assertions';
 
 test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks at responsive sizes', async ({ page }) => {
   await page.goto('/crystal-ball', { waitUntil: 'domcontentloaded', timeout: 30_000 });
@@ -80,9 +81,7 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   await expect(page.getByRole('button', { name: /Generate My Fortune/i })).toBeVisible();
   const greeting = page.getByTestId('crystal-ball-greeting');
   await expect(greeting).toBeVisible();
-  await expect(greeting.locator('.sr-only')).toHaveText(
-    /Well, look who's feeling lucky today\.|Let's see what the universe has up its sleeve, eh\?|I've been waiting for you\.|Pull up a chair, friend/,
-  );
+  await expectRecognizedCrystalBallGreeting(page, greeting.locator('.sr-only'));
   // This page also carries its own "Luck Generator" content CTA, so scope the
   // navigation check to the shared footer navigation instead of matching both.
   await expect(

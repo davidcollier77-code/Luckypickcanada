@@ -1,12 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { GREETINGS } from '../../app/crystal-ball-client/greetings';
+import { expectRecognizedCrystalBallGreeting } from './crystal-ball-greeting-assertions';
 
 const GREETING_STORAGE_KEY = 'luckyPickCanada:crystalBallGreeting:v1';
-const APPROVED_GREETINGS = [
-  "Well, look who's feeling lucky today.",
-  "Let's see what the universe has up its sleeve, eh?",
-  "I've been waiting for you. Not that I'm keeping track or anything.",
-  'Pull up a chair, friend — the mists kept the good seat warm for you.',
-];
 
 function localDateKey(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -25,9 +21,13 @@ test('the daily greeting is stable for the day and never repeats the previous da
   };
 
   const first = await readGreeting();
-  const firstPersonality = APPROVED_GREETINGS.find((greeting) => first.includes(greeting));
-  expect(firstPersonality, `No approved greeting found in: ${first}`).toBeTruthy();
-  expect(first).toMatch(/^(Good morning\.|Good afternoon\.|Good evening\.|Still up, eh\?) /);
+  const quietGreeting = await expectRecognizedCrystalBallGreeting(page, greetingText);
+  if (quietGreeting) {
+    expect(first).toBe(quietGreeting);
+  } else {
+    expect(GREETINGS.some((greeting) => first.includes(greeting))).toBe(true);
+    expect(first).toMatch(/^(Good morning\.|Good afternoon\.|Good evening\.|Still up, eh\?) /);
+  }
 
   // A refresh keeps the same greeting for the rest of the local day.
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -47,9 +47,23 @@ test('the daily greeting is stable for the day and never repeats the previous da
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   const second = await readGreeting();
-  const secondPersonality = APPROVED_GREETINGS.find((greeting) => second.includes(greeting));
-  expect(secondPersonality, `No approved greeting found in: ${second}`).toBeTruthy();
-  expect(secondPersonality).not.toBe(APPROVED_GREETINGS[0]);
+  const secondQuietGreeting = await expectRecognizedCrystalBallGreeting(page, greetingText);
+  if (secondQuietGreeting) {
+    expect(second).toBe(secondQuietGreeting);
+  } else {
+    expect(GREETINGS.some((greeting) => second.includes(greeting))).toBe(true);
+  }
+
+  const storedIndex = await page.evaluate((key) => {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw).index;
+    } catch {
+      return null;
+    }
+  }, GREETING_STORAGE_KEY);
+  expect(storedIndex).not.toBe(0);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(greetingText).toHaveText(second);
@@ -65,8 +79,5 @@ test('the greeting types out with the golden maple-leaf cursor', async ({ page }
 
   const cursor = greeting.locator('[class*="goldenLeafCursor"] img');
   await expect(cursor).toHaveAttribute('src', '/assets/golden-maple-leaf.svg');
-  await expect(greeting.locator('.sr-only')).toHaveText(
-    /Well, look who's|Let's see what the universe|I've been waiting for you|Pull up a chair/,
-    { timeout: 10_000 },
-  );
+  await expectRecognizedCrystalBallGreeting(page, greeting.locator('.sr-only'));
 });
