@@ -31,7 +31,7 @@ can be reviewed without changing the system clock, while leaving `/crystal-ball`
   591 tests.
 - **PASS:** `./freebuff-verify.sh` with `SPEC_KIT_BASE_REF=freebuff/3625a98e3b6b0eab9e6a60b2` —
   exit 0, including the Spec Kit gate, governance tests, type check, build and 36/36 docs tests.
-- **PASS:** production build 454,105,614 B = 433.07 MiB, below 495 MiB; OpenNext produced
+- **PASS:** production build 454,108,456 B = 433.07 MiB, below 495 MiB; OpenNext produced
   `.open-next/worker.js`.
 - **PASS:** production `/crystal-ball` is 200 with no preview markup; production preview route is
   404; development preview route is 200.

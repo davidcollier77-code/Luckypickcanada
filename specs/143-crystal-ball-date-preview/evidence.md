@@ -51,9 +51,9 @@ controls or Crystal Ball markup are rendered.
 Measured after the final production build:
 
 ```text
-.next       420,101,676 bytes
+.next       420,104,518 bytes
 public       34,003,938 bytes
-total       454,105,614 bytes = 433.07 MiB
+total       454,108,456 bytes = 433.07 MiB
 ```
 
 The repository hard cap is strictly below 495 MiB. **PASS.**
