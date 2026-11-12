@@ -83,18 +83,22 @@ The current Cloud workspace keeps its exact behavior: prefix provisioning, the s
   with `CHROMIUM_BROWSER_DIRS`.
 - **FR-006**: A root is usable only when it contains a `chrome` or `chrome-headless-shell` binary (symlinks followed).
   A read-only root MUST also hold the revision pinned by the repository's `playwright-core/browsers.json`; a writable
-  root may hold any revision.
+  root may hold any revision because it can be repaired in place. The revision rule applies to Playwright's default
+  `~/.cache/ms-playwright` as well: a cache holding only another revision is not a launchable install.
 - **FR-007**: The chosen prebaked root MUST be exported as `PLAYWRIGHT_BROWSERS_PATH` by `--env` and stored in
   `launchOptions.env` by `--persist`, so `playwright install`, the launch probe and the CLI all use it.
-- **FR-008**: `--browser-root` MUST print the effective root and exit 0 when a browser is present, and exit 1 with a
-  diagnostic when none is.
+- **FR-008**: `--browser-root` MUST print the effective root and exit 0 only when the pinned revision is present, and
+  exit 1 with a diagnostic naming the expected revision otherwise.
 - **FR-009**: `scripts/setup-playwright-agent.sh --install-browser` MUST skip `pnpm exec playwright install chromium`
-  when `--browser-root` succeeds, and keep installing otherwise.
+  only when `--browser-root` succeeds, so a wrong revision is always repaired by the install that follows.
 - **FR-010**: `--persist` MUST remove the library, font and browser-root keys this workspace no longer needs from an
   existing CLI config while preserving every unrelated key.
 - **FR-011**: With no system runtime and no prebaked root, the artifacts and the launch behavior MUST be unchanged.
-- **FR-012**: No application code, dependency, lockfile, workflow, hosting, deployment, secret, `AGENTS.md` or
-  `.docs/` change.
+- **FR-012**: No application code, dependency, lockfile, hosting, deployment, secret, `AGENTS.md` or `.docs/` change.
+- **FR-013**: The shared `--check` gate MUST verify the pinned binaries (plus any system Chrome) rather than any
+  `chromium-*` directory, so a stale revision is never reported as launchable.
+- **FR-014**: Every workflow that caches the pnpm store MUST install pnpm before `actions/setup-node` runs, and a
+  guard test MUST cover all workflows, not only the one that failed.
 
 ## Success Criteria
 
@@ -106,6 +110,9 @@ The current Cloud workspace keeps its exact behavior: prefix provisioning, the s
   and `--install-browser` reports the browser as already installed instead of downloading it.
 - **SC-005**: `./freebuff-verify.sh`, `tsc --noEmit` and the full unit suite pass; the production build stays below
   495 MiB.
+- **SC-006**: A default cache holding only another revision makes `--browser-root` exit 1, so the install runs.
+- **SC-007**: The `--check` assertions do not depend on whether the host has a system Chrome; the guard suite passes
+  on a runner that provides `/usr/bin/google-chrome`.
 
 ## Assumptions
 

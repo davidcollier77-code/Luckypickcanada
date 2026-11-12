@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -12,9 +13,11 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 // The detection contract: a system-wide runtime or a prebaked Playwright browser root is
-// used as it is, and the private prefix is only provisioned when neither is available.
-// Every fixture redirects the detection directories, so these tests never consult this
-// machine's real libraries, fonts or /opt, and never reach the apt download path.
+// used when it is present *and launchable* — the pinned Chromium revision — and the
+// private prefix is only provisioned when neither is available. Every fixture redirects
+// the detection directories, so these tests never consult this machine's real libraries,
+// fonts or /opt, never reach the apt download path, and never depend on whether the host
+// has a system Chrome.
 const REPO_ROOT = process.cwd();
 const SCRIPT = join(REPO_ROOT, "scripts", "setup-chromium-libs.sh");
 
@@ -37,11 +40,54 @@ const REQUIRED_LIBS = [
   "libatspi.so.0",
 ];
 
+// The revision the repository's own Playwright pins, resolved the same way the script
+// resolves it. When it cannot be resolved the revision-specific tests are skipped rather
+// than asserting a guessed number.
+const PINNED_REVISION = (() => {
+  const result = spawnSync(
+    "node",
+    [
+      "--input-type=commonjs",
+      "-e",
+      [
+        'const fs = require("node:fs");',
+        'const path = require("node:path");',
+        "const candidates = [];",
+        'try { candidates.push(require.resolve("playwright-core/browsers.json")); } catch {}',
+        "try {",
+        '  const manifest = require.resolve("playwright/package.json");',
+        '  candidates.push(path.join(path.dirname(manifest), "..", "playwright-core", "browsers.json"));',
+        "} catch {}",
+        "for (const file of candidates) {",
+        "  try {",
+        '    const data = JSON.parse(fs.readFileSync(file, "utf8"));',
+        '    const chromium = (data.browsers ?? []).find((entry) => entry.name === "chromium");',
+        "    if (chromium?.revision) { process.stdout.write(String(chromium.revision)); process.exit(0); }",
+        "  } catch {}",
+        "}",
+        "process.exit(1);",
+      ].join("\n"),
+    ],
+    { cwd: REPO_ROOT, encoding: "utf8" },
+  );
+  return (result.stdout || "").trim();
+})();
+
 const fixtures = [];
+
+function writeChromium(root, revision, { readOnly = false } = {}) {
+  const binaryDirectory = join(root, `chromium-${revision}`, "chrome-linux64");
+  mkdirSync(binaryDirectory, { recursive: true });
+  writeFileSync(join(binaryDirectory, "chrome"), "#!/bin/sh\nexit 0\n", {
+    mode: 0o755,
+  });
+  if (readOnly) chmodSync(join(root, `chromium-${revision}`), 0o555);
+  if (readOnly) chmodSync(root, 0o555);
+}
 
 function createFixture({
   systemRuntime = false,
-  prebakedBrowser = false,
+  prebakedRevision = null,
 } = {}) {
   const root = mkdtempSync(join(tmpdir(), "chromium-runtime-detect-"));
   fixtures.push(root);
@@ -67,12 +113,8 @@ function createFixture({
 
   const prebaked = join(root, "prebaked-browsers");
   mkdirSync(prebaked);
-  if (prebakedBrowser) {
-    const binaryDirectory = join(prebaked, "chromium-1", "chrome-linux64");
-    mkdirSync(binaryDirectory, { recursive: true });
-    writeFileSync(join(binaryDirectory, "chrome"), "#!/bin/sh\nexit 0\n", {
-      mode: 0o755,
-    });
+  if (prebakedRevision) {
+    writeChromium(prebaked, prebakedRevision, { readOnly: true });
   }
 
   const env = {
@@ -101,8 +143,12 @@ function run(fixture, args) {
 }
 
 afterEach(() => {
-  while (fixtures.length)
-    rmSync(fixtures.pop(), { recursive: true, force: true });
+  while (fixtures.length) {
+    const root = fixtures.pop();
+    // Fixtures mark image-style roots read-only, so restore write permission first.
+    spawnSync("chmod", ["-R", "u+w", root]);
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 describe("Chromium runtime detection", () => {
@@ -139,10 +185,10 @@ describe("Chromium runtime detection", () => {
     expect(env.stdout).toMatch(/FONTCONFIG_FILE/);
   });
 
-  it("reports and exports a prebaked Playwright browser root", () => {
+  it("uses a read-only prebaked root that holds the pinned revision", () => {
     const fixture = createFixture({
       systemRuntime: true,
-      prebakedBrowser: true,
+      prebakedRevision: PINNED_REVISION,
     });
 
     const root = run(fixture, ["--browser-root"]);
@@ -156,12 +202,65 @@ describe("Chromium runtime detection", () => {
 
     const check = run(fixture, ["--check"]);
     expect(check.status, `${check.stdout}\n${check.stderr}`).toBe(0);
+    // Count-agnostic: a host with a system Chrome legitimately adds another binary.
     expect(check.stdout).toMatch(
-      /1 Chromium binaries link with 0 missing shared objects/,
+      /Chromium binaries link with 0 missing shared objects/,
     );
-    expect(check.stdout).toMatch(
-      new RegExp(`browser root: ${fixture.prebaked}`),
+    expect(check.stdout).toContain(
+      join(
+        fixture.prebaked,
+        `chromium-${PINNED_REVISION}`,
+        "chrome-linux64",
+        "chrome",
+      ),
     );
+    expect(check.stdout).toContain(`browser root: ${fixture.prebaked}`);
+  });
+
+  it("rejects a read-only prebaked root with a different revision", () => {
+    const fixture = createFixture({
+      systemRuntime: true,
+      prebakedRevision: "9999",
+    });
+
+    const root = run(fixture, ["--browser-root"]);
+    expect(root.status).toBe(1);
+    expect(root.stderr).toMatch(/no Chromium at the pinned revision/);
+
+    // A read-only root cannot be repaired in place, so it is ignored entirely and
+    // nothing is exported; the install then targets the default cache instead.
+    const env = run(fixture, ["--env"]);
+    expect(env.stdout).not.toMatch(/PLAYWRIGHT_BROWSERS_PATH/);
+    // And the strict check must not claim the wrong revision is launchable.
+    const check = run(fixture, ["--check"]);
+    expect(check.stdout).not.toContain(join(fixture.prebaked, "chromium-9999"));
+  });
+
+  it("skips installation only for a default cache that holds the pinned revision", () => {
+    const fixture = createFixture({ systemRuntime: true });
+    const cache = join(fixture.home, ".cache", "ms-playwright");
+    mkdirSync(cache, { recursive: true });
+    writeChromium(cache, PINNED_REVISION);
+
+    const root = run(fixture, ["--browser-root"]);
+    expect(root.status, root.stderr).toBe(0);
+    expect(root.stdout.trim()).toBe(cache);
+
+    // No prebaked root was chosen, so nothing needs exporting.
+    const env = run(fixture, ["--env"]);
+    expect(env.stdout).not.toMatch(/PLAYWRIGHT_BROWSERS_PATH/);
+  });
+
+  it("rejects a default cache left behind by a different Playwright revision", () => {
+    const fixture = createFixture({ systemRuntime: true });
+    const cache = join(fixture.home, ".cache", "ms-playwright");
+    mkdirSync(cache, { recursive: true });
+    writeChromium(cache, "9999");
+
+    // Exit 1 is what makes `--install-browser` run the install that repairs the cache.
+    const root = run(fixture, ["--browser-root"]);
+    expect(root.status).toBe(1);
+    expect(root.stderr).toMatch(/no Chromium at the pinned revision/);
   });
 
   it("fails --browser-root when no Chromium is installed anywhere", () => {
@@ -169,7 +268,7 @@ describe("Chromium runtime detection", () => {
 
     const root = run(fixture, ["--browser-root"]);
     expect(root.status).toBe(1);
-    expect(root.stderr).toMatch(/no Chromium installed/);
+    expect(root.stderr).toMatch(/no Chromium/);
     expect(root.stdout.trim()).toBe("");
   });
 

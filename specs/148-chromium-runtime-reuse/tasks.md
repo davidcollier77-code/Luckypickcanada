@@ -34,10 +34,23 @@
       ignored; restore the workspace config.
 - [x] T013 `tsc --noEmit`, `./freebuff-verify.sh`, full unit suite, production build size, diff audit.
 
+## Phase 5: Review follow-up on PR #1854
+
+- [x] T014 Revision-validate the default browser cache, not only prebaked roots, and reject an incompatible install.
+- [x] T015 Make `--browser-root` succeed only for the pinned revision, so `--install-browser` repairs a stale cache.
+- [x] T016 Restrict `--check` to the pinned binaries so a stale revision is never reported as launchable.
+- [x] T017 Add tests for the pinned read-only root, the wrong read-only revision, the pinned default cache and the
+      stale default cache; make the binary assertions independent of a host system Chrome.
+- [x] T018 Fix `validate-open-next-repair.yml` so pnpm is installed before `actions/setup-node` uses its cache.
+- [x] T019 Add `__tests__/workflow-pnpm-setup-order.test.js` covering every workflow.
+- [x] T020 Re-run the detection and guard tests, the real workspace checks, the full suite, the repository gate and
+      the production build.
+
 ## Dependencies
 
 - T006–T009 depend on T001–T005.
 - T010–T013 depend on T006–T009.
+- T014–T020 depend on the PR #1854 review findings and T006–T009.
 
 ## Implementation Strategy
 

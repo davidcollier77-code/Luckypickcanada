@@ -27,18 +27,28 @@ browser. Only the first needs provisioning, but the script did the work uncondit
    exactly (`chromium-1248` for Playwright 1.64.1). A writable root may hold any revision because
    `playwright install` can repair it there. Without the pin resolvable (no `node_modules`), read-only roots are not
    trusted, which keeps a fresh checkout from pointing at an unverified browser.
-5. **`PLAYWRIGHT_BROWSERS_PATH` is the delivery mechanism.** It is Playwright's documented override, read by the CLI,
+5. **The pin governs the install skip and the strict check, not only the selection.** Review of the first revision
+   showed the rule stopping at root selection: `--browser-root` accepted any `chrome` binary, so a stale
+   `~/.cache/ms-playwright` (or a writable prebaked root) suppressed the install that would have repaired it, and the
+   probe then failed on the missing pinned revision. `--browser-root` now succeeds only for the pinned revision, which
+   covers the default cache and every writable root, and `--check` lists only the pinned binaries. The writable-any
+   rule survives solely for _selecting and exporting_ a root, where the following install repairs it.
+6. **CI prerequisite, not an application change.** The OpenNext validator failed before running any validation step
+   because `actions/setup-node` with `cache: pnpm` ran before `pnpm/action-setup`. It now matches the order already
+   used by Visual QA and the updater scheduler, and a new guard checks every workflow so the same mistake cannot
+   return silently.
+7. **`PLAYWRIGHT_BROWSERS_PATH` is the delivery mechanism.** It is Playwright's documented override, read by the CLI,
    the probe and the test runner, so `playwright.config.ts` does not change. Its existing prefix injection already
    no-ops when the prefix is absent, which is exactly the system-runtime case.
-6. **Symlinked roots are supported.** `find -L` with `-maxdepth 4` lets an image mount its browser install through a
+8. **Symlinked roots are supported.** `find -L` with `-maxdepth 4` lets an image mount its browser install through a
    symlink; the depth bound keeps the traversal finite.
-7. **Config keys are owned, not accumulated.** `--persist` deletes the library, font and browser-root keys this
+9. **Config keys are owned, not accumulated.** `--persist` deletes the library, font and browser-root keys this
    workspace no longer needs, so a workspace that moved to a system runtime cannot keep launching with a stale
    `LD_LIBRARY_PATH`. Unrelated keys and `launchOptions` entries are preserved.
-8. **Testability by directory override, not by mocking.** `CHROMIUM_SYSTEM_LIB_DIRS`, `CHROMIUM_SYSTEM_FONTS`,
-   `CHROMIUM_SYSTEM_FONT_DIRS` and `CHROMIUM_BROWSER_DIRS` follow the existing `CHROMIUM_LIBS_PREFIX` /
-   `CHROMIUM_APT_STATE` convention, so tests point detection at fixtures and never consult this machine's real
-   libraries or reach the apt path.
+10. **Testability by directory override, not by mocking.** `CHROMIUM_SYSTEM_LIB_DIRS`, `CHROMIUM_SYSTEM_FONTS`,
+    `CHROMIUM_SYSTEM_FONT_DIRS` and `CHROMIUM_BROWSER_DIRS` follow the existing `CHROMIUM_LIBS_PREFIX` /
+    `CHROMIUM_APT_STATE` convention, so tests point detection at fixtures and never consult this machine's real
+    libraries or reach the apt path.
 
 ## Rejected alternatives
 
@@ -58,7 +68,9 @@ browser. Only the first needs provisioning, but the script did the work uncondit
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `scripts/setup-chromium-libs.sh`                                | System-runtime detection, prebaked browser roots, mode-aware `--env`/`--check`/`--persist`, `--browser-root`. |
 | `scripts/setup-playwright-agent.sh`                             | Skip the browser download when `--browser-root` finds one.                                                    |
-| `__tests__/setup-chromium-runtime-detect.test.js`               | Five detection tests.                                                                                         |
+| `__tests__/setup-chromium-runtime-detect.test.js`               | Eight detection tests, including read-only pinned and wrong-revision rejection.                               |
+| `__tests__/workflow-pnpm-setup-order.test.js`                   | Guards pnpm-before-`setup-node` in every workflow.                                                            |
+| `.github/workflows/validate-open-next-repair.yml`               | Installs pnpm before Node.js so the pnpm cache resolves.                                                      |
 | `README.md`                                                     | Steps 5 and 8, plus where the browser comes from.                                                             |
 | `.agents/skills/playwright-cli/references/lucky-pick-canada.md` | Note that both scripts defer to the environment.                                                              |
 | `memory-bank/activeContext.md`, `.specify/feature.json`         | Record this feature.                                                                                          |

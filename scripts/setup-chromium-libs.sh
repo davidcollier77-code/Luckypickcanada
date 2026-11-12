@@ -114,6 +114,8 @@ SYSTEM_RUNTIME_STATUS=""
 BROWSER_ROOT_CACHE=""
 LDCONFIG_LIST=""
 LDCONFIG_LOADED=0
+PINNED_REVISION=""
+PINNED_REVISION_LOADED=0
 
 # `ldconfig -p` is the loader's own view, and covers directories that are not in
 # the list above. Read once: a missing runtime would otherwise run it per library.
@@ -173,10 +175,20 @@ runtime_mode() {
   fi
 }
 
-# The Chromium revision this repository's Playwright expects. A prebaked directory
-# is only trusted without it when it is writable, because Playwright fails on a
-# revision mismatch instead of falling back, and an image directory is read-only.
+# The Chromium revision this repository's Playwright expects. A directory holding a
+# different revision is never a launchable install: Playwright fails on the mismatch
+# instead of falling back. Read once per process; an unresolvable pin (for example
+# before `pnpm install`) is cached as empty so it is not retried per call.
 pinned_chromium_revision() {
+  if (( PINNED_REVISION_LOADED == 0 )); then
+    PINNED_REVISION_LOADED=1
+    PINNED_REVISION="$(detect_pinned_chromium_revision || true)"
+  fi
+  [[ -n "$PINNED_REVISION" ]] || return 1
+  printf '%s\n' "$PINNED_REVISION"
+}
+
+detect_pinned_chromium_revision() {
   command -v node >/dev/null 2>&1 || return 1
   (
     cd "$REPO_ROOT" 2>/dev/null || exit 1
@@ -214,13 +226,43 @@ browser_binaries_in() {
     | head -1 | grep -q .
 }
 
+# A root holds a Chromium this repository can actually launch, which means the pinned
+# revision. The same rule applies to the default cache: a cache left behind by a
+# different Playwright version must not count as installed, or the install that would
+# repair it is skipped and the launch fails with "executable doesn't exist". When the
+# pin cannot be resolved yet, any Chromium is accepted because nothing can be verified.
+root_has_pinned_browser() {
+  local directory="$1" revision
+  revision="$(pinned_chromium_revision || true)"
+  if [[ -z "$revision" ]]; then
+    browser_binaries_in "$directory"
+    return
+  fi
+  [[ -d "$directory/chromium-$revision" ]] && browser_binaries_in "$directory/chromium-$revision"
+}
+
+# The pinned binaries under one root. A headless launch runs `chrome-headless-shell`,
+# so the headless shell directory counts too, but a root with only the headless shell is
+# not reported as the full browser by root_has_pinned_browser.
+pinned_binaries_in() {
+  local directory="$1" revision subdirectory
+  revision="$(pinned_chromium_revision || true)"
+  if [[ -z "$revision" ]]; then
+    find -L "$directory" -maxdepth 4 -type f \
+      \( -name chrome -o -name chrome-headless-shell \) 2>/dev/null
+    return
+  fi
+  for subdirectory in "chromium-$revision" "chromium_headless_shell-$revision"; do
+    [[ -d "$directory/$subdirectory" ]] || continue
+    find -L "$directory/$subdirectory" -maxdepth 4 -type f \
+      \( -name chrome -o -name chrome-headless-shell \) 2>/dev/null
+  done
+}
+
 # A root is used when it already holds a Playwright Chromium. Directories that are
 # not writable must match the pinned revision exactly; a writable one can be
 # repaired in place by `playwright install`, so it is accepted as it is.
 prebaked_browser_root() {
-  local revision=""
-  revision="$(pinned_chromium_revision || true)"
-
   local -a candidates=()
   if [[ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" ]]; then
     candidates+=("$PLAYWRIGHT_BROWSERS_PATH")
@@ -232,17 +274,14 @@ prebaked_browser_root() {
 
   for directory in "${candidates[@]}"; do
     [[ -n "$directory" && -d "$directory" ]] || continue
-    if [[ -n "$revision" && -d "$directory/chromium-$revision" ]]; then
-      if browser_binaries_in "$directory/chromium-$revision"; then
-        printf '%s\n' "$directory"
-        return 0
-      fi
-      continue
+    if root_has_pinned_browser "$directory"; then
+      printf '%s\n' "$directory"
+      return 0
     fi
+    # A writable root may hold another revision: `playwright install` repairs it in
+    # place because --browser-root still reports failure until the pin is there.
     [[ -w "$directory" ]] || continue
-    if ! browser_binaries_in "$directory"; then
-      continue
-    fi
+    browser_binaries_in "$directory" || continue
     printf '%s\n' "$directory"
     return 0
   done
@@ -301,8 +340,7 @@ chromium_binaries() {
   roots+=("$DEFAULT_BROWSERS_DIR")
   for root in "${roots[@]}"; do
     [[ -d "$root" ]] || continue
-    find -L "$root" -maxdepth 4 -type f \
-      \( -name chrome -o -name chrome-headless-shell \) 2>/dev/null
+    pinned_binaries_in "$root"
   done | sort -u
 }
 
@@ -345,7 +383,13 @@ check() {
   check_libs || failed=1
 
   if (( ${#binaries[@]} == 0 )); then
-    echo "FAIL no Playwright Chromium installed yet; run: bash scripts/setup-playwright-agent.sh --install-browser" >&2
+    local revision
+    revision="$(pinned_chromium_revision || true)"
+    if [[ -n "$revision" ]]; then
+      echo "FAIL no Playwright Chromium at the pinned revision (chromium-$revision); run: bash scripts/setup-playwright-agent.sh --install-browser" >&2
+    else
+      echo "FAIL no Playwright Chromium installed yet; run: bash scripts/setup-playwright-agent.sh --install-browser" >&2
+    fi
     return 1
   fi
 
@@ -505,12 +549,17 @@ case "${1:-}" in
     exit $?
     ;;
   --browser-root)
+    # Success means a launchable browser is already there, which is the only safe
+    # reason to skip the install. A root holding another revision returns 1 so the
+    # install runs and repairs it.
     root="$(browser_root)"
-    if browser_binaries_in "$root"; then
+    if root_has_pinned_browser "$root"; then
       printf '%s\n' "$root"
       exit 0
     fi
-    printf 'FAIL no Chromium installed under %s\n' "$root" >&2
+    revision="$(pinned_chromium_revision || true)"
+    printf 'FAIL no Chromium%s installed under %s\n' \
+      "${revision:+ at the pinned revision chromium-$revision}" "$root" >&2
     exit 1
     ;;
   "")

@@ -110,16 +110,31 @@ PASS: Chromium launched and rendered a probe page.
 | ---------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Shell syntax     | `bash -n scripts/setup-chromium-libs.sh`, `bash -n scripts/setup-playwright-agent.sh` | PASS                                                             |
 | Type check       | `pnpm exec tsc --noEmit`                                                              | PASS (exit 0)                                                    |
-| Unit suite       | `pnpm exec vitest run`                                                                | PASS — 601 tests in 64 files                                     |
+| Unit suite       | `pnpm exec vitest run`                                                                | PASS — 606 tests in 65 files                                     |
 | Repository gate  | `SPEC_KIT_BASE_REF=d4dc6952 ./freebuff-verify.sh`                                     | PASS (exit 0), 36 updater tests                                  |
 | Production build | `pnpm build`                                                                          | PASS — exit 0                                                    |
 | Build size       | `du -sb .next`                                                                        | 306,083,776 bytes = 291.90 MiB, 203.10 MiB under the 495 MiB cap |
 
-## 7. Limitations
+## 7. Review follow-up on PR #1854
+
+| Finding                                                                                                                                                                              | Fix                                                                                                                                                                         | Evidence                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Graphite: `--browser-root` bypassed the revision rule for the default cache, so a cache of any revision counted as installed.                                                        | `root_has_pinned_browser` now requires `chromium-<pin>` in every root, including `~/.cache/ms-playwright`; the pin is resolved once per process.                            | Stale cache only: `--browser-root` exit 1 with `FAIL no Chromium at the pinned revision chromium-1248 installed under …`; pinned cache: exit 0. |
+| Graphite: `--install-browser` skipped the download for a wrong revision, preventing the repair.                                                                                      | The skip depends on the same pinned check, so a wrong revision always runs `playwright install chromium`.                                                                   | `--browser-root` returning 1 is the gate; the workspace's matching cache still prints `Chromium is already installed … skipping the download`.  |
+| Graphite: the prebaked test only exercised the writable shortcut; read-only pinned acceptance and wrong-revision rejection were untested.                                            | Eight tests now cover pinned read-only acceptance, wrong read-only rejection, pinned default cache and stale default cache; read-only fixtures are restored before cleanup. | `__tests__/setup-chromium-runtime-detect.test.js` — 8/8.                                                                                        |
+| Visual QA: the prebaked test asserted `1 Chromium binaries`, but the runner provides `/usr/bin/google-chrome`, so the strict check legitimately listed two.                          | Assertions are count-agnostic and assert the fixture path plus `link with 0 missing shared objects`; no runtime check was weakened.                                         | Local run passes with and without a system Chrome; `--check` still runs `ldd` on every pinned binary.                                           |
+| OpenNext validation: `actions/setup-node` used `cache: pnpm` before `pnpm/action-setup`, so the job failed with `Unable to locate executable file: pnpm` before any validation step. | pnpm is installed first, matching Visual QA and the updater scheduler; a guard test covers every workflow.                                                                  | `__tests__/workflow-pnpm-setup-order.test.js` — 2/2.                                                                                            |
+| Stale revision reported as launchable by `--check`.                                                                                                                                  | `chromium_binaries` lists only the pinned `chromium-<pin>` and `chromium_headless_shell-<pin>` binaries (any revision only when the pin is unresolvable).                   | Wrong-revision fixture output contains no `chromium-9999` path; the pinned fixture's binary is listed.                                          |
+
+Re-run after these changes: type check exit 0, 606 unit tests in 65 files, `./freebuff-verify.sh` exit 0 with 36 updater tests, documented startup command exit 0 in 11 s with the probe passing, production build 306,083,489 bytes = 291.90 MiB.
+
+## 8. Limitations
 
 - A genuinely system-wide runtime cannot be created in this workspace (`no new privileges`, read-only `/usr`), so
   system mode is proven by the fixture tests and by the script's own `ldd` path, not by launching Chromium against
   real `/usr/lib` libraries.
 - All prebaked-root launches used a symlink to the real Playwright browser; the selection, export, persistence and
   launch path are identical for a real directory, and a real-directory read-only fixture was also selected.
-- No CI workflow was run; PR-triggered checks are pending by definition.
+- No CI workflow was run locally; the workflow ordering fix is covered by source assertions, not by executing GitHub Actions.
+- The pin is read from `playwright-core/browsers.json`; before `pnpm install` it cannot be resolved, and any Chromium is
+  then accepted. That is a deliberate, documented fallback, not a revision guarantee.

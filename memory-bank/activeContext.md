@@ -33,6 +33,16 @@ the environment is better provisioned (a developer machine, CI, or a future imag
 - `scripts/setup-playwright-agent.sh`: `--install-browser` skips the download when `--browser-root` finds a browser.
 - `__tests__/setup-chromium-runtime-detect.test.js`: five tests over the four directory overrides.
 
+## Review follow-up on PR #1854
+
+Three Graphite findings and two failing checks were fixed on the same branch. `--browser-root`, the
+`--install-browser` skip and the strict `--check` now require the revision pinned by
+`playwright-core/browsers.json`, including in Playwright's default `~/.cache/ms-playwright`, so a cache left by another
+Playwright version is repaired instead of trusted. The tests cover the pinned read-only root and both wrong-revision
+cases, and no longer assume the host has no system Chrome. Separately, `validate-open-next-repair.yml` now installs
+pnpm before `actions/setup-node` uses `cache: pnpm`, and `__tests__/workflow-pnpm-setup-order.test.js` guards that
+order across every workflow.
+
 ## Verification
 
 Evidence is in `specs/148-chromium-runtime-reuse/evidence.md`.

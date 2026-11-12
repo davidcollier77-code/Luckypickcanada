@@ -104,8 +104,9 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    duplicated.
 8. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — applies the same Chromium
    environment to its own shell, installs the project-pinned Chromium only when `--browser-root` reports no browser
-   (an existing cache or an environment-provided install costs no download) and launches it headlessly, so startup
-   ends with `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
+   at the pinned revision (an existing matching cache or an environment-provided install costs no download, while a
+   cache left behind by another Playwright version is repaired) and launches it headlessly, so startup ends with
+   `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
 
 `pnpm exec playwright test` and `bash scripts/setup-playwright-agent.sh --probe-browser` need no manual setup: the
 Playwright config injects the library and font paths when `~/.local/chromium-libs` exists, and the setup script
@@ -134,6 +135,11 @@ Playwright, the probe and the CLI read it instead of downloading it. A read-only
 holds the revision this repository pins (`chromium-1248`), because Playwright fails on a mismatch instead of falling
 back; a writable one may hold any revision, since `playwright install` can repair it in place. With no prebaked
 install, the default `~/.cache/ms-playwright` is used.
+
+The same revision rule covers Playwright's own `~/.cache/ms-playwright`: `--browser-root` succeeds only when the
+pinned revision is present there, so a cache written by an older or newer Playwright makes
+`setup-playwright-agent.sh --install-browser` download the pinned build instead of skipping it. The strict `--check`
+verifies the pinned binaries too, so `ldd` never reports a launchable browser that Playwright would refuse to start.
 
 `bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
 `PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.
