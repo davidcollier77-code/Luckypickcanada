@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { expectRecognizedCrystalBallGreeting } from './crystal-ball-greeting-assertions';
 
 test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks at responsive sizes', async ({ page }) => {
   await page.goto('/crystal-ball', { waitUntil: 'domcontentloaded', timeout: 30_000 });
