@@ -33,12 +33,17 @@ function configureChromiumRuntime() {
     process.env.LD_LIBRARY_PATH = [...missingDirectories, ...currentDirectories].join(':');
   }
 
+  // An inherited value is only trusted when it names something that exists. A
+  // shell can carry FONTCONFIG_FILE/FONTCONFIG_PATH from another workspace, and
+  // keeping a path that is gone would make fontconfig fail to load and drop the
+  // fonts provisioned here.
+  const usable = (candidate: string | undefined) => Boolean(candidate && fs.existsSync(candidate));
   const fontConfigDirectory = path.join(prefix, 'etc', 'fonts');
   const fontConfigFile = path.join(fontConfigDirectory, 'lpc-fonts.conf');
-  if (!process.env.FONTCONFIG_FILE && fs.existsSync(fontConfigFile)) {
+  if (!usable(process.env.FONTCONFIG_FILE) && fs.existsSync(fontConfigFile)) {
     process.env.FONTCONFIG_FILE = fontConfigFile;
   }
-  if (!process.env.FONTCONFIG_PATH && fs.existsSync(fontConfigDirectory)) {
+  if (!usable(process.env.FONTCONFIG_PATH) && fs.existsSync(fontConfigDirectory)) {
     process.env.FONTCONFIG_PATH = fontConfigDirectory;
   }
 }

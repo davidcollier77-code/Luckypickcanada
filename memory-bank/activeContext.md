@@ -1,59 +1,61 @@
-# Active Context — Reuse an Environment-Provided Chromium Runtime
+# Active Context — Harden the Remaining Playwright Failure Points
 
 - **Updated:** 2026-11-12
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/0fe51d9fb70d7d5eedbd7455-image-aware`
-- **Base:** `main` at `d4dc6952`
-- **Spec Kit feature:** `specs/148-chromium-runtime-reuse` (continues `specs/146-*` and `specs/147-*`)
+- **Branch:** `freebuff/78543caa3c21f40958fc74d4`
+- **Base:** `main` at `9fbe7a21` (PR #1854, "reuse an environment-provided Chromium runtime")
+- **Spec Kit feature:** `specs/149-playwright-workspace-hardening` (continues `specs/146-*`, `147-*`, `148-*`)
 
 ## Current Task
 
-Make the Chromium setup scripts use a system-wide runtime or a preinstalled Playwright browser when they are
-present, instead of always downloading and unpacking everything into `$HOME`.
+A verification assessment of the Playwright setup found it working from a cold workspace and identified three failure
+points. This task fixes exactly those three.
 
-## What the environment actually provides
+## What changed
 
-The Cloud image ships nothing Chromium can use: no `/opt/google/chrome`, no browser on `PATH`, no `libnspr4.so`
-under `/usr/lib/x86_64-linux-gnu`, no `/etc/fonts`, no `ms-playwright` directory. The repository cannot change that
-either — the session is non-root, `sudo` is refused by `no new privileges`, and `/opt`, `/usr/local` and `/etc` are
-read-only — so a per-workspace prefix remains the normal path and this feature only removes duplicated work where
-the environment is better provisioned (a developer machine, CI, or a future image).
+- `scripts/playwright-cli.sh`: `bootstrap-pnpm.sh` is sourced on every call, before the
+  `node_modules/.bin/playwright` guard, because the wrapper always `exec`s a pnpm command. A shell without
+  `$HOME/.local/bin` on `PATH` previously died with `exec: pnpm: not found` (exit 127).
+- `scripts/playwright-cli.sh`: the Chromium download decision now calls
+  `scripts/setup-chromium-libs.sh --browser-root` instead of `compgen -G "$HOME/.cache/ms-playwright/chromium-*"`, so a
+  cache from a different Playwright version is repaired instead of trusted.
+- `playwright.config.ts`: an inherited `FONTCONFIG_FILE`/`FONTCONFIG_PATH` is trusted only when it exists; otherwise the
+  provisioned prefix wins. A shell can carry a stale path from another chat's home.
+- Tests: two guard assertions in `__tests__/playwright-cli-wrapper.test.js` and a new
+  `__tests__/playwright-config-fontconfig.test.js` that loads the real config module against a temporary prefix fixture.
 
-## Implementation
+No dependency, lockfile, workflow, application, hosting or `AGENTS.md` change.
 
-- `scripts/setup-chromium-libs.sh`: `has_system_runtime` accepts a runtime only when every `REQUIRED_LIBS` object
-  resolves in `CHROMIUM_SYSTEM_LIB_DIRS` or through a cached `ldconfig -p`, `/etc/fonts/fonts.conf` exists and a
-  system font directory exists. In that mode `--env` prints no library variables, `--check` runs `ldd` with an empty
-  `LD_LIBRARY_PATH`, `--persist` writes an env file without library keys, and plain provisioning exits 0 before
-  `apt-get`. `prebaked_browser_root` considers `PLAYWRIGHT_BROWSERS_PATH` and `/opt/ms-playwright`,
-  `/usr/local/share/ms-playwright`, `/usr/share/ms-playwright`, `/ms-playwright`; a read-only root must match the
-  revision pinned in `playwright-core/browsers.json` (`chromium-1248`), a writable root may hold any revision.
-  `--browser-root` prints the effective root, `--env` exports it as `PLAYWRIGHT_BROWSERS_PATH`, `--persist` stores it
-  in the CLI config and deletes keys the workspace no longer needs.
-- `scripts/setup-playwright-agent.sh`: `--install-browser` skips the download when `--browser-root` finds a browser.
-- `__tests__/setup-chromium-runtime-detect.test.js`: five tests over the four directory overrides.
+## Verified behaviour (this workspace)
 
-## Review follow-up on PR #1854
+Environment baseline: per-chat `$HOME`, non-root, no system Chromium libraries, no `/etc/fonts`, `pnpm` only in
+`~/.local/bin`, and inherited `FONTCONFIG_FILE`/`FONTCONFIG_PATH` pointing at a different chat's home that no longer
+exists.
 
-Three Graphite findings and two failing checks were fixed on the same branch. `--browser-root`, the
-`--install-browser` skip and the strict `--check` now require the revision pinned by
-`playwright-core/browsers.json`, including in Playwright's default `~/.cache/ms-playwright`, so a cache left by another
-Playwright version is repaired instead of trusted. The tests cover the pinned read-only root and both wrong-revision
-cases, and no longer assume the host has no system Chrome. Separately, `validate-open-next-repair.yml` now installs
-pnpm before `actions/setup-node` uses `cache: pnpm`, and `__tests__/workflow-pnpm-setup-order.test.js` guards that
-order across every workflow. `--install-browser` now also logs the pinned revision it reused or installed and re-runs
-`--browser-root` afterwards, so a download that does not produce the pinned browser fails as a setup error instead of
-surfacing at the probe as a misleading library problem; `--browser-revision` exposes the pin for that log.
+| Check | Result |
+| --- | --- |
+| Documented startup command (cold, before the change) | exit 0 in 41 s; Chromium 1248 + 27 MB prefix; probe PASS |
+| Wrapper in a shell without `~/.local/bin` | exit 0 (was 127) |
+| Wrapper with only a foreign-revision browser cache | installs `chromium-1248`, then launches; 11 s |
+| Warm launch | 4 s, no download, correct live title |
+| Focused tests | 9 tests in 2 files pass |
+| Unit suite | 66 files, exit 0 |
+| `./freebuff-verify.sh` | exit 0 in 78 s |
+| Production build | 306,083,516 bytes = 291.90 MiB (cap 495 MiB) |
+| Live full-page capture | PNG 1280 × 9366, 7 images, 0 broken, fonts loaded |
 
-## Verification
+Evidence: `artifacts/playwright-verification/verification.md`.
 
-Evidence is in `specs/148-chromium-runtime-reuse/evidence.md`.
-
-## Durable Locations
-
-Everything is still regenerated per workspace from `$HOME`, so a new workspace never inherits a stale path.
+## Durable Locations (unchanged by this task)
 
 - Libraries: `~/.local/chromium-libs` (27 MB, no root) when the system has none; `~/.apt-user` for apt state.
-- Browser: `~/.cache/ms-playwright` unless a prebaked root is present.
-- Environment: `~/.local/chromium-libs/env.sh`, sourced from `~/.profile` and `~/.bashrc`; empty in system mode.
-- Playwright CLI: `~/.playwright/cli.config.json` (browser channel, plus only the environment this workspace needs).
+- Browser: `~/.cache/ms-playwright` (Chromium 1248) unless an environment-provided root is present.
+- Environment: `~/.local/chromium-libs/env.sh`, sourced from `~/.profile` and `~/.bashrc`; Playwright CLI config at
+  `~/.playwright/cli.config.json`.
+
+## Known Context Risks
+
+- A chat's `$HOME` is per-chat, so a new chat is cold again (~41 s). The wrapper self-heals on first use.
+- An inherited `FONTCONFIG_FILE`/`FONTCONFIG_PATH` naming another workspace is now repaired by the wrapper and the test
+  config, but the stale variables still arrive in the container environment; clearing them where project environment
+  variables are configured would remove the last source of confusion.

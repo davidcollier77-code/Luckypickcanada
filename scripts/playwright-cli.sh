@@ -63,10 +63,14 @@ if [[ "$dry_run" == true ]]; then
   exit 0
 fi
 
-# 1. Repository dependencies and the pinned pnpm (a no-op once installed).
+# 1. The pinned pnpm, then the repository dependencies. The bootstrap runs on
+# every call because the `exec` below is a pnpm command and pnpm lives in
+# $HOME/.local when the environment does not put it on PATH - including the
+# reopened or scrubbed shells where the dependency tree is already installed.
+# It is a no-op once the pinned version is reachable.
+# shellcheck source=scripts/bootstrap-pnpm.sh
+source "$ROOT/scripts/bootstrap-pnpm.sh"
 if [[ ! -x "$ROOT/node_modules/.bin/playwright" ]]; then
-  # shellcheck source=scripts/bootstrap-pnpm.sh
-  source "$ROOT/scripts/bootstrap-pnpm.sh"
   CI=true pnpm install --frozen-lockfile
 fi
 
@@ -75,8 +79,11 @@ if ! bash "$ROOT/scripts/setup-chromium-libs.sh" --check >/dev/null 2>&1; then
   bash "$ROOT/scripts/setup-chromium-libs.sh" >/dev/null
 fi
 
-# 3. The project-pinned Chromium build itself.
-if ! compgen -G "$HOME/.cache/ms-playwright/chromium-*" >/dev/null; then
+# 3. The project-pinned Chromium build itself. `--browser-root` succeeds only
+# when the revision this Playwright pins is launchable, so a cache left behind by
+# another Playwright version is repaired here instead of failing at launch with
+# "Executable doesn't exist". It also keeps an environment-provided root reuse-only.
+if ! bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-root >/dev/null 2>&1; then
   pnpm exec playwright install chromium
 fi
 
