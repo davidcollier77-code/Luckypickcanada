@@ -70,7 +70,7 @@ The Freebuff project startup command is stored in Freebuff Project Settings, out
 exact value to paste there; the repository cannot read or change that setting:
 
 ```bash
-bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && (bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval "$(bash scripts/setup-chromium-libs.sh --env)" && bash scripts/setup-chromium-libs.sh --persist && bash scripts/setup-playwright-agent.sh --install-browser --probe-browser'
+bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && (bash scripts/setup-chromium-libs.sh --check-libs >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval "$(bash scripts/setup-chromium-libs.sh --env)" && bash scripts/setup-chromium-libs.sh --persist && bash scripts/setup-playwright-agent.sh --install-browser --probe-browser && bash scripts/setup-chromium-libs.sh --check'
 ```
 
 Each step is chained with `&&`, so it runs in this order and stops the rest of the command on failure:
@@ -88,31 +88,36 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    lockfile is out of date. `CI=true` keeps pnpm non-interactive during startup.
 4. `pnpm exec playwright cli --help` — proves the repository-local Playwright agent CLI used for browser QA is
    installed and runnable, without launching a browser.
-5. `bash scripts/setup-chromium-libs.sh --check || bash scripts/setup-chromium-libs.sh` — the check is a 0.06 s
-   `ldd` against the Playwright Chromium binary, so provisioning only runs when the libraries are missing. The image
-   ships none of them and refuses `sudo`, so the script downloads the official Ubuntu packages with `apt-get` as an
-   unprivileged downloader and unpacks them into `~/.local/chromium-libs`; nothing is written system-wide. A
-   provisioned workspace takes about 11 s once.
+5. `bash scripts/setup-chromium-libs.sh --check-libs || bash scripts/setup-chromium-libs.sh` — the gate is a 0.03 s
+   file test over the required shared objects and fonts, so provisioning only runs when they are missing. It does not
+   inspect a browser, which matters on a brand-new workspace: the libraries are provisioned before Chromium is
+   downloaded, and the chain continues instead of failing on a browser that does not exist yet. The image ships none
+   of these libraries and refuses `sudo`, so the script downloads the official Ubuntu packages with `apt-get` as an
+   unprivileged downloader and unpacks them into `~/.local/chromium-libs`; nothing is written system-wide. A cold
+   workspace takes about 11 s, and a complete prefix is reused without downloading anything.
 6. `eval "$(bash scripts/setup-chromium-libs.sh --env)"` — applies the `LD_LIBRARY_PATH` and `FONTCONFIG_*` values in
    the shell that runs the probe, because the provisioning step's environment does not outlive its own process.
 7. `bash scripts/setup-chromium-libs.sh --persist` — writes `~/.local/chromium-libs/env.sh` and sources it from a
    guarded block in `~/.profile` and `~/.bashrc`. The exports of a startup command die with that process, so without
    this step every later shell would start with no `LD_LIBRARY_PATH` and Chromium would fail on `libnspr4.so` again.
-   Both files live under `$HOME`, so the wiring survives workspace restarts and is rewritten idempotently, never
-   duplicated.
+   It also writes `~/.playwright/cli.config.json` with `browser.browserName=chromium`, the bundled Chromium channel
+   and those same paths as the browser environment, merging any values already there. All of it is under `$HOME`, is
+   regenerated from that workspace's own prefix and is rewritten idempotently, never duplicated, so a new workspace
+   never inherits a stale path from an earlier session.
 8. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — applies the same Chromium
    environment to its own shell, installs the project-pinned Chromium (a no-op when the cache already matches
-   Playwright 1.64.1) and launches it headlessly, so startup ends with
+   Playwright 1.64.1, or downloads it when the workspace is new) and launches it headlessly, so startup ends with
    `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
+9. `bash scripts/setup-chromium-libs.sh --check` — the strict readiness gate: every required library and font file,
+   plus an `ldd` over both the full `chrome` and the `chrome-headless-shell` Playwright installed above. A startup
+   that reaches this line has a launchable browser.
 
-`pnpm exec playwright test` and `bash scripts/setup-playwright-agent.sh --probe-browser` need no manual setup: the
-Playwright config injects the library and font paths when `~/.local/chromium-libs` exists, and the setup script
-applies them to its own process. Other shells load them from the profiles written by `--persist`.
-
-Interactive `pnpm exec playwright cli` commands are the exception: a non-interactive shell does not read a profile, so
-in one of those either run `eval "$(bash scripts/setup-chromium-libs.sh --env)"` first or define the same three
-values in Freebuff's Variables section, and pass `--browser=chromium` to `pnpm exec playwright cli open`, because the
-CLI's default channel is a system Chrome that this image does not have.
+Nothing else has to be configured by hand, and no environment variables need to be added to Freebuff. Every entry
+point applies the runtime itself: `pnpm exec playwright test` gets the paths from `playwright.config.ts`, the setup
+script applies them to its own process before probing, and `pnpm exec playwright cli` reads them from the
+`~/.playwright/cli.config.json` written by `--persist` — so it works in a non-interactive shell that never reads a
+profile, and `--browser=chromium` is no longer required. Login and interactive shells additionally load the exports
+from `~/.profile` and `~/.bashrc`.
 
 `bash -lc` is deliberate: the login profile supplies `node` and `npm`, which the bootstrap needs. With a minimal
 `PATH` and no login profile neither resolves; `bash -c` alone was measured failing there and `bash -lc` succeeding.

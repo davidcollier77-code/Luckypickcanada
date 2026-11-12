@@ -10,19 +10,20 @@
 # `dpkg-deb -x` unpacks the official Ubuntu packages into a private prefix, and
 # `LD_LIBRARY_PATH` makes the browser find them. Nothing is written system-wide.
 #
+# Everything it writes lives under $HOME, so a workspace that starts with an
+# empty home provisions itself the same way as one that keeps its previous state:
+# nothing here depends on a library or browser left behind by an earlier session.
+#
 # Usage:
-#   scripts/setup-chromium-libs.sh             # provision (idempotent, skips when complete)
-#   scripts/setup-chromium-libs.sh --check     # verify only, provision nothing
-#   scripts/setup-chromium-libs.sh --persist   # write $PREFIX/env.sh and hook ~/.profile + ~/.bashrc
-#   eval "$(scripts/setup-chromium-libs.sh --env)"   # apply the environment to this shell
+#   scripts/setup-chromium-libs.sh                 # provision (idempotent, skips when complete)
+#   scripts/setup-chromium-libs.sh --check-libs    # libraries + fonts only, no browser needed
+#   scripts/setup-chromium-libs.sh --check         # libraries, fonts and every installed Chromium binary
+#   scripts/setup-chromium-libs.sh --persist       # export file, shell profiles and the Playwright CLI config
+#   eval "$(scripts/setup-chromium-libs.sh --env)" # apply the environment to this shell
 #
 # Environment:
 #   CHROMIUM_LIBS_PREFIX  library prefix (default ~/.local/chromium-libs)
 #   CHROMIUM_APT_STATE    apt state/cache root (default ~/.apt-user)
-#
-# The prefix lives under $HOME, which is durable in this workspace, so a
-# provisioned browser survives archive/restore. It is not part of the repository
-# image; see the PR for the image-level request that would remove this step.
 
 set -euo pipefail
 
@@ -52,10 +53,33 @@ PACKAGES=(
   fonts-liberation
 )
 
+# The unpacked objects `--check-libs` requires. This is deliberately a file list
+# rather than an `ldd` run: a workspace can provision its libraries before any
+# browser exists, and `ldd` needs the browser to inspect.
+REQUIRED_LIBS=(
+  libnspr4.so
+  libnss3.so
+  libasound.so.2
+  libatk-1.0.so.0
+  libatk-bridge-2.0.so.0
+  libcups.so.2
+  libxkbcommon.so.0
+  libXcomposite.so.1
+  libXdamage.so.1
+  libXfixes.so.3
+  libXrandr.so.2
+  libpango-1.0.so.0
+  libpangocairo-1.0.so.0
+  libcairo.so.2
+  libatspi.so.0
+)
+
+LIB_DIR="$PREFIX/usr/lib/x86_64-linux-gnu"
 LIB_PATH="$PREFIX/usr/lib/x86_64-linux-gnu:$PREFIX/lib/x86_64-linux-gnu:$PREFIX/usr/lib:$PREFIX/lib"
 FONTS_DIR="$PREFIX/etc/fonts"
 FONTS_CONF="$FONTS_DIR/lpc-fonts.conf"
 ENV_FILE="$PREFIX/env.sh"
+CLI_CONFIG="$HOME/.playwright/cli.config.json"
 RC_MARKER_BEGIN='# >>> luckypick chromium runtime >>>'
 RC_MARKER_END='# <<< luckypick chromium runtime <<<'
 
@@ -87,13 +111,38 @@ chromium_binaries() {
     \( -name chrome -o -name chrome-headless-shell \) 2>/dev/null
 }
 
+# Browser-independent readiness: used as the startup gate and by --persist, so a
+# workspace with no browser yet still provisions its libraries and continues to
+# the browser install step instead of failing the whole startup chain.
+check_libs() {
+  local library failed=0
+  for library in "${REQUIRED_LIBS[@]}"; do
+    if [[ ! -e "$LIB_DIR/$library" ]]; then
+      echo "FAIL missing $library under $LIB_DIR" >&2
+      failed=1
+    fi
+  done
+  if [[ ! -f "$FONTS_CONF" || ! -d "$FONTS_DIR/conf.d" ]]; then
+    echo "FAIL fontconfig files are missing under $FONTS_DIR" >&2
+    failed=1
+  fi
+  if [[ ! -d "$PREFIX/usr/share/fonts" ]]; then
+    echo "FAIL font families are missing under $PREFIX/usr/share/fonts" >&2
+    failed=1
+  fi
+  (( failed == 0 ))
+}
+
+# Full readiness: libraries, fonts and every Chromium binary the workspace has.
 check() {
   local binary missing failed=0
   local -a binaries=()
   mapfile -t binaries < <(chromium_binaries)
 
+  check_libs || failed=1
+
   if (( ${#binaries[@]} == 0 )); then
-    echo "FAIL no Chromium binary found; run: pnpm install --frozen-lockfile" >&2
+    echo "FAIL no Playwright Chromium installed yet; run: bash scripts/setup-playwright-agent.sh --install-browser" >&2
     return 1
   fi
 
@@ -107,11 +156,6 @@ check() {
     fi
   done
 
-  if [[ ! -f "$FONTS_CONF" || ! -d "$FONTS_DIR/conf.d" ]]; then
-    echo "FAIL fontconfig files are missing under $FONTS_DIR" >&2
-    failed=1
-  fi
-
   (( failed == 0 )) || return 1
 
   printf 'PASS %d Chromium binaries link with 0 missing shared objects\n' "${#binaries[@]}"
@@ -121,12 +165,53 @@ check() {
   printf '     prefix: %s (%s)\n' "$PREFIX" "$(du -sh "$PREFIX" 2>/dev/null | cut -f1)"
 }
 
-# Make the environment durable for every later login or interactive shell, so a
-# Playwright launch after startup does not depend on the startup command's own
-# process still being alive. Both files live under $HOME and survive restarts.
+# Teach the repository's Playwright CLI where the libraries are, so `playwright
+# cli` launches the bundled Chromium from any shell - including the
+# non-interactive `bash -c` shells that never read a profile, and without the
+# `--browser=chromium` flag. The CLI reads ~/.playwright/cli.config.json; values
+# already present are preserved, and every path is derived from $HOME so it is
+# regenerated per workspace instead of being hardcoded.
+write_cli_config() {
+  mkdir -p "$(dirname -- "$CLI_CONFIG")"
+  if ! command -v node >/dev/null 2>&1; then
+    echo "WARN node is unavailable; skipped $CLI_CONFIG" >&2
+    return 0
+  fi
+  node - "$CLI_CONFIG" "$LIB_PATH" "$FONTS_CONF" "$FONTS_DIR" "$HOME" <<'NODE'
+const fs = require('node:fs');
+const [file, libraryPath, fontConfigFile, fontConfigPath, home] = process.argv.slice(2);
+
+let config = {};
+if (fs.existsSync(file)) {
+  try {
+    config = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    config = {};
+  }
+}
+
+const browser = (config.browser ??= {});
+browser.browserName ??= 'chromium';
+const launchOptions = (browser.launchOptions ??= {});
+launchOptions.channel ??= 'chromium';
+const env = (launchOptions.env ??= {});
+env.LD_LIBRARY_PATH = libraryPath;
+env.FONTCONFIG_FILE = fontConfigFile;
+env.FONTCONFIG_PATH = fontConfigPath;
+env.HOME = home;
+env.PATH ??= '/usr/local/bin:/usr/bin:/bin';
+
+fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`);
+NODE
+}
+
+# Make the environment durable for every later login or interactive shell, and
+# for the Playwright CLI in every shell, so a launch after startup does not
+# depend on the startup command's own process still being alive. Every file is
+# under $HOME and survives restarts; each block is rewritten, never duplicated.
 persist() {
   local rc
-  if ! check >/dev/null 2>&1; then
+  if ! check_libs >/dev/null 2>&1; then
     echo "FAIL refusing to persist an incomplete runtime; run: bash scripts/setup-chromium-libs.sh" >&2
     return 1
   fi
@@ -153,15 +238,22 @@ persist() {
     } >> "$rc"
   done
 
+  write_cli_config
+
   printf 'PASS persisted the Chromium runtime environment\n'
   printf '     env file: %s\n' "$ENV_FILE"
   printf '     shell profiles: %s/.profile, %s/.bashrc\n' "$HOME" "$HOME"
+  printf '     Playwright CLI config: %s\n' "$CLI_CONFIG"
 }
 
 case "${1:-}" in
   --env)
     print_env
     exit 0
+    ;;
+  --check-libs)
+    check_libs
+    exit $?
     ;;
   --check)
     check
@@ -181,9 +273,9 @@ esac
 
 # Reuse an existing prefix instead of downloading and unpacking the same packages
 # again; a restored workspace usually still has it under $HOME.
-if check >/dev/null 2>&1; then
+if check_libs >/dev/null 2>&1; then
   echo "==> Chromium runtime libraries are already provisioned; skipping download"
-  check
+  check_libs
   echo
   echo "Environment for this shell:"
   print_env
@@ -238,7 +330,14 @@ if [[ ! -e "$FONTS_DIR/conf.d" && -d "$FONTS_DIR/conf.avail" ]]; then
   ln -s conf.avail "$FONTS_DIR/conf.d"
 fi
 
-check
+check_libs
+echo "==> Chromium runtime libraries are ready in $PREFIX"
+if [[ -n "$(chromium_binaries)" ]]; then
+  echo "    The Playwright Chromium browser is present."
+else
+  echo "    No Playwright browser yet; the startup command installs it next:"
+  echo "    bash scripts/setup-playwright-agent.sh --install-browser"
+fi
 echo
 echo "Environment for this shell:"
 print_env

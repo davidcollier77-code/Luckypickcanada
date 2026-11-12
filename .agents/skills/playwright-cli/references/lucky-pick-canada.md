@@ -24,6 +24,8 @@ To test an actual headless launch:
 ./scripts/setup-playwright-agent.sh --probe-browser
 ```
 
+The workspace startup command runs `scripts/setup-chromium-libs.sh --persist`, which writes `~/.playwright/cli.config.json` with the bundled Chromium channel and the provisioned library paths. Because of that, `pnpm exec playwright cli` launches without `--browser=chromium` and without exporting `LD_LIBRARY_PATH`, in every shell shape, and every path inside it comes from that workspace's own `$HOME`. If the CLI cannot start, run `bash scripts/setup-chromium-libs.sh --check` and `bash scripts/setup-playwright-agent.sh --probe-browser` rather than reinstalling browsers.
+
 The script does not run sudo or install Linux packages. Downloading Chromium does not guarantee the VM has every shared library. Diagnose a real launch error; do not repeatedly reinstall Chromium or introduce undocumented library-path hacks. Follow `AGENTS.md`: Playwright first, Browserless fallback if Playwright is unavailable or fails, and Browserbase only with explicit owner approval. Do not put Browserless/Browserbase into automatic PR-checker workflows.
 
 ## Eight capability areas
