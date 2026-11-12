@@ -2,6 +2,20 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-12 — Chromium environment emitter hardening
+- Closed a code-injection sink in `scripts/setup-chromium-libs.sh --env`: `HOME`, `CHROMIUM_LIBS_PREFIX`,
+  `PLAYWRIGHT_BROWSERS_PATH` and `CHROMIUM_BROWSER_DIRS` were interpolated into shell text that the wrapper and the
+  startup command `eval` and that `--persist` writes into `~/.profile`. Command substitution in any of them ran
+  (reproduced with `$(touch …)` and backticks, and through the wrapper itself); every emitted value is now a
+  single-quoted POSIX word, so spaces, apostrophes and glob characters round-trip unchanged and nothing executes.
+  `--persist` quotes its profile source line for the same reason.
+- Added `__tests__/setup-chromium-env-shell-safety.test.js` (22 tests): four hostile payloads across all four inputs,
+  spaces, an apostrophe, `sh`/`bash` parsing, idempotency, literal glob matching and both `--persist` paths, with a
+  canary file as the oracle.
+- Verified: `bash -n` on every script, `sh -n` on generated and persisted output, 38 focused tests, 633 unit tests in
+  67 files, Spec Kit gate + governance tests, `tsc --noEmit`, docs tests, `./freebuff-verify.sh` steps, and a
+  291.91 MiB production build.
+
 ## 2026-11-12 — Playwright workspace hardening
 - Closed the three failure points found while verifying that browser work survives a reopened workspace: the wrapper
   now resolves the pinned pnpm even when dependencies are already installed and `$HOME/.local/bin` is missing from

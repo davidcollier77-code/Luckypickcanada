@@ -87,7 +87,9 @@ if ! bash "$ROOT/scripts/setup-chromium-libs.sh" --browser-root >/dev/null 2>&1;
   pnpm exec playwright install chromium
 fi
 
-# 4. The runtime environment for this process and the browser it launches.
+# 4. The runtime environment for this process and the browser it launches. `--env`
+# emits each value as a single quoted word, so this eval stays inert whatever HOME or
+# a prefix contains; keep it that way if it ever emits another value.
 eval "$(bash "$ROOT/scripts/setup-chromium-libs.sh" --env)"
 
 exec "${runner[@]}" "${args[@]}"

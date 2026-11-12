@@ -196,8 +196,10 @@ describe("Chromium runtime detection", () => {
     expect(root.stdout.trim()).toBe(fixture.prebaked);
 
     const env = run(fixture, ["--env"]);
-    expect(env.stdout).toMatch(
-      new RegExp(`export PLAYWRIGHT_BROWSERS_PATH="${fixture.prebaked}"`),
+    // Single-quoted: the value is emitted as a POSIX shell word, never as text that
+    // an eval could re-parse.
+    expect(env.stdout).toContain(
+      `export PLAYWRIGHT_BROWSERS_PATH='${fixture.prebaked}'`,
     );
 
     const check = run(fixture, ["--check"]);
