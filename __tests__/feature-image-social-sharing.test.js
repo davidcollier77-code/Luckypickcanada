@@ -20,11 +20,13 @@ const metadataOf = (relativePath) => sharp(filePath(relativePath)).metadata();
 
 const SHARE_URL = '/luckypickcanada-share-1200x630.jpg';
 const SHARE_FILE = publicPath(SHARE_URL);
+const HOME_SHARE_URL = '/luckypickcanada-home-1200x630.jpg';
+const HOME_SHARE_FILE = publicPath(HOME_SHARE_URL);
 const ORIGINAL_SHARE_URL = '/1785347037732.png';
 const ORIGINAL_SHARE_FILE = publicPath(ORIGINAL_SHARE_URL);
-
+// The homepage preview is a capture of the live homepage; feature pages keep
+// the shared artwork, so app/layout.js is checked by its own homepage test.
 const METADATA_FILES = [
-  'app/layout.js',
   'app/map/page.js',
   'app/crystal-ball/page.js',
   'app/lucky-meter/page.js',
@@ -94,6 +96,23 @@ describe('Social share image (F-H3)', () => {
     const metadata = await metadataOf(ORIGINAL_SHARE_FILE);
     expect(metadata.width).toBe(1407);
     expect(metadata.height).toBe(768);
+  });
+
+  it('keeps a homepage preview capture at 1200x630 under 250 KB', async () => {
+    expect(exists(HOME_SHARE_FILE)).toBe(true);
+    const metadata = await metadataOf(HOME_SHARE_FILE);
+    expect(metadata.width).toBe(1200);
+    expect(metadata.height).toBe(630);
+    expect(metadata.format).toBe('jpeg');
+    expect(bytes(HOME_SHARE_FILE)).toBeLessThanOrEqual(250 * 1024);
+  });
+
+  it('uses the homepage preview as the root og:image and twitter:image', async () => {
+    const source = read('app/layout.js');
+    expect(source).toContain(HOME_SHARE_URL);
+    expect(source).not.toContain(SHARE_URL);
+    expect(source).toContain('width: 1200, height: 630');
+    expect(source).toMatch(/images: \[\{ url: socialImage, alt: socialImageAlt \}\]/);
   });
 });
 
