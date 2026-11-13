@@ -90,26 +90,11 @@ export default function CrystalBallPreviewClient() {
     });
 
     setUsage((current) =>
-      current
-        ? {
-            ...current,
-            followUpUsed: true,
-            followUpQuestion: question,
-            followUpAnswer: answer,
-          }
-        : current,
+      current ? { ...current, followUpUsed: true } : current,
     );
 
     return answer;
   };
-
-  const savedFollowUp =
-    usage.followUpUsed && usage.followUpAnswer
-      ? {
-          question: usage.followUpQuestion || '',
-          answer: usage.followUpAnswer,
-        }
-      : null;
 
   return (
     <>
@@ -117,7 +102,6 @@ export default function CrystalBallPreviewClient() {
       <CrystalBall
         key={`${preview.localDate}:${preview.localTime}`}
         initialFortune={usage.fortune || null}
-        initialFollowUp={savedFollowUp}
         fortuneUsed={Boolean(usage.fortuneUsed)}
         followUpUsed={Boolean(usage.followUpUsed)}
         onGenerateFortune={handleGenerateFortune}

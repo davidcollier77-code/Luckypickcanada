@@ -36,8 +36,6 @@ describe('Crystal Ball visitor-local daily allowance', () => {
       fortuneUsed: false,
       fortune: null,
       followUpUsed: false,
-      followUpQuestion: null,
-      followUpAnswer: null,
     });
   });
 
@@ -71,16 +69,17 @@ describe('Crystal Ball visitor-local daily allowance', () => {
     expect(readDailyUsage(storage, today)).toEqual(afterFortune);
 
     const afterFollowUp = writeDailyUsage(
-      {
-        ...afterFortune,
-        followUpUsed: true,
-        followUpQuestion: 'Should I take the long way home?',
-        followUpAnswer: 'The long way has the better view.',
-      },
+      { ...afterFortune, followUpUsed: true },
       storage,
     );
     expect(afterFollowUp.followUpUsed).toBe(true);
     expect(readDailyUsage(storage, today)).toEqual(afterFollowUp);
+    expect(afterFollowUp).not.toHaveProperty('followUpQuestion');
+    expect(afterFollowUp).not.toHaveProperty('followUpAnswer');
+
+    const raw = storage.getItem(DAILY_STORAGE_KEY);
+    expect(raw).not.toContain('long way home');
+    expect(raw).not.toContain('better view');
   });
 
   it('does not consume an allowance when the stored reading is unusable', () => {
@@ -98,7 +97,8 @@ describe('Crystal Ball visitor-local daily allowance', () => {
     expect(usage.fortuneUsed).toBe(false);
     expect(usage.fortune).toBeNull();
     expect(usage.followUpUsed).toBe(false);
-    expect(usage.followUpAnswer).toBeNull();
+    expect(usage).not.toHaveProperty('followUpQuestion');
+    expect(usage).not.toHaveProperty('followUpAnswer');
   });
 
   it('keeps the state for the current page lifetime when storage is unavailable', () => {
@@ -114,9 +114,42 @@ describe('Crystal Ball visitor-local daily allowance', () => {
       fortuneUsed: true,
       fortune: 'In-memory fortune.',
       followUpUsed: false,
-      followUpQuestion: null,
-      followUpAnswer: null,
     });
+  });
+
+  it('drops legacy follow-up question and answer text from browser storage', () => {
+    const today = new Date(2026, 10, 9, 12, 0, 0, 0);
+    vi.useFakeTimers();
+    vi.setSystemTime(today);
+    const storage = createStorage(
+      JSON.stringify({
+        date: getLocalDateKey(today),
+        fortuneUsed: true,
+        fortune: 'A steady, warm day.',
+        followUpUsed: true,
+        followUpQuestion: 'A private question?',
+        followUpAnswer: 'A generated answer.',
+      }),
+    );
+
+    const usage = readDailyUsage(storage, today);
+    expect(usage).toEqual({
+      date: getLocalDateKey(today),
+      fortuneUsed: true,
+      fortune: 'A steady, warm day.',
+      followUpUsed: true,
+    });
+
+    writeDailyUsage(usage, storage);
+    const raw = storage.getItem(DAILY_STORAGE_KEY);
+    expect(raw).not.toContain('private question');
+    expect(raw).not.toContain('generated answer');
+    expect(Object.keys(JSON.parse(raw)).sort()).toEqual([
+      'date',
+      'followUpUsed',
+      'fortune',
+      'fortuneUsed',
+    ]);
   });
   it('serializes same-day allowance operations through the Web Locks API', async () => {
     const queues = new Map();

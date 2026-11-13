@@ -157,14 +157,14 @@ test('Crystal Ball delivers a greeting-led daily fortune, the leaf reveal, and o
     fortune,
   });
 
-  // A refresh restores the reading, question and answer without another request.
+  // A refresh restores the daily fortune and the used-follow-up allowance, but
+  // never the question or the answer text.
   await page.reload();
   await expect(page.locator('div[class*="fortunePanel"] .sr-only')).toHaveText(fortune);
-  const restoredAnswer = page.getByTestId('crystal-ball-followup-answer').locator('.sr-only');
-  await expect(restoredAnswer).toHaveText(followUp);
-  await expect(page.getByText('You asked:', { exact: false })).toBeVisible();
+  await expect(page.getByTestId('crystal-ball-followup-answer')).toHaveCount(0);
+  await expect(page.getByText('You asked:', { exact: false })).toHaveCount(0);
   await expect(page.getByRole('textbox')).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Ask a Follow-up Question/i })).toHaveCount(0);
-  await expect(page.getByText('That’s your follow-up for today.')).toBeVisible();
+  await expect(page.getByText(/You’ve used today’s follow-up question/)).toBeVisible();
   expect(requests).toHaveLength(2);
 });

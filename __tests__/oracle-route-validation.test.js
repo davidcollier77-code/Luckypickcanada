@@ -19,6 +19,14 @@ vi.mock('../app/spam-protection', () => ({
 
 import { POST } from '../app/api/oracle/route.js';
 
+const FOLLOW_UP_UNAVAILABLE_MESSAGE = [
+  "🔮 The Crystal Ball has been hit hard with fortunes and questions today. I've used up my magical energy and need a little rest.",
+  '',
+  'Come back tomorrow for your follow-up question.',
+  '',
+  'Until then, keep that Canadian spirit shining! 🇨🇦✨',
+].join('\n');
+
 function makeRequest(body) {
   return new Request('https://example.test/api/oracle', {
     method: 'POST',
@@ -96,7 +104,8 @@ describe('Oracle route validates before calling the AI provider', () => {
     // instead of the deprecated, too-small max_tokens value that produced the
     // empty-content Cloudflare issue.
     expect(requestBody).not.toHaveProperty('max_tokens');
-    expect(requestBody.max_completion_tokens).toBe(1024);
+    expect(requestBody.model).toBe('openai/gpt-oss-20b');
+    expect(requestBody.max_completion_tokens).toBe(900);
     expect(requestBody.reasoning_effort).toBe('low');
   });
 
@@ -156,6 +165,10 @@ describe('Oracle route validates before calling the AI provider', () => {
     const systemPrompt = requestBody.messages[0].content;
     const userContent = requestBody.messages.at(-1).content;
 
+    expect(requestBody.model).toBe('openai/gpt-oss-20b');
+    expect(requestBody.max_completion_tokens).toBe(700);
+    expect(requestBody.reasoning_effort).toBe('low');
+    expect(requestBody.temperature).toBe(0.7);
     expect(systemPrompt).toContain('do not repeat the whole fortune');
     expect(systemPrompt).toContain('choose ONE specific answer');
     expect(systemPrompt).toContain('never default to Friday');
@@ -193,6 +206,37 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
+  it('assigns a stable fallback ID and skips the supplied previous-day ID', async () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+    mocks.fetch.mockImplementation(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: '   ' } }],
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+
+    const firstResponse = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2027-01-15',
+    }));
+    const first = await firstResponse.json();
+
+    expect(firstResponse.status).toBe(200);
+    expect(first.source).toBe('fallback');
+    expect(first.fortuneId).toBe('seasonal-winter-01');
+
+    const secondResponse = await POST(makeRequest({
+      mode: 'fortune',
+      localDate: '2027-01-16',
+      avoidFallbackId: first.fortuneId,
+    }));
+    const second = await secondResponse.json();
+
+    expect(secondResponse.status).toBe(200);
+    expect(second.source).toBe('fallback');
+    expect(second.fortuneId).toBe('seasonal-winter-02');
+    expect(second.reading).not.toBe(first.reading);
+
+    randomSpy.mockRestore();
+  });
+
   it('returns a usable fallback when the provider returns blank content', async () => {
     mocks.fetch.mockResolvedValue(new Response(JSON.stringify({
       choices: [{ message: { content: '   ' } }],
@@ -206,6 +250,7 @@ describe('Oracle route validates before calling the AI provider', () => {
 
     expect(response.status).toBe(200);
     expect(body.source).toBe('fallback');
+    expect(body.fortuneId).toMatch(/^[a-z0-9-]{1,80}$/);
     expect(typeof body.reading).toBe('string');
     expect(body.reading.trim().length).toBeGreaterThan(20);
     expect(body.reading).not.toMatch(/guaranteed|winning numbers|jackpot/i);
@@ -238,7 +283,7 @@ describe('Oracle route validates before calling the AI provider', () => {
     errorSpy.mockRestore();
   });
 
-  it('returns a follow-up fallback when the provider response is malformed JSON', async () => {
+  it('returns the exact follow-up outage notice when the provider response is malformed JSON', async () => {
     mocks.fetch.mockResolvedValue(new Response('not-json', {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -252,11 +297,15 @@ describe('Oracle route validates before calling the AI provider', () => {
     }));
     const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(body.source).toBe('fallback');
-    expect(body.reading).toMatch(
-      /The mists keep|The glass shows|A familiar Canadian answer|The mists see|There is a promising|The fortune is not finished/,
-    );
+    expect(response.status).toBe(503);
+    expect(body).toEqual({
+      error: FOLLOW_UP_UNAVAILABLE_MESSAGE,
+      unavailable: true,
+    });
+    expect(body).not.toHaveProperty('reading');
+    expect(body).not.toHaveProperty('fortune');
+    expect(body).not.toHaveProperty('prediction');
+    expect(body).not.toHaveProperty('source');
   });
 
   it.each([
@@ -388,7 +437,7 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(body.reading).not.toMatch(/joke|laugh/i);
   });
 
-  it('returns a respectful follow-up fallback on Remembrance Day', async () => {
+  it('returns only the outage notice for a Remembrance Day follow-up failure', async () => {
     mocks.fetch.mockResolvedValue(new Response(JSON.stringify({
       choices: [{ message: { content: '   ' } }],
     }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
@@ -401,10 +450,11 @@ describe('Oracle route validates before calling the AI provider', () => {
     }));
     const body = await response.json();
 
-    expect(response.status).toBe(200);
-    expect(body.source).toBe('fallback');
-    expect(body.reading).not.toContain('eh?');
-    expect(body.reading).not.toContain('!');
+    expect(response.status).toBe(503);
+    expect(body.error).toBe(FOLLOW_UP_UNAVAILABLE_MESSAGE);
+    expect(body.unavailable).toBe(true);
+    expect(body).not.toHaveProperty('reading');
+    expect(body).not.toHaveProperty('fortune');
   });
 
 });

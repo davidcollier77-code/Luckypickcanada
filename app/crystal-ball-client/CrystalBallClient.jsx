@@ -12,6 +12,12 @@ import {
   writeDailyUsage,
   withDailyUsageLock,
 } from './daily-usage';
+import {
+  getFallbackFortuneToAvoid,
+  readFallbackHistory,
+  writeFallbackHistory,
+} from './fallback-history';
+import { FOLLOW_UP_UNAVAILABLE_MESSAGE } from '../lib/crystal-ball-follow-up-message';
 
 function getBrowserStorage() {
   try {
@@ -85,10 +91,21 @@ export default function CrystalBallClient() {
         throw new Error('You’ve already received today’s fortune. Come back after your next local midnight.');
       }
 
+      // Only yesterday's fallback is skipped. The hint is advisory and never
+      // changes the daily allowance or the seasonal selection rules.
+      const avoidFallbackId = getFallbackFortuneToAvoid(
+        readFallbackHistory(storage),
+        new Date(),
+      );
+
       const response = await fetch('/api/oracle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'fortune', ...getLocalCalendarContext() }),
+        body: JSON.stringify({
+          mode: 'fortune',
+          ...(avoidFallbackId ? { avoidFallbackId } : {}),
+          ...getLocalCalendarContext(),
+        }),
       });
       const data = await response.json().catch(() => ({}));
 
@@ -124,6 +141,10 @@ export default function CrystalBallClient() {
         ),
       );
 
+      if (data.source === 'fallback' && typeof data.fortuneId === 'string') {
+        writeFallbackHistory(data.fortuneId, storage);
+      }
+
       return reading;
     });
   };
@@ -146,17 +167,39 @@ export default function CrystalBallClient() {
         throw new Error('You’ve already used today’s follow-up question. Come back after your next local midnight.');
       }
 
-      const response = await fetch('/api/oracle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'follow-up',
-          question,
-          fortune: current.fortune,
-          ...getLocalCalendarContext(),
-        }),
-      });
+      // A provider outage ends today's follow-up with the fixed product notice.
+      // Mark the existing one-per-day allowance without retaining the question
+      // or any answer text, then surface the exact message to the component.
+      const failFollowUpForToday = () => {
+        const latestUsage = readDailyUsage(storage);
+        if (latestUsage.date === current.date && !latestUsage.followUpUsed) {
+          applyUsage(
+            writeDailyUsage({ ...latestUsage, followUpUsed: true }, storage),
+          );
+        }
+        throw new Error(FOLLOW_UP_UNAVAILABLE_MESSAGE);
+      };
+
+      let response;
+      try {
+        response = await fetch('/api/oracle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'follow-up',
+            question,
+            fortune: current.fortune,
+            ...getLocalCalendarContext(),
+          }),
+        });
+      } catch {
+        return failFollowUpForToday();
+      }
       const data = await response.json().catch(() => ({}));
+
+      if (response.status === 503 || data.unavailable === true) {
+        return failFollowUpForToday();
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'The Crystal Ball could not answer that follow-up. Please try again.');
@@ -164,7 +207,7 @@ export default function CrystalBallClient() {
 
       const answer = normalizeReading(data.reading);
       if (!answer) {
-        throw new Error(data.error || 'The Crystal Ball could not find a follow-up answer. Please try again.');
+        return failFollowUpForToday();
       }
 
       const latest = readDailyUsage(storage);
@@ -175,13 +218,13 @@ export default function CrystalBallClient() {
         throw new Error('You’ve already used today’s follow-up question. Refresh to see the saved answer.');
       }
 
+      // Keep only the allowance flag. The question and generated answer live in
+      // component state for this page and are never written to browser storage.
       applyUsage(
         writeDailyUsage(
           {
             ...latest,
             followUpUsed: true,
-            followUpQuestion: question,
-            followUpAnswer: answer,
           },
           storage,
         ),
@@ -191,19 +234,10 @@ export default function CrystalBallClient() {
     });
   };
 
-  const savedFollowUp =
-    usage?.followUpUsed && usage?.followUpAnswer
-      ? {
-          question: usage.followUpQuestion || '',
-          answer: usage.followUpAnswer,
-        }
-      : null;
-
   return (
     <CrystalBall
       key={usage?.date || 'pending'}
       initialFortune={usage?.fortune || null}
-      initialFollowUp={savedFollowUp}
       fortuneUsed={Boolean(usage?.fortuneUsed)}
       followUpUsed={Boolean(usage?.followUpUsed)}
       onGenerateFortune={handleGenerateFortune}
