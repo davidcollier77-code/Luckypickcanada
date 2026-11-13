@@ -186,7 +186,7 @@ describe('single-source agent governance', () => {
   it('requires all nine Spec Kit commands and checks for workflow changes', () => {
     const agents = readAgents();
     const start = agents.indexOf('9. Follow Spec Kit.');
-    const end = agents.indexOf('\\n\\nB — IMPLEMENT', start);
+    const end = agents.indexOf('\n\nB — IMPLEMENT', start);
     const workflow = agents.slice(start, end);
     const normalized = workflow.toLowerCase();
 
