@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-13T06:22:03-04:00",
+  "lastUpdated": "2026-11-13T10:44:26-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,18 +497,18 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "6d56af0c8b62bde11bb3d9df46244fab5f0a00f9",
+    "/github/docs": "66f5790db61fc9d07eb9b7d3525f2994cd2910b9",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
-    "/lucide-icons/lucide": "c55aab36b553a7de50a0050e7042fd7b2d64664e",
+    "/lucide-icons/lucide": "64502ae56389321a922bd498709d4184b0e61543",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "e02dcd623ca915f35e5c418f5384f4732bafa925",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "4bc599908663852319724580d81682c2cf5204b3",
-    "/cloudflare/cloudflare-docs/turnstile": "cca18a49012187f1e2555c9355e9898b265c8779",
-    "/cloudflare/cloudflare-docs/pages": "cca18a49012187f1e2555c9355e9898b265c8779",
-    "/dequelabs/axe-core": "6fd46ff230f683ca0ae029106ab4b452b075e122",
+    "/cloudflare/cloudflare-docs/turnstile": "6bdbbc6d8ce10febdeab416ddb0ab619384b2870",
+    "/cloudflare/cloudflare-docs/pages": "6bdbbc6d8ce10febdeab416ddb0ab619384b2870",
+    "/dequelabs/axe-core": "d991e05ac6eb42df88f9e61c1679692534bb92e2",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "8534271f0413bae6a455b7cf43b2637391bc614b",
     "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
@@ -516,7 +516,7 @@
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
-    "/opennextjs/opennextjs-cloudflare": "0e007b3b1c440d38b5133e4b3c64ff1a9057bf37",
+    "/opennextjs/opennextjs-cloudflare": "f5a2d09b239214f9c08afcc371bc6e1d0d98e1e5",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
     "/cloudflare/workers-sdk": "56459a561b7b133a9152b993336e1e5470b1d290",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
@@ -524,7 +524,7 @@
     "/getsentry/sentry-docs": "c363ae896db4672454ba646266e7611458385d21",
     "/marsidev/react-turnstile": "fafc7b564386a9b1ab0e58d564e0960adba9d230",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
-    "/resend/resend-node": "805b2ecb711ea73df40309725a16aa0fe7069618",
+    "/resend/resend-node": "0059060822e41e186b553f3bbd49c48dabcb090b",
     "/numpy/numpy": "c60f172b3330f76d6592362137f34c4a3030a001",
     "/lovell/sharp": "249971a743ebf1044a1a7b0d709e610e8b74fa02",
     "/google-gemini/gemini-skills/gemini-api-dev": "87fb0173d36fea4f87de4c3fbd0678cf929c0588",
