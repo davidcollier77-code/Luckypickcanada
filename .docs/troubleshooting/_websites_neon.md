@@ -257,10 +257,11 @@ API reference, SDKs, Terraform provider, Postgres compatibility, and platform-le
 - [Claimable Neon](https://neon.com/docs/reference/claimable-neon.md): CLI, claim, and HTTP reference
 - [Effect bindings for the Neon SDK](https://neon.com/docs/reference/effect-sdk.md): Use the Neon Management SDK with Effect v4 — every call an Effect, every paginated list a Stream, with tagged errors and interruption.
 - [Get started with the Neon API](https://neon.com/docs/reference/api/get-started.md): Create an API key and make your first authenticated request.
-- [Manage Neon with Terraform](https://neon.com/docs/reference/terraform.md): Use Terraform to provision and manage your Neon projects, branches, endpoints, roles, databases, and other resources as code.
+- [Manage Neon with Terraform](https://neon.com/docs/reference/terraform.md): Define Neon projects, branches, computes, and backend resources as code with the official Neon Terraform provider
 - [Managed Better Auth and Data API SDK](https://neon.com/docs/reference/javascript-sdk.md): Reference documentation for @neon/neon-js (authentication and Data API database queries)
 - [Metrics and logs reference](https://neon.com/docs/reference/metrics-logs.md): Complete reference for all metrics and log fields exported by Neon
 - [Migrate from @neondatabase/api-client to @neon/sdk](https://neon.com/docs/reference/migrate-api-client-to-sdk.md): Move Platform API automation from the legacy Axios client to the official fetch-based SDK
+- [Migrate from kislerdm/neon to the Neon Terraform provider](https://neon.com/docs/reference/terraform-migrate.md): Move an existing configuration from the community provider to neondatabase/neon without recreating resources
 - [Neon API](https://neon.com/docs/reference/api.md): Manage Neon projects, branches, and backend services over HTTP.
 - [Neon API key concepts](https://neon.com/docs/reference/api/key-concepts.md): Asynchronous operations, rate limits, and pagination.
 - [Neon Management SDK](https://neon.com/docs/reference/typescript-sdk.md): The official TypeScript SDK for the Neon API. Projects, branches, Postgres, storage, functions, and auth in one typed client.
