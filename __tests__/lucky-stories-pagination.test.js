@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
   const query = vi.fn();
-  // The Neon HTTP driver is callable: sql(text, params), not sql.query(...).
-  const database = vi.fn(async (text, params) => query(text, params));
-  return { query, database };
+  const templateQuery = vi.fn(async () => []);
+  const database = vi.fn(async (strings, ...values) => {
+    if (!Array.isArray(strings) || !Object.prototype.hasOwnProperty.call(strings, 'raw')) {
+      throw new Error('Neon HTTP SQL client must be called as a tagged template');
+    }
+
+    return templateQuery(strings.join(''), values);
+  });
+  database.query = query;
+  return { query, templateQuery, database };
 });
 
 vi.mock('../app/lib/db-init', () => ({
@@ -220,6 +227,88 @@ describe('getLuckyStoryMap paging', () => {
 
     const feedCalls = mocks.query.mock.calls.filter(([text]) => text.includes('ls.approved = true and ('));
     expect(feedCalls).toHaveLength(0);
+  });
+
+  it('uses Neon 1.x query() for every parameterized Lucky Stories read', async () => {
+    const mapData = await getLuckyStoryMap({ province: 'ON', limit: 3, storyId: '20' });
+
+    expect(mapData.isConfigured).toBe(true);
+
+    const statements = mocks.query.mock.calls.map(([text]) => text);
+    expect(statements.some((text) => text.includes('count(*) as total'))).toBe(true);
+    expect(statements.some((text) => text.includes('row_number() over'))).toBe(true);
+    expect(statements.some((text) => text.includes('limit 
+    const mapData = await getLuckyStoryMap({ province: 'ON', limit: 0, storyId: '20' });
+
+    expect(mapData.stories).toEqual([]);
+    expect(mapData.linkedStory.id).toBe('20');
+    expect(mapData.linkedStory.province).toBe('NT');
+    expect(mapData.recentStories).toHaveLength(5);
+
+    const countsByProvince = mapData.recentStories.reduce((counts, story) => {
+      counts[story.province] = (counts[story.province] || 0) + 1;
+      return counts;
+    }, {});
+    expect(countsByProvince).toEqual({ NS: 3, ON: 2 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain('partition by case');
+    expect(recentQuery[0]).toContain('where province_rank <= 3');
+    expect(recentQuery[1]).toContain('(^|[^a-z])ns([^a-z]|$)');
+    expect(recentQuery[1]).toContain('(^|[^a-z])on([^a-z]|$)');
+  });
+
+  it('applies the 24-hour window before ranking recent stories per province', async () => {
+    await getLuckyStoryMap({ province: 'ON', limit: 0, hours: 24 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain("ls.created_at >= now() - ($1::int * interval '1 hour')");
+    expect(recentQuery[1][0]).toBe(24);
+    expect(recentQuery[0]).toContain('partition by case');
+  });
+});
+) && text.includes('offset 
+    const mapData = await getLuckyStoryMap({ province: 'ON', limit: 0, storyId: '20' });
+
+    expect(mapData.stories).toEqual([]);
+    expect(mapData.linkedStory.id).toBe('20');
+    expect(mapData.linkedStory.province).toBe('NT');
+    expect(mapData.recentStories).toHaveLength(5);
+
+    const countsByProvince = mapData.recentStories.reduce((counts, story) => {
+      counts[story.province] = (counts[story.province] || 0) + 1;
+      return counts;
+    }, {});
+    expect(countsByProvince).toEqual({ NS: 3, ON: 2 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain('partition by case');
+    expect(recentQuery[0]).toContain('where province_rank <= 3');
+    expect(recentQuery[1]).toContain('(^|[^a-z])ns([^a-z]|$)');
+    expect(recentQuery[1]).toContain('(^|[^a-z])on([^a-z]|$)');
+  });
+
+  it('applies the 24-hour window before ranking recent stories per province', async () => {
+    await getLuckyStoryMap({ province: 'ON', limit: 0, hours: 24 });
+
+    const recentQuery = mocks.query.mock.calls.find(([text]) => text.includes('row_number() over'));
+    expect(recentQuery).toBeTruthy();
+    expect(recentQuery[0]).toContain("ls.created_at >= now() - ($1::int * interval '1 hour')");
+    expect(recentQuery[1][0]).toBe(24);
+    expect(recentQuery[0]).toContain('partition by case');
+  });
+});
+))).toBe(true);
+    expect(statements.some((text) => text.includes('ls.id = $1::bigint'))).toBe(true);
+
+    // The callable client is reserved for true tagged-template calls. A legacy
+    // database(sqlText, params) invocation throws in this mock and fails the test.
+    expect(mocks.database.mock.calls.every(([strings]) =>
+      Array.isArray(strings) && Object.prototype.hasOwnProperty.call(strings, 'raw'),
+    )).toBe(true);
   });
 
   it('returns up to three recent stories per province, not three across Canada', async () => {
