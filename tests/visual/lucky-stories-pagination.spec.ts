@@ -219,10 +219,10 @@ test('the story form requires one of the thirteen canonical provinces or territo
   });
 
   await dialog.getByRole('button', { name: 'Submit Story' }).click();
-  await expect(provinceSelect).toBeInvalid();
+  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(false);
   expect(storySubmissions).toHaveLength(0);
 
   await provinceSelect.selectOption({ label: 'Nova Scotia' });
   await expect(provinceSelect).toHaveValue('Nova Scotia');
-  await expect(provinceSelect).toBeValid();
+  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(true);
 });
