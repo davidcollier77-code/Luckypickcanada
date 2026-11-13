@@ -1362,7 +1362,7 @@ re-binds the name <code class="docutils literal notranslate"><span class="pre">a
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/numpy.ndarray.__matmul__.html#numpy.ndarray.__matmul__" title="numpy.ndarray.__matmul__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndarray.__matmul__</span></code></a>(value, /)</p></td>
-<td><p>Return <a class="reference external" href="/cdn-cgi/l/email-protection#790a1c151f5f5a4a4e425f5a4c4b425f5a4d41420f18150c1c">self<span>&#64;</span>value</a>.</p></td>
+<td><p>Return <a class="reference external" href="/cdn-cgi/l/email-protection#f586909993d3d6c6c2ced3d6c0c7ced3d6c1cdce8394998090">self<span>&#64;</span>value</a>.</p></td>
 </tr>
 </tbody>
 </table>
