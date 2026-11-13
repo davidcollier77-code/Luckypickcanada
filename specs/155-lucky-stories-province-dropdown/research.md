@@ -4,6 +4,9 @@
 
 ## Existing Source of Truth
 
+The canonical `storyProvinces` collection is currently embedded in the server-side `app/lucky-stories.js` module. That module also imports database and Cloudflare runtime code, so it must not be imported by the browser component. The province records will be extracted unchanged into a small, dependency-free shared module and re-exported by the existing server module to preserve current imports.
+
+
 The existing `storyProvinces` collection in `app/lucky-stories.js` defines thirteen province/territory records. Each record has a two-letter region code and a canonical full English name. The map component maintains the same region code/name associations for its map controls.
 
 The exact canonical display and submission names are:
