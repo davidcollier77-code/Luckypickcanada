@@ -175,7 +175,7 @@ PostgREST-style REST interface for your Neon database.
 
 Realtime reactivity on standard Postgres. Live SQL API makes any SQL query live (full support for joins, aggregates, ordering, extensions, UDFs). Plus end-to-end reactive DX: live queries and optimistic mutations as type-safe client primitives, on standard Neon Postgres.
 
-- [All 16 Realtime pages](https://neon.com/docs/realtime/llms.txt) — key pages below
+- [All 18 Realtime pages](https://neon.com/docs/realtime/llms.txt) — key pages below
 
 - [Neon Realtime](https://neon.com/docs/realtime/overview.md): Live queries that update your app's UI the moment your data changes.
 - [Quickstart](https://neon.com/docs/realtime/quickstart.md): Get started with Realtime.
