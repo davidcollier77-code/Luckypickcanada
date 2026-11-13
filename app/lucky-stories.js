@@ -4,21 +4,8 @@ import { cached, cacheKey, invalidate } from './lib/kv-cache';
 import crypto from 'crypto';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
-export const storyProvinces = [
-  { code: 'BC', name: 'British Columbia', aliases: ['bc', 'b.c.', 'british columbia'] },
-  { code: 'AB', name: 'Alberta', aliases: ['ab', 'alta', 'alberta'] },
-  { code: 'SK', name: 'Saskatchewan', aliases: ['sk', 'sask', 'saskatchewan'] },
-  { code: 'MB', name: 'Manitoba', aliases: ['mb', 'manitoba'] },
-  { code: 'ON', name: 'Ontario', aliases: ['on', 'ont', 'ontario'] },
-  { code: 'QC', name: 'Quebec', aliases: ['qc', 'québec', 'quebec'] },
-  { code: 'NB', name: 'New Brunswick', aliases: ['nb', 'n.b.', 'new brunswick'] },
-  { code: 'NS', name: 'Nova Scotia', aliases: ['ns', 'n.s.', 'nova scotia'] },
-  { code: 'PE', name: 'Prince Edward Island', aliases: ['pe', 'pei', 'p.e.i.', 'prince edward island'] },
-  { code: 'NL', name: 'Newfoundland and Labrador', aliases: ['nl', 'nfld', 'newfoundland', 'labrador', 'newfoundland and labrador'] },
-  { code: 'YT', name: 'Yukon', aliases: ['yt', 'yukon'] },
-  { code: 'NT', name: 'Northwest Territories', aliases: ['nt', 'nwt', 'northwest territories'] },
-  { code: 'NU', name: 'Nunavut', aliases: ['nu', 'nunavut'] },
-];
+import { storyProvinces } from './lucky-story-provinces';
+export { storyProvinces };
 
 /** Stories fetched for the first page and every automatic follow-up page. */
 export const LUCKY_STORIES_PAGE_SIZE = 3;
@@ -113,8 +100,9 @@ export function validateLuckyStory({ name, location, story }) {
   });
   const cleanLocation = validatePlainTextField({
     value: location,
-    label: 'Location',
+    label: 'Province or territory',
     maxLength: 80,
+    required: true,
     allowUrls: false,
   });
   const cleanStory = validatePlainTextField({
@@ -130,9 +118,16 @@ export function validateLuckyStory({ name, location, story }) {
   if (cleanLocation.error) return cleanLocation;
   if (cleanStory.error) return cleanStory;
 
+  const selectedProvince = storyProvinces.find(
+    (province) => normalizeLocation(province.name) === normalizeLocation(cleanLocation.value),
+  );
+  if (!selectedProvince) {
+    return { error: 'Please select a valid province or territory.' };
+  }
+
   return {
     name: sanitizeSingleLine(cleanName.value, 40),
-    location: sanitizeSingleLine(cleanLocation.value, 80) || null,
+    location: selectedProvince.name,
     story: cleanStory.value,
   };
 }
