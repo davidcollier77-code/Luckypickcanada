@@ -2,6 +2,19 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-13 — Crystal Ball token budgets and fallback resilience
+- Split the Groq completion budget into 900 tokens for daily fortunes and 700 for follow-ups,
+  keeping `openai/gpt-oss-20b`, low reasoning effort and every other request setting unchanged.
+- Tagged all 197 daily fallback fortunes with stable IDs, excluded only yesterday's fallback from the
+  next local day's selection, and kept seasonal/occasion weighting intact. Browser storage holds
+  only the last fallback ID and date.
+- Removed the 14 follow-up fallback answers. A follow-up provider failure now returns the exact
+  supplied outage notice with no substitute fortune, and only the daily used flag is persisted — no
+  question, answer or Q&A history.
+- Verified: 78 focused tests, 69 files / 649 unit tests, `tsc --noEmit`, `./freebuff-verify.sh` exit
+  0, a 306,445,265-byte build, and six desktop Playwright Crystal Ball checks including the new
+  outage flow.
+
 ## 2026-11-13 — Homepage search listing
 - Replaced the homepage search/share image with a 1200 × 630 progressive JPEG (160 KB) cropped from a live Playwright
   capture of the deployed homepage, preserving the Milky Way backdrop, maple-leaf emblem, tagline and headline.

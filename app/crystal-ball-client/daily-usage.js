@@ -4,7 +4,6 @@ export { getLocalDateKey };
 
 export const DAILY_STORAGE_KEY = 'luckyPickCanada:crystalBallDailyFortune:v1';
 export const MAX_FORTUNE_LENGTH = 2000;
-export const MAX_FOLLOW_UP_QUESTION_LENGTH = 120;
 
 let inMemoryUsage = null;
 const dailyUsageQueues = new Map();
@@ -58,8 +57,6 @@ export function createFreshUsage(date = new Date()) {
     fortuneUsed: false,
     fortune: null,
     followUpUsed: false,
-    followUpQuestion: null,
-    followUpAnswer: null,
   };
 }
 
@@ -67,22 +64,15 @@ function normalizeUsage(value, today) {
   if (!value || typeof value !== 'object' || value.date !== today) return null;
 
   const fortune = cleanText(value.fortune, MAX_FORTUNE_LENGTH);
-  const followUpAnswer = cleanText(value.followUpAnswer, MAX_FORTUNE_LENGTH);
-  const followUpQuestion = cleanText(
-    value.followUpQuestion,
-    MAX_FOLLOW_UP_QUESTION_LENGTH,
-  );
 
   return {
     date: today,
-    // A flag only counts when the matching usable reading is actually stored,
-    // so an unusable response can never consume the visitor's allowance.
+    // A flag only counts when the daily fortune is actually stored, so an
+    // unusable response can never consume the visitor's allowance. Follow-up
+    // question and answer text is deliberately never read or retained.
     fortuneUsed: cleanFlag(value.fortuneUsed) && Boolean(fortune),
     fortune,
-    followUpUsed:
-      cleanFlag(value.followUpUsed) && Boolean(fortune) && Boolean(followUpAnswer),
-    followUpQuestion: followUpQuestion || null,
-    followUpAnswer,
+    followUpUsed: cleanFlag(value.followUpUsed) && Boolean(fortune),
   };
 }
 

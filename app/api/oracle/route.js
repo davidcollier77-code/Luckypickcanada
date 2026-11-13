@@ -11,9 +11,9 @@ import {
 } from '../../lib/crystal-ball-calendar';
 import {
   addTimeGreeting,
-  getFallbackFollowUp,
-  getFallbackFortune,
+  getFallbackFortuneEntry,
 } from '../../lib/crystal-ball-fortunes';
+import { FOLLOW_UP_UNAVAILABLE_MESSAGE } from '../../lib/crystal-ball-follow-up-message';
 import { getTimeOfDayFromLocalTime, parseLocalTime } from '../../lib/local-time';
 
 const ALLOWED_ORIGINS = [
@@ -35,6 +35,10 @@ function getCorsHeaders(request) {
   }
   return headers;
 }
+
+const FORTUNE_MAX_COMPLETION_TOKENS = 900;
+const FOLLOW_UP_MAX_COMPLETION_TOKENS = 700;
+const FALLBACK_FORTUNE_ID_PATTERN = /^[a-z0-9-]{1,80}$/;
 
 const PLAYFUL_IDENTITY =
   'You are the Lucky Pick Canada Crystal Ball: funny, clever, mysterious, warm, occasionally cheeky, uplifting and unmistakably Canadian — not a generic AI assistant.';
@@ -118,13 +122,38 @@ function buildSystemPrompt(context, mode) {
   return parts.join(' ');
 }
 
-function getFallbackPayload(context, mode) {
-  const reading =
-    mode === 'follow-up'
-      ? getFallbackFollowUp(context)
-      : addTimeGreeting(getFallbackFortune(context), context);
+function getFallbackFortunePayload(context, excludeId) {
+  const entry = getFallbackFortuneEntry(context, Math.random, {
+    excludeId: FALLBACK_FORTUNE_ID_PATTERN.test(excludeId || '') ? excludeId : null,
+  });
+  const reading = addTimeGreeting(entry.text, context);
 
-  return { prediction: reading, fortune: reading, reading, source: 'fallback' };
+  return {
+    prediction: reading,
+    fortune: reading,
+    reading,
+    source: 'fallback',
+    fortuneId: entry.id,
+  };
+}
+
+/**
+ * A follow-up failure is not a reading. It returns the fixed product notice so
+ * the client never substitutes a fortune for an answer, while a daily fortune
+ * keeps its existing curated fallback.
+ */
+function getFallbackResponse(context, mode, corsHeaders, excludeId) {
+  if (mode === 'follow-up') {
+    return NextResponse.json(
+      { error: FOLLOW_UP_UNAVAILABLE_MESSAGE, unavailable: true },
+      { status: 503, headers: corsHeaders },
+    );
+  }
+
+  return NextResponse.json(getFallbackFortunePayload(context, excludeId), {
+    status: 200,
+    headers: corsHeaders,
+  });
 }
 
 function getApiKey() {
@@ -189,6 +218,7 @@ export async function POST(request) {
   const clientIp = getClientIp(request) || 'anonymous';
   let requestMode = 'fortune';
   let calendarContext = null;
+  let fallbackExcludeId = null;
 
   try {
     // Keep the short-window abuse limit, independent of the visitor-side daily counter.
@@ -208,6 +238,14 @@ export async function POST(request) {
     if (body.mode !== undefined && body.mode !== 'fortune' && body.mode !== 'follow-up') {
       return NextResponse.json({ error: 'Invalid request mode.' }, { status: 400, headers: corsHeaders });
     }
+
+    // Advisory variety hint: never trusted for identity or allowance, only for
+    // skipping yesterday's curated fallback when it is still in the pool.
+    fallbackExcludeId =
+      typeof body.avoidFallbackId === 'string' &&
+      FALLBACK_FORTUNE_ID_PATTERN.test(body.avoidFallbackId)
+        ? body.avoidFallbackId
+        : null;
 
     const rawQuestion = body.message ?? body.prompt ?? body.question;
     // Requests without a mode keep the old question-only behaviour; the Crystal
@@ -275,7 +313,7 @@ export async function POST(request) {
     const apiKey = getApiKey();
     if (!apiKey) {
       console.error('Oracle Error: GROQ_API_KEY environment variable is missing.');
-      return NextResponse.json(getFallbackPayload(context, mode), { status: 200, headers: corsHeaders });
+      return getFallbackResponse(context, mode, corsHeaders, fallbackExcludeId);
     }
 
     const controller = new AbortController();
@@ -300,14 +338,17 @@ export async function POST(request) {
           // Groq API response" issue. Use the supported `max_completion_tokens`
           // field, keep effort low for short readings and leave headroom for
           // reasoning plus the visible fortune.
-          max_completion_tokens: 1024,
+          max_completion_tokens:
+            mode === 'fortune'
+              ? FORTUNE_MAX_COMPLETION_TOKENS
+              : FOLLOW_UP_MAX_COMPLETION_TOKENS,
           reasoning_effort: 'low',
         }),
         signal: controller.signal,
       });
     } catch (fetchError) {
       console.error('Oracle Error:', fetchError);
-      return NextResponse.json(getFallbackPayload(context, mode), { status: 200, headers: corsHeaders });
+      return getFallbackResponse(context, mode, corsHeaders, fallbackExcludeId);
     } finally {
       clearTimeout(timeoutId);
     }
@@ -315,7 +356,7 @@ export async function POST(request) {
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
       console.error('Oracle Error:', groqResponse.status, errorText);
-      return NextResponse.json(getFallbackPayload(context, mode), { status: 200, headers: corsHeaders });
+      return getFallbackResponse(context, mode, corsHeaders, fallbackExcludeId);
     }
 
     const data = await groqResponse.json();
@@ -334,7 +375,7 @@ export async function POST(request) {
           reasoningTokens: data.usage?.completion_tokens_details?.reasoning_tokens ?? null,
         }),
       );
-      return NextResponse.json(getFallbackPayload(context, mode), { status: 200, headers: corsHeaders });
+      return getFallbackResponse(context, mode, corsHeaders, fallbackExcludeId);
     }
 
     return NextResponse.json(
@@ -343,6 +384,6 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error('Oracle Route Exception:', error);
-    return NextResponse.json(getFallbackPayload(calendarContext, requestMode), { status: 200, headers: corsHeaders });
+    return getFallbackResponse(calendarContext, requestMode, corsHeaders, fallbackExcludeId);
   }
 }

@@ -263,33 +263,34 @@ const OCCASION_POOLS = {
   ],
 };
 
-const FOLLOW_UP_FALLBACKS = [
-  'The mists keep the sharper details close, but they do lean toward a warmer answer than you expected. Give it a day and watch for the second sign.',
-  'The glass shows a small, practical step rather than a grand leap. Take the one that leaves you more room to breathe, eh?',
-  'A familiar Canadian answer applies here: check the forecast, dress in layers and do not let one cold patch decide the whole season.',
-  'The mists see the question turning over like a coin, and the side that lands facing up is the one you already suspect. Trust the quieter instinct.',
-  'There is a promising little opening here, though it arrives with ordinary timing rather than fireworks. Say yes to the next useful conversation.',
-  'The fortune is not finished with you yet. Keep your stick on the ice; the play is still developing, and the next pass is friendlier than it looks.',
-];
+function withFortuneIds(pool, prefix) {
+  return pool.map((text, index) => ({
+    id: `${prefix}-${String(index + 1).padStart(2, '0')}`,
+    text,
+  }));
+}
 
-const RESPECTFUL_FOLLOW_UP = [
-  'The mists keep today quiet. The answer is to pause, remember and carry that care gently into the rest of the day.',
-  'There is no rush today. Take the honest, quiet answer that leaves room for respect and kindness.',
-  'The glass offers a simple reading: listen, remember and let your next small action be a thoughtful one.',
-  'Today’s answer is less about luck and more about attention. Give the moment the care it deserves.',
-];
+// Stable identifiers for every curated daily fortune. They are derived from the
+// pool namespace and the reading's position, so the same reading keeps the same
+// ID across page loads while never sharing an ID with another pool.
+const GENERAL_ENTRIES = withFortuneIds(GENERAL, 'general');
+const SEASONAL_ENTRIES = Object.fromEntries(
+  Object.entries(SEASONAL).map(([season, pool]) => [
+    season,
+    withFortuneIds(pool, `seasonal-${season}`),
+  ]),
+);
+const OCCASION_ENTRIES = Object.fromEntries(
+  Object.entries(OCCASION_POOLS).map(([key, pool]) => [
+    key,
+    withFortuneIds(pool, `occasion-${key}`),
+  ]),
+);
 
-const THOUGHTFUL_FOLLOW_UP = [
-  'The mists are listening today. The answer is to make space, learn with care and carry that understanding into ordinary choices.',
-  'A thoughtful response begins with listening. Let the next step be sincere and respectful.',
-  'Today’s reading is quiet: seek understanding before certainty, and let your actions follow.',
-  'The glass points toward reflection. Take the answer slowly and let it shape one small, sincere choice.',
-];
-
-function pick(items, random) {
-  if (!items || items.length === 0) return '';
+function pickEntry(entries, random) {
+  if (!entries || entries.length === 0) return null;
   const roll = Math.min(Math.max(Number(random()) || 0, 0), 0.999999);
-  return items[Math.floor(roll * items.length)];
+  return entries[Math.floor(roll * entries.length)];
 }
 
 /**
@@ -297,29 +298,47 @@ function pick(items, random) {
  * thoughtful days use only their own quiet pool, so a provider outage can
  * never produce a joke on a commemorative day.
  *
+ * The optional `excludeId` removes one reading (and every weighted copy of it)
+ * before selection. Seasonal and occasion pools remain the only candidates, so
+ * consecutive-day variety never weakens holiday relevance.
+ *
  * @param {object | null} context Calendar context, or null on an early failure.
  * @param {() => number} [random] Injectable random source for tests.
+ * @param {{ excludeId?: string | null }} [options]
  */
-export function getFallbackFortune(context, random = Math.random) {
+export function getFallbackFortuneEntry(context, random = Math.random, options = {}) {
+  const { excludeId = null } = options;
   const poolKey = context?.focus?.poolKey;
-  const occasionPool = poolKey ? OCCASION_POOLS[poolKey] : null;
+  const occasionEntries = poolKey ? OCCASION_ENTRIES[poolKey] : null;
+  const seasonalEntries = SEASONAL_ENTRIES[context?.season] || [];
 
-  if (occasionPool?.length) {
-    if (context.tone === 'respectful' || context.tone === 'thoughtful') {
-      return pick(occasionPool, random);
-    }
-    const seasonal = SEASONAL[context.season] || [];
-    return pick([...occasionPool, ...occasionPool, ...seasonal], random);
+  let entries;
+  if (occasionEntries?.length) {
+    entries =
+      context.tone === 'respectful' || context.tone === 'thoughtful'
+        ? occasionEntries
+        : [...occasionEntries, ...occasionEntries, ...seasonalEntries];
+  } else {
+    entries = [...seasonalEntries, ...seasonalEntries, ...GENERAL_ENTRIES];
   }
 
-  const seasonal = SEASONAL[context?.season] || [];
-  return pick([...seasonal, ...seasonal, ...GENERAL], random);
+  const eligible = excludeId
+    ? entries.filter((entry) => entry.id !== excludeId)
+    : entries;
+
+  return pickEntry(eligible.length ? eligible : entries, random);
 }
 
-export function getFallbackFollowUp(context, random = Math.random) {
-  if (context?.tone === 'respectful') return pick(RESPECTFUL_FOLLOW_UP, random);
-  if (context?.tone === 'thoughtful') return pick(THOUGHTFUL_FOLLOW_UP, random);
-  return pick(FOLLOW_UP_FALLBACKS, random);
+/**
+ * Return the reading text for existing callers. `getFallbackFortuneEntry()`
+ * additionally supplies the stable ID used for consecutive-day variety.
+ *
+ * @param {object | null} context
+ * @param {() => number} [random]
+ * @param {{ excludeId?: string | null }} [options]
+ */
+export function getFallbackFortune(context, random = Math.random, options = {}) {
+  return getFallbackFortuneEntry(context, random, options)?.text || '';
 }
 
 /**
@@ -346,7 +365,12 @@ export const FALLBACK_POOLS = {
   general: GENERAL,
   seasonal: SEASONAL,
   occasion: OCCASION_POOLS,
-  followUp: FOLLOW_UP_FALLBACKS,
-  respectfulFollowUp: RESPECTFUL_FOLLOW_UP,
-  thoughtfulFollowUp: THOUGHTFUL_FOLLOW_UP,
+};
+
+// Identifier-bearing view of the same 197 daily readings. Kept separate from
+// FALLBACK_POOLS so existing callers and tests can keep working with strings.
+export const FALLBACK_ENTRIES = {
+  general: GENERAL_ENTRIES,
+  seasonal: SEASONAL_ENTRIES,
+  occasion: OCCASION_ENTRIES,
 };

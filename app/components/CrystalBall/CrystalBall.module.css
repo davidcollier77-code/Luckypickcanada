@@ -741,6 +741,8 @@
   font-size: 0.86rem;
   line-height: 1.45;
   color: #ffb4a8;
+  /* Keep the supplied outage notice's paragraphs distinct. */
+  white-space: pre-line;
 }
 
 /* =========================================================================

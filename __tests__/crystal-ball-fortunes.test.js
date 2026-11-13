@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getCalendarContext } from '../app/lib/crystal-ball-calendar';
 import {
+  FALLBACK_ENTRIES,
   FALLBACK_POOLS,
   addTimeGreeting,
   getFallbackFortune,
-  getFallbackFollowUp,
+  getFallbackFortuneEntry,
 } from '../app/lib/crystal-ball-fortunes';
 import { getTimeOfDayFromLocalTime } from '../app/lib/local-time';
 
@@ -66,22 +67,86 @@ describe('Crystal Ball fallback fortunes', () => {
 
   it('handles a missing context without throwing', () => {
     expect(getFallbackFortune(null, () => 0).length).toBeGreaterThan(20);
-    expect(getFallbackFollowUp(null, () => 0).length).toBeGreaterThan(20);
+    expect(getFallbackFortuneEntry(null, () => 0)).toMatchObject({
+      id: expect.any(String),
+      text: expect.any(String),
+    });
   });
 
-  it('keeps follow-up fallbacks respectful on solemn days', () => {
-    const remembrance = getFallbackFollowUp(getCalendarContext('2026-11-11'), () => 0);
-    expect(remembrance).toBe(FALLBACK_POOLS.respectfulFollowUp[0]);
-    expect(remembrance).not.toContain('eh?');
-    expect(remembrance).not.toContain('!');
+  it('keeps exactly 197 daily readings with stable unique identifiers', () => {
+    const allEntries = [
+      ...FALLBACK_ENTRIES.general,
+      ...Object.values(FALLBACK_ENTRIES.seasonal).flat(),
+      ...Object.values(FALLBACK_ENTRIES.occasion).flat(),
+    ];
 
-    const truth = getFallbackFollowUp(getCalendarContext('2026-09-30'), () => 0.999999);
-    expect(FALLBACK_POOLS.thoughtfulFollowUp).toContain(truth);
-    expect(truth).not.toContain('eh?');
+    expect(allEntries).toHaveLength(197);
+    expect(new Set(allEntries.map((entry) => entry.id)).size).toBe(197);
 
-    expect(getFallbackFollowUp(getCalendarContext('2026-11-12'), () => 0)).toBe(
-      FALLBACK_POOLS.followUp[0],
+    for (const entry of allEntries) {
+      expect(entry.id).toMatch(/^[a-z0-9-]{1,80}$/);
+      expect(entry.text.trim().length).toBeGreaterThan(20);
+    }
+
+    const first = getFallbackFortuneEntry(getCalendarContext('2027-01-15'), () => 0);
+    expect(first.id).toBe('seasonal-winter-01');
+    expect(first.text).toBe(FALLBACK_POOLS.seasonal.winter[0]);
+  });
+
+  it('removes the former follow-up fallback pools', () => {
+    expect(Object.keys(FALLBACK_POOLS).sort()).toEqual([
+      'general',
+      'occasion',
+      'seasonal',
+    ]);
+  });
+
+  it('excludes the supplied fallback ID from the next selection', () => {
+    const context = getCalendarContext('2027-01-15');
+    const first = getFallbackFortuneEntry(context, () => 0);
+    const next = getFallbackFortuneEntry(context, () => 0, {
+      excludeId: first.id,
+    });
+
+    expect(next.id).toBe('seasonal-winter-02');
+    expect(next.text).not.toBe(first.text);
+  });
+
+  it('keeps seasonal and occasion relevance when excluding a reading', () => {
+    const winter = getCalendarContext('2027-01-15');
+    const excludedWinter = getFallbackFortuneEntry(winter, () => 0);
+    const nextWinter = getFallbackFortuneEntry(winter, () => 0, {
+      excludeId: excludedWinter.id,
+    });
+    expect(nextWinter.id).toBe('seasonal-winter-02');
+    expect(FALLBACK_POOLS.seasonal.winter).toContain(nextWinter.text);
+
+    const canadaDay = getCalendarContext('2026-07-01');
+    const excludedCanadaDay = getFallbackFortuneEntry(canadaDay, () => 0);
+    const nextCanadaDay = getFallbackFortuneEntry(canadaDay, () => 0, {
+      excludeId: excludedCanadaDay.id,
+    });
+    expect(FALLBACK_POOLS.occasion['canada-day']).toContain(nextCanadaDay.text);
+
+    const remembrance = getCalendarContext('2026-11-11');
+    const excludedRemembrance = getFallbackFortuneEntry(remembrance, () => 0);
+    const nextRemembrance = getFallbackFortuneEntry(remembrance, () => 0.999999, {
+      excludeId: excludedRemembrance.id,
+    });
+    expect(FALLBACK_POOLS.occasion['remembrance-day']).toContain(
+      nextRemembrance.text,
     );
+    expect(nextRemembrance.text).not.toContain('eh?');
+    expect(nextRemembrance.text).not.toContain('!');
+  });
+
+  it('ignores an exclusion that is not in the active weighted pool', () => {
+    const context = getCalendarContext('2027-01-15');
+    expect(
+      getFallbackFortuneEntry(context, () => 0, {
+        excludeId: 'occasion-canada-day-01',
+      }).text,
+    ).toBe(FALLBACK_POOLS.seasonal.winter[0]);
   });
 
   it('prefixes some everyday readings with the shared local greeting', () => {
@@ -102,14 +167,11 @@ describe('Crystal Ball fallback fortunes', () => {
     );
   });
 
-  it('keeps every fallback free of guaranteed wins and lottery claims', () => {
+  it('keeps every daily fallback free of guaranteed wins and lottery claims', () => {
     const all = [
       ...FALLBACK_POOLS.general,
       ...Object.values(FALLBACK_POOLS.seasonal).flat(),
       ...Object.values(FALLBACK_POOLS.occasion).flat(),
-      ...FALLBACK_POOLS.followUp,
-      ...FALLBACK_POOLS.respectfulFollowUp,
-      ...FALLBACK_POOLS.thoughtfulFollowUp,
     ];
 
     for (const reading of all) {

@@ -106,8 +106,6 @@ describe('Crystal Ball development date preview', () => {
       fortuneUsed: false,
       fortune: null,
       followUpUsed: false,
-      followUpQuestion: null,
-      followUpAnswer: null,
     });
   });
 

@@ -795,10 +795,6 @@ export default function CrystalBall({
                     That’s your follow-up for today. The Crystal Ball is quiet until the next local midnight.
                   </p>
                 </div>
-              ) : followUpUsed ? (
-                <p className={styles.followUpNote}>
-                  You’ve used today’s follow-up question. Come back after your next local midnight for another one.
-                </p>
               ) : followUpPanelOpen ? (
                 <div
                   className={styles.followUpPanel}
@@ -822,7 +818,7 @@ export default function CrystalBall({
                     maxLength={120}
                     value={followUpQuestion}
                     onChange={(event) => setFollowUpQuestion(event.target.value)}
-                    disabled={followUpStatus === 'loading'}
+                    disabled={followUpStatus === 'loading' || followUpUsed}
                     enterKeyHint="send"
                   />
                   <div className={styles.panelMeta} aria-hidden="true">
@@ -841,7 +837,11 @@ export default function CrystalBall({
                         playCrystalBallEnergy();
                         void handleAskFollowUp();
                       }}
-                      disabled={followUpStatus === 'loading' || followUpQuestion.trim() === ''}
+                      disabled={
+                        followUpStatus === 'loading' ||
+                        followUpQuestion.trim() === '' ||
+                        followUpUsed
+                      }
                     >
                       {followUpStatus === 'loading' ? (
                         <>
@@ -884,6 +884,10 @@ export default function CrystalBall({
                     </p>
                   )}
                 </div>
+              ) : followUpUsed ? (
+                <p className={styles.followUpNote}>
+                  You’ve used today’s follow-up question. Come back after your next local midnight for another one.
+                </p>
               ) : (
                 <>
                   <p className={styles.followUpPrompt}>

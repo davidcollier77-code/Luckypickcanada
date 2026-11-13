@@ -184,8 +184,6 @@ export function createPreviewUsage(dateKey) {
     fortuneUsed: false,
     fortune: null,
     followUpUsed: false,
-    followUpQuestion: null,
-    followUpAnswer: null,
   };
 }
 

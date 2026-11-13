@@ -79,12 +79,17 @@ test('Crystal Ball keeps one fortune and one follow-up per local day and never c
   expect(followUpRequests).toBe(1);
 
   await page.reload();
-  await expect(
-    page.getByTestId('crystal-ball-followup-answer').locator('.sr-only'),
-  ).toHaveText(followUp);
+  await expect(page.getByTestId('crystal-ball-followup-answer')).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: 'Your follow-up question' })).toHaveCount(0);
-  await expect(page.getByText('That’s your follow-up for today.')).toBeVisible();
+  await expect(page.getByText(/You’ve used today’s follow-up question/)).toBeVisible();
   expect(followUpRequests).toBe(1);
+
+  const savedAfterFollowUp = await page.evaluate((key) => {
+    return JSON.parse(window.localStorage.getItem(key) || '{}');
+  }, STORAGE_KEY);
+  expect(savedAfterFollowUp.followUpUsed).toBe(true);
+  expect(savedAfterFollowUp).not.toHaveProperty('followUpQuestion');
+  expect(savedAfterFollowUp).not.toHaveProperty('followUpAnswer');
 
   // A stored state from an earlier local date starts a fresh allowance.
   await page.evaluate((key) => {
