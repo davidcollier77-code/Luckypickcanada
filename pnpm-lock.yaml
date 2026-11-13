@@ -81,7 +81,7 @@ importers:
         version: 4.14.0
       '@hookform/resolvers':
         specifier: ^5.9.1
-        version: 5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.3.1))(zod@4.5.4)
+        version: 5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.91.0(@types/react@19.2.18)(react@19.3.1))(zod@4.5.4)
       '@opennextjs/cloudflare':
         specifier: 1.20.15
         version: 1.20.15(next@16.4.3(@babel/core@7.29.7)(@opentelemetry/api@1.10.0)(@playwright/test@1.64.1)(@types/node@26.2.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(wrangler@4.148.0(@types/node@26.2.0))
@@ -182,8 +182,8 @@ importers:
         specifier: ^3.9.10
         version: 3.9.10
       react-hook-form:
-        specifier: ^7.89.0
-        version: 7.89.0(@types/react@19.2.18)(react@19.3.1)
+        specifier: ^7.91.0
+        version: 7.91.0(@types/react@19.2.18)(react@19.3.1)
       sharp:
         specifier: 0.35.5
         version: 0.35.5(@types/node@26.2.0)
@@ -538,8 +538,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/runtime@7.29.10':
-    resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
+  '@babel/runtime@7.29.13':
+    resolution: {integrity: sha512-v+oN26xP4YIlQsbQ/CbTH1WG5m/l/DjKKZNy/Kp3f/AFvbgt7Em/D0FeMM3O2hX0YzeN2M16W8lOpyhIkfCBcQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.7':
@@ -4354,8 +4354,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-hook-form@7.89.0:
-    resolution: {integrity: sha512-vKcoCfy8RKZDrhSdqsRFp0uEOdS1AhLjOL6hR7Wmfzg1akNxEhaPf5WORx8SgEQPVXakdDyDkqQp+KNxVnnPHg==}
+  react-hook-form@7.91.0:
+    resolution: {integrity: sha512-5BEBUnCBwa28AFXYTYmOaB/+CSpJ/+CWVASHEvIGUzFdHyUiPHeRhG7r5hOZ8nZi0yP7pbHdFNXO/p31EKTJFQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@types/react': '*'
@@ -4462,12 +4462,12 @@ packages:
   scheduler@0.28.0:
     resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
-  schema-utils@4.8.2:
-    resolution: {integrity: sha512-iKlak3OFHF0dgD1nZRvgWQzG+P1TiEcMnLSBtIVBg937z5Jd6WE1c3SyZkXIyCfPHowL35yMsVvIjotm1c1qiw==}
+  schema-utils@4.8.3:
+    resolution: {integrity: sha512-qIfo3f+lRNqnMPgpXSKvUhsT3pY5U+ppmgGr4j8LanFP3W/Ze+xj8DY/dPb5qVu3m6qFIMyMWKVRLNKxrNhxWg==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
     peerDependencies:
-      webpack: ^5.112.0
+      webpack: ^5.0.0
     peerDependenciesMeta:
       webpack:
         optional: true
@@ -4979,8 +4979,8 @@ packages:
     resolution: {integrity: sha512-o8qghlI8NZHU1lLPrpi2+Uq7abh4GGPpYANlalzWxyWteJOCsr/P+oPBA49TOLu5FTZO4d3F9MnWJfiMo4BkmA==}
     engines: {node: '>=18'}
 
-  watchpack@2.6.3:
-    resolution: {integrity: sha512-s3NZy0QpTY9qGqzc0wtz4qI28z3+5qKbbAec4MV4G9N3CfgZ9wgvQRr0cl2jh/tqkWG1NWHkmVMHZpCamev5Wg==}
+  watchpack@2.6.4:
+    resolution: {integrity: sha512-5H3Tce2GfzWbcr9VnSqyak2whFaONw4BdmI5BDnMXold4qSlCFd64XaMQESRh2vkDKmdUkv6rUo17UvZ9f9nXw==}
     engines: {node: '>=10.13.0'}
 
   web-streams-polyfill@4.0.0-beta.3:
@@ -5843,7 +5843,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.8
 
-  '@babel/runtime@7.29.10': {}
+  '@babel/runtime@7.29.13': {}
 
   '@babel/runtime@7.29.7': {}
 
@@ -6178,10 +6178,10 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@hookform/resolvers@5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.89.0(@types/react@19.2.18)(react@19.3.1))(zod@4.5.4)':
+  '@hookform/resolvers@5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.91.0(@types/react@19.2.18)(react@19.3.1))(zod@4.5.4)':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.89.0(@types/react@19.2.18)(react@19.3.1)
+      react-hook-form: 7.91.0(@types/react@19.2.18)(react@19.3.1)
     optionalDependencies:
       ajv: 8.20.0
       ajv-formats: 2.1.1(ajv@8.20.0)
@@ -7159,7 +7159,7 @@ snapshots:
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/runtime': 7.29.10
+      '@babel/runtime': 7.29.13
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -9031,7 +9031,7 @@ snapshots:
   minimizer-webpack-plugin@5.14.0(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))):
     dependencies:
       jest-worker: 27.5.1
-      schema-utils: 4.8.2(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0)))
+      schema-utils: 4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0)))
       terser: 5.51.2
       webpack: 5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))
     optionalDependencies:
@@ -9373,7 +9373,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
 
-  react-hook-form@7.89.0(@types/react@19.2.18)(react@19.3.1):
+  react-hook-form@7.91.0(@types/react@19.2.18)(react@19.3.1):
     dependencies:
       react: 19.3.1
     optionalDependencies:
@@ -9535,7 +9535,7 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  schema-utils@4.8.2(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))):
+  schema-utils@4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
@@ -10098,7 +10098,7 @@ snapshots:
     dependencies:
       xml-name-validator: 5.0.0
 
-  watchpack@2.6.3:
+  watchpack@2.6.4:
     dependencies:
       graceful-fs: 4.2.11
 
@@ -10127,9 +10127,9 @@ snapshots:
       mime-db: 1.54.0
       minimizer-webpack-plugin: 5.14.0(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0)))
       neo-async: 2.6.2
-      schema-utils: 4.8.2(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0)))
+      schema-utils: 4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.31))(esbuild@0.28.2)(postcss@8.5.31)(sharp@0.35.5(@types/node@26.2.0)))
       tapable: 2.3.3
-      watchpack: 2.6.3
+      watchpack: 2.6.4
       webpack-sources: 3.7.0
     transitivePeerDependencies:
       - '@minify-html/node'
