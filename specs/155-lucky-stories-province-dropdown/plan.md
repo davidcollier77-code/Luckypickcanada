@@ -57,6 +57,7 @@ specs/155-lucky-stories-province-dropdown/
 
 ```text
 app/
+├── lucky-story-provinces.js
 ├── lucky-stories.js
 └── lucky-map-of-canada/
     └── lucky-map-of-canada.js
@@ -68,7 +69,7 @@ tests/visual/
 └── lucky-stories-pagination.spec.ts
 ```
 
-**Structure Decision**: Extend the existing Lucky Stories validator and the existing map modal in place. Extend current unit and Playwright coverage rather than creating a parallel component, route or test harness.
+**Structure Decision**: Extract the existing province records into a dependency-free shared data module consumed by both the server validator and browser form. Re-export the records from the existing server module so current imports remain compatible. Extend current unit and Playwright coverage rather than creating a parallel component, route or test harness.
 
 ## Complexity Tracking
 
@@ -89,7 +90,8 @@ No data-model, contract or quickstart artifact is needed:
 
 ### Phase 2: Implementation
 
-1. Add unit coverage for all thirteen canonical names and invalid/missing values.
-2. Add browser coverage for the dropdown options, required selection and unchanged submission journey.
-3. Implement canonical allowlist validation and the required native dropdown.
-4. Run focused tests, full repository verification and applicable Playwright projects where execution is available.
+1. Extract the canonical province data into a dependency-free shared module without changing its entries.
+2. Add unit coverage for all thirteen canonical names and invalid/missing values.
+3. Add browser coverage for the dropdown options, required selection and unchanged submission journey.
+4. Implement canonical allowlist validation and the required native dropdown.
+5. Run focused tests, full repository verification and applicable Playwright projects where execution is available.
