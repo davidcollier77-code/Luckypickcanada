@@ -1,7 +1,7 @@
 {
   "integration": "generic",
-  "version": "1.3.3",
-  "installed_at": "2026-11-10T05:05:48.813565+00:00",
+  "version": "1.4.0",
+  "installed_at": "2026-11-13T05:05:58.881023+00:00",
   "files": {
     ".freebuff/cmds/speckit.analyze.md": "91fe16257ededdea9cc21d3cb27d539fcdd12d93ddcea52332cd4b68176b6a8d",
     ".freebuff/cmds/speckit.clarify.md": "dd11eb5b9759f7d3cd18c9d7f23a0ae2fe7973fc6ca2486dbfaf53a5569224b1",
