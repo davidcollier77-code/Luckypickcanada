@@ -176,3 +176,53 @@ test('switching province replaces the feed with that province only', async ({ pa
   expect(bcRequest).toMatchObject({ province: 'BC', offset: 0, limit: 3 });
   await expect(page.locator('.map-story-card', { hasText: 'Ontario' })).toHaveCount(0);
 });
+
+
+test('the story form requires one of the thirteen canonical provinces or territories', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openPagedMap(page);
+
+  await page.getByRole('button', { name: /share your lucky story/i }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Community Stories' });
+  const provinceSelect = dialog.getByLabel('Province or territory', { exact: true });
+  await expect(provinceSelect).toBeVisible();
+  await expect(provinceSelect).toHaveAttribute('required', '');
+  await expect(provinceSelect).toHaveValue('');
+
+  const options = provinceSelect.locator('option:not([disabled])');
+  await expect(options).toHaveCount(13);
+  expect(await options.allTextContents()).toEqual([
+    'Alberta',
+    'British Columbia',
+    'Manitoba',
+    'New Brunswick',
+    'Newfoundland and Labrador',
+    'Northwest Territories',
+    'Nova Scotia',
+    'Nunavut',
+    'Ontario',
+    'Prince Edward Island',
+    'Quebec',
+    'Saskatchewan',
+    'Yukon',
+  ]);
+
+  await dialog.getByLabel('Name').fill('Jane Doe');
+  await dialog.locator('textarea[name="story"]').fill('A memorable lucky moment shared with the Canadian community.');
+
+  const storySubmissions: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/api/lucky-stories') && request.method() === 'POST') {
+      storySubmissions.push(request.url());
+    }
+  });
+
+  await dialog.getByRole('button', { name: 'Submit Story' }).click();
+  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(false);
+  expect(storySubmissions).toHaveLength(0);
+
+  await provinceSelect.selectOption({ label: 'Nova Scotia' });
+  await expect(provinceSelect).toHaveValue('Nova Scotia');
+  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(true);
+});

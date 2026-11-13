@@ -2,6 +2,7 @@
 import "../../themes/default/map.css";
 
 import { playButtonClick } from '../lib/audio';
+import { storyProvinces } from '../lucky-story-provinces';
 
 
 import dynamic from 'next/dynamic';
@@ -33,6 +34,7 @@ const { background: _bg, backgroundColor: _bgc, ...pageStyle } = origPageStyle;
 
 const STORED_PROVINCE_KEY = 'luckyStoriesProvince';
 const STORY_PAGE_SIZE = 3;
+const storyProvinceOptions = [...storyProvinces].sort((left, right) => left.name.localeCompare(right.name));
 
 /**
  * Formats a story timestamp as elapsed minutes, hours, or days.
@@ -760,7 +762,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                 <form action="/api/lucky-stories" method="post" onSubmit={handleFormSubmit} style={{ display: 'grid', gap: '1rem' }}>
                   <input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} />
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Name<input name="name" required maxLength="40" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
-                  <label style={{ color: "#f8fafc", fontWeight: 700 }}>Province or territory<input name="location" maxLength="80" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
+                  <label style={{ color: "#f8fafc", fontWeight: 700 }}>Province or territory<select name="location" required defaultValue="" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }}><option value="" disabled>Select your province or territory</option>{storyProvinceOptions.map((province) => <option key={province.code} value={province.name}>{province.name}</option>)}</select></label>
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Tell us your story...<textarea name="story" required minLength="20" maxLength="600" rows="5" onChange={(e) => setStoryFormText(e.target.value)} style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem', resize: 'vertical' }} /><div style={{ textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem' }}>{storyFormText.length}/600 characters</div></label>
                   <TurnstileField submitButtonId="lucky-story-submit" action="lucky-story" />
                   <button id="lucky-story-submit" type="submit" disabled={isSubmitting} onClick={playButtonClick} className="gold-3d-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', borderRadius: 999, fontWeight: 900, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1, marginTop: '0.5rem', fontSize: '1.1rem' }}><span className="gold-cta-emoji" aria-hidden="true">📜</span>{isSubmitting ? 'Please wait...' : 'Submit Story'}</button>

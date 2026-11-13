@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getStoryProvince } from '../app/lucky-stories';
+import { getStoryProvince, storyProvinces, validateLuckyStory } from '../app/lucky-stories';
 
 describe('getStoryProvince', () => {
   it('should return null for empty or invalid input', () => {
@@ -80,5 +80,49 @@ describe('getStoryProvince', () => {
     expect(getStoryProvince('mons')).toBeNull();
     // "nt" is in "montreal", should not match NT
     expect(getStoryProvince('montreal')).toBeNull();
+  });
+});
+
+
+describe('validateLuckyStory province selection', () => {
+  const story = 'A memorable lucky moment shared with the Canadian community.';
+
+  it.each(storyProvinces)('accepts the canonical full name $name', (province) => {
+    expect(validateLuckyStory({
+      name: 'Jane Doe',
+      location: province.name,
+      story,
+    })).toEqual({
+      name: 'Jane Doe',
+      location: province.name,
+      story,
+    });
+  });
+
+  it('requires a province or territory', () => {
+    expect(validateLuckyStory({
+      name: 'Jane Doe',
+      location: '',
+      story,
+    })).toEqual({ error: 'Province or territory is required.' });
+  });
+
+  it.each(['NS', 'N.S.', 'Halifax, Nova Scotia', 'Nova Scota', 'Ontario Canada', 'New York'])(
+    'rejects non-canonical location input: %s',
+    (location) => {
+      expect(validateLuckyStory({
+        name: 'Jane Doe',
+        location,
+        story,
+      })).toEqual({ error: 'Please select a valid province or territory.' });
+    },
+  );
+
+  it('stores the canonical name when case or surrounding whitespace differs', () => {
+    expect(validateLuckyStory({
+      name: 'Jane Doe',
+      location: '  nova   scotia  ',
+      story,
+    }).location).toBe('Nova Scotia');
   });
 });
