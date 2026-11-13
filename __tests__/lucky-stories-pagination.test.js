@@ -248,6 +248,7 @@ describe('getLuckyStoryMap paging', () => {
       Array.isArray(strings) && Object.prototype.hasOwnProperty.call(strings, 'raw'),
     )).toBe(true);
   });
+
   it('returns up to three recent stories per province, not three across Canada', async () => {
     const mapData = await getLuckyStoryMap({ province: 'ON', limit: 0, storyId: '20' });
 
