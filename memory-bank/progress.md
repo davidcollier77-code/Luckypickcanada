@@ -2,6 +2,15 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-13 — Homepage search listing
+- Replaced the homepage search/share image with a 1200 × 630 progressive JPEG (160 KB) cropped from a live Playwright
+  capture of the deployed homepage, preserving the Milky Way backdrop, maple-leaf emblem, tagline and headline.
+- Published the owner-approved community description verbatim across the standard, Open Graph, Twitter and WebSite
+  JSON-LD metadata through one shared constant; feature routes and their shared artwork are unchanged.
+- Verified: 10 focused guards, 67 files / 635 tests, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, a 309 MB build,
+  built-head metadata on all four surfaces, and local image delivery as `200 image/jpeg` with no `X-Robots-Tag`.
+- Live re-verification of the production head and new image URL requires the owner's deployment.
+
 ## 2026-11-12 — Chromium environment emitter hardening
 - Closed a code-injection sink in `scripts/setup-chromium-libs.sh --env`: `HOME`, `CHROMIUM_LIBS_PREFIX`,
   `PLAYWRIGHT_BROWSERS_PATH` and `CHROMIUM_BROWSER_DIRS` were interpolated into shell text that the wrapper and the

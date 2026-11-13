@@ -1,54 +1,46 @@
-# Active Context — Harden the Chromium Environment Emitter
+# Active Context — Homepage Search Listing
 
-- **Updated:** 2026-11-12
+- **Updated:** 2026-11-13
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/419f8aeeb3f6faf5ad52daa2`
+- **Branch:** `freebuff/3861236672f48b16179def62`
 - **Base:** `main`
-- **Spec Kit feature:** `specs/150-chromium-env-emitter-hardening` (follows `specs/146-*` … `149-*`)
+- **Spec Kit feature:** `specs/151-homepage-search-listing` (follows `specs/150-*`)
 
 ## Current Task
 
-An investigation of the `eval "$(bash scripts/setup-chromium-libs.sh --env)"` in the startup command and
-`scripts/playwright-cli.sh` reproduced command execution through that text. This task closes the sink in the generator
-and in what `--persist` writes. The startup script and its settings are a separate task and are unchanged here.
+The owner asked for an accurate Google Search homepage thumbnail and an approved community-focused description, with no
+change to the Google Business Profile, homepage layout, artwork or functionality.
 
 ## What changed
 
-- `scripts/setup-chromium-libs.sh`: new `sh_squote` emits one single-quoted POSIX word per value. `print_env` now
-  quotes `LIB_PATH`, `FONTS_CONF`, `FONTS_DIR` and the browser root, and runs the `LD_LIBRARY_PATH` dedupe against a
-  quoted variable, so a value is compared literally instead of becoming a glob. `--persist` quotes the path in the
-  `~/.profile`/`~/.bashrc` source line.
-- `scripts/playwright-cli.sh`, `scripts/setup-playwright-agent.sh`: comments record that the output is quoted and the
-  `eval` must stay inert. The consumers and the startup command are otherwise unchanged.
-- `__tests__/setup-chromium-env-shell-safety.test.js`: 22 tests over four hostile payloads in `CHROMIUM_LIBS_PREFIX`,
-  `HOME`, `PLAYWRIGHT_BROWSERS_PATH` and `CHROMIUM_BROWSER_DIRS`, plus spaces, an apostrophe, `sh`/`bash` parsing,
-  idempotency, literal glob matching and both `--persist` paths. A canary file is the oracle.
-- `__tests__/setup-chromium-runtime-detect.test.js`: the one assertion that pinned the double-quoted
-  `PLAYWRIGHT_BROWSERS_PATH` form now expects the single-quoted word.
+- `public/luckypickcanada-home-1200x630.jpg` — new 1200 × 630 progressive JPEG (160,384 bytes) cropped from a live
+  Playwright capture of the deployed homepage at 1440 × 900: Milky Way backdrop, maple-leaf/clover emblem, tagline and
+  headline.
+- `app/layout.js` — one `siteDescription` constant holds the approved wording verbatim and feeds the standard, Open
+  Graph, Twitter and WebSite JSON-LD descriptions; the root `og:image`/`twitter:image` now point at the homepage
+  capture with matching dimensions and descriptive alt text. The existing shared share artwork and every feature route
+  are unchanged.
+- `__tests__/feature-image-social-sharing.test.js` — feature routes keep the shared-artwork contract; new guards check
+  the homepage capture's real dimensions/format/size and that the root metadata references it correctly.
+- `artifacts/seo-homepage/` — source capture and verification evidence.
 
 ## Verified behaviour (this workspace)
 
 | Check | Result |
 | --- | --- |
-| `bash -n` on every `scripts/*.sh` | exit 0 |
-| Generated `--env`, parsed by `sh -n` and applied | exit 0, literal paths exported |
-| Focused vitest (shell safety, detection, wrapper) | 38 tests, exit 0 |
-| Full unit suite | 67 files, 633 tests, exit 0 |
-| Spec Kit gate + its tests, `tsc --noEmit`, docs tests | exit 0 |
-| Production build | 291.91 MiB (cap 495 MiB) |
-
-## Durable Locations (unchanged by this task)
-
-- Libraries: `~/.local/chromium-libs` (27 MB, no root) when the system has none; `~/.apt-user` for apt state.
-- Browser: `~/.cache/ms-playwright` (Chromium 1248) unless an environment-provided root is present.
-- Environment: `~/.local/chromium-libs/env.sh`, sourced from `~/.profile` and `~/.bashrc`; Playwright CLI config at
-  `~/.playwright/cli.config.json`. Values are single-quoted, so `env.sh` is safe to source from `sh`.
+| Focused image/social guard | 10 tests, exit 0 |
+| Full unit suite | 67 files, 635 tests, exit 0 |
+| Type check | `tsc --noEmit`, exit 0 |
+| Production build | 309 MB (cap 495 MiB) |
+| `./freebuff-verify.sh` | exit 0 |
+| Built homepage head | approved description on all four surfaces; absolute homepage `og:image`, 1200 × 630, alt text |
+| Local image delivery | `200 image/jpeg`, 160,384 bytes, no `X-Robots-Tag`; `robots.txt` allows all crawling |
 
 ## Known Context Risks
 
-- A chat's `$HOME` is per-chat, so a new chat is cold again (~41 s). The wrapper self-heals on first use.
-- An inherited `FONTCONFIG_FILE`/`FONTCONFIG_PATH` naming another workspace still arrives in the container
-  environment; the wrapper and the test config repair it by existing-path checks, so it cannot drop the provisioned
-  fonts.
-- The emitter derives safety from the process environment, so anything that injects environment variables into the
-  startup shell is now inert rather than merely unguarded; do not reintroduce an unquoted value in `print_env`.
+- The live head can only be re-verified after the owner deploys the merged change; the local production build and the
+  live crawler-access path are verified instead.
+- The approved description is longer than Google usually displays; it is published verbatim and Google may truncate the
+  visible snippet.
+- The source capture is a screenshot of the live homepage, so it must be re-captured only if the hero artwork itself
+  changes.
