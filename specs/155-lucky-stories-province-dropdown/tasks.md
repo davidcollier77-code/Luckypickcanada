@@ -21,14 +21,15 @@
 
 ### Implementation
 
-- [ ] T004 Update `app/lucky-stories.js` so new story submissions require one of the exact thirteen canonical full province/territory names and store the canonical name. Leave `getStoryProvince` and legacy record resolution unchanged.
-- [ ] T005 Replace the free-text location input in `app/lucky-map-of-canada/lucky-map-of-canada.js` with a required native select. Generate options from `storyProvinces`, submit full canonical names, retain the existing `location` field name, and preserve the modal's styling and all other form protections.
+- [ ] T004 Extract the existing thirteen `storyProvinces` records unchanged into a dependency-free `app/lucky-story-provinces.js` module; import and re-export them from `app/lucky-stories.js` so existing server imports remain compatible.
+- [ ] T005 Update `app/lucky-stories.js` so new story submissions require one of the exact thirteen canonical full province/territory names and store the canonical name. Leave `getStoryProvince` and legacy record resolution unchanged.
+- [ ] T006 Replace the free-text location input in `app/lucky-map-of-canada/lucky-map-of-canada.js` with a required native select. Generate options from the shared province module, submit full canonical names, retain the existing `location` field name, and preserve the modal's styling and all other form protections.
 
 ### Verification
 
-- [ ] T006 Run focused Lucky Stories Vitest tests and the focused Playwright story-modal test; confirm all thirteen values, required-field behavior and invalid server submissions.
-- [ ] T007 Run `pnpm run test`, `./freebuff-verify.sh`, type checking/build through the gate, and the applicable Playwright browser projects. Measure the production build and confirm it remains below 495 MiB.
-- [ ] T008 Review the complete diff to confirm only the requested form, validation, focused tests and Spec Kit artifacts changed; preserve existing story records, resolver behavior, Turnstile, spam controls and visual baselines.
+- [ ] T007 Run focused Lucky Stories Vitest tests and the focused Playwright story-modal test; confirm all thirteen values, required-field behavior and invalid server submissions.
+- [ ] T008 Run `pnpm run test`, `./freebuff-verify.sh`, type checking/build through the gate, and the applicable Playwright browser projects. Measure the production build and confirm it remains below 495 MiB.
+- [ ] T009 Review the complete diff to confirm only the shared province data module, requested form, validation, focused tests and Spec Kit artifacts changed; preserve existing story records, resolver behavior, Turnstile, spam controls and visual baselines.
 
 ## Dependencies & Execution Order
 
