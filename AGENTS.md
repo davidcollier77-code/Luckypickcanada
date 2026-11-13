@@ -35,7 +35,11 @@ A — PREPARE AND PLAN
 
 8. Check applicable repository QA and validation requirements. Inspect the relevant workflows, configurations, scripts and referenced requirements. Identify their scope, triggers, qualifications, thresholds and pass/fail conditions. Treat those requirements as targets before implementation. Follow current repository definitions if documentation conflicts, and report any discrepancy. Do not silently change them.
 
-9. Follow Spec Kit in order. Use the instructions in ".freebuff/cmds/speckit.*.md". Complete Specify, Plan and Tasks in sequence before implementation. Carry out the Implement stage in Section B, following the approved specification, plan and task list.
+9. Follow Spec Kit. Review and follow all nine command definitions in ".freebuff/cmds/speckit.*.md", together with their applicable instructions, current templates and project-constitution requirements. The repository's checked baseline is Spec Kit 1.4.0: four core stages—Specify, Plan, Tasks and Implement—and five supporting commands—Clarify, Analyze, Checklist, Constitution and Converge.
+
+   Complete the four core stages in that order for every repository-changing task. Finish Specify, Plan and Tasks before implementation; carry out Implement in Section B using the approved specification, plan and task list. Complete every required section, field and group in each applicable template. Complete conditional sections when they apply. Use optional sections and artifacts only when their instructions or the task call for them; do not invent content or leave required content incomplete. Follow the supporting command definitions when they apply, but do not mechanically run all five supporting commands on every task.
+
+   Before starting the workflow, check the installed Spec Kit version, all nine available command definitions, the core-stage names and order, and the required template sections and groups against this baseline. If the version, command set, stages, sequence or required groups change, notify the owner and explain what changed and how it affects our workflow. You are authorized to make the necessary surgical update to AGENTS.md to keep it aligned with the current Spec Kit workflow. Limit the edit strictly to the affected wording, preserve all unrelated governance and requirements, and report exactly what changed. Do not silently change the established workflow.
 
 B — IMPLEMENT
 
