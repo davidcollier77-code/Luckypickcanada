@@ -300,7 +300,7 @@ async function fetchProvinceCounts(database, { hours = null } = {}) {
     selects.push(`count(*) filter (where ${parts.clause}${windowClause}) as "${province.code}"`);
   }
 
-  const [row] = await database(
+  const [row] = await database.query(
     `select count(*) as total, ${selects.join(', ')} from lucky_stories where approved = true`,
     params,
   );
@@ -343,7 +343,7 @@ async function fetchRecentStories(database, { hours = null } = {}) {
   });
   const provinceExpression = `case ${provinceCases.join(' ')} else null end`;
 
-  const rows = await database(
+  const rows = await database.query(
     `
       with ranked_stories as (
         select
@@ -396,7 +396,7 @@ async function fetchStoryPage(database, { province, offset, limit, hours }) {
 
   params.push(limit, offset);
 
-  const rows = await database(
+  const rows = await database.query(
     `
       select ls.id, ls.display_name, ls.location, ls.story, ls.created_at, count(lr.id) as reaction_count
       from lucky_stories ls
@@ -420,7 +420,7 @@ async function fetchStoryPage(database, { province, offset, limit, hours }) {
  * @returns {Promise<Object|null>} The linked story, or null.
  */
 async function fetchLinkedStory(database, storyId) {
-  const rows = await database(
+  const rows = await database.query(
     `
       select ls.id, ls.display_name, ls.location, ls.story, ls.created_at, count(lr.id) as reaction_count
       from lucky_stories ls

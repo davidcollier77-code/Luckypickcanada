@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
   const query = vi.fn();
-  // The Neon HTTP driver is callable: sql(text, params), not sql.query(...).
-  const database = vi.fn(async (text, params) => query(text, params));
-  return { query, database };
+  const templateQuery = vi.fn(async () => []);
+  const database = vi.fn(async (strings, ...values) => {
+    if (!Array.isArray(strings) || !Object.prototype.hasOwnProperty.call(strings, 'raw')) {
+      throw new Error('Neon HTTP SQL client must be called as a tagged template');
+    }
+
+    return templateQuery(strings.join(''), values);
+  });
+  database.query = query;
+  return { query, templateQuery, database };
 });
 
 vi.mock('../app/lib/db-init', () => ({
@@ -180,6 +187,8 @@ describe('toLuckyStory', () => {
 describe('getLuckyStoryMap paging', () => {
   beforeEach(() => {
     mocks.query.mockReset();
+    mocks.database.mockClear();
+    mocks.templateQuery.mockReset().mockResolvedValue([]);
     installDatabase();
   });
 
@@ -220,6 +229,24 @@ describe('getLuckyStoryMap paging', () => {
 
     const feedCalls = mocks.query.mock.calls.filter(([text]) => text.includes('ls.approved = true and ('));
     expect(feedCalls).toHaveLength(0);
+  });
+
+  it('uses Neon 1.x query() for every parameterized Lucky Stories read', async () => {
+    const mapData = await getLuckyStoryMap({ province: 'ON', limit: 3, storyId: '20' });
+
+    expect(mapData.isConfigured).toBe(true);
+
+    const statements = mocks.query.mock.calls.map(([text]) => text);
+    expect(statements.some((text) => text.includes('count(*) as total'))).toBe(true);
+    expect(statements.some((text) => text.includes('row_number() over'))).toBe(true);
+    expect(statements.some((text) => text.includes('limit $') && text.includes('offset $'))).toBe(true);
+    expect(statements.some((text) => text.includes('ls.id = $1::bigint'))).toBe(true);
+
+    // The callable client is reserved for true tagged-template calls. A legacy
+    // database(sqlText, params) invocation throws in this mock and fails the test.
+    expect(mocks.database.mock.calls.every(([strings]) =>
+      Array.isArray(strings) && Object.prototype.hasOwnProperty.call(strings, 'raw'),
+    )).toBe(true);
   });
 
   it('returns up to three recent stories per province, not three across Canada', async () => {
