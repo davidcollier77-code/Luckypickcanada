@@ -187,6 +187,8 @@ describe('toLuckyStory', () => {
 describe('getLuckyStoryMap paging', () => {
   beforeEach(() => {
     mocks.query.mockReset();
+    mocks.database.mockClear();
+    mocks.templateQuery.mockReset().mockResolvedValue([]);
     installDatabase();
   });
 
