@@ -105,7 +105,7 @@ describe('single-source agent governance', () => {
       'The production build must remain strictly below 495 MiB.',
     );
     expect(agents).toContain(
-      'Specify, Plan and Tasks in sequence before implementation.',
+      'Complete the four core stages in that order for every repository-changing task.',
     );
     expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
     expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
@@ -182,10 +182,52 @@ describe('single-source agent governance', () => {
     }
   });
 
+
+  it('requires all nine Spec Kit commands and checks for workflow changes', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('9. Follow Spec Kit.');
+    const end = agents.indexOf('\\n\\nB — IMPLEMENT', start);
+    const workflow = agents.slice(start, end);
+    const normalized = workflow.toLowerCase();
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    expect(normalized).toContain('all nine command definitions');
+    expect(normalized).toContain('four core stages');
+    expect(normalized).toContain('five supporting commands');
+    expect(normalized).toContain('complete every required section, field and group');
+    expect(normalized).toContain('notify the owner');
+    expect(normalized).toContain('authorized to make the necessary surgical update to agents.md');
+    expect(normalized).toContain('do not mechanically run all five supporting commands');
+
+    for (const command of [
+      'specify',
+      'plan',
+      'tasks',
+      'implement',
+      'clarify',
+      'analyze',
+      'checklist',
+      'constitution',
+      'converge',
+    ]) {
+      expect(normalized).toContain(command);
+    }
+  });
+
   it('retains the Freebuff Spec Kit command directory', () => {
-    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.specify.md'))).toBe(true);
-    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.plan.md'))).toBe(true);
-    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.tasks.md'))).toBe(true);
-    expect(existsSync(join(root, '.freebuff', 'cmds', 'speckit.implement.md'))).toBe(true);
+    for (const command of [
+      'analyze',
+      'checklist',
+      'clarify',
+      'constitution',
+      'converge',
+      'implement',
+      'plan',
+      'specify',
+      'tasks',
+    ]) {
+      expect(existsSync(join(root, '.freebuff', 'cmds', `speckit.${command}.md`))).toBe(true);
+    }
   });
 });
