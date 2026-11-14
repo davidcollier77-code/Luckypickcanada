@@ -117,7 +117,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_invalid_json_is_rejected(self):
         body = START_MARKER + "\n{not-json}\n" + END_MARKER
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": body}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_placeholder_summary_is_rejected(self):
         value = declaration(summary="TODO fill this in")
@@ -127,7 +127,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_placeholder_feature_names_are_rejected(self):
         value = declaration(features=["Name each affected feature or QA responsibility"])
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": pr_body(value)}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_broad_wildcard_is_rejected(self):
         value = declaration(paths=["**"])
