@@ -37,7 +37,7 @@ The approval digest is bound to the current PR head SHA, the complete PR descrip
 
 ### Browser evidence
 
-For visual changes, record the browser tool that actually ran and link its run, trace, or artifact. Supported tools are Playwright, Firecrawl, and Browserless. Do not relabel one tool's evidence as another. A pending CI run is not a completed verification result.
+For visual changes, record the browser tool that actually ran and link its run, trace, or artifact. Supported tools are Playwright, Firecrawl, and Browserless. Do not relabel one tool's evidence as another. A pending CI run is not a completed verification result. The scope checker rejects obvious placeholder references, but it does not fetch the referenced URL or independently confirm the run's conclusion. Record only a completed run, artifact, or trace.
 
 ### Visual baseline changes
 
