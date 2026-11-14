@@ -189,6 +189,22 @@ class CurrentHeadAuditTests(unittest.TestCase):
         )
         self.assertEqual(report["overall_status"], "NOT VERIFIED")
 
+    def test_scope_verification_is_a_required_current_head_check(self):
+        runs = [
+            check_run(name, run_id=index)
+            for index, name in enumerate(auditor.REQUIRED_CHECKS[:-1], start=1)
+        ]
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "fix: current head")],
+            runs,
+        )
+        self.assertEqual(
+            statuses(report)["PR Scope Verification"],
+            "NOT RUN",
+        )
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+
     def test_failure_and_pending_are_never_passes(self):
         runs = [
             check_run(auditor.REQUIRED_CHECKS[0], conclusion="failure", run_id=1),
