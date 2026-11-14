@@ -227,6 +227,22 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         result = run_check(["app/new-component.tsx"], value, comments)
         self.assertEqual(result["status"], "FAIL")
 
+    def test_approval_is_invalidated_when_scope_description_changes(self):
+        entries = {"app/new-component.tsx": "Shared component required by the QA change"}
+        value = declaration(
+            paths=["app/new-component.tsx"],
+            scope_expansion=[{"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}],
+            browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
+        )
+        comments = [{
+            "body": "/approve-scope " + approval_digest(entries, value),
+            "user": {"login": OWNER},
+        }]
+        changed_description = dict(value, summary="Expanded the intended scope after review")
+        result = run_check(["app/new-component.tsx"], changed_description, comments)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertFalse(result["approvals"]["scope_expansion"]["approved"])
+
     def test_scope_approval_is_invalidated_by_a_new_head_commit(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         value = declaration(
