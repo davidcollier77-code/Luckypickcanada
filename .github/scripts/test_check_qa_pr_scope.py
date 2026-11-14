@@ -49,12 +49,13 @@ def pr_body(value):
     )
 
 
-def approval_digest(entries, value):
+def approval_digest(entries, value, body=None):
     file_purposes = {
         item["path"]: item["purpose"]
         for item in value["file_purposes"]
     }
     scope_context = {
+        "complete_pr_body": body if body is not None else pr_body(value),
         "summary": value["summary"],
         "features": value["features"],
         "paths": value["paths"],
@@ -227,19 +228,28 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         result = run_check(["app/new-component.tsx"], value, comments)
         self.assertEqual(result["status"], "FAIL")
 
-    def test_approval_is_invalidated_when_scope_description_changes(self):
+    def test_approval_is_invalidated_when_prose_scope_description_changes(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         value = declaration(
             paths=["app/new-component.tsx"],
             scope_expansion=[{"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}],
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
+        original_body = pr_body(value)
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries, value),
+            "body": "/approve-scope " + approval_digest(entries, value, original_body),
             "user": {"login": OWNER},
         }]
-        changed_description = dict(value, summary="Expanded the intended scope after review")
-        result = run_check(["app/new-component.tsx"], changed_description, comments)
+        changed_body = original_body.replace(
+            "This change improves QA infrastructure.",
+            "This change also modifies the unrelated Lucky Map feature.",
+        )
+        result = validate(
+            {"number": 42, "body": changed_body, "head": {"sha": HEAD_SHA}, "changed_files": 1},
+            [{"filename": "app/new-component.tsx"}],
+            comments,
+            OWNER,
+        )
         self.assertEqual(result["status"], "FAIL")
         self.assertFalse(result["approvals"]["scope_expansion"]["approved"])
 
