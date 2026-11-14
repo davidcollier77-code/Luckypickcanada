@@ -29,14 +29,14 @@
 
 ## Phase 4: Spec Kit and delivery records
 
-- [ ] T015 Create the feature specification, plan, research, requirements checklist and task records.
-- [ ] T016 Update the active feature pointer and Memory Bank context/progress.
+- [X] T015 Create the feature specification, plan, research, requirements checklist and task records.
+- [X] T016 Update the active feature pointer and Memory Bank context/progress.
 - [ ] T017 Review the exact final changed-file inventory and prepare the complete stacked-PR handoff.
 
 ## Phase 5: Verification and submission
 
 - [ ] T018 Run Python syntax checks and all three focused suites where a local runtime is available; otherwise record the exact environment limitation.
-- [ ] T019 Confirm no production app, image, screenshot baseline, dependency, secret or protected governance file is changed.
+- [X] T019 Confirm no production app, image, screenshot baseline, dependency, secret or protected governance file is changed.
 - [ ] T020 Submit one regular, non-draft, open and unmerged PR targeting the parent QA-infrastructure branch; stop immediately after successful handoff.
  
 ## Verification Record
@@ -44,4 +44,5 @@
 - Python `py_compile` and all three `unittest` suites: BLOCKED — no local repository checkout or executable project runtime is available through this GitHub-only session.
 - Repository startup scripts and `freebuff-verify.sh`: NOT RUN, as required by the ChatGPT-specific repository instructions.
 - Playwright/browser verification: NOT APPLICABLE to this non-rendering QA-script and PR-template change; no Playwright tool is exposed through the connected Firecrawl integration.
-- PR-triggered workflow checks: BLOCKED for a stacked PR while the workflows' base-branch filters still select `main`; GitHub does not run the parent PR's workflow definitions for a PR whose base is the unmerged feature branch.
+- PR-triggered workflow checks: BLOCKED for a stacked PR while DevSkim, Visual QA, PR Scope Verification and Verification Integrity filter on base `main`. The OpenNext validation workflow has an unrestricted `pull_request` trigger, but it does not replace the missing required checks.
+- PR submission: BLOCKED. PR #1900 is still unmerged, and a dependent PR would not trigger the complete required QA set. Wait until the parent is merged so this branch can be retargeted to `main`, or use an owner-approved verification path.
