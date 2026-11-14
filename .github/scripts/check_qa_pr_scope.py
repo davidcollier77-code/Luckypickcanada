@@ -154,6 +154,25 @@ def _entries_with_reasons(value, field: str) -> dict[str, str]:
     return entries
 
 
+def _file_purpose_entries(value) -> dict[str, str]:
+    if not isinstance(value, list) or not value:
+        raise ScopeError("file_purposes must be a non-empty array of path/purpose objects")
+    entries: dict[str, str] = {}
+    for item in value:
+        if not isinstance(item, dict):
+            raise ScopeError("file_purposes entries must be objects")
+        path = normalize_path(item.get("path"))
+        purpose = item.get("purpose")
+        if not isinstance(purpose, str) or len(purpose.strip()) < 12:
+            raise ScopeError(f"file_purposes requires a specific purpose for {path}")
+        if re.search(r"\\b(todo|tbd|placeholder|describe this|fill this in)\\b|<[^>]+>", purpose, re.I):
+            raise ScopeError(f"file purpose for {path} contains placeholder wording")
+        if path in entries:
+            raise ScopeError(f"file_purposes contains duplicate path {path}")
+        entries[path] = purpose.strip()
+    return entries
+
+
 def _digest(entries: dict[str, str] | list[str]) -> str:
     payload = json.dumps(entries, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -209,6 +228,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
     patterns = declaration["paths"]
+    file_purposes = _file_purpose_entries(declaration.get("file_purposes"))
     expansion = _entries_with_reasons(declaration.get("scope_expansion"), "scope_expansion")
     baseline_updates = [
         normalize_path(path)
@@ -240,6 +260,14 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         })
 
     errors = []
+    if set(file_purposes) != set(patterns):
+        missing_purposes = sorted(set(patterns) - set(file_purposes))
+        stale_purposes = sorted(set(file_purposes) - set(patterns))
+        if missing_purposes:
+            errors.append("declared paths are missing file purposes: " + ", ".join(missing_purposes))
+        if stale_purposes:
+            errors.append("file purposes reference paths not in the exact manifest: " + ", ".join(stale_purposes))
+
     for path in expansion:
         if path not in actual:
             errors.append(f"scope_expansion path is not in this diff: {path}")
@@ -300,6 +328,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         "pr_number": pr.get("number"),
         "changed_paths": sorted(actual),
         "declared_path_patterns": patterns,
+        "file_purposes": file_purposes,
         "features": features,
         "shared_dependencies": shared_dependencies,
         "matched_paths": sorted(path for path in actual if path in patterns),
@@ -326,6 +355,11 @@ def render_markdown(report: dict) -> str:
         "### Changed paths",
     ]
     lines.extend(f"- {path}" for path in report.get("changed_paths", []))
+    lines.extend(["", "### Declared purpose per file"])
+    lines.extend(
+        f"- {path}: {purpose}"
+        for path, purpose in sorted(report.get("file_purposes", {}).items())
+    )
     lines.extend(["", "### Browser evidence"])
     if report.get("browser_evidence"):
         for item in report["browser_evidence"]:
