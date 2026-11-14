@@ -8,10 +8,7 @@
 
 ## Current Task
 
-The owner approved the P1 finding from the HTTP security-header audit: make the served HSTS policy
-one year with `includeSubDomains` and no `preload`, and make the repository declare exactly the
-same value. Scope is HSTS only; CSP, other headers, DNS, email authentication and unrelated
-Cloudflare settings are untouched.
+The owner approved the security-header hardening and the follow-up correction to Lucky Stories browser QA. The current HSTS source of truth is the one-year policy `max-age=31536000; includeSubDomains` with `preload` disabled. PR #1895 also tightens CSP, uses `strict-origin-when-cross-origin`, removes obsolete `X-XSS-Protection`, and corrects the existing story-form test without changing the dropdown or Turnstile.
 
 ## What changed
 
@@ -40,3 +37,10 @@ with the commands recorded in `specs/156-hsts-policy-reconciliation/evidence.md`
   `includeSubDomains`, so repository and edge still disagree.
 - `includeSubDomains` is not instantly reversible for browsers that have already received it.
 - Preload remains deliberately off and the domain is not on any preload list.
+
+
+## PR #1895 — preserved implementation and QA correction
+
+- Security-header hardening keeps the Next.js inline bootstrap allowance, blocks inline event-handler attributes, retains required Cloudflare Turnstile, Google Analytics, Cloudflare Web Analytics and Stripe origins, removes unused font/Pexels origins, and retains the structural CSP restrictions.
+- `Referrer-Policy` is `strict-origin-when-cross-origin`; `X-XSS-Protection` is removed; HSTS remains `max-age=31536000; includeSubDomains` with no `preload`.
+- The existing Lucky Stories Province or territory dropdown remains visible, required, and populated with all 13 canonical options. Its explicit label association and browser test validate native required-field behavior without attempting a Turnstile-gated submission.

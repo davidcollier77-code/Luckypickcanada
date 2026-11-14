@@ -48,9 +48,8 @@ const nextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            // Cloudflare terminates TLS and overwrites this value with the zone HSTS
-            // setting, whose max-age is capped at 12 months (31536000). Keep this
-            // declaration identical to the served policy so the two cannot diverge.
+            // Keep the repository declaration aligned with the approved one-year
+            // Cloudflare policy; preload remains deliberately disabled.
             value: 'max-age=31536000; includeSubDomains',
           },
           {
@@ -62,17 +61,16 @@ const nextConfig = {
             value: 'SAMEORIGIN',
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
+            value: 'strict-origin-when-cross-origin',
           },
 
           {
+            // Keep 'unsafe-inline' for Next.js inline bootstrap scripts; no nonce
+            // implementation is proven safe here. script-src-attr separately refuses
+            // inline event-handler attributes, which React does not use.
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '') + " https://challenges.cloudflare.com https://www.googletagmanager.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.pexels.com https://www.google-analytics.com; connect-src 'self' https://challenges.cloudflare.com https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self' https://challenges.cloudflare.com; media-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : '') + " https://challenges.cloudflare.com https://www.googletagmanager.com https://static.cloudflareinsights.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://www.google-analytics.com; connect-src 'self' https://challenges.cloudflare.com https://www.google-analytics.com https://region1.google-analytics.com; frame-src 'self' https://challenges.cloudflare.com; media-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com; frame-ancestors 'self';",
           },
           {
             key: 'Permissions-Policy',
