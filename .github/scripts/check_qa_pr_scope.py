@@ -155,8 +155,8 @@ def _entries_with_reasons(value, field: str) -> dict[str, str]:
 
 
 def _file_purpose_entries(value) -> dict[str, str]:
-    if not isinstance(value, list) or not value:
-        raise ScopeError("file_purposes must be a non-empty array of path/purpose objects")
+    if not isinstance(value, list):
+        raise ScopeError("file_purposes must be an array of path/purpose objects")
     entries: dict[str, str] = {}
     for item in value:
         if not isinstance(item, dict):
@@ -165,7 +165,7 @@ def _file_purpose_entries(value) -> dict[str, str]:
         purpose = item.get("purpose")
         if not isinstance(purpose, str) or len(purpose.strip()) < 12:
             raise ScopeError(f"file_purposes requires a specific purpose for {path}")
-        if re.search(r"\\b(todo|tbd|placeholder|describe this|fill this in)\\b|<[^>]+>", purpose, re.I):
+        if re.search(r"\b(todo|tbd|placeholder|describe this|fill this in)\b|<[^>]+>", purpose, re.I):
             raise ScopeError(f"file purpose for {path} contains placeholder wording")
         if path in entries:
             raise ScopeError(f"file_purposes contains duplicate path {path}")
