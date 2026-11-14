@@ -258,6 +258,9 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     shared_dependencies = _string_list(declaration.get("shared_dependencies"), "shared_dependencies")
     features = declaration["features"]
     scope_context = {
+        # Bind approvals to the full prose description as well as the JSON manifest.
+        # An out-of-scope/verification paragraph edit must trigger a new review.
+        "complete_pr_body": pr["body"],
         "summary": declaration["summary"],
         "features": features,
         "paths": patterns,
