@@ -190,6 +190,16 @@ def _is_visual_path(path: str) -> bool:
     return path.startswith(VISUAL_PREFIXES)
 
 
+def _is_governance_path(path: str) -> bool:
+    # Spec Kit commands/templates and Freebuff specialist guidance are repository
+    # governance. The active feature pointer is task state, not a governance edit.
+    return (
+        path in GOVERNANCE_PATHS
+        or path.startswith(".freebuff/")
+        or (path.startswith(".specify/") and path != ".specify/feature.json")
+    )
+
+
 def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     if not isinstance(pr, dict) or not isinstance(pr.get("body"), str):
         raise ScopeError("GitHub pull request metadata is missing its body")
@@ -252,7 +262,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         if path not in patterns:
             errors.append(f"visual baseline path is not included in declared paths: {path}")
 
-    actual_governance = actual.intersection(GOVERNANCE_PATHS)
+    actual_governance = {path for path in actual if _is_governance_path(path)}
     declared_governance = set(governance)
     if actual_governance != declared_governance:
         missing = sorted(actual_governance - declared_governance)
