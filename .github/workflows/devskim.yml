@@ -120,6 +120,8 @@ jobs:
             echo "| Stage | Outcome |"
             echo "| --- | --- |"
             printf '| Scanner | %s |\n' "${SCANNER:-not run}"
+            printf '| SARIF summary syntax | %s |\n' "${SUMMARY_SYNTAX:-not run}"
+            printf '| SARIF summary tests | %s |\n' "${SUMMARY_TESTS:-not run}"
             printf '| Suppression script syntax | %s |\n' "${PYTHON_SYNTAX:-not run}"
             printf '| Suppression regression tests | %s |\n' "${SUPPRESSION_TESTS:-not run}"
             printf '| Real SARIF replay | %s |\n' "${SARIF_REPLAY:-not run}"
