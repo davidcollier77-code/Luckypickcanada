@@ -31,8 +31,8 @@
 
 ## Phase 5: Memory Bank and delivery
 
-- [ ] T014 Set the active Spec Kit feature pointer in `.specify/feature.json`.
-- [ ] T015 Update current task context in `memory-bank/activeContext.md`.
-- [ ] T016 Append the completed milestone and verification limitations in `memory-bank/progress.md`.
+- [X] T014 Set the active Spec Kit feature pointer in `.specify/feature.json`.
+- [X] T015 Update current task context in `memory-bank/activeContext.md`.
+- [X] T016 Append the completed milestone and verification limitations in `memory-bank/progress.md`.
 - [ ] T017 Run available focused checker tests and syntax checks; inspect the full branch diff and exact changed-file manifest.
 - [ ] T018 Prepare the complete PR description and submit one regular, non-draft, unmerged PR using the full intended branch HEAD SHA.
