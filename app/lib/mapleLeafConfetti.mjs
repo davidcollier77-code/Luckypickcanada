@@ -6,6 +6,8 @@
  * the exact same leaf artwork as the homepage instead of a look-alike copy.
  */
 
+import { supportsPath2D } from './graphics-capabilities';
+
 // Same golden maple-leaf outline used by public/images/maple-leaf.svg.
 // Its SVG viewBox is 4030 x 4030, centered at y=15. Map that geometry to a
 // 10 x 10 particle while centering it, avoiding canvas-confetti's expensive
@@ -49,6 +51,7 @@ let mapleLeafShape = null;
  */
 export function createMapleLeafShape(confettiLib) {
   if (mapleLeafShape) return mapleLeafShape;
+  if (!supportsPath2D()) return null;
   if (typeof confettiLib?.shapeFromPath !== 'function') return null;
 
   try {

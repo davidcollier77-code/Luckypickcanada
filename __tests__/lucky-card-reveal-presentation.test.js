@@ -191,7 +191,8 @@ describe('Lucky Card reveal presentation markup', () => {
     expect(source).toContain('<CollectionBinder />');
     expect(source).toContain('Return to Home');
 
-    // No dependency, module or asset was added to the reveal.
+    // No third-party dependency or asset was added; the shared graphics helper
+    // is the only new local module.
     const imports = source
       .split('\n')
       .filter(line => line.startsWith('import '))
@@ -206,6 +207,7 @@ describe('Lucky Card reveal presentation markup', () => {
       "import { getLuckyCardTierPresentation } from './lucky-card-presentation';",
       "import LuckyCardShare from './lucky-card-share';",
       "import { playButtonClick } from './lib/audio';",
+      "import { getCanvas2DContext, watchContextLoss } from './lib/graphics-capabilities';",
       "import MidnightCountdown from '../components/midnight-countdown';",
     ]);
   });

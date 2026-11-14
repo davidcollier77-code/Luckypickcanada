@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getCanvas2DContext } from './lib/graphics-capabilities';
 
 const SHARE_TEXT = 'I revealed a Lucky Card from LuckyPickCanada.ca.';
 
@@ -52,7 +53,10 @@ async function createShareImage(card) {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  const context = canvas.getContext('2d');
+  const context = getCanvas2DContext(canvas);
+  if (!context) {
+    throw new Error('Unable to create the share image.');
+  }
 
   const background = context.createLinearGradient(0, 0, width, height);
   background.addColorStop(0, '#102f2b');

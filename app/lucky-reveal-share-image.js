@@ -5,6 +5,7 @@ import {
   getLuckyColorSwatch,
   splitLuckyNumberRows,
 } from './lucky-reveal-presentation';
+import { getCanvas2DContext } from './lib/graphics-capabilities';
 
 // The static share image is drawn from the reveal data already on screen. It
 // never generates numbers: the exact stored pick, colour, and day are drawn.
@@ -318,7 +319,7 @@ export async function createLuckyRevealShareImage(reveal) {
   const canvas = document.createElement('canvas');
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
-  const context = canvas.getContext('2d');
+  const context = getCanvas2DContext(canvas);
 
   if (!context) {
     throw new Error('Unable to create the share image.');

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playConfettiPop, preloadConfettiPop } from './lib/audio';
 import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/mapleLeafConfetti';
+import { getCanvas2DContext } from './lib/graphics-capabilities';
 
 // The reveal celebrates with the homepage's Explore Your Luck moment: the same
 // maple-leaf outline and gold palette, the same confetti pop, and the same
@@ -132,7 +133,7 @@ const SETTLED_LEAVES = [
  */
 function countPaintedPixels(canvas) {
   if (!canvas) return 0;
-  const context = canvas.getContext('2d');
+  const context = getCanvas2DContext(canvas);
   if (!context) return 0;
 
   try {
