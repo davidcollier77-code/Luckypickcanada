@@ -10,6 +10,7 @@ from check_qa_pr_scope import (
 )
 
 OWNER = "davidcollier77-code"
+HEAD_SHA = "fixture-head-sha"
 
 
 def declaration(**overrides):
@@ -48,13 +49,17 @@ def pr_body(value):
     )
 
 
+def approvalapproval_digest(entries):
+    return _digest({"head_sha": HEAD_SHA, "entries": entries})
+
+
 def run_check(paths, value=None, comments=None):
     records = [
         {"filename": path, "status": "modified"}
         for path in paths
     ]
     return validate(
-        {"number": 42, "body": pr_body(value or declaration())},
+        {"number": 42, "body": pr_body(value or declaration()), "head": {"sha": HEAD_SHA}},
         records,
         comments or [],
         OWNER,
@@ -79,7 +84,7 @@ class ScopeDeclarationTests(unittest.TestCase):
             "status": "renamed",
         }
         result = validate(
-            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/new-checker.py"]))},
+            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/new-checker.py"])), "head": {"sha": HEAD_SHA}},
             [record],
             [],
             OWNER,
@@ -90,12 +95,12 @@ class ScopeDeclarationTests(unittest.TestCase):
 
     def test_missing_scope_markers_are_rejected(self):
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": "No scope section"}, [{"filename": "x"}], [], OWNER)
+            validate({"number": 1, "body": "No scope section", "head": {"sha": HEAD_SHA}}, [{"filename": "x"}], [], OWNER)
 
     def test_duplicate_scope_markers_are_rejected(self):
         body = pr_body(declaration()) + START_MARKER
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": body}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_invalid_json_is_rejected(self):
         body = START_MARKER + "\n{not-json}\n" + END_MARKER
@@ -105,7 +110,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_placeholder_summary_is_rejected(self):
         value = declaration(summary="TODO fill this in")
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": pr_body(value)}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_placeholder_feature_names_are_rejected(self):
         value = declaration(features=["Name each affected feature or QA responsibility"])
@@ -124,7 +129,7 @@ class ScopeDeclarationTests(unittest.TestCase):
 
     def test_empty_changed_file_list_fails_closed(self):
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": pr_body(declaration())}, [], [], OWNER)
+            validate({"number": 1, "body": pr_body(declaration()), "head": {"sha": HEAD_SHA}}, [], [], OWNER)
 
 
 class ScopeExpansionApprovalTests(unittest.TestCase):
@@ -143,10 +148,10 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         self.assertEqual(result["status"], "FAIL")
         approval = result["approvals"]["scope_expansion"]
         self.assertFalse(approval["approved"])
-        self.assertIn("/approve-scope " + _digest(entries), approval["command"])
+        self.assertIn("/approve-scope " + approval_digest(entries), approval["command"])
 
         comments = [{
-            "body": "/approve-scope " + _digest(entries),
+            "body": "/approve-scope " + approval_digest(entries),
             "user": {"login": OWNER},
         }]
         approved = run_check(["app/new-component.tsx"], value, comments)
@@ -161,7 +166,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + _digest(entries),
+            "body": "/approve-scope " + approval_digest(entries),
             "user": {"login": "outside-contributor"},
         }]
         result = run_check(["app/new-component.tsx"], value, comments)
@@ -176,11 +181,32 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + _digest(entries),
+            "body": "/approve-scope " + approval_digest(entries),
             "user": {"login": OWNER},
         }]
         result = run_check(["app/new-component.tsx"], value, comments)
         self.assertEqual(result["status"], "FAIL")
+
+    def test_scope_approval_is_invalidated_by_a_new_head_commit(self):
+        entries = {"app/new-component.tsx": "Shared component required by the QA change"}
+        value = declaration(
+            paths=["app/new-component.tsx"],
+            scope_expansion=[{"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}],
+            browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
+        )
+        comments = [{
+            "body": "/approve-scope " + approval_digest(entries),
+            "user": {"login": OWNER},
+        }]
+        records = [{"filename": "app/new-component.tsx"}]
+        changed_head = validate(
+            {"number": 44, "body": pr_body(value), "head": {"sha": "newer-head-sha"}},
+            records,
+            comments,
+            OWNER,
+        )
+        self.assertEqual(changed_head["status"], "FAIL")
+        self.assertFalse(changed_head["approvals"]["scope_expansion"]["approved"])
 
     def test_scope_expansion_must_refer_to_a_real_changed_file(self):
         value = declaration(
@@ -250,7 +276,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         result = run_check([path], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertIn("visual_baseline_updates", result["approvals"])
-        digest = _digest({path: path})
+        digest = approval_digest({path: path})
         comments = [{"body": "/approve-visual-baselines " + digest, "user": {"login": OWNER}}]
         approved = run_check([path], value, comments)
         self.assertEqual(approved["status"], "PASS")
@@ -270,7 +296,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         )
         result = run_check([".freebuff/testing.md"], value)
         self.assertEqual(result["status"], "FAIL")
-        digest = _digest(entries)
+        digest = approval_digest(entries)
         comments = [{"body": "/approve-governance " + digest, "user": {"login": OWNER}}]
         approved = run_check([".freebuff/testing.md"], value, comments)
         self.assertEqual(approved["status"], "PASS")
