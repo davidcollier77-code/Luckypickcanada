@@ -97,7 +97,7 @@ def extract_declaration(body: str) -> dict:
     if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", summary, re.I):
         raise ScopeError("QA scope summary still contains placeholder wording")
     features = _string_list(declaration.get("features"), "features", required=True)
-    if any(re.search(r"\b(todo|tbd|placeholder|name each|describe the|fill this in)\\b", item, re.I) for item in features):
+    if any(re.search(r"\b(todo|tbd|placeholder|name each|describe the|fill this in)\b", item, re.I) for item in features):
         raise ScopeError("features still contains placeholder wording")
     patterns = _string_list(declaration.get("paths"), "paths", required=True)
     for pattern in patterns:
