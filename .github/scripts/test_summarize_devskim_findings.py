@@ -91,6 +91,26 @@ class DevSkimSummaryTests(unittest.TestCase):
             with self.assertRaises(SarifSummaryError):
                 build_report(raw, filtered)
 
+    def test_rejects_filtered_findings_not_present_in_raw_sarif(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw.sarif"
+            filtered = Path(directory) / "filtered.sarif"
+            write_sarif(raw, [result("DS1", "app/a.ts", 10, "raw finding")])
+            write_sarif(filtered, [result("DS2", "app/b.ts", 20, "invented replacement")])
+            with self.assertRaises(SarifSummaryError):
+                build_report(raw, filtered)
+
+    def test_rejects_malformed_finding_properties(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw.sarif"
+            filtered = Path(directory) / "filtered.sarif"
+            finding = result("DS1", "app/a.ts", 10, "review this")
+            finding["properties"] = "not-an-object"
+            write_sarif(raw, [finding])
+            write_sarif(filtered, [finding])
+            with self.assertRaises(SarifSummaryError):
+                build_report(raw, filtered)
+
     def test_rejects_invalid_sarif(self):
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw.sarif"
