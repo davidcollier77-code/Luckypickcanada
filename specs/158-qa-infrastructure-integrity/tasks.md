@@ -21,7 +21,7 @@
 
 - [X] T008 Add a dependency-free raw/filtered SARIF summary utility in `.github/scripts/summarize_devskim_findings.py`.
 - [X] T009 Add summary tests for counts, remaining findings, locations, malformed SARIF and count consistency in `.github/scripts/test_summarize_devskim_findings.py`.
-- [X] T010 Preserve raw DevSkim SARIF, upload a separate raw artifact, summarize remaining findings and report pipeline stage outcomes in `.github/workflows/devskim.yml`, retaining the existing filtered artifact and suppression flow.
+- [X] T010 Preserve raw DevSkim SARIF, upload a separate raw artifact, summarize remaining findings and report scanner, SARIF-summary, suppression, replay, filter and Security-upload stage outcomes in `.github/workflows/devskim.yml`, retaining the existing filtered artifact and suppression flow.
 
 ## Phase 4: QA integration and governance preservation
 
@@ -34,5 +34,5 @@
 - [X] T014 Set the active Spec Kit feature pointer in `.specify/feature.json`.
 - [X] T015 Update current task context in `memory-bank/activeContext.md`.
 - [X] T016 Append the completed milestone and verification limitations in `memory-bank/progress.md`.
-- [ ] T017 Run available focused checker tests and syntax checks; inspect the full branch diff and exact changed-file manifest.
+- [ ] T017 Run focused checker tests and syntax checks, then inspect the full branch diff and exact manifest. Local execution was not available through the connected GitHub-only workspace; GitHub Actions results remain pending PR submission.
 - [ ] T018 Prepare the complete PR description and submit one regular, non-draft, unmerged PR using the full intended branch HEAD SHA.
