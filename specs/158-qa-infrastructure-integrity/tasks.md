@@ -21,7 +21,7 @@
 
 - [X] T008 Add a dependency-free raw/filtered SARIF summary utility in `.github/scripts/summarize_devskim_findings.py`.
 - [X] T009 Add summary tests for counts, remaining findings, locations, malformed SARIF and count consistency in `.github/scripts/test_summarize_devskim_findings.py`.
-- [X] T010 Preserve raw DevSkim SARIF, upload a separate raw artifact and summarize remaining findings in `.github/workflows/devskim.yml`, retaining the existing filtered artifact and suppression flow.
+- [X] T010 Preserve raw DevSkim SARIF, upload a separate raw artifact, summarize remaining findings and report pipeline stage outcomes in `.github/workflows/devskim.yml`, retaining the existing filtered artifact and suppression flow.
 
 ## Phase 4: QA integration and governance preservation
 
