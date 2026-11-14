@@ -18,6 +18,10 @@ def declaration(**overrides):
         "summary": "Add reviewable QA scope and evidence controls",
         "features": ["QA scope verification"],
         "paths": [".github/scripts/checker.py", ".github/scripts/test_checker.py"],
+        "file_purposes": [
+            {"path": ".github/scripts/checker.py", "purpose": "Implement the PR scope validation contract."},
+            {"path": ".github/scripts/test_checker.py", "purpose": "Cover the PR scope checker behavior."},
+        ],
         "shared_dependencies": [],
         "visual_baseline_updates": [],
         "scope_expansion": [],
@@ -25,6 +29,11 @@ def declaration(**overrides):
         "browser_evidence": [],
     }
     value.update(overrides)
+    if "file_purposes" not in overrides:
+        value["file_purposes"] = [
+            {"path": path, "purpose": "This file supports the declared QA infrastructure change."}
+            for path in value["paths"]
+        ]
     return value
 
 
@@ -107,6 +116,11 @@ class ScopeDeclarationTests(unittest.TestCase):
         value = declaration(paths=["**"])
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(value)}, [{"filename": "app/page.tsx"}], [], OWNER)
+
+    def test_file_purposes_must_cover_every_declared_path(self):
+        value = declaration(file_purposes=[])
+        result = run_check([".github/scripts/checker.py", ".github/scripts/test_checker.py"], value)
+        self.assertEqual(result["status"], "FAIL")
 
     def test_empty_changed_file_list_fails_closed(self):
         with self.assertRaises(ScopeError):
