@@ -48,7 +48,10 @@ const nextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            // Cloudflare terminates TLS and overwrites this value with the zone HSTS
+            // setting, whose max-age is capped at 12 months (31536000). Keep this
+            // declaration identical to the served policy so the two cannot diverge.
+            value: 'max-age=31536000; includeSubDomains',
           },
           {
             key: 'X-Content-Type-Options',
