@@ -64,6 +64,24 @@ pnpm install
 pnpm dev
 ```
 
+### Playwright Modes
+
+Normal QA and CI use the standard Playwright configuration:
+
+```bash
+pnpm exec playwright test
+```
+
+For an explicit software-rendered investigation of GPU, WebGL or graphics behaviour, select the
+opt-in SwiftShader configuration:
+
+```bash
+pnpm exec playwright test --config=playwright.swiftshader.config.ts
+```
+
+The SwiftShader mode forces the software backend, uses one worker and does not update visual
+baselines. It is for investigation only; CI continues to use the standard configuration.
+
 ### Freebuff Workspace Startup
 
 The Freebuff project startup command is stored in Freebuff Project Settings, outside this repository. This is the
