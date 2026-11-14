@@ -314,6 +314,40 @@ class CurrentHeadAuditTests(unittest.TestCase):
 
         self.assertEqual(report["conditional_checks"][0]["status"], "PENDING")
 
+    def test_conditional_check_groups_do_not_aggregate_each_others_shards(self):
+        with (
+            mock.patch.object(
+                auditor,
+                "CONDITIONAL_CHECKS",
+                ("Visual QA", "Accessibility QA"),
+            ),
+            mock.patch.object(
+                auditor,
+                "CONDITIONAL_CHECK_PREFIXES",
+                ("Visual QA", "Accessibility QA"),
+            ),
+        ):
+            runs = green_checks() + [
+                check_run("Visual QA (shard 1/2)", run_id=31),
+                check_run(
+                    "Accessibility QA (shard 1/2)",
+                    conclusion="failure",
+                    run_id=32,
+                ),
+            ]
+            report = auditor.audit_verification(
+                pull_request(),
+                [commit(HEAD, "test: verify independent conditional groups")],
+                runs,
+            )
+
+        conditional = {
+            record["name"]: record for record in report["conditional_checks"]
+        }
+        self.assertEqual(conditional["Visual QA"]["status"], "PASS")
+        self.assertEqual(conditional["Accessibility QA"]["status"], "FAIL")
+        self.assertEqual(report["other_checks"], [])
+
     def test_head_absent_from_commit_list_fails_closed(self):
         report = auditor.audit_verification(
             pull_request(),
