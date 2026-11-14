@@ -121,11 +121,16 @@ def changed_paths(file_records: list) -> set[str]:
     if not isinstance(file_records, list) or not file_records:
         raise ScopeError("GitHub returned no changed files; scope cannot be verified")
     paths: set[str] = set()
+    current_names: set[str] = set()
     for record in file_records:
         if not isinstance(record, dict):
             raise ScopeError("GitHub changed-file evidence contains a malformed record")
         if record.get("filename"):
-            paths.add(normalize_path(record["filename"]))
+            filename = normalize_path(record["filename"])
+            if filename in current_names:
+                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {filename}")
+            current_names.add(filename)
+            paths.add(filename)
         if record.get("previous_filename"):
             paths.add(normalize_path(record["previous_filename"]))
     if not paths:
@@ -236,6 +241,12 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
 
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
+    changed_file_count = pr.get("changed_files")
+    if type(changed_file_count) is not int or changed_file_count != len(file_records):
+        raise ScopeError(
+            "GitHub changed-file count does not match the complete file list "
+            f"(reported {changed_file_count!r}; received {len(file_records)})"
+        )
     patterns = declaration["paths"]
     file_purposes = _file_purpose_entries(declaration.get("file_purposes"))
     expansion = _entries_with_reasons(declaration.get("scope_expansion"), "scope_expansion")
