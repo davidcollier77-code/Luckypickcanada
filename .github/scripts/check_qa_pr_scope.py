@@ -173,7 +173,7 @@ def _file_purpose_entries(value) -> dict[str, str]:
     return entries
 
 
-def _digest(entries: dict[str, str] | list[str]) -> str:
+def _digest(entries: dict | list) -> str:
     payload = json.dumps(entries, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
