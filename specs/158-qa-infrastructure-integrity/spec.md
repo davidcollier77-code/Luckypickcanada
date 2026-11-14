@@ -76,7 +76,7 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 ## Functional Requirements
 
 - **FR-001**: Parse exactly one machine-readable scope declaration from the PR body.
-- **FR-002**: Require a meaningful summary, feature list and exact repository-relative path list; reject broad globs and placeholders.
+- **FR-002**: Require a meaningful summary, feature list, exact repository-relative path list, and a specific purpose for every path; reject broad globs and placeholders.
 - **FR-003**: Compare declared paths against GitHub's actual changed-file list and fail closed when evidence is incomplete or invalid.
 - **FR-004**: Include both prior and current file paths for renames.
 - **FR-005**: Require each scope expansion to be in the exact path list with a specific reason and a repository-owner approval bound to a SHA-256 digest of that path/reason mapping.
@@ -96,7 +96,7 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 
 ## Success Criteria
 
-- **SC-001**: Every changed path in test fixtures is either exact-listed or reported as undeclared.
+- **SC-001**: Every changed path in test fixtures is exact-listed, has a file-specific purpose, or is reported as undeclared/incomplete.
 - **SC-002**: Scope, baseline and governance tests reject missing, non-owner and stale-digest approvals.
 - **SC-003**: All three supported browser tools pass validation; unsupported tools fail.
 - **SC-004**: Raw SARIF is unchanged by suppression and stored as a separate artifact.
