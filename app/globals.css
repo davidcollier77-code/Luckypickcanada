@@ -469,3 +469,44 @@ body {
     opacity: 0;
   }
 }
+
+/* ==========================================================================
+   Daily Resonance (Lucky Meter) result presentation.
+
+   The number lands, flashes two or three times, then stays visible. Details
+   rise in after it. Both animations are disabled under reduced motion.
+   ========================================================================== */
+@keyframes luckyNumberFlash {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  45% { opacity: 0.16; transform: scale(0.965); }
+}
+
+.animate-lucky-flash {
+  animation: luckyNumberFlash 0.2s ease-in-out 3;
+}
+
+@keyframes resonanceRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-resonance-rise {
+  animation: resonanceRise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes resonanceGlow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+
+.resonance-number-glow {
+  animation: resonanceGlow 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-lucky-flash,
+  .animate-resonance-rise,
+  .resonance-number-glow {
+    animation: none;
+  }
+}
