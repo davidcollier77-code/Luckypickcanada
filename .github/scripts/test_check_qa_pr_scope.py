@@ -70,7 +70,7 @@ class ScopeDeclarationTests(unittest.TestCase):
             "status": "renamed",
         }
         result = validate(
-            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/**"]))},
+            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/new-checker.py"]))},
             [record],
             [],
             OWNER,
@@ -174,7 +174,7 @@ class VisualEvidenceTests(unittest.TestCase):
         for tool in ("Playwright", "Firecrawl", "Browserless"):
             with self.subTest(tool=tool):
                 value = declaration(
-                    paths=["components/**"],
+                    paths=["components/Example.tsx"],
                     browser_evidence=[{
                         "tool": tool,
                         "reference": "https://example.invalid/artifact/42",
@@ -221,7 +221,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
     def test_changed_baseline_requires_declaration_and_owner_approval(self):
         path = "tests/visual/__screenshots__/chromium/homepage.png"
         value = declaration(
-            paths=["tests/visual/__screenshots__/**/*.png"],
+            paths=["tests/visual/__screenshots__/chromium/homepage.png"],
             visual_baseline_updates=[path],
         )
         result = run_check([path], value)
