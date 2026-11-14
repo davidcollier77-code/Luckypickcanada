@@ -4,14 +4,16 @@
 - **Repository:** davidcollier77-code/Luckypickcanada
 - **Branch:** `freebuff/38a663e10f412e1b8cba2642`
 - **Base:** `main`
-- **Spec Kit feature:** `specs/158-lucky-meter-daily-experience`
+- **Spec Kit feature:** `specs/160-lucky-meter-daily-experience`
 
 ## Current Task
 
 The Lucky Meter now produces one complete daily reading per local day and presents it
 through an unpredictable 4.5-second reveal followed by one of three WebGL events.
+The feature was renumbered from 158 to 160 after main introduced features 158 and 159;
+the branch is being merged with current `main` and prepared for review.
 
-## What changed
+## Scope and safeguards
 
 - `app/lib/lucky-meter/` — pure configuration, 30 Little Sparks, independent selection,
   versioned Local Storage, reveal timing and sharing helpers.
@@ -40,3 +42,4 @@ through an unpredictable 4.5-second reveal followed by one of three WebGL events
 
 - The event engine's visual polish (especially branching variety) needs real GPU review.
 - No audio was added; existing cues are unchanged by design.
+- Final review fixes and the merge with current `main` require a fresh verification pass.

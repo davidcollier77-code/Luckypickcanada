@@ -55,6 +55,7 @@ NOT_RUN_CONCLUSIONS = frozenset({"skipped", "neutral", "cancelled", "stale"})
 REQUIRED_CHECKS = (
     "DevSkim scan and Security upload",
     "Validate OpenNext build artifacts",
+    "PR Scope Verification",
 )
 
 # Checks that legitimately do not run for every pull request (for example
@@ -276,7 +277,7 @@ def audit_verification(pr, commits, check_runs):
         return [run for run in collection if (run.get("name") or "") == name]
 
     def runs_in_group(name, collection):
-        return [run for run in collection if is_conditional_check_name(run.get("name") or "")]
+        return [run for run in collection if (run.get("name") or "").startswith(name)]
 
     required = []
     for name in REQUIRED_CHECKS:

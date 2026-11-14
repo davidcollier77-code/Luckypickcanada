@@ -1,6 +1,6 @@
 # Data Model: Lucky Meter Daily Experience
 
-**Feature**: `specs/158-lucky-meter-daily-experience/`
+**Feature**: `specs/160-lucky-meter-daily-experience/`
 
 ## Storage record
 

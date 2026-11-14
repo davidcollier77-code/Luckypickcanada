@@ -1,6 +1,6 @@
 # Verification Evidence — Lucky Meter Daily Experience
 
-- **Feature**: `specs/158-lucky-meter-daily-experience`
+- **Feature**: `specs/160-lucky-meter-daily-experience`
 - **Branch**: `freebuff/38a663e10f412e1b8cba2642`
 - **Base**: `main`
 - **Date**: 2026-11-14
@@ -38,7 +38,7 @@
   `__tests__/daily-resonance-daily-experience.test.jsx`,
   `__tests__/daily-resonance-lifecycle.test.jsx` — focused coverage.
 - `tests/visual/crystal-ball-daily-limit.spec.ts` — storage seed updated to the new schema.
-- `.specify/feature.json`, `specs/158-lucky-meter-daily-experience/*` — Spec Kit artifacts.
+- `.specify/feature.json`, `specs/160-lucky-meter-daily-experience/*` — Spec Kit artifacts.
 - `artifacts/lucky-meter-qa/` — QA harness, machine-readable results and visual evidence.
 
 ## Checks performed

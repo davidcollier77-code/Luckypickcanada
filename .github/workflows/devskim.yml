@@ -41,9 +41,23 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Run DevSkim scanner
+        id: scanner
         uses: microsoft/DevSkim-Action@4b5047945a44163b94642a1cecc0d93a3f428cc6 # v1.0.16
         with:
           output-filename: devskim-alerts.sarif
+
+      # Preserve an immutable copy before the in-place suppression filter runs.
+      - name: Preserve raw DevSkim SARIF
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
+        run: cp devskim-alerts.sarif devskim-alerts.raw.sarif
+
+      - name: Validate DevSkim reporting Python syntax
+        id: summary-syntax
+        run: python3 -m py_compile .github/scripts/summarize_devskim_findings.py
+
+      - name: Test DevSkim findings reporting
+        id: summary-tests
+        run: PYTHONPATH=.github/scripts python3 -m unittest test_summarize_devskim_findings -v
 
       - name: Validate DevSkim suppression Python syntax
         id: python-syntax
@@ -72,18 +86,66 @@ jobs:
         run: echo "::warning::DevSkim suppression did not complete successfully; the original SARIF will be uploaded without these suppressions."
 
       - name: Upload DevSkim scan results to GitHub Security tab
+        id: security-upload
         if: always() && hashFiles('devskim-alerts.sarif') != ''
         uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: devskim-alerts.sarif
+
+      - name: Summarize raw and filtered DevSkim findings
+        if: always() && hashFiles('devskim-alerts.raw.sarif') != '' && hashFiles('devskim-alerts.sarif') != ''
+        run: |
+          python3 .github/scripts/summarize_devskim_findings.py \
+            --raw devskim-alerts.raw.sarif \
+            --filtered devskim-alerts.sarif \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Report DevSkim stage outcomes
+        if: always()
+        env:
+          SCANNER: ${{ steps.scanner.outcome }}
+          SUMMARY_SYNTAX: ${{ steps.summary-syntax.outcome }}
+          SUMMARY_TESTS: ${{ steps.summary-tests.outcome }}
+          PYTHON_SYNTAX: ${{ steps.python-syntax.outcome }}
+          SUPPRESSION_TESTS: ${{ steps.suppression-tests.outcome }}
+          SARIF_REPLAY: ${{ steps.sarif-replay.outcome }}
+          FILTER: ${{ steps.suppress-devskim.outcome }}
+          SECURITY_UPLOAD: ${{ steps.security-upload.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## DevSkim pipeline stage outcomes"
+            echo
+            echo "| Stage | Outcome |"
+            echo "| --- | --- |"
+            printf '| Scanner | %s |\n' "${SCANNER:-not run}"
+            printf '| SARIF summary syntax | %s |\n' "${SUMMARY_SYNTAX:-not run}"
+            printf '| SARIF summary tests | %s |\n' "${SUMMARY_TESTS:-not run}"
+            printf '| Suppression script syntax | %s |\n' "${PYTHON_SYNTAX:-not run}"
+            printf '| Suppression regression tests | %s |\n' "${SUPPRESSION_TESTS:-not run}"
+            printf '| Real SARIF replay | %s |\n' "${SARIF_REPLAY:-not run}"
+            printf '| Suppression filter | %s |\n' "${FILTER:-not run}"
+            printf '| GitHub Security upload | %s |\n' "${SECURITY_UPLOAD:-not run}"
+            echo
+            echo "Pipeline-stage failures are reported separately from scanner findings in the SARIF summary above."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload DevSkim alerts files
         if: always() && hashFiles('devskim-alerts.sarif') != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: devskim-sarif
-          # Only SARIF is transferred; never overwrite the append-only shared Markdown report.
+          # Only filtered SARIF is transferred to the existing report updater.
           path: devskim-alerts.sarif
+          if-no-files-found: error
+
+      - name: Upload original unfiltered DevSkim SARIF
+        if: always() && hashFiles('devskim-alerts.raw.sarif') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: devskim-sarif-raw
+          path: devskim-alerts.raw.sarif
           if-no-files-found: error
 
   update-report:

@@ -2,7 +2,7 @@
 
 **Branch**: `freebuff/38a663e10f412e1b8cba2642` | **Date**: 2026-11-14 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/158-lucky-meter-daily-experience/spec.md`
+**Input**: Feature specification from `/specs/160-lucky-meter-daily-experience/spec.md`
 
 ## Summary
 
@@ -68,7 +68,7 @@ keeps the visual layer additive so existing artwork is untouched.
 ### Documentation (this feature)
 
 ```text
-specs/158-lucky-meter-daily-experience/
+specs/160-lucky-meter-daily-experience/
 ├── spec.md
 ├── plan.md
 ├── tasks.md

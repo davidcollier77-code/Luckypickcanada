@@ -1,6 +1,6 @@
 # Tasks: Lucky Meter Daily Experience
 
-**Input**: Design documents from `/specs/158-lucky-meter-daily-experience/`
+**Input**: Design documents from `/specs/160-lucky-meter-daily-experience/`
 
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md
 

@@ -1,6 +1,6 @@
 # Research: Lucky Meter Daily Experience
 
-**Date**: 2026-11-14 | **Feature**: `specs/158-lucky-meter-daily-experience/`
+**Date**: 2026-11-14 | **Feature**: `specs/160-lucky-meter-daily-experience/`
 
 ## Existing implementation (inspected, not assumed)
 
