@@ -84,7 +84,7 @@ memory-bank/progress.md
 
 Use `pull_request_target` and `issue_comment`, with checkout pinned to the trusted `main` ref. Never check out PR code. Read PR metadata, changed-file records and issue comments through the read-only token. Fail closed when required data is missing or malformed. The PR body contains exactly one JSON declaration between fixed markers. Its `paths` value is an exact file list. Renames check both old and new paths. Scope expansions must be added to that list and approved by an exact owner-authored digest comment.
 
-This is deterministic file-scope validation, not semantic static analysis. The report lists the paths checked; reviewers must still compare the actual code hunks with the declared purpose to catch unrelated behavior inserted into an already-declared file.
+This is deterministic file-scope validation, not semantic static analysis. The report lists every checked path and its declared purpose; reviewers must still compare the actual code hunks with that purpose to catch unrelated behavior inserted into an already-declared file.
 
 ### Visual baselines and governance
 
