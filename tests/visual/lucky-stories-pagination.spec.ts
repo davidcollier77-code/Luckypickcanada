@@ -185,8 +185,9 @@ test('the story form requires one of the thirteen canonical provinces or territo
   await page.getByRole('button', { name: /share your lucky story/i }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Community Stories' });
-  const provinceSelect = dialog.getByLabel('Province or territory', { exact: true });
+  const provinceSelect = dialog.getByRole('combobox', { name: 'Province or territory', exact: true });
   await expect(provinceSelect).toBeVisible();
+  await expect(provinceSelect).toHaveAttribute('id', 'lucky-story-province');
   await expect(provinceSelect).toHaveAttribute('required', '');
   await expect(provinceSelect).toHaveValue('');
 
@@ -208,21 +209,17 @@ test('the story form requires one of the thirteen canonical provinces or territo
     'Yukon',
   ]);
 
-  await dialog.getByLabel('Name').fill('Jane Doe');
+  await dialog.locator('input[name="name"]').fill('Jane Doe');
   await dialog.locator('textarea[name="story"]').fill('A memorable lucky moment shared with the Canadian community.');
 
-  const storySubmissions: string[] = [];
-  page.on('request', (request) => {
-    if (request.url().includes('/api/lucky-stories') && request.method() === 'POST') {
-      storySubmissions.push(request.url());
-    }
-  });
-
-  await dialog.getByRole('button', { name: 'Submit Story' }).click();
-  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(false);
-  expect(storySubmissions).toHaveLength(0);
+  const storyForm = dialog.locator('form[action="/api/lucky-stories"]');
+  // Check native required-field validation directly. CI intentionally has no
+  // Turnstile site key, so its submit button is disabled and should not be clicked.
+  await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valueMissing)).toBe(true);
+  await expect.poll(() => storyForm.evaluate((form) => (form as HTMLFormElement).checkValidity())).toBe(false);
 
   await provinceSelect.selectOption({ label: 'Nova Scotia' });
   await expect(provinceSelect).toHaveValue('Nova Scotia');
   await expect.poll(() => provinceSelect.evaluate((select) => (select as HTMLSelectElement).validity.valid)).toBe(true);
+  await expect.poll(() => storyForm.evaluate((form) => (form as HTMLFormElement).checkValidity())).toBe(true);
 });

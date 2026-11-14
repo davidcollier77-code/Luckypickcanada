@@ -2,6 +2,19 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-14 — Security header hardening
+- Tightened the response CSP: kept `script-src 'unsafe-inline'` for Next.js, added
+  `script-src-attr 'none'`, and removed the unused Google Fonts and Pexels origins while preserving
+  Turnstile, Google Analytics, Cloudflare Web Analytics and the Stripe form destination.
+- Switched `Referrer-Policy` to `strict-origin-when-cross-origin` and removed obsolete
+  `X-XSS-Protection`; HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Permissions-Policy` and
+  `Cross-Origin-Opener-Policy` are unchanged.
+- Verified: 679 unit tests, type check, `./freebuff-verify.sh` exit 0, a 358,302,351-byte build
+  (≈341.7 MiB), 3/3 Playwright header checks on both production and dev servers, eight public
+  routes with zero CSP violations, and successful Turnstile plus Google Analytics script loads.
+- Recorded that the Cloudflare edge replaces origin HSTS with a one-year includeSubDomains value;
+  the owner must align the edge HSTS setting if the repository's two-year preload intent is wanted.
+
 ## 2026-11-13 — Crystal Ball token budgets and fallback resilience
 - Split the Groq completion budget into 900 tokens for daily fortunes and 700 for follow-ups,
   keeping `openai/gpt-oss-20b`, low reasoning effort and every other request setting unchanged.
