@@ -20,7 +20,7 @@ QA checkers, application code, visual baselines and browser dependencies remain 
 **Independent Test**: Resolve the standard command and assert the standard config has no
 `launchOptions` or `channel`.
 
-- [X] T004 [US1] Add the `test:visual` standard command in `package.json`
+- [X] T004 [US1] Document the standard `pnpm exec playwright test` command in the project Playwright guide and README
 - [X] T005 [US1] Add a guard asserting `playwright.config.ts` has no SwiftShader launch arguments or channel in `__tests__/playwright-config-modes.test.js`
 - [X] T006 [US1] Leave `.github/workflows/visual-qa.yml` and every QA checker unchanged
 
@@ -32,7 +32,7 @@ QA checkers, application code, visual baselines and browser dependencies remain 
 renderer; it must identify SwiftShader.
 
 - [X] T007 [US2] Create `playwright.swiftshader.config.ts` inheriting the standard projects and web server, with `--use-gl=angle --use-angle=swiftshader --enable-gpu`, `workers: 1` and `retries: 0`
-- [X] T008 [US2] Add the `test:visual:swiftshader` command in `package.json`
+- [X] T008 [US2] Document the `--config=playwright.swiftshader.config.ts` command in the project Playwright guide and README
 - [X] T009 [US2] Guard the SwiftShader arguments, serial settings and inherited project names in `__tests__/playwright-config-modes.test.js`
 - [X] T010 [US2] Run a focused Playwright check through the SwiftShader config and record the launch result
 

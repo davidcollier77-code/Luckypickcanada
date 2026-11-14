@@ -26,10 +26,10 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Added an opt-in SwiftShader configuration that explicitly requests ANGLE's software backend and
   enables the GPU process for graphics investigations; it uses one worker and no retries and
   inherits the standard projects and web server.
-- Added distinct package commands, project guidance and a source guard that prevents either mode
-  from drifting into the other.
-- Verified: 4/4 mode guards, standard and SwiftShader smoke runs 3/3 each, full suite 687/687,
-  type check exit 0, repository gate exit 0, and a 438,114,618-byte build (≈417.8 MiB).
+- Added distinct documented commands, project guidance and a source guard that prevents either
+  mode from drifting into the other.
+- Verified: 3/3 mode guards, standard and SwiftShader smoke runs 3/3 each, full suite 686/686,
+  type check exit 0, repository gate exit 0, and a 438,155,074-byte build (≈417.9 MiB).
 
 ## 2026-11-14 — Security header hardening
 - Tightened the response CSP: kept `script-src 'unsafe-inline'` for Next.js, added

@@ -59,7 +59,7 @@ Use **Option A — Standard Playwright** for normal QA, CI and every visual-regr
 behavioural check:
 
 ```bash
-pnpm run test:visual          # same as: pnpm exec playwright test
+pnpm exec playwright test
 ```
 
 It uses `playwright.config.ts` exactly as before. Do not add SwiftShader flags to it, and do not
@@ -69,8 +69,7 @@ Use **Option B — SwiftShader Playwright** only when investigating GPU renderin
 graphics or related performance:
 
 ```bash
-pnpm run test:visual:swiftshader
-# same as: pnpm exec playwright test --config=playwright.swiftshader.config.ts
+pnpm exec playwright test --config=playwright.swiftshader.config.ts
 ```
 
 This mode inherits the standard projects and web server but launches Chromium with ANGLE's

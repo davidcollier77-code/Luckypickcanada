@@ -69,14 +69,14 @@ pnpm dev
 Normal QA and CI use the standard Playwright configuration:
 
 ```bash
-pnpm run test:visual
+pnpm exec playwright test
 ```
 
-For an explicit software-rendered investigation of GPU, WebGL or graphics behaviour, use the
+For an explicit software-rendered investigation of GPU, WebGL or graphics behaviour, select the
 opt-in SwiftShader configuration:
 
 ```bash
-pnpm run test:visual:swiftshader
+pnpm exec playwright test --config=playwright.swiftshader.config.ts
 ```
 
 The SwiftShader mode forces the software backend, uses one worker and does not update visual

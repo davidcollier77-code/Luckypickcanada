@@ -9,7 +9,7 @@
 Keep `playwright.config.ts` as the unchanged standard option for normal QA and CI. Add a
 separate `playwright.swiftshader.config.ts` that imports the standard config, sets the
 SwiftShader-specific launch arguments, and runs one worker with no retries for deterministic
-graphics investigations. Expose both options as package scripts and document the choice in the
+graphics investigations. Expose both options as explicit commands and document the choice in the
 project Playwright guide. Add a Vale-free Vitest guard that fails if either mode drifts. No
 browser, CI checker, workflow or infrastructure changes are needed.
 
@@ -22,7 +22,7 @@ browser, CI checker, workflow or infrastructure changes are needed.
 
 **Storage**: N/A. This is test tooling configuration only.
 
-**Testing**: Vitest source guard for the two configurations and package commands; a focused
+**Testing**: Vitest source guard for the two configurations and documented commands; a focused
 Playwright run through the SwiftShader configuration to prove the browser launches; the
 existing full suite, type check and repository gate.
 
@@ -38,7 +38,7 @@ be slower; it uses one worker to avoid competing software renderers.
 checker scripts, committed visual baselines or app behaviour. No new infrastructure or
 dependencies. Production build strictly below 495 MiB.
 
-**Scale/Scope**: Two Playwright configurations, two package commands, one project guide section,
+**Scale/Scope**: Two Playwright configurations, two documented commands, one project guide section,
 one focused Vitest guard and one targeted runtime check.
 
 ## Constitution Check
@@ -48,7 +48,7 @@ one focused Vitest guard and one targeted runtime check.
 - **I. Single Source of Truth** — PASS. `AGENTS.md` remains authoritative; the new guide
   section supplements it and the standard config remains the default.
 - **II. Verify Before Acting** — PASS. The current configuration, Chromium build, visual QA
-  workflow, checker assertions and package scripts were inspected before design.
+  workflow, checker assertions and standard command were inspected before design.
 - **III. Implementation Sequence** — PASS. INSPECT → IDENTIFY → UNDERSTAND → PLAN →
   IMPLEMENT → TEST → DOUBLE-CHECK → REPORT → CREATE PR.
 - **IV. Protect Core Systems** — PASS. No payment, auth, database, secrets, hosting or
@@ -78,7 +78,6 @@ specs/161-playwright-swiftshader-mode/
 ```text
 playwright.config.ts                    # unchanged standard option
 playwright.swiftshader.config.ts        # new opt-in SwiftShader option
-package.json                            # two selectable scripts
 .agents/skills/playwright-cli/references/lucky-pick-canada.md
                                         # choose A or B guidance
 __tests__/playwright-config-modes.test.js
@@ -97,8 +96,9 @@ affect the standard path. Package scripts give both modes a stable, discoverable
    `use.launchOptions.args`, `workers` and `retries`.
 3. Use `--use-gl=angle --use-angle=swiftshader --enable-gpu`; do not use `--disable-gpu`, which
    would disable the GPU process rather than exercise the software GPU path.
-4. Add `test:visual` (standard) and `test:visual:swiftshader` (investigation) scripts.
-5. Document when to use each mode, that CI uses the standard mode, and that investigation runs
+4. Document the standard `pnpm exec playwright test` command and the investigation
+   `--config=playwright.swiftshader.config.ts` command.
+5. State when to use each mode, that CI uses the standard mode, and that investigation runs
    do not update baselines.
 6. Add a Vitest guard that asserts the standard config has no launch arguments or channel, the
    SwiftShader config has the expected arguments and serial settings, and both scripts remain

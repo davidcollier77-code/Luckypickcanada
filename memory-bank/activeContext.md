@@ -10,8 +10,9 @@
 
 The repository now has two explicit Playwright Test modes. Option A is the unchanged
 `playwright.config.ts` used by normal QA and CI. Option B is the opt-in
-`playwright.swiftshader.config.ts`, selected with `pnpm run test:visual:swiftshader`, which
-forces ANGLE's SwiftShader backend for GPU and graphics investigations.
+`playwright.swiftshader.config.ts`, selected with
+`pnpm exec playwright test --config=playwright.swiftshader.config.ts`, which forces ANGLE's
+SwiftShader backend for GPU and graphics investigations.
 
 ## Scope and safeguards
 
@@ -20,19 +21,19 @@ forces ANGLE's SwiftShader backend for GPU and graphics investigations.
 - Option B inherits the standard projects and web server, adds `--use-gl=angle`,
   `--use-angle=swiftshader`, `--enable-gpu`, and uses one worker with no retries.
 - No new browser, dependency, paid service, hosted runner or infrastructure was introduced.
-- `__tests__/playwright-config-modes.test.js` guards both modes and the package commands.
+- `__tests__/playwright-config-modes.test.js` guards both modes and their documented commands.
 - The project Playwright guide and README explain which mode to use and that investigation runs
   must not regenerate baselines.
 
 ## Verification
 
-- Focused mode guard: 4/4 passed; combined focused run 23/23 passed.
+- Focused mode guard: 3/3 passed; combined focused run 22/22 passed.
 - Standard Playwright smoke (`security-headers`, desktop): 3/3 passed.
 - SwiftShader Playwright smoke: 3/3 passed; renderer reported SwiftShader / `SwANGLE`.
-- Full Vitest: 687/687 passed.
+- Full Vitest: 686/686 passed.
 - `pnpm exec tsc --noEmit`: exit 0.
 - `./freebuff-verify.sh`: exit 0, including 36/36 documentation tests.
-- Production build: 438,114,618 bytes (≈417.8 MiB), below the 495 MiB cap.
+- Production build: 438,155,074 bytes (≈417.9 MiB), below the 495 MiB cap.
 
 ## Remaining
 

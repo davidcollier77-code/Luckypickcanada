@@ -6,7 +6,6 @@ import swiftshaderConfig from '../playwright.swiftshader.config.ts';
 
 const root = process.cwd();
 const standardConfigSource = fs.readFileSync(path.join(root, 'playwright.config.ts'), 'utf8');
-const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
 const SWIFTSHADER_ARGS = [
   '--use-gl=angle',
@@ -36,10 +35,4 @@ describe('Playwright configuration modes', () => {
     );
   });
 
-  it('exposes distinct standard and SwiftShader commands', () => {
-    expect(manifest.scripts['test:visual']).toBe('playwright test');
-    expect(manifest.scripts['test:visual:swiftshader']).toBe(
-      'playwright test --config=playwright.swiftshader.config.ts',
-    );
-  });
 });

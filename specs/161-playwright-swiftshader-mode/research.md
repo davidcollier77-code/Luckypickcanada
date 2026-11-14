@@ -49,14 +49,16 @@ Rationale: Software rendering is CPU-bound; two concurrent browsers compete for 
 and make graphics timings noisy. A retry can hide a launch or rendering failure and masks the
 first-run behaviour being investigated.
 
-### Package scripts and documentation
+### Documented commands
 
-Decision: expose `test:visual` and `test:visual:swiftshader`, and document both in the project
+Decision: document the standard `pnpm exec playwright test` command and the investigation
+`pnpm exec playwright test --config=playwright.swiftshader.config.ts` command in the project
 Playwright guide.
 
-Rationale: The options are then selectable without editing files, and an agent following the
-Playwright instructions has an explicit rule: standard for normal QA, SwiftShader for graphics
-investigations. CI keeps using `pnpm exec playwright test`, so no workflow changes are needed.
+Rationale: The options are selectable without editing files or changing protected package
+metadata, and an agent following the Playwright instructions has an explicit rule: standard for
+normal QA, SwiftShader for graphics investigations. CI keeps using the standard command, so no
+workflow changes are needed.
 
 ## References consulted
 
