@@ -257,9 +257,26 @@ test('Card Reveal, Crystal Ball and Lucky Meter read the same local-midnight cou
   });
 
   await meterPage.addInitScript(() => {
-    window.localStorage.setItem('lucky_lastDate', new Date().toLocaleDateString());
-    window.localStorage.setItem('lucky_lastPct', '50');
-    window.localStorage.setItem('lucky_lastQuote', '0');
+    // Seed the daily Lucky Meter result in its versioned Local Storage schema so
+    // the countdown is present without running the reveal.
+    const now = new Date();
+    const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    window.localStorage.setItem(
+      'lucky-pick-canada-lucky-meter-v1',
+      JSON.stringify({
+        version: 1,
+        dateKey,
+        result: {
+          dateKey,
+          percentage: 50,
+          event: { id: 'meteor' },
+          colour: { id: 'maple-red' },
+          spark: { id: 'spark-01' },
+          createdAt: Date.now(),
+        },
+        history: { percentages: [50], events: ['meteor'], sparks: ['spark-01'] },
+      }),
+    );
   });
 
   await Promise.all([
