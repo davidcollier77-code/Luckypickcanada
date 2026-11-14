@@ -1,5 +1,11 @@
 # Project Progress — Significant Milestones
 
+## 2026-11-14 — QA checker requirements moved into task planning
+- Added a dedicated AGENTS.md planning-stage section requiring agents to inspect applicable QA checker definitions and understand their actual checks before drafting task specifications.
+- Requires checker scope, triggers, inputs, evidence, thresholds, approvals and pass/fail behaviour to inform task scope, constraints, acceptance criteria and verification planning.
+- Extended the governance regression test to guard the new requirement. Local execution remains unavailable in the connected GitHub-only workspace; no test pass is claimed.
+
+
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
 ## 2026-11-14 — Security header hardening

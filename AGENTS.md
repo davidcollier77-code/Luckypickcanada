@@ -33,6 +33,17 @@ A — PREPARE AND PLAN
 
 7. Check integrations and tools. Confirm that required integrations and tools are available and operational. Use applicable integrations as needed for the task. Use the repository's Playwright CLI as the primary browser tool. Troubleshoot Playwright issues using the existing setup script and project instructions. If Playwright remains unavailable, use Browserless as the fallback for direct browser tasks.
 
+QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION
+
+Before writing or approving a task specification for work that may be checked by repository QA infrastructure, inspect the applicable QA checker requirements first. This is a task-planning input, not a step to defer until implementation or pre-submission review.
+
+- Identify the workflows, checker scripts, configurations, test suites and written requirements that will evaluate the proposed changes.
+- Understand what each applicable checker is designed to detect, enforce or prevent, including its scope, triggers, required inputs, evidence, thresholds, approval conditions and pass/fail behaviour.
+- Determine which changed files, application behaviours, safeguards and evidence the checkers will examine. Do not infer their purpose from workflow or script names; inspect their actual definitions and relevant tests.
+- Use those requirements when defining the task's scope, constraints, implementation approach, acceptance criteria and verification plan. The task must be designed to satisfy the applicable checks, not discover their expectations after implementation.
+- Identify gaps, conflicts, unclear requirements or checker changes needed to support the task. Record them in the specification and raise material conflicts with the owner before implementation.
+- Do not weaken, bypass, suppress or redefine an existing check merely to make a task pass. Any proposed change to checker requirements must be explicit, separately justified and authorized where protected files or governance are involved.
+
 8. Check applicable repository QA and validation requirements. Inspect the relevant workflows, configurations, scripts and referenced requirements. Identify their scope, triggers, qualifications, thresholds and pass/fail conditions. Treat those requirements as targets before implementation. Follow current repository definitions if documentation conflicts, and report any discrepancy. Do not silently change them.
 
 9. Follow Spec Kit. Review and follow all nine command definitions in ".freebuff/cmds/speckit.*.md", together with their applicable instructions, current templates and project-constitution requirements. The repository's checked baseline is Spec Kit 1.4.0: four core stages—Specify, Plan, Tasks and Implement—and five supporting commands—Clarify, Analyze, Checklist, Constitution and Converge.
