@@ -99,9 +99,14 @@ jobs:
       # replace or narrow the application suite below.
       - name: Test QA infrastructure checkers
         run: |
+          python3 -m py_compile \
+            .github/scripts/check_qa_pr_scope.py \
+            .github/scripts/summarize_devskim_findings.py \
+            .github/scripts/verify_pr_verification_status.py
           PYTHONPATH=.github/scripts python3 -m unittest \
             test_check_qa_pr_scope \
             test_summarize_devskim_findings \
+            test_verify_pr_verification_status \
             -v
 
       # The full suite includes the Crystal Ball allowance and Oracle validation
