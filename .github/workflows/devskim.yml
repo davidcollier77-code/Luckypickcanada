@@ -45,6 +45,17 @@ jobs:
         with:
           output-filename: devskim-alerts.sarif
 
+      # Preserve an immutable copy before the in-place suppression filter runs.
+      - name: Preserve raw DevSkim SARIF
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
+        run: cp devskim-alerts.sarif devskim-alerts.raw.sarif
+
+      - name: Validate DevSkim reporting Python syntax
+        run: python3 -m py_compile .github/scripts/summarize_devskim_findings.py
+
+      - name: Test DevSkim findings reporting
+        run: PYTHONPATH=.github/scripts python3 -m unittest test_summarize_devskim_findings -v
+
       - name: Validate DevSkim suppression Python syntax
         id: python-syntax
         run: python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py
@@ -77,13 +88,29 @@ jobs:
         with:
           sarif_file: devskim-alerts.sarif
 
+      - name: Summarize raw and filtered DevSkim findings
+        if: always() && hashFiles('devskim-alerts.raw.sarif') != '' && hashFiles('devskim-alerts.sarif') != ''
+        run: |
+          python3 .github/scripts/summarize_devskim_findings.py \
+            --raw devskim-alerts.raw.sarif \
+            --filtered devskim-alerts.sarif \
+            --summary "$GITHUB_STEP_SUMMARY"
+
       - name: Upload DevSkim alerts files
         if: always() && hashFiles('devskim-alerts.sarif') != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: devskim-sarif
-          # Only SARIF is transferred; never overwrite the append-only shared Markdown report.
+          # Only filtered SARIF is transferred to the existing report updater.
           path: devskim-alerts.sarif
+          if-no-files-found: error
+
+      - name: Upload original unfiltered DevSkim SARIF
+        if: always() && hashFiles('devskim-alerts.raw.sarif') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: devskim-sarif-raw
+          path: devskim-alerts.raw.sarif
           if-no-files-found: error
 
   update-report:
