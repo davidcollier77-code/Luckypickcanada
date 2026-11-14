@@ -178,6 +178,11 @@ def _digest(entries: dict[str, str] | list[str]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _approval_digest(head_sha: str, entries: dict[str, str] | list[str]) -> str:
+    # A later commit invalidates approvals, even when it edits an already-listed path.
+    return _digest({"head_sha": head_sha, "entries": entries})
+
+
 def _owner_approval(comments: list, owner: str, command: str, digest: str) -> bool:
     if not isinstance(comments, list):
         raise ScopeError("GitHub issue-comment evidence is malformed")
@@ -224,6 +229,10 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         raise ScopeError("GitHub pull request metadata is missing its body")
     if not isinstance(owner, str) or not owner.strip():
         raise ScopeError("repository owner identity is required for approval checks")
+    head = pr.get("head")
+    head_sha = head.get("sha") if isinstance(head, dict) else None
+    if not isinstance(head_sha, str) or not head_sha.strip():
+        raise ScopeError("current pull request head SHA is required for approval-bound scope checks")
 
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
@@ -313,7 +322,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     ):
         if not entries:
             continue
-        digest = _digest(entries)
+        digest = _approval_digest(head_sha, entries)
         command = APPROVAL_COMMANDS[category]
         approvals[category] = {
             "digest": digest,
