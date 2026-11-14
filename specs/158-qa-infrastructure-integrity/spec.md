@@ -77,7 +77,7 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 
 - **FR-001**: Parse exactly one machine-readable scope declaration from the PR body.
 - **FR-002**: Require a meaningful summary, feature list, exact repository-relative path list, and a specific purpose for every path; reject broad globs and placeholders.
-- **FR-003**: Compare declared paths against GitHub's actual changed-file list and fail closed when evidence is incomplete or invalid.
+- **FR-003**: Compare declared paths against GitHub's actual changed-file list, require the returned changed-file count to equal the received file records, reject duplicate filenames, and fail closed when evidence is incomplete or invalid.
 - **FR-004**: Include both prior and current file paths for renames.
 - **FR-005**: Require each scope expansion to be in the exact path list with a specific reason and a repository-owner approval bound to a SHA-256 digest of the current head SHA, complete declared scope, and that path/reason mapping.
 - **FR-006**: Never treat PR description edits, titles, branches or commits as approval.
@@ -87,7 +87,7 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 - **FR-010**: Keep the existing automated browser workflow Playwright-based.
 - **FR-011**: Preserve raw DevSkim SARIF before the existing in-place suppression filter runs.
 - **FR-012**: Retain the filtered SARIF artifact and add a separate raw SARIF artifact.
-- **FR-013**: Summarize raw, filtered and removed counts plus all remaining finding locations and metadata.
+- **FR-013**: Summarize raw, filtered and removed counts plus all remaining finding locations and metadata; separately report scanner, syntax, suppression-test, replay, filter and Security upload stage outcomes.
 - **FR-014**: Do not add suppressions or automatically classify findings as true/false positives.
 - **FR-015**: Run new QA checker tests in addition to the full existing test suite.
 - **FR-016**: Preserve Crystal Ball functionality/visual coverage, all other tests, Playwright projects/shards, security checks and governance checks.
@@ -97,9 +97,9 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 ## Success Criteria
 
 - **SC-001**: Every changed path in test fixtures is exact-listed and has a file-specific purpose; incomplete GitHub file inventories fail closed.
-- **SC-002**: Scope, baseline and governance tests reject missing, non-owner and stale-digest approvals.
+- **SC-002**: Scope, baseline and governance tests reject missing, non-owner, stale-head and stale-description approvals.
 - **SC-003**: All three supported browser tools pass validation; unsupported tools fail.
-- **SC-004**: Raw SARIF is unchanged by suppression and stored as a separate artifact.
+- **SC-004**: Raw SARIF is unchanged by suppression and stored as a separate artifact; the summary identifies which DevSkim pipeline stage failed or was not run.
 - **SC-005**: Every remaining SARIF result is shown with rule, severity, confidence, file, line and message.
 - **SC-006**: New Python checks run alongside the complete existing QA suite.
 - **SC-007**: No production application feature, visual asset or Crystal Ball functionality is changed.
