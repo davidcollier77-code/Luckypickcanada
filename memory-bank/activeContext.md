@@ -9,91 +9,28 @@
 
 ## Current Task
 
-Review all actionable feedback on PR #1900 and repair confirmed QA-infrastructure defects in a separate dependent branch. Do not modify the previously submitted PR or its branch. Keep production application code, features, artwork and screenshot baselines untouched.
+Review all actionable feedback on PR #1900 and repair confirmed QA-infrastructure defects in a separate dependent branch. PR #1900 and its branch remain unchanged. Production application code, feature behaviour, artwork and screenshot baselines remain out of scope.
 
-## Review disposition and changes
+## Review Findings and Repairs
 
-- Already present in the parent branch: conditional-check prefix filtering, raw/filtered SARIF source-context errors, empty-pagination jq fallbacks, field-aware missing-path guards, route-segment path support and BLOCKED report empty-list handling. Added regression coverage to protect these behaviours.
-- Repaired changed-file inventory handling for absent/null `previous_filename`, shared duplicate detection across current/previous filenames, and the malformed `changed_files` missing-key guard.
-- Made the exact-path regex's hyphen unambiguous, added AVIF baseline detection, rejected explicit pending/placeholder browser-evidence references and corrected the Advanced Security test-fixture false-positive without changing its runtime string.
-- Retained full PR-body/head approval binding and the requirement that expansion paths appear in the exact `paths` manifest and `scope_expansion` reason list; both are intentional safeguards.
+- Already present in the parent branch: conditional-check prefix filtering, raw/filtered SARIF source-context errors, empty-pagination jq fallbacks, field-aware missing-path guards, route-segment path support and BLOCKED report empty-list handling. Regression tests now protect these behaviours.
+- Repaired changed-file inventory handling for absent/null `previous_filename`, duplicate detection across current/previous filenames, and the malformed/missing `changed_files` guard.
+- Made the exact-path regex's hyphen literal, added AVIF baseline recognition, rejected explicit pending/placeholder browser-evidence references and corrected the Advanced Security test-fixture false-positive without changing its runtime value.
+- Retained full PR-body/head approval binding and the requirement that expansion paths appear in both the exact `paths` manifest and `scope_expansion` reason list; both are intentional safeguards.
 
-## Verification limitations
+## Verification and Delivery Status
 
-- Python syntax checks and the three focused unit suites have not run in this GitHub-only session. No local repository checkout or project runtime is available.
-- `freebuff-verify.sh` and repository startup scripts were not run.
-- No Playwright tool is exposed through the connected Firecrawl integration. The patch does not affect rendered application output or visual baselines, so browser verification is not applicable to the changed files.
-- This repair branch is based on the unmerged parent branch and has not been submitted as a PR. Existing required PR workflows filter for base `main`, so a stacked PR would run only the unrestricted OpenNext validation, not DevSkim, Visual QA, PR Scope Verification or Verification Integrity. Local Python tests are also blocked in this session. Submission is therefore held until PR #1900 is merged and the follow-up can be retargeted to `main`, or a suitable approved verification path is available.
+- **Implementation:** Changes and regression tests are committed on this branch. The final compare with the parent contains 13 files and no production app, visual asset, baseline, dependency, secret or protected governance changes.
+- **Python tests and syntax:** BLOCKED — no local repository checkout or executable project runtime is available in this session.
+- **Repository startup scripts and `freebuff-verify.sh`:** NOT RUN, as required by the ChatGPT-specific repository instructions.
+- **Playwright:** Not applicable to the changed non-rendering QA files; no Playwright tool is exposed through the connected Firecrawl integration.
+- **PR workflows:** A PR stacked on the unmerged parent branch would not run DevSkim, Visual QA, PR Scope Verification or Verification Integrity because those workflows filter for base `main`. The unrestricted OpenNext validation workflow alone does not satisfy the complete QA requirements.
+- **Submission:** No follow-up PR has been opened. Wait until PR #1900 is merged so this branch can be retargeted to `main`, or use an owner-approved verification path that runs the required checks. Do not merge the repair branch without required verification evidence.
 
-## Previous active task — QA Infrastructure Integrity
+## Parent Feature Context
 
+PR #1900 introduces the trusted PR scope checker, exact path manifest, owner approvals, raw/filtered DevSkim SARIF reporting and QA checker test integration. Its scope remains QA infrastructure only. The parent feature's remaining verification limitations and original design are recorded in `specs/158-qa-infrastructure-integrity/` and `memory-bank/progress.md`.
 
-- **Updated:** 2026-11-14
-- **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `feat/158-qa-infrastructure-integrity`
-- **Base:** `main`
-- **Spec Kit feature:** `specs/158-qa-infrastructure-integrity`
+## Prior HSTS Context
 
-## Current Task
-
-Implement the owner-approved QA infrastructure improvements in a separate PR. Keep all work on the branch above and leave PR #1899 and production application features untouched.
-
-## Scope and implementation
-
-- PR descriptions contain a structured exact file-path scope manifest. The trusted, read-only scope workflow compares it with GitHub's actual changed files, reports undeclared paths, handles renames, and requires repository-owner digest approval for scope expansions.
-- Screenshot baseline paths must match the declared baseline list and require separate owner approval. Governance instructions under `.freebuff/` and relevant `.specify/` files (apart from the routine active-feature pointer) are identified and require an explicit reason and owner approval.
-- Scope evidence accepts Playwright, Firecrawl or Browserless as distinct, accurately recorded tool identities. The automatic visual workflow continues to use its existing Playwright runner.
-- DevSkim's raw SARIF is copied before the existing in-place suppression filter. The existing filtered artifact/report path remains, and a separate raw artifact plus remaining-finding summary is added.
-- New Python tests are added to PR verification alongside the complete existing Vitest suite. Existing Crystal Ball, Playwright, security, verification-integrity and protected-file checks remain.
-- No Agent MD edit is included. Existing protected-file rules require a dedicated governance change; the new checker detects specialist governance paths so they cannot be silently introduced into unrelated PRs.
-
-## Known QA observations (not fixed in this PR)
-
-PR #1899 had a failing unit assertion involving the feature/social-sharing image object-position, a Lucky Stories pagination request returning HTTP 500 on mobile 390, and mobile accessibility text-size assertions below 12px. These are application/test findings and are outside this QA-infrastructure-only PR. Crystal Ball daily-limit and follow-up outage tests are preserved.
-
-DevSkim passed on PR #1899. Its retained finding was DS172411 (ManualReview, high confidence) at `components/DailyResonance.tsx:386`; the fixed timeout callback remains visible for human review, without automatic false-positive classification or suppression.
-
-## Verification limitations and handoff
-
-Firecrawl's Node browser runtime did not provide the `playwright` module, so ChatGPT browser verification could not run. Browserless was not substituted. Repository startup scripts and `freebuff-verify.sh` were not run. GitHub Actions checks are expected to run after PR creation; the new `PR Scope Verification` workflow is activated for subsequent PRs after this workflow is merged to main.
-
-The PR must remain open, non-draft and unmerged. Follow `PR_SUBMISSION.md`; after successful creation, stop immediately and hand off only the PR number/link and full head SHA.
-
-## Previous task: HSTS policy reconciliation (2026-11-13)
-
-The owner approved the security-header hardening and the follow-up correction to Lucky Stories browser QA. The current HSTS source of truth is the one-year policy `max-age=31536000; includeSubDomains` with `preload` disabled. PR #1895 also tightens CSP, uses `strict-origin-when-cross-origin`, removes obsolete `X-XSS-Protection`, and corrects the existing story-form test without changing the dropdown or Turnstile.
-
-## HSTS changes from that task
-
-- `next.config.mjs` — `Strict-Transport-Security` is now
-  `max-age=31536000; includeSubDomains` (previously `max-age=63072000; includeSubDomains; preload`,
-  a two-year value that Cloudflare can never serve because its HSTS max-age is capped at 12 months).
-- `__tests__/hsts-policy.test.js` — pins the value, requires exactly one HSTS definition in the
-  header configuration and forbids `preload` or a two-year max-age from returning.
-- `specs/156-hsts-policy-reconciliation/` — spec, plan, tasks, research and verification evidence.
-
-## Cloudflare production change — BLOCKED, not applied
-
-The edge half could not be performed from this environment. The available Cloudflare credential can
-read the zone (`luckypickcanada.ca`, `0af2a3985db329cdb671829cb59a41f1`, plan Free) but every zone
-settings endpoint returns Cloudflare error **9109 "Unauthorized to access requested resource"**,
-including `/settings`, `/settings/hsts` and `/settings/security_header`. No Cloudflare integration
-is connected and no dashboard session is available.
-
-Required action by the owner, in Cloudflare → SSL/TLS → Edge Certificates → HSTS: Max Age
-**12 months**, **Apply HSTS policy to subdomains** on, **Preload** off, **No-Sniff** on. Then verify
-with the commands recorded in `specs/156-hsts-policy-reconciliation/evidence.md`.
-
-## Known HSTS context risks
-
-- Until the edge change is applied, production keeps serving `max-age=15552000` without
-  `includeSubDomains`, so repository and edge still disagree.
-- `includeSubDomains` is not instantly reversible for browsers that have already received it.
-- Preload remains deliberately off and the domain is not on any preload list.
-
-
-## PR #1895 — preserved implementation and QA correction
-
-- Security-header hardening keeps the Next.js inline bootstrap allowance, blocks inline event-handler attributes, retains required Cloudflare Turnstile, Google Analytics, Cloudflare Web Analytics and Stripe origins, removes unused font/Pexels origins, and retains the structural CSP restrictions.
-- `Referrer-Policy` is `strict-origin-when-cross-origin`; `X-XSS-Protection` is removed; HSTS remains `max-age=31536000; includeSubDomains` with no `preload`.
-- The existing Lucky Stories Province or territory dropdown remains visible, required, and populated with all 13 canonical options. Its explicit label association and browser test validate native required-field behavior without attempting a Turnstile-gated submission.
+The repository HSTS policy is `max-age=31536000; includeSubDomains` with `preload` disabled. The production Cloudflare edge setting was previously inaccessible from the connected environment; see the earlier HSTS entry in `memory-bank/progress.md` and `specs/156-hsts-policy-reconciliation/` for the owner's remaining edge-setting action.
