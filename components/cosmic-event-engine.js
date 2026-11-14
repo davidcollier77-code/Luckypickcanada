@@ -872,7 +872,7 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
         : (Math.sin(strike.age * 53 + index) > 0.15 ? 0.95 : 0.72);
       const intensity = attack * decay * flicker;
 
-      if (intensity > strongestFlash) {
+      if (intensity * strike.peakFlash > strongestFlash) {
         strongestFlash = intensity * strike.peakFlash;
         flashPosition = [strike.rootX, Math.max(30, strike.rootY)];
       }
