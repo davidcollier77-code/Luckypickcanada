@@ -32,7 +32,7 @@ interface DailyResult {
   percentage: number;
   tier: { id: string; label: string; message: string };
   event: { id: string; name: string; numbers: number[] };
-  colour: { id: string; name: string; hex: string };
+  colour: { id: string; name: string; hex: string; light: boolean };
   spark: { id: string; message: string };
 }
 
@@ -49,7 +49,6 @@ const EMPTY_SOUNDS = () => ({
   impactFireworks: null as any,
   fireworkBurst: null as any,
   fireworkBurstAlt: null as any,
-  crackle: null as any,
   willowCrackle: null as any,
   fireworkLaunch: null as any,
 });
@@ -78,7 +77,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [announcement, setAnnouncement] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [history, setHistory] = useState(emptyMeterHistory);
-  const [todayKey, setTodayKey] = useState<string | null>(null);
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
   const { ready, dateKey, formatted: resetCountdown } = useDailyResetCountdown();
@@ -92,6 +90,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const keyframesRef = useRef<Array<{ at: number; value: number }>>([]);
   const revealStartRef = useRef(0);
   const isMountedRef = useRef(true);
+  const visitsAbortRef = useRef<AbortController | null>(null);
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -133,7 +132,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const localKey = getLocalDateKey();
-    setTodayKey(localKey);
     const loaded = loadMeterState();
     setHistory(loaded.history);
 
@@ -154,7 +152,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // local date key, so it also follows DST changes.
   useEffect(() => {
     if (!ready || !dateKey) return;
-    setTodayKey(dateKey);
     if (result && result.dateKey !== dateKey) {
       clearSequence();
       setResult(null);
@@ -174,6 +171,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   useEffect(() => {
     return () => {
       clearSequence();
+      visitsAbortRef.current?.abort();
+      visitsAbortRef.current = null;
       if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
 
       const sounds = soundsRef.current;
@@ -200,7 +199,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
         fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
         fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
-        crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
         willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 }),
         fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 }),
       };
@@ -211,6 +209,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   const playEventCue = useCallback((cue: string) => {
+    if (!isMountedRef.current) return;
     const sounds = soundsRef.current;
     const play = (key: string, rate = 1, volume = 0.6) => {
       const sound = sounds[key];
@@ -238,7 +237,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (isRevealing || isRevealed || typeof window === 'undefined') return;
 
     const localKey = ready && dateKey ? dateKey : getLocalDateKey();
-    const next = createDailyResult({ dateKey: localKey, history }) as DailyResult;
+    let next: DailyResult;
+    try {
+      next = createDailyResult({ dateKey: localKey, history }) as DailyResult;
+    } catch (error) {
+      // A bad local date or a corrupt history must not crash the page.
+      console.error('Unable to prepare today’s resonance:', error);
+      setAnnouncement('Today’s resonance could not be prepared. Please try again.');
+      return;
+    }
     const nextHistory = appendResultToHistory(history, next);
 
     // Persist before animating so a refresh mid-reveal still keeps today's result.
@@ -263,15 +270,27 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       }
     });
 
-    // Preserve the existing total-ritual counter.
-    fetch('/api/visits', { method: 'POST' })
-      .then((response) => response.json())
+    // Preserve the existing total-ritual counter. A newer reveal or unmount
+    // aborts an older request so a late response cannot overwrite the count.
+    visitsAbortRef.current?.abort();
+    const visitsController = new AbortController();
+    visitsAbortRef.current = visitsController;
+    fetch('/api/visits', { method: 'POST', signal: visitsController.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Visit counter responded with ${response.status}`);
+        return response.json();
+      })
       .then((data) => {
         if (isMountedRef.current && data && typeof data.visits === 'number') {
           setTotalVisits(data.visits);
         }
       })
-      .catch((error) => console.error('Failed to update visits:', error));
+      .catch((error) => {
+        if (error?.name !== 'AbortError') console.error('Failed to update visits:', error);
+      })
+      .finally(() => {
+        if (visitsAbortRef.current === visitsController) visitsAbortRef.current = null;
+      });
 
     if (reducedMotion) {
       setDisplayPercentage(next.percentage);
@@ -351,8 +370,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     );
   }, [
     clearSequence,
+    createDailyResult,
     dateKey,
     ensureRevealAudio,
+    getLocalDateKey,
     history,
     isRevealed,
     isRevealing,
@@ -383,7 +404,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }
 
     if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
-    shareTimerRef.current = window.setTimeout(() => {
+    shareTimerRef.current = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
       if (isMountedRef.current) setShareStatus('idle');
     }, 2400);
   }, [result]);
@@ -395,7 +416,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         ? 'Sharing unavailable'
         : 'Share My Resonance';
 
-  const isLightColour = result?.colour?.id === 'cream' || result?.colour?.id === 'winter-white';
+  const isLightColour = result?.colour?.light === true;
 
   return (
     <div

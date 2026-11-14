@@ -258,6 +258,16 @@ describe('complete daily result', () => {
     expect(new Set(result.event.numbers).size).toBe(3);
   });
 
+  it('marks light colours from the shared palette rather than hard-coded ids', () => {
+    const cream = createDailyResult({ dateKey, random: () => 0.5 });
+    expect(cream.colour.id).toBe('cream');
+    expect(cream.colour.light).toBe(true);
+
+    const mapleRed = createDailyResult({ dateKey, random: () => 0 });
+    expect(mapleRed.colour.id).toBe('maple-red');
+    expect(mapleRed.colour.light).toBe(false);
+  });
+
   it('selects event, colour and Spark independently of the percentage', () => {
     // Every percentage should still be able to pair with every event/colour.
     const seenPairs = new Set();

@@ -226,7 +226,7 @@ class PointBatch {
   }
 }
 
-function buildBranchSegments({ startX, startY, endX, endY, roughness, generation, maxGeneration, branchProbability, segments }) {
+function buildBranchSegments({ startX, startY, endX, endY, roughness, generation, maxGeneration, branchProbability, segments, random }) {
   const dx = endX - startX;
   const dy = endY - startY;
   const length = Math.hypot(dx, dy);
@@ -238,7 +238,7 @@ function buildBranchSegments({ startX, startY, endX, endY, roughness, generation
 
   const normalX = -dy / (length || 1);
   const normalY = dx / (length || 1);
-  const variance = (Math.random() - 0.5) * roughness;
+  const variance = (random() - 0.5) * roughness;
   const midX = (startX + endX) / 2 + normalX * variance;
   const midY = (startY + endY) / 2 + normalY * variance + roughness * 0.12;
 
@@ -252,6 +252,7 @@ function buildBranchSegments({ startX, startY, endX, endY, roughness, generation
     maxGeneration,
     branchProbability,
     segments,
+    random,
   });
   buildBranchSegments({
     startX: midX,
@@ -263,11 +264,12 @@ function buildBranchSegments({ startX, startY, endX, endY, roughness, generation
     maxGeneration,
     branchProbability,
     segments,
+    random,
   });
 
-  if (Math.random() < branchProbability) {
-    const angle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * randomBetween(Math.random, 0.35, 0.95);
-    const branchLength = length * randomBetween(Math.random, 0.4, 0.85);
+  if (random() < branchProbability) {
+    const angle = Math.atan2(dy, dx) + (random() > 0.5 ? 1 : -1) * randomBetween(random, 0.35, 0.95);
+    const branchLength = length * randomBetween(random, 0.4, 0.85);
     buildBranchSegments({
       startX: midX,
       startY: midY,
@@ -278,6 +280,7 @@ function buildBranchSegments({ startX, startY, endX, endY, roughness, generation
       maxGeneration,
       branchProbability: branchProbability * 0.22,
       segments,
+      random,
     });
   }
 }
@@ -339,8 +342,8 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
 
   if (!gl) return null;
 
-  const pointProgram = createProgram(gl, POINT_VERTEX_SHADER, POINT_FRAGMENT_SHADER);
-  const hazeProgram = createProgram(gl, HAZE_VERTEX_SHADER, HAZE_FRAGMENT_SHADER);
+  let pointProgram = createProgram(gl, POINT_VERTEX_SHADER, POINT_FRAGMENT_SHADER);
+  let hazeProgram = createProgram(gl, HAZE_VERTEX_SHADER, HAZE_FRAGMENT_SHADER);
   if (!pointProgram || !hazeProgram) {
     if (pointProgram) gl.deleteProgram(pointProgram);
     if (hazeProgram) gl.deleteProgram(hazeProgram);
@@ -523,6 +526,7 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
       maxGeneration,
       branchProbability: isFinale ? 0.42 : 0.2 + depth * 0.12,
       segments,
+      random: planRandom,
     });
 
     // The finale's outer branches spread toward the viewer, reading as an
@@ -539,6 +543,7 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
           maxGeneration: 6,
           branchProbability: 0.3,
           segments,
+          random: planRandom,
         });
       }
     }
@@ -1131,6 +1136,8 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
     gl.deleteBuffer(hazeBuffer);
     gl.deleteProgram(pointProgram);
     gl.deleteProgram(hazeProgram);
+    pointProgram = null;
+    hazeProgram = null;
 
     // Free the backing surface promptly on mobile browsers.
     try {

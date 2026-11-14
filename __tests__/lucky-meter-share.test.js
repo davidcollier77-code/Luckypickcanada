@@ -93,7 +93,7 @@ describe('native sharing and clipboard fallback', () => {
 
   it('treats only a genuine cancellation as cancellation', () => {
     expect(isShareCancellation({ name: 'AbortError' })).toBe(true);
-    expect(isShareCancellation({ code: 20 })).toBe(true);
+    expect(isShareCancellation({ code: 20 })).toBe(false);
     expect(isShareCancellation({ name: 'NotAllowedError' })).toBe(false);
     expect(isShareCancellation(null)).toBe(false);
   });

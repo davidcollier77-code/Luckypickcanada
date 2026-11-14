@@ -45,10 +45,10 @@
 
 | Check | Status | Evidence |
 | --- | --- | --- |
-| Focused Vitest | PASS | 6 files, 49 tests, exit 0 |
+| Focused Vitest | PASS | 6 files, 51 tests, exit 0 |
 | `pnpm exec tsc --noEmit` | PASS | exit 0 |
-| `SPEC_KIT_BASE_REF=$(git rev-parse HEAD^) ./freebuff-verify.sh` | PASS | exit 0; Spec Kit/governance gates, build and 36/36 isolated documentation tests passed. The explicit base is required because this clone has no local `main`. |
-| Production build | PASS | exit 0; `.next` = 343,768,364 bytes (≈327.8 MiB), below the 495 MiB cap |
+| `SPEC_KIT_BASE_REF=origin/main ./freebuff-verify.sh` | PASS | exit 0; Spec Kit/governance gates, build and 36/36 isolated documentation tests passed. |
+| Production build | PASS | exit 0; `.next` = 302,488,849 bytes (≈288.5 MiB), below the 495 MiB cap |
 | Browser QA (production build) | PASS | `results.json` has `failures: []` for all six scenarios |
 | WebGL availability | PASS | `WebGL 1.0 (OpenGL ES 2.0 Chromium)` in each desktop scenario |
 | Reveal timing | PASS | details recorded at 5.40–5.50 s; 42–52 distinct preview values; no early final value |
@@ -86,6 +86,33 @@ all measurements above are from the unmodified product. Full-motion GPU review a
 and mobile sizes, including the branching variety that requires real randomness, was not
 performed in this environment. Branching is implemented and deterministic tests cover the
 configuration, but the final visual quality on a GPU remains for owner review.
+
+## Review follow-up
+
+The branch was merged with current `main` and the feature renumbered from 158 to 160
+because main introduced features 158 and 159. Reviewer findings were checked against
+the code; the confirmed items were fixed:
+
+- `buildBranchSegments` now receives the injectable random source and every recursive
+  call and call site passes it, so lightning branching no longer bypasses the engine RNG.
+- `strongestFlash` compares the same weighted metric it stores.
+- `createDailyResult` is guarded in `handleReveal`, with a visible announcement and no
+  storage write when creation fails; a component test covers the path.
+- The colour `light` flag is carried through `createDailyResult` and
+  `validateDailyResult`, and the swatch reads it instead of hard-coded colour IDs.
+- The unused looping `crackle` Howl and the unread `todayKey` state were removed.
+- The visit-counter request uses `AbortController`, checks `response.ok` and ignores
+  abort errors; `playEventCue` checks the mounted ref; the reviewed share-timer timer
+  carries the repository's DevSkim false-positive annotation.
+- WebGL programs are nulled after deletion, and the dependency array includes the
+  imported selection/date helpers.
+- Share cancellation now relies on the standard `AbortError` only.
+
+Suggestions that did not identify a defect were answered rather than changed: expired
+particles are culled from the live arrays each frame, the two load/rollover effects are
+ordered and idempotent, particle and engine state use the existing injectable/global RNG
+by design, `durationMs` is already floored in the stage, and the fallback gradients are
+deliberately not the event accent colours.
 
 ## Gaps / follow-up
 

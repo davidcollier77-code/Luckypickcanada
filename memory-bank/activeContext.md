@@ -29,10 +29,10 @@ the branch is being merged with current `main` and prepared for review.
 
 ## Verification
 
-- Focused Vitest: 49 tests in 6 files, exit 0.
+- Focused Vitest: 51 tests in 6 files, exit 0.
 - `pnpm exec tsc --noEmit`: exit 0.
-- `./freebuff-verify.sh`: exit 0.
-- Production build: 343,768,364 bytes (≈327.8 MiB), below the 495 MiB cap.
+- `SPEC_KIT_BASE_REF=origin/main ./freebuff-verify.sh`: exit 0.
+- Production build: 302,488,849 bytes (≈288.5 MiB), below the 495 MiB cap.
 - Browser QA: all six scenarios pass with zero failures, no console errors; daily
   storage survives refresh, sharing falls back correctly, reduced motion is honoured.
 - Limitation: SwiftShader makes full-motion visual review impractical; canvas snapshots
@@ -42,4 +42,4 @@ the branch is being merged with current `main` and prepared for review.
 
 - The event engine's visual polish (especially branching variety) needs real GPU review.
 - No audio was added; existing cues are unchanged by design.
-- Final review fixes and the merge with current `main` require a fresh verification pass.
+- Review fixes and the merge with current `main` are committed; PR scope and current-head checks must pass before merge.

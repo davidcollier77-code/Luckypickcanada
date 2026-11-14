@@ -127,7 +127,12 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
     percentage,
     tier: { id: tier.id, label: tier.label, message: tier.message },
     event: { id: event.id, name: event.name, numbers: [...event.numbers] },
-    colour: { id: colour.id, name: colour.name, hex: colour.hex },
+    colour: {
+      id: colour.id,
+      name: colour.name,
+      hex: colour.hex,
+      light: colour.light === true,
+    },
     spark: { id: spark.id, message: spark.message },
     createdAt: Date.now(),
   };
@@ -167,7 +172,12 @@ export function validateDailyResult(value, expectedDateKey) {
     percentage,
     tier: { id: tier.id, label: tier.label, message: tier.message },
     event: { id: event.id, name: event.name, numbers: [...event.numbers] },
-    colour: { id: colour.id, name: colour.name, hex: colour.hex },
+    colour: {
+      id: colour.id,
+      name: colour.name,
+      hex: colour.hex,
+      light: colour.light === true,
+    },
     spark: { id: spark.id, message: spark.message },
     createdAt: Number.isFinite(value.createdAt) ? value.createdAt : 0,
   };

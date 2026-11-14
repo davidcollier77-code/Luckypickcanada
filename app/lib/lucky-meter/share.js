@@ -27,7 +27,7 @@ export function buildShareText(result) {
 
 export function isShareCancellation(error) {
   if (!error) return false;
-  return error.name === 'AbortError' || error.code === 20;
+  return error.name === 'AbortError';
 }
 
 /**

@@ -21,6 +21,14 @@ vi.mock('../app/lib/audio', () => ({
   playButtonClick: vi.fn(() => Promise.resolve()),
 }));
 
+vi.mock('../app/lib/lucky-meter/selection', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    createDailyResult: vi.fn(actual.createDailyResult),
+  };
+});
+
 vi.mock('howler', () => ({
   Howl: vi.fn().mockImplementation(function MockHowl() {
     this.play = vi.fn();
@@ -41,6 +49,7 @@ vi.mock('../components/CosmicEventStage', () => ({
 
 import DailyResonance from '../components/DailyResonance';
 import { METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
+import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import { REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
 
 const TODAY = '2026-11-14';
@@ -65,7 +74,9 @@ describe('Daily Resonance daily experience', () => {
       remainingMs: 0,
     };
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    global.fetch = vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ visits: 7 }) }));
+    global.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, json: () => Promise.resolve({ visits: 7 }) }),
+    );
     originalRaf = window.requestAnimationFrame;
     originalCancelRaf = window.cancelAnimationFrame;
     window.requestAnimationFrame = vi.fn(() => 1);
@@ -102,7 +113,12 @@ describe('Daily Resonance daily experience', () => {
       name: 'Cosmic Lightning',
       numbers: [11, 22, 33],
     });
-    expect(stored.result.colour).toEqual({ id: 'cream', name: 'Cream', hex: '#F1E8D5' });
+    expect(stored.result.colour).toEqual({
+      id: 'cream',
+      name: 'Cream',
+      hex: '#F1E8D5',
+      light: true,
+    });
     expect(stored.result.spark.id).toBe('spark-16');
     expect(stored.history.percentages).toEqual([53]);
     expect(screen.queryByText('Your Lucky Numbers')).not.toBeInTheDocument();
@@ -142,6 +158,21 @@ describe('Daily Resonance daily experience', () => {
     expect(stage).toHaveAttribute('data-event', 'lightning');
     expect(Number(stage.getAttribute('data-duration'))).toBeGreaterThanOrEqual(9500);
     expect(Number(stage.getAttribute('data-duration'))).toBeLessThanOrEqual(10500);
+  });
+
+  it('keeps the page usable when a daily result cannot be created', () => {
+    vi.mocked(createDailyResult).mockImplementationOnce(() => {
+      throw new Error('Corrupt local date');
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(<DailyResonance />);
+    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+
+    expect(screen.getByRole('button', { name: /Reveal My Resonance/i })).toBeInTheDocument();
+    expect(screen.queryByText(/Reading today/i)).not.toBeInTheDocument();
+    expect(window.localStorage.getItem(METER_STORAGE_KEY)).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent(/could not be prepared/i);
   });
 
   it('restores the persisted result after a refresh without replaying the reveal', () => {

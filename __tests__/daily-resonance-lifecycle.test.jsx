@@ -53,6 +53,7 @@ describe('DailyResonance Lifecycle & Audio', () => {
     localStorage.clear();
     global.fetch = vi.fn(() =>
       Promise.resolve({
+        ok: true,
         json: () => Promise.resolve({ visits: 42 }),
       }),
     );
