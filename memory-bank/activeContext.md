@@ -8,6 +8,8 @@
 
 ## Current Task
 
+A focused follow-up for PR #1895 repairs the Lucky Stories form's browser-test coverage. The captured CI trace showed the modal, accessible combobox and all 13 options rendered; the scoped `getByLabel` locator failed, and the test would then have encountered the intentionally disabled Turnstile submit button because CI has no site key. The follow-up adds an explicit label association and tests native required-field validity without attempting a Turnstile-protected submission.
+
 The owner asked to tighten the remaining security headers without breaking the website: review and
 tighten the CSP, restrict inline event handlers where compatible, switch the referrer policy to
 `strict-origin-when-cross-origin`, remove obsolete `X-XSS-Protection`, preserve HSTS and the other
