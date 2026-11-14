@@ -52,9 +52,11 @@ jobs:
         run: cp devskim-alerts.sarif devskim-alerts.raw.sarif
 
       - name: Validate DevSkim reporting Python syntax
+        id: summary-syntax
         run: python3 -m py_compile .github/scripts/summarize_devskim_findings.py
 
       - name: Test DevSkim findings reporting
+        id: summary-tests
         run: PYTHONPATH=.github/scripts python3 -m unittest test_summarize_devskim_findings -v
 
       - name: Validate DevSkim suppression Python syntax
@@ -102,6 +104,8 @@ jobs:
         if: always()
         env:
           SCANNER: ${{ steps.scanner.outcome }}
+          SUMMARY_SYNTAX: ${{ steps.summary-syntax.outcome }}
+          SUMMARY_TESTS: ${{ steps.summary-tests.outcome }}
           PYTHON_SYNTAX: ${{ steps.python-syntax.outcome }}
           SUPPRESSION_TESTS: ${{ steps.suppression-tests.outcome }}
           SARIF_REPLAY: ${{ steps.sarif-replay.outcome }}
