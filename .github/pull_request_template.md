@@ -16,6 +16,7 @@ Keep the markers and JSON structure. List every intended changed path exactly. I
   "summary": "",
   "features": [],
   "paths": [],
+  "file_purposes": [],
   "shared_dependencies": [],
   "visual_baseline_updates": [],
   "scope_expansion": [],
