@@ -498,7 +498,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY&apos;S RESONANCE</h1>
             <ResonanceButton onClick={handleReveal} />
-            <p className="mt-5 max-w-xs text-xs leading-relaxed text-slate-400">
+            <p className="mt-5 max-w-xs text-[12px] leading-relaxed text-slate-400">
               One reading a day, revealed in a few unforgettable seconds.
             </p>
           </div>
