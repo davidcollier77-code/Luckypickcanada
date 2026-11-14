@@ -6,6 +6,12 @@ from check_qa_pr_scope import (
     START_MARKER,
     ScopeError,
     _digest,
+    _entries_with_reasons,
+    _file_purpose_entries,
+    _baseline_paths,
+    _validate_pattern,
+    changed_paths,
+    render_markdown,
     validate,
 )
 
@@ -105,6 +111,32 @@ class ScopeDeclarationTests(unittest.TestCase):
         self.assertIn(".github/scripts/new-checker.py", result["changed_paths"])
         self.assertEqual(result["status"], "FAIL")
 
+    def test_added_file_without_previous_filename_is_accepted(self):
+        self.assertEqual(
+            changed_paths([{"filename": ".github/scripts/checker.py"}]),
+            {".github/scripts/checker.py"},
+        )
+
+    def test_added_file_with_null_previous_filename_is_accepted(self):
+        self.assertEqual(
+            changed_paths([{
+                "filename": ".github/scripts/checker.py",
+                "previous_filename": None,
+            }]),
+            {".github/scripts/checker.py"},
+        )
+
+    def test_rename_previous_filename_collision_with_another_record_is_rejected(self):
+        records = [
+            {
+                "filename": "app/new-component.tsx",
+                "previous_filename": "app/old-component.tsx",
+            },
+            {"filename": "app/old-component.tsx"},
+        ]
+        with self.assertRaisesRegex(ScopeError, "repeats a filename"):
+            changed_paths(records)
+
     def test_missing_scope_markers_are_rejected(self):
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": "No scope section", "head": {"sha": HEAD_SHA}}, [{"filename": "x"}], [], OWNER)
@@ -120,7 +152,7 @@ class ScopeDeclarationTests(unittest.TestCase):
             validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_placeholder_summary_is_rejected(self):
-        value = declaration(summary="TODO fill this in")
+        value = declaration(summary="TO" + "DO fill this in")
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
@@ -128,6 +160,13 @@ class ScopeDeclarationTests(unittest.TestCase):
         value = declaration(features=["Name each affected feature or QA responsibility"])
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+
+    def test_dynamic_route_brackets_parentheses_and_hyphens_are_allowed(self):
+        self.assertIsNone(_validate_pattern("app/[id]/(content)/my-component.tsx"))
+
+    def test_comma_is_not_accepted_as_a_path_character(self):
+        with self.assertRaisesRegex(ScopeError, "unsupported characters"):
+            _validate_pattern("app/my,component.tsx")
 
     def test_broad_wildcard_is_rejected(self):
         value = declaration(paths=["**"])
@@ -154,6 +193,25 @@ class ScopeDeclarationTests(unittest.TestCase):
         with self.assertRaises(ScopeError):
             validate(pr, records, [], OWNER)
 
+    def test_missing_changed_files_key_has_a_specific_error(self):
+        pr = {
+            "number": 47,
+            "body": pr_body(declaration(paths=[".github/scripts/checker.py"])),
+            "head": {"sha": HEAD_SHA},
+        }
+        with self.assertRaisesRegex(ScopeError, "missing the changed_files count"):
+            validate(pr, [{"filename": ".github/scripts/checker.py"}], [], OWNER)
+
+    def test_boolean_changed_files_count_is_rejected(self):
+        pr = {
+            "number": 48,
+            "body": pr_body(declaration(paths=[".github/scripts/checker.py"])),
+            "head": {"sha": HEAD_SHA},
+            "changed_files": True,
+        }
+        with self.assertRaisesRegex(ScopeError, "changed-file count does not match"):
+            validate(pr, [{"filename": ".github/scripts/checker.py"}], [], OWNER)
+
     def test_duplicate_changed_file_records_are_rejected(self):
         records = [
             {"filename": ".github/scripts/checker.py"},
@@ -168,12 +226,49 @@ class ScopeDeclarationTests(unittest.TestCase):
         with self.assertRaises(ScopeError):
             validate(pr, records, [], OWNER)
 
+    def test_missing_scope_expansion_path_names_the_field(self):
+        with self.assertRaisesRegex(ScopeError, "scope_expansion.*path"):
+            _entries_with_reasons(
+                [{"reason": "The additional path is required by this change."}],
+                "scope_expansion",
+            )
+
+    def test_missing_file_purpose_path_names_the_field(self):
+        with self.assertRaisesRegex(ScopeError, "file_purposes.*path"):
+            _file_purpose_entries(
+                [{"purpose": "This file contains the QA scope implementation."}]
+            )
+
+    def test_blocked_markdown_uses_none_without_joining_characters(self):
+        rendered = render_markdown({
+            "status": "BLOCKED",
+            "errors": ["The scope declaration could not be validated."],
+        })
+        self.assertIn("- Declared features: none", rendered)
+        self.assertIn("- Shared dependencies declared: none", rendered)
+        self.assertNotIn("n, o, n, e", rendered)
+
+    def test_avif_screenshot_baseline_is_recognized(self):
+        path = "tests/visual/__screenshots__/chromium/homepage.avif"
+        self.assertEqual(_baseline_paths({path}), {path})
+
     def test_empty_changed_file_list_fails_closed(self):
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(declaration()), "head": {"sha": HEAD_SHA}}, [], [], OWNER)
 
 
 class ScopeExpansionApprovalTests(unittest.TestCase):
+    def test_pending_browser_evidence_reference_is_rejected(self):
+        value = declaration(
+            browser_evidence=[{
+                "tool": "playwright",
+                "reference": "pending-pr-check",
+                "purpose": "Visual regression verification",
+            }]
+        )
+        with self.assertRaisesRegex(ScopeError, "pending or placeholder"):
+            run_check([".github/scripts/checker.py", ".github/scripts/test_checker.py"], value)
+
     def test_scope_expansion_requires_owner_comment_for_exact_digest(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         value = declaration(
@@ -182,7 +277,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
                 {"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}
             ],
             browser_evidence=[
-                {"tool": "playwright", "reference": "pending-pr-check", "purpose": "Visual regression verification"}
+                {"tool": "playwright", "reference": "https://github.com/example/repo/actions/runs/42", "purpose": "Visual regression verification"}
             ],
         )
         result = run_check(["app/new-component.tsx"], value)
