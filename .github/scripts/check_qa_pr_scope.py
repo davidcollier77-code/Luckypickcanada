@@ -111,9 +111,9 @@ def _validate_pattern(pattern: str) -> None:
     parts = pattern.split("/")
     if any(part in {"", ".", ".."} for part in parts):
         raise ScopeError(f"unsafe scope path pattern: {pattern!r}")
-    if any(character in pattern for character in "*?[]"):
+    if any(character in pattern for character in "*?"):
         raise ScopeError(f"scope paths must be exact file paths, not globs: {pattern!r}")
-    if not re.fullmatch(r"[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*", pattern):
+    if not re.fullmatch(r"[A-Za-z0-9._@+()\[\] -]+(?:/[A-Za-z0-9._@+()\[\] -]+)*", pattern):
         raise ScopeError(f"scope path contains unsupported characters: {pattern!r}")
 
 
@@ -131,7 +131,11 @@ def changed_paths(file_records: list) -> set[str]:
                 raise ScopeError(f"GitHub changed-file evidence repeats a filename: {filename}")
             current_names.add(filename)
             paths.add(filename)
-        if record.get("previous_filename"):
+            prev = normalize_path(record["previous_filename"])
+            if prev in current_names:
+                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {prev}")
+            current_names.add(prev)
+            paths.add(prev)
             paths.add(normalize_path(record["previous_filename"]))
     if not paths:
         raise ScopeError("GitHub changed-file evidence contains no usable paths")
@@ -147,7 +151,10 @@ def _entries_with_reasons(value, field: str) -> dict[str, str]:
     for item in value:
         if not isinstance(item, dict):
             raise ScopeError(f"{field} entries must be objects with path and reason")
-        path = normalize_path(item.get("path"))
+        raw_path = item.get("path")
+        if raw_path is None:
+            raise ScopeError(f"{field} entry is missing the required 'path' key")
+        path = normalize_path(raw_path)
         reason = item.get("reason")
         if not isinstance(reason, str) or len(reason.strip()) < 12:
             raise ScopeError(f"{field} requires a specific reason for {path}")
@@ -166,7 +173,10 @@ def _file_purpose_entries(value) -> dict[str, str]:
     for item in value:
         if not isinstance(item, dict):
             raise ScopeError("file_purposes entries must be objects")
-        path = normalize_path(item.get("path"))
+        raw_path = item.get("path")
+        if raw_path is None:
+            raise ScopeError("file_purposes entry is missing the required 'path' key")
+        path = normalize_path(raw_path)
         purpose = item.get("purpose")
         if not isinstance(purpose, str) or len(purpose.strip()) < 12:
             raise ScopeError(f"file_purposes requires a specific purpose for {path}")
@@ -257,9 +267,13 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
     changed_file_count = pr.get("changed_files")
+    if "changed_files" not in pr:
+            "GitHub changed-file count does not match the complete file list "
+            "GitHub pull request metadata is missing the changed_files count"
+        )
+    changed_file_count = pr["changed_files"]
     if type(changed_file_count) is not int or changed_file_count != len(file_records):
         raise ScopeError(
-            "GitHub changed-file count does not match the complete file list "
             f"(reported {changed_file_count!r}; received {len(file_records)})"
         )
     patterns = declaration["paths"]
@@ -394,8 +408,8 @@ def render_markdown(report: dict) -> str:
         "",
         f"- Pull request: #{report.get('pr_number')}",
         f"- Changed paths checked: {len(report.get('changed_paths', []))}",
-        f"- Declared features: {', '.join(report.get('features', [])) or 'none'}",
-        f"- Shared dependencies declared: {', '.join(report.get('shared_dependencies', [])) or 'none'}",
+        f"- Declared features: {', '.join(report.get('features') or []) or 'none'}",
+        f"- Shared dependencies declared: {', '.join(report.get('shared_dependencies') or []) or 'none'}",
         "",
         "### Changed paths",
     ]

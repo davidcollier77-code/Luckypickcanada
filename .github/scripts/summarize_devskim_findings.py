@@ -96,8 +96,18 @@ def _finding(result: dict) -> dict:
 def build_report(raw_path: str | Path, filtered_path: str | Path) -> dict:
     raw = load_results(raw_path)
     filtered = load_results(filtered_path)
-    raw_identities = Counter(_parts(result) for result in raw)
-    filtered_identities = Counter(_parts(result) for result in filtered)
+    try:
+        raw_identities = Counter(_parts(r) for r in raw)
+    except SarifSummaryError as exc:
+        raise SarifSummaryError(
+            f"malformed result in raw SARIF ({raw_path}): {exc}"
+        ) from exc
+    try:
+        filtered_identities = Counter(_parts(r) for r in filtered)
+    except SarifSummaryError as exc:
+        raise SarifSummaryError(
+            f"malformed result in filtered SARIF ({filtered_path}): {exc}"
+        ) from exc
     unexpected = filtered_identities - raw_identities
     if unexpected:
         first = next(iter(unexpected))

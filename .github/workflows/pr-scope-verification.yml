@@ -47,10 +47,10 @@ jobs:
           gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" > "${RUNNER_TEMP}/pr.json"
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
-            | jq 'add' > "${RUNNER_TEMP}/files.json"
+            | jq 'add // []' > "${RUNNER_TEMP}/files.json"
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
-            | jq 'add' > "${RUNNER_TEMP}/comments.json"
+            | jq 'add // []' > "${RUNNER_TEMP}/comments.json"
 
       - name: Compare declared scope with the actual pull request diff
         env:
