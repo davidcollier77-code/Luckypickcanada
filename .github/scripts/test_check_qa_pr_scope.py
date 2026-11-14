@@ -17,7 +17,7 @@ def declaration(**overrides):
         "version": 1,
         "summary": "Add reviewable QA scope and evidence controls",
         "features": ["QA scope verification"],
-        "paths": [".github/scripts/**"],
+        "paths": [".github/scripts/checker.py", ".github/scripts/test_checker.py"],
         "shared_dependencies": [],
         "visual_baseline_updates": [],
         "scope_expansion": [],
@@ -186,7 +186,7 @@ class VisualEvidenceTests(unittest.TestCase):
                 self.assertEqual(result["browser_evidence"][0]["tool"], tool.casefold())
 
     def test_visual_change_without_browser_evidence_fails(self):
-        value = declaration(paths=["components/**"])
+        value = declaration(paths=["components/Example.tsx"])
         result = run_check(["components/Example.tsx"], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
@@ -234,7 +234,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
 
     def test_undeclared_baseline_change_fails(self):
         path = "tests/visual/__screenshots__/chromium/homepage.png"
-        value = declaration(paths=["tests/visual/__screenshots__/**/*.png"])
+        value = declaration(paths=["tests/visual/__screenshots__/chromium/homepage.png"])
         result = run_check([path], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertTrue(any("not declared" in error for error in result["errors"]))
