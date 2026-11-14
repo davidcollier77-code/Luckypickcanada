@@ -4,10 +4,10 @@ import React from 'react';
 import DailyResonance from '../components/DailyResonance';
 import * as audioLib from '../app/lib/audio';
 
-// Mock dependencies
-const mockPlayButtonClick = vi.spyOn(audioLib, 'playButtonClick').mockImplementation(() => Promise.resolve());
+vi.mock('../app/lib/audio', () => ({
+  playButtonClick: vi.fn(() => Promise.resolve()),
+}));
 
-// Store for checking if global unload was called
 let globalUnloadCalled = false;
 
 vi.mock('howler', () => {
@@ -17,50 +17,44 @@ vi.mock('howler', () => {
         globalUnloadCalled = true;
       }),
     },
-    Howl: vi.fn().mockImplementation(function (options) {
-      this.options = options;
+    Howl: vi.fn().mockImplementation(function MockHowl() {
       this.play = vi.fn();
       this.volume = vi.fn();
+      this.rate = vi.fn();
+      this.fade = vi.fn();
+      this.stop = vi.fn();
       this.unload = vi.fn();
       this.playing = vi.fn(() => false);
-      return this;
     }),
   };
 });
 
-vi.mock('gsap', () => {
-  return {
-    default: {
-      timeline: vi.fn(() => ({
-        to: vi.fn(),
-        set: vi.fn(),
-        call: vi.fn(),
-        kill: vi.fn(),
-      })),
-      to: vi.fn(),
-      set: vi.fn(),
-    }
-  };
-});
-
-// Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
 };
 
+vi.mock('../components/daily-reset-countdown', () => ({
+  useDailyResetCountdown: () => ({
+    ready: true,
+    dateKey: '2026-11-14',
+    formatted: '05:00:00',
+    now: 0,
+    deadlineMs: 0,
+    remainingMs: 0,
+  }),
+}));
+
 describe('DailyResonance Lifecycle & Audio', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     globalUnloadCalled = false;
     localStorage.clear();
-
-    // Stub fetch
     global.fetch = vi.fn(() =>
       Promise.resolve({
         json: () => Promise.resolve({ visits: 42 }),
-      })
+      }),
     );
   });
 
@@ -70,54 +64,39 @@ describe('DailyResonance Lifecycle & Audio', () => {
 
   it('unmounts cleanly without calling Howler.unload() if no reveal occurred', () => {
     const { unmount } = render(<DailyResonance isCompact={false} />);
-
-    // Component mounted, now unmount it
     unmount();
-
-    // The global unload should not be called
     expect(globalUnloadCalled).toBe(false);
+    expect(audioLib.playButtonClick).not.toHaveBeenCalled();
   });
 
   it('unmounts and unloads only owned Howl instances, avoiding global Howler.unload()', async () => {
     const { unmount } = render(<DailyResonance isCompact={false} />);
 
-    // Trigger reveal to initialize sounds
-    const button = screen.getByText("Reveal My Resonance");
     await act(async () => {
-      fireEvent.click(button);
-      // wait a tick for dynamic imports to resolve
-      await new Promise(r => setTimeout(r, 0));
+      fireEvent.click(screen.getByText('Reveal My Resonance'));
+      await Promise.resolve();
+      await Promise.resolve();
     });
 
     unmount();
 
-    // The global unload should NOT be called
     expect(globalUnloadCalled).toBe(false);
   });
 
-  it('handles dynamic import failures and resets state to allow retry', async () => {
-    // Force import failure by resetting the mocks to reject
+  it('continues the reveal when the audio library cannot load', async () => {
     vi.doMock('howler', () => {
-      throw new Error('Mock network failure');
-    });
-    vi.doMock('gsap', () => {
       throw new Error('Mock network failure');
     });
 
     render(<DailyResonance isCompact={false} />);
+    fireEvent.click(screen.getByText('Reveal My Resonance'));
 
-    const button = screen.getByText("Reveal My Resonance");
-
-    fireEvent.click(button);
+    // Audio is optional: a failed import must not cancel or block the reveal.
     await waitFor(() => {
-      expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
+      expect(screen.queryByText(/Reading today/i)).not.toBeNull();
     });
+    expect(window.localStorage.getItem('lucky-pick-canada-lucky-meter-v1')).not.toBeNull();
 
-    // State should be reset, meaning button is visible again and not stuck on loading/revealing
-    expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
-
-    // Reset mocks back to normal
     vi.doUnmock('howler');
-    vi.doUnmock('gsap');
   });
 });

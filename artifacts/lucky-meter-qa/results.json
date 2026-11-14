@@ -1,0 +1,212 @@
+{
+  "base": "http://127.0.0.1:3002",
+  "failures": [],
+  "records": [
+    {
+      "name": "meteor",
+      "viewport": {
+        "width": 1440,
+        "height": 950
+      },
+      "webgl": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+      "storage": {
+        "dateKey": "2026-11-14",
+        "percentage": 24,
+        "tier": "Low Resonance",
+        "event": {
+          "id": "meteor",
+          "name": "Meteor Shower",
+          "numbers": [
+            3,
+            9,
+            21
+          ]
+        },
+        "colour": {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#23395B"
+        },
+        "spark": "spark-07",
+        "history": {
+          "percentages": [
+            24
+          ],
+          "events": [
+            "meteor"
+          ],
+          "sparks": [
+            "spark-07"
+          ]
+        }
+      },
+      "timings": {
+        "detailsAt": 5400,
+        "stageAt": 11466,
+        "duration": 15362,
+        "configuredDuration": 8700,
+        "expected": [
+          8500,
+          9500
+        ]
+      },
+      "previewSamples": 49,
+      "background": {
+        "imageLoaded": true,
+        "canvasCount": 1,
+        "cardWidth": 672,
+        "viewportWidth": 1440,
+        "viewportHeight": 950,
+        "overflowX": false,
+        "tierFontSize": "14px"
+      },
+      "consoleErrors": []
+    },
+    {
+      "name": "lightning",
+      "viewport": {
+        "width": 1440,
+        "height": 950
+      },
+      "webgl": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+      "storage": {
+        "dateKey": "2026-11-14",
+        "percentage": 53,
+        "tier": "Medium Resonance",
+        "event": {
+          "id": "lightning",
+          "name": "Cosmic Lightning",
+          "numbers": [
+            11,
+            22,
+            33
+          ]
+        },
+        "colour": {
+          "id": "cream",
+          "name": "Cream",
+          "hex": "#F1E8D5"
+        },
+        "spark": "spark-16",
+        "history": {
+          "percentages": [
+            53
+          ],
+          "events": [
+            "lightning"
+          ],
+          "sparks": [
+            "spark-16"
+          ]
+        }
+      },
+      "timings": {
+        "detailsAt": 5497,
+        "stageAt": 6105,
+        "duration": 35397,
+        "configuredDuration": 10000,
+        "expected": [
+          9500,
+          10500
+        ]
+      },
+      "previewSamples": 52,
+      "background": {
+        "imageLoaded": true,
+        "canvasCount": 1,
+        "cardWidth": 672,
+        "viewportWidth": 1440,
+        "viewportHeight": 950,
+        "overflowX": false,
+        "tierFontSize": "14px"
+      },
+      "consoleErrors": []
+    },
+    {
+      "name": "fireworks",
+      "viewport": {
+        "width": 1440,
+        "height": 950
+      },
+      "webgl": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+      "storage": {
+        "dateKey": "2026-11-14",
+        "percentage": 91,
+        "tier": "High Resonance",
+        "event": {
+          "id": "fireworks",
+          "name": "Fireworks",
+          "numbers": [
+            7,
+            8,
+            77
+          ]
+        },
+        "colour": {
+          "id": "pumpkin-orange",
+          "name": "Pumpkin Orange",
+          "hex": "#C96A25"
+        },
+        "spark": "spark-28",
+        "history": {
+          "percentages": [
+            91
+          ],
+          "events": [
+            "fireworks"
+          ],
+          "sparks": [
+            "spark-28"
+          ]
+        }
+      },
+      "timings": {
+        "detailsAt": 5501,
+        "stageAt": 9465,
+        "duration": 26958,
+        "configuredDuration": 11900,
+        "expected": [
+          11000,
+          12000
+        ]
+      },
+      "previewSamples": 42,
+      "background": {
+        "imageLoaded": true,
+        "canvasCount": 1,
+        "cardWidth": 672,
+        "viewportWidth": 1440,
+        "viewportHeight": 950,
+        "overflowX": false,
+        "tierFontSize": "14px"
+      },
+      "consoleErrors": []
+    },
+    {
+      "name": "mobile-refresh",
+      "percentage": 24,
+      "refreshState": {
+        "percentage": true,
+        "revealButton": false,
+        "countdown": "09:17:06",
+        "overflowX": false
+      },
+      "mobileErrors": []
+    },
+    {
+      "name": "reduced-motion",
+      "reducedState": {
+        "scrambleVisible": false,
+        "stage": false,
+        "percentage": 53
+      },
+      "stageAfter": false
+    },
+    {
+      "name": "share",
+      "nativeShare": false,
+      "clipboardText": "My Daily Resonance is 78% — Medium Resonance.\nToday's event: Meteor Shower\nYour Lucky Numbers: 3, 9, 21\nColour: Maple Red (#B52B32)\nLittle Spark: “Even a small step forward can change the direction of your day.”\nDiscover yours at https://luckypickcanada.ca/lucky-meter\nFor entertainment only — not lottery predictions or promises of winning.",
+      "shareStatus": "✦Copied ✓"
+    }
+  ]
+}

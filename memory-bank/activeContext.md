@@ -1,46 +1,42 @@
-# Active Context — HSTS policy reconciliation
+# Active Context — Lucky Meter daily experience
 
-- **Updated:** 2026-11-13
+- **Updated:** 2026-11-14
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/c941bc03442fc8f36d8df66f`
+- **Branch:** `freebuff/38a663e10f412e1b8cba2642`
 - **Base:** `main`
-- **Spec Kit feature:** `specs/156-hsts-policy-reconciliation`
+- **Spec Kit feature:** `specs/158-lucky-meter-daily-experience`
 
 ## Current Task
 
-The owner approved the security-header hardening and the follow-up correction to Lucky Stories browser QA. The current HSTS source of truth is the one-year policy `max-age=31536000; includeSubDomains` with `preload` disabled. PR #1895 also tightens CSP, uses `strict-origin-when-cross-origin`, removes obsolete `X-XSS-Protection`, and corrects the existing story-form test without changing the dropdown or Turnstile.
+The Lucky Meter now produces one complete daily reading per local day and presents it
+through an unpredictable 4.5-second reveal followed by one of three WebGL events.
 
 ## What changed
 
-- `next.config.mjs` — `Strict-Transport-Security` is now
-  `max-age=31536000; includeSubDomains` (previously `max-age=63072000; includeSubDomains; preload`,
-  a two-year value that Cloudflare can never serve because its HSTS max-age is capped at 12 months).
-- `__tests__/hsts-policy.test.js` — pins the value, requires exactly one HSTS definition in the
-  header configuration and forbids `preload` or a two-year max-age from returning.
-- `specs/156-hsts-policy-reconciliation/` — spec, plan, tasks, research and verification evidence.
+- `app/lib/lucky-meter/` — pure configuration, 30 Little Sparks, independent selection,
+  versioned Local Storage, reveal timing and sharing helpers.
+- `components/DailyResonance.tsx` — daily state machine, storage rollover, staged reveal,
+  result card, sharing and event lifecycle.
+- `components/cosmic-event-engine.js` — additive WebGL meteor, lightning and fireworks
+  set pieces with per-event duration windows and cleanup.
+- `components/CosmicEventStage.jsx` — stage mount, WebGL fallback, reduced-motion view and
+  safety completion.
+- `app/globals.css` — landing flash and calm detail-rise motion.
+- Focused Vitest coverage, Spec Kit artifacts and a Playwright QA harness under
+  `artifacts/lucky-meter-qa/`.
 
-## Cloudflare production change — BLOCKED, not applied
+## Verification
 
-The edge half could not be performed from this environment. The available Cloudflare credential can
-read the zone (`luckypickcanada.ca`, `0af2a3985db329cdb671829cb59a41f1`, plan Free) but every zone
-settings endpoint returns Cloudflare error **9109 "Unauthorized to access requested resource"**,
-including `/settings`, `/settings/hsts` and `/settings/security_header`. No Cloudflare integration
-is connected and no dashboard session is available.
-
-Required action by the owner, in Cloudflare → SSL/TLS → Edge Certificates → HSTS: Max Age
-**12 months**, **Apply HSTS policy to subdomains** on, **Preload** off, **No-Sniff** on. Then verify
-with the commands recorded in `specs/156-hsts-policy-reconciliation/evidence.md`.
+- Focused Vitest: 49 tests in 6 files, exit 0.
+- `pnpm exec tsc --noEmit`: exit 0.
+- `./freebuff-verify.sh`: exit 0.
+- Production build: 343,768,364 bytes (≈327.8 MiB), below the 495 MiB cap.
+- Browser QA: all six scenarios pass with zero failures, no console errors; daily
+  storage survives refresh, sharing falls back correctly, reduced motion is honoured.
+- Limitation: SwiftShader makes full-motion visual review impractical; canvas snapshots
+  confirm the particles, and GPU-quality review remains for the owner.
 
 ## Known Context Risks
 
-- Until the edge change is applied, production keeps serving `max-age=15552000` without
-  `includeSubDomains`, so repository and edge still disagree.
-- `includeSubDomains` is not instantly reversible for browsers that have already received it.
-- Preload remains deliberately off and the domain is not on any preload list.
-
-
-## PR #1895 — preserved implementation and QA correction
-
-- Security-header hardening keeps the Next.js inline bootstrap allowance, blocks inline event-handler attributes, retains required Cloudflare Turnstile, Google Analytics, Cloudflare Web Analytics and Stripe origins, removes unused font/Pexels origins, and retains the structural CSP restrictions.
-- `Referrer-Policy` is `strict-origin-when-cross-origin`; `X-XSS-Protection` is removed; HSTS remains `max-age=31536000; includeSubDomains` with no `preload`.
-- The existing Lucky Stories Province or territory dropdown remains visible, required, and populated with all 13 canonical options. Its explicit label association and browser test validate native required-field behavior without attempting a Turnstile-gated submission.
+- The event engine's visual polish (especially branching variety) needs real GPU review.
+- No audio was added; existing cues are unchanged by design.
