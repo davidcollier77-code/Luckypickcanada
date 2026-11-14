@@ -29,7 +29,7 @@ No production application code or artwork is in scope.
 **Constraints**:
 - New `pull_request_target` workflow must run trusted base-branch code only, use read-only token permissions, and never check out or execute PR code.
 - Scope declarations use exact paths, not directory-wide globs.
-- Approvals are tied to exact SHA-256 digests of paths and reasons.
+- Approvals are tied to exact SHA-256 digests of the current head SHA, the complete declared scope, and the category-specific path/reason entries.
 - Automated browser testing remains Playwright-based.
 - Preserve existing DevSkim suppression/replay and append-only report logic.
 - Do not run `freebuff-verify.sh` or repository startup scripts in this ChatGPT environment.
@@ -82,7 +82,7 @@ memory-bank/progress.md
 
 ### PR scope and trust boundary
 
-Use `pull_request_target` and `issue_comment`, with checkout pinned to the trusted `main` ref. Never check out PR code. Read PR metadata, changed-file records and issue comments through the read-only token. Fail closed when required data is missing or malformed. The PR body contains exactly one JSON declaration between fixed markers. Its `paths` value is an exact file list. Renames check both old and new paths. Scope expansions must be added to that list and approved by an exact owner-authored digest comment.
+Use `pull_request_target` and `issue_comment`, with checkout pinned to the trusted `main` ref. Never check out PR code. Read PR metadata, changed-file records and issue comments through the read-only token. Fail closed when required data is missing or malformed. The PR body contains exactly one JSON declaration between fixed markers. Its `paths` value is an exact file list. Renames check both old and new paths. Scope expansions must be added to that list and approved by an exact owner-authored digest comment bound to the current head SHA and full declared scope.
 
 This is deterministic file-scope validation, not semantic static analysis. The report lists every checked path and its declared purpose; reviewers must still compare the actual code hunks with that purpose to catch unrelated behavior inserted into an already-declared file.
 
