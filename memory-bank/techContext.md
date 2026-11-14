@@ -13,7 +13,7 @@
 
 ## Testing and Verification
 - **Unit/component:** Vitest and Testing Library.
-- **Browser/e2e:** Playwright Test with the repository's configured desktop, mobile-390 and mobile-412 projects and committed visual baselines.
+- **Browser/e2e:** Playwright Test with the repository's configured desktop, mobile-390 and mobile-412 projects and committed visual baselines. Normal QA uses `playwright.config.ts`; `pnpm run test:visual:swiftshader` selects the opt-in `playwright.swiftshader.config.ts` for software-rendered graphics investigations.
 - **Direct agent browser interaction:** Use the vendored Microsoft Playwright CLI skill and local pnpm exec playwright cli command when available. Browserless is the connected remote-browser option and fallback under the rules in AGENTS.md. Do not assume Browserbase is connected.
 - **Repository gate:** Run ./freebuff-verify.sh and all applicable checks when a shell-capable environment is available. Inspect package.json before choosing scripts.
 - **Deployment:** A deploy command or successful build does not authorize deployment. Follow AGENTS.md approval boundaries.

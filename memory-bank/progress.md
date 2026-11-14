@@ -21,6 +21,16 @@
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
+## 2026-11-14 — Selectable Playwright modes
+- Kept the standard Playwright configuration and every QA checker unchanged for normal QA and CI.
+- Added an opt-in SwiftShader configuration that explicitly requests ANGLE's software backend and
+  enables the GPU process for graphics investigations; it uses one worker and no retries and
+  inherits the standard projects and web server.
+- Added distinct package commands, project guidance and a source guard that prevents either mode
+  from drifting into the other.
+- Verified: 4/4 mode guards, standard and SwiftShader smoke runs 3/3 each, full suite 687/687,
+  type check exit 0, repository gate exit 0, and a 438,114,618-byte build (≈417.8 MiB).
+
 ## 2026-11-14 — Security header hardening
 - Tightened the response CSP: kept `script-src 'unsafe-inline'` for Next.js, added
   `script-src-attr 'none'`, and removed the unused Google Fonts and Pexels origins while preserving

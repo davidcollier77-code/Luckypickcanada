@@ -1,18 +1,40 @@
-# Active Context — QA checker requirements in task planning
+# Active Context — Selectable Playwright modes
 
 - **Updated:** 2026-11-14
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `chore/159-qa-checker-requirements-first`
-- **Base:** `main`
-- **Spec Kit feature:** `specs/159-qa-checker-requirements-first`
+- **Branch:** `freebuff/38a663e10f412e1b8cba2642-playwright-modes`
+- **Base:** `main` (`2e7cd054`)
+- **Spec Kit feature:** `specs/161-playwright-swiftshader-mode`
 
 ## Current Task
 
-Add a dedicated planning-stage requirement to AGENTS.md so agents understand the repository QA checkers' actual expectations before writing task specifications. Those expectations must shape task scope, constraints, implementation approach, acceptance criteria and verification planning.
+The repository now has two explicit Playwright Test modes. Option A is the unchanged
+`playwright.config.ts` used by normal QA and CI. Option B is the opt-in
+`playwright.swiftshader.config.ts`, selected with `pnpm run test:visual:swiftshader`, which
+forces ANGLE's SwiftShader backend for GPU and graphics investigations.
 
 ## Scope and safeguards
 
-- Dedicated governance-only change; no application code, QA checker implementation, workflow behaviour, production visuals or screenshot baselines are changed.
-- Preserve existing QA requirements and protected-file authorization.
-- The new section requires inspection of actual checker definitions and relevant tests, not assumptions based on names.
-- Local test execution is unavailable in this connected GitHub-only workspace; do not claim tests passed.
+- `playwright.config.ts`, the Visual QA workflow, QA checker scripts and committed baselines are
+  unchanged.
+- Option B inherits the standard projects and web server, adds `--use-gl=angle`,
+  `--use-angle=swiftshader`, `--enable-gpu`, and uses one worker with no retries.
+- No new browser, dependency, paid service, hosted runner or infrastructure was introduced.
+- `__tests__/playwright-config-modes.test.js` guards both modes and the package commands.
+- The project Playwright guide and README explain which mode to use and that investigation runs
+  must not regenerate baselines.
+
+## Verification
+
+- Focused mode guard: 4/4 passed; combined focused run 23/23 passed.
+- Standard Playwright smoke (`security-headers`, desktop): 3/3 passed.
+- SwiftShader Playwright smoke: 3/3 passed; renderer reported SwiftShader / `SwANGLE`.
+- Full Vitest: 687/687 passed.
+- `pnpm exec tsc --noEmit`: exit 0.
+- `./freebuff-verify.sh`: exit 0, including 36/36 documentation tests.
+- Production build: 438,114,618 bytes (≈417.8 MiB), below the 495 MiB cap.
+
+## Remaining
+
+- The required Visual QA workflow and PR checks run after the PR is opened.
+- SwiftShader is intentionally slower and is not a hardware performance measurement.

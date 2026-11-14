@@ -53,6 +53,36 @@ To test an actual headless launch:
 
 The script does not run sudo or install Linux packages. Downloading Chromium does not guarantee the VM has every shared library. Diagnose a real launch error; do not repeatedly reinstall Chromium or introduce undocumented library-path hacks. Both scripts defer to the environment first: a system-wide library set and fontconfig, or a prebaked browser root under `PLAYWRIGHT_BROWSERS_PATH`, are used as they are. Run `bash scripts/setup-chromium-libs.sh --browser-root` to see which browser a workspace will launch before reaching for any setup command. Follow `AGENTS.md`: Playwright first, Browserless fallback if Playwright is unavailable or fails, and Browserbase only with explicit owner approval. Do not put Browserless/Browserbase into automatic PR-checker workflows.
 
+## Choose a Playwright mode
+
+Use **Option A — Standard Playwright** for normal QA, CI and every visual-regression or
+behavioural check:
+
+```bash
+pnpm run test:visual          # same as: pnpm exec playwright test
+```
+
+It uses `playwright.config.ts` exactly as before. Do not add SwiftShader flags to it, and do not
+select the investigation mode for required QA.
+
+Use **Option B — SwiftShader Playwright** only when investigating GPU rendering, WebGL,
+graphics or related performance:
+
+```bash
+pnpm run test:visual:swiftshader
+# same as: pnpm exec playwright test --config=playwright.swiftshader.config.ts
+```
+
+This mode inherits the standard projects and web server but launches Chromium with ANGLE's
+SwiftShader backend (`--use-gl=angle --use-angle=swiftshader --enable-gpu`), one worker and no
+retries. It forces software rendering even on a machine with a hardware GPU. It is an
+investigation tool, not a replacement for normal QA: screenshot differences from committed
+baselines are expected, and investigation runs must not regenerate or update those baselines.
+
+CI continues to run only the standard command. If a graphics investigation needs a real GPU,
+use the existing infrastructure outside this mode; do not add a paid runner or a new browser
+dependency for it.
+
 ## Eight capability areas
 
 ### 1. Browser automation and interaction
