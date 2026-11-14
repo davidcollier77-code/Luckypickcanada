@@ -49,8 +49,19 @@ def pr_body(value):
     )
 
 
-def approval_digest(entries):
-    return _digest({"head_sha": HEAD_SHA, "entries": entries})
+def approval_digest(entries, value):
+    file_purposes = {
+        item["path"]: item["purpose"]
+        for item in value["file_purposes"]
+    }
+    scope_context = {
+        "summary": value["summary"],
+        "features": value["features"],
+        "paths": value["paths"],
+        "file_purposes": file_purposes,
+        "shared_dependencies": value["shared_dependencies"],
+    }
+    return _digest({"head_sha": HEAD_SHA, "entries": entries, "scope": scope_context})
 
 
 def run_check(paths, value=None, comments=None):
@@ -152,10 +163,10 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         self.assertEqual(result["status"], "FAIL")
         approval = result["approvals"]["scope_expansion"]
         self.assertFalse(approval["approved"])
-        self.assertIn("/approve-scope " + approval_digest(entries), approval["command"])
+        self.assertIn("/approve-scope " + approval_digest(entries, value), approval["command"])
 
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries),
+            "body": "/approve-scope " + approval_digest(entries, value),
             "user": {"login": OWNER},
         }]
         approved = run_check(["app/new-component.tsx"], value, comments)
@@ -170,7 +181,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries),
+            "body": "/approve-scope " + approval_digest(entries, value),
             "user": {"login": "outside-contributor"},
         }]
         result = run_check(["app/new-component.tsx"], value, comments)
@@ -185,7 +196,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries),
+            "body": "/approve-scope " + approval_digest(entries, value),
             "user": {"login": OWNER},
         }]
         result = run_check(["app/new-component.tsx"], value, comments)
@@ -199,7 +210,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries),
+            "body": "/approve-scope " + approval_digest(entries, value),
             "user": {"login": OWNER},
         }]
         records = [{"filename": "app/new-component.tsx"}]
@@ -280,7 +291,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         result = run_check([path], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertIn("visual_baseline_updates", result["approvals"])
-        digest = approval_digest({path: path})
+        digest = approval_digest({path: path}, value)
         comments = [{"body": "/approve-visual-baselines " + digest, "user": {"login": OWNER}}]
         approved = run_check([path], value, comments)
         self.assertEqual(approved["status"], "PASS")
@@ -300,7 +311,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         )
         result = run_check([".freebuff/testing.md"], value)
         self.assertEqual(result["status"], "FAIL")
-        digest = approval_digest(entries)
+        digest = approval_digest(entries, value)
         comments = [{"body": "/approve-governance " + digest, "user": {"login": OWNER}}]
         approved = run_check([".freebuff/testing.md"], value, comments)
         self.assertEqual(approved["status"], "PASS")
