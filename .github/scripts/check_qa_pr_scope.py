@@ -14,7 +14,6 @@ approvals. Existing protected-file governance gates remain independent.
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import hashlib
 import json
 import re
@@ -110,10 +109,10 @@ def _validate_pattern(pattern: str) -> None:
     parts = pattern.split("/")
     if any(part in {"", ".", ".."} for part in parts):
         raise ScopeError(f"unsafe scope path pattern: {pattern!r}")
-    if pattern in {"*", "**", "**/*", "**/**"} or pattern.startswith("**/"):
-        raise ScopeError(f"scope pattern is too broad; use a repository path prefix: {pattern!r}")
-    if not re.fullmatch(r"[A-Za-z0-9._/*?@+-]+", pattern):
-        raise ScopeError(f"scope pattern contains unsupported characters: {pattern!r}")
+    if any(character in pattern for character in "*?[]"):
+        raise ScopeError(f"scope paths must be exact file paths, not globs: {pattern!r}")
+    if not re.fullmatch(r"[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*", pattern):
+        raise ScopeError(f"scope path contains unsupported characters: {pattern!r}")
 
 
 def changed_paths(file_records: list) -> set[str]:
@@ -237,7 +236,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
 
     uncovered = {
         path for path in actual
-        if not any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+        if path not in patterns
         and path not in expanded_paths
     }
     if uncovered:
@@ -253,7 +252,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         if stale:
             errors.append("declared visual baseline updates are not in this diff: " + ", ".join(stale))
     for path in declared_baselines:
-        if not any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns):
+        if not path in patterns:
             errors.append(f"visual baseline path is not included in declared paths: {path}")
 
     actual_governance = actual.intersection(GOVERNANCE_PATHS)
