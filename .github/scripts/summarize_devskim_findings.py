@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 
 
@@ -31,30 +32,78 @@ def load_results(path: str | Path) -> list[dict]:
     return results
 
 
-def _finding(result: dict) -> dict:
-    locations = result.get("locations") or []
-    physical = locations[0].get("physicalLocation", {}) if locations and isinstance(locations[0], dict) else {}
-    artifact = physical.get("artifactLocation", {}) if isinstance(physical, dict) else {}
-    region = physical.get("region", {}) if isinstance(physical, dict) else {}
-    properties = result.get("properties") or {}
+def _parts(result: dict) -> tuple[str, str, str, int | None]:
     message = result.get("message") or {}
+    if not isinstance(message, dict):
+        raise SarifSummaryError("SARIF result message must be an object")
+    text = message.get("text")
+    if text is not None and not isinstance(text, str):
+        raise SarifSummaryError("SARIF result message text must be a string")
+
+    locations = result.get("locations") or []
+    if not isinstance(locations, list):
+        raise SarifSummaryError("SARIF result locations must be an array")
+    physical = {}
+    if locations:
+        if not isinstance(locations[0], dict):
+            raise SarifSummaryError("SARIF physical location must be an object")
+        physical = locations[0].get("physicalLocation") or {}
+        if not isinstance(physical, dict):
+            raise SarifSummaryError("SARIF physicalLocation must be an object")
+
+    artifact = physical.get("artifactLocation") or {}
+    region = physical.get("region") or {}
+    if not isinstance(artifact, dict) or not isinstance(region, dict):
+        raise SarifSummaryError("SARIF artifact location and region must be objects")
+    uri = artifact.get("uri") or "location-not-provided"
+    if not isinstance(uri, str):
+        raise SarifSummaryError("SARIF artifact URI must be a string")
+    line = region.get("startLine")
+    if line is not None and (not isinstance(line, int) or line < 1):
+        raise SarifSummaryError("SARIF startLine must be a positive integer")
+
+    return (
+        str(result.get("ruleId") or "unknown"),
+        str(text or "No message provided").replace("\n", " ").strip(),
+        uri,
+        line,
+    )
+
+
+def _finding(result: dict) -> dict:
+    rule, message_text, uri, line = _parts(result)
+    properties = result.get("properties") or {}
+    if not isinstance(properties, dict):
+        raise SarifSummaryError("SARIF result properties must be an object")
+    level = result.get("level") or "unspecified"
+    if not isinstance(level, str):
+        raise SarifSummaryError("SARIF result level must be a string")
+    severity = properties.get("DevSkimSeverity") or "unspecified"
+    confidence = properties.get("DevSkimConfidence") or "unspecified"
+    if not isinstance(severity, str) or not isinstance(confidence, str):
+        raise SarifSummaryError("DevSkim severity and confidence must be strings")
     return {
-        "rule": str(result.get("ruleId") or "unknown"),
-        "level": str(result.get("level") or "unspecified"),
-        "severity": str(properties.get("DevSkimSeverity") or "unspecified"),
-        "confidence": str(properties.get("DevSkimConfidence") or "unspecified"),
-        "path": str(artifact.get("uri") or "location-not-provided"),
-        "line": region.get("startLine"),
-        "message": str(message.get("text") or "No message provided").replace("\n", " ").strip(),
+        "rule": rule,
+        "level": level,
+        "severity": severity,
+        "confidence": confidence,
+        "path": uri,
+        "line": line,
+        "message": message_text,
     }
 
 
 def build_report(raw_path: str | Path, filtered_path: str | Path) -> dict:
     raw = load_results(raw_path)
     filtered = load_results(filtered_path)
-    if len(filtered) > len(raw):
+    raw_identities = Counter(_parts(result) for result in raw)
+    filtered_identities = Counter(_parts(result) for result in filtered)
+    unexpected = filtered_identities - raw_identities
+    if unexpected:
+        first = next(iter(unexpected))
         raise SarifSummaryError(
-            f"filtered SARIF has {len(filtered)} findings, more than raw SARIF ({len(raw)})"
+            "filtered SARIF contains a finding not present in the raw scanner output: "
+            f"{first[0]} at {first[2]}:{first[3]}"
         )
     findings = [_finding(result) for result in filtered]
     return {
