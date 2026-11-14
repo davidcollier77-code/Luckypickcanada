@@ -25,8 +25,8 @@
 
 ## Phase 4: QA integration and governance preservation
 
-- [X] T011 Run the new Python checker suites in addition to existing tests in `.github/workflows/visual-qa.yml`.
-- [X] T012 Keep the existing Playwright classifier/configuration, visual shards, Crystal Ball specs, DevSkim suppression/replay, verification-integrity and protected-file governance logic unchanged in their existing files/workflows.
+- [X] T011 Run the two new Python checker suites and the existing verification-integrity contract tests in addition to existing tests in `.github/workflows/visual-qa.yml`.
+- [X] T012 Preserve the existing Playwright classifier/configuration, visual shards, Crystal Ball specs, DevSkim suppression/replay and protected-file governance; extend verification-integrity to require the new scope check and rerun after owner approval comments.
 - [X] T013 Inspect Agent MD and protected governance requirements; record why no Agent MD modification is needed and why it cannot be mixed into this infrastructure PR in `specs/158-qa-infrastructure-integrity/research.md`.
 
 ## Phase 5: Memory Bank and delivery
