@@ -88,6 +88,9 @@ describe('single-source agent governance', () => {
   it('checks the current repository QA and implementation requirements', () => {
     const agents = readAgents();
 
+    expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
+    expect(agents).toContain('This is a task-planning input, not a step to defer until implementation or pre-submission review.');
+    expect(agents).toContain('Use those requirements when defining the task\'s scope, constraints, implementation approach, acceptance criteria and verification plan.');
     expect(agents).toContain('REPOSITORY QA AND VALIDATION');
     // These assertions track the approved, merged AGENTS.md baseline. They
     // verify the requirements, not superseded wording from an earlier revision.

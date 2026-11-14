@@ -1,5 +1,24 @@
 # Project Progress — Significant Milestones
 
+## 2026-11-14 — QA checker requirements moved into task planning
+- Added a dedicated AGENTS.md planning-stage section requiring agents to inspect applicable QA checker definitions and understand their actual checks before drafting task specifications.
+- Requires checker scope, triggers, inputs, evidence, thresholds, approvals and pass/fail behaviour to inform task scope, constraints, acceptance criteria and verification planning.
+- Extended the governance regression test to guard the new requirement. Local execution remains unavailable in the connected GitHub-only workspace; no test pass is claimed.
+
+
+## 2026-11-14 — QA infrastructure integrity
+
+- Added a trusted, read-only PR scope workflow and exact file-path scope manifest with rename handling and repository-owner digest approvals tied to the current head and full declared scope for scope expansions, screenshot baseline changes and governance edits.
+- Added distinct Playwright, Firecrawl and Browserless evidence labels without changing the existing automatic Playwright workflow.
+- Added raw DevSkim SARIF preservation, a separate raw artifact, and a summary of remaining findings. Kept the existing suppression filter, SARIF replay, filtered artifact and append-only report logic.
+- The scope checker also verifies GitHub's reported changed-file count against all paginated file records, rejects duplicate names, and binds owner approvals to the complete PR body plus current head SHA; PR prose edits invalidate earlier approval digests.
+- DevSkim reporting now includes per-stage outcomes for scanner execution, SARIF-summary syntax/tests, suppression-script syntax/tests, real SARIF replay, suppression filter, and Security upload.
+- Added focused Python checker tests, including incomplete changed-file inventory and approval invalidation cases, to the PR QA workflow while retaining the existing full unit suite, Crystal Ball checks, Playwright visual coverage, Agent MD/protected-file gates and verification-integrity checks.
+- Reviewed Agent MD and left it unchanged: existing protected-file policy does not permit mixing an Agent MD change into this infrastructure PR, and current browser-tool instructions remain compatible with accurate evidence labels.
+- Recorded that PR #1899's DevSkim scan passed with one unsuppressed ManualReview finding (DS172411 at `components/DailyResonance.tsx:386`); unrelated unit and Playwright failures were not modified.
+- Local Python suites and repository verification have not yet been executed in this environment. Firecrawl's browser runtime lacked the Playwright module; no browser pass is claimed. GitHub Actions results remain pending PR submission.
+
+
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
 
 ## 2026-11-14 — Security header hardening
@@ -240,15 +259,3 @@ This file is a concise record of meaningful completed work, not a chronological 
 ## Historical record policy
 - Detailed PR-by-PR logs, old task checklists, reviewer debates and transient CI failures were removed from this working summary. The authoritative evidence remains in GitHub commits, pull requests, workflow runs and the relevant Spec Kit feature directories.
 - Do not restore routine PR transcripts here. Add a new entry only for a durable project milestone or decision that materially helps future work.
-
-## 2026-11-14 — QA infrastructure integrity
-
-- Added a trusted, read-only PR scope workflow and exact file-path scope manifest with rename handling and repository-owner digest approvals tied to the current head and full declared scope for scope expansions, screenshot baseline changes and governance edits.
-- Added distinct Playwright, Firecrawl and Browserless evidence labels without changing the existing automatic Playwright workflow.
-- Added raw DevSkim SARIF preservation, a separate raw artifact, and a summary of remaining findings. Kept the existing suppression filter, SARIF replay, filtered artifact and append-only report logic.
-- The scope checker also verifies GitHub's reported changed-file count against all paginated file records, rejects duplicate names, and binds owner approvals to the complete PR body plus current head SHA; PR prose edits invalidate earlier approval digests.
-- DevSkim reporting now includes per-stage outcomes for scanner execution, SARIF-summary syntax/tests, suppression-script syntax/tests, real SARIF replay, suppression filter, and Security upload.
-- Added focused Python checker tests, including incomplete changed-file inventory and approval invalidation cases, to the PR QA workflow while retaining the existing full unit suite, Crystal Ball checks, Playwright visual coverage, Agent MD/protected-file gates and verification-integrity checks.
-- Reviewed Agent MD and left it unchanged: existing protected-file policy does not permit mixing an Agent MD change into this infrastructure PR, and current browser-tool instructions remain compatible with accurate evidence labels.
-- Recorded that PR #1899's DevSkim scan passed with one unsuppressed ManualReview finding (DS172411 at `components/DailyResonance.tsx:386`); unrelated unit and Playwright failures were not modified.
-- Local Python suites and repository verification have not yet been executed in this environment. Firecrawl's browser runtime lacked the Playwright module; no browser pass is claimed. GitHub Actions results remain pending PR submission.
