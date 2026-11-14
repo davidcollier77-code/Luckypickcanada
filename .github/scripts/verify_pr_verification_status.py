@@ -55,6 +55,7 @@ NOT_RUN_CONCLUSIONS = frozenset({"skipped", "neutral", "cancelled", "stale"})
 REQUIRED_CHECKS = (
     "DevSkim scan and Security upload",
     "Validate OpenNext build artifacts",
+    "PR Scope Verification",
 )
 
 # Checks that legitimately do not run for every pull request (for example
