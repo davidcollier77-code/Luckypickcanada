@@ -82,7 +82,7 @@ memory-bank/progress.md
 
 ### PR scope and trust boundary
 
-Use `pull_request_target` and `issue_comment`, with checkout pinned to the trusted `main` ref. Never check out PR code. Read PR metadata, changed-file records and issue comments through the read-only token. Fail closed when required data is missing or malformed. The PR body contains exactly one JSON declaration between fixed markers. Its `paths` value is an exact file list. Renames check both old and new paths. Scope expansions must be added to that list and approved by an exact owner-authored digest comment bound to the current head SHA and full declared scope.
+Use `pull_request_target` and `issue_comment`, with checkout pinned to the trusted `main` ref. Never check out PR code. Read PR metadata, changed-file records and issue comments through the read-only token. Fail closed when required data is missing or malformed. The PR body contains exactly one JSON declaration between fixed markers. Its `paths` value is an exact file list. Compare GitHub's reported `changed_files` count with the fully paginated file records; fail closed on a count mismatch or duplicate filenames. Renames check both old and new paths. Scope expansions must be added to that list and approved by an exact owner-authored digest comment bound to the current head SHA and full declared scope.
 
 This is deterministic file-scope validation, not semantic static analysis. The report lists every checked path and its declared purpose; reviewers must still compare the actual code hunks with that purpose to catch unrelated behavior inserted into an already-declared file.
 
