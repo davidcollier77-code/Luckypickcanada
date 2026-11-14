@@ -299,6 +299,14 @@ class VisualEvidenceTests(unittest.TestCase):
                 self.assertEqual(result["status"], "PASS")
                 self.assertEqual(result["browser_evidence"][0]["tool"], tool.casefold())
 
+    def test_global_stylesheet_and_visual_tooling_config_require_browser_evidence(self):
+        for path in ("styles/tokens.css", "app/theme.scss", "tailwind.config.ts", "next.config.mjs"):
+            with self.subTest(path=path):
+                value = declaration(paths=[path])
+                result = run_check([path], value)
+                self.assertEqual(result["status"], "FAIL")
+                self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+
     def test_visual_change_without_browser_evidence_fails(self):
         value = declaration(paths=["components/Example.tsx"])
         result = run_check(["components/Example.tsx"], value)
