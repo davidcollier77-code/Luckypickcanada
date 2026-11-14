@@ -1,4 +1,32 @@
-# Active Context — QA Infrastructure Integrity
+# Active Context — QA Review Repairs
+
+- **Updated:** 2026-11-14
+- **Repository:** davidcollier77-code/Luckypickcanada
+- **Branch:** `fix/160-qa-review-repairs`
+- **Base:** `feat/158-qa-infrastructure-integrity`
+- **Spec Kit feature:** `specs/160-qa-review-repairs`
+- **Parent PR:** [#1900](https://github.com/davidcollier77-code/Luckypickcanada/pull/1900)
+
+## Current Task
+
+Review all actionable feedback on PR #1900 and repair confirmed QA-infrastructure defects in a separate dependent branch. Do not modify the previously submitted PR or its branch. Keep production application code, features, artwork and screenshot baselines untouched.
+
+## Review disposition and changes
+
+- Already present in the parent branch: conditional-check prefix filtering, raw/filtered SARIF source-context errors, empty-pagination jq fallbacks, field-aware missing-path guards, route-segment path support and BLOCKED report empty-list handling. Added regression coverage to protect these behaviours.
+- Repaired changed-file inventory handling for absent/null `previous_filename`, shared duplicate detection across current/previous filenames, and the malformed `changed_files` missing-key guard.
+- Made the exact-path regex's hyphen unambiguous, added AVIF baseline detection, rejected explicit pending/placeholder browser-evidence references and corrected the Advanced Security test-fixture false-positive without changing its runtime string.
+- Retained full PR-body/head approval binding and the requirement that expansion paths appear in the exact `paths` manifest and `scope_expansion` reason list; both are intentional safeguards.
+
+## Verification limitations
+
+- Python syntax checks and the three focused unit suites have not run in this GitHub-only session. No local repository checkout or project runtime is available.
+- `freebuff-verify.sh` and repository startup scripts were not run.
+- No Playwright tool is exposed through the connected Firecrawl integration. The patch does not affect rendered application output or visual baselines, so browser verification is not applicable to the changed files.
+- The follow-up PR is based on the unmerged parent branch. Existing PR-triggered workflows filter for base `main`, so checks will not run automatically for this stacked PR; this must be resolved by the repository owner after PR #1900 is merged or the PR is retargeted.
+
+## Previous active task — QA Infrastructure Integrity
+
 
 - **Updated:** 2026-11-14
 - **Repository:** davidcollier77-code/Luckypickcanada
