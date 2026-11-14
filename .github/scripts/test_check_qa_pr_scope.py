@@ -70,7 +70,7 @@ def run_check(paths, value=None, comments=None):
         for path in paths
     ]
     return validate(
-        {"number": 42, "body": pr_body(value or declaration()), "head": {"sha": HEAD_SHA}},
+        {"number": 42, "body": pr_body(value or declaration()), "head": {"sha": HEAD_SHA}, "changed_files": len(records)},
         records,
         comments or [],
         OWNER,
@@ -95,7 +95,7 @@ class ScopeDeclarationTests(unittest.TestCase):
             "status": "renamed",
         }
         result = validate(
-            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/new-checker.py"])), "head": {"sha": HEAD_SHA}},
+            {"number": 43, "body": pr_body(declaration(paths=[".github/scripts/new-checker.py"])), "head": {"sha": HEAD_SHA}, "changed_files": 1},
             [record],
             [],
             OWNER,
@@ -111,7 +111,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_duplicate_scope_markers_are_rejected(self):
         body = pr_body(declaration()) + START_MARKER
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_invalid_json_is_rejected(self):
         body = START_MARKER + "\n{not-json}\n" + END_MARKER
@@ -121,7 +121,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_placeholder_summary_is_rejected(self):
         value = declaration(summary="TODO fill this in")
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+            validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_placeholder_feature_names_are_rejected(self):
         value = declaration(features=["Name each affected feature or QA responsibility"])
@@ -131,7 +131,7 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_broad_wildcard_is_rejected(self):
         value = declaration(paths=["**"])
         with self.assertRaises(ScopeError):
-            validate({"number": 1, "body": pr_body(value)}, [{"filename": "app/page.tsx"}], [], OWNER)
+            validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": "app/page.tsx"}], [], OWNER)
 
     def test_file_purposes_must_cover_every_declared_path(self):
         value = declaration(file_purposes=[])
@@ -141,6 +141,31 @@ class ScopeDeclarationTests(unittest.TestCase):
     def test_missing_current_head_sha_fails_closed(self):
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(declaration())}, [{"filename": ".github/scripts/checker.py"}], [], OWNER)
+
+    def test_changed_file_count_must_match_complete_github_file_list(self):
+        records = [{"filename": ".github/scripts/checker.py"}]
+        pr = {
+            "number": 45,
+            "body": pr_body(declaration(paths=[".github/scripts/checker.py"])),
+            "head": {"sha": HEAD_SHA},
+            "changed_files": 2,
+        }
+        with self.assertRaises(ScopeError):
+            validate(pr, records, [], OWNER)
+
+    def test_duplicate_changed_file_records_are_rejected(self):
+        records = [
+            {"filename": ".github/scripts/checker.py"},
+            {"filename": ".github/scripts/checker.py"},
+        ]
+        pr = {
+            "number": 46,
+            "body": pr_body(declaration(paths=[".github/scripts/checker.py"])),
+            "head": {"sha": HEAD_SHA},
+            "changed_files": 2,
+        }
+        with self.assertRaises(ScopeError):
+            validate(pr, records, [], OWNER)
 
     def test_empty_changed_file_list_fails_closed(self):
         with self.assertRaises(ScopeError):
@@ -215,7 +240,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         }]
         records = [{"filename": "app/new-component.tsx"}]
         changed_head = validate(
-            {"number": 44, "body": pr_body(value), "head": {"sha": "newer-head-sha"}},
+            {"number": 44, "body": pr_body(value), "head": {"sha": "newer-head-sha"}, "changed_files": 1},
             records,
             comments,
             OWNER,
