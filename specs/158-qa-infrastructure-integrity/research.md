@@ -8,7 +8,7 @@
 - `.github/scripts/classify-visual-changes.sh` fails closed when no paths are supplied or a path is not positively classified as non-rendering. Retained unchanged.
 - `.github/workflows/verification-integrity.yml` checks evidence against the current PR head and treats skipped/unrun checks as NOT RUN. It is extended to require `PR Scope Verification` on the current head and rerun after PR edits/owner approval comments.
 - `.github/workflows/protected-files.yml`, `.github/scripts/agents_md_protection.py`, its tests and CODEOWNERS enforce separate authorization for protected governance. Retained unchanged.
-- `.github/workflows/devskim.yml` invokes DevSkim, validates/tests the conservative suppression filter, replays real SARIF, filters in place, uploads the filtered artifact and updates an append-only Markdown report on main/schedule. Before this change, it did not separately preserve the unfiltered SARIF artifact.
+- `.github/workflows/devskim.yml` invokes DevSkim, validates/tests the conservative suppression filter, replays real SARIF, filters in place, uploads the filtered artifact and updates an append-only Markdown report on main/schedule. Before this change, it did not separately preserve the unfiltered SARIF artifact or emit a compact table of scanner/filter/replay/upload stage outcomes.
 
 ## Observed failure classification
 
