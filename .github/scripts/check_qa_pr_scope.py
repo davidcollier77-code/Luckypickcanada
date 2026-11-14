@@ -96,7 +96,9 @@ def extract_declaration(body: str) -> dict:
         raise ScopeError("QA scope summary must describe the intended change")
     if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", summary, re.I):
         raise ScopeError("QA scope summary still contains placeholder wording")
-    _string_list(declaration.get("features"), "features", required=True)
+    features = _string_list(declaration.get("features"), "features", required=True)
+    if any(re.search(r"\\b(todo|tbd|placeholder|name each|describe the|fill this in)\\b", item, re.I) for item in features):
+        raise ScopeError("features still contains placeholder wording")
     patterns = _string_list(declaration.get("paths"), "paths", required=True)
     for pattern in patterns:
         _validate_pattern(pattern)
@@ -204,8 +206,6 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     ]
     governance = _entries_with_reasons(declaration.get("governance_changes"), "governance_changes")
     shared_dependencies = _string_list(declaration.get("shared_dependencies"), "shared_dependencies")
-    features = _string_list(declaration.get("features"), "features", required=True)
-
     evidence = declaration.get("browser_evidence", [])
     if not isinstance(evidence, list):
         raise ScopeError("browser_evidence must be an array")
@@ -229,16 +229,13 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         })
 
     errors = []
-    expanded_paths = set(expansion)
     for path in expansion:
         if path not in actual:
             errors.append(f"scope_expansion path is not in this diff: {path}")
+        if path not in patterns:
+            errors.append(f"scope_expansion path must also be added to the exact paths manifest: {path}")
 
-    uncovered = {
-        path for path in actual
-        if path not in patterns
-        and path not in expanded_paths
-    }
+    uncovered = {path for path in actual if path not in patterns}
     if uncovered:
         errors.append("changed paths are not declared in the PR description: " + ", ".join(sorted(uncovered)))
 
@@ -252,7 +249,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         if stale:
             errors.append("declared visual baseline updates are not in this diff: " + ", ".join(stale))
     for path in declared_baselines:
-        if not path in patterns:
+        if path not in patterns:
             errors.append(f"visual baseline path is not included in declared paths: {path}")
 
     actual_governance = actual.intersection(GOVERNANCE_PATHS)
@@ -294,7 +291,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         "declared_path_patterns": patterns,
         "features": features,
         "shared_dependencies": shared_dependencies,
-        "matched_paths": sorted(path for path in actual if any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)),
+        "matched_paths": sorted(path for path in actual if path in patterns),
         "scope_expansion": sorted(expansion),
         "visual_changes": visual_changes,
         "visual_baseline_updates": sorted(declared_baselines),
