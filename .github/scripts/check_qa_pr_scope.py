@@ -216,6 +216,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     ]
     governance = _entries_with_reasons(declaration.get("governance_changes"), "governance_changes")
     shared_dependencies = _string_list(declaration.get("shared_dependencies"), "shared_dependencies")
+    features = declaration["features"]
     evidence = declaration.get("browser_evidence", [])
     if not isinstance(evidence, list):
         raise ScopeError("browser_evidence must be an array")
