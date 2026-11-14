@@ -127,6 +127,10 @@ class ScopeDeclarationTests(unittest.TestCase):
         result = run_check([".github/scripts/checker.py", ".github/scripts/test_checker.py"], value)
         self.assertEqual(result["status"], "FAIL")
 
+    def test_missing_current_head_sha_fails_closed(self):
+        with self.assertRaises(ScopeError):
+            validate({"number": 1, "body": pr_body(declaration())}, [{"filename": ".github/scripts/checker.py"}], [], OWNER)
+
     def test_empty_changed_file_list_fails_closed(self):
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(declaration()), "head": {"sha": HEAD_SHA}}, [], [], OWNER)
