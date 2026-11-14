@@ -49,7 +49,7 @@ def pr_body(value):
     )
 
 
-def approvalapproval_digest(entries):
+def approval_digest(entries):
     return _digest({"head_sha": HEAD_SHA, "entries": entries})
 
 
