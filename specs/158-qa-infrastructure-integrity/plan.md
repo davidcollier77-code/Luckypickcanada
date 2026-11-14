@@ -100,7 +100,7 @@ Copy raw SARIF before the existing in-place suppression step. Keep the current f
 
 ### Existing QA protection
 
-Run the two new Python test modules in the existing Visual QA verification job in addition to the complete unit suite. Test the SARIF summary in the DevSkim workflow. Preserve Crystal Ball tests, Playwright projects and shards, baseline checks, Agent MD gates, security checks and verification-integrity.
+Run the new Python test modules and verification-integrity contract tests in the existing Visual QA verification job in addition to the complete unit suite. The verification-integrity audit makes `PR Scope Verification` mandatory on the current head. Test the SARIF summary in the DevSkim workflow. Preserve Crystal Ball tests, Playwright projects and shards, baseline checks, Agent MD gates, security checks and verification-integrity.
 
 ## Research
 
