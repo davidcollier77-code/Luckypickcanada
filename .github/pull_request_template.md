@@ -13,13 +13,9 @@ Keep the markers and JSON structure. List every intended changed path exactly. I
 <!-- qa-scope:start -->
 {
   "version": 1,
-  "summary": "Describe the intended change in a specific sentence.",
-  "features": [
-    "Name each affected feature or QA responsibility."
-  ],
-  "paths": [
-    "path/to/intended-file"
-  ],
+  "summary": "",
+  "features": [],
+  "paths": [],
   "shared_dependencies": [],
   "visual_baseline_updates": [],
   "scope_expansion": [],
