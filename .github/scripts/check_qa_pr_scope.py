@@ -23,6 +23,7 @@ from pathlib import PurePosixPath
 START_MARKER = "<!-- qa-scope:start -->"
 END_MARKER = "<!-- qa-scope:end -->"
 ALLOWED_BROWSER_TOOLS = frozenset({"playwright", "firecrawl", "browserless"})
+PLACEHOLDER_BROWSER_EVIDENCE_REFERENCES = frozenset({"pending", "pending-pr-check", "not-run", "not run", "todo", "tbd", "placeholder"})
 VISUAL_PREFIXES = ("app/", "components/", "pages/", "public/", "styles/", "tests/visual/")
 BASELINE_PREFIX = "tests/visual/__screenshots__/"
 GOVERNANCE_PATHS = frozenset({
@@ -113,7 +114,7 @@ def _validate_pattern(pattern: str) -> None:
         raise ScopeError(f"unsafe scope path pattern: {pattern!r}")
     if any(character in pattern for character in "*?"):
         raise ScopeError(f"scope paths must be exact file paths, not globs: {pattern!r}")
-    if not re.fullmatch(r"[A-Za-z0-9._@+()\[\] -]+(?:/[A-Za-z0-9._@+()\[\] -]+)*", pattern):
+    if any(not re.fullmatch(r"[-A-Za-z0-9._@+()\[\] ]+", part) for part in parts):
         raise ScopeError(f"scope path contains unsupported characters: {pattern!r}")
 
 
@@ -125,18 +126,24 @@ def changed_paths(file_records: list) -> set[str]:
     for record in file_records:
         if not isinstance(record, dict):
             raise ScopeError("GitHub changed-file evidence contains a malformed record")
-        if record.get("filename"):
-            filename = normalize_path(record["filename"])
-            if filename in current_names:
-                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {filename}")
-            current_names.add(filename)
-            paths.add(filename)
-            prev = normalize_path(record["previous_filename"])
-            if prev in current_names:
-                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {prev}")
-            current_names.add(prev)
-            paths.add(prev)
-            paths.add(normalize_path(record["previous_filename"]))
+        raw_filename = record.get("filename")
+        if not isinstance(raw_filename, str) or not raw_filename.strip():
+            raise ScopeError("GitHub changed-file evidence is missing a valid 'filename'")
+        filename = normalize_path(raw_filename)
+        record_paths = [filename]
+        previous_filename = record.get("previous_filename")
+        if previous_filename is not None:
+            previous = normalize_path(previous_filename)
+            if previous == filename:
+                raise ScopeError(
+                    f"GitHub changed-file evidence repeats a filename within one record: {filename}"
+                )
+            record_paths.append(previous)
+        for path in record_paths:
+            if path in current_names:
+                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {path}")
+            current_names.add(path)
+            paths.add(path)
     if not paths:
         raise ScopeError("GitHub changed-file evidence contains no usable paths")
     return paths
@@ -218,7 +225,7 @@ def _owner_approval(comments: list, owner: str, command: str, digest: str) -> bo
 
 
 def _baseline_paths(paths: set[str]) -> set[str]:
-    extensions = (".png", ".jpg", ".jpeg", ".webp")
+    extensions = (".png", ".jpg", ".jpeg", ".webp", ".avif")
     return {
         path for path in paths
         if path.startswith(BASELINE_PREFIX) and path.lower().endswith(extensions)
@@ -266,14 +273,14 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
 
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
-    changed_file_count = pr.get("changed_files")
     if "changed_files" not in pr:
-            "GitHub changed-file count does not match the complete file list "
+        raise ScopeError(
             "GitHub pull request metadata is missing the changed_files count"
         )
     changed_file_count = pr["changed_files"]
     if type(changed_file_count) is not int or changed_file_count != len(file_records):
         raise ScopeError(
+            "GitHub changed-file count does not match the complete file list "
             f"(reported {changed_file_count!r}; received {len(file_records)})"
         )
     patterns = declaration["paths"]
@@ -310,11 +317,16 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
             raise ScopeError("browser evidence tool must be Playwright, Firecrawl, or Browserless")
         if not isinstance(reference, str) or not reference.strip():
             raise ScopeError(f"{tool} browser evidence requires a run, artifact, or trace reference")
+        reference = reference.strip()
+        if reference.casefold() in PLACEHOLDER_BROWSER_EVIDENCE_REFERENCES:
+            raise ScopeError(
+                f"{tool} browser evidence reference cannot be a pending or placeholder value"
+            )
         if not isinstance(purpose, str) or len(purpose.strip()) < 8:
             raise ScopeError(f"{tool} browser evidence requires a specific verification purpose")
         normalized_evidence.append({
             "tool": tool.casefold(),
-            "reference": reference.strip(),
+            "reference": reference,
             "purpose": purpose.strip(),
         })
 
