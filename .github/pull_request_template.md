@@ -8,7 +8,7 @@ List the specific features/components, shared dependencies, configuration, tests
 
 ## QA Scope Declaration
 
-Keep the markers and JSON structure. List every intended changed path exactly. If the diff adds an unlisted file, the scope checker will block until the scope is explicitly expanded and the repository owner approves the exact expansion digest in a PR comment.
+Keep the markers and JSON structure. List every intended changed path exactly and add one file_purposes entry explaining the intended work in that file. The checker requires the purposes and paths to match exactly. If the diff adds an unlisted file, the scope checker will block until the path, purpose and expansion reason are added and the repository owner approves the exact expansion digest in a PR comment.
 
 <!-- qa-scope:start -->
 {
