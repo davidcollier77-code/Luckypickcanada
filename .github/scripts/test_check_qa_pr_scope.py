@@ -112,6 +112,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
     def test_scope_expansion_requires_owner_comment_for_exact_digest(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         value = declaration(
+            paths=["app/new-component.tsx"],
             scope_expansion=[
                 {"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}
             ],
@@ -136,6 +137,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
     def test_non_owner_comment_cannot_approve_scope(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         value = declaration(
+            paths=["app/new-component.tsx"],
             scope_expansion=[{"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}],
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
@@ -150,6 +152,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
         changed_entries = {"app/new-component.tsx": "Different rationale for the changed scope"}
         value = declaration(
+            paths=["app/new-component.tsx"],
             scope_expansion=[{"path": "app/new-component.tsx", "reason": changed_entries["app/new-component.tsx"]}],
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
@@ -223,6 +226,7 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         value = declaration(
             paths=["tests/visual/__screenshots__/chromium/homepage.png"],
             visual_baseline_updates=[path],
+            browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Verify screenshot baseline updates"}],
         )
         result = run_check([path], value)
         self.assertEqual(result["status"], "FAIL")
