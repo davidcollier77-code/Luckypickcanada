@@ -93,6 +93,7 @@ New checker tests run in addition to the complete existing Vitest suite, Crystal
 - **FR-016**: Preserve Crystal Ball functionality/visual coverage, all other tests, Playwright projects/shards, security checks and governance checks.
 - **FR-017**: Run the new scope workflow from trusted base-branch code with read-only permissions and without executing PR code.
 - **FR-018**: Rerun after an owner posts an exact approval command; non-owner comments cannot approve.
+- **FR-019**: The verification-integrity audit MUST treat `PR Scope Verification` as required current-head evidence and MUST rerun on PR-description edits and owner approval comments. Missing, skipped, failed or stale scope evidence MUST NOT count as a pass.
 
 ## Success Criteria
 
