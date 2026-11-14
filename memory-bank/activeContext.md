@@ -23,7 +23,7 @@ Review all actionable feedback on PR #1900 and repair confirmed QA-infrastructur
 - Python syntax checks and the three focused unit suites have not run in this GitHub-only session. No local repository checkout or project runtime is available.
 - `freebuff-verify.sh` and repository startup scripts were not run.
 - No Playwright tool is exposed through the connected Firecrawl integration. The patch does not affect rendered application output or visual baselines, so browser verification is not applicable to the changed files.
-- The follow-up PR is based on the unmerged parent branch. Existing PR-triggered workflows filter for base `main`, so checks will not run automatically for this stacked PR; this must be resolved by the repository owner after PR #1900 is merged or the PR is retargeted.
+- This repair branch is based on the unmerged parent branch and has not been submitted as a PR. Existing required PR workflows filter for base `main`, so a stacked PR would run only the unrestricted OpenNext validation, not DevSkim, Visual QA, PR Scope Verification or Verification Integrity. Local Python tests are also blocked in this session. Submission is therefore held until PR #1900 is merged and the follow-up can be retargeted to `main`, or a suitable approved verification path is available.
 
 ## Previous active task — QA Infrastructure Integrity
 
