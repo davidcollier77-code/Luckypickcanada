@@ -33,7 +33,7 @@ Only the repository owner can authorize an expansion by posting the exact comman
 - Visual baseline update: /approve-visual-baselines <digest>
 - Governance change: /approve-governance <digest>
 
-The approval digest is bound to the declared paths and reasons. Editing the PR description is not approval. Protected-file and Agent MD authorization checks remain separate and mandatory.
+The approval digest is bound to the current PR head SHA and the exact declared paths/reasons. Any new commit invalidates prior digest approvals. Editing the PR description is not approval. Protected-file and Agent MD authorization checks remain separate and mandatory.
 
 ### Browser evidence
 
