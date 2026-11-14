@@ -15,6 +15,7 @@
 
 - [x] No unresolved clarification markers
 - [x] Requirements are testable and unambiguous
+- [x] Every declared path has a file-specific purpose
 - [x] Success criteria are measurable
 - [x] Acceptance scenarios cover normal and failure cases
 - [x] Scope is explicitly bounded
