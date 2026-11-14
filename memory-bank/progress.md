@@ -1,3 +1,12 @@
+## 2026-11-14 — QA reviewer repair follow-up
+
+- Reviewed Amazon Q Developer, Graphite, Pullfrog and GitHub Advanced Security feedback on PR #1900 against its current source and scope.
+- Repaired GitHub changed-file parsing for missing/null rename fields, cross-record rename/current-path collisions and malformed/missing `changed_files` metadata.
+- Added AVIF screenshot-baseline recognition, explicit rejection of known pending browser-evidence placeholders, exact-path regex coverage for dynamic/route-group paths and comma rejection.
+- Added regression coverage for field-specific missing-path errors, BLOCKED summary defaults, existing conditional-check grouping, raw/filtered SARIF diagnostics and the DevSkim test-fixture false-positive.
+- Preserved the full-body/head approval digest, explicit scope-expansion manifest requirement, both `jq 'add // []'` pagination fixes and all production application behaviour/artwork/baselines.
+- Local Python tests and syntax checks remain blocked by the GitHub-only workspace; PR-triggered checks are also not expected for the stacked base while workflow branch filters target `main`.
+
 # Project Progress — Significant Milestones
 
 This file is a concise record of meaningful completed work, not a chronological transcript of every PR, CI retry, review comment or implementation task. Current repository state belongs in activeContext.md; technical facts belong in techContext.md.
