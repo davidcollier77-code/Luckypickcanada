@@ -193,7 +193,7 @@ class VisualEvidenceTests(unittest.TestCase):
 
     def test_unsupported_browser_tool_is_rejected(self):
         value = declaration(
-            paths=["components/**"],
+            paths=["components/Example.tsx"],
             browser_evidence=[{
                 "tool": "puppeteer",
                 "reference": "run-42",
@@ -205,7 +205,7 @@ class VisualEvidenceTests(unittest.TestCase):
 
     def test_tool_identity_is_normalized_not_relabelled(self):
         value = declaration(
-            paths=["components/**"],
+            paths=["components/Example.tsx"],
             browser_evidence=[{
                 "tool": "Browserless",
                 "reference": "browserless-session-42",
