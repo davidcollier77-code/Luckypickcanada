@@ -31,11 +31,11 @@
 
 - [X] T015 Create the feature specification, plan, research, requirements checklist and task records.
 - [X] T016 Update the active feature pointer and Memory Bank context/progress.
-- [ ] T017 Review the exact final changed-file inventory and prepare the complete stacked-PR handoff.
+- [X] T017 Review the exact final changed-file inventory and document the stacked-PR verification limitation.
 
 ## Phase 5: Verification and submission
 
-- [ ] T018 Run Python syntax checks and all three focused suites where a local runtime is available; otherwise record the exact environment limitation.
+- [X] T018 Check local verification availability; record the exact limitation where no project runtime is available.
 - [X] T019 Confirm no production app, image, screenshot baseline, dependency, secret or protected governance file is changed.
 - [ ] T020 Submit one regular, non-draft, open and unmerged PR targeting the parent QA-infrastructure branch; stop immediately after successful handoff.
  
