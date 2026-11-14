@@ -178,9 +178,9 @@ def _digest(entries: dict | list) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def _approval_digest(head_sha: str, entries: dict[str, str] | list[str]) -> str:
-    # A later commit invalidates approvals, even when it edits an already-listed path.
-    return _digest({"head_sha": head_sha, "entries": entries})
+def _approval_digest(head_sha: str, entries: dict[str, str] | list[str], scope_context: dict) -> str:
+    # Any new commit or material scope-description edit invalidates prior approval.
+    return _digest({"head_sha": head_sha, "entries": entries, "scope": scope_context})
 
 
 def _owner_approval(comments: list, owner: str, command: str, digest: str) -> bool:
@@ -246,6 +246,13 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     governance = _entries_with_reasons(declaration.get("governance_changes"), "governance_changes")
     shared_dependencies = _string_list(declaration.get("shared_dependencies"), "shared_dependencies")
     features = declaration["features"]
+    scope_context = {
+        "summary": declaration["summary"],
+        "features": features,
+        "paths": patterns,
+        "file_purposes": file_purposes,
+        "shared_dependencies": shared_dependencies,
+    }
     evidence = declaration.get("browser_evidence", [])
     if not isinstance(evidence, list):
         raise ScopeError("browser_evidence must be an array")
@@ -322,7 +329,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     ):
         if not entries:
             continue
-        digest = _approval_digest(head_sha, entries)
+        digest = _approval_digest(head_sha, entries, scope_context)
         command = APPROVAL_COMMANDS[category]
         approvals[category] = {
             "digest": digest,
