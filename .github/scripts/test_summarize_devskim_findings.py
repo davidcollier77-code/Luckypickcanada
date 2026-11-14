@@ -100,6 +100,32 @@ class DevSkimSummaryTests(unittest.TestCase):
             with self.assertRaises(SarifSummaryError):
                 build_report(raw, filtered)
 
+    def test_malformed_raw_result_error_names_the_raw_sarif_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw-input.sarif"
+            filtered = Path(directory) / "filtered.sarif"
+            malformed = result("DS1", "app/a.ts", 10, "invalid message shape")
+            malformed["message"] = "not-an-object"
+            write_sarif(raw, [malformed])
+            write_sarif(filtered, [])
+            with self.assertRaises(SarifSummaryError) as raised:
+                build_report(raw, filtered)
+            self.assertIn("raw SARIF", str(raised.exception))
+            self.assertIn(str(raw), str(raised.exception))
+
+    def test_malformed_filtered_result_error_names_the_filtered_sarif_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory) / "raw-input.sarif"
+            filtered = Path(directory) / "filtered-input.sarif"
+            write_sarif(raw, [result("DS1", "app/a.ts", 10, "valid raw finding")])
+            malformed = result("DS1", "app/a.ts", 10, "invalid message shape")
+            malformed["message"] = "not-an-object"
+            write_sarif(filtered, [malformed])
+            with self.assertRaises(SarifSummaryError) as raised:
+                build_report(raw, filtered)
+            self.assertIn("filtered SARIF", str(raised.exception))
+            self.assertIn(str(filtered), str(raised.exception))
+
     def test_rejects_malformed_finding_properties(self):
         with tempfile.TemporaryDirectory() as directory:
             raw = Path(directory) / "raw.sarif"
