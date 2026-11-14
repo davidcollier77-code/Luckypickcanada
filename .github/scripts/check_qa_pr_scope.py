@@ -216,7 +216,22 @@ def _baseline_paths(paths: set[str]) -> set[str]:
 
 
 def _is_visual_path(path: str) -> bool:
-    return path.startswith(VISUAL_PREFIXES)
+    if path.startswith(VISUAL_PREFIXES):
+        return True
+    suffix = PurePosixPath(path).suffix.casefold()
+    if suffix in {".css", ".scss", ".sass", ".less", ".svg"}:
+        return True
+    return PurePosixPath(path).name in {
+        "next.config.js",
+        "next.config.mjs",
+        "next.config.ts",
+        "tailwind.config.js",
+        "tailwind.config.cjs",
+        "tailwind.config.ts",
+        "postcss.config.js",
+        "postcss.config.mjs",
+        "postcss.config.cjs",
+    }
 
 
 def _is_governance_path(path: str) -> bool:
