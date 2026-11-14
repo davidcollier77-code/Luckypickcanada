@@ -115,12 +115,12 @@ jobs:
             echo
             echo "| Stage | Outcome |"
             echo "| --- | --- |"
-            printf '| Scanner | %s |\\n' "${SCANNER:-not run}"
-            printf '| Suppression script syntax | %s |\\n' "${PYTHON_SYNTAX:-not run}"
-            printf '| Suppression regression tests | %s |\\n' "${SUPPRESSION_TESTS:-not run}"
-            printf '| Real SARIF replay | %s |\\n' "${SARIF_REPLAY:-not run}"
-            printf '| Suppression filter | %s |\\n' "${FILTER:-not run}"
-            printf '| GitHub Security upload | %s |\\n' "${SECURITY_UPLOAD:-not run}"
+            printf '| Scanner | %s |\n' "${SCANNER:-not run}"
+            printf '| Suppression script syntax | %s |\n' "${PYTHON_SYNTAX:-not run}"
+            printf '| Suppression regression tests | %s |\n' "${SUPPRESSION_TESTS:-not run}"
+            printf '| Real SARIF replay | %s |\n' "${SARIF_REPLAY:-not run}"
+            printf '| Suppression filter | %s |\n' "${FILTER:-not run}"
+            printf '| GitHub Security upload | %s |\n' "${SECURITY_UPLOAD:-not run}"
             echo
             echo "Pipeline-stage failures are reported separately from scanner findings in the SARIF summary above."
           } >> "$GITHUB_STEP_SUMMARY"
