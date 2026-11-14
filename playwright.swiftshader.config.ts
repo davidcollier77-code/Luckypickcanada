@@ -26,7 +26,12 @@ export default defineConfig({
     ...standardConfig.use,
     launchOptions: {
       ...standardConfig.use.launchOptions,
-      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-gpu'],
+      args: [
+        ...(standardConfig.use?.launchOptions?.args ?? []),
+        '--use-gl=angle',
+        '--use-angle=swiftshader',
+        '--enable-gpu',
+      ],
     },
   },
 });

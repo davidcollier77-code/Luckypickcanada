@@ -1,11 +1,13 @@
+// @vitest-environment node
 import fs from 'node:fs';
-import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import standardConfig from '../playwright.config.ts';
 import swiftshaderConfig from '../playwright.swiftshader.config.ts';
 
-const root = process.cwd();
-const standardConfigSource = fs.readFileSync(path.join(root, 'playwright.config.ts'), 'utf8');
+const standardConfigSource = fs.readFileSync(
+  new URL('../playwright.config.ts', import.meta.url),
+  'utf8',
+);
 
 const SWIFTSHADER_ARGS = [
   '--use-gl=angle',
@@ -17,12 +19,14 @@ describe('Playwright configuration modes', () => {
   it('keeps the standard configuration free of SwiftShader launch settings', () => {
     expect(standardConfig.use.channel).toBeUndefined();
     expect(standardConfig.use.launchOptions).toBeUndefined();
+    expect(standardConfig.use.launchOptions?.args).toBeUndefined();
     expect(standardConfigSource).not.toMatch(/swiftshader/i);
   });
 
   it('forces the SwiftShader backend only in the opt-in configuration', () => {
-    expect(swiftshaderConfig.use.launchOptions?.args).toEqual(SWIFTSHADER_ARGS);
-    expect(swiftshaderConfig.use.launchOptions?.args).not.toContain('--disable-gpu');
+    expect(swiftshaderConfig.use.launchOptions).toBeDefined();
+    expect(swiftshaderConfig.use.launchOptions.args).toEqual(SWIFTSHADER_ARGS);
+    expect(swiftshaderConfig.use.launchOptions.args).not.toContain('--disable-gpu');
     expect(swiftshaderConfig.workers).toBe(1);
     expect(swiftshaderConfig.retries).toBe(0);
   });
