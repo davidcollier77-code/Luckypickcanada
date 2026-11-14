@@ -98,6 +98,11 @@ class ScopeDeclarationTests(unittest.TestCase):
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(value)}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
+    def test_placeholder_feature_names_are_rejected(self):
+        value = declaration(features=["Name each affected feature or QA responsibility"])
+        with self.assertRaises(ScopeError):
+            validate({"number": 1, "body": pr_body(value)}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
+
     def test_broad_wildcard_is_rejected(self):
         value = declaration(paths=["**"])
         with self.assertRaises(ScopeError):
@@ -244,16 +249,16 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         self.assertTrue(any("not declared" in error for error in result["errors"]))
 
     def test_governance_change_needs_reason_and_owner_approval(self):
-        entries = {"AGENTS.md": "Document the new scope and QA evidence requirements"}
+        entries = {".freebuff/testing.md": "Document the new QA scope and evidence requirements"}
         value = declaration(
-            paths=["AGENTS.md"],
-            governance_changes=[{"path": "AGENTS.md", "reason": entries["AGENTS.md"]}],
+            paths=[".freebuff/testing.md"],
+            governance_changes=[{"path": ".freebuff/testing.md", "reason": entries[".freebuff/testing.md"]}],
         )
-        result = run_check(["AGENTS.md"], value)
+        result = run_check([".freebuff/testing.md"], value)
         self.assertEqual(result["status"], "FAIL")
         digest = _digest(entries)
         comments = [{"body": "/approve-governance " + digest, "user": {"login": OWNER}}]
-        approved = run_check(["AGENTS.md"], value, comments)
+        approved = run_check([".freebuff/testing.md"], value, comments)
         self.assertEqual(approved["status"], "PASS")
         self.assertIn("protected-file", approved["note"])
 
