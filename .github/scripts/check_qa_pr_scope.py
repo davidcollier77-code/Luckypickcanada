@@ -267,13 +267,13 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
     changed_file_count = pr.get("changed_files")
-    if "changed_files" not in pr:
-            "GitHub changed-file count does not match the complete file list "
+    if type(changed_file_count) is not int:
+        raise ScopeError(
             "GitHub pull request metadata is missing the changed_files count"
         )
-    changed_file_count = pr["changed_files"]
-    if type(changed_file_count) is not int or changed_file_count != len(file_records):
+    if changed_file_count != len(file_records):
         raise ScopeError(
+            "GitHub changed-file count does not match the complete file list "
             f"(reported {changed_file_count!r}; received {len(file_records)})"
         )
     patterns = declaration["paths"]
