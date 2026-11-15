@@ -125,3 +125,39 @@ features to GPU, no AVIF/WebP conversion change, no production WebGPU requiremen
   rejects unjustified unsafe or experimental flags.
 - Re-run the graphics probe before adding a Chromium flag, and record the renderer and feature status
   with the result.
+
+## Lit meshes and the shared scene-light bus (spec 170)
+
+The Lucky Meter adds a second renderer family beside the additive point stage.
+Both are WebGL 1 / GLSL ES 1.00 and share the same capability detection, quality
+profile, visibility pausing and context-loss handling.
+
+- `app/lib/gpu-math.js` — the one effect camera. Depth is authored as a
+  multiplier; `depthScale()` turns it into a screen scale (`FOCAL / (BASE /
+  depth)`), so authoring a single number controls apparent size, speed and
+  convergence together. `composeTrs`, `normalMatrixFromMat4` and
+  `orthographicMat4` back both mesh renderers. `composeTrs` ping-pongs three
+  module-level scratch matrices because `multiplyMat4` may not alias its output.
+- `app/lib/gpu-geometry.js` — procedural geometry only, no mesh assets. A maple
+  leaf silhouette is ear-clipped and extruded through a shared bevel profile;
+  the medallion is a lathe over `MEDALLION_PROFILE`. Every band owns its own
+  vertices so creases stay sharp.
+- `app/lib/gpu-lighting.js` — one metallic shader (two-lobe Blinn-Phong, Schlick
+  Fresnel, procedural environment reflection, hemisphere ambient, ACES tone map,
+  sRGB) and one additive full-screen sky-light pass. Shaders live here and
+  nowhere else; renderers own only their buffers and frame state.
+- `app/lib/gpu-scene-light.js` — a fixed four-light bus. The effect stage
+  publishes the strongest active lights each frame; the medallion, the leaves
+  and the smoke read it. This is what makes an explosion light the gold beside
+  it instead of sitting on top of it as a separate flat layer.
+- `components/lucky-meter-medallion-engine.js` and
+  `components/lucky-meter-ornament-engine.js` draw the meter and the leaf layers.
+  Both fall back to static CSS artwork when WebGL is unavailable.
+- `components/cosmic-event-engine.js` keeps the pre-existing two-surface
+  (far/near) additive stage and projects every effect through the shared camera.
+  It also runs the sky-light pass and owns the timeline clock: the timeline
+  follows wall time so a slow frame cannot stretch the event, while the physics
+  step is capped so a long frame cannot teleport particles.
+
+Quality budgets are resolved once per page (`resolveRenderQuality`) and add
+`meshSegments` and `ornament: { far, near }` to the existing tier profile.

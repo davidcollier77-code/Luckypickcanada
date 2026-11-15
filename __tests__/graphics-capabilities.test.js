@@ -348,7 +348,8 @@ describe('cinematic render quality', () => {
 describe('renderer source guards', () => {
   const sharedSource = readSource('app/lib/graphics-capabilities.js');
   const engineSource = readSource('components/cosmic-event-engine.js');
-  const ringSource = readSource('components/lucky-meter-ring-engine.js');
+  const medallionSource = readSource('components/lucky-meter-medallion-engine.js');
+  const ornamentSource = readSource('components/lucky-meter-ornament-engine.js');
   const particleSource = readSource('app/lib/gpu-particles.js');
   const stageSource = readSource('components/CosmicEventStage.jsx');
   const homePageSource = readSource('app/homepage/HomePage.js');
@@ -357,7 +358,7 @@ describe('renderer source guards', () => {
   const confettiSource = readSource('app/lib/mapleLeafConfetti.mjs');
 
   it('never identifies a browser or forces a renderer', () => {
-    for (const source of [sharedSource, engineSource, ringSource]) {
+    for (const source of [sharedSource, engineSource, medallionSource, ornamentSource]) {
       expect(source).not.toMatch(/navigator\.userAgent/);
       expect(source).not.toMatch(/--use-gl|--use-angle/);
       expect(source).not.toMatch(/failIfMajorPerformanceCaveat\s*:/);
@@ -368,7 +369,7 @@ describe('renderer source guards', () => {
       expect(source).not.toMatch(/if\s*\([^)]*swiftshader/i);
     }
     expect(engineSource).not.toMatch(/swiftshader/i);
-    expect(ringSource).not.toMatch(/swiftshader/i);
+    expect(medallionSource).not.toMatch(/swiftshader/i);
   });
 
   it('can cap per-frame point work without reallocating the batch', () => {
@@ -383,14 +384,31 @@ describe('renderer source guards', () => {
     expect(batch.positions).toBeInstanceOf(Float32Array);
   });
 
-  it('shares one audited point pipeline between the stage and the ring', () => {
+  it('shares one audited point pipeline with the cosmic stage', () => {
     expect(particleSource).toContain('POINT_VERTEX_SHADER');
     expect(particleSource).toContain('POINT_FRAGMENT_SHADER');
     expect(particleSource).toContain('export class PointBatch');
     expect(engineSource).toContain("from '../app/lib/gpu-particles'");
-    expect(ringSource).toContain("from '../app/lib/gpu-particles'");
     expect(engineSource).not.toContain('attribute vec2 a_position');
-    expect(ringSource).not.toContain('attribute vec2 a_position');
+  });
+
+  it('renders the medallion and the leaves through the shared lit-mesh pipeline', () => {
+    // Both are surfaces with normals, not point sprites: they must reuse the
+    // one mesh program and keep their GLSL in the shared module.
+    for (const meshConsumer of [medallionSource, ornamentSource]) {
+      expect(meshConsumer).toContain("from '../app/lib/gpu-lighting'");
+      expect(meshConsumer).toContain('createMeshProgram');
+      expect(meshConsumer).not.toContain('attribute vec3 a_position');
+      expect(meshConsumer).not.toContain('precision highp float');
+    }
+    expect(medallionSource).toContain('buildMedallionGeometry');
+    expect(ornamentSource).toContain('buildMapleLeafGeometry');
+  });
+
+  it('shares one light bus so effects illuminate the gold they sit beside', () => {
+    expect(engineSource).toContain('publishSceneLights');
+    expect(medallionSource).toContain('getSceneLights');
+    expect(ornamentSource).toContain('getSceneLights');
   });
 
   it('adopts safe acquisition and the context-loss lifecycle', () => {
@@ -400,6 +418,9 @@ describe('renderer source guards', () => {
     expect(revealSource).toContain('watchContextLoss');
     expect(engineSource).toContain('getWebGLContext');
     expect(engineSource).toContain('watchContextLoss');
+    expect(medallionSource).toContain('getWebGLContext');
+    expect(medallionSource).toContain('watchContextLoss');
+    expect(ornamentSource).toContain('watchContextLoss');
     expect(stageSource).toContain('onContextLost');
     expect(cardShareSource).toContain('Unable to create the share image.');
     expect(confettiSource).toContain('supportsPath2D');
