@@ -23,5 +23,6 @@
 - [ ] T005 Run the focused governance test and applicable repository verification in a shell-capable environment; ChatGPT must not run freebuff-verify.sh.
 - [x] T006 Review the changed-file scope and prepare the dedicated governance PR with local-test limitations stated accurately.
 - [x] T011 Reconcile the complete PR #1908 file inventory and update the scope manifest, purposes, governance reasons and handoff to match the actual diff.
+- [x] T014 Fix protected-file workflow parsing so empty previous filenames cannot shift the status field into the path field; add regression coverage and relocate the evidence record to the classifier's existing allowed evidence directory.
 - [ ] T012 Obtain the separate repository-owner `/approve-governance <digest>` comment for the current PR head and scope body.
 - [ ] T013 Obtain the configured `protected-file-authorization` environment approval before merge.
