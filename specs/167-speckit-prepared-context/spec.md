@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-15
 
-**Status**: Draft
+**Status**: Implemented
 
 **Input**: Owner request: Remove duplicate setup-script and extension-hook execution instructions from the four core Spec Kit command definitions. Freebuff completes repository preparation before entering Spec Kit; the stages must use that prepared context instead of rerunning preparation.
 
