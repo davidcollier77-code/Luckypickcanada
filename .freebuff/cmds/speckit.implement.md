@@ -15,7 +15,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Freebuff completes repository preparation before starting the Spec Kit workflow. Use the existing branch, feature context, paths and prepared artifacts. Do not run setup, template-resolver or prerequisite scripts, and do not execute configured extension hooks during any Spec Kit stage. If required context or an artifact is missing, report exactly what is missing and stop that stage; do not rerun the preparation scripts.
 
 ## Outline
-1. **Use prepared feature context**: Read `.specify/feature.json` to identify the feature directory, and use the existing specification, plan, task list and available design documents. Do not run `check-prerequisites.sh`. If the feature directory or required artifacts are missing, report the exact missing prerequisites and stop rather than rerunning the script.
+1. **Use prepared feature context**: Read `.specify/feature.json` to identify the feature directory, and use the existing specification, plan, task list and available design documents. Do not repeat prerequisite checks or setup. If the feature directory or required artifacts are missing, report the exact missing prerequisites and stop rather than rerunning the script.
 
 2. **Check checklist status without creating unnecessary pauses**:
    - If `FEATURE_DIR/checklists/` exists, inspect every checklist file and count
