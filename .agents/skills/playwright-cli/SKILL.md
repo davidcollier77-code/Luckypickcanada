@@ -1,7 +1,7 @@
 ---
 name: playwright-cli
 description: Automate browser interactions, test web pages and work with Playwright tests.
-allowed-tools: Bash(playwright-cli:*) Bash(npx playwright:*) Bash(npx --no-install playwright:*) Bash(pnpm exec playwright:*) Bash(./scripts/setup-playwright-agent.sh:*)
+allowed-tools: Bash(playwright-cli:*) Bash(npx playwright:*) Bash(npx --no-install playwright:*) Bash(pnpm exec playwright:*) Bash(./scripts/playwright-cli.sh:*) Bash(./scripts/setup-playwright-agent.sh:*)
 ---
 
 # Browser Automation with playwright-cli
@@ -9,21 +9,71 @@ allowed-tools: Bash(playwright-cli:*) Bash(npx playwright:*) Bash(npx --no-insta
 ## Quick start
 
 ```bash
+# this repository runs every command through the project wrapper
 # open new browser
-playwright-cli open
+./scripts/playwright-cli.sh open
 # navigate to a page
-playwright-cli goto https://playwright.dev
+./scripts/playwright-cli.sh goto https://playwright.dev
 # interact with the page using refs from the snapshot
-playwright-cli click e15
-playwright-cli type "page.click"
-playwright-cli press Enter
+./scripts/playwright-cli.sh click e15
+./scripts/playwright-cli.sh type "page.click"
+./scripts/playwright-cli.sh press Enter
 # take a screenshot (rarely used, as snapshot is more common)
-playwright-cli screenshot
+./scripts/playwright-cli.sh screenshot
 # close the browser
-playwright-cli close
+./scripts/playwright-cli.sh close
 ```
 
+## Lucky Pick Canada: one skill, two configurations, thirteen capabilities
+
+This skill is the repository's single Playwright entrypoint. All thirteen capability areas are used
+through it; there is no second skill, CLI or browser setup to install or switch to.
+
+Every interactive command goes through the project wrapper, `./scripts/playwright-cli.sh`, which
+provisions the workspace, Chromium's shared libraries and the pinned browser, applies the runtime
+environment and selects the Chromium channel. A bare `pnpm exec playwright cli` is a dependency
+check, not a session command.
+
+### The two configurations
+
+| Configuration | Select it with | Role |
+| --- | --- | --- |
+| **Standard** (default) | `./scripts/playwright-cli.sh open <url>` and `./scripts/playwright-cli.sh test` | The normal browser rendering path: ordinary automation, functional tests, responsive and visual QA, CI, and performance measured as visitors normally experience it |
+| **SwiftShader** (optional) | `./scripts/playwright-cli.sh open --config=/tmp/lpc-swiftshader.json <url>` and `./scripts/playwright-cli.sh test --config=playwright.swiftshader.config.ts` | Controlled software rendering for WebGL, WebGL2, shader, rendering and graphics diagnostics; WebGPU is probe-only and unavailable in the current Chromium build |
+
+Both are retained because they answer different questions. Standard is the baseline for the site as a
+visitor receives it, and the only configuration required QA and CI may use. SwiftShader is a controlled
+software-rendering environment that makes graphics behaviour reproducible without a hardware GPU. It is
+not a physical-GPU benchmark, has its own rendering, performance and feature-availability
+differences, and must not replace normal visitor-experience performance measurements.
+
+Start with Standard. Use SwiftShader only when the Standard graphics probe shows the capability a task
+needs is unavailable or blocked, or the task is itself a WebGL, WebGPU, shader or software-rendering
+investigation. Run one configuration at a time and close the session before switching. Full
+instructions, probe programs, evidence requirements and compatibility limits are in
+[references/lucky-pick-canada.md](references/lucky-pick-canada.md).
+
+### The thirteen capability areas
+
+| # | Capability | Standard | SwiftShader |
+| --- | --- | --- | --- |
+| 1 | Browser automation and interaction | default | to drive a graphics state |
+| 2 | Responsive and mobile QA | yes | not recommended |
+| 3 | Test generation, execution, debugging and repair | yes (CI) | investigation only |
+| 4 | Network and API inspection | yes | yes |
+| 5 | Console debugging, traces and execution history | yes | yes |
+| 6 | Visual QA, screenshots and element inspection | yes | graphics captures |
+| 7 | Cookies, local/session storage and authentication state | yes | not needed |
+| 8 | Documents, media and PR evidence | yes | graphics evidence |
+| 9 | Performance profiling | yes (host rendering path) | software baseline only |
+| 10 | Rendering profiling | yes | slow-path and stall evidence |
+| 11 | WebGL and WebGL2 inspection | availability and fallback only | full inventory |
+| 12 | WebGPU inspection | availability reporting | probe-only; reports `unavailable_software` in this Chromium build |
+| 13 | Graphics quality assessment and enhancement support | yes | when software WebGL is required |
+
 ## Commands
+
+Run every command below through the project wrapper: `./scripts/playwright-cli.sh <verb> …`.
 
 ### Core
 
@@ -490,8 +540,21 @@ See [references/pr-attachments.md](references/pr-attachments.md) for alt text, i
 
 ## Repository command convention
 
-In this repository, all shell examples in this skill and its references that use `playwright-cli` or `npx playwright cli` are invoked through the project-local wrapper: `pnpm exec playwright cli`. This keeps the browser CLI aligned with the existing Playwright dependency and lockfile.
+Every example in this skill and its references that shows `playwright-cli` or `npx playwright cli` is
+run as `./scripts/playwright-cli.sh …`. The wrapper is the documented entrypoint for interactive
+sessions and for Playwright test commands:
+
+```bash
+./scripts/playwright-cli.sh open https://luckypickcanada.ca
+./scripts/playwright-cli.sh test --project=desktop
+```
+
+A bare `pnpm exec playwright cli …` is not a session command in a Freebuff Cloud `bash -c` shell: the
+profile that holds `LD_LIBRARY_PATH` and `FONTCONFIG_*` is never read, and the CLI's default browser is
+a system Chrome the image does not have. Use `pnpm exec playwright cli --help` only as the installation
+check that `scripts/setup-playwright-agent.sh` already performs. `./scripts/playwright-cli.sh test …`
+routes to `pnpm exec playwright test …`, which injects its own environment.
 
 ## Lucky Pick Canada repository guidance
 
-Before browser work in this repository, read [references/lucky-pick-canada.md](references/lucky-pick-canada.md). It documents all eight project capability areas, the existing desktop/mobile regression projects, setup/probe commands, credential safeguards and the required browser-tool fallback order.
+Before browser work in this repository, read [references/lucky-pick-canada.md](references/lucky-pick-canada.md). It documents the Standard and SwiftShader configurations, how to select and switch between them, all thirteen capability areas, the graphics probe programs, evidence requirements, compatibility limits, the existing desktop/mobile regression projects, setup and probe commands, credential safeguards and the required browser-tool fallback order.
