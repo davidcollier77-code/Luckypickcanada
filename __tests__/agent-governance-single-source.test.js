@@ -114,6 +114,25 @@ describe('single-source agent governance', () => {
     expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
   });
 
+  it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('### Playwright Browser Testing (Freebuff only)');
+    const end = agents.indexOf('PROJECT-WIDE TECHNICAL RULES', start);
+    const section = agents.slice(start, end);
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    expect(section).toContain('ChatGPT must not use, load, modify or maintain the repository Playwright CLI');
+    expect(section).toContain('./scripts/playwright-cli.sh');
+    expect(section).toContain('Option A — Standard');
+    expect(section).toContain('pnpm exec playwright test');
+    expect(section).toContain('Option B — SwiftShader');
+    expect(section).toContain('playwright.swiftshader.config.ts');
+    expect(section).toContain('does not measure physical GPU performance');
+    expect(section).toContain('standard QA and CI must continue using Option A');
+    expect(section).toContain('verify that the startup, browser-runtime and CLI setup scripts still work');
+  });
+
   it('requires the protection workflow and owner rule for AGENTS.md', () => {
     const workflow = readFileSync(
       join(root, '.github', 'workflows', 'protected-files.yml'),
