@@ -372,7 +372,8 @@ class VisualEvidenceTests(unittest.TestCase):
         result = run_check(["components/Example.tsx"], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertTrue(result["warnings"])
-        self.assertTrue(any("browser-evidence requirement still applies" in item for item in result["warnings"]))
+        self.assertTrue(any("visual_impact.required is declared as false" in item for item in result["warnings"]))
+        self.assertTrue(any("A reviewer should confirm" in item for item in result["warnings"]))
 
     def test_nonvisual_impact_on_nonvisual_path_passes(self):
         value = declaration(

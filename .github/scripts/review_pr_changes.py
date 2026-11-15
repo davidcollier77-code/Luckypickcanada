@@ -52,13 +52,15 @@ UNSAFE_HTML_PATTERN = re.compile(
     + "insertAdjacentHTML\\(|\\beval\\(|new Function\\("
 )
 INSECURE_URL_PATTERN = re.compile(
-    r"(?i)(?:^|(?<=[^\w:/]))http://" + r"([^\s\"'<>]+)"
+    r"(?i)(?<![\w:/])http" + "://" + r"([^\s\"'<>]+)"
 )
 TARGET_BLANK_PATTERN = re.compile(r"(?i)target\s*=\s*[\"']_blank[\"']")
 NOOPENER_PATTERN = re.compile(r"(?i)rel\s*=\s*[\"'][^\"']*noopener")
 PACKAGE_ENTRY_PATTERN = re.compile(r'^\s*"([^"]+)"\s*:\s*"[^"]+"')
+# Match the directive itself; comment context is required separately so an
+# example inside a string literal or documentation prose is not reported.
 QUALITY_SUPPRESSION_PATTERN = re.compile(
-    r"(?:(?:^|(?<=//)|(?<=#))\s*.*?)?(?:@ts-(?:ignore|nocheck)\b|eslint-disable(?:-next-line|-line)?\b)"
+    r"(?i)@ts-(?:ignore|nocheck)\b|eslint-disable(?:-next-line|-line)?\b"
 )
 DEBUGGER_PATTERN = re.compile(r"^\s*debugger\s*;?\s*$")
 DEPRECATED_API_PATTERN = re.compile(
@@ -174,6 +176,34 @@ def _finding(
     }
 
 
+def _in_comment_context(text: str, position: int) -> bool:
+    """True when the token at position sits in a comment, not a string literal."""
+    prefix = text[:position]
+    if not prefix.strip():
+        return True
+    for marker in ("//", "/*", "<!--", "#"):
+        index = prefix.find(marker)
+        if index == -1:
+            continue
+        before_marker = prefix[:index]
+        if before_marker.count('"') % 2 or before_marker.count("'") % 2:
+            continue
+        return True
+    return False
+
+
+def _insecure_http_match(text: str):
+    """Return the first http:// URL that does not sit inside an https:// URL."""
+    for match in INSECURE_URL_PATTERN.finditer(text):
+        prefix = text[: match.start()]
+        boundary = max(prefix.rfind(quote) for quote in "\"'`") + 1
+        token = prefix[boundary:].lstrip()
+        if token.casefold().startswith("https://"):
+            continue
+        return match
+    return None
+
+
 def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> list[dict]:
     findings = []
     stripped = text.strip()
@@ -258,7 +288,7 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
         )
 
     if not documentation:
-        combined = text + "
+        combined = text + "\n" + nearby_text
         if TARGET_BLANK_PATTERN.search(text) and not NOOPENER_PATTERN.search(combined):
             findings.append(
                 _finding(
@@ -272,7 +302,7 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                     stripped,
                 )
             )
-        url_match = INSECURE_URL_PATTERN.search(text)
+        url_match = _insecure_http_match(text)
         if url_match:
             authority = url_match.group(1).split("/", 1)[0]
             if authority.startswith("["):
@@ -299,7 +329,12 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                     )
                 )
 
-    if not documentation and QUALITY_SUPPRESSION_PATTERN.search(text):
+    suppression = QUALITY_SUPPRESSION_PATTERN.search(text)
+    if (
+        not documentation
+        and suppression
+        and _in_comment_context(text, suppression.start())
+    ):
         findings.append(
             _finding(
                 path,
@@ -390,7 +425,7 @@ def review_files(file_records) -> dict:
         added = list(_added_lines(patch))
         for idx, (line_number, text) in enumerate(added):
             window = added[max(0, idx - 5):idx + 6]
-            nearby_text = "
+            nearby_text = "\n".join(line for _, line in window)
             findings.extend(_line_findings(path, line_number, text, nearby_text))
 
     deduplicated = {}

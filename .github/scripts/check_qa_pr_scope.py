@@ -403,9 +403,9 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     warnings = []
     if visual_changes and visual_impact and not visual_impact["required"]:
         warnings.append(
-            "Path-based detection found visual/application changes, but visual_impact.required is false. "
             "Path-based detection found visual/application changes, but visual_impact.required is declared as false. "
             "A reviewer should confirm this assessment matches the actual rendering impact."
+        )
 
     approvals = {}
     for category, entries in (

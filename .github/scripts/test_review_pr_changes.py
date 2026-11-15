@@ -169,7 +169,6 @@ class FalsePositiveControlTests(unittest.TestCase):
             review_files([{"status": "modified"}])
 
 
-class ReportAndLineMappingTests(unittest.TestCase):
 class RegressionFixTests(unittest.TestCase):
     """Regression tests for false-positive and false-negative fixes."""
 
@@ -231,6 +230,7 @@ class RegressionFixTests(unittest.TestCase):
         self.assertEqual(len(findings), 1)
 
 
+class ReportAndLineMappingTests(unittest.TestCase):
     def test_hunk_line_numbers_point_to_the_new_file(self):
         token = "AKIA" + "1234567890ABCDEF"
         body = (

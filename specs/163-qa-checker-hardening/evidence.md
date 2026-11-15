@@ -92,7 +92,10 @@ filename instead of silently ignoring it.
 - `freebuff-verify.sh` itself and its own unit test remain in the repository;
   only the QA workflow dependency was removed.
 
-## Verification
+## Verification at `698ce434`
+
+These results were recorded before the follow-up `[skip ci]` commit; the repair
+pass below re-verified the changed files at the current branch head.
 
 | Check | Result |
 | --- | --- |
@@ -141,3 +144,48 @@ is a unit-test clock pin, not a rendering change.
 - The Visual QA workflow's browser job is not triggered by this non-rendering
   change set.
 - No live AI request was made. Crystal Ball coverage remains mocked and focused.
+
+## Repair pass at `da2cd698`
+
+The follow-up `[skip ci]` commit applied four review-driven edits and left the
+branch head broken: `check_qa_pr_scope.py`, `review_pr_changes.py` and
+`test_review_pr_changes.py` were syntactically invalid, and `visual-qa.yml` was
+no longer parseable YAML because the new Python heredoc began at column 1 and
+terminated the `run: |` block. The `[skip ci]` directive also skipped Visual QA,
+so no workflow reported it. Repairs:
+
+- `.github/scripts/check_qa_pr_scope.py`: closed the unterminated
+  `warnings.append(...)` call and removed the duplicated sentence from the
+  reworded visual-impact warning.
+- `.github/scripts/review_pr_changes.py`: completed the two unterminated string
+  concatenations (`combined`, `nearby_text`), matched insecure `http://` only
+  when it does not sit inside an `https://` token, and required comment context
+  before reporting a suppression directive so examples in string literals are
+  not flagged.
+- `.github/scripts/test_review_pr_changes.py`: restored the
+  `ReportAndLineMappingTests` class header that the insertion displaced, so its
+  report-rendering and line-mapping tests run again.
+- `.github/scripts/test_check_qa_pr_scope.py`: updated the assertion for the
+  deliberately reworded visual-impact warning.
+- `.github/workflows/visual-qa.yml`: re-indented the heredoc Python block so the
+  workflow parses as YAML again. The step still fails closed.
+
+| Check | Result |
+| --- | --- |
+| `python3 -m py_compile` on both checker scripts | exit 0 |
+| `python3 -m unittest discover -s .github/scripts -p 'test_*.py'` | 231 tests passed |
+| Focused QA checker suites | 106 tests passed |
+| `pnpm run test` | 77 files, 734 tests passed |
+| `pnpm exec tsc --noEmit` | exit 0 |
+| `pnpm exec vitest run __tests__/visual-qa-chromium-cache.test.js` | 14 tests passed |
+| `bash scripts/test-verify-speckit-task.sh` | exit 0 |
+| YAML parse of the three QA workflows | all parsed |
+| Extracted declared-impact step (`PR_BODY` cases: true, false, absent, malformed, non-object) | `required` output correct in all five; malformed and non-object fail closed |
+| `check_qa_pr_scope.py` on this PR's 20-file manifest | PASS, 20/20 paths matched |
+| `check_qa_pr_scope.py` with a rename record missing `previous_filename` | BLOCKED, exit 2 |
+| `changed_paths()` with a genuine rename | both old and new paths collected |
+| Production build | NOT RUN in this repair pass; no application or bundling input changed |
+
+PR Scope Verification still runs `main`'s pre-fix checker through
+`pull_request_target`, so that check cannot pass until this branch is merged.
+Verification Integrity reports it as incomplete for the same reason.
