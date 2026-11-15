@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PointBatch } from '../app/lib/gpu-particles.js';
 
 const originalGetContext = HTMLCanvasElement.prototype.getContext;
 const originalMatchMedia = window.matchMedia;
@@ -275,9 +276,80 @@ describe('context loss', () => {
   });
 });
 
+describe('cinematic render quality', () => {
+  it('keeps a capable desktop on the full near/far pipeline', async () => {
+    const graphics = await loadModule();
+    expect(
+      graphics.resolveRenderQuality({
+        hardwareConcurrency: 8,
+        deviceMemory: 8,
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        pixelRatio: 1,
+      }),
+    ).toMatchObject({
+      tier: 'high',
+      maxPixelRatio: 2,
+      particleScale: 1.2,
+      foreground: true,
+      haze: true,
+      sparkBudget: 900,
+    });
+  });
+
+  it('steps down from measured backing-store cost rather than device class', async () => {
+    const graphics = await loadModule();
+
+    // A high-DPI phone with many cores is not assumed weak, but its large
+    // backing store resolves to the balanced profile.
+    expect(
+      graphics.resolveRenderQuality({
+        hardwareConcurrency: 8,
+        deviceMemory: 8,
+        viewportWidth: 390,
+        viewportHeight: 844,
+        pixelRatio: 3,
+        coarsePointer: true,
+      }).tier,
+    ).toBe('balanced');
+
+    // A 4K desktop surface costs more than a smaller one at the same CPU hints.
+    expect(
+      graphics.resolveRenderQuality({
+        hardwareConcurrency: 8,
+        deviceMemory: 8,
+        viewportWidth: 3840,
+        viewportHeight: 2160,
+        pixelRatio: 1,
+      }).tier,
+    ).toBe('balanced');
+  });
+
+  it('drops the optional near surface on constrained devices and save-data', async () => {
+    const graphics = await loadModule();
+    for (const options of [
+      { saveData: true },
+      { deviceMemory: 2 },
+      { hardwareConcurrency: 2 },
+      { profileTier: 'constrained' },
+    ]) {
+      expect(graphics.resolveRenderQuality(options)).toMatchObject({
+        tier: 'constrained',
+        maxPixelRatio: 1.25,
+        particleScale: 0.55,
+        foreground: false,
+        haze: false,
+        sparkBudget: 280,
+      });
+    }
+  });
+});
+
 describe('renderer source guards', () => {
   const sharedSource = readSource('app/lib/graphics-capabilities.js');
   const engineSource = readSource('components/cosmic-event-engine.js');
+  const ringSource = readSource('components/lucky-meter-ring-engine.js');
+  const particleSource = readSource('app/lib/gpu-particles.js');
   const stageSource = readSource('components/CosmicEventStage.jsx');
   const homePageSource = readSource('app/homepage/HomePage.js');
   const revealSource = readSource('app/lucky-card-reveal.js');
@@ -285,7 +357,7 @@ describe('renderer source guards', () => {
   const confettiSource = readSource('app/lib/mapleLeafConfetti.mjs');
 
   it('never identifies a browser or forces a renderer', () => {
-    for (const source of [sharedSource, engineSource]) {
+    for (const source of [sharedSource, engineSource, ringSource]) {
       expect(source).not.toMatch(/navigator\.userAgent/);
       expect(source).not.toMatch(/--use-gl|--use-angle/);
       expect(source).not.toMatch(/failIfMajorPerformanceCaveat\s*:/);
@@ -296,6 +368,29 @@ describe('renderer source guards', () => {
       expect(source).not.toMatch(/if\s*\([^)]*swiftshader/i);
     }
     expect(engineSource).not.toMatch(/swiftshader/i);
+    expect(ringSource).not.toMatch(/swiftshader/i);
+  });
+
+  it('can cap per-frame point work without reallocating the batch', () => {
+    const batch = new PointBatch(8, 32);
+    batch.maxPoints = 3;
+    for (let index = 0; index < 6; index += 1) {
+      batch.push(index, index, 2, [1, 1, 1], 0.8, 1, 64);
+    }
+    expect(batch.count).toBe(3);
+    expect(batch.dropped).toBe(3);
+    expect(batch.capacity).toBe(8);
+    expect(batch.positions).toBeInstanceOf(Float32Array);
+  });
+
+  it('shares one audited point pipeline between the stage and the ring', () => {
+    expect(particleSource).toContain('POINT_VERTEX_SHADER');
+    expect(particleSource).toContain('POINT_FRAGMENT_SHADER');
+    expect(particleSource).toContain('export class PointBatch');
+    expect(engineSource).toContain("from '../app/lib/gpu-particles'");
+    expect(ringSource).toContain("from '../app/lib/gpu-particles'");
+    expect(engineSource).not.toContain('attribute vec2 a_position');
+    expect(ringSource).not.toContain('attribute vec2 a_position');
   });
 
   it('adopts safe acquisition and the context-loss lifecycle', () => {

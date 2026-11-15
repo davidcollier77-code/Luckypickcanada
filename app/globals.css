@@ -510,3 +510,239 @@ body {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Lucky Meter circular energy ring.
+
+   The DOM ring is the readable structure: a dark glass disc, a gold rim and
+   the existing golden maple-leaf artwork. The conic-gradient arcs and the
+   small WebGL canvas only add light, so a browser without WebGL still shows a
+   complete meter. Movement is deliberately slow and fluid.
+   ========================================================================== */
+@keyframes resonanceRingSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes resonanceRingReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes resonanceHaloBreathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.88; transform: scale(1.035); }
+}
+
+.resonance-ring-halo {
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 201, 92, 0.3) 0%,
+    rgba(255, 154, 48, 0.13) 52%,
+    rgba(255, 154, 48, 0) 76%
+  );
+  filter: blur(16px);
+  animation: resonanceHaloBreathe 6.5s ease-in-out infinite;
+}
+
+/* A real metallic rim: lit gold segments with darker engraved shadows. */
+.resonance-ring-rim {
+  pointer-events: none;
+  opacity: 0.94;
+  background: conic-gradient(
+    from 205deg,
+    #4b310b 0deg,
+    #d9ad5a 34deg,
+    #fff0b4 58deg,
+    #a9781f 88deg,
+    #5b3b0c 132deg,
+    #e8c470 188deg,
+    #fff6d0 214deg,
+    #b3822a 246deg,
+    #4a3009 292deg,
+    #f2d38a 332deg,
+    #5b3b0c 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 16px),
+    #000 calc(100% - 15px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 16px),
+    #000 calc(100% - 15px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 7px rgba(255, 196, 80, 0.45));
+}
+
+.resonance-ring-halo--inner {
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 201, 92, 0) 54%,
+    rgba(255, 226, 160, 0.17) 74%,
+    rgba(255, 201, 92, 0) 88%
+  );
+  filter: blur(6px);
+  animation-duration: 8.5s;
+  animation-direction: reverse;
+}
+
+.resonance-ring-etched {
+  pointer-events: none;
+  opacity: 0.32;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 226, 160, 0.55) 0deg 0.55deg,
+    rgba(255, 226, 160, 0) 0.55deg 3.1deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 4px),
+    #000 calc(100% - 3px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 4px),
+    #000 calc(100% - 3px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+}
+
+.resonance-ring-arc {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 214, 130, 0) 0deg,
+    rgba(255, 214, 130, 0.06) 42deg,
+    rgba(255, 224, 158, 0.72) 92deg,
+    rgba(255, 246, 210, 1) 104deg,
+    rgba(255, 206, 112, 0.24) 132deg,
+    rgba(255, 206, 112, 0) 178deg,
+    rgba(255, 206, 112, 0) 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 15px),
+    #000 calc(100% - 14px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 15px),
+    #000 calc(100% - 14px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  filter: drop-shadow(0 0 7px rgba(255, 196, 80, 0.7));
+  animation: resonanceRingSpin 26s linear infinite;
+  will-change: transform;
+}
+
+.resonance-ring-arc--alt {
+  inset: 2.5%;
+  opacity: 0.78;
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 240, 190, 0) 0deg,
+    rgba(255, 233, 170, 0.7) 84deg,
+    rgba(255, 250, 226, 1) 96deg,
+    rgba(255, 210, 120, 0.16) 138deg,
+    rgba(255, 210, 120, 0) 200deg,
+    rgba(255, 210, 120, 0) 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 9px),
+    #000 calc(100% - 8px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 9px),
+    #000 calc(100% - 8px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  animation: resonanceRingReverse 37s linear infinite;
+}
+
+.resonance-ring-arc--spark {
+  inset: 4.5%;
+  opacity: 0.6;
+  background: conic-gradient(
+    from 300deg,
+    rgba(255, 250, 230, 0) 0deg,
+    rgba(255, 250, 230, 0.9) 28deg,
+    rgba(255, 210, 130, 0) 66deg,
+    rgba(255, 210, 130, 0) 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 3px),
+    #000 calc(100% - 2px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 3px),
+    #000 calc(100% - 2px),
+    #000 calc(100% - 1px),
+    transparent 100%
+  );
+  animation-duration: 17s;
+}
+
+.resonance-ring[data-phase='scrambling'] .resonance-ring-arc {
+  animation-duration: 14s;
+}
+
+.resonance-ring[data-phase='landed'] .resonance-ring-arc {
+  animation-duration: 19s;
+}
+
+.resonance-ring[data-phase='landed'] .resonance-ring-halo {
+  opacity: 1;
+}
+
+/* The Home control reuses the shared metallic gold CTA but sits compactly in
+   the top-right corner of the scene. */
+.lucky-home-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+@media (min-width: 640px) {
+  .lucky-home-btn {
+    padding: 0.62rem 1.05rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resonance-ring-arc,
+  .resonance-ring-halo,
+  .resonance-ring-etched {
+    animation: none !important;
+  }
+}
+

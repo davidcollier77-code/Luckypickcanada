@@ -41,10 +41,15 @@ vi.mock('howler', () => ({
   }),
 }));
 
+const stageControl = vi.hoisted(() => ({ onComplete: null }));
+
 vi.mock('../components/CosmicEventStage', () => ({
-  default: ({ eventId, durationMs }) => (
-    <div data-testid="cosmic-event-stage" data-event={eventId} data-duration={durationMs} />
-  ),
+  default: ({ eventId, durationMs, onComplete }) => {
+    stageControl.onComplete = onComplete;
+    return (
+      <div data-testid="cosmic-event-stage" data-event={eventId} data-duration={durationMs} />
+    );
+  },
 }));
 
 import DailyResonance from '../components/DailyResonance';
@@ -178,7 +183,7 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/could not be prepared/i);
   });
 
-  it('restores the persisted result after a refresh without replaying the reveal', () => {
+  it('restores the persisted result after a refresh and resumes the unfinished event', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     act(() => {
@@ -187,14 +192,26 @@ describe('Daily Resonance daily experience', () => {
       );
     });
     expect(screen.getByText('53')).toBeInTheDocument();
+    // Home disappeared at Start and stays hidden through the unfinished event.
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     first.unmount();
 
+    // The persisted result exists but the event never completed: the result is
+    // restored, the event resumes, and Home stays hidden until it finishes.
     render(<DailyResonance />);
     expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
     expect(screen.getByText('53')).toBeInTheDocument();
     expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
     expect(screen.getByText('07:30:00')).toBeInTheDocument();
+    expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+
+    act(() => {
+      stageControl.onComplete?.();
+    });
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+    expect(readStoredResult().eventCompleted).toBe(true);
   });
 
   it('rolls over when the local date changes in an open tab', () => {

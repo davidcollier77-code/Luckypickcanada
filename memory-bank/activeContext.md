@@ -1,64 +1,56 @@
-# Active Context — QA Checker Hardening
+# Active Context — Lucky Meter Cinematic Redesign
 
 - **Updated:** 2026-11-15
-- **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/qa-checker-hardening-20261115`
-- **Base:** `main` (`92b048e9`, including merged adaptive graphics capability foundation PR #1904)
-- **Spec Kit feature:** `specs/163-qa-checker-hardening`
+- **Repository:** `davidcollier77-code/Luckypickcanada`
+- **Branch:** `freebuff/645448188e4eb950b3b04f32`
+- **Base:** `main`
+- **Spec Kit feature:** `specs/164-lucky-meter-cinematic-redesign`
 
 ## Current Task
 
-Repair the inherited PR scope checker crash and harden the QA system without
-duplicating DevSkim, CodeQL, TypeScript, the unit/build suites, or Freebuff's
-own verification script.
-
-The branch now includes the latest `main`. The adaptive graphics capability
-foundation from PR #1904 is retained as merged base functionality; this task
-does not modify its rendering implementation, artwork, or browser/device
-compatibility behavior.
+Redesign the Lucky Meter into a cinematic, realistically rendered experience while
+preserving its result logic, reveal timings, sharing, storage, artwork and the
+existing Milky Way background.
 
 ## Implemented state
 
-- `changed_paths()` now handles modified and added GitHub records without
-  `previous_filename`, preserves both rename paths, and fails closed on
-  incomplete rename evidence or a missing filename.
-- `review_pr_changes.py` reviews added patch lines only. Private keys, provider
-  tokens and merge markers are hard findings; unsafe HTML, insecure links,
-  hardcoded credential-like values, dependency additions, suppressions,
-  debugger statements and deprecated APIs are advisory warnings. Secret
-  excerpts are redacted, placeholders and environment lookups are suppressed,
-  and findings are deduplicated.
-- The optional `visual_impact` declaration can require browser evidence on a
-  non-visual path; a conflicting non-visual declaration is surfaced for review.
-  The Visual QA classifier also honors a declared visual requirement.
-- Visual QA runs the full Vitest suite and a standalone
-  `pnpm exec tsc --noEmit`; it does not invoke or depend on
-  `freebuff-verify.sh`. The script and its own test remain present.
-- The Daily Resonance unit test pins its clock to its mocked date fixture so
-  the suite does not fail when the real calendar advances.
+- The Milky Way `<picture>`, responsive sources, `object-position: center 40%`,
+  overlay and layer order are unchanged.
+- The composition is bottom-anchored around an always-mounted circular meter:
+  heading and Start above it, supporting details and Share below it, Home in the
+  top-right corner. The ring has a viewport-aware minimum size so its centre text
+  never clips on short viewports.
+- Home follows the persisted lifecycle: visible before Start, removed on the
+  Start press, hidden across the scramble, landing, details and the whole event,
+  and restored only once the cinematic (including the final golden sparks) has
+  finished. A refresh mid-event resumes the stored event with Home still hidden.
+- `cosmic-event-engine.js` renders a far surface behind the interface and a
+  pointer-transparent near surface above it. Meteors use continuous plasma
+  streaks, lightning uses a bounded branching geometry with a white-hot core and
+  additive bloom, red fireworks are dense peonies while silver is finer crackling
+  sparkle, and the finale is a large golden chrysanthemum with willow streamers
+  and foreground sparks that fall across the interface.
+- Particle sizes scale with viewport area; per-surface point budgets are bounded;
+  silver crackle children are terminal so the particle count cannot run away; the
+  frame governor steps resolution and budgets down before it drops the near layer.
+- Two recorded cues were added (finale boom, thunder rumble) with a committed
+  provenance record; existing cues are unchanged.
 
 ## Verification
 
-- QA checker Python suites: 99 tests passed.
-- Visual QA workflow guard: 14 tests passed.
-- Full Vitest: 77 files, 734 tests passed.
-- Crystal Ball/Oracle focused suite: 11 files, 146 tests passed.
-- `pnpm exec tsc --noEmit`: exit 0.
-- `./freebuff-verify.sh`: exit 0, including the Spec Kit gate and 36/36 docs tests.
-- Production build: 348 MiB, below the 495 MiB cap.
-- Reviewer self-scan: 0 hard findings, 0 warnings; CLI redaction test passed.
+- 80 Vitest files / 769 tests passed; `tsc --noEmit` exit 0.
+- `./freebuff-verify.sh` passed; production build recorded in the PR body and
+  strictly below the 495 MiB cap.
+- Chromium browser QA: 27/27 checks covering welcome, lifecycle, event, Share
+  clickability, persistence, refresh resume, reduced motion, WebGL-disabled
+  fallback and mobile 390 × 844.
+- Audio files were verified sample-for-sample against their Mixkit masters
+  (correlation 1.0), confirming they are recordings rather than generated audio.
 
-These results are recorded in the implementation evidence and PR description;
-they are not represented as newly rerun in this branch-reconciliation session.
+## Limitations
 
-## Remaining
-
-- The PR is open for owner review. GitHub Actions must report against the
-  reconciled branch head.
-- PR Scope Verification is a `pull_request_target` workflow and therefore
-  continues to execute the trusted checker from the default branch. Until this
-  PR merges, that is the older `main` implementation, which assumes
-  `previous_filename` exists on ordinary changed-file records. This branch
-  fixes that defect and tests it, but does not execute PR-head code in the
-  trusted workflow context or bypass the check.
-- Browser runs are not required for this non-rendering change set.
+- Firefox and WebKit binaries are unavailable in this environment, so those
+  engines were not executed.
+- No hardware GPU is exposed; Chromium ran on SwiftShader. Frame-rate behaviour on
+  real GPUs and the near-layer path at full quality are not measured here.
+- Real-device Samsung Internet, Opera and Edge runs were not performed.
