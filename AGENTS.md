@@ -44,9 +44,7 @@ Before writing or approving a task specification for work that may be checked by
 - Identify gaps, conflicts, unclear requirements or checker changes needed to support the task. Record them in the specification and raise material conflicts with the owner before implementation.
 - Do not weaken, bypass, suppress or redefine an existing check merely to make a task pass. Any proposed change to checker requirements must be explicit, separately justified and authorized where protected files or governance are involved.
 
-8. Check applicable repository QA and validation requirements. Inspect the relevant workflows, configurations, scripts and referenced requirements. Identify their scope, triggers, qualifications, thresholds and pass/fail conditions. Treat those requirements as targets before implementation. Follow current repository definitions if documentation conflicts, and report any discrepancy. Do not silently change them.
-
-9. Follow Spec Kit. Review and follow all nine command definitions in ".freebuff/cmds/speckit.*.md", together with their applicable instructions, current templates and project-constitution requirements. The repository's checked baseline is Spec Kit 1.4.0: four core stages—Specify, Plan, Tasks and Implement—and five supporting commands—Clarify, Analyze, Checklist, Constitution and Converge.
+8. Follow Spec Kit. Review and follow all nine command definitions in ".freebuff/cmds/speckit.*.md", together with their applicable instructions, current templates and project-constitution requirements. The repository's checked baseline is Spec Kit 1.4.0: four core stages—Specify, Plan, Tasks and Implement—and five supporting commands—Clarify, Analyze, Checklist, Constitution and Converge.
 
    Complete the four core stages in that order for every repository-changing task. Finish Specify, Plan and Tasks before implementation; carry out Implement in Section B using the approved specification, plan and task list. Complete every required section, field and group in each applicable template. Complete conditional sections when they apply. Use optional sections and artifacts only when their instructions or the task call for them; do not invent content or leave required content incomplete. Follow the supporting command definitions when they apply, but do not mechanically run all five supporting commands on every task.
 
@@ -70,35 +68,30 @@ C — VERIFY AND SUBMIT
 
 1. Verify the implementation. Run "./freebuff-verify.sh" and all applicable task-group checks, tests, builds, browser QA and integration checks.
 
-2. Meet repository QA requirements. Confirm all applicable repository QA and validation requirements identified in Stage A have been addressed before PR submission.
+2. Complete the final checker-requirement review. Before submission, review the completed implementation and complete diff against every applicable checker requirement identified in A.8 and documented in `PR_SUBMISSION.md`. Resolve unmet in-scope requirements or record the exact blocker. A passing or pending CI result does not replace this independent review.
 
 3. Confirm build size. Measure the production build and confirm it remains strictly below 495 MiB, as required by B.5.
 
 4. Submit the PR. Every task in which the owner authorizes repository changes must proceed directly from implementation and pre-submission verification to PR preparation and submission, following "PR_SUBMISSION.md". Opening the PR is mandatory task completion, not an optional follow-up. Do not stop after implementation, testing or a completion report, and do not wait for the owner to request the PR or give separate permission. Read-only investigations, audits, recommendations and advice do not require a PR. If the owner explicitly directs that no PR be opened, follow that instruction. If a PR cannot safely be opened, report the exact blocker and preserve the completed work for owner direction. A repository-changing task is not complete until its PR has been successfully opened and handed off.
 
-REPOSITORY QA AND VALIDATION
-
-Applicable repository checks may cover:
-
-- Security and code-quality requirements.
-- Application builds and deployment-platform validation.
-- Testing, type checking and visual regressions.
-- Verification evidence and current-commit integrity.
-- Authorization requirements for protected files.
-- Scheduler, updater and maintenance changes.
-- Supported-language code scanning.
-
-Inspect the actual repository workflows, scripts, configurations and referenced requirements to determine which checks apply and what they require. Do not rely on this summary as a substitute for inspecting their current definitions.
-
-External review applications provide advisory feedback only. They do not replace required repository checks.
-
 PROJECT-WIDE TECHNICAL RULES
+
+### Playwright Browser Testing (Freebuff only)
+
+**Scope:** This section governs Freebuff only. For ChatGPT, it overrides the general Playwright CLI instruction: ChatGPT must not use, load, modify or maintain the repository Playwright CLI or its associated startup scripts.
+
+- **Interactive browser sessions:** Use `./scripts/playwright-cli.sh`.
+- **Option A — Standard:** Use `pnpm exec playwright test` for normal QA, visual testing and CI.
+- **Option B — SwiftShader:** Use `pnpm exec playwright test --config=playwright.swiftshader.config.ts` for software-rendered GPU and graphics investigations. This does not measure physical GPU performance.
+
+Keep both modes separate; standard QA and CI must continue using Option A. When Freebuff's environment, dependencies or browser runtime change, verify that the startup, browser-runtime and CLI setup scripts still work. Update the relevant scripts as needed to keep them functional.
 
 - Never weaken security, privacy, validation, authentication, CAPTCHA, Turnstile, rate limiting, duplicate protection or data integrity.
 - Use Playwright as the primary browser automation tool. Use Browserless as the remote fallback for direct browser tasks. Automatic PR-checker workflows use Playwright, not Browserless.
 - Use Firecrawl as the primary content-retrieval tool and Crawlbase as its fallback. Neither replaces browser rendering or end-to-end testing.
 - Do not assume a skill or integration provides access to a tool that is not actually available.
 - Avoid unnecessary side effects, paid usage and disclosure of sensitive information, credentials, API keys or secrets.
+- External review applications provide advisory feedback only; they do not replace required repository checks.
 - Do not claim work or checks are complete without evidence.
 
 NO EVIDENCE = NO CLAIM.

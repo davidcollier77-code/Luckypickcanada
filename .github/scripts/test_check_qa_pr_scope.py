@@ -6,6 +6,7 @@ from check_qa_pr_scope import (
     START_MARKER,
     ScopeError,
     _digest,
+    _is_visual_path,
     changed_paths,
     validate,
 )
@@ -347,6 +348,28 @@ class VisualEvidenceTests(unittest.TestCase):
     def test_visual_change_without_browser_evidence_fails(self):
         value = declaration(paths=["components/Example.tsx"])
         result = run_check(["components/Example.tsx"], value)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+
+    def test_backend_api_and_ci_paths_do_not_require_browser_evidence(self):
+        for path in (
+            "app/api/checkout/route.js",
+            "app/api/health/route.ts",
+            "pages/api/status.js",
+            ".github/workflows/visual-qa.yml",
+            ".github/scripts/check_qa_pr_scope.py",
+        ):
+            with self.subTest(path=path):
+                self.assertFalse(_is_visual_path(path))
+                value = declaration(paths=[path])
+                result = run_check([path], value)
+                self.assertEqual(result["status"], "PASS")
+                self.assertEqual(result["browser_evidence"], [])
+
+    def test_frontend_paths_still_require_browser_evidence_when_mixed_with_api_changes(self):
+        paths = ["app/api/checkout/route.js", "app/page.tsx"]
+        value = declaration(paths=paths)
+        result = run_check(paths, value)
         self.assertEqual(result["status"], "FAIL")
         self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
 

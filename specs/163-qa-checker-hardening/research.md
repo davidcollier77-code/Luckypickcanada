@@ -45,6 +45,12 @@ The defect was introduced with the checker in commit `2e7cd054` (#1900), not by 
 
 `visual-qa.yml` invokes `./freebuff-verify.sh` after the full unit suite. That script runs Spec Kit governance tests, a TypeScript check, a production build, and documentation tests. The QA workflow already runs unit tests, and OpenNext validation runs the production build. Making Visual QA depend on `freebuff-verify.sh` duplicates Freebuff's own Agent MD responsibility and creates a second failure surface. The plan removes that dependency, keeps a standalone TypeScript check, and leaves the script itself intact.
 
+### Visual QA false-positive review
+
+The existing classifier treated almost every unknown path as visual. That fail-closed default is appropriate for unknown frontend/build inputs, but it over-classified known non-rendering work: .github/ automation and Next.js API route handlers. This caused Playwright screenshot/browser shards to run for CI-only and API-only PRs that do not change rendered UI. The scope checker independently classified all app/ paths as visual, so app/api/ also incorrectly required browser evidence.
+
+The correction is deliberately narrow: explicitly classify .github/, app/api/, and pages/api/ as non-rendering for browser inspection. Keep unknown paths fail-closed, preserve browser/e2e tests, styles, assets, frontend app routes and components as visual, and keep visual_impact.required: true as an explicit override. Mixed PRs still run Playwright. The always-on unit suite, TypeScript, build, scope, security and other checks are not changed or skipped.
+
 ### Crystal Ball AI health
 
 Existing coverage includes daily usage/allowance, fallback history, fortunes, greetings, local time/calendar, client follow-up, preview, Oracle route validation, daily limit, greeting, interactions, and follow-up outage browser specs. These use mocks or controlled routes rather than live AI requests. No new live-service call is needed.
