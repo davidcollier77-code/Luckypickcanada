@@ -1630,6 +1630,9 @@ export function createCosmicEventEngine({
       contextLost = true;
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       animationFrame = 0;
+      // Release the JS-side handles immediately for the same reason as the
+      // near surface: destroy() would otherwise delete them on a dead context.
+      farSurface.dispose();
       if (lostHandler) lostHandler();
     },
   });
