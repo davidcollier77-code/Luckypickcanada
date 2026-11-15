@@ -64,7 +64,8 @@ function assertWellFormedMesh(mesh) {
 describe('golden maple leaf silhouette', () => {
   it('is a symmetric Canadian maple leaf with defined lobes and a stem', () => {
     const outline = mapleLeafOutline();
-    expect(outline.length).toBe(26);
+    // Twelve authored points on the right half, mirrored below the apex.
+    expect(outline.length).toBe(22);
 
     // Symmetric about x = 0: every point has a mirrored partner.
     for (const [x, y] of outline) {
@@ -76,11 +77,11 @@ describe('golden maple leaf silhouette', () => {
 
     const ys = outline.map(([, y]) => y);
     const xs = outline.map(([x]) => x);
-    // Apex above, stem below, widest lobes around +/-0.62.
+    // Apex above, stem below, widest lobes around +/-0.70.
     expect(Math.max(...ys)).toBeCloseTo(0.905, 3);
     expect(Math.min(...ys)).toBeCloseTo(-0.782, 3);
-    expect(Math.max(...xs)).toBeCloseTo(0.622, 3);
-    expect(Math.min(...xs)).toBeCloseTo(-0.622, 3);
+    expect(Math.max(...xs)).toBeCloseTo(0.695, 3);
+    expect(Math.min(...xs)).toBeCloseTo(-0.695, 3);
 
     // Counter-clockwise winding, so the shared shader's two-sided lighting sees
     // a consistent front face.
@@ -104,7 +105,7 @@ describe('golden maple leaf silhouette', () => {
   });
 
   it('builds an extruded, bevelled ornament rather than a flat card', () => {
-    const mesh = buildMapleLeafGeometry({ thickness: 0.1, bevel: 0.05, dome: 0.028 });
+    const mesh = buildMapleLeafGeometry({ thickness: 0.155, bevel: 0.07, dome: 0.042 });
     assertWellFormedMesh(mesh);
 
     const zs = [];

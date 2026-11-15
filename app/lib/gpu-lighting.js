@@ -277,6 +277,10 @@ export function beginMeshFrame(gl, meshProgram, frame) {
   if (count > 0) {
     const packed = LIGHT_PACK;
     const colors = LIGHT_COLOR_PACK;
+    // Clear all four slots first: these buffers are module-level, so a frame
+    // with fewer lights than the last one would otherwise re-upload stale data.
+    packed.fill(0);
+    colors.fill(0);
     for (let index = 0; index < count; index += 1) {
       const offset = index * 4;
       packed[offset] = lights.positions[index * 3];

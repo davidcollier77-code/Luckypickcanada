@@ -117,6 +117,15 @@ void main() {
 
 const QUAD_VERTICES = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);
 
+// Meteor trail grade, head to tail. Module constants so the per-sample loop
+// never re-parses a hex string: this runs thousands of times per frame.
+const TRAIL_HOT = hexToRgb('#ffdca0');
+const TRAIL_WARM = hexToRgb('#ff9a4a');
+const TRAIL_COOL = hexToRgb('#e0562f');
+const TRAIL_EMBER = hexToRgb('#8c2f22');
+const METEOR_HEAD = hexToRgb('#ffffff');
+const METEOR_HEAD_FINALE = hexToRgb('#fff4d6');
+
 /**
  * One WebGL canvas: programs, attribute buffers and its own backing store.
  */
@@ -298,7 +307,6 @@ function createSurface(canvas, { haze = false, skyLight = false } = {}) {
 // Reused between frames; never resized.
 const SKY_PACK = new Float32Array(16);
 const SKY_COLOR_PACK = new Float32Array(12);
-const SCENE_PACK = [];
 
 /**
  * Recursive lightning branching, authored in a local unit space where x is a
@@ -645,7 +653,7 @@ export function createCosmicEventEngine({
       directionY: isFinale ? 0.55 : Math.cos(angle),
       lengthWorld: isFinale ? 330 : randomBetween(planRandom, 120, 250),
       thicknessWorld: isFinale ? 5.2 : randomBetween(planRandom, 2.2, 4.2),
-      headColor: isFinale ? hexToRgb('#fff4d6') : hexToRgb('#ffffff'),
+      headColor: isFinale ? METEOR_HEAD_FINALE : METEOR_HEAD,
       isFinale,
       age: 0,
       seed: planRandom() * 1000,
@@ -711,18 +719,21 @@ export function createCosmicEventEngine({
         clamp(trailPixels / 1.6, 40, 400) * clamp(qualityScale, 0.5, 1),
       );
 
+      // Guarded denominator: a single-sample trail would otherwise divide by
+      // zero and poison every colour and alpha downstream with NaN.
+      const sampleSpan = Math.max(1, samples - 1);
       for (let sample = 0; sample < samples; sample += 1) {
-        const progress = sample / (samples - 1);
+        const progress = sample / sampleSpan;
         projectMeteorSample(meteor, progress, meteorSample);
         const { x, y, scale } = meteorSample;
 
         // Head-to-tail grade: white-hot, gold, orange, deep red, then ember.
         let color;
         if (progress < 0.05) color = meteor.headColor;
-        else if (progress < 0.22) color = hexToRgb('#ffdca0');
-        else if (progress < 0.48) color = hexToRgb('#ff9a4a');
-        else if (progress < 0.75) color = hexToRgb('#e0562f');
-        else color = hexToRgb('#8c2f22');
+        else if (progress < 0.22) color = TRAIL_HOT;
+        else if (progress < 0.48) color = TRAIL_WARM;
+        else if (progress < 0.75) color = TRAIL_COOL;
+        else color = TRAIL_EMBER;
 
         const thickness = meteor.thicknessWorld * scale * effectScale;
         // The tail widens as it cools and expands into the wake. The floor keeps

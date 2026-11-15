@@ -1,0 +1,152 @@
+{
+  "capturedAt": "2026-11-15T23:20:03.467Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewports": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "isMobile": false,
+        "hasTouch": false
+      },
+      "errors": [],
+      "states": {
+        "welcome": {
+          "errors": []
+        },
+        "meteor": {
+          "captured": [
+            "desktop-meteor-020.png",
+            "desktop-meteor-045.png",
+            "desktop-meteor-072.png",
+            "desktop-meteor-093.png"
+          ],
+          "perf": {
+            "frames": 45,
+            "fps": 17.7,
+            "medianMs": 66.6,
+            "p95Ms": 66.7,
+            "dropped": 0,
+            "longestStallMs": 83.3
+          },
+          "debug": {
+            "elapsed": 9006,
+            "farCount": 0,
+            "nearCount": 0,
+            "fireworks": 0,
+            "rockets": 0,
+            "meteors": 1,
+            "strikes": 0,
+            "smoke": 58,
+            "lights": 1,
+            "finaleSpawned": true,
+            "farDropped": 0,
+            "nearDropped": 0,
+            "droppedPoints": 0,
+            "qualitySteps": 2,
+            "nearDead": true,
+            "globalAlpha": 0,
+            "lost": false
+          },
+          "errors": []
+        },
+        "lightning": {
+          "captured": [
+            "desktop-lightning-020.png",
+            "desktop-lightning-045.png",
+            "desktop-lightning-072.png",
+            "desktop-lightning-093.png"
+          ],
+          "perf": {
+            "frames": 43,
+            "fps": 17.2,
+            "medianMs": 66.6,
+            "p95Ms": 66.8,
+            "dropped": 0,
+            "longestStallMs": 83.4
+          },
+          "debug": {
+            "elapsed": 9646,
+            "farCount": 10098,
+            "nearCount": 0,
+            "fireworks": 0,
+            "rockets": 0,
+            "meteors": 0,
+            "strikes": 1,
+            "smoke": 0,
+            "lights": 0,
+            "finaleSpawned": true,
+            "farDropped": 0,
+            "nearDropped": 0,
+            "droppedPoints": 0,
+            "qualitySteps": 2,
+            "nearDead": true,
+            "globalAlpha": 0.3931111111111103,
+            "lost": false
+          },
+          "errors": []
+        },
+        "fireworks": {
+          "captured": [
+            "desktop-fireworks-022.png",
+            "desktop-fireworks-042.png",
+            "desktop-fireworks-062.png",
+            "desktop-fireworks-086.png",
+            "desktop-fireworks-095.png"
+          ],
+          "perf": {
+            "frames": 44,
+            "fps": 17.6,
+            "medianMs": 66.6,
+            "p95Ms": 66.8,
+            "dropped": 0,
+            "longestStallMs": 83.4
+          },
+          "debug": {
+            "elapsed": 11513,
+            "farCount": 0,
+            "nearCount": 0,
+            "fireworks": 1,
+            "rockets": 0,
+            "meteors": 0,
+            "strikes": 0,
+            "smoke": 0,
+            "lights": 0,
+            "finaleSpawned": true,
+            "farDropped": 0,
+            "nearDropped": 0,
+            "droppedPoints": 135786,
+            "qualitySteps": 2,
+            "nearDead": true,
+            "globalAlpha": 0,
+            "lost": false
+          },
+          "errors": []
+        }
+      }
+    }
+  },
+  "graphics": {
+    "webgl": true,
+    "version": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+    "vendor": "Google Inc. (Google)",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "maxPoint": {
+      "0": 1,
+      "1": 1023
+    },
+    "dpr": 1,
+    "contextAttributes": {
+      "alpha": true,
+      "antialias": true,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "default",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    }
+  }
+}

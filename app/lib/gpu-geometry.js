@@ -149,17 +149,17 @@ function scalePolygon(points, factor) {
 export function mapleLeafOutline() {
   const rightHalf = [
     [0.0, 0.905], // apex
-    // Valleys stay shallow relative to the tips: deep notches turn the leaf
-    // into a star at the small sizes it is actually drawn at.
-    [0.105, 0.615], // valley below the apex
-    [0.212, 0.688], // upper lobe tip
-    [0.205, 0.492], // valley
-    [0.352, 0.47], // middle lobe tip
-    [0.338, 0.302], // valley
-    [0.622, 0.3], // widest outer lobe tip
-    [0.425, 0.118], // valley
-    [0.472, -0.128], // lower lobe tip
-    [0.245, -0.104], // valley
+    // Authored in polar terms: lobe tips at roughly 52, 97 and 133 degrees from
+    // the apex, with notches about 28 degrees away from each tip. Widely spaced
+    // tips are what make broad lobe wedges; narrow spacing produces a starburst
+    // no matter how deep the notches go.
+    [0.272, 0.512], // notch below the apex
+    [0.646, 0.505], // upper lobe tip
+    [0.489, 0.104], // notch
+    [0.695, -0.085], // widest side lobe tip
+    [0.335, -0.178], // notch
+    [0.38, -0.355], // basal lobe tip
+    [0.12, -0.208], // notch
     [0.268, -0.372], // base point
     [0.07, -0.332], // stem shoulder
     [0.058, -0.762], // stem right
@@ -417,6 +417,11 @@ export const MEDALLION_PROFILE = Object.freeze([
  * @returns {{ positions: Float32Array, normals: Float32Array, albedos: Float32Array, indices: Uint16Array }}
  */
 export function buildMedallionGeometry({ segments = 192 } = {}) {
+  // Indices are UNSIGNED_SHORT, so the vertex count has a hard ceiling. Clamp
+  // the tessellation rather than letting a large segment count silently corrupt
+  // the mesh: the profile has a bounded ring count, so 480 is well inside 65535.
+  const requested = Number.isFinite(segments) ? Math.round(segments) : 192;
+  segments = Math.max(12, Math.min(480, requested));
   const rings = MEDALLION_PROFILE;
   const positions = [];
   const normals = [];

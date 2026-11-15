@@ -1,0 +1,98 @@
+{
+  "capturedAt": "2026-11-15T22:15:16.481Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewports": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "isMobile": false,
+        "hasTouch": false
+      },
+      "errors": [],
+      "states": {
+        "welcome": {
+          "errors": []
+        },
+        "meteor": {
+          "captured": [
+            "desktop-meteor-020.png",
+            "desktop-meteor-045.png",
+            "desktop-meteor-072.png",
+            "desktop-meteor-093.png"
+          ],
+          "perf": {
+            "frames": 71,
+            "fps": 28.3,
+            "medianMs": 33.3,
+            "p95Ms": 50,
+            "dropped": 8,
+            "longestStallMs": 83.2
+          },
+          "debug": null,
+          "errors": []
+        },
+        "lightning": {
+          "captured": [
+            "desktop-lightning-020.png",
+            "desktop-lightning-045.png",
+            "desktop-lightning-072.png",
+            "desktop-lightning-093.png"
+          ],
+          "perf": {
+            "frames": 62,
+            "fps": 24.5,
+            "medianMs": 33.4,
+            "p95Ms": 50.1,
+            "dropped": 7,
+            "longestStallMs": 100
+          },
+          "debug": null,
+          "errors": []
+        },
+        "fireworks": {
+          "captured": [
+            "desktop-fireworks-022.png",
+            "desktop-fireworks-042.png",
+            "desktop-fireworks-062.png",
+            "desktop-fireworks-086.png",
+            "desktop-fireworks-095.png"
+          ],
+          "perf": {
+            "frames": 72,
+            "fps": 28.7,
+            "medianMs": 33.3,
+            "p95Ms": 50,
+            "dropped": 6,
+            "longestStallMs": 83.3
+          },
+          "debug": null,
+          "errors": []
+        }
+      }
+    }
+  },
+  "graphics": {
+    "webgl": true,
+    "version": "WebGL 1.0 (OpenGL ES 2.0 Chromium)",
+    "vendor": "Google Inc. (Google)",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "maxPoint": {
+      "0": 1,
+      "1": 1023
+    },
+    "dpr": 1,
+    "contextAttributes": {
+      "alpha": true,
+      "antialias": true,
+      "depth": true,
+      "desynchronized": false,
+      "failIfMajorPerformanceCaveat": false,
+      "powerPreference": "default",
+      "premultipliedAlpha": true,
+      "preserveDrawingBuffer": false,
+      "stencil": false,
+      "xrCompatible": false
+    }
+  }
+}

@@ -49,13 +49,13 @@ const LAYER_PROFILES = {
     opacity: 0.92,
     fog: [0.035, 0.055, 0.105],
   },
-      near: {
-      leaves: { high: 5, balanced: 3, constrained: 0 },
-      heightRange: [80, 148],
-      depthRange: [1.15, 1.75],
-      opacity: 1,
-      fog: [0.02, 0.03, 0.06],
-    },
+  near: {
+    leaves: { high: 5, balanced: 3, constrained: 0 },
+    heightRange: [76, 124],
+    depthRange: [1.15, 1.75],
+    opacity: 1,
+    fog: [0.02, 0.03, 0.06],
+  },
 };
 
 /**
@@ -160,7 +160,9 @@ export function createLuckyMeterOrnamentEngine({
   }
 
   const meshProgram = createMeshProgram(gl);
-  const geometry = buildMapleLeafGeometry({ thickness: 0.105, bevel: 0.05, dome: 0.028 });
+  // A little more thickness than a real leaf so an edge-on ornament reads as a
+  // solid gold sliver with a lit edge instead of a one-pixel needle.
+  const geometry = buildMapleLeafGeometry({ thickness: 0.155, bevel: 0.07, dome: 0.042 });
   const buffers = meshProgram ? createMeshBuffers(gl, geometry) : null;
   if (!meshProgram || !buffers) {
     if (meshProgram) gl.deleteProgram(meshProgram.program);
@@ -262,9 +264,14 @@ export function createLuckyMeterOrnamentEngine({
           x,
           y,
           z,
-          rotationX: reducedMotion ? leaf.tilt : Math.sin(time * leaf.spinX + leaf.phase) * 0.85 + leaf.tilt,
-          rotationY: reducedMotion ? leaf.phase : time * leaf.spinY + leaf.phase,
-          rotationZ: reducedMotion ? 0 : Math.sin(time * leaf.spinZ + leaf.phase) * 0.22,
+          // Yaw oscillates inside roughly +/-35 degrees instead of spinning a
+          // full turn. A flat ornament seen exactly edge-on is a sliver, and with
+          // a dozen leaves a third of them were edge-on at any moment; keeping
+          // them near face-on means the gold always reads as a maple leaf while
+          // still turning enough to catch the light.
+          rotationX: reducedMotion ? leaf.tilt : Math.sin(time * leaf.spinX + leaf.phase) * 0.45 + leaf.tilt,
+          rotationY: reducedMotion ? leaf.tilt : Math.sin(time * leaf.spinY + leaf.phase) * 0.62,
+          rotationZ: reducedMotion ? 0 : Math.sin(time * leaf.spinZ + leaf.phase) * 0.2,
           scale: worldScale,
         },
         model,
