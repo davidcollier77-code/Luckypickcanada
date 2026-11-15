@@ -17,9 +17,11 @@ import importlib.util
 import io
 import json
 import os
+import re
 import tempfile
 import unittest
 import zipfile
+from unittest import mock
 
 MODULE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "report_visual_qa_install_timings.py")
 SPEC = importlib.util.spec_from_file_location("report_visual_qa_install_timings", MODULE_PATH)
@@ -71,6 +73,59 @@ def install_steps(started, completed, chromium="hit"):
     return steps
 
 
+def restore_step(conclusion="success", status="completed"):
+    completed = status == "completed"
+    return {
+        "name": "Restore cached Playwright Chromium",
+        "number": 2,
+        "status": status,
+        "conclusion": conclusion if completed else None,
+        "started_at": "2026-11-15T16:05:40Z",
+        "completed_at": "2026-11-15T16:05:45Z" if completed else None,
+    }
+
+
+def chromium_job(restore=None, miss="missing", job_id="10"):
+    steps = [step("Install dependencies", "2026-11-15T16:05:32Z", "2026-11-15T16:05:39Z")]
+    if restore is not None:
+        steps.append(restore)
+    if miss != "missing":
+        steps.append(miss)
+    return job(job_id, "Visual QA (shard 1/2)", steps)
+
+
+def miss_step(conclusion="skipped"):
+    return step(
+        "Install Playwright Chromium (cache miss)",
+        "2026-11-15T16:05:45Z",
+        "2026-11-15T16:05:45Z",
+        conclusion=conclusion,
+        number=3,
+    )
+
+
+def page_of_jobs(count, start=0):
+    return [
+        job(
+            "%d" % (start + index),
+            "Backend %d" % (start + index),
+            [step("Checkout repository", "2026-11-15T15:33:30Z", "2026-11-15T15:33:37Z")],
+        )
+        for index in range(count)
+    ]
+
+
+def fake_api_json(payloads, requested):
+    def call(url, token):
+        if "/jobs?" not in url:
+            return dict(RUN)
+        page = int(re.search(r"[?&]page=(\d+)", url).group(1))
+        requested.append(page)
+        return payloads[page - 1]
+
+    return call
+
+
 VERIFY_JOB = job(
     "1",
     "Visual QA",
@@ -97,7 +152,7 @@ RUN = {
     "run_attempt": 2,
     "status": "completed",
     "conclusion": "success",
-    "head_sha": "6027091ad6c3171ff7329c82a3aa623e17822726",
+    "head_sha": "fixture-head-sha-value",
     "html_url": "https://github.com/example/repo/actions/runs/43730539554",
 }
 
@@ -154,6 +209,18 @@ class CacheParsingTests(unittest.TestCase):
             ]
         )
         self.assertEqual(timings.parse_cache_states(log)["pnpm"]["state"], "hit")
+
+    def test_first_hit_key_is_not_overwritten_by_a_later_duplicate_hit(self):
+        log = "\n".join(
+            [
+                "Cache restored from key: playwright-chromium-Linux-1.64.1",
+                "Cache restored from key: playwright-chromium-Linux-9.99.9",
+            ]
+        )
+        self.assertEqual(
+            timings.parse_cache_states(log)["chromium"],
+            {"state": "hit", "key": "playwright-chromium-Linux-1.64.1"},
+        )
 
     def test_classifies_only_known_cache_families(self):
         self.assertEqual(
@@ -222,6 +289,38 @@ class StepAndJobTests(unittest.TestCase):
         broken["steps"][2]["conclusion"] = None
         self.assertEqual(timings.chromium_state_from_steps(broken), "unknown")
 
+    def test_skipped_miss_after_a_successful_restore_is_a_hit(self):
+        candidate = chromium_job(restore=restore_step(), miss=miss_step("skipped"))
+        self.assertEqual(timings.chromium_state_from_steps(candidate), "hit")
+
+    def test_executed_miss_after_a_successful_restore_stays_a_miss(self):
+        candidate = chromium_job(restore=restore_step(), miss=miss_step("success"))
+        self.assertEqual(timings.chromium_state_from_steps(candidate), "miss")
+
+    def test_skipped_miss_cannot_be_a_hit_without_a_successful_restore(self):
+        cases = {
+            "failed": restore_step(conclusion="failure"),
+            "cancelled": restore_step(conclusion="cancelled"),
+            "skipped": restore_step(conclusion="skipped"),
+            "no conclusion": restore_step(conclusion=None),
+            "incomplete": restore_step(status="in_progress"),
+        }
+        for label, restore in cases.items():
+            with self.subTest(restore=label):
+                candidate = chromium_job(restore=restore, miss=miss_step("skipped"))
+                self.assertEqual(timings.chromium_state_from_steps(candidate), "unknown")
+
+    def test_missing_miss_only_step_is_unknown_and_the_log_supplies_the_key(self):
+        candidate = chromium_job(restore=restore_step(), miss="missing")
+        self.assertEqual(timings.chromium_state_from_steps(candidate), "unknown")
+        row = timings.build_row(
+            candidate, "Cache restored from key: playwright-chromium-Linux-1.64.1"
+        )
+        self.assertEqual(
+            row["chromium_cache"],
+            {"state": "hit", "key": "playwright-chromium-Linux-1.64.1"},
+        )
+
 
 class RowAndReportTests(unittest.TestCase):
     def test_row_compares_with_the_pr_1914_baseline(self):
@@ -244,6 +343,8 @@ class RowAndReportTests(unittest.TestCase):
         self.assertRegex(report, r"7s\s+7s\s+0s")
         self.assertIn("Cold pnpm store on Visual QA (shard 2/2)", report)
         self.assertIn("PR #1914", report)
+        # The head identifier is still shortened to eight characters.
+        self.assertIn("Head: fixture-", report)
 
     def test_report_notes_when_no_browser_shard_ran(self):
         report = timings.render_report(RUN, [timings.build_row(VERIFY_JOB, "")], "example/repo")
@@ -252,6 +353,114 @@ class RowAndReportTests(unittest.TestCase):
     def test_report_notes_unreadable_cache_state(self):
         report = timings.render_report(RUN, [timings.build_row(SHARD_ONE, "")], "example/repo")
         self.assertIn("could not be read from the job log", report)
+
+
+class LiveLoadingTests(unittest.TestCase):
+    def test_pagination_continues_past_a_full_page_without_a_total(self):
+        requested = []
+        payloads = [{"jobs": page_of_jobs(100)}, {"jobs": page_of_jobs(3, 100)}]
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, requested)):
+            _run, jobs, logs = timings.load_live("owner/repo", 1, None)
+        self.assertEqual(requested, [1, 2])
+        self.assertEqual(len(jobs), 103)
+        self.assertEqual(logs, {})
+
+    def test_pagination_continues_past_full_pages_when_the_total_is_zero(self):
+        requested = []
+        payloads = [
+            {"jobs": page_of_jobs(100), "total_count": 0},
+            {"jobs": page_of_jobs(100, 100), "total_count": 0},
+            {"jobs": page_of_jobs(5, 200), "total_count": 0},
+        ]
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, requested)):
+            _run, jobs, _logs = timings.load_live("owner/repo", 1, None)
+        self.assertEqual(requested, [1, 2, 3])
+        self.assertEqual(len(jobs), 205)
+
+    def test_pagination_stops_when_a_positive_total_is_reached(self):
+        requested = []
+        payloads = [
+            {"jobs": page_of_jobs(100), "total_count": 150},
+            {"jobs": page_of_jobs(50, 100), "total_count": 150},
+        ]
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, requested)):
+            _run, jobs, _logs = timings.load_live("owner/repo", 1, None)
+        self.assertEqual(requested, [1, 2])
+        self.assertEqual(len(jobs), 150)
+
+    def test_pagination_stops_on_a_short_page_even_with_a_larger_total(self):
+        requested = []
+        payloads = [{"jobs": page_of_jobs(2), "total_count": 900}]
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, requested)):
+            _run, jobs, _logs = timings.load_live("owner/repo", 1, None)
+        self.assertEqual(requested, [1])
+        self.assertEqual(len(jobs), 2)
+
+    def _single_visual_payload(self, chromium=None):
+        visual = job(
+            "2",
+            "Visual QA (shard 1/2)",
+            install_steps("2026-11-15T16:05:32Z", "2026-11-15T16:05:39Z", chromium=chromium),
+        )
+        return {"jobs": [visual], "total_count": 1}
+
+    def test_unavailable_log_leaves_cache_details_unknown(self):
+        payloads = [self._single_visual_payload(chromium=None)]
+
+        def unavailable(_url, _token):
+            raise timings.ReportError("GitHub API request failed with HTTP 404 for /logs")
+
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, [])):
+            with mock.patch.object(timings, "api_bytes", unavailable):
+                _run, jobs, logs = timings.load_live("owner/repo", 1, None)
+        self.assertEqual(logs, {})
+        row = timings.build_rows(jobs, logs)[0]
+        self.assertEqual(row["pnpm_cache"]["state"], "unknown")
+        self.assertEqual(row["chromium_cache"]["state"], "n/a")
+
+    def test_corrupt_zip_log_raises_a_clear_report_error(self):
+        payloads = [self._single_visual_payload()]
+        with mock.patch.object(timings, "api_json", fake_api_json(payloads, [])):
+            with mock.patch.object(timings, "api_bytes", lambda _url, _token: b"PK\x03\x04broken"):
+                with self.assertRaises(timings.ReportError) as caught:
+                    timings.load_live("owner/repo", 1, None)
+        self.assertIn("not a valid zip", str(caught.exception))
+
+    def test_corrupt_logs_make_the_report_exit_non_zero(self):
+        payloads = [self._single_visual_payload()]
+        error = io.StringIO()
+        with mock.patch.object(timings, "resolve_repository", lambda _explicit: "owner/repo"):
+            with mock.patch.object(timings, "resolve_token", lambda: None):
+                with mock.patch.object(timings, "api_json", fake_api_json(payloads, [])):
+                    with mock.patch.object(
+                        timings, "api_bytes", lambda _url, _token: b"PK\x03\x04broken"
+                    ):
+                        with contextlib.redirect_stderr(error):
+                            status = timings.main(["43730539554"])
+        self.assertEqual(status, 2)
+        self.assertIn("not a valid zip", error.getvalue())
+
+
+class ApiJsonReportingTests(unittest.TestCase):
+    def test_invalid_json_error_keeps_the_decoder_detail(self):
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_exc):
+                return False
+
+            def read(self):
+                return b'{"jobs": '
+
+        with mock.patch.object(timings, "_github_request", lambda _url, _token: Response()):
+            with self.assertRaises(timings.ReportError) as caught:
+                timings.api_json("https://api.github.com/repos/owner/repo/actions/runs/1", None)
+        message = str(caught.exception)
+        self.assertIn("/repos/owner/repo/actions/runs/1", message)
+        self.assertIn("invalid JSON", message)
+        self.assertIn("Expecting value", message)
+        self.assertIn("line 1 column", message)
 
 
 class FixtureModeTests(unittest.TestCase):

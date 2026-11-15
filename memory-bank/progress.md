@@ -1,3 +1,18 @@
+## 2026-11-15 — Visual QA install timing reporter corrections
+- Fixed six confirmed defects in the PR #1917 reporter without reverting or re-implementing it: a
+  Chromium hit now requires a successfully completed restore step; pagination no longer stops after
+  a full page when `total_count` is missing or zero; corrupt zip logs raise a visible error while an
+  unavailable log still degrades to `unknown`; the first recorded cache state is preserved;
+  `api_json()` keeps the decoder message and position; and the hexadecimal `head_sha` fixture became
+  a harmless dummy, clearing DevSkim DS173237.
+- Extended the offline suite from 21 to 34 tests, including failed/cancelled/skipped/incomplete
+  restore steps, the missing-miss-step log fallback, duplicate-hit protection, missing/zero/positive
+  totals with multiple full pages, unavailable versus corrupt logs, and invalid JSON diagnostics.
+- Verified: 34 focused tests, 142 QA infrastructure tests, the DevSkim suppression suite, a local
+  DevSkim 1.0.103 scan (baseline 1 finding, corrected file 0), 80 files / 788 Vitest tests,
+  `freebuff-verify.sh` exit 0 and a 304,970,368-byte (290.84 MiB) build below the 495 MiB cap.
+  No workflow, cache key, install, Chromium-provisioning or classifier change.
+
 ## 2026-11-15 — Visual QA install timing report
 - Added `.github/scripts/report_visual_qa_install_timings.py`, a read-only, dependency-free reporter that takes a Visual QA run ID and prints each job's `Install dependencies` duration beside the PR #1914 baseline (8 s verification, 7 s per shard), plus pnpm and Chromium cache states.
 - Cache states come from `@actions/cache` log lines, with the Chromium cache-miss step conclusion as the offline fallback; missing logs degrade to `unknown`, and a cold pnpm store is called out as the only case where the skipped postinstall download mattered.
