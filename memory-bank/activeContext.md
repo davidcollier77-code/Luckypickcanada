@@ -38,11 +38,10 @@ the SwiftShader flag set from upstream documentation rather than from this envir
 - SwiftShader Playwright: 3/3 on desktop with the ANGLE/SwiftShader renderer.
 - WebGL-disabled browser check: static radial-gradient fallback rendered, Share reached, zero console
   errors.
-- `./freebuff-verify.sh` exit 0; production build 370.26 MiB, below the 495 MiB cap.
-- Full Vitest: 773/774. The single failure is pre-existing on `main`: PR #1912 flattened `AGENTS.md`
-  headings, and the current `main` tip #1913 still has no `###` headings or Playwright section. The
-  governance guard still looks for the `###` heading. `AGENTS.md` is untouched here; repairing it is a
-  separate governance task.
+- Governance guard: 10/10 after aligning its expectations with the current `AGENTS.md`; full Vitest
+  80/80 files, 774/774 tests; `tsc --noEmit` exit 0.
+- `./freebuff-verify.sh` exit 0; production build 387.04 MiB (160.32 MiB without cache), below the
+  495 MiB cap.
 
 ## Limitations
 
@@ -54,5 +53,5 @@ the SwiftShader flag set from upstream documentation rather than from this envir
 
 ## Follow-ups
 
-- Owner decision on the pre-existing `AGENTS.md` heading vs governance guard failure (separate PR).
+- Re-run the PR's CI after the governance-test correction.
 - Re-run the graphics probe after a Chromium upgrade before changing any SwiftShader flag.

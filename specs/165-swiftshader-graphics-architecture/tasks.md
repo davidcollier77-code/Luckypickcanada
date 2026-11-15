@@ -45,3 +45,5 @@
 - [x] T023 Review the complete diff and confirm no production graphics, visual or image change.
 - [x] T024 Update the PR body with scope, verification, limitations and deferred recommendations.
 - [x] T025 Push the branch and keep the pull request open and unmerged.
+- [x] T026 Align the governance guard with the current `AGENTS.md` wording without modifying `AGENTS.md` or `PR_SUBMISSION.md`.
+- [x] T027 Re-run the governance suite, full Vitest, type check, repository gate and build-size check, and update the PR handoff.

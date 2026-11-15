@@ -55,8 +55,10 @@ describe('single-source agent governance', () => {
   it('uses AGENTS.md as the current repository-governance entrypoint', () => {
     const agents = readAgents();
 
-    expect(agents).toContain('This file is the primary repository instruction for Freebuff.');
-    expect(agents).toContain('PR submission: "PR_SUBMISSION.md" is mandatory.');
+    expect(agents).toContain(
+      'This document establishes the repository governance and operating requirements for ChatGPT and Freebuff.',
+    );
+    expect(agents).toContain('"PR_SUBMISSION.md" is mandatory.');
     expect(agents).not.toContain('.freebuff/freebuff.md');
     expect(existsSync(obsoleteEntryPoint)).toBe(false);
     expect(existsSync(prSubmissionPath)).toBe(true);
@@ -67,8 +69,11 @@ describe('single-source agent governance', () => {
 
   it('requires PR submission to complete repository-changing tasks without forcing PRs for read-only work', () => {
     const agents = readAgents();
-    const handoffStart = agents.indexOf('4. Submit the PR.');
-    const handoffEnd = agents.indexOf('\n\nPROJECT-WIDE TECHNICAL RULES', handoffStart);
+    const handoffStart = agents.indexOf('4. SUBMIT THE PR');
+    const handoffEnd = agents.indexOf(
+      '\n\n---\n\n🟣 CHATGPT OPERATING INSTRUCTIONS',
+      handoffStart,
+    );
 
     expect(handoffStart).toBeGreaterThanOrEqual(0);
     expect(handoffEnd).toBeGreaterThan(handoffStart);
@@ -89,24 +94,22 @@ describe('single-source agent governance', () => {
     const agents = readAgents();
 
     expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
-    expect(agents).toContain('This is a task-planning input, not a step to defer until implementation or pre-submission review.');
+    expect(agents).toContain('This is a task-planning requirement, not something to defer until implementation or pre-submission review.');
     expect(agents).toContain('Use those requirements when defining the task\'s scope, constraints, implementation approach, acceptance criteria and verification plan.');
     expect(agents).not.toContain('REPOSITORY QA AND VALIDATION');
-    expect(agents).toContain('Complete the final checker-requirement review.');
+    expect(agents).toContain('COMPLETE THE FINAL CHECKER-REQUIREMENT REVIEW');
     expect(agents).toContain('review the completed implementation and complete diff against every applicable checker requirement');
     expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
-    expect(agents).toContain('Use Playwright as the primary browser automation tool.');
-    expect(agents).toContain(
-      'Use Browserless as the remote fallback for direct browser tasks.',
-    );
-    expect(agents).toContain(
-      'Use Firecrawl as the primary content-retrieval tool and Crawlbase as its fallback.',
-    );
+    expect(agents).toContain("Playwright is Freebuff's primary browser automation tool.");
+    expect(agents).toContain("Crawlbase is Freebuff's first and only fallback");
+    expect(agents).toContain('Crawlbase does not replace interactive browser rendering');
+    expect(agents).toContain("Browserless is ChatGPT's primary browser tool.");
+    expect(agents).toContain('Firecrawl is the fallback for supported content-retrieval tasks.');
     expect(agents).toContain(
       'The production build must remain strictly below 495 MiB.',
     );
     expect(agents).toContain(
-      'Complete the four core stages in that order for every repository-changing task.',
+      'Complete all required workflow stages in their prescribed order for repository-changing tasks.',
     );
     expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
     expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
@@ -119,21 +122,37 @@ describe('single-source agent governance', () => {
 
   it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
     const agents = readAgents();
-    const start = agents.indexOf('### Playwright Browser Testing (Freebuff only)');
-    const end = agents.indexOf('\n- Never weaken security', start);
+    const start = agents.indexOf('8. PLAYWRIGHT BROWSER TESTING');
+    const end = agents.indexOf('\n\nB — IMPLEMENT', start);
     const section = agents.slice(start, end);
+    const skill = readFileSync(
+      join(root, '.agents', 'skills', 'playwright-cli', 'SKILL.md'),
+      'utf8',
+    );
 
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
-    expect(section).toContain('ChatGPT must not use, load, modify or maintain the repository Playwright CLI');
     expect(section).toContain('./scripts/playwright-cli.sh');
-    expect(section).toContain('Option A — Standard');
-    expect(section).toContain('pnpm exec playwright test');
-    expect(section).toContain('Option B — SwiftShader');
-    expect(section).toContain('playwright.swiftshader.config.ts');
-    expect(section).toContain('does not measure physical GPU performance');
-    expect(section).toContain('standard QA and CI must continue using Option A');
-    expect(section).toContain('verify that the startup, browser-runtime and CLI setup scripts still work');
+    expect(section).toContain('.agents/skills/playwright-cli/SKILL.md');
+    expect(section).toContain('.agents/skills/playwright-cli/references/lucky-pick-canada.md');
+    expect(section).toContain('Do not introduce a competing CLI or browser automation setup.');
+    expect(section).toContain("Crawlbase is Freebuff's first and only fallback");
+    expect(section).toContain('Do not introduce additional browser fallback tools.');
+
+    // AGENTS.md designates the skill files as authoritative for both rendering modes.
+    expect(skill).toContain('Standard');
+    expect(skill).toContain('SwiftShader');
+    expect(skill).toContain('playwright.swiftshader.config.ts');
+    expect(skill).toContain('not a physical-GPU benchmark');
+
+    // ChatGPT's exclusion remains explicit in its own operating instructions.
+    expect(agents).toContain(
+      'ChatGPT must not load, modify or maintain the repository Playwright CLI',
+    );
+    expect(agents).toContain('The repository Playwright CLI.');
+    expect(agents).toContain(
+      'Do not spend time attempting to initialize, troubleshoot or maintain tools that are not available to ChatGPT.',
+    );
   });
 
   it('requires the protection workflow and owner rule for AGENTS.md', () => {
@@ -208,22 +227,24 @@ describe('single-source agent governance', () => {
   });
 
 
-  it('requires all nine Spec Kit commands and checks for workflow changes', () => {
+  it('requires the current Spec Kit workflow and all nine command definitions', () => {
     const agents = readAgents();
-    const start = agents.indexOf('8. Follow Spec Kit.');
-    const end = agents.indexOf('\n\nB — IMPLEMENT', start);
+    const start = agents.indexOf('8. SPEC KIT REQUIREMENTS');
+    const end = agents.indexOf('\n\n9. QA CHECKER REQUIREMENTS', start);
     const workflow = agents.slice(start, end);
     const normalized = workflow.toLowerCase();
 
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
-    expect(normalized).toContain('all nine command definitions');
-    expect(normalized).toContain('four core stages');
-    expect(normalized).toContain('five supporting commands');
-    expect(normalized).toContain('complete every required section, field and group');
+    expect(normalized).toContain('current spec kit command definitions');
+    expect(normalized).toContain('current spec kit workflow');
+    expect(normalized).toContain(
+      'complete all required workflow stages in their prescribed order',
+    );
+    expect(normalized).toContain('mandatory template sections');
     expect(normalized).toContain('notify the owner');
-    expect(normalized).toContain('authorized to make the necessary surgical update to agents.md');
-    expect(normalized).toContain('do not mechanically run all five supporting commands');
+    expect(normalized).toContain('limited strictly to affected wording');
+    expect(normalized).toContain('do not silently change the established project workflow');
 
     for (const command of [
       'specify',
@@ -236,7 +257,7 @@ describe('single-source agent governance', () => {
       'constitution',
       'converge',
     ]) {
-      expect(normalized).toContain(command);
+      expect(existsSync(join(root, '.freebuff', 'cmds', `speckit.${command}.md`))).toBe(true);
     }
   });
 

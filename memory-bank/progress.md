@@ -1,3 +1,8 @@
+## 2026-11-15 — Governance guard aligned with the revised AGENTS.md
+- Retargeted `__tests__/agent-governance-single-source.test.js` to the current unified ChatGPT/Freebuff `AGENTS.md` without changing `AGENTS.md` or `PR_SUBMISSION.md`.
+- Replaced stale entry-point, handoff, browser-fallback, Playwright-option and Spec Kit-count expectations with the equivalent current requirements; Playwright mode coverage now verifies the skill documents that `AGENTS.md` designates as authoritative.
+- Verified the focused governance suite 10/10, full Vitest 80/80 files and 774/774 tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, and a 387.04 MiB production build.
+
 ## 2026-11-15 — SwiftShader configuration verified and graphics architecture documented
 - Measured the SwiftShader flag set instead of assuming it: WebGL 1/2, shader link and pixel readback pass under the committed three arguments; WebGPU reports `unavailable_software` and `navigator.gpu` stays undefined with every tested WebGPU/Vulkan flag, and `--enable-webgpu-developer-features` degrades compositing and WebGL without exposing WebGPU.
 - Kept the three proven arguments, rejected the unsafe/experimental flags, exposed the documented `test:visual` and `test:visual:swiftshader` scripts, and extended the mode guard to pin the arguments and reject unjustified additions.

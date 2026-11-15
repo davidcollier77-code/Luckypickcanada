@@ -102,6 +102,12 @@ measurement. Record exact results in `evidence.md`.
 Review the complete diff, update the PR body with scope and evidence, push the branch, keep the pull
 request open and unmerged.
 
+### Phase 7: Governance guard alignment (owner-directed follow-up)
+
+Update the stale expectations in `__tests__/agent-governance-single-source.test.js` to the current
+`AGENTS.md` and `PR_SUBMISSION.md` wording without modifying either instruction file, preserving every
+coverage area. Re-run the focused guard, the full suite, type check, repository gate and build check.
+
 ## Complexity Tracking
 
 No constitution violations. No new abstraction, dependency or runtime path is introduced.

@@ -24,14 +24,15 @@ No console warning about SwiftShader appeared with or without `--enable-unsafe-s
 | Command | Result |
 | --- | --- |
 | `pnpm exec vitest run __tests__/playwright-config-modes.test.js __tests__/playwright-agent-toolkit.test.js` | **PASS** — 2 files, 9/9 tests, exit 0 |
-| `pnpm test` | **FAIL** — 79/80 files, 773/774 tests; one pre-existing governance failure (below) |
+| `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` | **PASS** — 10/10 after aligning expectations with the current `AGENTS.md` |
+| `pnpm test` | **PASS** — 80/80 files, 774/774 tests, exit 0 |
 | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
 | `pnpm exec playwright test tests/visual/security-headers.spec.ts --project=desktop --project=mobile-390` | **PASS** — 6/6 |
 | `pnpm exec playwright test tests/visual/security-headers.spec.ts --project=mobile-412` | **PASS** — 3/3 |
 | `pnpm exec playwright test tests/visual/security-headers.spec.ts --project=desktop --config=playwright.swiftshader.config.ts` | **PASS** — 3/3, 1 worker, SwiftShader renderer |
 | WebGL-disabled browser check (`/tmp/lpc-fallback.mjs`, route `/lucky-meter`) | **PASS** — see below |
 | `./freebuff-verify.sh` | **PASS** — exit 0; bootstrap, Spec Kit gate, checker tests, type check, production build, 36/36 docs tests |
-| Build size (`du -sb .next`) | **PASS** — 370.26 MiB total, 161.17 MiB excluding cache (cap 495 MiB) |
+| Build size (`du -sb .next`) | **PASS** — 387.04 MiB total, 160.32 MiB excluding cache (cap 495 MiB) |
 
 ## WebGL-disabled fallback observation
 
@@ -58,27 +59,33 @@ The page ran with `HTMLCanvasElement.prototype.getContext` returning `null` for 
 The cinematic stage mounted, rendered its static radial-gradient glow instead of WebGL, completed the
 sequence, and reached the Share control with no page or console errors.
 
-## Known pre-existing failure (not introduced by this change)
+## Governance test alignment
 
-`__tests__/agent-governance-single-source.test.js` fails at line 126 because it looks for the heading
-`### Playwright Browser Testing (Freebuff only)`, while `AGENTS.md` currently contains that text without
-`###`:
+The governance guard was written for an earlier `AGENTS.md` layout. PR #1913 replaced that file with the
+unified ChatGPT/Freebuff instruction set, so assertions that looked for the old entry-point sentence,
+section headings, browser-fallback ordering, Playwright option labels and Spec Kit counts no longer
+matched. The instructions were correct; the expectations were stale.
 
-```
-$ git show 157008fd^:AGENTS.md | grep -n "Playwright Browser Testing"
-79:### Playwright Browser Testing (Freebuff only)
-$ git show 157008fd:AGENTS.md | grep -n "Playwright Browser Testing"
-86:Playwright Browser Testing (Freebuff only)
-$ git status --short AGENTS.md
-(no output)
-```
+Only `__tests__/agent-governance-single-source.test.js` changed:
 
-Commit `157008fd` ("Update AGENTS.md (#1912)", already on `main`) flattened the headings. The newer
-`main` tip `f9d6d9d4` ("Update AGENTS.md (#1913)") still has no `###` headings and no
-`Playwright Browser Testing` heading at all, so the guard remains red there too. This branch does not
-modify `AGENTS.md`, so the failure exists independently of this diff. `AGENTS.md` is a protected
-governance file; repairing either the file or its governance guard requires owner direction and a
-separate governance PR.
+| Previous expectation | Current instruction checked |
+| --- | --- |
+| "This file is the primary repository instruction for Freebuff." | "This document establishes the repository governance and operating requirements for ChatGPT and Freebuff." |
+| "4. Submit the PR." and a `PROJECT-WIDE TECHNICAL RULES` boundary | "4. SUBMIT THE PR" and the Freebuff/ChatGPT section boundary |
+| "task-planning input" | "This is a task-planning requirement…" |
+| "Use Playwright as the primary browser automation tool." | "Playwright is Freebuff's primary browser automation tool." |
+| Browserless/Firecrawl fallback sentences | The current Freebuff rule ("Crawlbase is Freebuff's first and only fallback") plus the ChatGPT Browserless/Firecrawl rules, both asserted |
+| Playwright "Option A/B" block in `AGENTS.md` | `AGENTS.md` now designates `.agents/skills/playwright-cli/SKILL.md` and its reference as authoritative; the guard asserts that delegation and verifies `Standard`, `SwiftShader`, `playwright.swiftshader.config.ts` and `not a physical-GPU benchmark` in the skill file |
+| "all nine command definitions" / "four core stages" in `AGENTS.md` | Current Spec Kit requirements: current command definitions, prescribed stage order, mandatory template sections, owner notification, wording-only updates and no silent workflow change; all nine command files are still asserted |
+
+No coverage area was dropped. PR-submission handoff, QA planning requirements, the build-size cap,
+evidence statements, Playwright wrapper and mode separation, ChatGPT's exclusion, the Spec Kit workflow
+and every task-group file remain guarded. The nine-command check now validates the command files that
+`AGENTS.md` delegates to, rather than a hardcoded count in the prose.
+
+`AGENTS.md` and `PR_SUBMISSION.md` were not modified. Verification: the focused governance suite passes
+10/10, the full suite passes 80/80 files and 774/774 tests, `tsc --noEmit` exits 0, and
+`./freebuff-verify.sh` exits 0 with the build below the cap.
 
 ## Limitations
 
@@ -88,5 +95,4 @@ separate governance PR.
 - Firefox and WebKit were not run; their binaries are not available here.
 - The screenshot-based visual suite was not run; functional desktop, mobile-390 and mobile-412 Playwright
   checks were. No visual baselines changed.
-- The full unit suite has the one pre-existing governance failure described above; every other test
-  passed.
+- No unit-test failures remain; the governance guard passes against the current instructions.
