@@ -47,6 +47,10 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      # Run tests from the trusted base checkout, never from the pull request head.
+      - name: Test AGENTS.md protection classifier and workflow contract
+        run: python3 .github/scripts/test_agents_md_protection.py
+
       - name: Inspect changed paths from GitHub
         id: detect
         shell: bash
