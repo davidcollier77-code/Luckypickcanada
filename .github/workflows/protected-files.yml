@@ -83,15 +83,13 @@ jobs:
 
           protected_changed=()
           declare -A seen=()
-          TAB=$(printf '\t')
-
           api_output="$(mktemp)"
           changed_paths="$(mktemp)"
           trap 'rm -f "$api_output" "$changed_paths"' EXIT
 
           if ! gh api --paginate \
             "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
-            --jq '.[] | [.filename, (.previous_filename // ""), .status] | @tsv' \
+            --jq -j '.[] | .filename, "\u0000", (.previous_filename // ""), "\u0000", .status, "\u0000"' \
             >"$api_output"; then
             echo "::error::Failed to query the GitHub API for pull request files."
             {
@@ -107,8 +105,16 @@ jobs:
           agents_status=""
           agents_new_path=""
 
-          while IFS="$TAB" read -r new_path old_path status; do
-            printf '%s\t%s\n' "$new_path" "$old_path" >> "$changed_paths"
+          # NUL delimiters preserve empty previous_filename values. Bash treats
+          # tabs as IFS whitespace and would otherwise shift status into old_path.
+          while IFS= read -r -d '' new_path \
+            && IFS= read -r -d '' old_path \
+            && IFS= read -r -d '' status; do
+            if [[ -n "$old_path" ]]; then
+              printf '%s\t%s\n' "$new_path" "$old_path" >> "$changed_paths"
+            else
+              printf '%s\n' "$new_path" >> "$changed_paths"
+            fi
 
             for candidate in "$new_path" "$old_path"; do
               [[ -z "$candidate" ]] && continue
