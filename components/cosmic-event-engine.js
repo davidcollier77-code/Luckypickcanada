@@ -563,11 +563,18 @@ export function createCosmicEventEngine({
    * is unavailable, the point falls back to the far surface rather than being
    * lost, which keeps the composition complete on constrained devices.
    */
+  // Aggregate of every point both surfaces rejected during this run, so budget
+  // pressure during the finale is observable without a per-drop log in the
+  // render loop. It is surfaced through the debug hook below.
+  let droppedPoints = 0;
+
   function pushPoint(x, y, size, color, alpha, near = false) {
     if (alpha <= 0.003 || size <= 0) return;
     const batch = near && canUseNear() ? nearBatch : farBatch;
     if (!batch) return;
-    batch.push(x, y, size, color, alpha, pixelRatio, farSurface.maxPointSize);
+    if (!batch.push(x, y, size, color, alpha, pixelRatio, farSurface.maxPointSize)) {
+      droppedPoints += 1;
+    }
   }
 
   function liveParticleCount() {
@@ -1560,6 +1567,7 @@ export function createCosmicEventEngine({
         finaleSpawned,
         farDropped: farBatch.dropped,
         nearDropped: nearBatch ? nearBatch.dropped : 0,
+        droppedPoints,
         byKind: fireworks.reduce((totals, shell) => {
           for (const particle of shell.particles) {
             totals[particle.kind] = (totals[particle.kind] || 0) + 1;
