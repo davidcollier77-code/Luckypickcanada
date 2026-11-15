@@ -170,7 +170,7 @@ class InputValidationTests(unittest.TestCase):
                     protection.normalize_path(path)
 
     def test_trailing_empty_previous_path_is_not_a_changed_path(self):
-        records = protection.parse_changed_files(["AGENTS.md\\t\\n"])
+        records = protection.parse_changed_files(["AGENTS.md\t\n"])
         self.assertEqual(records, [{"path": "AGENTS.md", "previous_path": ""}])
 
     def test_protected_file_workflow_preserves_empty_previous_filename(self):
@@ -183,7 +183,7 @@ class InputValidationTests(unittest.TestCase):
         with open(workflow_path, encoding="utf-8") as handle:
             workflow = handle.read()
         self.assertIn("read -r -d '' new_path", workflow)
-        self.assertIn('(.previous_filename // ""), "\\\\u0000"', workflow)
+        self.assertIn('(.previous_filename // ""), "\\u0000"', workflow)
         self.assertNotIn('IFS="$TAB" read -r new_path old_path status', workflow)
 
     def test_leading_dot_slash_is_normalized(self):
