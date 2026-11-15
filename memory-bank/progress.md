@@ -1,3 +1,10 @@
+## 2026-11-15 — SwiftShader configuration verified and graphics architecture documented
+- Measured the SwiftShader flag set instead of assuming it: WebGL 1/2, shader link and pixel readback pass under the committed three arguments; WebGPU reports `unavailable_software` and `navigator.gpu` stays undefined with every tested WebGPU/Vulkan flag, and `--enable-webgpu-developer-features` degrades compositing and WebGL without exposing WebGPU.
+- Kept the three proven arguments, rejected the unsafe/experimental flags, exposed the documented `test:visual` and `test:visual:swiftshader` scripts, and extended the mode guard to pin the arguments and reject unjustified additions.
+- Added `docs/graphics-rendering-architecture.md` covering CSS/Canvas 2D/WebGL/optional WebGPU layers, capability selection, renderer inventory, fallbacks, AVIF/WebP independence and future 3D requirements, without adding effects or production WebGPU.
+- Corrected the 13-area Playwright skill guidance to the measured capability and compatibility results.
+- Verified: both Playwright configurations pass, WebGL-disabled fallback renders and completes with zero console errors, `./freebuff-verify.sh` exit 0, build 370.26 MiB, full suite 773/774 with one pre-existing `AGENTS.md` heading/governance-guard failure from #1912.
+
 ## 2026-11-15 — Playwright visual QA classification correction
 - Narrowed the visual-browser trigger so CI-only changes under `.github/` and Next.js API route handlers under `app/api/` and `pages/api/` do not require screenshot/browser inspection.
 - Kept frontend routes/components, styles, visual assets, browser/e2e tests, visual tooling configuration and unknown paths on the Playwright-required path. Mixed changes still require browser coverage.

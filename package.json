@@ -8,7 +8,9 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "postbuild": "echo 'Build completed successfully'",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:visual": "playwright test",
+    "test:visual:swiftshader": "playwright test --config=playwright.swiftshader.config.ts"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "1.6.1",
