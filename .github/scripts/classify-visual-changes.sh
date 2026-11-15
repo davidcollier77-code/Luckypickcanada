@@ -10,20 +10,52 @@
 # `visual_required=false`. Diagnostics go to standard error.
 #
 # The classifier fails closed. Known non-rendering paths may skip visual QA:
-# documentation/task records, CI configuration and scripts, backend API route
-# handlers, the classifier itself, and unit tests directly under __tests__/.
-# Frontend application paths, browser/e2e tests, visual assets/configuration and
-# unknown paths still request visual QA.
+# documentation/task records, agent skill and Playwright documentation, CI
+# configuration and scripts, backend API route handlers, the classifier itself,
+# unit tests directly under __tests__/, and standalone Playwright configuration
+# files that CI visual QA does not use. Frontend application paths, browser/e2e
+# tests, the QA Playwright configuration, visual assets and unknown paths still
+# request visual QA.
+#
+# package.json is never exempt by path. It is non-rendering only when the caller
+# positively establishes, with PACKAGE_JSON_SCRIPTS_ONLY=true, that the manifest
+# changed solely in test/tooling scripts (see package-json-scripts-only.mjs).
+# Dependencies, exports, engines, pnpm overrides, build/dev lifecycle scripts,
+# an unknown script name, or a missing/unreadable determination keep visual QA.
 
 set -euo pipefail
 
 non_rendering_path() {
   case "$1" in
+    # Documentation at any depth, task records and the reference library.
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
-    .specify/feature.json | .github/scripts/classify-visual-changes.sh) return 0 ;;
-    .github/* | app/api/* | pages/api/*) return 0 ;;
+
+    # Agent skill documentation, including the vendored Playwright CLI skill and
+    # its reference material. Agents read these files; the Next.js build never
+    # bundles them and they cannot change rendered output.
+    .agents/skills/*) return 0 ;;
+
+    # Repository automation, QA checkers and backend API route handlers.
+    .specify/feature.json | .github/* | app/api/* | pages/api/*) return 0 ;;
+
+    # Unit-test-only changes under __tests__/.
     __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
+
+    # The Playwright configuration the visual QA job runs stays on the visual
+    # path: a change there changes how the committed baselines are produced.
+    playwright.config.ts) return 1 ;;
+
+    # Standalone Playwright configurations (for example the opt-in SwiftShader
+    # investigation configuration) are not used by the CI visual QA job and do
+    # not affect the application's rendered output.
+    playwright.*.config.ts | playwright-*.config.ts) return 0 ;;
+
+    # package.json is decided by the manifest comparison supplied by the caller.
+    package.json)
+      [[ "${PACKAGE_JSON_SCRIPTS_ONLY:-}" == "true" ]]
+      return
+      ;;
   esac
   return 1
 }
