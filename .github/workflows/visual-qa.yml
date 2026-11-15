@@ -16,7 +16,8 @@ concurrency:
 jobs:
   # Visual QA is only meaningful when a pull request can change rendered output.
   # This job classifies the changed paths and fails closed: a failed file listing,
-  # an empty list, or any path that is not documentation-only requires visual QA.
+  # an empty list, an unreadable package.json comparison, or any path that is not
+  # positively established as non-rendering requires visual QA.
   changes:
     name: Detect visual changes
     runs-on: ubuntu-latest
@@ -79,6 +80,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
 
@@ -93,7 +96,34 @@ jobs:
             exit 0
           fi
 
-          if ! classification="$(bash .github/scripts/classify-visual-changes.sh <"$files")"; then
+          # package.json is never exempt by path. Compare the base and head
+          # manifests so only a change limited to test/tooling scripts can skip
+          # visual QA. Dependencies, exports, engines, pnpm overrides, build/dev
+          # lifecycle scripts and any failed comparison keep visual QA.
+          package_json_scripts_only=false
+          if grep -Fxq 'package.json' "$files"; then
+            base_package="$(mktemp)"
+            head_package="$(mktemp)"
+            trap 'rm -f "$files" "$base_package" "$head_package"' EXIT
+            if gh api -H 'Accept: application/vnd.github.raw' \
+                 "repos/${REPOSITORY}/contents/package.json?ref=${BASE_SHA}" >"$base_package" \
+               && gh api -H 'Accept: application/vnd.github.raw' \
+                 "repos/${REPOSITORY}/contents/package.json?ref=${HEAD_SHA}" >"$head_package" \
+               && package_json_decision="$(node .github/scripts/package-json-scripts-only.mjs "$base_package" "$head_package")"; then
+              case "$package_json_decision" in
+                scripts_only=true) package_json_scripts_only=true ;;
+                scripts_only=false) ;;
+                *)
+                  echo "::warning::package.json classification returned an unexpected value; treating the manifest as rendering-affecting (fail closed)."
+                  ;;
+              esac
+            else
+              echo "::warning::package.json could not be compared with its base revision; treating the manifest as rendering-affecting (fail closed)."
+            fi
+          fi
+
+          if ! classification="$(PACKAGE_JSON_SCRIPTS_ONLY="$package_json_scripts_only" \
+            bash .github/scripts/classify-visual-changes.sh <"$files")"; then
             echo "::warning::Change classification failed; requesting visual QA (fail closed)."
             classification="visual_required=true"
           fi
@@ -143,6 +173,12 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
+        env:
+          # playwright-chromium's postinstall would download a browser during
+          # installation. The verification job never launches a browser, and the
+          # visual job provisions Chromium explicitly after its version-keyed
+          # cache step, so that download is always redundant in QA.
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: pnpm install --frozen-lockfile
 
       # Exercise the QA infrastructure checkers directly. These tests do not
@@ -204,6 +240,11 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
+        env:
+          # Skip playwright-chromium's postinstall download. It runs before the
+          # version-keyed browser cache is restored and would duplicate the
+          # Chromium build this job installs explicitly after that cache step.
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: pnpm install --frozen-lockfile
 
       # The Chromium build Playwright downloads is a function of the Playwright

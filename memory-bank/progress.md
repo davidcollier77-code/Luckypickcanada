@@ -1,3 +1,11 @@
+## 2026-11-15 — Visual QA classifier precision and QA Playwright initialization
+- Extended the fail-closed visual change classifier with positively non-rendering classes that cannot affect production rendering: agent/Playwright skill documentation (`.agents/skills/*`) and standalone Playwright configurations (`playwright.*.config.ts`, `playwright-*.config.ts`). `playwright.config.ts`, app code, components, styles, images, fonts, rendering configuration, visual/e2e tests and unknown paths still require visual QA.
+- Removed the blanket `package.json` trigger. A new fail-closed manifest comparator reports scripts-only only for changed test/tooling script names (`test`, `lint`, `format`, `typecheck`, `type-check`, `check`, `verify` and `:<name>` variants). Dependencies, engines, exports, package-manager/PNPM overrides, lifecycle scripts, unknown scripts and failed comparisons keep visual QA.
+- The `changes` job compares base/head `package.json` through the read-only contents API and warns plus keeps visual QA on any failure. The always-on verification job, gated browser job, Playwright projects, shards, retries and committed baselines are unchanged.
+- Removed Playwright's npm postinstall browser download from both QA dependency installs (`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`). The visual job previously downloaded Chromium before restoring its version-keyed cache; the exit verification job never launched a browser at all. Explicit Chromium provisioning and system dependencies remain mandatory.
+- Added executed regression coverage for every requested case, including the exact merged PR #1914 changed-file set. Focused suite 30/30; full suite, TypeScript, repository gate and build size recorded in `specs/166-visual-qa-classifier-precision/evidence.md`.
+- GitHub Actions results remain pending PR submission.
+
 ## 2026-11-15 — Governance guard aligned with the revised AGENTS.md
 - Retargeted `__tests__/agent-governance-single-source.test.js` to the current unified ChatGPT/Freebuff `AGENTS.md` without changing `AGENTS.md` or `PR_SUBMISSION.md`.
 - Replaced stale entry-point, handoff, browser-fallback, Playwright-option and Spec Kit-count expectations with the equivalent current requirements; Playwright mode coverage now verifies the skill documents that `AGENTS.md` designates as authoritative.
