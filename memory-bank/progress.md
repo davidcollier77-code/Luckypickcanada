@@ -349,3 +349,5 @@ This file is a concise record of meaningful completed work, not a chronological 
 ## Historical record policy
 - Detailed PR-by-PR logs, old task checklists, reviewer debates and transient CI failures were removed from this working summary. The authoritative evidence remains in GitHub commits, pull requests, workflow runs and the relevant Spec Kit feature directories.
 - Do not restore routine PR transcripts here. Add a new entry only for a durable project milestone or decision that materially helps future work.
+
+- 2026-11-15 follow-up: fixed protected-files workflow parsing by switching the GitHub changed-file stream to NUL-delimited fields, preserving empty previous filenames and preventing status values from being misread as paths. Added parser/workflow regression coverage and moved the Spec Kit evidence record under the classifier's existing allowed `evidence/` directory. The first CI run's changed-code review passed with zero findings; the protected-file check failed before this correction and must be rerun on the new head.
