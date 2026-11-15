@@ -91,9 +91,9 @@ jobs:
           changed_paths="$(mktemp)"
           trap 'rm -f "$api_output" "$changed_paths"' EXIT
 
-          if ! gh api --paginate \
+          if ! gh api --paginate --slurp \
             "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
-            --jq -j '.[] | .filename, "\u0000", (.previous_filename // ""), "\u0000", .status, "\u0000"' \
+            | jq -j 'add[] | .filename, "\u0000", (.previous_filename // ""), "\u0000", .status, "\u0000"' \
             >"$api_output"; then
             echo "::error::Failed to query the GitHub API for pull request files."
             {
