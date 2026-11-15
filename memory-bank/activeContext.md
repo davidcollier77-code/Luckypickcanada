@@ -40,8 +40,9 @@ the SwiftShader flag set from upstream documentation rather than from this envir
   errors.
 - `./freebuff-verify.sh` exit 0; production build 370.26 MiB, below the 495 MiB cap.
 - Full Vitest: 773/774. The single failure is pre-existing on `main`: PR #1912 flattened `AGENTS.md`
-  headings, and the governance guard still looks for the `###` heading. `AGENTS.md` is untouched here;
-  repairing it is a separate governance task.
+  headings, and the current `main` tip #1913 still has no `###` headings or Playwright section. The
+  governance guard still looks for the `###` heading. `AGENTS.md` is untouched here; repairing it is a
+  separate governance task.
 
 ## Limitations
 

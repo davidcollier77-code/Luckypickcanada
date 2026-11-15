@@ -73,10 +73,12 @@ $ git status --short AGENTS.md
 (no output)
 ```
 
-Commit `157008fd` ("Update AGENTS.md (#1912)", already on `main`) flattened the headings. This branch
-does not modify `AGENTS.md`, so the failure exists independently of this diff. `AGENTS.md` is a
-protected governance file; repairing either the file or its governance guard requires owner direction
-and a separate governance PR.
+Commit `157008fd` ("Update AGENTS.md (#1912)", already on `main`) flattened the headings. The newer
+`main` tip `f9d6d9d4` ("Update AGENTS.md (#1913)") still has no `###` headings and no
+`Playwright Browser Testing` heading at all, so the guard remains red there too. This branch does not
+modify `AGENTS.md`, so the failure exists independently of this diff. `AGENTS.md` is a protected
+governance file; repairing either the file or its governance guard requires owner direction and a
+separate governance PR.
 
 ## Limitations
 
