@@ -63,7 +63,9 @@ export default function CosmicEventStage({
 
     if (reducedMotion) {
       // Respect reduced motion: no animation, no WebGL loop, a calm glow only.
-      const reducedTimer = window.setTimeout(() => {
+      // DevSkim DS172411 is a false positive here: the callback is a local
+      // closure and no request data, string or user input reaches the timer.
+      const reducedTimer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
         completed = true;
         finishOnce();
       }, 900);
@@ -91,7 +93,8 @@ export default function CosmicEventStage({
     if (!engine) setFallback(true);
     setHasForeground(Boolean(engine?.hasForeground));
     // Safety net: the stage can never leave the UI stuck if the loop fails.
-    const safetyTimer = window.setTimeout(() => {
+    // Same verified-safe timer as above: a fixed delay with a local closure.
+    const safetyTimer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
       if (!completed) setFallback(true);
       finishOnce();
     }, safeDuration + 450);

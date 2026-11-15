@@ -150,9 +150,10 @@ export class PointBatch {
     if (required <= this.capacity) return true;
     if (required > this.limit) return false;
 
-    let nextCapacity = this.capacity;
-    while (nextCapacity < required) nextCapacity *= 2;
-    const capped = Math.min(nextCapacity, this.limit);
+    // Grow towards double the current capacity but never past the ceiling, and
+    // never past what this call actually needs, so a single large spawn does
+    // not allocate far more than it will use.
+    const capped = Math.min(this.limit, Math.max(required, this.capacity * 2));
     const positions = new Float32Array(capped * 2);
     const colors = new Float32Array(capped * 4);
     const sizes = new Float32Array(capped);

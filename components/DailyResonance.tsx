@@ -695,21 +695,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             {isRevealing ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-2 text-[clamp(0.45rem,1.1vh,0.625rem)] uppercase tracking-[0.3em] text-amber-200/70">
+                <p className="mb-2 text-[clamp(12px,1.5vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
                   Reading today&apos;s resonance
                 </p>
                 <div className="text-gold-gradient text-[clamp(1.9rem,7vh,4.25rem)] font-bold leading-none tabular-nums">
                   {displayPercentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-3 text-[9px] uppercase tracking-[0.28em] text-slate-400 sm:text-[10px]">
+                <p className="mt-3 text-[12px] uppercase tracking-[0.14em] text-slate-400 sm:text-[13px]">
                   The sky is listening
                 </p>
               </div>
             ) : isRevealed && result ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1 text-[clamp(0.45rem,1.1vh,0.625rem)] uppercase tracking-[0.3em] text-amber-200/65">
+                <p className="mb-1 text-[clamp(12px,1.5vh,13px)] uppercase tracking-[0.16em] text-amber-200/65">
                   Daily Resonance
                 </p>
                 <div
@@ -720,23 +720,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   {displayPercentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-1.5 text-[clamp(0.5rem,1.4vh,0.75rem)] font-semibold uppercase tracking-[0.16em] text-amber-100">
+                <p className="mt-1.5 text-[clamp(12px,1.4vh,15px)] font-semibold uppercase tracking-[0.12em] text-amber-100">
                   {result.tier.label}
                 </p>
-                <p className="mt-1 max-w-[13rem] text-[clamp(0.5rem,1.25vh,0.6875rem)] leading-snug text-slate-200/85">
+                <p className="mt-1 max-w-[14rem] text-[clamp(12px,1.25vh,13px)] leading-snug text-slate-200/85">
                   {result.tier.message}
                 </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Daily Resonance Ritual</h1>
-                <p className="text-[8px] uppercase tracking-[0.4em] text-amber-200/60 sm:text-[9px]">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60 sm:text-[13px]">
                   Daily Resonance
                 </p>
                 <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
                   —
                 </span>
-                <p className="mt-2 text-[8px] uppercase tracking-[0.3em] text-slate-400 sm:text-[9px]">
+                <p className="mt-2 text-[12px] uppercase tracking-[0.16em] text-slate-400 sm:text-[13px]">
                   Awaiting the reading
                 </p>
               </div>
@@ -753,14 +753,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[9px] uppercase tracking-[0.24em] text-amber-200/70">
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
                         Today&apos;s Event
                       </h2>
                       <p className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base">
                         {result.event.name}
                       </p>
                       {stageActive && (
-                        <p className="mt-0.5 inline-flex items-center gap-1.5 text-[10px] text-amber-200/80">
+                        <p className="mt-0.5 inline-flex items-center gap-1.5 text-[12px] text-amber-200/80">
                           <span className="h-1 w-1 animate-pulse rounded-full bg-amber-300" />
                           Now playing
                         </p>
@@ -768,7 +768,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[9px] uppercase tracking-[0.24em] text-amber-200/70">
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
                         Today&apos;s Colour
                       </h2>
                       <div className="mt-1 flex items-center gap-2.5">
@@ -783,7 +783,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                           <p className="truncate text-sm font-semibold text-white sm:text-base">
                             {result.colour.name}
                           </p>
-                          <p className="text-[9px] uppercase tracking-widest text-slate-400">
+                          <p className="text-[12px] uppercase tracking-wider text-slate-400">
                             {result.colour.hex}
                           </p>
                         </div>
@@ -791,7 +791,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[9px] uppercase tracking-[0.24em] text-amber-200/70">
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
                         {LUCKY_NUMBERS_LABEL}
                       </h2>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -807,17 +807,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[9px] uppercase tracking-[0.24em] text-amber-200/70">
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
                         Little Spark
                       </h2>
-                      <p className="mt-0.5 text-[10px] italic leading-snug text-amber-50/90 sm:text-xs">
+                      <p className="mt-0.5 text-[12px] italic leading-snug text-amber-50/90 sm:text-[13px]">
                         “{result.spark.message}”
                       </p>
                     </section>
                   </div>
 
                   {!isCompact && (
-                    <p className="mt-2 text-center text-[10px] leading-relaxed text-slate-400">
+                    <p className="mt-2 text-center text-[12px] leading-relaxed text-slate-400">
                       {ENTERTAINMENT_DISCLAIMER}
                     </p>
                   )}
@@ -835,7 +835,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </button>
 
                     <div className="mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-0.5">
-                      <p className="text-[9px] text-slate-400 uppercase tracking-[0.24em]">
+                      <p className="text-[12px] text-slate-400 uppercase tracking-[0.18em]">
                         Next Resonance In
                       </p>
                       <div
@@ -846,7 +846,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                       </div>
                     </div>
                     {!isCompact && (
-                      <p className="mt-1 text-[10px] text-slate-500">
+                      <p className="mt-1 text-[12px] text-slate-500">
                         A new reading appears after local midnight.
                       </p>
                     )}
