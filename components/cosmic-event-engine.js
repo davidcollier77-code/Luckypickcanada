@@ -1283,6 +1283,12 @@ export function createCosmicEventEngine({
     }
 
     // Burst particles with cascading trails.
+    //
+    // This is a snapshot taken before the loop. Children added by silver
+    // branching below are not visited in this same pass (the loop walks
+    // backwards from the pre-existing tail), so the snapshot intentionally
+    // lags by one frame; it gates branching, not the per-frame draw budget,
+    // which PointBatch.maxPoints enforces at push time.
     let liveParticles = liveParticleCount();
     for (let fireworkIndex = fireworks.length - 1; fireworkIndex >= 0; fireworkIndex -= 1) {
       const firework = fireworks[fireworkIndex];
@@ -1564,7 +1570,9 @@ export function createCosmicEventEngine({
         nearDead: nearDead,
         globalAlpha: globalAlpha,
         lost: farSurface.gl.isContextLost(),
-        glError: farSurface.gl.getError(),
+        // Deliberately no gl.getError() here: it synchronises the GPU pipeline
+        // on every frame and would distort the timing this hook exists to
+        // measure. Use the browser devtools or a one-off call instead.
         firstPoints: Array.from(farBatch.positions.slice(0, 8)),
         firstColors: Array.from(farBatch.colors.slice(0, 8)),
         firstSizes: Array.from(farBatch.sizes.slice(0, 6)),
@@ -1635,6 +1643,10 @@ export function createCosmicEventEngine({
             nearDead = true;
             try {
               nearSurface.clear();
+              // Release the JS-side handles now rather than at teardown: the
+              // driver has already dropped this context, and holding the
+              // buffers/programs until destroy() would keep them reachable.
+              nearSurface.dispose();
             } catch {
               // The context is already gone.
             }
