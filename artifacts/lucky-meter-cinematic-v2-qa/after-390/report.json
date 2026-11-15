@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-15T22:55:42.874Z",
+  "capturedAt": "2026-11-15T23:35:58.654Z",
   "baseUrl": "http://127.0.0.1:3000",
   "viewports": {
     "mobile-390": {
@@ -22,15 +22,15 @@
             "mobile-390-meteor-093.png"
           ],
           "perf": {
-            "frames": 133,
-            "fps": 52.9,
+            "frames": 119,
+            "fps": 47.6,
             "medianMs": 16.7,
-            "p95Ms": 33.3,
-            "dropped": 19,
+            "p95Ms": 33.4,
+            "dropped": 33,
             "longestStallMs": 33.4
           },
           "debug": {
-            "elapsed": 9006,
+            "elapsed": 9023,
             "farCount": 0,
             "nearCount": 0,
             "fireworks": 0,
@@ -58,11 +58,11 @@
             "mobile-390-lightning-093.png"
           ],
           "perf": {
-            "frames": 129,
-            "fps": 51.4,
+            "frames": 119,
+            "fps": 47.6,
             "medianMs": 16.7,
-            "p95Ms": 33.3,
-            "dropped": 23,
+            "p95Ms": 33.4,
+            "dropped": 33,
             "longestStallMs": 33.4
           },
           "debug": {
@@ -80,7 +80,7 @@
             "nearDropped": 0,
             "droppedPoints": 0,
             "qualitySteps": 2,
-            "nearDead": false,
+            "nearDead": true,
             "globalAlpha": 0,
             "lost": false
           },
@@ -95,18 +95,18 @@
             "mobile-390-fireworks-095.png"
           ],
           "perf": {
-            "frames": 133,
-            "fps": 53,
+            "frames": 112,
+            "fps": 44.8,
             "medianMs": 16.7,
             "p95Ms": 33.4,
-            "dropped": 19,
+            "dropped": 40,
             "longestStallMs": 33.4
           },
           "debug": {
-            "elapsed": 11520,
+            "elapsed": 11506,
             "farCount": 0,
             "nearCount": 0,
-            "fireworks": 0,
+            "fireworks": 2,
             "rockets": 0,
             "meteors": 0,
             "strikes": 0,
@@ -115,7 +115,7 @@
             "finaleSpawned": true,
             "farDropped": 0,
             "nearDropped": 0,
-            "droppedPoints": 39697,
+            "droppedPoints": 91183,
             "qualitySteps": 2,
             "nearDead": true,
             "globalAlpha": 0,

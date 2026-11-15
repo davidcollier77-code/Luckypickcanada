@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-15T22:56:38.121Z",
+  "capturedAt": "2026-11-15T23:36:44.261Z",
   "baseUrl": "http://127.0.0.1:3000",
   "viewports": {
     "mobile-412": {
@@ -22,11 +22,11 @@
             "mobile-412-meteor-093.png"
           ],
           "perf": {
-            "frames": 127,
-            "fps": 50.2,
-            "medianMs": 16.7,
+            "frames": 100,
+            "fps": 39.8,
+            "medianMs": 33.2,
             "p95Ms": 33.4,
-            "dropped": 26,
+            "dropped": 0,
             "longestStallMs": 33.4
           },
           "debug": {
@@ -58,11 +58,11 @@
             "mobile-412-lightning-093.png"
           ],
           "perf": {
-            "frames": 119,
-            "fps": 47.5,
+            "frames": 121,
+            "fps": 48,
             "medianMs": 16.7,
             "p95Ms": 33.4,
-            "dropped": 33,
+            "dropped": 32,
             "longestStallMs": 33.4
           },
           "debug": {
@@ -80,7 +80,7 @@
             "nearDropped": 0,
             "droppedPoints": 0,
             "qualitySteps": 2,
-            "nearDead": false,
+            "nearDead": true,
             "globalAlpha": 0,
             "lost": false
           },
@@ -95,11 +95,11 @@
             "mobile-412-fireworks-095.png"
           ],
           "perf": {
-            "frames": 127,
-            "fps": 50.6,
+            "frames": 119,
+            "fps": 47,
             "medianMs": 16.7,
             "p95Ms": 33.4,
-            "dropped": 25,
+            "dropped": 34,
             "longestStallMs": 33.4
           },
           "debug": {
@@ -115,7 +115,7 @@
             "finaleSpawned": true,
             "farDropped": 0,
             "nearDropped": 0,
-            "droppedPoints": 3222,
+            "droppedPoints": 89188,
             "qualitySteps": 2,
             "nearDead": true,
             "globalAlpha": 0,
