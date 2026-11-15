@@ -104,10 +104,19 @@ export default function ExploreLuckButton() {
     });
     document.body.appendChild(canvas);
     confettiCanvasRef.current = canvas;
-    confettiInstanceRef.current = confettiLib.create(canvas, {
-      resize: true,
-      useWorker: false,
-    });
+    try {
+      confettiInstanceRef.current = confettiLib.create(canvas, {
+        resize: true,
+        useWorker: false,
+      });
+    } catch (error) {
+      // A browser without a usable 2D context must not block the Explore scroll.
+      canvas.remove();
+      confettiCanvasRef.current = null;
+      confettiInstanceRef.current = null;
+      console.warn('Confetti effect unavailable', error);
+      return null;
+    }
     return confettiInstanceRef.current;
   }, []);
 
@@ -141,6 +150,9 @@ export default function ExploreLuckButton() {
     const count = 72;
 
     const fireConfetti = (confettiLib) => {
+      const confetti = getConfettiInstance(confettiLib);
+      if (!confetti) return;
+
       // Find the button element by traversing up or querying
       const btn = document.querySelector('.homepage-hero-welcome button[aria-label^="Explore your luck"]');
       let originY = 0.9;
@@ -169,7 +181,7 @@ export default function ExploreLuckButton() {
       };
 
       function fire(particleRatio, opts) {
-        getConfettiInstance(confettiLib)({
+        confetti({
           ...defaults,
           ...opts,
           particleCount: Math.floor(count * particleRatio)

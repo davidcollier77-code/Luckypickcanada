@@ -1,5 +1,22 @@
 # Project Progress — Significant Milestones
 
+## 2026-11-14 — Adaptive graphics capability foundation
+- Added one dependency-free capability layer for safe Canvas 2D/WebGL acquisition, lazy cached
+  feature checks, a conservative device profile, pixel-ratio and particle-scale caps,
+  reduced-motion/visibility lifecycle, and context-loss handling.
+- Adopted it across the homepage stars, Aurora, Lucky Meter cinematic stage, Lucky Card reveal,
+  share images, confetti and the retained legacy starfields while preserving every existing
+  static fallback and the approved artwork, sounds and interactions.
+- Removed the engine's forced high-performance power hint so Chrome, Edge, Firefox, Samsung
+  Internet and Safari can each choose their available graphics path; no browser or SwiftShader
+  path is forced.
+- Verified: 14 focused graphics tests, 3 stage-fallback tests, 43 affected component tests,
+  751/751 full tests, type check exit 0, repository gate exit 0, a clean 302,780,210-byte build
+  (≈288.75 MiB), production-build Chromium checks for normal/reduced-motion/no-2D rendering, and
+  the committed homepage visual baselines across desktop and both mobile projects. Firefox/WebKit
+  and Samsung Internet remain untested because their native libraries or binaries are unavailable
+  in this environment.
+
 ## 2026-11-14 — QA checker requirements moved into task planning
 - Added a dedicated AGENTS.md planning-stage section requiring agents to inspect applicable QA checker definitions and understand their actual checks before drafting task specifications.
 - Requires checker scope, triggers, inputs, evidence, thresholds, approvals and pass/fail behaviour to inform task scope, constraints, acceptance criteria and verification planning.

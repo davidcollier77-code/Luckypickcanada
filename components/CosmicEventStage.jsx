@@ -65,6 +65,7 @@ export default function CosmicEventStage({
         durationMs: safeDuration,
         onCue: (cue) => onCueRef.current?.(cue),
         onDone: finishOnce,
+        onContextLost: () => setFallback(true),
       });
     } catch {
       engine = null;

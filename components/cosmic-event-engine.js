@@ -17,6 +17,14 @@
  *     fallback and keeps its own completion timer.
  */
 
+import {
+  getGraphicsProfile,
+  getWebGLContext,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from '../app/lib/graphics-capabilities';
+
 const POINT_VERTEX_SHADER = `
 attribute vec2 a_position;
 attribute vec4 a_color;
@@ -318,27 +326,29 @@ function rasterizeSegments(segments, { step, coreSize, coreColor, depth }) {
  *   durationMs: number,
  *   onCue?: (cue: string) => void,
  *   onDone?: () => void,
+ *   onContextLost?: () => void,
  * }} options
  * @returns {{ destroy: () => void } | null} Null when WebGL cannot be created.
  */
-export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, onDone }) {
+export function createCosmicEventEngine({
+  canvas,
+  eventId,
+  durationMs,
+  onCue,
+  onDone,
+  onContextLost,
+}) {
   if (!canvas || typeof window === 'undefined') return null;
 
-  const gl =
-    canvas.getContext('webgl', {
-      alpha: true,
-      antialias: false,
-      depth: false,
-      stencil: false,
-      premultipliedAlpha: false,
-      powerPreference: 'high-performance',
-    }) ||
-    canvas.getContext('experimental-webgl', {
-      alpha: true,
-      antialias: false,
-      depth: false,
-      premultipliedAlpha: false,
-    });
+  // The shared getter tries webgl then experimental-webgl and lets the browser
+  // choose its renderer. It never rejects a software fallback.
+  const gl = getWebGLContext(canvas, {
+    alpha: true,
+    antialias: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: false,
+  });
 
   if (!gl) return null;
 
@@ -384,9 +394,8 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
     }
   })();
 
-  const prefersReducedMotion =
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reducedMotion = prefersReducedMotion();
+  const particleScale = getGraphicsProfile().particleScale;
   const coarsePointer =
     typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
   const isMobileViewport = window.innerWidth < 768;
@@ -413,8 +422,10 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
   let animationFrame = 0;
   let destroyed = false;
   let completed = false;
+  let contextLost = false;
   let cueHandler = typeof onCue === 'function' ? onCue : null;
   let doneHandler = typeof onDone === 'function' ? onDone : null;
+  let lostHandler = typeof onContextLost === 'function' ? onContextLost : null;
 
   const planRandom = Math.random;
   const plan = [];
@@ -572,7 +583,7 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
     const particles = [];
     const palette = spec.palette;
     const sizeMultiplier = spec.sizeMultiplier;
-    const count = Math.round(spec.count * (isCompact ? 0.58 : 1));
+    const count = Math.round(spec.count * (isCompact ? 0.58 : 1) * particleScale);
 
     const pushParticle = (angle, speed, color, options = {}) => {
       particles.push({
@@ -1024,7 +1035,7 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
   }
 
   function frame(timestamp) {
-    if (destroyed) return;
+    if (destroyed || contextLost) return;
 
     if (!lastFrame) lastFrame = timestamp;
     const deltaMs = Math.min(64, timestamp - lastFrame);
@@ -1087,14 +1098,11 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
     if (animationFrame) window.cancelAnimationFrame(animationFrame);
     animationFrame = 0;
     // Clear the canvas so no frame is left over the artwork after the event.
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (!contextLost) {
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+    }
     if (doneHandler) doneHandler();
-  }
-
-  function handleVisibility() {
-    // Resume with a fresh frame delta so a hidden tab never skips the finale.
-    lastFrame = 0;
   }
 
   function handleResize() {
@@ -1103,9 +1111,31 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
 
   window.addEventListener('resize', handleResize);
   window.addEventListener('orientationchange', handleResize);
-  document.addEventListener('visibilitychange', handleVisibility);
 
-  if (!prefersReducedMotion) {
+  const stopVisibilityListener = onVisibilityChange((visible) => {
+    // Resume with a fresh frame delta so a hidden tab never skips the finale.
+    lastFrame = 0;
+    if (!visible) {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      return;
+    }
+    if (!destroyed && !completed && !contextLost && !animationFrame) {
+      animationFrame = window.requestAnimationFrame(frame);
+    }
+  });
+
+  const stopContextWatcher = watchContextLoss(canvas, {
+    onLost: () => {
+      if (destroyed || completed || contextLost) return;
+      contextLost = true;
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      if (lostHandler) lostHandler();
+    },
+  });
+
+  if (!reducedMotion) {
     animationFrame = window.requestAnimationFrame(frame);
   } else {
     // The caller normally does not mount the stage under reduced motion; if it
@@ -1120,10 +1150,12 @@ export function createCosmicEventEngine({ canvas, eventId, durationMs, onCue, on
     animationFrame = 0;
     window.removeEventListener('resize', handleResize);
     window.removeEventListener('orientationchange', handleResize);
-    document.removeEventListener('visibilitychange', handleVisibility);
+    stopVisibilityListener();
+    stopContextWatcher();
 
     cueHandler = null;
     doneHandler = null;
+    lostHandler = null;
     meteors.length = 0;
     lightningStrikes.length = 0;
     rockets.length = 0;

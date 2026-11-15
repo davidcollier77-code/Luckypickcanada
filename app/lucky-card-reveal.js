@@ -10,6 +10,7 @@ import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky
 import { getLuckyCardTierPresentation } from './lucky-card-presentation';
 import LuckyCardShare from './lucky-card-share';
 import { playButtonClick } from './lib/audio';
+import { getCanvas2DContext, watchContextLoss } from './lib/graphics-capabilities';
 import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
@@ -398,6 +399,21 @@ export default function LuckyCardReveal() {
       stopAll();
     };
   }, [stopAll]);
+
+  // A lost 2D context must not leave the loop running against an invalid canvas.
+  // The CSS/Framer reveal and its fallback timer continue independently.
+  useEffect(() => {
+    if (!isGenerating) return undefined;
+    const canvas = bgCanvasRef.current;
+    if (!canvas) return undefined;
+
+    return watchContextLoss(canvas, {
+      onLost: () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      },
+    });
+  }, [isGenerating]);
 
   const executeRevealState = useCallback(() => {
     if (isRevealedRef.current) return;
@@ -895,8 +911,9 @@ export default function LuckyCardReveal() {
 
     let elapsed = (timestamp - rafStartTimeRef.current) / 1000;
 
-    const bgCtx = bgCanvasRef.current.getContext('2d');
-    const fgCtx = fgCanvasRef.current ? fgCanvasRef.current.getContext('2d') : null;
+    const bgCtx = getCanvas2DContext(bgCanvasRef.current);
+    const fgCtx = fgCanvasRef.current ? getCanvas2DContext(fgCanvasRef.current) : null;
+    if (!bgCtx) return;
     const w = bgCanvasRef.current.width;
     const h = bgCanvasRef.current.height;
 
