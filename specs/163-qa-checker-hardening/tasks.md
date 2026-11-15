@@ -41,3 +41,10 @@
 - [x] T021 Review the final diff and confirm no application, artwork, audio, payment, database, authentication, hosting, dependency, or lockfile changes.
 - [x] T022 Update `memory-bank/activeContext.md`, `memory-bank/progress.md`, and `memory-bank/techContext.md`.
 - [ ] T023 Prepare the complete PR body and submit one regular, non-draft, unmerged PR.
+
+## Phase 6: Proportionate Playwright visual QA
+
+- [x] T024 Update the path classifier to skip visual browser shards for CI-only and backend API-only changes while preserving fail-closed handling for unknown paths and requiring Playwright for mixed changes.
+- [x] T025 Align the PR scope checker's visual-path detection with the API/CI exclusions while preserving explicit visual-impact overrides and all non-browser CI gates.
+- [x] T026 Add shell and Python regression coverage for API-only, CI-only, mixed frontend/backend, frontend visual, and explicit visual-impact cases.
+- [ ] T027 Reconcile the PR scope manifest, inspect the complete diff, and record post-update CI results and limitations.
