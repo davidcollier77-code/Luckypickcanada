@@ -59,7 +59,7 @@ Given that feature description, do this:
       - If `branch_numbering` was used (and `feature_numbering` was absent), emit a one-line warning: "⚠️ `branch_numbering` in init-options.json is deprecated. Rename to `feature_numbering`."
 
    **Create the directory and spec file**:
-    - Use `TEMPLATE_CONTENT` if Freebuff has already supplied it. Otherwise, read `.specify/templates/spec-template.md` directly. Do not run a template resolver script. If repository configuration requires additional template layers that are not already supplied or directly identifiable from the files, report the missing template context and stop rather than running a resolver.
+    - Use `TEMPLATE_CONTENT` if Freebuff has already supplied it. Otherwise, read `.specify/templates/spec-template.md` directly. Do not execute template-resolution tooling. If repository configuration requires additional template layers that are not already supplied or directly identifiable from the files, report the missing template context and stop rather than running a resolver.
     - Create `SPECIFY_FEATURE_DIRECTORY` using file operations; do not run a setup script or shell command.
    - Write the active template content in `TEMPLATE_CONTENT` to `SPECIFY_FEATURE_DIRECTORY/spec.md` as the starting point.
    - Set `SPEC_FILE` to `SPECIFY_FEATURE_DIRECTORY/spec.md`
