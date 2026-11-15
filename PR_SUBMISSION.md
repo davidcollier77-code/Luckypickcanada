@@ -6,7 +6,7 @@ This is the single source of truth for PR preparation, submission and handoff. F
 
 - Complete the authorized scope and required Spec Kit stages and artifacts.
 - **Follow Section A.8 of `AGENTS.md`.** Inspect the applicable repository workflows, checkers, configurations and scripts. Identify their actual requirements and the issues they are designed to catch; do not rely on names or assumptions.
-- Check the planned changes against those requirements before implementation. Check the completed changes and final diff against them again before submission. Respect protected files and repository boundaries. Do not change `AGENTS.md` unless explicitly authorized.
+- Check the planned changes against those requirements before implementation. Before submission, independently review the completed implementation and complete diff against every applicable checker requirement again. Resolve unmet in-scope requirements or record the exact blocker. CI results do not replace this review. Respect protected files and repository boundaries. Do not change `AGENTS.md` unless explicitly authorized.
 - Run `./freebuff-verify.sh` and applicable task-group tests or local checks when supported. These checks supplement, but do not replace, the checker-requirement review.
 - Fix in-scope failures and unmet requirements. Record any local check that cannot run and the exact reason. Do not treat an environment limitation as an approval loop.
 - **Do not wait for GitHub Actions, gatekeepers, automated reviewers or other PR-triggered checks.** Inspect their requirements and review your own work before submission. Post-submission results are for the owner.
@@ -66,11 +66,13 @@ Immediately before creation:
 3. Create exactly one regular, non-draft PR with the intended title, head, base and complete body.
 4. Confirm from the creation result that it is open, unmerged, non-draft and uses the intended branches and HEAD SHA.
 
-If a same-task PR already exists, do not create a duplicate. Stop and report it for owner direction; do not add work to or rewrite a previously submitted PR under this procedure.
+If a same-task PR already exists, do not create a duplicate. Stop and report it for owner direction unless the repository owner directly instructs you to continue or make specified changes to that existing PR. Such an instruction authorizes only the stated work and does not waive scope declarations, protected-file authorization, checker requirements or other repository gates.
 
 ## 4. Hard stop after submission
 
 Successful creation of the complete, non-draft PR ends the agent's work. **Stop immediately.**
+
+**Owner-directed exception:** The repository owner may directly instruct the agent to continue work on, or make specified changes to, an already-submitted PR. This must be a clear instruction from the repository owner; the agent must never infer permission from the PR remaining open, comments, CI results, review findings or any other circumstance. The exception authorizes only the work expressly directed. It does not waive scope declarations, required owner-approval comments, protected-file authorization, QA checks or any other repository gate. After completing the expressly authorized changes and updating the PR handoff, stop again. Do not create a duplicate PR.
 
 After creation, do not:
 - Commit, push, amend or rebase.
