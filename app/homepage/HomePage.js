@@ -3,6 +3,15 @@ import "../../themes/default/homepage.css";
 
 
 import { playButtonClick } from '../lib/audio';
+import {
+  getCanvas2DContext,
+  getGraphicsProfile,
+  isPageVisible,
+  onReducedMotionChange,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from '../lib/graphics-capabilities';
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -163,9 +172,14 @@ export default function HomePage() {
   useEffect(() => {
     const canvas = backgroundCanvasRef.current;
     if (!canvas) return;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const ctx = canvas.getContext('2d', { alpha: true });
+
+    const ctx = getCanvas2DContext(canvas, { alpha: true });
+    if (!ctx) return;
+
+    let reducedMotion = prefersReducedMotion();
+    const particleScale = getGraphicsProfile().particleScale;
     let animationFrameId;
+    let contextLost = false;
 
     let ambientStars = [];
     let shootingStars = [];
@@ -177,11 +191,12 @@ export default function HomePage() {
      *
      * @param {number} width - Canvas width in pixels.
      * @param {number} height - Canvas height in pixels.
-     * @returns {Object[]} New star records, one per 2,000 square pixels rounded down;
-     * empty when the nonnegative canvas area is less than 2,000 square pixels.
+     * @returns {Object[]} New star records, roughly one per 2,000 square pixels
+     * rounded down. A constrained device scales that density down; empty when
+     * the scaled canvas area is less than 2,000 square pixels.
      */
     const initAmbientStars = (width, height) => {
-      const numStars = Math.floor((width * height) / 2000); // Moderate density
+      const numStars = Math.floor((width * height * particleScale) / 2000);
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
         // Only a small subset (~16%) of stars will twinkle independently
@@ -249,6 +264,7 @@ export default function HomePage() {
      */
     const scheduleShootingStar = () => {
       if (reducedMotion) return;
+      clearTimeout(shootingStarTimeout);
       const delay = Math.random() * 20000 + 10000; // 10s to 30s
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
@@ -270,13 +286,12 @@ export default function HomePage() {
 
     /**
      * Repaints the star canvas, advances shooting stars, removes expired ones,
-     * and schedules the next animation frame. If reduced motion was preferred
-     * when the effect initialized, paints without ambient twinkling and does not
-     * schedule another frame.
-     *
-     * @throws {TypeError} If the canvas has no 2D rendering context.
+     * and schedules the next animation frame. Reduced motion paints one static
+     * frame; a hidden document or a lost context schedules nothing.
      */
     const draw = () => {
+      if (contextLost) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const currentTime = Date.now();
@@ -345,9 +360,14 @@ export default function HomePage() {
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
 
-      if (!reducedMotion) {
+      if (!reducedMotion && !contextLost && isPageVisible()) {
         animationFrameId = requestAnimationFrame(draw);
       }
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = undefined;
     };
 
     draw();
@@ -356,20 +376,55 @@ export default function HomePage() {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         resizeCanvas();
-        if (reducedMotion) draw();
+        stopAnimation();
+        draw();
       }, 200);
     };
     window.addEventListener('resize', handleResize);
 
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      reducedMotion = matches;
+      if (matches) {
+        clearTimeout(shootingStarTimeout);
+        clearTimeout(doubleStarTimeout);
+      } else {
+        scheduleShootingStar();
+      }
+      stopAnimation();
+      draw();
+    });
+
+    const stopVisibilityListener = onVisibilityChange((visible) => {
+      if (!visible) {
+        stopAnimation();
+        return;
+      }
+      stopAnimation();
+      draw();
+    });
+
+    const stopContextWatcher = watchContextLoss(canvas, {
+      onLost: () => {
+        contextLost = true;
+        stopAnimation();
+      },
+      onRestored: () => {
+        contextLost = false;
+        resizeCanvas();
+        stopAnimation();
+        draw();
+      },
+    });
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      stopMotionListener();
+      stopVisibilityListener();
+      stopContextWatcher();
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
       if (typeof resizeTimeout !== 'undefined') clearTimeout(resizeTimeout);
-
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      stopAnimation();
     };
   }, []);
 

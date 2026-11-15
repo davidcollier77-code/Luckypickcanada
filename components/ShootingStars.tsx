@@ -1,5 +1,14 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import {
+  getCanvas2DContext,
+  getCanvasPixelRatio,
+  isPageVisible,
+  onReducedMotionChange,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from "../app/lib/graphics-capabilities";
 
 export default function ShootingStars() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,12 +16,14 @@ export default function ShootingStars() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const ctx = canvas.getContext("2d", { alpha: true });
+    let reducedMotion = prefersReducedMotion();
+
+    const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId = 0;
+    let contextLost = false;
 
     type ShootingStar = {
       x: number;
@@ -36,7 +47,7 @@ export default function ShootingStars() {
     }));
 
     const initCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getCanvasPixelRatio();
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -68,6 +79,8 @@ export default function ShootingStars() {
     };
 
     const draw = () => {
+      if (contextLost) return;
+
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -77,7 +90,7 @@ export default function ShootingStars() {
       stars.forEach((star) => {
         if (!star.active) {
           // Random chance to spawn a new star if inactive
-          if (Math.random() < 0.005) {
+          if (!reducedMotion && Math.random() < 0.005) {
             spawnStar(star);
           }
           return;
@@ -116,13 +129,20 @@ export default function ShootingStars() {
       });
 
       ctx.globalCompositeOperation = 'source-over'; // Restore default
-      animationFrameId = requestAnimationFrame(draw);
+      if (!reducedMotion && !contextLost && isPageVisible()) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
     };
 
     const handleResize = () => {
       initCanvas();
-      // Cancel pending animation frame to prevent duplicate animation loops
-      cancelAnimationFrame(animationFrameId);
+      stopAnimation();
+      draw();
     };
 
     initCanvas();
@@ -131,10 +151,41 @@ export default function ShootingStars() {
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
 
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      reducedMotion = matches;
+      stopAnimation();
+      draw();
+    });
+
+    const stopVisibilityListener = onVisibilityChange((visible) => {
+      if (!visible) {
+        stopAnimation();
+        return;
+      }
+      stopAnimation();
+      draw();
+    });
+
+    const stopContextWatcher = watchContextLoss(canvas, {
+      onLost: () => {
+        contextLost = true;
+        stopAnimation();
+      },
+      onRestored: () => {
+        contextLost = false;
+        initCanvas();
+        stopAnimation();
+        draw();
+      },
+    });
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
-      cancelAnimationFrame(animationFrameId);
+      stopMotionListener();
+      stopVisibilityListener();
+      stopContextWatcher();
+      stopAnimation();
     };
   }, []);
 

@@ -1,5 +1,15 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import {
+  getCanvas2DContext,
+  getCanvasPixelRatio,
+  getGraphicsProfile,
+  isPageVisible,
+  onReducedMotionChange,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from "../app/lib/graphics-capabilities";
 
 export default function Starfield() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -8,14 +18,17 @@ export default function Starfield() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d", { alpha: false });
+    const ctx = getCanvas2DContext(canvas, { alpha: false });
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId = 0;
+    let contextLost = false;
+    let reducedMotion = prefersReducedMotion();
+    const particleScale = getGraphicsProfile().particleScale;
     let stars: Array<{ x: number; y: number; r: number; alpha: number; twinkleSpeed: number }> = [];
 
     const initStars = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getCanvasPixelRatio();
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -29,8 +42,10 @@ export default function Starfield() {
 
       ctx.scale(dpr, dpr);
 
-      // Scale down density based on screen width for mobile optimization
-      const numStars = width < 768 ? 100 : 300;
+      // Scale down density based on screen width for mobile optimization.
+      // A constrained device draws fewer stars; a capable device is unchanged.
+      const baseCount = width < 768 ? 100 : 300;
+      const numStars = Math.round(baseCount * particleScale);
 
       stars = Array.from({ length: numStars }).map(() => ({
         x: Math.floor(Math.random() * width),
@@ -42,6 +57,8 @@ export default function Starfield() {
     };
 
     const draw = () => {
+      if (contextLost) return;
+
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -51,10 +68,12 @@ export default function Starfield() {
       ctx.fillStyle = "#ffffff";
 
       stars.forEach((star) => {
-        // Twinkle logic
-        star.alpha += star.twinkleSpeed;
-        if (star.alpha > 1 || star.alpha < 0.1) {
-          star.twinkleSpeed = -star.twinkleSpeed;
+        // Reduced motion paints one static frame instead of a twinkle loop.
+        if (!reducedMotion) {
+          star.alpha += star.twinkleSpeed;
+          if (star.alpha > 1 || star.alpha < 0.1) {
+            star.twinkleSpeed = -star.twinkleSpeed;
+          }
         }
 
         ctx.globalAlpha = star.alpha;
@@ -62,13 +81,20 @@ export default function Starfield() {
       });
 
       ctx.globalAlpha = 1.0;
-      animationFrameId = requestAnimationFrame(draw);
+      if (!reducedMotion && !contextLost && isPageVisible()) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
     };
 
     const handleResize = () => {
       initStars();
-      // Cancel pending animation frame to prevent duplicate animation loops
-      cancelAnimationFrame(animationFrameId);
+      stopAnimation();
+      draw();
     };
 
     initStars();
@@ -77,10 +103,41 @@ export default function Starfield() {
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
 
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      reducedMotion = matches;
+      stopAnimation();
+      draw();
+    });
+
+    const stopVisibilityListener = onVisibilityChange((visible) => {
+      if (!visible) {
+        stopAnimation();
+        return;
+      }
+      stopAnimation();
+      draw();
+    });
+
+    const stopContextWatcher = watchContextLoss(canvas, {
+      onLost: () => {
+        contextLost = true;
+        stopAnimation();
+      },
+      onRestored: () => {
+        contextLost = false;
+        initStars();
+        stopAnimation();
+        draw();
+      },
+    });
+
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
-      cancelAnimationFrame(animationFrameId);
+      stopMotionListener();
+      stopVisibilityListener();
+      stopContextWatcher();
+      stopAnimation();
     };
   }, []);
 

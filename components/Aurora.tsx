@@ -1,5 +1,14 @@
 "use client";
 import React, { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
+import {
+  getCanvas2DContext,
+  getCanvasPixelRatio,
+  isPageVisible,
+  onReducedMotionChange,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from "../app/lib/graphics-capabilities";
 
 export interface AuroraHandle {
   setPhase: (phase: 'idle' | 'awaken' | 'gather' | 'impact' | 'settled', tier?: string) => void;
@@ -59,14 +68,15 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
     if (!canvas) return;
 
     // Use alpha: true since this needs to composite over the Starfield
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
     let animationFrameId: number;
     let time = 0;
+    let contextLost = false;
 
     const initCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getCanvasPixelRatio();
       const width = window.innerWidth;
       const height = window.innerHeight;
 
@@ -82,7 +92,10 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
     };
 
 
-    const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+    let isReducedMotion = prefersReducedMotion();
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      isReducedMotion = matches;
+    });
 
     const drawWisp = (ctx, x, y, angle, w, h, colorRGB, opacity) => {
       ctx.save();
@@ -99,6 +112,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
     };
 
     const draw = () => {
+      if (contextLost) return;
       const p = params.current;
       if (p.targetSpeed !== undefined) p.speedMultiplier += (p.targetSpeed - p.speedMultiplier) * 0.05;
       if (p.targetPull !== undefined) p.centerPull += (p.targetPull - p.centerPull) * 0.02;
@@ -176,7 +190,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       }
 
       ctx.globalCompositeOperation = 'source-over';
-      if (!document.hidden) {
+      if (isPageVisible()) {
         animationFrameId = requestAnimationFrame(draw);
       }
     };
@@ -189,26 +203,36 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       draw();
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
+    const stopVisibilityListener = onVisibilityChange((visible) => {
+      cancelAnimationFrame(animationFrameId);
+      if (visible) draw();
+    });
+
+    const stopContextWatcher = watchContextLoss(canvas, {
+      onLost: () => {
+        contextLost = true;
         cancelAnimationFrame(animationFrameId);
-      } else {
+      },
+      onRestored: () => {
+        contextLost = false;
+        initCanvas();
         cancelAnimationFrame(animationFrameId);
         draw();
-      }
-    };
+      },
+    });
 
     initCanvas();
     draw();
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      stopMotionListener();
+      stopVisibilityListener();
+      stopContextWatcher();
       cancelAnimationFrame(animationFrameId);
     };
   }, []);

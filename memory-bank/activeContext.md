@@ -3,14 +3,19 @@
 - **Updated:** 2026-11-15
 - **Repository:** davidcollier77-code/Luckypickcanada
 - **Branch:** `freebuff/qa-checker-hardening-20261115`
-- **Base:** `main` (`3d26f05d`)
+- **Base:** `main` (`92b048e9`, including merged adaptive graphics capability foundation PR #1904)
 - **Spec Kit feature:** `specs/163-qa-checker-hardening`
 
 ## Current Task
 
 Repair the inherited PR scope checker crash and harden the QA system without
 duplicating DevSkim, CodeQL, TypeScript, the unit/build suites, or Freebuff's
-own verification script. The work is local and has not been submitted yet.
+own verification script.
+
+The branch now includes the latest `main`. The adaptive graphics capability
+foundation from PR #1904 is retained as merged base functionality; this task
+does not modify its rendering implementation, artwork, or browser/device
+compatibility behavior.
 
 ## Implemented state
 
@@ -26,8 +31,9 @@ own verification script. The work is local and has not been submitted yet.
 - The optional `visual_impact` declaration can require browser evidence on a
   non-visual path; a conflicting non-visual declaration is surfaced for review.
   The Visual QA classifier also honors a declared visual requirement.
-- Visual QA now runs the full Vitest suite and a standalone
-  `pnpm exec tsc --noEmit`; it no longer depends on `freebuff-verify.sh`.
+- Visual QA runs the full Vitest suite and a standalone
+  `pnpm exec tsc --noEmit`; it does not invoke or depend on
+  `freebuff-verify.sh`. The script and its own test remain present.
 - The Daily Resonance unit test pins its clock to its mocked date fixture so
   the suite does not fail when the real calendar advances.
 
@@ -42,11 +48,17 @@ own verification script. The work is local and has not been submitted yet.
 - Production build: 348 MiB, below the 495 MiB cap.
 - Reviewer self-scan: 0 hard findings, 0 warnings; CLI redaction test passed.
 
+These results are recorded in the implementation evidence and PR description;
+they are not represented as newly rerun in this branch-reconciliation session.
+
 ## Remaining
 
-- Commit, push and open one regular non-draft PR with the complete scope
-  manifest.
-- GitHub Actions results remain pending submission. PR Scope Verification uses
-  the trusted base-branch workflow, so it will use `main`'s pre-fix checker
-  until this branch is merged; local and PR-branch checks exercise the repair.
-- No browser run is required for this non-rendering change set.
+- The PR is open for owner review. GitHub Actions must report against the
+  reconciled branch head.
+- PR Scope Verification is a `pull_request_target` workflow and therefore
+  continues to execute the trusted checker from the default branch. Until this
+  PR merges, that is the older `main` implementation, which assumes
+  `previous_filename` exists on ordinary changed-file records. This branch
+  fixes that defect and tests it, but does not execute PR-head code in the
+  trusted workflow context or bypass the check.
+- Browser runs are not required for this non-rendering change set.

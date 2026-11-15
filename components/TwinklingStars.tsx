@@ -1,5 +1,14 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import {
+  getCanvas2DContext,
+  getCanvasPixelRatio,
+  isPageVisible,
+  onReducedMotionChange,
+  onVisibilityChange,
+  prefersReducedMotion,
+  watchContextLoss,
+} from "../app/lib/graphics-capabilities";
 
 const TwinklingStars: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,37 +16,27 @@ const TwinklingStars: React.FC = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number = 0;
+    let animationFrameId = 0;
+    let contextLost = false;
     let width = window.innerWidth;
     let height = window.innerHeight;
+    let isReducedMotion = prefersReducedMotion();
 
-    const mediaQuery = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-    let isReducedMotion = mediaQuery?.matches ?? false;
-
-    const handleMotionPreferenceChange = (e: MediaQueryListEvent) => {
-      isReducedMotion = e.matches;
-      if (isReducedMotion && animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = 0;
-        draw(); // Draw once when motion is disabled
-      } else if (!isReducedMotion && animationFrameId === 0) {
-        draw(); // Resume animation loop
-      }
+    const stopAnimation = () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
     };
-
-    mediaQuery?.addEventListener?.('change', handleMotionPreferenceChange);
 
     // We only want stars in the upper part of the sky (e.g. top 60%),
     // to avoid overlapping mountains and foreground elements in the photograph.
     const STAR_DENSITY = 0.0003; // slightly more visible but subtle
-    const maxStars = Math.floor(width * height * STAR_DENSITY);
     const stars: { x: number; y: number; size: number; baseAlpha: number; currentAlpha: number; twinkleSpeed: number; twinklePhase: number; isTwinkling: boolean }[] = [];
 
     const initCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = getCanvasPixelRatio();
       width = window.innerWidth;
       height = window.innerHeight;
 
@@ -86,6 +85,8 @@ const TwinklingStars: React.FC = () => {
     initCanvas();
 
     const draw = () => {
+      if (contextLost) return;
+
       ctx.clearRect(0, 0, width, height);
 
       stars.forEach(star => {
@@ -103,11 +104,8 @@ const TwinklingStars: React.FC = () => {
         ctx.fill();
       });
 
-      if (!isReducedMotion && !document.hidden) {
+      if (!isReducedMotion && !contextLost && isPageVisible()) {
         animationFrameId = requestAnimationFrame(draw);
-      } else {
-        // Draw once if reduced motion
-        // (If reduced motion, animationFrame won't loop)
       }
     };
 
@@ -115,27 +113,46 @@ const TwinklingStars: React.FC = () => {
 
     const handleResize = () => {
       initCanvas();
-      if (isReducedMotion) {
-          draw();
-      }
+      stopAnimation();
+      draw();
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(animationFrameId);
-      } else {
-        draw();
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      isReducedMotion = matches;
+      stopAnimation();
+      draw();
+    });
+
+    const stopVisibilityListener = onVisibilityChange((visible) => {
+      if (!visible) {
+        stopAnimation();
+        return;
       }
-    };
+      stopAnimation();
+      draw();
+    });
+
+    const stopContextWatcher = watchContextLoss(canvas, {
+      onLost: () => {
+        contextLost = true;
+        stopAnimation();
+      },
+      onRestored: () => {
+        contextLost = false;
+        initCanvas();
+        stopAnimation();
+        draw();
+      },
+    });
 
     window.addEventListener("resize", handleResize);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      mediaQuery?.removeEventListener?.('change', handleMotionPreferenceChange);
-      cancelAnimationFrame(animationFrameId);
+      stopMotionListener();
+      stopVisibilityListener();
+      stopContextWatcher();
+      stopAnimation();
     };
   }, []);
 
