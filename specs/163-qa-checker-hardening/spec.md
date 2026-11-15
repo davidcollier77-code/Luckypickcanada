@@ -54,7 +54,9 @@ A PR can declare that a change is visual or non-visual based on its actual impac
 1. **Given** a declared visual change, **When** browser evidence is missing, **Then** the checker fails with a clear action.
 2. **Given** a declared non-visual change in an otherwise visual path, **When** the scope report is produced, **Then** the declaration is preserved and flagged for reviewer confirmation rather than silently accepted as proof.
 3. **Given** Playwright, Firecrawl, or Browserless evidence, **When** it is valid, **Then** all three are accepted equally with their true identity preserved.
-4. **Given** documentation-only or unit-test-only changes, **When** Visual QA classification runs, **Then** browser tests are not required.
+4. **Given** documentation-only, CI-only, backend API-only, or unit-test-only changes, **When** Visual QA classification runs, **Then** the Playwright browser shards are not required.
+5. **Given** a mixed PR containing any frontend/rendering change alongside backend or CI changes, **When** Visual QA classification runs, **Then** Playwright remains required.
+6. **Given** an API-only change explicitly declared as having user-visible browser impact, **When** Visual QA classification runs, **Then** the declared impact still requires browser evidence.
 
 ### User Story 4 - Preserve Existing Verification Without Duplication (Priority: P1)
 
@@ -104,6 +106,10 @@ The repository keeps its existing TypeScript, unit, build, visual, Crystal Ball,
 - **FR-013**: A declared non-visual impact on a path-classified visual change MUST be reported as a reviewer warning, not silently accepted as verification.
 - **FR-014**: Playwright, Firecrawl, and Browserless MUST remain equally accepted, with no mandatory preference or execution order.
 - **FR-015**: Visual QA MUST remain conditional, MUST honor a declared visual impact even when path classification would skip browser coverage, and MUST preserve existing baselines and shards.
+- **FR-022**: Playwright visual/browser shards MUST be skipped for known non-rendering changes limited to CI configuration/scripts, backend API route handlers, documentation, task records, and unit-test-only files.
+- **FR-023**: A mixed change set MUST require Playwright when any changed path can affect frontend rendering or browser behavior; non-rendering paths MUST NOT cancel that requirement.
+- **FR-024**: The PR scope checker MUST apply the same backend API exclusion to browser-evidence requirements while retaining explicit visual_impact.required: true as an override.
+- **FR-025**: Skipping Playwright MUST NOT skip the always-running unit suite, TypeScript check, scope validation, changed-code review, security scans, build validation, or other required CI checks.
 - **FR-016**: Crystal Ball daily-fortune and follow-up coverage MUST remain present and runnable without live AI requests.
 - **FR-017**: The new checker MUST be dependency-free and complete in seconds for a normal PR.
 - **FR-018**: Regression tests MUST cover modified, added, and renamed records, hard findings, warnings, false-positive controls, deduplication, and clean patches.
@@ -128,6 +134,8 @@ The repository keeps its existing TypeScript, unit, build, visual, Crystal Ball,
 - **SC-005**: All existing Crystal Ball unit and visual test files remain present and focused tests pass.
 - **SC-006**: Full TypeScript, unit, build, and repository verification remain green, with the production build below 495 MiB.
 - **SC-007**: No application source, visual asset, dependency lockfile, or production configuration is changed.
+- **SC-008**: Backend API-only and CI-only fixtures classify as non-visual, while frontend, visual asset, browser-test, and mixed frontend/backend fixtures still require Playwright.
+- **SC-009**: The scope checker accepts API-only and CI-only changes without browser evidence but continues to require evidence for frontend paths and explicit visual-impact overrides.
 
 ## Assumptions
 

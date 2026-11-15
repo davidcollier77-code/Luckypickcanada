@@ -1,3 +1,9 @@
+## 2026-11-15 — Playwright visual QA classification correction
+- Narrowed the visual-browser trigger so CI-only changes under `.github/` and Next.js API route handlers under `app/api/` and `pages/api/` do not require screenshot/browser inspection.
+- Kept frontend routes/components, styles, visual assets, browser/e2e tests, visual tooling configuration and unknown paths on the Playwright-required path. Mixed changes still require browser coverage.
+- Aligned the PR scope checker's browser-evidence classification with the same API/CI exclusions; explicit `visual_impact.required: true` still forces browser evidence.
+- The always-on full unit suite, TypeScript, security, scope, build and other CI checks remain unchanged. Regression tests were added; execution was pending the updated PR workflow.
+
 ## 2026-11-15 — QA checker governance consolidation and owner-directed PR exception
 - Consolidated the QA checker planning requirement into one dedicated AGENTS.md section and removed duplicated QA instructions and the generic summary section.
 - Required an independent pre-submission review of the completed implementation and full diff against every applicable checker requirement; clarified that CI results do not replace this review.

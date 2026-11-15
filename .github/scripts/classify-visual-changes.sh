@@ -9,10 +9,11 @@
 # prints exactly one line on standard output: `visual_required=true` or
 # `visual_required=false`. Diagnostics go to standard error.
 #
-# The classifier fails closed. Only known non-rendering paths may skip visual QA:
-# Markdown files, the specs/, memory-bank/ and .docs/ trees, the Spec Kit feature
-# pointer, the classifier implementation itself, and unit tests directly under
-# __tests__/. Browser/e2e tests under tests/ and all unknown paths still request visual QA.
+# The classifier fails closed. Known non-rendering paths may skip visual QA:
+# documentation/task records, CI configuration and scripts, backend API route
+# handlers, the classifier itself, and unit tests directly under __tests__/.
+# Frontend application paths, browser/e2e tests, visual assets/configuration and
+# unknown paths still request visual QA.
 
 set -euo pipefail
 
@@ -21,6 +22,7 @@ non_rendering_path() {
     *.md) return 0 ;;
     specs/* | memory-bank/* | .docs/*) return 0 ;;
     .specify/feature.json | .github/scripts/classify-visual-changes.sh) return 0 ;;
+    .github/* | app/api/* | pages/api/*) return 0 ;;
     __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
   esac
   return 1
@@ -53,7 +55,7 @@ fi
 if [[ "$visual_required" == "true" ]]; then
   echo "classify-visual-changes: ${reviewed} changed path(s) reviewed; '${first_visual_path}' is not positively classified as non-rendering, so visual QA is required." >&2
 else
-  echo "classify-visual-changes: ${reviewed} documentation-only path(s) reviewed; visual QA is not required." >&2
+  echo "classify-visual-changes: ${reviewed} known non-rendering path(s) reviewed; visual QA is not required." >&2
 fi
 
 echo "visual_required=${visual_required}"

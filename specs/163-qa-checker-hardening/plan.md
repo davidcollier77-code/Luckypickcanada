@@ -33,7 +33,7 @@ No application code or visual assets are in scope.
 - Treat all other risky patterns as advisory, evidence-backed warnings.
 - Do not duplicate DevSkim/CodeQL generic injection detection.
 - Do not require `freebuff-verify.sh` in QA.
-- Preserve existing Playwright baselines, shards, and Crystal Ball coverage.
+- Preserve existing Playwright baselines, shards, and Crystal Ball coverage. Run browser shards only for changes that can affect frontend rendering or browser behavior; skip known CI-only and backend API-only changes without skipping the always-on unit, TypeScript, security, scope, or build checks.
 - Keep production build below 495 MiB.
 - No live AI requests.
 
@@ -87,6 +87,12 @@ memory-bank/techContext.md
 ### File-record handling
 
 `changed_paths()` will read `previous_filename` only when it is a non-empty string. A record whose status is `renamed` or `copied` without a previous path fails closed. Duplicate current and previous names are rejected. This preserves rename coverage while allowing ordinary GitHub records.
+
+### Visual QA classification
+
+The path classifier remains fail-closed for unknown paths but explicitly recognizes two non-rendering categories: GitHub automation/configuration under .github/, and Next.js API route handlers under app/api/ and pages/api/. These paths do not need screenshot/browser inspection merely because they changed. The PR scope checker's visual-path detection uses the same API exclusions and does not treat CI files as visual paths. Frontend routes/components, styles, assets, browser/e2e tests, visual tooling configuration, and unknown paths continue to require browser evidence. A visual_impact.required: true declaration continues to force browser coverage for an otherwise non-visual path. Any mixed change set with at least one visual path requires Playwright.
+
+This changes only the browser-evidence requirement. The stable Visual QA job continues to run the full unit suite and standalone TypeScript check on every PR; other CI, security, scope, build and governance gates are unchanged.
 
 ### Changed-code review
 
