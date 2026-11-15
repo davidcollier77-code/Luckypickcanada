@@ -62,3 +62,5 @@ they are not represented as newly rerun in this branch-reconciliation session.
   fixes that defect and tests it, but does not execute PR-head code in the
   trusted workflow context or bypass the check.
 - Browser runs are not required for this non-rendering change set.
+- Visual QA classifier correction is being added to PR #1910: CI-only paths under .github/ and Next.js API route paths under app/api/ and pages/api/ skip only the Playwright browser shards. Frontend, visual assets, browser tests, and unknown paths remain fail-closed; mixed changes still require Playwright.
+- The PR scope checker applies the same API/CI browser-evidence exclusions. Explicit visual_impact.required: true remains an override. The always-running Vitest suite, TypeScript check, security, scope, build and other CI gates remain intact.
