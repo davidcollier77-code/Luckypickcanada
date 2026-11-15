@@ -257,6 +257,13 @@ def _baseline_paths(paths: set[str]) -> set[str]:
 
 
 def _is_visual_path(path: str) -> bool:
+    # API handlers and GitHub automation/configuration do not render UI. They
+    # remain subject to normal unit, type, security, scope and CI checks; only
+    # the browser-evidence requirement is omitted. A PR can still force browser
+    # coverage with visual_impact.required=true when API changes have a specific
+    # user-visible consequence that needs browser verification.
+    if path.startswith(("app/api/", "pages/api/", ".github/")):
+        return False
     if path.startswith(VISUAL_PREFIXES):
         return True
     suffix = PurePosixPath(path).suffix.casefold()

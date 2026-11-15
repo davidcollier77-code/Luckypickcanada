@@ -68,6 +68,20 @@ describe('visual QA change classification', () => {
     );
   });
 
+  it('skips visual QA for backend API routes and CI-only changes', () => {
+    expect(classify(['app/api/checkout/route.js'])).toBe('visual_required=false');
+    expect(classify(['app/api/health/route.ts'])).toBe('visual_required=false');
+    expect(classify(['pages/api/status.js'])).toBe('visual_required=false');
+    expect(classify(['.github/workflows/protected-files.yml'])).toBe('visual_required=false');
+    expect(classify(['.github/workflows/visual-qa.yml'])).toBe('visual_required=false');
+    expect(classify(['.github/scripts/check_qa_pr_scope.py'])).toBe('visual_required=false');
+  });
+
+  it('still requires visual QA when backend or CI changes are mixed with UI changes', () => {
+    expect(classify(['app/api/checkout/route.js', '.github/workflows/protected-files.yml', 'app/page.js'])).toBe('visual_required=true');
+    expect(classify(['.github/workflows/visual-qa.yml', 'public/themes/default/hero.webp'])).toBe('visual_required=true');
+  });
+
   it('skips visual QA for documentation, Spec Kit pointer and unit-test-only changes', () => {
     expect(classify(['PR_SUMMARY.md'])).toBe('visual_required=false');
     expect(classify(['.specify/feature.json'])).toBe('visual_required=false');
