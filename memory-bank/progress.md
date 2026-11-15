@@ -19,6 +19,28 @@
 
 # Project Progress — Significant Milestones
 
+## 2026-11-15 — Lucky Meter cinematic redesign
+- Rebuilt the Lucky Meter presentation around a bottom-anchored, always-mounted
+  circular meter with Home in the top-right corner, a persisted completion flag
+  so Home only returns after the whole cinematic has finished (including refresh
+  mid-event), and the existing Milky Way artwork left completely untouched.
+- Extended the retained additive WebGL stage into far/near surfaces so meteors,
+  lightning and the golden finale pass both behind and in front of the meter;
+  added continuous plasma meteor trails, bounded branching lightning with real
+  atmospheric illumination, distinct dense-red and fine-silver firework
+  identities, and a golden chrysanthemum plus willow finale whose foreground
+  sparks fall across the interface.
+- Fixed inherited defects that starved the finale: silver crackle children could
+  branch without end, and the point budget saturated before the finale was
+  drawn. Particle sizes now scale with viewport area, budgets are bounded, and
+  the governor steps quality down before dropping the near layer.
+- Added two recorded cues (deep finale boom, subtle throttled thunder) with a
+  committed source/licence record; the existing cues are unchanged and the audio
+  files were verified against their original masters.
+- Verified: 769 unit tests, `tsc --noEmit`, `./freebuff-verify.sh`, production
+  build below the cap, and 27/27 Chromium checks across lifecycle, persistence,
+  reduced motion, WebGL fallback and mobile.
+
 ## 2026-11-15 — QA checker hardening and inherited crash repair
 - Fixed the unconditional `previous_filename` read that crashed the PR scope
   checker on every ordinary modified or added GitHub record, including the

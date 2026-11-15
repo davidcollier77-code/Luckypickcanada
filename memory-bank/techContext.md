@@ -6,7 +6,8 @@
 - **Package manager:** pnpm 10.30.3. Use the committed lockfile and pnpm; never use npm ci.
 - **Styling and motion:** Tailwind CSS 4, Framer Motion, GSAP and existing Canvas-based visual effects.
 - **Graphics compatibility:** One shared, dependency-free layer at `app/lib/graphics-capabilities.js` supplies lazy Canvas 2D/WebGL/`Path2D` detection, safe context acquisition, a conservative device profile, reduced-motion/visibility helpers and context-loss watching. Renderers let the browser choose its own GPU or software rasterizer.
-- **Audio:** Howler and browser Web Audio API where already used.
+- **Lucky Meter renderer:** `components/cosmic-event-engine.js` composites two additive WebGL surfaces (far behind the interface, a pointer-transparent near layer above it) using the shared shaders in `app/lib/gpu-particles.js`; `components/lucky-meter-ring-engine.js` draws the ring's slow energy trails with the same primitives. `resolveRenderQuality` in the capability layer supplies the tier, DPR cap, particle scale, near-layer availability, haze and spark budget.
+- **Audio:** Howler and browser Web Audio API where already used. Lucky Meter audio assets are genuine recordings; additions carry a provider, item, licence, acquisition date and derivative record in `public/sounds/lucky-meter-cinematic-audio-sources.md`.
 - **Database:** Neon PostgreSQL through the serverless driver.
 - **Hosting/build:** Cloudflare Pages hosting with OpenNext Cloudflare build tooling and Workers runtime support.
 - **Payments and email:** Stripe Checkout and Resend.

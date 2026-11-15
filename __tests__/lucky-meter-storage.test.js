@@ -146,6 +146,64 @@ describe('Lucky Meter Local Storage', () => {
     expect(saveMeterState({ result: makeResult(), history: emptyMeterHistory() }, throwingStorage)).toBe(false);
   });
 
+  it('persists event completion and stage duration at the existing version', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+    const history = appendResultToHistory(emptyMeterHistory(), result);
+
+    saveMeterState(
+      { result, history, eventCompleted: true, stageDurationMs: 10_000 },
+      storage,
+    );
+    const payload = JSON.parse(storage.map.get(METER_STORAGE_KEY));
+    expect(payload.version).toBe(METER_STORAGE_VERSION);
+    expect(payload.eventCompleted).toBe(true);
+    expect(payload.stageDurationMs).toBe(10_000);
+
+    const loaded = loadMeterState(storage);
+    expect(loaded.eventCompleted).toBe(true);
+    expect(loaded.stageDurationMs).toBe(10_000);
+  });
+
+  it('treats missing lifecycle fields as unfinished for backward compatibility', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+    storage.setItem(
+      METER_STORAGE_KEY,
+      JSON.stringify({
+        version: METER_STORAGE_VERSION,
+        dateKey: result.dateKey,
+        result,
+        history: emptyMeterHistory(),
+      }),
+    );
+
+    const loaded = loadMeterState(storage);
+    expect(loaded.result).not.toBeNull();
+    expect(loaded.eventCompleted).toBe(false);
+    expect(loaded.stageDurationMs).toBe(0);
+  });
+
+  it('rejects impossible stage durations and completion without a valid result', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+
+    saveMeterState(
+      { result, history: emptyMeterHistory(), eventCompleted: true, stageDurationMs: 999_999 },
+      storage,
+    );
+    expect(loadMeterState(storage).stageDurationMs).toBe(0);
+
+    saveMeterState(
+      { result: null, history: emptyMeterHistory(), eventCompleted: true, stageDurationMs: 10_000 },
+      storage,
+    );
+    const loaded = loadMeterState(storage);
+    expect(loaded.result).toBeNull();
+    expect(loaded.eventCompleted).toBe(false);
+    expect(loaded.stageDurationMs).toBe(0);
+  });
+
   it('ignores malformed history entries without dropping valid ones', () => {
     const storage = createMemoryStorage();
     const result = makeResult();

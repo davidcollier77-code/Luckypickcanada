@@ -28,6 +28,40 @@ const PARTICLE_SCALES = Object.freeze({
   [CONSTRAINED_TIER]: 0.7,
 });
 
+/** Render-quality tiers used by the cinematic Lucky Meter effects. */
+export const RENDER_QUALITY = Object.freeze({
+  HIGH: 'high',
+  BALANCED: 'balanced',
+  CONSTRAINED: 'constrained',
+});
+
+const RENDER_QUALITY_PROFILES = Object.freeze({
+  high: Object.freeze({
+    tier: 'high',
+    maxPixelRatio: 2,
+    particleScale: 1.2,
+    foreground: true,
+    haze: true,
+    sparkBudget: 900,
+  }),
+  balanced: Object.freeze({
+    tier: 'balanced',
+    maxPixelRatio: 1.6,
+    particleScale: 0.85,
+    foreground: true,
+    haze: true,
+    sparkBudget: 560,
+  }),
+  constrained: Object.freeze({
+    tier: 'constrained',
+    maxPixelRatio: 1.25,
+    particleScale: 0.55,
+    foreground: false,
+    haze: false,
+    sparkBudget: 280,
+  }),
+});
+
 // Only transparency/depth choices that match the existing renderers. The shared
 // WebGL getter strips any caller-supplied renderer-forcing option.
 const DEFAULT_WEBGL_ATTRIBUTES = Object.freeze({
@@ -133,6 +167,106 @@ export function getGraphicsProfile() {
     particleScale: PARTICLE_SCALES[tier],
   });
   return cachedProfile;
+}
+
+/**
+ * Resolves the cinematic render quality from real device and viewport facts.
+ *
+ * The result is deliberately conservative about the expensive near/far layered
+ * pass, but it never assumes a class of device is weak: a high-DPI phone with
+ * many cores can still resolve to `high`, while a large 4K surface on modest
+ * hardware resolves lower because its backing store, not its form factor, is
+ * the cost.
+ *
+ * @param {{
+ *   profileTier?: 'standard'|'constrained',
+ *   saveData?: boolean,
+ *   deviceMemory?: number|null,
+ *   hardwareConcurrency?: number|null,
+ *   viewportWidth?: number,
+ *   viewportHeight?: number,
+ *   pixelRatio?: number,
+ *   coarsePointer?: boolean,
+ * }} [options]
+ * @returns {{ tier: 'high'|'balanced'|'constrained', maxPixelRatio: number, particleScale: number, foreground: boolean, haze: boolean, sparkBudget: number }}
+ */
+export function resolveRenderQuality({
+  profileTier = STANDARD_TIER,
+  saveData = false,
+  deviceMemory = null,
+  hardwareConcurrency = null,
+  viewportWidth = 1280,
+  viewportHeight = 800,
+  pixelRatio = 1,
+  coarsePointer = false,
+} = {}) {
+  const width = Number.isFinite(viewportWidth) && viewportWidth > 0 ? viewportWidth : 1280;
+  const height = Number.isFinite(viewportHeight) && viewportHeight > 0 ? viewportHeight : 800;
+  const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? pixelRatio : 1;
+  // Physical pixels actually rasterized, not the CSS footprint alone.
+  const backingPixels = width * height * ratio * ratio;
+
+  const constrained =
+    profileTier === CONSTRAINED_TIER ||
+    saveData ||
+    (typeof deviceMemory === 'number' && deviceMemory > 0 && deviceMemory <= 2) ||
+    (typeof hardwareConcurrency === 'number' &&
+      hardwareConcurrency > 0 &&
+      hardwareConcurrency <= 2);
+
+  if (constrained) return RENDER_QUALITY_PROFILES.constrained;
+
+  const plentifulCores =
+    typeof hardwareConcurrency !== 'number' || hardwareConcurrency >= 6;
+  const plentifulMemory =
+    typeof deviceMemory !== 'number' || deviceMemory >= 6;
+  const modestBackingStore = backingPixels <= 3_000_000;
+  const touchHighDensity = coarsePointer && ratio >= 3;
+
+  if (
+    plentifulCores &&
+    plentifulMemory &&
+    modestBackingStore &&
+    !touchHighDensity
+  ) {
+    return RENDER_QUALITY_PROFILES.high;
+  }
+
+  return RENDER_QUALITY_PROFILES.balanced;
+}
+
+/**
+ * Reads the current browser facts and resolves the cinematic render quality.
+ * Safe on the server: it falls back to the balanced profile.
+ *
+ * @returns {{ tier: 'high'|'balanced'|'constrained', maxPixelRatio: number, particleScale: number, foreground: boolean, haze: boolean, sparkBudget: number }}
+ */
+export function getRenderQuality() {
+  if (typeof window === 'undefined') return RENDER_QUALITY_PROFILES.balanced;
+
+  const navigatorObject = getNavigator();
+  const connection =
+    navigatorObject?.connection ??
+    navigatorObject?.mozConnection ??
+    navigatorObject?.webkitConnection ??
+    null;
+  const profile = getGraphicsProfile();
+  const coarsePointer = getMediaQuery('(pointer: coarse)')?.matches ?? false;
+
+  return resolveRenderQuality({
+    profileTier: profile.tier,
+    saveData: Boolean(connection?.saveData),
+    deviceMemory:
+      typeof navigatorObject?.deviceMemory === 'number' ? navigatorObject.deviceMemory : null,
+    hardwareConcurrency:
+      typeof navigatorObject?.hardwareConcurrency === 'number'
+        ? navigatorObject.hardwareConcurrency
+        : null,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    pixelRatio: window.devicePixelRatio || 1,
+    coarsePointer,
+  });
 }
 
 /**

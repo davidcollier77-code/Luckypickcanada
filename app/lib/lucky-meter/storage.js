@@ -19,7 +19,23 @@ export function emptyMeterHistory() {
 }
 
 export function emptyMeterState() {
-  return { result: null, history: emptyMeterHistory() };
+  return {
+    result: null,
+    history: emptyMeterHistory(),
+    // The event has not finished for this result. Older payloads without these
+    // fields load as incomplete, which safely resumes the cinematic instead of
+    // showing the Home control before it has actually completed.
+    eventCompleted: false,
+    stageDurationMs: 0,
+  };
+}
+
+/** Only a real event window is accepted; anything else is treated as absent. */
+function normalizeStageDuration(value) {
+  const duration = Number(value);
+  if (!Number.isFinite(duration)) return 0;
+  if (duration < 1200 || duration > 60000) return 0;
+  return Math.round(duration);
 }
 
 function getBrowserStorage() {
@@ -84,6 +100,9 @@ export function loadMeterState(storage = getBrowserStorage()) {
     return {
       result,
       history: normalizeHistory(parsed.history),
+      // A missing or unreadable result can never be considered completed.
+      eventCompleted: Boolean(result) && parsed.eventCompleted === true,
+      stageDurationMs: result ? normalizeStageDuration(parsed.stageDurationMs) : 0,
     };
   } catch {
     return emptyMeterState();
@@ -103,6 +122,8 @@ export function saveMeterState(state, storage = getBrowserStorage()) {
     dateKey: state.result?.dateKey || null,
     result: state.result || null,
     history: normalizeHistory(state.history),
+    eventCompleted: state.eventCompleted === true,
+    stageDurationMs: normalizeStageDuration(state.stageDurationMs),
   };
 
   try {

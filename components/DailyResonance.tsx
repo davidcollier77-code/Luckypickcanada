@@ -7,9 +7,11 @@ import Link from 'next/link';
 
 import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
+import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
 import { useDailyResetCountdown } from './daily-reset-countdown';
 import { getLocalDateKey } from '../app/lib/daily-reset';
+import { prefersReducedMotion } from '../app/lib/graphics-capabilities';
 import {
   appendResultToHistory,
   emptyMeterHistory,
@@ -25,7 +27,11 @@ import {
   sampleRevealNumber,
 } from '../app/lib/lucky-meter/reveal';
 import { shareDailyResult } from '../app/lib/lucky-meter/share';
-import { ENTERTAINMENT_DISCLAIMER, LUCKY_NUMBERS_LABEL } from '../app/lib/lucky-meter/config';
+import {
+  ENTERTAINMENT_DISCLAIMER,
+  EVENTS_BY_ID,
+  LUCKY_NUMBERS_LABEL,
+} from '../app/lib/lucky-meter/config';
 
 interface DailyResult {
   dateKey: string;
@@ -41,6 +47,7 @@ interface DailyResonanceProps {
 }
 
 type ShareStatus = 'idle' | 'copied' | 'failed';
+type RingPhase = 'idle' | 'scrambling' | 'landed';
 
 const EMPTY_SOUNDS = () => ({
   buildup: null as any,
@@ -51,6 +58,9 @@ const EMPTY_SOUNDS = () => ({
   fireworkBurstAlt: null as any,
   willowCrackle: null as any,
   fireworkLaunch: null as any,
+  // Recorded additions. The existing cues above keep their original files.
+  finaleBoom: null as any,
+  thunderRumble: null as any,
 });
 
 /**
@@ -60,6 +70,11 @@ const EMPTY_SOUNDS = () => ({
  * Storage only. The real percentage is hidden behind a 4.5-second unpredictable
  * climb/drop/jump animation, flashes on landing, and is then followed by the
  * colour, numbers, Little Spark, event and the event's cinematic sequence.
+ *
+ * The circular meter is mounted in every state. The Home control is only
+ * available before the reveal and once the day's event (including its final
+ * sparks) has finished; the completion flag is persisted so refreshing during a
+ * reveal resumes the event instead of exposing Home early.
  *
  * @param props - Component display options.
  * @param props.isCompact - Reduces layout spacing and hides the home link; defaults to false.
@@ -73,6 +88,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [stageActive, setStageActive] = useState(false);
   const [stageDuration, setStageDuration] = useState(0);
+  const [eventCompleted, setEventCompleted] = useState(false);
+  // Home stays unmounted until the persisted lifecycle has been read, so a
+  // refresh never paints it for a frame before an unfinished event resumes.
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>('idle');
   const [announcement, setAnnouncement] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -91,6 +110,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const revealStartRef = useRef(0);
   const isMountedRef = useRef(true);
   const visitsAbortRef = useRef<AbortController | null>(null);
+  const resultRef = useRef<DailyResult | null>(null);
+  const historyRef = useRef(emptyMeterHistory());
+  const stageDurationRef = useRef(0);
+  const eventCompletedRef = useRef(false);
+  const thunderRef = useRef({ count: 0, lastAt: 0 });
+
+  const ringPhase: RingPhase = isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
+
+  // The Home control is available only before Start and after today's complete
+  // cinematic. `result && !eventCompleted` keeps it hidden across a refresh.
+  const showHome =
+    hasLoaded && !isCompact && !isRevealing && !stageActive && (!result || eventCompleted);
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -106,6 +137,24 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     timersRef.current.push(timer);
     return timer;
   }, []);
+
+  const persistLifecycle = useCallback(
+    (
+      nextResult: DailyResult | null,
+      nextHistory: ReturnType<typeof emptyMeterHistory>,
+      completed: boolean,
+      duration: number,
+    ) => {
+      if (!nextResult) return;
+      saveMeterState({
+        result: nextResult,
+        history: nextHistory,
+        eventCompleted: completed,
+        stageDurationMs: duration,
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -128,22 +177,64 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     return undefined;
   }, []);
 
-  // Load today's persisted result. Refresh keeps the revealed result all day.
+  // Load today's persisted result. Refresh keeps the revealed result all day
+  // and, when the event never finished, resumes that event without returning
+  // the Home control prematurely.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const localKey = getLocalDateKey();
     const loaded = loadMeterState();
     setHistory(loaded.history);
+    historyRef.current = loaded.history;
+    setHasLoaded(true);
 
     if (isResultForDate(loaded.result, localKey)) {
       const saved = loaded.result as DailyResult;
+      // Only a stored duration inside this event's documented window is reused;
+      // anything else gets a fresh in-window duration so the finale can always
+      // finish naturally rather than being truncated.
+      const eventWindow = EVENTS_BY_ID.get(saved.event.id);
+      const storedDuration = loaded.stageDurationMs;
+      const duration =
+        eventWindow &&
+        storedDuration >= eventWindow.minDurationMs &&
+        storedDuration <= eventWindow.maxDurationMs
+          ? storedDuration
+          : getEventDurationMs(saved.event.id);
+      const completed = loaded.eventCompleted === true;
+
+      resultRef.current = saved;
+      stageDurationRef.current = duration;
+      eventCompletedRef.current = completed;
+      thunderRef.current = { count: 0, lastAt: 0 };
+
       setResult(saved);
       setDisplayPercentage(saved.percentage);
       setIsRevealed(true);
       setDetailsVisible(true);
+      setStageDuration(duration);
+      setEventCompleted(completed);
       setAnnouncement(
         `Today's resonance is ${saved.percentage} percent. ${saved.tier.label}. ${saved.tier.message}`,
       );
+
+      if (!completed) {
+        if (prefersReducedMotion()) {
+          eventCompletedRef.current = true;
+          setEventCompleted(true);
+          auroraRef.current?.setPhase('settled', saved.event.name);
+          saveMeterState({
+            result: saved,
+            history: loaded.history,
+            eventCompleted: true,
+            stageDurationMs: duration,
+          });
+        } else {
+          // Resume the unfinished cinematic from the start of its event. The
+          // result stays visible and Home remains hidden until it completes.
+          setStageActive(true);
+        }
+      }
     }
   }, []);
 
@@ -154,6 +245,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (!ready || !dateKey) return;
     if (result && result.dateKey !== dateKey) {
       clearSequence();
+      resultRef.current = null;
+      historyRef.current = emptyMeterHistory();
+      stageDurationRef.current = 0;
+      eventCompletedRef.current = false;
+      thunderRef.current = { count: 0, lastAt: 0 };
       setResult(null);
       setDisplayPercentage(0);
       setIsRevealing(false);
@@ -161,6 +257,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setIsFlashing(false);
       setDetailsVisible(false);
       setStageActive(false);
+      setEventCompleted(false);
       setShareStatus('idle');
       setAnnouncement('');
       auroraRef.current?.setPhase('idle');
@@ -184,23 +281,31 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, [clearSequence]);
 
   /**
-   * Loads the existing Lucky Meter sound set on first reveal. This mission is
-   * visual-only and adds no new audio; the established cues are preserved.
+   * Loads the Lucky Meter sound set on first reveal. The established buildup,
+   * meteor, lightning, whistle and firework cues are unchanged; two new
+   * recorded cues are added for the finale boom and thunder.
    */
   const ensureRevealAudio = useCallback(async () => {
     if (soundsRef.current.buildup) return;
     try {
       const howlerModule = await import('howler');
       const Howl = howlerModule.Howl;
+      // A cue that fails to load must never stop the reveal, but it should be
+      // diagnosable in the field instead of failing silently.
+      const onLoadError = (id: number, error: unknown) => {
+        console.warn('Lucky Meter audio load failed:', id, error);
+      };
       soundsRef.current = {
-        buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
-        impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0 }),
-        impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
-        impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
-        fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
-        fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
-        willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 }),
-        fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 }),
+        buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8, onloaderror: onLoadError }),
+        impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0, onloaderror: onLoadError }),
+        impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0, onloaderror: onLoadError }),
+        impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0, onloaderror: onLoadError }),
+        fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], onloaderror: onLoadError }),
+        fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'], onloaderror: onLoadError }),
+        willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0, onloaderror: onLoadError }),
+        fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5, onloaderror: onLoadError }),
+        finaleBoom: new Howl({ src: ['/sounds/lucky-meter-finale-boom.wav'], volume: 1.0, onloaderror: onLoadError }),
+        thunderRumble: new Howl({ src: ['/sounds/lucky-meter-thunder-rumble.wav'], volume: 0.24, onloaderror: onLoadError }),
       };
     } catch (error) {
       // Audio is optional; a blocked or missing sound must never stop the reveal.
@@ -222,15 +327,37 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         // A failed cue never affects the visual sequence.
       }
     };
+    const variation = (spread = 0.08) => 1 + (Math.random() * 2 - 1) * spread;
+
+    // Subtle recorded thunder, linked to the strike and deliberately throttled
+    // so overlapping strikes never become a wall of noise.
+    const maybeThunder = (isFinale: boolean) => {
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (thunderRef.current.count >= 2) return;
+      // The first rumble always plays; later ones keep a minimum spacing.
+      if (thunderRef.current.count > 0 && now - thunderRef.current.lastAt < 2500) return;
+      thunderRef.current = { count: thunderRef.current.count + 1, lastAt: now };
+      play('thunderRumble', variation(0.05), isFinale ? 0.32 : 0.22);
+    };
 
     if (cue === 'meteor') play('impactMeteor', 1.2, 0.5);
     else if (cue === 'meteor-finale') play('impactMeteor', 0.7, 0.95);
-    else if (cue === 'lightning') play('impactLightning', 1, 0.55);
-    else if (cue === 'lightning-finale') play('impactLightning', 0.8, 1);
-    else if (cue === 'firework-launch') play('fireworkLaunch', 1.2, 0.4);
-    else if (cue === 'firework-burst') play('fireworkBurst', 1, 0.55);
+    else if (cue === 'lightning') {
+      // The existing lightning sound is preserved exactly as it was.
+      play('impactLightning', 1, 0.55);
+      maybeThunder(false);
+    } else if (cue === 'lightning-finale') {
+      play('impactLightning', 0.8, 1);
+      maybeThunder(true);
+    } else if (cue === 'firework-launch') play('fireworkLaunch', variation(0.06), 0.4);
+    else if (cue === 'firework-burst') play('fireworkBurst', variation(0.07), 0.55);
+    else if (cue === 'firework-burst-silver') play('fireworkBurstAlt', 1.12 * variation(0.05), 0.42);
     else if (cue === 'firework-finale') play('fireworkLaunch', 0.8, 0.7);
-    else if (cue === 'firework-willow') play('willowCrackle', 1, 1);
+    else if (cue === 'finale-boom') {
+      // A real recording, mixed noticeably louder and deeper than the opening
+      // bursts but kept below unity so the extra low end cannot clip.
+      play('finaleBoom', 1, 0.96);
+    } else if (cue === 'firework-willow') play('willowCrackle', 1, 0.85);
   }, []);
 
   const handleReveal = useCallback(() => {
@@ -247,17 +374,30 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       return;
     }
     const nextHistory = appendResultToHistory(history, next);
+    const duration = getEventDurationMs(next.event.id);
 
     // Persist before animating so a refresh mid-reveal still keeps today's result.
+    resultRef.current = next;
+    historyRef.current = nextHistory;
+    stageDurationRef.current = duration;
+    eventCompletedRef.current = false;
+    thunderRef.current = { count: 0, lastAt: 0 };
+
     setHistory(nextHistory);
-    saveMeterState({ result: next, history: nextHistory });
+    saveMeterState({
+      result: next,
+      history: nextHistory,
+      eventCompleted: false,
+      stageDurationMs: duration,
+    });
 
     setResult(next);
     setShareStatus('idle');
+    setEventCompleted(false);
     setAnnouncement('Preparing today’s resonance.');
     finalPercentageRef.current = next.percentage;
     keyframesRef.current = buildRevealKeyframes(next.percentage);
-    setStageDuration(getEventDurationMs(next.event.id));
+    setStageDuration(duration);
     clearSequence();
 
     void playButtonClick().catch(() => {});
@@ -301,6 +441,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message}`,
       );
       auroraRef.current?.setPhase('settled', next.event.name);
+      // No cinematic runs under reduced motion, so the reading is complete as
+      // soon as every detail is visible and Home may return.
+      eventCompletedRef.current = true;
+      setEventCompleted(true);
+      persistLifecycle(next, nextHistory, true, duration);
       return;
     }
 
@@ -370,13 +515,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     );
   }, [
     clearSequence,
-    createDailyResult,
     dateKey,
     ensureRevealAudio,
-    getLocalDateKey,
     history,
     isRevealed,
     isRevealing,
+    persistLifecycle,
     ready,
     reducedMotion,
     schedule,
@@ -384,7 +528,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const handleStageComplete = useCallback(() => {
     setStageActive(false);
-  }, []);
+    setEventCompleted(true);
+    eventCompletedRef.current = true;
+    // Persist only after the event has actually completed, including the last
+    // visible golden sparks. A refresh before this point resumes the event.
+    persistLifecycle(
+      resultRef.current,
+      historyRef.current,
+      true,
+      stageDurationRef.current,
+    );
+  }, [persistLifecycle]);
 
   const handleShare = useCallback(async () => {
     if (!result) return;
@@ -418,14 +572,20 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const isLightColour = result?.colour?.light === true;
 
+  const ringSizeClasses = isCompact ? 'mt-3' : 'mt-8 sm:mt-9';
+  const panelClass =
+    'rounded-2xl border border-amber-300/20 bg-slate-950/55 shadow-[inset_0_1px_0_rgba(255,240,190,0.08)] backdrop-blur-sm';
+
   return (
     <div
-      className={`relative flex w-full flex-1 flex-col items-center justify-center overflow-hidden z-0 ${
-        isCompact ? 'min-h-[200px]' : 'min-h-[560px]'
+      className={`relative flex w-full flex-1 flex-col items-center overflow-x-hidden z-0 ${
+        isCompact ? 'min-h-[200px]' : 'min-h-[100svh]'
       }`}
     >
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
+      {/* The Milky Way artwork, responsive sources, position and overlay are
+          intentionally unchanged from the approved Lucky Meter design. */}
       <picture className="absolute inset-0 w-full h-full -z-20 pointer-events-none">
         <source
           srcSet="/images/lucky-meter-night-sky-640w.avif 640w, /images/lucky-meter-night-sky-1024w.avif 1024w, /images/lucky-meter-night-sky.avif 1400w"
@@ -464,200 +624,246 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         />
       )}
 
-      {!isCompact && (
-        <div className="absolute top-4 left-4 z-30">
+      {showHome && (
+        <div className="fixed right-3 top-3 z-50 sm:right-5 sm:top-5">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 resonance-return-link text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90"
+            data-testid="lucky-meter-home"
+            aria-label="Return to Home"
+            className="gold-3d-btn lucky-home-btn rounded-full font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
           >
-            <span aria-hidden>←</span> Return to Home
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 10.6 12 3l9 7.6" />
+              <path d="M5.6 9.6V21h12.8V9.6" />
+            </svg>
+            <span>Home</span>
           </Link>
         </div>
       )}
 
-      <div className="relative z-20 flex w-full flex-1 flex-col items-center justify-center px-4 py-10">
-        {totalVisits !== null && (
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-sm tracking-widest uppercase">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-            </span>
-            <span>
-              Total Resonance Rituals:{' '}
-              <strong className="text-emerald-400 font-bold ml-1">
-                {totalVisits.toLocaleString()}
-              </strong>
-            </span>
-          </div>
-        )}
-
-        {!isRevealed && !isRevealing && (
-          <div className="flex flex-col items-center justify-center flex-1 w-full py-8 text-center">
-            {/* Visually identical eyebrow line. It is a paragraph, not a heading, so
-                the page's first heading is its single H1 (audit D5). */}
-            <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
-            <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY&apos;S RESONANCE</h1>
-            <ResonanceButton onClick={handleReveal} />
-            <p className="mt-5 max-w-xs text-[12px] leading-relaxed text-slate-400">
-              One reading a day, revealed in a few unforgettable seconds.
-            </p>
-          </div>
-        )}
-
-        {isRevealing && (
-          <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem] text-center">
-            <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-            <p className="mb-5 text-xs uppercase tracking-[0.4em] text-amber-200/70">
-              Reading today&apos;s resonance
-            </p>
-            <div className="text-gold-gradient text-7xl font-bold leading-none tabular-nums md:text-8xl">
-              {displayPercentage}
-              <span className="ml-1 text-3xl md:text-4xl">%</span>
+      <div
+        className={`relative z-20 flex w-full flex-1 flex-col items-center justify-end ${
+          isCompact ? 'px-2 pb-3 pt-6' : 'px-4 pb-5 pt-20 sm:px-6 sm:pb-8'
+        }`}
+      >
+        <div className={`flex w-full flex-col items-center ${isCompact ? '' : 'max-w-3xl'}`}>
+          {totalVisits !== null && !isCompact && (
+            <div className="mb-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[11px] sm:text-xs tracking-widest uppercase">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+              </span>
+              <span>
+                Total Resonance Rituals:{' '}
+                <strong className="text-emerald-400 font-bold ml-1">
+                  {totalVisits.toLocaleString()}
+                </strong>
+              </span>
             </div>
-          </div>
-        )}
+          )}
 
-        {isRevealed && result && (
-          <div className={`w-full ${isCompact ? 'max-w-[430px]' : 'max-w-2xl'}`}>
-            <div className="relative overflow-hidden rounded-3xl border border-amber-300/25 bg-slate-950/65 px-4 py-6 shadow-[0_0_70px_rgba(234,190,82,0.16)] backdrop-blur-md md:px-8 md:py-8">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-12 -top-24 h-44 rounded-full bg-amber-400/10 blur-3xl resonance-number-glow"
-              />
+          {!isRevealed && !isRevealing && !result && (
+            <div className="flex w-full flex-col items-center text-center">
+              {/* Visually identical eyebrow line. It is a paragraph, not a heading, so
+                  the page's first heading is its single H1 (audit D5). */}
+              <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
+              <h1
+                className={`font-light text-white text-balance ${
+                  isCompact ? 'text-xl mb-2' : 'text-2xl sm:text-3xl md:text-4xl mb-3'
+                }`}
+              >
+                AWAKEN TODAY&apos;S RESONANCE
+              </h1>
+              <p
+                className={`max-w-sm text-slate-300/85 text-balance ${
+                  isCompact ? 'hidden' : 'text-sm leading-relaxed mb-4'
+                }`}
+              >
+                One reading a day, revealed in a few unforgettable seconds.
+              </p>
+              <div className={isCompact ? 'mt-1' : 'mt-1'}>
+                <ResonanceButton onClick={handleReveal} />
+              </div>
+            </div>
+          )}
 
-              <div className="relative flex flex-col items-center text-center">
-                <h1 className="text-[11px] uppercase tracking-[0.4em] text-amber-200/70">
-                  Daily Resonance Ritual
-                </h1>
-                <div className="mt-3 flex items-baseline justify-center">
-                  <span
-                    className={`text-gold-gradient text-6xl font-bold leading-none tabular-nums md:text-7xl ${
-                      isFlashing ? 'animate-lucky-flash' : ''
-                    }`}
-                  >
-                    {displayPercentage}
-                  </span>
-                  <span className="ml-1 text-2xl font-semibold text-amber-200/80 md:text-3xl">%</span>
+          <LuckyMeterRing phase={ringPhase} compact={isCompact} className={ringSizeClasses}>
+            {isRevealing ? (
+              <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
+                <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
+                <p className="mb-2 text-[clamp(12px,1.5vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
+                  Reading today&apos;s resonance
+                </p>
+                <div className="text-gold-gradient text-[clamp(1.9rem,7vh,4.25rem)] font-bold leading-none tabular-nums">
+                  {displayPercentage}
+                  <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-2 text-sm font-semibold uppercase tracking-[0.25em] text-amber-100">
+                <p className="mt-3 text-[12px] uppercase tracking-[0.14em] text-slate-400 sm:text-[13px]">
+                  The sky is listening
+                </p>
+              </div>
+            ) : isRevealed && result ? (
+              <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
+                <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
+                <p className="mb-1 text-[clamp(12px,1.5vh,13px)] uppercase tracking-[0.16em] text-amber-200/65">
+                  Daily Resonance
+                </p>
+                <div
+                  className={`text-gold-gradient font-bold leading-none tabular-nums ${
+                    isCompact ? 'text-4xl' : 'text-[clamp(2rem,7.4vh,4.5rem)]'
+                  } ${isFlashing ? 'animate-lucky-flash' : ''}`}
+                >
+                  {displayPercentage}
+                  <span className="ml-0.5 align-top text-[0.42em]">%</span>
+                </div>
+                <p className="mt-1.5 text-[clamp(12px,1.4vh,15px)] font-semibold uppercase tracking-[0.12em] text-amber-100">
                   {result.tier.label}
                 </p>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-200/90">
+                <p className="mt-1 max-w-[14rem] text-[clamp(12px,1.25vh,13px)] leading-snug text-slate-200/85">
                   {result.tier.message}
                 </p>
               </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
+                <h1 className="sr-only">Daily Resonance Ritual</h1>
+                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60 sm:text-[13px]">
+                  Daily Resonance
+                </p>
+                <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
+                  —
+                </span>
+                <p className="mt-2 text-[12px] uppercase tracking-[0.16em] text-slate-400 sm:text-[13px]">
+                  Awaiting the reading
+                </p>
+              </div>
+            )}
+          </LuckyMeterRing>
 
+          {isRevealed && result && (
+            <div className={`w-full ${isCompact ? 'mt-2' : 'mt-4 sm:mt-5'}`}>
               {detailsVisible && (
-                <div className="relative mt-7 grid gap-3 sm:grid-cols-2">
-                  <section
-                    className="animate-resonance-rise rounded-2xl border border-amber-300/20 bg-white/[0.04] p-4"
-                    style={{ animationDelay: '0ms' }}
-                  >
-                    <h2 className="text-[10px] uppercase tracking-[0.28em] text-amber-200/70">
-                      Today&apos;s Event
-                    </h2>
-                    <p className="mt-1 text-lg font-semibold text-white">{result.event.name}</p>
-                    {stageActive && (
-                      <p className="mt-1 inline-flex items-center gap-2 text-xs text-amber-200/80">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-300" />
-                        Now playing
+                <div
+                  className={`mx-auto w-full ${
+                    isCompact ? 'max-w-[260px]' : 'max-w-2xl'
+                  } animate-resonance-rise`}
+                >
+                  <div className="grid grid-cols-2 gap-2">
+                    <section className={`${panelClass} p-2.5 sm:p-3`}>
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                        Today&apos;s Event
+                      </h2>
+                      <p className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base">
+                        {result.event.name}
                       </p>
-                    )}
-                  </section>
-
-                  <section
-                    className="animate-resonance-rise rounded-2xl border border-amber-300/20 bg-white/[0.04] p-4"
-                    style={{ animationDelay: '90ms' }}
-                  >
-                    <h2 className="text-[10px] uppercase tracking-[0.28em] text-amber-200/70">
-                      Today&apos;s Colour
-                    </h2>
-                    <div className="mt-2 flex items-center gap-3">
-                      <span
-                        aria-hidden="true"
-                        className={`h-10 w-10 shrink-0 rounded-full border shadow-inner ${
-                          isLightColour ? 'border-slate-500/70' : 'border-white/25'
-                        }`}
-                        style={{ backgroundColor: result.colour.hex }}
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-lg font-semibold text-white">{result.colour.name}</p>
-                        <p className="text-[11px] uppercase tracking-widest text-slate-400">
-                          {result.colour.hex}
+                      {stageActive && (
+                        <p className="mt-0.5 inline-flex items-center gap-1.5 text-[12px] text-amber-200/80">
+                          <span className="h-1 w-1 animate-pulse rounded-full bg-amber-300" />
+                          Now playing
                         </p>
-                      </div>
-                    </div>
-                  </section>
+                      )}
+                    </section>
 
-                  <section
-                    className="animate-resonance-rise rounded-2xl border border-amber-300/20 bg-white/[0.04] p-4 sm:col-span-2"
-                    style={{ animationDelay: '180ms' }}
-                  >
-                    <h2 className="text-[10px] uppercase tracking-[0.28em] text-amber-200/70">
-                      {LUCKY_NUMBERS_LABEL}
-                    </h2>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {result.event.numbers.map((number) => (
+                    <section className={`${panelClass} p-2.5 sm:p-3`}>
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                        Today&apos;s Colour
+                      </h2>
+                      <div className="mt-1 flex items-center gap-2.5">
                         <span
-                          key={number}
-                          className="inline-flex min-w-12 items-center justify-center rounded-xl border border-amber-300/40 bg-amber-400/10 px-3 py-2 text-lg font-semibold text-amber-100"
-                        >
-                          {number}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+                          aria-hidden="true"
+                          className={`h-8 w-8 shrink-0 rounded-full border shadow-inner ${
+                            isLightColour ? 'border-slate-500/70' : 'border-white/25'
+                          }`}
+                          style={{ backgroundColor: result.colour.hex }}
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-white sm:text-base">
+                            {result.colour.name}
+                          </p>
+                          <p className="text-[12px] uppercase tracking-wider text-slate-400">
+                            {result.colour.hex}
+                          </p>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className={`${panelClass} p-2.5 sm:p-3`}>
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                        {LUCKY_NUMBERS_LABEL}
+                      </h2>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {result.event.numbers.map((number) => (
+                          <span
+                            key={number}
+                            className="inline-flex min-w-8 items-center justify-center rounded-lg border border-amber-300/40 bg-amber-400/10 px-1.5 py-1 text-sm font-semibold text-amber-100 sm:min-w-9 sm:px-2 sm:text-base"
+                          >
+                            {number}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+
+                    <section className={`${panelClass} p-2.5 sm:p-3`}>
+                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                        Little Spark
+                      </h2>
+                      <p className="mt-0.5 text-[12px] italic leading-snug text-amber-50/90 sm:text-[13px]">
+                        “{result.spark.message}”
+                      </p>
+                    </section>
+                  </div>
+
+                  {!isCompact && (
+                    <p className="mt-2 text-center text-[12px] leading-relaxed text-slate-400">
                       {ENTERTAINMENT_DISCLAIMER}
                     </p>
-                  </section>
+                  )}
 
-                  <section
-                    className="animate-resonance-rise rounded-2xl border border-amber-300/20 bg-white/[0.04] p-4 sm:col-span-2"
-                    style={{ animationDelay: '270ms' }}
-                  >
-                    <h2 className="text-[10px] uppercase tracking-[0.28em] text-amber-200/70">
-                      Little Spark
-                    </h2>
-                    <p className="mt-1 text-sm italic leading-relaxed text-amber-50/90">
-                      “{result.spark.message}”
-                    </p>
-                  </section>
-                </div>
-              )}
+                  <div className="mt-3 flex w-full flex-col items-center">
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="gold-3d-btn w-full rounded-full px-6 py-2.5 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
+                    >
+                      <span className="gold-cta-emoji" aria-hidden="true">
+                        ✦
+                      </span>
+                      {shareLabel}
+                    </button>
 
-              {detailsVisible && (
-                <div className="relative mt-6 flex w-full flex-col items-center">
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="gold-3d-btn mb-6 w-full rounded-full px-6 py-3 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
-                  >
-                    <span className="gold-cta-emoji" aria-hidden="true">
-                      ✦
-                    </span>
-                    {shareLabel}
-                  </button>
-
-                  <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">
-                    Next Resonance In
-                  </p>
-                  <div
-                    className="text-3xl font-mono text-amber-200 tracking-wider drop-shadow-md tabular-nums"
-                    aria-label="Time until daily reset"
-                  >
-                    {resetCountdown}
+                    <div className="mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-0.5">
+                      <p className="text-[12px] text-slate-400 uppercase tracking-[0.18em]">
+                        Next Resonance In
+                      </p>
+                      <div
+                        className="text-xl font-mono text-amber-200 tracking-wider drop-shadow-md tabular-nums sm:text-2xl"
+                        aria-label="Time until daily reset"
+                      >
+                        {resetCountdown}
+                      </div>
+                    </div>
+                    {!isCompact && (
+                      <p className="mt-1 text-[12px] text-slate-500">
+                        A new reading appears after local midnight.
+                      </p>
+                    )}
                   </div>
-                  <p className="mt-2 text-[11px] text-slate-500">
-                    A new reading appears after local midnight.
-                  </p>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="sr-only" role="status" aria-live="polite">
-          {announcement}
+          <div className="sr-only" role="status" aria-live="polite">
+            {announcement}
+          </div>
         </div>
       </div>
     </div>
