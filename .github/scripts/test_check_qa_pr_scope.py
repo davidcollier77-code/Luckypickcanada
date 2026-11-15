@@ -356,7 +356,7 @@ class VisualEvidenceTests(unittest.TestCase):
             "app/api/checkout/route.js",
             "app/api/health/route.ts",
             "pages/api/status.js",
-            ".github/workflows/protected-files.yml",
+            ".github/workflows/visual-qa.yml",
             ".github/scripts/check_qa_pr_scope.py",
         ):
             with self.subTest(path=path):
