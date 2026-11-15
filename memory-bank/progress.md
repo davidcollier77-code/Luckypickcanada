@@ -1,3 +1,10 @@
+## 2026-11-15 — QA checker governance consolidation and owner-directed PR exception
+- Consolidated the QA checker planning requirement into one dedicated AGENTS.md section and removed duplicated QA instructions and the generic summary section.
+- Required an independent pre-submission review of the completed implementation and full diff against every applicable checker requirement; clarified that CI results do not replace this review.
+- Added a narrowly scoped exception to PR_SUBMISSION.md: only a direct instruction from the repository owner permits specified work on an already-submitted PR. Open status, comments, CI results and review findings do not imply permission. All scope, approval and protected-file gates remain mandatory.
+- Extended the existing governance regression test and updated Spec Kit requirements, plan, tasks, checklist and evidence.
+- PR #1908 continuation was directly authorized by the repository owner. Focused test execution remains NOT RUN in this GitHub-only session; current-head owner governance approval and protected-file environment authorization remain pending.
+
 ## 2026-11-15 — Freebuff Playwright governance guidance
 - Added a concise Freebuff-only AGENTS.md section documenting the interactive CLI launcher, standard Option A and SwiftShader Option B.
 - Explicitly excluded ChatGPT from using, loading, modifying or maintaining the repository Playwright CLI and its setup scripts.
