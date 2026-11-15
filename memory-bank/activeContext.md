@@ -19,7 +19,7 @@ Complete the owner-authorized continuation of PR #1908. The original Freebuff-on
 - PR_SUBMISSION.md permits work on an already-submitted PR only when the repository owner directly instructs the agent to continue or make specified changes. Permission cannot be inferred from an open PR, comments, CI results or review findings. All other gates remain in force.
 - The existing governance regression test asserts the consolidated QA and owner-exception rules.
 - Spec Kit specification, plan, task list, checklist and evidence, plus this Memory Bank context and progress, record the authorized continuation.
-- No application, browser, Playwright runtime, CI workflow, README, visual asset or production build input was changed.
+- No application, browser, Playwright runtime, README, visual asset or production build input was changed. The protected-file workflow was corrected to preserve empty previous filenames, and its regression test now guards that parsing contract.
 
 ## Verification and Handoff
 
@@ -27,6 +27,6 @@ Complete the owner-authorized continuation of PR #1908. The original Freebuff-on
 - Complete branch scope is reconciled in PR #1908's exact-path QA manifest.
 - Focused Vitest was not run: no shell-capable repository checkout is available in this GitHub editing session.
 - ChatGPT did not load or execute `freebuff-verify.sh`.
-- PR-triggered checks remain pending until current-head results are observed.
+- The initial current-head run found and exposed the protected-file parsing defect; the corrected workflow and regression coverage are now committed. Fresh PR-triggered checks must run against the new head before any result is treated as passing.
 - Current-head `/approve-governance <digest>` comment and protected-file environment authorization remain separate required human approvals.
 - PR #1908 remains open and unmerged for owner review.
