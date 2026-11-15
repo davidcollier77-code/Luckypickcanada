@@ -12,7 +12,7 @@
 
 - Updated AGENTS.md only within the new Playwright guidance section.
 - Extended the existing governance regression test with assertions for the new section.
-- Did not change Playwright scripts, browser setup, Playwright configurations, CI workflows, application code or README.md.
+- Did not change Playwright scripts, browser setup, Playwright configurations, application code or README.md. The protected-file authorization workflow was later corrected in the owner-authorized continuation documented below.
 
 ## Verification Status
 
