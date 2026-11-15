@@ -94,6 +94,16 @@ External review applications provide advisory feedback only. They do not replace
 
 PROJECT-WIDE TECHNICAL RULES
 
+### Playwright Browser Testing (Freebuff only)
+
+**Scope:** This section governs Freebuff only. For ChatGPT, it overrides the general Playwright CLI instruction: ChatGPT must not use, load, modify or maintain the repository Playwright CLI or its associated startup scripts.
+
+- **Interactive browser sessions:** Use `./scripts/playwright-cli.sh`.
+- **Option A — Standard:** Use `pnpm exec playwright test` for normal QA, visual testing and CI.
+- **Option B — SwiftShader:** Use `pnpm exec playwright test --config=playwright.swiftshader.config.ts` for software-rendered GPU and graphics investigations. This does not measure physical GPU performance.
+
+Keep both modes separate; standard QA and CI must continue using Option A. When Freebuff's environment, dependencies or browser runtime change, verify that the startup, browser-runtime and CLI setup scripts still work. Update the relevant scripts as needed to keep them functional.
+
 - Never weaken security, privacy, validation, authentication, CAPTCHA, Turnstile, rate limiting, duplicate protection or data integrity.
 - Use Playwright as the primary browser automation tool. Use Browserless as the remote fallback for direct browser tasks. Automatic PR-checker workflows use Playwright, not Browserless.
 - Use Firecrawl as the primary content-retrieval tool and Crawlbase as its fallback. Neither replaces browser rendering or end-to-end testing.
