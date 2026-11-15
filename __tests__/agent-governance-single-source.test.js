@@ -117,7 +117,7 @@ describe('single-source agent governance', () => {
   it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
     const agents = readAgents();
     const start = agents.indexOf('### Playwright Browser Testing (Freebuff only)');
-    const end = agents.indexOf('PROJECT-WIDE TECHNICAL RULES', start);
+    const end = agents.indexOf('\n- Never weaken security', start);
     const section = agents.slice(start, end);
 
     expect(start).toBeGreaterThanOrEqual(0);
