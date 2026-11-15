@@ -68,7 +68,7 @@ describe('single-source agent governance', () => {
   it('requires PR submission to complete repository-changing tasks without forcing PRs for read-only work', () => {
     const agents = readAgents();
     const handoffStart = agents.indexOf('4. Submit the PR.');
-    const handoffEnd = agents.indexOf('\n\nREPOSITORY QA AND VALIDATION', handoffStart);
+    const handoffEnd = agents.indexOf('\n\nPROJECT-WIDE TECHNICAL RULES', handoffStart);
 
     expect(handoffStart).toBeGreaterThanOrEqual(0);
     expect(handoffEnd).toBeGreaterThan(handoffStart);
@@ -91,12 +91,10 @@ describe('single-source agent governance', () => {
     expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
     expect(agents).toContain('This is a task-planning input, not a step to defer until implementation or pre-submission review.');
     expect(agents).toContain('Use those requirements when defining the task\'s scope, constraints, implementation approach, acceptance criteria and verification plan.');
-    expect(agents).toContain('REPOSITORY QA AND VALIDATION');
-    // These assertions track the approved, merged AGENTS.md baseline. They
-    // verify the requirements, not superseded wording from an earlier revision.
-    expect(agents).toContain(
-      'Inspect the actual repository workflows, scripts, configurations and referenced requirements',
-    );
+    expect(agents).not.toContain('REPOSITORY QA AND VALIDATION');
+    expect(agents).toContain('Complete the final checker-requirement review.');
+    expect(agents).toContain('review the completed implementation and complete diff against every applicable checker requirement');
+    expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
     expect(agents).toContain('Use Playwright as the primary browser automation tool.');
     expect(agents).toContain(
       'Use Browserless as the remote fallback for direct browser tasks.',
@@ -112,6 +110,11 @@ describe('single-source agent governance', () => {
     );
     expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
     expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
+    const submission = readFileSync(prSubmissionPath, 'utf8');
+    expect(submission).toContain('Owner-directed exception:');
+    expect(submission).toContain('must never infer permission');
+    expect(submission).toContain('clear instruction from the repository owner');
+    expect(submission).toContain('CI results do not replace this review.');
   });
 
   it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
@@ -207,7 +210,7 @@ describe('single-source agent governance', () => {
 
   it('requires all nine Spec Kit commands and checks for workflow changes', () => {
     const agents = readAgents();
-    const start = agents.indexOf('9. Follow Spec Kit.');
+    const start = agents.indexOf('8. Follow Spec Kit.');
     const end = agents.indexOf('\n\nB — IMPLEMENT', start);
     const workflow = agents.slice(start, end);
     const normalized = workflow.toLowerCase();
