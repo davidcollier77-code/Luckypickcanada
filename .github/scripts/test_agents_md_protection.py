@@ -184,6 +184,9 @@ class InputValidationTests(unittest.TestCase):
             workflow = handle.read()
         self.assertIn("read -r -d '' new_path", workflow)
         self.assertIn('(.previous_filename // ""), "\\u0000"', workflow)
+        self.assertIn("gh api --paginate --slurp", workflow)
+        self.assertIn("| jq -j", workflow)
+        self.assertNotIn("--jq -j", workflow)
         self.assertNotIn('IFS="$TAB" read -r new_path old_path status', workflow)
 
     def test_leading_dot_slash_is_normalized(self):
