@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add one concise Freebuff-only Playwright guidance section to AGENTS.md and extend the existing governance test to guard its scope, commands, mode separation and maintenance instructions. Do not change README.md, browser scripts, Playwright configurations, CI workflows or application code.
+Retain the concise Freebuff-only Playwright guidance and consolidate QA governance: remove duplicate checker instructions, make checker requirements inform task specification and independent final self-review, define a direct-owner-only exception to the post-submission hard stop, and extend the governance regression test. Keep the work within governance documentation, its existing regression test, Spec Kit records and Memory Bank task records. Do not change README.md, browser scripts, Playwright configurations, CI workflows or application code.
 
 ## Technical Context
 
@@ -17,7 +17,7 @@ Add one concise Freebuff-only Playwright guidance section to AGENTS.md and exten
 **Target Platform**: GitHub repository
 **Project Type**: Governance documentation and regression test
 **Performance Goals**: No runtime or build impact
-**Constraints**: Dedicated AGENTS.md governance PR; preserve existing browser-tool exceptions and all unrelated governance wording
+**Constraints**: Existing dedicated governance PR #1908; continuation explicitly authorized by the repository owner; preserve existing browser-tool exceptions and unrelated governance; owner approval, protected-file authorization and QA scope gates remain mandatory
 
 ## Constitution Check
 
@@ -25,7 +25,8 @@ Add one concise Freebuff-only Playwright guidance section to AGENTS.md and exten
 - The change is explicitly authorized by the repository owner.
 - The AGENTS.md protection workflow requires a dedicated governance PR and human authorization before merge.
 - No application, browser runtime, security, payment, deployment or data boundary is changed.
-- The Spec Kit artifacts remain concise and scoped to this governance change.
+- The Spec Kit artifacts record both the original Playwright guidance and the owner-authorized QA-governance continuation.
+- PR #1908 remains open and unmerged; direct owner instruction permits this specific continuation but does not satisfy the separate QA-scope owner approval or protected-file environment authorization.
 
 ## Project Structure
 
