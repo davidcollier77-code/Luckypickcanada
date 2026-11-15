@@ -169,7 +169,10 @@ def parse_cache_states(log_text):
         if restored:
             key = restored.group(1)
             slot = classify_cache_key(key)
-            if slot:
+            # Keep the first recorded state for each family so a later
+            # duplicate restore line cannot replace the key that was
+            # actually restored.
+            if slot and states[slot]["state"] == "unknown":
                 states[slot] = {"state": "hit", "key": key}
             continue
         missing = CACHE_NOT_FOUND.search(line)
@@ -184,10 +187,18 @@ def parse_cache_states(log_text):
 
 
 def chromium_state_from_steps(job):
-    """Infer the Chromium cache outcome from the step that only runs on a miss."""
+    """Infer the Chromium cache outcome from the step that only runs on a miss.
+
+    A skipped miss-only step only proves a hit when the restore step really
+    completed successfully; without that evidence the outcome is unknown.
+    """
     restore = find_step(job, "Restore cached Playwright Chromium")
     if restore is None:
         return "n/a"
+    if str(restore.get("status") or "").lower() != "completed":
+        return "unknown"
+    if str(restore.get("conclusion") or "").lower() != "success":
+        return "unknown"
     miss_step = find_step(job, CHROMIUM_MISS_STEP)
     if miss_step is None:
         return "unknown"
@@ -373,11 +384,19 @@ def _github_request(url, token, accept="application/vnd.github+json"):
 
 
 def api_json(url, token):
+    path = urllib.parse.urlsplit(url).path
+    with _github_request(url, token) as response:
+        body = response.read()
     try:
-        with _github_request(url, token) as response:
-            return json.loads(response.read().decode("utf-8"))
-    except json.JSONDecodeError:
-        raise ReportError("GitHub API returned invalid JSON for %s" % urllib.parse.urlsplit(url).path) from None
+        return json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        if isinstance(error, json.JSONDecodeError):
+            detail = "%s at line %d column %d" % (error.msg, error.lineno, error.colno)
+        else:
+            detail = "payload is not valid UTF-8: %s" % error
+        raise ReportError(
+            "GitHub API returned invalid JSON for %s: %s" % (path, detail)
+        ) from error
 
 
 def api_bytes(url, token):
@@ -399,8 +418,16 @@ def load_live(repository, run_id, token):
         )
         chunk = payload.get("jobs") or []
         jobs.extend(chunk)
-        total = int(payload.get("total_count") or 0)
-        if len(chunk) < 100 or len(jobs) >= total:
+        # GitHub omits total_count on some responses and reports zero when it
+        # does not count. Only a positive total can end pagination early; a
+        # full page must otherwise request the next page.
+        try:
+            total = int(payload.get("total_count") or 0)
+        except (TypeError, ValueError):
+            total = 0
+        if len(chunk) < 100:
+            break
+        if total > 0 and len(jobs) >= total:
             break
         page += 1
 
@@ -410,10 +437,14 @@ def load_live(repository, run_id, token):
         if not job_id:
             continue
         try:
-            logs[str(job_id)] = decode_log(api_bytes("%s/actions/jobs/%s/logs" % (base, job_id), token))
+            payload = api_bytes("%s/actions/jobs/%s/logs" % (base, job_id), token)
         except ReportError:
-            # A missing log only changes cache details from known to unknown.
+            # A missing or unavailable log only changes cache details from
+            # known to unknown; the report still renders.
             continue
+        # Decoding stays outside the retrieval guard. A corrupt archive is not
+        # unavailable evidence: it must fail the report visibly.
+        logs[str(job_id)] = decode_log(payload)
     return run, jobs, logs
 
 

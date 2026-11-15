@@ -1,47 +1,52 @@
-# Active Context — Visual QA Install Timing Report
+# Active Context — Visual QA install timing reporter corrections
 
 - **Updated:** 2026-11-15
 - **Repository:** `davidcollier77-code/Luckypickcanada`
-- **Branch:** `freebuff/02773acb0f15757c85d4c07d-install-timings`
-- **Base:** `main` at `0c03ac90` (merged PR #1915)
-- **Spec Kit feature:** `specs/167-visual-qa-install-timings`
+- **Branch:** `freebuff/visual-qa-timings-fixes`
+- **Base:** `main` at `0b12cd86` (merged PR #1917)
+- **Spec Kit feature:** `specs/168-visual-qa-timings-fixes`
 - **Pull request:** pending creation from this branch as a regular, non-draft PR
 
 ## Current Task
 
-Add one command that, given a Visual QA run ID, reports each job's `Install dependencies` duration
-and delta against the PR #1914 baseline, together with the pnpm store and Chromium cache hit/miss
-states, so the next rendering-capable PR can be measured without reading job logs by hand.
+Correct the confirmed reporting and cache-classification defects in
+`.github/scripts/report_visual_qa_install_timings.py` in one follow-up PR against `main`, without
+reverting or re-implementing PR #1917.
 
 ## Implemented State
 
-- `.github/scripts/report_visual_qa_install_timings.py` reports the verification job and both browser
-  shards, ordered verification first; durations are whole seconds and deltas use the embedded
-  baseline (verification 8 s, each shard 7 s) from run `43730539554`.
-- pnpm and Chromium cache states come from `@actions/cache` log lines, with the
-  `Install Playwright Chromium (cache miss)` step conclusion as the exact offline fallback.
-  Missing logs degrade to `unknown` rather than failing the report.
-- The tool reads plain or one-entry-zip job logs, strips the Authorization header on the log
-  redirect, resolves the repository from `--repo`/`GITHUB_REPOSITORY`/git origin, and never prints
-  the token. `--json` emits the same data; `--fixture-dir` supports offline runs.
-- The QA verification job now compiles the reporter and runs its 21 offline tests; no install,
-  cache, Playwright or classifier step changed.
+- Chromium classification requires a completed restore step with a `success` conclusion before a
+  skipped miss-only step can mean a hit; failed, cancelled, skipped, conclusion-less and incomplete
+  restores are `unknown`, and an executed miss-only step stays a miss.
+- Job pagination stops on a page shorter than 100 jobs, or once a positive `total_count` is reached;
+  a missing or zero total no longer ends pagination after a full page.
+- Log retrieval and decoding are separate: an unavailable log leaves cache details `unknown`, while
+  a corrupt zip raises `ReportError` and the command exits 2 with a clear message.
+- Cache parsing keeps the first recorded state, so a duplicate restore line cannot replace the key.
+- `api_json()` reports the API path plus the decoder message and line/column position.
+- The hexadecimal `head_sha` fixture is `fixture-head-sha-value`, and an assertion covers the
+  eight-character `Head:` formatting; DevSkim no longer reports DS173237 for the file.
+- The focused suite grew from 21 to 34 offline tests; no workflow, cache key, install,
+  Chromium-provisioning, classifier or baseline behaviour changed.
 
 ## Verification
 
-- Focused reporter suite: 21/21 passed.
-- Full Vitest suite: 80 files / 788 tests passed; `tsc --noEmit` exit 0.
-- `SPEC_KIT_BASE_REF=0c03ac90 ./freebuff-verify.sh` exit 0; build 290.84 MiB, below the 495 MiB cap.
-- Workflow YAML parses, the modified run block passes `bash -n`, and the existing classifier suite
-  remains 30/30.
+- Focused reporter suite: 34/34 passed; `py_compile` exit 0.
+- QA infrastructure suites: 142 tests passed; DevSkim suppression suite passed.
+- DevSkim CLI 1.0.103: pre-fix file reported DS173237 at line 100; corrected file reports 0 findings.
+- Full Vitest suite: 80 files / 788 tests passed.
+- `SPEC_KIT_BASE_REF=0b12cd86 ./freebuff-verify.sh` exit 0; build 304,970,368 bytes (290.84 MiB),
+  below the 495 MiB cap.
+- Visual change classifier: `visual_required=false`.
 
 ## Limitations
 
-- Live API mode was not exercised in this workspace (no authenticated `gh`; anonymous request 403).
-- Playwright visual tests were not run; no rendering paths changed.
+- Live API mode was not exercised (no authenticated `gh`/token in this workspace).
+- DevSkim ran locally with the official CLI, not the GitHub Security upload.
+- Playwright visual tests were not run; this change set is non-rendering.
 - PR-triggered checks are pending until the PR is created.
 
 ## Follow-ups
 
-- Run the report on the next genuinely visual PR with an authenticated token and record the cache
-  states; expect ~0 s delta on a warm pnpm store and the removed ~681 MB download only on a miss.
+- Run the report against the next genuinely visual PR to confirm both cache families and the
+  paginated job list on live data.
