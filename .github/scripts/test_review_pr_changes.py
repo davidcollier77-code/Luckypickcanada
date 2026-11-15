@@ -170,6 +170,67 @@ class FalsePositiveControlTests(unittest.TestCase):
 
 
 class ReportAndLineMappingTests(unittest.TestCase):
+class RegressionFixTests(unittest.TestCase):
+    """Regression tests for false-positive and false-negative fixes."""
+
+    # Fix 2: HTTP URL detection
+    def test_https_url_is_not_flagged_as_insecure(self):
+        url = "https" + "://secure.example.com/path"
+        result = review_files([record("components/Link.tsx", '<a href="%s">link</a>' % url)])
+        insecure = [f for f in result["findings"] if f["rule"] == "insecure-http-url"]
+        self.assertEqual(insecure, [])
+
+    def test_http_embedded_inside_https_query_param_is_not_flagged(self):
+        # http:// is preceded by a word char (the 's' of https) so must not match.
+        line = 'const u = "https' + '://host/path?from=http' + '://old.example.com";'
+        result = review_files([record("app/lib/redirect.ts", line)])
+        insecure = [f for f in result["findings"] if f["rule"] == "insecure-http-url"]
+        self.assertEqual(insecure, [])
+
+    def test_standalone_http_url_is_still_flagged(self):
+        url = "http" + "://insecure.example.com/page"
+        result = review_files([record("components/Link.tsx", '<a href="%s">x</a>' % url)])
+        insecure = [f for f in result["findings"] if f["rule"] == "insecure-http-url"]
+        self.assertEqual(len(insecure), 1)
+
+    # Fix 3: Multiline target="_blank" / rel="noopener"
+    def test_target_blank_with_noopener_on_next_line_is_not_flagged(self):
+        result = review_files([record(
+            "components/Hero.tsx",
+            "<a",
+            '  target="_blank"',
+            '  rel="noopener noreferrer"',
+            '  href="https://example.com"',
+            ">link</a>",
+        )])
+        blank_findings = [f for f in result["findings"] if f["rule"] == "target-blank-without-noopener"]
+        self.assertEqual(blank_findings, [])
+
+    def test_target_blank_without_noopener_anywhere_is_still_flagged(self):
+        result = review_files([record(
+            "components/Hero.tsx",
+            "<a",
+            '  target="_blank"',
+            '  href="https://example.com"',
+            ">link</a>",
+        )])
+        blank_findings = [f for f in result["findings"] if f["rule"] == "target-blank-without-noopener"]
+        self.assertEqual(len(blank_findings), 1)
+
+    # Fix 4: Suppression detection — string literals must not trigger
+    def test_suppression_directive_in_string_literal_is_not_flagged(self):
+        line = 'const msg = "Do not use @ts-' + 'ignore in production.";'
+        result = review_files([record("app/lib/docs.ts", line)])
+        suppression = [f for f in result["findings"] if f["rule"] == "type-or-lint-suppression"]
+        self.assertEqual(suppression, [])
+
+    def test_suppression_directive_in_code_comment_is_still_flagged(self):
+        suppression = "// @ts-" + "ignore"
+        result = review_files([record("app/lib/safe.ts", suppression)])
+        findings = [f for f in result["findings"] if f["rule"] == "type-or-lint-suppression"]
+        self.assertEqual(len(findings), 1)
+
+
     def test_hunk_line_numbers_point_to_the_new_file(self):
         token = "AKIA" + "1234567890ABCDEF"
         body = (

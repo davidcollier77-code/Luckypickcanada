@@ -52,16 +52,13 @@ UNSAFE_HTML_PATTERN = re.compile(
     + "insertAdjacentHTML\\(|\\beval\\(|new Function\\("
 )
 INSECURE_URL_PATTERN = re.compile(
-    r"(?i)(?<!https)http" + "://" + r"([^\s\"'<>]+)"
+    r"(?i)(?:^|(?<=[^\w:/]))http://" + r"([^\s\"'<>]+)"
 )
 TARGET_BLANK_PATTERN = re.compile(r"(?i)target\s*=\s*[\"']_blank[\"']")
 NOOPENER_PATTERN = re.compile(r"(?i)rel\s*=\s*[\"'][^\"']*noopener")
 PACKAGE_ENTRY_PATTERN = re.compile(r'^\s*"([^"]+)"\s*:\s*"[^"]+"')
 QUALITY_SUPPRESSION_PATTERN = re.compile(
-    r"@ts-"
-    + r"(?:ignore|nocheck)\b|eslint-"
-    + r"disable"
-    + r"(?:-next-line|-line)?\b"
+    r"(?:(?:^|(?<=//)|(?<=#))\s*.*?)?(?:@ts-(?:ignore|nocheck)\b|eslint-disable(?:-next-line|-line)?\b)"
 )
 DEBUGGER_PATTERN = re.compile(r"^\s*debugger\s*;?\s*$")
 DEPRECATED_API_PATTERN = re.compile(
@@ -177,7 +174,7 @@ def _finding(
     }
 
 
-def _line_findings(path: str, line: int, text: str) -> list[dict]:
+def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> list[dict]:
     findings = []
     stripped = text.strip()
     if not stripped:
@@ -261,7 +258,8 @@ def _line_findings(path: str, line: int, text: str) -> list[dict]:
         )
 
     if not documentation:
-        if TARGET_BLANK_PATTERN.search(text) and not NOOPENER_PATTERN.search(text):
+        combined = text + "
+        if TARGET_BLANK_PATTERN.search(text) and not NOOPENER_PATTERN.search(combined):
             findings.append(
                 _finding(
                     path,
@@ -269,7 +267,7 @@ def _line_findings(path: str, line: int, text: str) -> list[dict]:
                     "target-blank-without-noopener",
                     WARNING,
                     CONFIDENCE_MEDIUM,
-                    "A new-tab link does not include rel=noopener on the changed line.",
+                    "A new-tab link does not include rel=noopener on the changed line or adjacent lines.",
                     "Add rel=\"noopener noreferrer\" or confirm the framework supplies it.",
                     stripped,
                 )
@@ -389,8 +387,11 @@ def review_files(file_records) -> dict:
             )
             continue
         reviewed.append(path)
-        for line_number, text in _added_lines(patch):
-            findings.extend(_line_findings(path, line_number, text))
+        added = list(_added_lines(patch))
+        for idx, (line_number, text) in enumerate(added):
+            window = added[max(0, idx - 5):idx + 6]
+            nearby_text = "
+            findings.extend(_line_findings(path, line_number, text, nearby_text))
 
     deduplicated = {}
     for finding in findings:

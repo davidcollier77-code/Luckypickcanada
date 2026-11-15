@@ -36,7 +36,39 @@ jobs:
           set -euo pipefail
           required=false
           if [[ -n "${PR_BODY:-}" ]]; then
-            required="$(python3 -c 'import json,os,re; body=os.environ.get("PR_BODY",""); m=re.search(r"<!-- qa-scope:start -->(.*?)<!-- qa-scope:end -->", body, re.S); d=json.loads(m.group(1)) if m else {}; i=d.get("visual_impact") if isinstance(d,dict) else None; print("true" if isinstance(i,dict) and i.get("required") is True else "false")' 2>/dev/null || printf false)"
+            if ! parse_out="$(python3 - <<'PYEOF'
+import json, os, re, sys
+body = os.environ.get("PR_BODY", "")
+m = re.search(r"<!-- qa-scope:start -->(.*?)<!-- qa-scope:end -->", body, re.S)
+if not m:
+    print("false")
+    sys.exit(0)
+try:
+    d = json.loads(m.group(1))
+except json.JSONDecodeError as exc:
+    print(
+        f"::warning::visual-qa: QA scope JSON is malformed ({exc}); "
+        "defaulting visual_impact.required=true (fail-closed).",
+        file=sys.stderr,
+    )
+    print("true")
+    sys.exit(0)
+if not isinstance(d, dict):
+    print(
+        "::warning::visual-qa: QA scope block is not a JSON object; "
+        "defaulting visual_impact.required=true (fail-closed).",
+        file=sys.stderr,
+    )
+    print("true")
+    sys.exit(0)
+i = d.get("visual_impact")
+print("true" if isinstance(i, dict) and i.get("required") is True else "false")
+PYEOF
+)"; then
+              echo "::warning::visual-qa: Python parse step failed unexpectedly; defaulting visual_impact.required=true (fail-closed)."
+              parse_out="true"
+            fi
+            required="$parse_out"
           fi
           printf 'required=%s\n' "$required" >> "$GITHUB_OUTPUT"
 
