@@ -22,16 +22,16 @@
 
 ## Phase 4: Verification (Priority: P1)
 
-- [ ] T010 Run the focused classifier test and full pnpm test suite in an authorized repository environment.
-- [ ] T011 Run the standalone TypeScript check and OpenNext Cloudflare production build.
-- [ ] T012 Run Wrangler build validation and confirm the measured .next plus public output remains strictly below 495 MiB.
-- [ ] T013 Run the repository verification gate in an authorized environment; ChatGPT must not execute repository shell scripts.
+- [x] T010 Run the classifier regression through the full pnpm test suite: 80/80 test files and 789/789 tests passed in Visual QA run 43760858112; QA infrastructure checker tests also passed (142 tests).
+- [x] T011 Run the standalone TypeScript check (passed in Visual QA run 43760858112) and the OpenNext Cloudflare production build (passed in Validate OpenNext Repair run 43760857988).
+- [x] T012 Wrangler build validation passed in run 43760857988; .next plus public measured 326.43 MiB against the 495 MiB cap. The updater-scheduler workflow independently measured 326.44 MiB and its Wrangler dry-run passed in run 43760858000.
+- [x] T013 The repository governance verification gate passed in the PR-triggered GitHub Actions environment (run 43760858000). ChatGPT did not execute repository shell scripts.
 
 ## Dependencies and Execution Order
 
 - Phase 1 and Phase 2 are prerequisites for implementation and are complete.
 - T006–T008 are the configuration and QA regression changes; they are complete.
-- T010–T013 are verification tasks and remain pending for the PR's authorized CI environment.
+- T010–T013 are complete based on the recorded current-head GitHub Actions results above.
 - No visual/browser regression run is required for this non-rendering change; the full unit, type, OpenNext, Wrangler, security, scope, and integrity checks remain applicable.
 
 ## Implementation Strategy
