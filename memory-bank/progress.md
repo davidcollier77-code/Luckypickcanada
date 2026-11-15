@@ -1,3 +1,9 @@
+## 2026-11-15 — Visual QA install timing report
+- Added `.github/scripts/report_visual_qa_install_timings.py`, a read-only, dependency-free reporter that takes a Visual QA run ID and prints each job's `Install dependencies` duration beside the PR #1914 baseline (8 s verification, 7 s per shard), plus pnpm and Chromium cache states.
+- Cache states come from `@actions/cache` log lines, with the Chromium cache-miss step conclusion as the offline fallback; missing logs degrade to `unknown`, and a cold pnpm store is called out as the only case where the skipped postinstall download mattered.
+- Added 21 offline tests and wired them into the QA checker step; no install, cache, Playwright, classifier or baseline behaviour changed.
+- Verified: 21 reporter tests, full suite 80 files / 788 tests, `tsc --noEmit`, `./freebuff-verify.sh` exit 0, workflow YAML/`bash -n` checks, existing classifier suite 30/30, and a 290.84 MiB build below the 495 MiB cap. GitHub Actions and the live authenticated report run remain pending the PR/owner token.
+
 ## 2026-11-15 — Visual QA classifier precision and QA Playwright initialization
 - Extended the fail-closed visual change classifier with positively non-rendering classes that cannot affect production rendering: agent/Playwright skill documentation (`.agents/skills/*`) and standalone Playwright configurations (`playwright.*.config.ts`, `playwright-*.config.ts`). `playwright.config.ts`, app code, components, styles, images, fonts, rendering configuration, visual/e2e tests and unknown paths still require visual QA.
 - Removed the blanket `package.json` trigger. A new fail-closed manifest comparator reports scripts-only only for changed test/tooling script names (`test`, `lint`, `format`, `typecheck`, `type-check`, `check`, `verify` and `:<name>` variants). Dependencies, engines, exports, package-manager/PNPM overrides, lifecycle scripts, unknown scripts and failed comparisons keep visual QA.
