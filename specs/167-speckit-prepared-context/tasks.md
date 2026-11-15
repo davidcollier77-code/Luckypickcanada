@@ -36,7 +36,7 @@
 
 - [X] T011 Review all four updated command definitions for remaining setup-script, resolver, prerequisite-script or hook-dispatch instructions.
 - [X] T012 Confirm the complete branch diff contains only the four core command definitions and these three required Spec Kit feature artifacts; confirm `AGENTS.md` is unchanged.
-- [ ] T013 Record unavailable local script-based checks accurately and submit the complete PR with PR-triggered checks marked pending.
+- [X] T013 Prepare the PR handoff with the source branch, target base, full HEAD SHA and verification limitations accurately recorded.
 
 ## Dependencies & Execution Order
 
