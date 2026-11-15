@@ -302,10 +302,10 @@ dependabot_commit "$root" "chore(deps): bump fixture from 1.0.0 to 1.0.1"
 git -C "$root" branch -D main >/dev/null
 expect_failure "Dependabot scope without a comparison base" "$root" "$DEPENDABOT_AUTHOR"
 
-# Both workflows that run the gate must forward the GitHub-reported PR author;
-# without that wiring the exemption can never apply in CI.
+# The deploy workflow still runs the gate and must forward the GitHub-reported
+# PR author; without that wiring the exemption can never apply in CI.
 REPOSITORY_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
-for workflow in visual-qa.yml deploy-updater-scheduler.yml; do
+for workflow in deploy-updater-scheduler.yml; do
   workflow_path="$REPOSITORY_ROOT/.github/workflows/$workflow"
   if [[ ! -f "$workflow_path" ]]; then
     fail "expected governance workflow is missing: $workflow"
@@ -315,5 +315,12 @@ for workflow in visual-qa.yml deploy-updater-scheduler.yml; do
   fi
   echo "PASS: $workflow forwards the GitHub-reported pull request author"
 done
+
+# Visual QA no longer invokes Freebuff's governance script, so it must not
+# forward the author or depend on that script.
+if grep -Fq './freebuff-verify.sh' "$REPOSITORY_ROOT/.github/workflows/visual-qa.yml"; then
+  fail "visual-qa.yml must not depend on freebuff-verify.sh"
+fi
+echo "PASS: visual-qa.yml does not depend on freebuff-verify.sh"
 
 echo "All Spec Kit task-artifact verifier tests passed."

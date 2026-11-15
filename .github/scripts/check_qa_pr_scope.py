@@ -125,18 +125,32 @@ def changed_paths(file_records: list) -> set[str]:
     for record in file_records:
         if not isinstance(record, dict):
             raise ScopeError("GitHub changed-file evidence contains a malformed record")
-        if record.get("filename"):
-            filename = normalize_path(record["filename"])
-            if filename in current_names:
-                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {filename}")
-            current_names.add(filename)
-            paths.add(filename)
-            prev = normalize_path(record["previous_filename"])
-            if prev in current_names:
-                raise ScopeError(f"GitHub changed-file evidence repeats a filename: {prev}")
-            current_names.add(prev)
-            paths.add(prev)
-            paths.add(normalize_path(record["previous_filename"]))
+        if not record.get("filename"):
+            raise ScopeError("GitHub changed-file evidence contains a record without a filename")
+        status = (record.get("status") or "").casefold()
+        raw_previous = record.get("previous_filename")
+        previous = None
+        if raw_previous not in (None, ""):
+            previous = normalize_path(raw_previous)
+        # GitHub supplies previous_filename only for renames and copies. A
+        # rename without it is incomplete evidence, not an ordinary change.
+        if status in {"renamed", "copied"} and previous is None:
+            raise ScopeError(
+                "GitHub changed-file evidence is missing the previous path for a rename"
+            )
+
+        filename = normalize_path(record["filename"])
+        if filename in current_names:
+            raise ScopeError(f"GitHub changed-file evidence repeats a filename: {filename}")
+        current_names.add(filename)
+        paths.add(filename)
+        if previous is not None:
+            if previous in current_names:
+                raise ScopeError(
+                    f"GitHub changed-file evidence repeats a filename: {previous}"
+                )
+            current_names.add(previous)
+            paths.add(previous)
     if not paths:
         raise ScopeError("GitHub changed-file evidence contains no usable paths")
     return paths
@@ -186,6 +200,23 @@ def _file_purpose_entries(value) -> dict[str, str]:
             raise ScopeError(f"file_purposes contains duplicate path {path}")
         entries[path] = purpose.strip()
     return entries
+
+
+def _visual_impact(value) -> dict | None:
+    """Validate the optional author declaration of actual visual impact."""
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ScopeError("visual_impact must be an object with required and reason")
+    required = value.get("required")
+    if type(required) is not bool:
+        raise ScopeError("visual_impact.required must be true or false")
+    reason = value.get("reason")
+    if not isinstance(reason, str) or len(reason.strip()) < 12:
+        raise ScopeError("visual_impact requires a specific reason")
+    if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", reason, re.I):
+        raise ScopeError("visual_impact reason contains placeholder wording")
+    return {"required": required, "reason": reason.strip()}
 
 
 def _digest(entries: dict | list) -> str:
@@ -286,6 +317,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     governance = _entries_with_reasons(declaration.get("governance_changes"), "governance_changes")
     shared_dependencies = _string_list(declaration.get("shared_dependencies"), "shared_dependencies")
     features = declaration["features"]
+    visual_impact = _visual_impact(declaration.get("visual_impact"))
     scope_context = {
         # Bind approvals to the full prose description as well as the JSON manifest.
         # An out-of-scope/verification paragraph edit must trigger a new review.
@@ -363,6 +395,17 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     visual_changes = sorted(path for path in actual if _is_visual_path(path))
     if visual_changes and not normalized_evidence:
         errors.append("visual/application paths changed without browser evidence; declare Playwright, Firecrawl, or Browserless evidence")
+    if visual_impact and visual_impact["required"] and not normalized_evidence:
+        errors.append(
+            "visual_impact is declared as required but no browser evidence was supplied"
+        )
+
+    warnings = []
+    if visual_changes and visual_impact and not visual_impact["required"]:
+        warnings.append(
+            "Path-based detection found visual/application changes, but visual_impact.required is false. "
+            "The browser-evidence requirement still applies; a reviewer must confirm the non-visual assessment."
+        )
 
     approvals = {}
     for category, entries in (
@@ -393,10 +436,12 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         "matched_paths": sorted(path for path in actual if path in patterns),
         "scope_expansion": sorted(expansion),
         "visual_changes": visual_changes,
+        "visual_impact": visual_impact,
         "visual_baseline_updates": sorted(declared_baselines),
         "governance_changes": sorted(declared_governance),
         "browser_evidence": normalized_evidence,
         "approvals": approvals,
+        "warnings": warnings,
         "errors": errors,
         "note": "This scope check does not grant permission to change protected files. Existing protected-file and Agent MD authorization workflows remain mandatory.",
     }
@@ -423,8 +468,20 @@ def render_markdown(report: dict) -> str:
     if report.get("browser_evidence"):
         for item in report["browser_evidence"]:
             lines.append(f"- {item['tool']}: {item['reference']} — {item['purpose']}")
+    elif report.get("visual_changes") or (
+        report.get("visual_impact") and report["visual_impact"]["required"]
+    ):
+        lines.append("- No browser evidence was supplied for a change set that requires it.")
     else:
         lines.append("- No browser evidence declaration was required for this non-visual change set.")
+    if report.get("visual_impact"):
+        impact = report["visual_impact"]
+        lines.append(
+            f"- Declared visual impact: {'required' if impact['required'] else 'not required'} — {impact['reason']}"
+        )
+    if report.get("warnings"):
+        lines.extend(["", "### Reviewer warnings"])
+        lines.extend(f"- {warning}" for warning in report["warnings"])
     if report.get("approvals"):
         lines.extend(["", "### Explicit approvals"])
         for name, item in report["approvals"].items():

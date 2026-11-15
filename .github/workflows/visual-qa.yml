@@ -27,6 +27,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
+      - name: Read declared visual impact
+        id: declared-impact
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          required=false
+          if [[ -n "${PR_BODY:-}" ]]; then
+            required="$(python3 -c 'import json,os,re; body=os.environ.get("PR_BODY",""); m=re.search(r"<!-- qa-scope:start -->(.*?)<!-- qa-scope:end -->", body, re.S); d=json.loads(m.group(1)) if m else {}; i=d.get("visual_impact") if isinstance(d,dict) else None; print("true" if isinstance(i,dict) and i.get("required") is True else "false")' 2>/dev/null || printf false)"
+          fi
+          printf 'required=%s\n' "$required" >> "$GITHUB_OUTPUT"
+
       - name: Classify pull request change set
         id: classify
         shell: bash
@@ -60,6 +73,11 @@ jobs:
               classification="visual_required=true"
               ;;
           esac
+
+          if [[ "${{ steps.declared-impact.outputs.required }}" == "true" ]]; then
+            echo "::notice::The PR declares visual impact; visual QA is required."
+            classification="visual_required=true"
+          fi
 
           printf '%s\n' "$classification" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$classification" >> "$GITHUB_STEP_SUMMARY"
@@ -101,10 +119,12 @@ jobs:
         run: |
           python3 -m py_compile \
             .github/scripts/check_qa_pr_scope.py \
+            .github/scripts/review_pr_changes.py \
             .github/scripts/summarize_devskim_findings.py \
             .github/scripts/verify_pr_verification_status.py
           PYTHONPATH=.github/scripts python3 -m unittest \
             test_check_qa_pr_scope \
+            test_review_pr_changes \
             test_summarize_devskim_findings \
             test_verify_pr_verification_status \
             -v
@@ -114,16 +134,11 @@ jobs:
       - name: Run all unit tests
         run: pnpm run test
 
-      # freebuff-verify.sh runs the Spec Kit governance tests, the TypeScript
-      # check, the production build and the refresh-docs tests. The standalone
-      # tsc step that used to run here duplicated that same type check.
-      - name: Run AGENTS.md Spec Kit verification
-        env:
-          # GitHub-reported pull request author. This is the only trusted input for
-          # the narrow Dependabot maintenance exemption; it is never derived from
-          # the pull request title or branch name.
-          SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-        run: ./freebuff-verify.sh
+      # Keep the application type check in QA without making QA depend on
+      # Freebuff's own Agent MD verification script. Build validation runs in
+      # the dedicated OpenNext workflow.
+      - name: Run standalone TypeScript check
+        run: pnpm exec tsc --noEmit
 
   # Browser verification runs in two Playwright-native shards. Sharding splits
   # spec files across runners, so every test still runs and every committed

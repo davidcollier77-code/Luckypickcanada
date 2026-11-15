@@ -15,7 +15,8 @@
 - **Unit/component:** Vitest and Testing Library.
 - **Browser/e2e:** Playwright Test with the repository's configured desktop, mobile-390 and mobile-412 projects and committed visual baselines. Normal QA uses `playwright.config.ts`; `pnpm exec playwright test --config=playwright.swiftshader.config.ts` selects the opt-in `playwright.swiftshader.config.ts` for software-rendered graphics investigations.
 - **Direct agent browser interaction:** Use the vendored Microsoft Playwright CLI skill and local pnpm exec playwright cli command when available. Browserless is the connected remote-browser option and fallback under the rules in AGENTS.md. Do not assume Browserbase is connected.
-- **Repository gate:** Run ./freebuff-verify.sh and all applicable checks when a shell-capable environment is available. Inspect package.json before choosing scripts.
+- **Repository gate:** Run ./freebuff-verify.sh and all applicable checks when a shell-capable environment is available. Inspect package.json before choosing scripts. Visual QA does not depend on that script; it runs the full Vitest suite and a standalone TypeScript check.
+- **QA infrastructure:** `check_qa_pr_scope.py` validates the exact path manifest, approvals and browser evidence from trusted base-branch code. `review_pr_changes.py` scans added patch lines for a narrow set of high-confidence secrets and advisory quality risks; it is not a replacement for DevSkim or CodeQL. Secret-like excerpts are redacted before reports are written.
 - **Deployment:** A deploy command or successful build does not authorize deployment. Follow AGENTS.md approval boundaries.
 
 ## Architecture and Data Boundaries

@@ -21,6 +21,7 @@ Keep the markers and JSON structure. List every intended changed path exactly an
   "visual_baseline_updates": [],
   "scope_expansion": [],
   "governance_changes": [],
+  "visual_impact": null,
   "browser_evidence": []
 }
 <!-- qa-scope:end -->
@@ -35,7 +36,9 @@ Only the repository owner can authorize an expansion by posting the exact comman
 
 The approval digest is bound to the current PR head SHA, the complete PR description text, features, exact paths, per-file purposes, shared dependencies, and the relevant baseline/scope/governance entries. Any new commit or PR description edit invalidates prior digest approvals. Editing the PR description is not approval. Protected-file and Agent MD authorization checks remain separate and mandatory.
 
-### Browser evidence
+### Visual impact and browser evidence
+
+`visual_impact` is optional. When present, use an object such as `{"required": true, "reason": "Changes the homepage hero layout and animation"}`. A required declaration needs browser evidence even when path detection would not require it. A non-visual declaration on a path-classified visual change is surfaced as a reviewer warning; it does not remove the existing browser-evidence requirement.
 
 For visual changes, record the browser tool that actually ran and link its run, trace, or artifact. Supported tools are Playwright, Firecrawl, and Browserless. Do not relabel one tool's evidence as another. A pending CI run is not a completed verification result.
 

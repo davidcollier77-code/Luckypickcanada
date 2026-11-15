@@ -106,9 +106,11 @@ describe('visual QA workflow wiring', () => {
     expect(classifyStep).not.toBeNull();
     expect(classifyStep).toContain('::warning::');
     // One fallback for a failed file listing, two for a failed or unexpected
-    // classification, plus the case label that accepts both valid values.
-    expect(classifyStep.match(/visual_required=true/g) ?? []).toHaveLength(4);
+    // classification, the case label, and the declared-visual-impact override.
+    expect(classifyStep.match(/visual_required=true/g) ?? []).toHaveLength(5);
     expect(classifyStep).toContain('case "$classification" in');
+    expect(workflow).toContain('Read declared visual impact');
+    expect(workflow).toContain('steps.declared-impact.outputs.required');
   });
 
   it('runs verification for every pull request and the browser job only after the classifier', () => {
@@ -122,19 +124,20 @@ describe('visual QA workflow wiring', () => {
     expect(visual).toContain("if: needs.changes.outputs.visual_required == 'true'");
 
     // These checks must keep running for every pull request, visual or not.
-    // The full suite also contains the two files the former targeted step ran.
-    for (const step of ['Run all unit tests', 'Run AGENTS.md Spec Kit verification']) {
+    // The full suite also contains the Crystal Ball files the former targeted
+    // step ran. Freebuff verification is intentionally not part of QA.
+    for (const step of ['Run all unit tests', 'Run standalone TypeScript check']) {
       const block = stepBlock(step);
       expect(block, `${step} must remain in the workflow`).not.toBeNull();
       expect(block, `${step} must not be gated on visual changes`).not.toContain('visual_required');
     }
     expect(stepBlock('Run all unit tests')).toContain('pnpm run test');
-    expect(stepBlock('Run AGENTS.md Spec Kit verification')).toContain('./freebuff-verify.sh');
-    expect(stepBlock('Run AGENTS.md Spec Kit verification')).toContain(
-      'SPEC_KIT_PR_AUTHOR: ${{ github.event.pull_request.user.login }}',
+    expect(stepBlock('Run standalone TypeScript check')).toContain(
+      'pnpm exec tsc --noEmit',
     );
-    // freebuff-verify.sh runs the TypeScript check and the production build.
-    expect(workflow).not.toContain('Run standalone TypeScript check');
+    expect(workflow).toContain('test_review_pr_changes');
+    expect(workflow).not.toContain('Run AGENTS.md Spec Kit verification');
+    expect(workflow).not.toContain('./freebuff-verify.sh');
     expect(workflow).not.toContain('Run targeted Crystal Ball allowance');
   });
 
