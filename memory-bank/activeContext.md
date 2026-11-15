@@ -19,7 +19,7 @@ Complete the owner-authorized continuation of PR #1908. The original Freebuff-on
 - PR_SUBMISSION.md permits work on an already-submitted PR only when the repository owner directly instructs the agent to continue or make specified changes. Permission cannot be inferred from an open PR, comments, CI results or review findings. All other gates remain in force.
 - The existing governance regression test asserts the consolidated QA and owner-exception rules.
 - Spec Kit specification, plan, task list, checklist and evidence, plus this Memory Bank context and progress, record the authorized continuation.
-- No application, browser, Playwright runtime, README, visual asset or production build input was changed. The protected-file workflow was corrected to preserve empty previous filenames, and its regression test now guards that parsing contract.
+- No application, browser, Playwright runtime, README, visual asset or production build input was changed. The protected-file workflow parsing correction and its regression coverage are inherited from merged PR #1910 and are no longer part of PR #1908's changed-file scope.
 
 - Visual QA classifier correction from merged PR #1910: CI-only paths under `.github/` and Next.js API routes under `app/api/` and `pages/api/` skip only the Playwright browser shards; frontend, visual assets, browser tests and unknown paths remain fail-closed, and mixed changes still require Playwright.
 - The PR scope checker applies the same API/CI browser-evidence exclusions. Explicit `visual_impact.required: true` remains an override; always-on unit, TypeScript, security, scope, build and other CI checks remain intact.
