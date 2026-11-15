@@ -1,3 +1,17 @@
+## 2026-11-15 — Playwright visual QA classification correction
+- Narrowed the visual-browser trigger so CI-only changes under .github/ and
+  Next.js API route handlers under app/api/ and pages/api/ do not require
+  screenshot/browser inspection.
+- Kept frontend routes/components, styles, visual assets, browser/e2e tests,
+  visual tooling configuration and unknown paths on the Playwright-required
+  path. Mixed changes still require browser coverage.
+- Aligned the PR scope checker's browser-evidence classification with the
+  same API/CI exclusions; explicit visual_impact.required: true still forces
+  browser evidence.
+- The always-on full unit suite, TypeScript, security, scope, build and other
+  CI checks remain unchanged. Regression tests were added; execution is
+  pending the updated PR workflow.
+
 # Project Progress — Significant Milestones
 
 ## 2026-11-15 — QA checker hardening and inherited crash repair
