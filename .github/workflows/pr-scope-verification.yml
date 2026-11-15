@@ -80,3 +80,31 @@ jobs:
             echo "::error::The PR scope declaration does not match the actual diff or an explicit owner approval is missing."
             exit "$status"
           fi
+
+      - name: Review changed code for security and quality risks
+        if: always()
+        env:
+          FILES_FILE: ${{ runner.temp }}/files.json
+          SUMMARY_FILE: ${{ runner.temp }}/qa-review-summary.md
+          REPORT_FILE: ${{ runner.temp }}/qa-review-report.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python3 .github/scripts/review_pr_changes.py \
+            --files "$FILES_FILE" \
+            --summary "$SUMMARY_FILE" \
+            --json "$REPORT_FILE"
+          status=$?
+          set -e
+          if [[ -f "$SUMMARY_FILE" ]]; then
+            cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [[ "$status" -eq 2 ]]; then
+            echo "::error::The changed-code review could not run because GitHub's file evidence was missing or malformed."
+            exit "$status"
+          fi
+          if [[ "$status" -ne 0 ]]; then
+            echo "::error::The changed-code review found a hard security or merge-integrity failure."
+            exit "$status"
+          fi

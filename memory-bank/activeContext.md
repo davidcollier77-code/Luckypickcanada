@@ -1,52 +1,64 @@
-# Active Context — Adaptive graphics capability foundation
+# Active Context — QA Checker Hardening
 
-- **Updated:** 2026-11-14
+- **Updated:** 2026-11-15
 - **Repository:** davidcollier77-code/Luckypickcanada
-- **Branch:** `freebuff/ac8a265279e6080fde702b01`
-- **Base:** `main` (`3d26f05d`, including merged feature 161)
-- **Spec Kit feature:** `specs/162-graphics-capability-foundation`
+- **Branch:** `freebuff/qa-checker-hardening-20261115`
+- **Base:** `main` (`92b048e9`, including merged adaptive graphics capability foundation PR #1904)
+- **Spec Kit feature:** `specs/163-qa-checker-hardening`
 
 ## Current Task
 
-The site now has one shared, dependency-free graphics capability layer at
-`app/lib/graphics-capabilities.js`. Every active canvas and WebGL renderer uses it for safe context
-acquisition, reduced-motion and visibility lifecycle, and context-loss handling. The browser still
-chooses its own GPU, software rasterizer and power profile; no renderer, vendor or browser name is
-forced or rejected.
+Repair the inherited PR scope checker crash and harden the QA system without
+duplicating DevSkim, CodeQL, TypeScript, the unit/build suites, or Freebuff's
+own verification script.
 
-## Scope and safeguards
+The branch now includes the latest `main`. The adaptive graphics capability
+foundation from PR #1904 is retained as merged base functionality; this task
+does not modify its rendering implementation, artwork, or browser/device
+compatibility behavior.
 
-- Canvas 2D, WebGL and `Path2D` checks are lazy and cached for the page lifetime. Importing the
-  module performs no graphics work.
-- Safe getters return `null`; the existing static glow, CSS backdrop, share-image error and basic
-  confetti shapes remain the fallbacks.
-- `powerPreference: 'high-performance'` was removed from the cinematic engine. No replacement power
-  preference or `failIfMajorPerformanceCaveat` was added.
-- The homepage keeps its approved star density on standard devices; only a constrained tier uses
-  the shared 0.7 particle scale. DPR is capped at 2 standard and 1.5 constrained for canvases that
-  already scale by DPR.
-- `playwright.config.ts`, `playwright.swiftshader.config.ts`, visual baselines, QA checkers,
-  protected files and the dependency lockfile are unchanged.
-- No feature was migrated to GPU rendering; this is a compatibility and lifecycle foundation only.
+## Implemented state
+
+- `changed_paths()` now handles modified and added GitHub records without
+  `previous_filename`, preserves both rename paths, and fails closed on
+  incomplete rename evidence or a missing filename.
+- `review_pr_changes.py` reviews added patch lines only. Private keys, provider
+  tokens and merge markers are hard findings; unsafe HTML, insecure links,
+  hardcoded credential-like values, dependency additions, suppressions,
+  debugger statements and deprecated APIs are advisory warnings. Secret
+  excerpts are redacted, placeholders and environment lookups are suppressed,
+  and findings are deduplicated.
+- The optional `visual_impact` declaration can require browser evidence on a
+  non-visual path; a conflicting non-visual declaration is surfaced for review.
+  The Visual QA classifier also honors a declared visual requirement.
+- Visual QA runs the full Vitest suite and a standalone
+  `pnpm exec tsc --noEmit`; it does not invoke or depend on
+  `freebuff-verify.sh`. The script and its own test remain present.
+- The Daily Resonance unit test pins its clock to its mocked date fixture so
+  the suite does not fail when the real calendar advances.
 
 ## Verification
 
-- Focused graphics tests: 14/14 passed; cosmic stage fallback tests: 3/3 passed; affected
-  component run 43/43 passed.
-- Full Vitest: 751/751 passed in 79 files.
+- QA checker Python suites: 99 tests passed.
+- Visual QA workflow guard: 14 tests passed.
+- Full Vitest: 77 files, 734 tests passed.
+- Crystal Ball/Oracle focused suite: 11 files, 146 tests passed.
 - `pnpm exec tsc --noEmit`: exit 0.
-- `./freebuff-verify.sh`: exit 0, including 36/36 documentation tests.
-- Clean production build: 302,780,210 bytes (288.75 MiB), below the 495 MiB cap.
-- Production-build Chromium checks: normal homepage canvas painted 4,994 alpha pixels; reduced
-  motion added zero clears in 800 ms; the no-2D page kept its heading and canvas with zero graphics
-  page errors.
-- Committed homepage visual baselines and interactions passed for desktop, mobile-390 and
-  mobile-412 (22 passed, 5 expected skips, 0 failed).
-- Firefox/WebKit launch is blocked by missing native host libraries; Samsung Internet is not
-  installed. These are recorded as untested in `evidence.md`, not claimed as passes.
+- `./freebuff-verify.sh`: exit 0, including the Spec Kit gate and 36/36 docs tests.
+- Production build: 348 MiB, below the 495 MiB cap.
+- Reviewer self-scan: 0 hard findings, 0 warnings; CLI redaction test passed.
+
+These results are recorded in the implementation evidence and PR description;
+they are not represented as newly rerun in this branch-reconciliation session.
 
 ## Remaining
 
-- Open the regular, non-draft PR for owner review.
-- Cross-browser verification in Firefox, WebKit/Safari and Samsung Internet must run in an
-  environment that provides those browsers and native libraries.
+- The PR is open for owner review. GitHub Actions must report against the
+  reconciled branch head.
+- PR Scope Verification is a `pull_request_target` workflow and therefore
+  continues to execute the trusted checker from the default branch. Until this
+  PR merges, that is the older `main` implementation, which assumes
+  `previous_filename` exists on ordinary changed-file records. This branch
+  fixes that defect and tests it, but does not execute PR-head code in the
+  trusted workflow context or bypass the check.
+- Browser runs are not required for this non-rendering change set.

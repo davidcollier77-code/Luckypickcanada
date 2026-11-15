@@ -64,6 +64,9 @@ describe('Daily Resonance daily experience', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    // Keep the component's local-date lookup aligned with the mocked countdown
+    // fixture instead of depending on the day the suite runs.
+    vi.setSystemTime(new Date('2026-11-14T12:00:00'));
     window.localStorage.clear();
     countdown.state = {
       ready: true,

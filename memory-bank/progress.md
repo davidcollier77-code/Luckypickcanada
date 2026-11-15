@@ -1,5 +1,37 @@
 # Project Progress — Significant Milestones
 
+## 2026-11-15 — QA checker hardening and inherited crash repair
+- Fixed the unconditional `previous_filename` read that crashed the PR scope
+  checker on every ordinary modified or added GitHub record, including the
+  records in PR #1904; renames still contribute both paths and incomplete
+  rename evidence fails closed.
+- Added a dependency-free changed-line reviewer with high-confidence secret,
+  provider-token and merge-marker hard findings, evidence-backed advisory
+  quality warnings, redaction, placeholder suppression and deduplication.
+- Added optional `visual_impact` declarations, a declared-impact override for
+  the Visual QA classifier, and reviewer warnings when a non-visual declaration
+  conflicts with path-based detection.
+- Removed Visual QA's dependency on `freebuff-verify.sh` while retaining the
+  full unit suite and a standalone TypeScript check; kept the script and its
+  own test intact.
+- Pinned the Daily Resonance test clock to its fixture date so a later real
+  calendar day cannot produce a false persisted-result failure.
+- Verified: 99 QA checker tests, 14 workflow guard tests, 77 files / 734 unit
+  tests, 11 files / 146 Crystal Ball tests, `tsc --noEmit`, the full
+  `./freebuff-verify.sh` gate (36/36 docs tests), and a 348 MiB build below the
+  495 MiB cap. GitHub Actions results remain pending PR submission.
+
+## 2026-11-15 — QA branch reconciled with the graphics foundation merge
+- Reconciled the QA hardening branch with current `main`, retaining the
+  adaptive graphics capability foundation merged in PR #1904.
+- Kept `specs/163-qa-checker-hardening` as the active Spec Kit feature while
+  preserving the graphics capability architecture in `techContext.md` and
+  the graphics foundation milestone in this progress history.
+- The four overlapping files were combined without dropping either task's
+  documentation or changing the PR's declared 20-file scope.
+
+# Project Progress — Significant Milestones
+
 ## 2026-11-14 — Adaptive graphics capability foundation
 - Added one dependency-free capability layer for safe Canvas 2D/WebGL acquisition, lazy cached
   feature checks, a conservative device profile, pixel-ratio and particle-scale caps,

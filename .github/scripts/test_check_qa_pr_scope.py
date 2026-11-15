@@ -6,6 +6,7 @@ from check_qa_pr_scope import (
     START_MARKER,
     ScopeError,
     _digest,
+    changed_paths,
     validate,
 )
 
@@ -76,6 +77,42 @@ def run_check(paths, value=None, comments=None):
         comments or [],
         OWNER,
     )
+
+
+class ChangedPathRecordTests(unittest.TestCase):
+    def test_modified_record_without_previous_filename(self):
+        self.assertEqual(
+            changed_paths([{"filename": "app/page.tsx", "status": "modified"}]),
+            {"app/page.tsx"},
+        )
+
+    def test_added_record_without_previous_filename(self):
+        self.assertEqual(
+            changed_paths([{"filename": "app/new-page.tsx", "status": "added"}]),
+            {"app/new-page.tsx"},
+        )
+
+    def test_renamed_record_includes_both_paths(self):
+        self.assertEqual(
+            changed_paths(
+                [
+                    {
+                        "filename": "components/NewHero.tsx",
+                        "previous_filename": "components/OldHero.tsx",
+                        "status": "renamed",
+                    }
+                ]
+            ),
+            {"components/NewHero.tsx", "components/OldHero.tsx"},
+        )
+
+    def test_rename_without_previous_path_fails_closed(self):
+        with self.assertRaises(ScopeError):
+            changed_paths([{"filename": "components/NewHero.tsx", "status": "renamed"}])
+
+    def test_record_without_filename_fails_closed(self):
+        with self.assertRaises(ScopeError):
+            changed_paths([{"status": "modified"}])
 
 
 class ScopeDeclarationTests(unittest.TestCase):
@@ -312,6 +349,52 @@ class VisualEvidenceTests(unittest.TestCase):
         result = run_check(["components/Example.tsx"], value)
         self.assertEqual(result["status"], "FAIL")
         self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+
+    def test_declared_visual_impact_requires_browser_evidence_on_nonvisual_path(self):
+        value = declaration(
+            visual_impact={
+                "required": True,
+                "reason": "The logic change controls visible hero copy and layout.",
+            }
+        )
+        result = run_check([".github/scripts/checker.py"], value)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertTrue(any("visual_impact" in error for error in result["errors"]))
+
+    def test_nonvisual_impact_on_visual_path_is_a_reviewer_warning(self):
+        value = declaration(
+            paths=["components/Example.tsx"],
+            visual_impact={
+                "required": False,
+                "reason": "Only an internal calculation changes; rendered output is unchanged.",
+            },
+        )
+        result = run_check(["components/Example.tsx"], value)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertTrue(result["warnings"])
+        self.assertTrue(any("visual_impact.required is declared as false" in item for item in result["warnings"]))
+        self.assertTrue(any("A reviewer should confirm" in item for item in result["warnings"]))
+
+    def test_nonvisual_impact_on_nonvisual_path_passes(self):
+        value = declaration(
+            visual_impact={
+                "required": False,
+                "reason": "The checker logic does not affect rendered application output.",
+            }
+        )
+        result = run_check([".github/scripts/checker.py"], value)
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["warnings"], [])
+
+    def test_visual_impact_requires_a_boolean_and_specific_reason(self):
+        for impact in (
+            {"required": "yes", "reason": "Visible layout changes require browser verification."},
+            {"required": True, "reason": "TODO"},
+            {"required": True},
+        ):
+            with self.subTest(impact=impact):
+                with self.assertRaises(ScopeError):
+                    run_check([".github/scripts/checker.py"], declaration(visual_impact=impact))
 
     def test_unsupported_browser_tool_is_rejected(self):
         value = declaration(
