@@ -29,7 +29,14 @@ A — PREPARE AND PLAN
    
    Keep a record of the task groups selected and the reference documents actually used. In the completion report, identify the selected groups, list the library documents that were useful to the task, and identify any Freebuff integrations and enabled skills used.
 
-6. Check enabled skills. Check Freebuff's Settings → Skills. Use any enabled skills relevant to the task. Read their instructions before use. Confirm that any required tools are actually available.
+6. Check enabled skills. Check Freebuff's Settings → Skills. Use any enabled skills relevant to the task and read their instructions before use. Confirm that any required tools are actually available.
+   
+   For any task involving Playwright, browser testing, visual QA, performance or rendering profiling, WebGL/WebGPU inspection, or graphics work, read both of these repository files before using or modifying the Playwright setup:
+   
+   - ".agents/skills/playwright-cli/SKILL.md"
+   - ".agents/skills/playwright-cli/references/lucky-pick-canada.md"
+   
+   Follow their documented CLI commands, wrapper, installation, browser-runtime and setup conventions. Preserve the existing Playwright configuration and keep Standard and SwiftShader testing modes separate. Do not introduce a competing CLI or browser automation setup.
 
 7. Check integrations and tools. Confirm that required integrations and tools are available and operational. Use applicable integrations as needed for the task. Use the repository's Playwright CLI as the primary browser tool. Troubleshoot Playwright issues using the existing setup script and project instructions. If Playwright remains unavailable, use Browserless as the fallback for direct browser tasks.
 
@@ -45,9 +52,9 @@ Before writing or approving a task specification for work that may be checked by
 - Do not weaken, bypass, suppress or redefine an existing check merely to make a task pass. Any proposed change to checker requirements must be explicit, separately justified and authorized where protected files or governance are involved.
 
 8. Follow Spec Kit. Review and follow all nine command definitions in ".freebuff/cmds/speckit.*.md", together with their applicable instructions, current templates and project-constitution requirements. The repository's checked baseline is Spec Kit 1.4.0: four core stages—Specify, Plan, Tasks and Implement—and five supporting commands—Clarify, Analyze, Checklist, Constitution and Converge.
-
+   
    Complete the four core stages in that order for every repository-changing task. Finish Specify, Plan and Tasks before implementation; carry out Implement in Section B using the approved specification, plan and task list. Complete every required section, field and group in each applicable template. Complete conditional sections when they apply. Use optional sections and artifacts only when their instructions or the task call for them; do not invent content or leave required content incomplete. Follow the supporting command definitions when they apply, but do not mechanically run all five supporting commands on every task.
-
+   
    Before starting the workflow, check the installed Spec Kit version, all nine available command definitions, the core-stage names and order, and the required template sections and groups against this baseline. If the version, command set, stages, sequence or required groups change, notify the owner and explain what changed and how it affects our workflow. You are authorized to make the necessary surgical update to AGENTS.md to keep it aligned with the current Spec Kit workflow. Limit the edit strictly to the affected wording, preserve all unrelated governance and requirements, and report exactly what changed. Do not silently change the established workflow.
 
 B — IMPLEMENT
@@ -68,7 +75,7 @@ C — VERIFY AND SUBMIT
 
 1. Verify the implementation. Run "./freebuff-verify.sh" and all applicable task-group checks, tests, builds, browser QA and integration checks.
 
-2. Complete the final checker-requirement review. Before submission, review the completed implementation and complete diff against every applicable checker requirement identified in A.8 and documented in `PR_SUBMISSION.md`. Resolve unmet in-scope requirements or record the exact blocker. A passing or pending CI result does not replace this independent review.
+2. Complete the final checker-requirement review. Before submission, review the completed implementation and complete diff against every applicable checker requirement identified in A.8 and documented in "PR_SUBMISSION.md". Resolve unmet in-scope requirements or record the exact blocker. A passing or pending CI result does not replace this independent review.
 
 3. Confirm build size. Measure the production build and confirm it remains strictly below 495 MiB, as required by B.5.
 
@@ -76,13 +83,13 @@ C — VERIFY AND SUBMIT
 
 PROJECT-WIDE TECHNICAL RULES
 
-### Playwright Browser Testing (Freebuff only)
+Playwright Browser Testing (Freebuff only)
 
-**Scope:** This section governs Freebuff only. For ChatGPT, it overrides the general Playwright CLI instruction: ChatGPT must not use, load, modify or maintain the repository Playwright CLI or its associated startup scripts.
+Scope: This section governs Freebuff only. For ChatGPT, it overrides the general Playwright CLI instruction: ChatGPT must not use, load, modify or maintain the repository Playwright CLI or its associated startup scripts.
 
-- **Interactive browser sessions:** Use `./scripts/playwright-cli.sh`.
-- **Option A — Standard:** Use `pnpm exec playwright test` for normal QA, visual testing and CI.
-- **Option B — SwiftShader:** Use `pnpm exec playwright test --config=playwright.swiftshader.config.ts` for software-rendered GPU and graphics investigations. This does not measure physical GPU performance.
+- Interactive browser sessions: Use "./scripts/playwright-cli.sh".
+- Option A — Standard: Use "pnpm exec playwright test" for normal QA, visual testing and CI.
+- Option B — SwiftShader: Use "pnpm exec playwright test --config=playwright.swiftshader.config.ts" for software-rendered GPU and graphics investigations. This does not measure physical GPU performance.
 
 Keep both modes separate; standard QA and CI must continue using Option A. When Freebuff's environment, dependencies or browser runtime change, verify that the startup, browser-runtime and CLI setup scripts still work. Update the relevant scripts as needed to keep them functional.
 
