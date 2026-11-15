@@ -24,7 +24,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Freebuff completes repository preparation before starting the Spec Kit workflow. Use the existing branch, feature context, paths and prepared artifacts. Do not run setup, template-resolver or prerequisite scripts, and do not execute configured extension hooks during any Spec Kit stage. If required context or an artifact is missing, report exactly what is missing and stop that stage; do not rerun the preparation scripts.
 
 ## Outline
-1. **Use prepared feature context**: Read `.specify/feature.json` to identify `FEATURE_DIR`. Use the existing `FEATURE_DIR`, `TASKS_TEMPLATE_CONTENT`, `TASKS_TEMPLATE` and available-document information if Freebuff has already supplied them. Otherwise, inspect the feature directory and read `.specify/templates/tasks-template.md` directly. Do not run `setup-tasks.sh`. If the feature directory or required design documents are missing, report the missing prerequisites and stop rather than rerunning setup.
+1. **Use prepared feature context**: Read `.specify/feature.json` to identify `FEATURE_DIR`. Use the existing `FEATURE_DIR`, `TASKS_TEMPLATE_CONTENT`, `TASKS_TEMPLATE` and available-document information if Freebuff has already supplied them. Otherwise, inspect the feature directory and read `.specify/templates/tasks-template.md` directly. Do not repeat the setup step. If the feature directory or required design documents are missing, report the missing prerequisites and stop rather than rerunning setup.
 
 2. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
