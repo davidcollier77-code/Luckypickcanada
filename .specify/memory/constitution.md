@@ -32,7 +32,7 @@ The primary application is a Next.js App Router project deployed on Cloudflare P
 ## Development Workflow
 
 - **Specification**: Every coding task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—in order, using `.specify/` and each invoked `.freebuff/cmds/speckit.*.md` definition. Keep artifacts concise and task-scoped; create optional design artifacts only when the task needs them. Execute each stage once; do not duplicate dispatches or pause for routine confirmation. When native slash-command dispatch is unavailable, follow the invoked command definition directly and report the actual execution method.
-- **Testing**: Use Playwright for browser/user-facing verification. Use `act` and `./freebuff-verify.sh` for local workflow/CI validation.
+- **Testing**: Follow the repository's authoritative browser-testing instructions in `AGENTS.md` for browser/user-facing verification. Use `act` and `./freebuff-verify.sh` for local workflow/CI validation.
 - **Troubleshooting**: Apply the Scientific Debugging & Verification Protocol. Fix the verified problem; do not turn a repair task into an audit-only task.
 
 ## Governance
