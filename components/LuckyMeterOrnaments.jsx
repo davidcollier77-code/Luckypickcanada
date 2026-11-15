@@ -13,23 +13,45 @@ import { getRenderQuality } from '../app/lib/graphics-capabilities';
  * when the resolved quality profile allows a foreground pass, so a constrained
  * device never pays for it.
  *
+ * It also requires a viewport wide enough for the copy to leave side margins.
+ * Below that width the copy column spans nearly the full screen, and a
+ * foreground leaf can only cross it - so on a phone the leaves stay behind the
+ * text and a headline is never obscured for the sake of a depth cue.
+ *
  * Both layers are decorative: `aria-hidden` and `pointer-events-none`.
  *
  * @param {{ reducedMotion?: boolean }} props
  */
+
+/** Minimum viewport width that leaves usable margins beside the copy column. */
+const NEAR_LAYER_MIN_WIDTH = 900;
+
 export default function LuckyMeterOrnaments({ reducedMotion = false }) {
   const farRef = useRef(null);
   const nearRef = useRef(null);
   const [nearEnabled, setNearEnabled] = useState(false);
 
   useEffect(() => {
-    let nearAllowed = false;
-    try {
-      nearAllowed = getRenderQuality().foreground;
-    } catch {
-      nearAllowed = false;
-    }
-    setNearEnabled(nearAllowed);
+    if (typeof window === 'undefined') return undefined;
+    // matchMedia is the accurate signal, but not every environment has it (the
+    // test runner does not), so fall back to the current width.
+    const query =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia(`(min-width: ${NEAR_LAYER_MIN_WIDTH}px)`)
+        : null;
+    const sync = () => {
+      let nearAllowed = false;
+      try {
+        const wideEnough = query ? query.matches : window.innerWidth >= NEAR_LAYER_MIN_WIDTH;
+        nearAllowed = Boolean(getRenderQuality().foreground) && wideEnough;
+      } catch {
+        nearAllowed = false;
+      }
+      setNearEnabled(nearAllowed);
+    };
+    sync();
+    query?.addEventListener?.('change', sync);
+    return () => query?.removeEventListener?.('change', sync);
   }, []);
 
   useEffect(() => {

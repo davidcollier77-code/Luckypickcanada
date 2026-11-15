@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-15T23:35:58.654Z",
+  "capturedAt": "2026-11-15T23:43:56.359Z",
   "baseUrl": "http://127.0.0.1:3000",
   "viewports": {
     "mobile-390": {
@@ -22,15 +22,15 @@
             "mobile-390-meteor-093.png"
           ],
           "perf": {
-            "frames": 119,
-            "fps": 47.6,
+            "frames": 132,
+            "fps": 52.7,
             "medianMs": 16.7,
-            "p95Ms": 33.4,
-            "dropped": 33,
+            "p95Ms": 33.3,
+            "dropped": 20,
             "longestStallMs": 33.4
           },
           "debug": {
-            "elapsed": 9023,
+            "elapsed": 9016,
             "farCount": 0,
             "nearCount": 0,
             "fireworks": 0,
@@ -58,15 +58,15 @@
             "mobile-390-lightning-093.png"
           ],
           "perf": {
-            "frames": 119,
-            "fps": 47.6,
+            "frames": 131,
+            "fps": 52,
             "medianMs": 16.7,
             "p95Ms": 33.4,
-            "dropped": 33,
-            "longestStallMs": 33.4
+            "dropped": 22,
+            "longestStallMs": 33.5
           },
           "debug": {
-            "elapsed": 10006,
+            "elapsed": 10003,
             "farCount": 0,
             "nearCount": 0,
             "fireworks": 0,
@@ -80,7 +80,7 @@
             "nearDropped": 0,
             "droppedPoints": 0,
             "qualitySteps": 2,
-            "nearDead": true,
+            "nearDead": false,
             "globalAlpha": 0,
             "lost": false
           },
@@ -95,18 +95,18 @@
             "mobile-390-fireworks-095.png"
           ],
           "perf": {
-            "frames": 112,
-            "fps": 44.8,
+            "frames": 137,
+            "fps": 54.3,
             "medianMs": 16.7,
-            "p95Ms": 33.4,
-            "dropped": 40,
+            "p95Ms": 33.3,
+            "dropped": 16,
             "longestStallMs": 33.4
           },
           "debug": {
-            "elapsed": 11506,
+            "elapsed": 11503,
             "farCount": 0,
             "nearCount": 0,
-            "fireworks": 2,
+            "fireworks": 0,
             "rockets": 0,
             "meteors": 0,
             "strikes": 0,
@@ -115,9 +115,9 @@
             "finaleSpawned": true,
             "farDropped": 0,
             "nearDropped": 0,
-            "droppedPoints": 91183,
+            "droppedPoints": 0,
             "qualitySteps": 2,
-            "nearDead": true,
+            "nearDead": false,
             "globalAlpha": 0,
             "lost": false
           },

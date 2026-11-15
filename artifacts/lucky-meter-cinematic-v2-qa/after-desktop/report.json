@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-11-15T23:20:03.467Z",
+  "capturedAt": "2026-11-15T23:46:13.030Z",
   "baseUrl": "http://127.0.0.1:3000",
   "viewports": {
     "desktop": {
@@ -22,30 +22,30 @@
             "desktop-meteor-093.png"
           ],
           "perf": {
-            "frames": 45,
-            "fps": 17.7,
+            "frames": 42,
+            "fps": 16.2,
             "medianMs": 66.6,
-            "p95Ms": 66.7,
-            "dropped": 0,
-            "longestStallMs": 83.3
+            "p95Ms": 83.3,
+            "dropped": 1,
+            "longestStallMs": 100
           },
           "debug": {
-            "elapsed": 9006,
-            "farCount": 0,
+            "elapsed": 8960,
+            "farCount": 10,
             "nearCount": 0,
             "fireworks": 0,
             "rockets": 0,
-            "meteors": 1,
+            "meteors": 0,
             "strikes": 0,
-            "smoke": 58,
-            "lights": 1,
+            "smoke": 30,
+            "lights": 0,
             "finaleSpawned": true,
             "farDropped": 0,
             "nearDropped": 0,
             "droppedPoints": 0,
             "qualitySteps": 2,
             "nearDead": true,
-            "globalAlpha": 0,
+            "globalAlpha": 0.04455555555555798,
             "lost": false
           },
           "errors": []
@@ -59,15 +59,15 @@
           ],
           "perf": {
             "frames": 43,
-            "fps": 17.2,
+            "fps": 16.7,
             "medianMs": 66.6,
             "p95Ms": 66.8,
             "dropped": 0,
-            "longestStallMs": 83.4
+            "longestStallMs": 83.3
           },
           "debug": {
-            "elapsed": 9646,
-            "farCount": 10098,
+            "elapsed": 9506,
+            "farCount": 12165,
             "nearCount": 0,
             "fireworks": 0,
             "rockets": 0,
@@ -81,7 +81,7 @@
             "droppedPoints": 0,
             "qualitySteps": 2,
             "nearDead": true,
-            "globalAlpha": 0.3931111111111103,
+            "globalAlpha": 0.5484444444444428,
             "lost": false
           },
           "errors": []
@@ -95,15 +95,15 @@
             "desktop-fireworks-095.png"
           ],
           "perf": {
-            "frames": 44,
-            "fps": 17.6,
+            "frames": 43,
+            "fps": 16.8,
             "medianMs": 66.6,
-            "p95Ms": 66.8,
+            "p95Ms": 83.3,
             "dropped": 0,
             "longestStallMs": 83.4
           },
           "debug": {
-            "elapsed": 11513,
+            "elapsed": 11526,
             "farCount": 0,
             "nearCount": 0,
             "fireworks": 1,
@@ -115,7 +115,7 @@
             "finaleSpawned": true,
             "farDropped": 0,
             "nearDropped": 0,
-            "droppedPoints": 135786,
+            "droppedPoints": 84182,
             "qualitySteps": 2,
             "nearDead": true,
             "globalAlpha": 0,

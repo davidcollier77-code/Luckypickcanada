@@ -8,8 +8,9 @@
  * Each leaf is the procedurally built, extruded and bevelled maple-leaf mesh from
  * `app/lib/gpu-geometry.js`, shaded by the shared metallic shader. Leaves differ
  * in depth: size, brightness and haze change with distance, which is what makes
- * them read as objects in the scene instead of stickers on the sky. They rotate
- * slowly, so they turn past edge-on and show their thickness and edge highlights.
+ * them read as objects in the scene instead of stickers on the sky. They turn
+ * within a limited arc, so they catch the light and show their bevelled edge
+ * without ever collapsing into an edge-on sliver.
  *
  * The layer is decorative: it is pointer-transparent, hidden from assistive
  * technology, and drawn at a capped backing-store ratio because these are soft
@@ -59,28 +60,79 @@ const LAYER_PROFILES = {
 };
 
 /**
+ * The copy column the near layer must stay out of, as viewport fractions.
+ *
+ * The near layer is the only one drawn in front of the interface, so it is the
+ * only one that can actually hide a headline. The far layer sits behind the
+ * copy and reads as background, so it keeps its full spread.
+ */
+const COPY_LANE = { halfWidth: 0.24, top: 0.26, bottom: 0.58 };
+
+/**
+ * Picks a near-layer base position outside the copy lane.
+ *
+ * The lane is padded by the leaf's own footprint plus the drift range, so the
+ * whole path avoids the text rather than just the spawn point. When the viewport
+ * is too narrow for the side margins to clear the lane the surviving bands are
+ * the ones above and below the copy, which is also where the meter sits.
+ */
+function nearBaseSpot(random, leafHeight, viewport) {
+  const vw = Math.max(1, viewport.width);
+  const vh = Math.max(1, viewport.height);
+  const padX = (leafHeight * 0.5 + 48) / vw;
+  const padY = (leafHeight * 0.5 + 36) / vh;
+  const leftEdge = 0.06;
+  const rightEdge = 0.94;
+  const topEdge = 0.12;
+  const bottomEdge = 0.9;
+  const innerLeft = 0.5 - COPY_LANE.halfWidth - padX;
+  const innerRight = 0.5 + COPY_LANE.halfWidth + padX;
+  const bands = [];
+
+  if (innerLeft - leftEdge > 0.06) bands.push([leftEdge, innerLeft, topEdge, bottomEdge]);
+  if (rightEdge - innerRight > 0.06) bands.push([innerRight, rightEdge, topEdge, bottomEdge]);
+  if (COPY_LANE.top - padY - topEdge > 0.05) {
+    bands.push([leftEdge, rightEdge, topEdge, COPY_LANE.top - padY]);
+  }
+  if (bottomEdge - (COPY_LANE.bottom + padY) > 0.05) {
+    bands.push([leftEdge, rightEdge, COPY_LANE.bottom + padY, bottomEdge]);
+  }
+  if (bands.length === 0) return { x: 0.5, y: 0.92 };
+
+  const band = bands[Math.floor(random() * bands.length) % bands.length];
+  return {
+    x: band[0] + random() * (band[1] - band[0]),
+    y: band[2] + random() * (band[3] - band[2]),
+  };
+}
+
+/**
  * Builds the drifting leaf state for one layer. Positions are fractions of the
  * viewport so a resize keeps the composition.
  */
-function createLeaves(count, layer, random) {
+function createLeaves(count, layer, random, viewport = { width: 1440, height: 900 }) {
   const profile = LAYER_PROFILES[layer];
   const leaves = [];
 
   for (let index = 0; index < count; index += 1) {
     const depth =
       profile.depthRange[0] + random() * (profile.depthRange[1] - profile.depthRange[0]);
-    // Spread across the frame, but the near layer is pushed toward the middle
-    // band so it genuinely crosses the meter rather than hugging the edges.
-    const baseX =
-      layer === 'near' ? 0.16 + random() * 0.68 : 0.06 + random() * 0.88;
-    const baseY =
-      layer === 'near' ? 0.24 + random() * 0.5 : 0.08 + random() * 0.72;
+    const height =
+      profile.heightRange[0] + random() * (profile.heightRange[1] - profile.heightRange[0]);
+    // The far layer spreads across the whole frame because it sits behind the
+    // copy; the near layer is placed around the copy instead of over it.
+    const spot =
+      layer === 'near'
+        ? nearBaseSpot(random, height, viewport)
+        : { x: 0.06 + random() * 0.88, y: 0.08 + random() * 0.72 };
+    const baseX = spot.x;
+    const baseY = spot.y;
 
     leaves.push({
       depth,
       baseX,
       baseY,
-      height: profile.heightRange[0] + random() * (profile.heightRange[1] - profile.heightRange[0]),
+      height,
       driftX: 14 + random() * 34,
       driftY: 10 + random() * 26,
       driftSpeed: 0.06 + random() * 0.1,
@@ -178,7 +230,11 @@ export function createLuckyMeterOrnamentEngine({
   let width = 1;
   let height = 1;
   let pixelRatio = 1;
-  let activeLeaves = createLeaves(requested, layer, Math.random);
+  const canvasRect = canvas.getBoundingClientRect();
+  let activeLeaves = createLeaves(requested, layer, Math.random, {
+    width: canvasRect.width || window.innerWidth,
+    height: canvasRect.height || window.innerHeight,
+  });
   let elapsed = 0;
   let lastFrame = 0;
   let animationFrame = 0;
