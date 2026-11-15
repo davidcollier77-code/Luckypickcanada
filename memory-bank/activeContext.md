@@ -1,52 +1,39 @@
-# Active Context — Visual QA install timing reporter corrections
+# Active Context — R2 revalidation queue deduplication
 
 - **Updated:** 2026-11-15
-- **Repository:** `davidcollier77-code/Luckypickcanada`
-- **Branch:** `freebuff/visual-qa-timings-fixes`
-- **Base:** `main` at `0b12cd86` (merged PR #1917)
-- **Spec Kit feature:** `specs/168-visual-qa-timings-fixes`
-- **Pull request:** pending creation from this branch as a regular, non-draft PR
+- **Repository:** davidcollier77-code/Luckypickcanada
+- **Branch:** fix/r2-revalidation-queue-deduplication
+- **Base:** main at b47dbd4990ed84f2ae2368fed03819211155a817
+- **Spec Kit feature:** specs/169-r2-queue-cache-deduplication
+- **Pull request:** #1923 (open, unmerged)
+- **Current implementation commit:** a0fd8399ed98c4ac0e9eb73d900b12fee1af0ce6
 
 ## Current Task
 
-Correct the confirmed reporting and cache-classification defects in
-`.github/scripts/report_visual_qa_install_timings.py` in one follow-up PR against `main`, without
-reverting or re-implementing PR #1917.
+Add the OpenNext queueCache wrapper to the existing Durable Object revalidation queue to reduce repeat stale-revalidation dispatches for the same page and content version.
 
 ## Implemented State
 
-- Chromium classification requires a completed restore step with a `success` conclusion before a
-  skipped miss-only step can mean a hit; failed, cancelled, skipped, conclusion-less and incomplete
-  restores are `unknown`, and an executed miss-only step stays a miss.
-- Job pagination stops on a page shorter than 100 jobs, or once a positive `total_count` is reached;
-  a missing or zero total no longer ends pagination after a full page.
-- Log retrieval and decoding are separate: an unavailable log leaves cache details `unknown`, while
-  a corrupt zip raises `ReportError` and the command exits 2 with a clear message.
-- Cache parsing keeps the first recorded state, so a duplicate restore line cannot replace the key.
-- `api_json()` reports the API path plus the decoder message and line/column position.
-- The hexadecimal `head_sha` fixture is `fixture-head-sha-value`, and an assertion covers the
-  eight-character `Head:` formatting; DevSkim no longer reports DS173237 for the file.
-- The focused suite grew from 21 to 34 offline tests; no workflow, cache key, install,
-  Chromium-provisioning, classifier or baseline behaviour changed.
+- open-next.config.ts wraps the existing doQueue with queueCache using regionalCacheTtlSec: 5 and waitForQueueAck: true.
+- The existing R2 incremental cache, Durable Object queue, D1 tag cache, Wrangler bindings, dependencies and build command are unchanged.
+- The visual QA classifier recognizes only the exact open-next.config.ts path as a non-rendering runtime configuration file; all other unknown paths remain fail-closed.
+- The classifier regression test covers that exact exception.
+- Spec Kit specification, quality checklist, plan, research and tasks are recorded under specs/169-r2-queue-cache-deduplication.
+- The first PR head omitted the executable classifier case and failed one regression assertion. The case was added in commit a0fd8399ed98c4ac0e9eb73d900b12fee1af0ce6; all current-head tests then passed.
 
 ## Verification
 
-- Focused reporter suite: 34/34 passed; `py_compile` exit 0.
-- QA infrastructure suites: 142 tests passed; DevSkim suppression suite passed.
-- DevSkim CLI 1.0.103: pre-fix file reported DS173237 at line 100; corrected file reports 0 findings.
-- Full Vitest suite: 80 files / 788 tests passed.
-- `SPEC_KIT_BASE_REF=0b12cd86 ./freebuff-verify.sh` exit 0; build 304,970,368 bytes (290.84 MiB),
-  below the 495 MiB cap.
-- Visual change classifier: `visual_required=false`.
+- Visual QA: PASS — run 43760858112. QA infrastructure tests passed; full Vitest suite passed with 80/80 test files and 789/789 tests; standalone TypeScript check passed.
+- Browser visual regression: NOT REQUIRED — the change is non-rendering. The classifier succeeded and both Playwright shards were skipped.
+- OpenNext validation: PASS — run 43760857988. Next.js build, 495 MiB size gate, OpenNext Cloudflare build, Tailwind validation, Worker artifact checks and Wrangler build validation passed. Combined .next plus public output: 326.43 MiB.
+- Updater scheduler verification: PASS — run 43760858000. Schedule tests, Spec Kit customization tests, isolated safe Spec Kit upgrade, repository governance verification, secondary build-size gate and Wrangler dry-run passed. Secondary .next plus public output: 326.44 MiB. The deployment job was skipped for this pull request.
+- DevSkim: PASS — run 43760858036.
+- CodeQL: PASS — Python, JavaScript/TypeScript and Actions analyses passed in run 43760854398.
+- PR Scope Verification: PASS — run 43760855972.
+- Verification Integrity: PASS — run 43760855895.
+- No local shell scripts or Playwright CLI were executed by ChatGPT. The required repository verification gate ran inside GitHub Actions as authorized by the repository workflow.
+- No deployment was performed.
 
 ## Limitations
 
-- Live API mode was not exercised (no authenticated `gh`/token in this workspace).
-- DevSkim ran locally with the official CLI, not the GitHub Security upload.
-- Playwright visual tests were not run; this change set is non-rendering.
-- PR-triggered checks are pending until the PR is created.
-
-## Follow-ups
-
-- Run the report against the next genuinely visual PR to confirm both cache families and the
-  paginated job list on live data.
+The queue optimization may reduce redundant revalidation work but does not prove the root cause or guarantee elimination of R2 error 10058. The exact colliding R2 object key was not exposed in the sampled issue traces. The external Pullfrog review is advisory and is not a required repository verification gate.

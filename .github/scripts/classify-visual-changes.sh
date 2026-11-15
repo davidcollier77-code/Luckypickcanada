@@ -11,7 +11,8 @@
 #
 # The classifier fails closed. Known non-rendering paths may skip visual QA:
 # documentation/task records, agent skill and Playwright documentation, CI
-# configuration and scripts, backend API route handlers, the classifier itself,
+# configuration and scripts, OpenNext queue/runtime configuration, backend API route handlers,
+# the classifier itself,
 # unit tests directly under __tests__/, and standalone Playwright configuration
 # files that CI visual QA does not use. Frontend application paths, browser/e2e
 # tests, the QA Playwright configuration, visual assets and unknown paths still
@@ -38,6 +39,9 @@ non_rendering_path() {
 
     # Repository automation, QA checkers and backend API route handlers.
     .specify/feature.json | .github/* | app/api/* | pages/api/*) return 0 ;;
+
+    # OpenNext queue/cache runtime configuration does not change rendered output.
+    open-next.config.ts) return 0 ;;
 
     # Unit-test-only changes under __tests__/.
     __tests__/*.test.js | __tests__/*.test.jsx | __tests__/*.test.ts | __tests__/*.test.tsx) return 0 ;;
