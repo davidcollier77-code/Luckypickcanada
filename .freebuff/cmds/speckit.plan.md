@@ -23,7 +23,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 Freebuff completes repository preparation before starting the Spec Kit workflow. Use the existing branch, feature context, paths and prepared artifacts. Do not run setup, template-resolver or prerequisite scripts, and do not execute configured extension hooks during any Spec Kit stage. If required context or an artifact is missing, report exactly what is missing and stop that stage; do not rerun the preparation scripts.
 
 ## Outline
-1. **Use prepared feature context**: Read `.specify/feature.json` to identify `FEATURE_DIR`. Use the existing `FEATURE_SPEC`, `IMPL_PLAN` and `BRANCH` values from the prepared context and repository files. Set `IMPL_PLAN` to `FEATURE_DIR/plan.md`. Use the existing plan file if present; otherwise, create it from `.specify/templates/plan-template.md` using file operations. Do not run `setup-plan.sh`. If the feature directory or required specification is missing, report the missing prerequisite and stop rather than rerunning setup.
+1. **Use prepared feature context**: Read `.specify/feature.json` to identify `FEATURE_DIR`. Use the existing `FEATURE_SPEC`, `IMPL_PLAN` and `BRANCH` values from the prepared context and repository files. Set `IMPL_PLAN` to `FEATURE_DIR/plan.md`. Use the existing plan file if present; otherwise, create it from `.specify/templates/plan-template.md` using file operations. Do not repeat the setup step. If the feature directory or required specification is missing, report the missing prerequisite and stop rather than rerunning setup.
 
 2. **Load context**: Read FEATURE_SPEC and `.specify/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
