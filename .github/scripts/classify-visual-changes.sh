@@ -11,7 +11,8 @@
 #
 # The classifier fails closed. Known non-rendering paths may skip visual QA:
 # documentation/task records, agent skill and Playwright documentation, CI
-# configuration and scripts, backend API route handlers, the classifier itself,
+# configuration and scripts, OpenNext queue/runtime configuration, backend API route handlers,
+# the classifier itself,
 # unit tests directly under __tests__/, and standalone Playwright configuration
 # files that CI visual QA does not use. Frontend application paths, browser/e2e
 # tests, the QA Playwright configuration, visual assets and unknown paths still

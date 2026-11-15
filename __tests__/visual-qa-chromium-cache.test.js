@@ -99,6 +99,10 @@ describe('visual QA change classification', () => {
     );
   });
 
+  it('skips browser QA for the non-visual OpenNext runtime queue configuration', () => {
+    expect(classify(['open-next.config.ts'])).toBe('visual_required=false');
+  });
+
   it('skips visual QA for backend API routes and CI-only changes', () => {
     expect(classify(['app/api/checkout/route.js'])).toBe('visual_required=false');
     expect(classify(['app/api/health/route.ts'])).toBe('visual_required=false');

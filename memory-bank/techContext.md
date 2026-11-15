@@ -10,6 +10,7 @@
 - **Audio:** Howler and browser Web Audio API where already used. Lucky Meter audio assets are genuine recordings; additions carry a provider, item, licence, acquisition date and derivative record in `public/sounds/lucky-meter-cinematic-audio-sources.md`.
 - **Database:** Neon PostgreSQL through the serverless driver.
 - **Hosting/build:** Cloudflare Pages hosting with OpenNext Cloudflare build tooling and Workers runtime support.
+- **ISR revalidation queue:** The existing OpenNext Durable Object queue is wrapped by queueCache with a five-second regional Cache API TTL and acknowledgement-before-cache behavior. This suppresses repeat dispatches for the same page/content-version identity after the Durable Object accepts the request; it does not replace the Durable Object's in-flight deduplication or guarantee elimination of every R2 write-rate-limit event.
 - **Payments and email:** Stripe Checkout and Resend.
 - **Public-form protection:** Cloudflare Turnstile, alongside existing validation, sanitization and rate limits.
 
