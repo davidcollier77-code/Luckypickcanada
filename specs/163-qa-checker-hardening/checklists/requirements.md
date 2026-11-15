@@ -28,6 +28,8 @@
 - [x] Security findings distinguish hard failures from advisory warnings
 - [x] False-positive controls and deduplication are specified
 - [x] Visual QA remains conditional and recognizes all three approved tools
+- [x] CI-only and backend API-only changes skip browser shards without skipping always-on checks
+- [x] Mixed visual/non-visual changes still require browser verification; unknown paths fail closed
 - [x] Crystal Ball daily-fortune and follow-up coverage is preserved
 - [x] No application, visual, payment, database, authentication, hosting, dependency, or lockfile change is authorized
 
