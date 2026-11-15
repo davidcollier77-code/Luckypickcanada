@@ -1,3 +1,9 @@
+## 2026-11-15 — Freebuff Playwright governance guidance
+- Added a concise Freebuff-only AGENTS.md section documenting the interactive CLI launcher, standard Option A and SwiftShader Option B.
+- Explicitly excluded ChatGPT from using, loading, modifying or maintaining the repository Playwright CLI and its setup scripts.
+- Authorized Freebuff to verify and maintain relevant setup scripts when environment, dependency or browser-runtime changes affect them.
+- Added a focused governance regression assertion. Local test execution was unavailable in the GitHub-only editing session; no test pass is claimed.
+
 # Project Progress — Significant Milestones
 
 ## 2026-11-15 — QA checker hardening and inherited crash repair
