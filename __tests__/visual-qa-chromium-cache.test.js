@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -91,6 +91,22 @@ describe('visual QA change classification', () => {
     expect(classify(['tests/visual/homepage.spec.ts'])).toBe('visual_required=true');
     expect(classify(['tests/e2e/homepage.spec.ts'])).toBe('visual_required=true');
     expect(classify(['playwright.config.ts'])).toBe('visual_required=true');
+  });
+
+  it('requires visual QA for performance-related changes', () => {
+    // Rendering and performance work has to keep its browser coverage; only a
+    // change that is positively non-rendering may skip it.
+    expect(classify(['app/lib/gpu-particles.js'])).toBe('visual_required=true');
+    expect(classify(['components/cosmic-event-engine.js'])).toBe('visual_required=true');
+    expect(classify(['scripts/measure-performance.mjs'])).toBe('visual_required=true');
+    expect(classify(['tests/performance/lucky-meter-fps.spec.ts'])).toBe(
+      'visual_required=true',
+    );
+    expect(classify(['app/lib/gpu-particles.js', 'specs/170-x/evidence.md'])).toBe(
+      'visual_required=true',
+    );
+    // Ordinary application code stays fail-closed rather than being guessed.
+    expect(classify(['app/lib/rate-limit.js'])).toBe('visual_required=true');
   });
 
   it('requires visual QA when any changed path can affect rendered output', () => {
@@ -239,6 +255,69 @@ describe('visual QA change classification', () => {
 
   it('tolerates CRLF input and ignores blank lines', () => {
     expect(classify('README.md\r\n\r\nspecs/x/tasks.md\r\n')).toBe('visual_required=false');
+  });
+});
+
+describe('Playwright cache validation', () => {
+  function runCacheCheck(root) {
+    return execFileSync(
+      'bash',
+      [join(process.cwd(), '.github/scripts/verify-playwright-cache.sh'), root],
+      { encoding: 'utf8' },
+    ).trim();
+  }
+
+  function temporaryRoot() {
+    return mkdtempSync(join(tmpdir(), 'lqa-playwright-cache-'));
+  }
+
+  it('reports a cached Chromium executable as ready', () => {
+    const root = temporaryRoot();
+    try {
+      const browser = join(root, 'chromium-1234', 'chrome-linux', 'chrome');
+      mkdirSync(join(root, 'chromium-1234', 'chrome-linux'), { recursive: true });
+      writeFileSync(browser, '#!/bin/sh\n');
+      chmodSync(browser, 0o755);
+      expect(runCacheCheck(root)).toBe('ready=true');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects an empty, missing or non-executable cache', () => {
+    const empty = temporaryRoot();
+    try {
+      expect(runCacheCheck(empty)).toBe('ready=false');
+
+      const stale = join(empty, 'chromium-1234', 'chrome-linux', 'chrome');
+      mkdirSync(join(empty, 'chromium-1234', 'chrome-linux'), { recursive: true });
+      writeFileSync(stale, 'not executable');
+      expect(runCacheCheck(empty)).toBe('ready=false');
+
+      // A directory named like the browser is not an executable either.
+      mkdirSync(join(empty, 'chromium-5678', 'chrome-linux', 'chrome'), { recursive: true });
+      expect(runCacheCheck(empty)).toBe('ready=false');
+
+      expect(runCacheCheck(join(empty, 'absent'))).toBe('ready=false');
+    } finally {
+      rmSync(empty, { recursive: true, force: true });
+    }
+  });
+
+  it('gates the download on the validated cache, not the cache-hit flag', () => {
+    const validation = stepBlock('Validate restored Playwright Chromium');
+    expect(validation).not.toBeNull();
+    expect(validation).toContain('id: playwright-browser');
+    expect(validation).toContain('.github/scripts/verify-playwright-cache.sh');
+    expect(validation).toContain('no usable Chromium executable');
+    // The install still runs on an incomplete cache and still provisions system
+    // dependencies when the browser is usable.
+    expect(stepBlock('Install Playwright Chromium (browser unavailable)')).toContain(
+      "steps.playwright-browser.outputs.ready != 'true'",
+    );
+    expect(
+      stepBlock('Install Playwright system dependencies (browser cached)'),
+    ).toContain("steps.playwright-browser.outputs.ready == 'true'");
   });
 });
 
@@ -398,10 +477,10 @@ describe('visual QA workflow wiring', () => {
     }
 
     // Explicit Chromium provisioning is unchanged and never carries the skip.
-    expect(stepBlock('Install Playwright Chromium (cache miss)')).toContain(
+    expect(stepBlock('Install Playwright Chromium (browser unavailable)')).toContain(
       'pnpm exec playwright install --with-deps chromium',
     );
-    expect(stepBlock('Install Playwright system dependencies (cache hit)')).toContain(
+    expect(stepBlock('Install Playwright system dependencies (browser cached)')).toContain(
       'pnpm exec playwright install-deps chromium',
     );
   });
@@ -474,14 +553,14 @@ describe('visual QA workflow wiring', () => {
       "if: needs.changes.outputs.visual_required == 'true'",
     );
 
-    const missInstall = stepBlock('Install Playwright Chromium (cache miss)');
+    const missInstall = stepBlock('Install Playwright Chromium (browser unavailable)');
     expect(missInstall).not.toBeNull();
-    expect(missInstall).toContain("steps.playwright-cache.outputs.cache-hit != 'true'");
+    expect(missInstall).toContain("steps.playwright-browser.outputs.ready != 'true'");
     expect(missInstall).toContain('pnpm exec playwright install --with-deps chromium');
 
-    const hitDeps = stepBlock('Install Playwright system dependencies (cache hit)');
+    const hitDeps = stepBlock('Install Playwright system dependencies (browser cached)');
     expect(hitDeps).not.toBeNull();
-    expect(hitDeps).toContain("steps.playwright-cache.outputs.cache-hit == 'true'");
+    expect(hitDeps).toContain("steps.playwright-browser.outputs.ready == 'true'");
     expect(hitDeps).toContain('pnpm exec playwright install-deps chromium');
 
     // No workflow step may pull in Firefox or WebKit.

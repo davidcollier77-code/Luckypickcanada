@@ -272,5 +272,141 @@ class ReportAndLineMappingTests(unittest.TestCase):
         self.assertIn("Warnings are advisory", markdown)
 
 
+def added_record(path, *lines, start=1):
+    return {"filename": path, "status": "added", "patch": patch(*lines, start=start)}
+
+
+class DefectPatternTests(unittest.TestCase):
+    """Controlled examples: real defect patterns, with harmless code beside them."""
+
+    def test_focused_test_is_a_confirmed_warning(self):
+        result = review_files(
+            [record("__tests__/hero.test.js", "it.only('runs alone', () => {});")]
+        )
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["warning_count"], 1)
+        finding = result["findings"][0]
+        self.assertEqual(finding["rule"], "focused-test")
+        self.assertEqual(finding["classification"], "confirmed")
+        self.assertEqual(finding["confidence"], "high")
+
+    def test_only_property_access_outside_a_test_is_not_flagged(self):
+        result = review_files([record("app/lib/list.js", "const first = list.only(1);")])
+        self.assertEqual(result["findings"], [])
+
+    def test_skipped_test_is_not_a_focused_test(self):
+        result = review_files(
+            [record("__tests__/hero.test.js", "describe.skip('later', () => {});")]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_empty_catch_is_reported(self):
+        result = review_files([record("app/lib/io.js", "} catch { }")])
+        self.assertEqual(result["findings"][0]["rule"], "empty-catch-block")
+        self.assertEqual(result["findings"][0]["classification"], "potential")
+
+    def test_handled_catch_is_not_reported(self):
+        result = review_files(
+            [record("app/lib/io.js", "} catch (error) { console.warn(error); }")]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_await_inside_for_each_is_reported(self):
+        result = review_files(
+            [
+                record(
+                    "app/lib/save.js",
+                    "items.forEach(async (item) => {",
+                    "  await save(item);",
+                    "});",
+                )
+            ]
+        )
+        self.assertEqual(result["findings"][0]["rule"], "await-in-for-each")
+        self.assertEqual(result["findings"][0]["classification"], "confirmed")
+
+    def test_promise_all_map_pattern_is_not_reported(self):
+        result = review_files(
+            [
+                record(
+                    "app/lib/save.js",
+                    "await Promise.all(items.map(async (item) => save(item)));",
+                )
+            ]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_unused_import_in_a_fully_added_file_is_reported(self):
+        result = review_files(
+            [
+                added_record(
+                    "components/Widget.jsx",
+                    "import { alpha, beta } from './math';",
+                    "export default function Widget() {",
+                    "  return beta;",
+                    "}",
+                )
+            ]
+        )
+        rules = [(item["rule"], item["message"]) for item in result["findings"]]
+        self.assertEqual(len(rules), 1)
+        self.assertEqual(rules[0][0], "unused-import")
+        self.assertIn("'alpha'", rules[0][1])
+        self.assertEqual(result["findings"][0]["classification"], "confirmed")
+
+    def test_used_import_in_jsx_is_not_reported(self):
+        result = review_files(
+            [
+                added_record(
+                    "components/Widget.jsx",
+                    "import Widget from './Widget';",
+                    "export default function Page() {",
+                    "  return <Widget />;",
+                    "}",
+                )
+            ]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_react_import_is_never_reported_as_unused(self):
+        result = review_files(
+            [added_record("components/Widget.jsx", "import React from 'react';", "export default 1;")]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_unused_import_rule_does_not_guess_in_modified_files(self):
+        # A modified file exposes only its hunks, so an absent reference is not
+        # evidence that the import is unused.
+        result = review_files(
+            [record("components/Widget.jsx", "import { alpha } from './math';")]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_duplicate_locations_collapse_and_are_counted(self):
+        token = "AKIA" + "1234567890ABCDEF"
+        body = patch('const key = "%s";' % token)
+        result = review_files(
+            [
+                {"filename": "app/config.js", "status": "modified", "patch": body},
+                {"filename": "app/config.js", "status": "modified", "patch": body},
+            ]
+        )
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertEqual(result["duplicates_collapsed"], 1)
+
+    def test_classification_separates_confirmed_from_potential(self):
+        token = "AKIA" + "1234567890ABCDEF"
+        sink = "<div " + "dangerouslySet" + "InnerHTML={html} />"
+        result = review_files(
+            [
+                record("app/config.js", 'const key = "%s";' % token),
+                record("components/Hero.tsx", sink),
+            ]
+        )
+        classifications = {item["rule"]: item["classification"] for item in result["findings"]}
+        self.assertEqual(classifications["aws-access-key"], "confirmed")
+        self.assertEqual(classifications["unsafe-html-or-dynamic-code"], "potential")
+
+
 if __name__ == "__main__":
     unittest.main()

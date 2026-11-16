@@ -1,0 +1,131 @@
+# Evidence: QA Checker Effectiveness and Reliability
+
+Recorded on branch `freebuff/qa-checker-effectiveness` based on `main` at
+`4bfec5969d9872e01257f8591ff30292ce3c280a`.
+
+## 1. Evaluation vehicle — Lucky Meter PR #1924, head `6eb2ae7e`
+
+### 1.1 Check-run outcomes on that head
+
+| Check | Conclusion | Note |
+| --- | --- | --- |
+| Visual QA | success | verification job: QA checker suites, full unit suite, TypeScript |
+| Visual QA (shard 1/2) | success | Playwright shard |
+| Visual QA (shard 2/2) | **failure** | 6 annotations; annotation detail was not retrievable through the connected tools |
+| Verification Integrity | **cancelled** | the current-head audit never completed, so it is not evidence of a pass |
+| PR Scope Verification | **failure** | the PR body has no `<!-- qa-scope:start -->` declaration, so `check_qa_pr_scope.extract_declaration` cannot compare scope with the diff |
+| DevSkim scan and Security upload | success | |
+| devskim / CodeQL | success | no new alerts |
+| Protected File Authorization | success | |
+| Validate OpenNext build artifacts | success | |
+| Detect visual changes | success | correctly required browser QA for this rendering change |
+| pullfrog | **failure** | provider quota (429) on two attempts |
+| Graphite / AI Reviews | **skipped** | "AI code review did not run because this PR is too large" |
+| Append new alerts and notify owner | skipped | not applicable |
+
+### 1.2 External review findings, verified against the code
+
+| Source | Finding | Disposition | Evidence |
+| --- | --- | --- | --- |
+| Amazon Q | `near` profile indentation | already fixed | `far:`/`near:` aligned at head; fixed in `f3bae2ff` |
+| Amazon Q | unused `SCENE_PACK` | already fixed | no occurrence under `components/` or `app/` |
+| Amazon Q | `samples - 1` NaN | already fixed | `Math.max(1, samples - 1)` at `cosmic-event-engine.js:724` |
+| Amazon Q | stale light slots | not a defect | `beginMeshFrame` zero-fills both light arrays and `u_lightCount` gates the shader loop |
+| Amazon Q | `UNSIGNED_SHORT` index overflow | not a defect | `segments` clamps to 12–480 (~12.5k vertices at the cap) |
+| Amazon Q | `hexToRgb` in the hot loop | already fixed | trail colours are module constants (`cosmic-event-engine.js:122-127`) |
+| Pullfrog | `geometry = null` after `dispose()` (×2) | not a defect | `geometry` is a construction-time input; the returned engine holds no reference |
+| Pullfrog | add `subscribe`/`unsubscribe` to the light bus | not a defect | the bus is a pull model with no subscriber list |
+| Pullfrog | `engineRef` nulled before `destroy()` | not a defect | deliberate ordering; `destroy()` is synchronous |
+| Pullfrog | no `onRestored` handler (×2) | **confirmed defect** | neither engine passed `onRestored`; fixed in PR #1924 commit `2d487227` |
+
+Totals: 18 inline comments → 6 unique Pullfrog findings + 6 Amazon Q findings,
+of which 12 comments were byte-identical duplicates, 3 were already fixed,
+4 were not defects, and 1 was a real defect.
+
+## 2. Deterministic checker: detections and non-detections
+
+Controlled fixtures (`__tests__`-independent Python fixtures in
+`.github/scripts/test_review_pr_changes.py`):
+
+| Defect class | Fixture | Result | Harmless counterpart | Result |
+| --- | --- | --- | --- | --- |
+| focused test | `it.only(...)` in `__tests__/*.test.js` | detected, `confirmed` | `list.only(1)` in app code, `describe.skip(...)` | not reported |
+| floating promise | `items.forEach(async ...)` | detected, `confirmed` | `await Promise.all(items.map(async ...))` | not reported |
+| swallowed error | `} catch { }` | detected, `potential` | `catch (e) { console.warn(e); }` | not reported |
+| unused import | unused binding in a fully added file | detected, `confirmed` | JSX-used import, `React` default import, modified file | not reported |
+
+Deduplication: the same defect supplied twice at the same path, line and rule now
+produces 1 finding and `duplicates_collapsed: 1`. Before this change the key
+included the excerpt, so the same defect with a different excerpt was reported
+twice.
+
+Real-diff run against the complete PR #1924 change set (105 file records):
+
+```
+records 105 reviewed 104 skipped 1 (binary)
+elapsed_s 0.099
+hard 0 warnings 2 dupes 0
+warning potential type-or-lint-suppression components/LuckyMeterRing.jsx:101
+warning potential type-or-lint-suppression components/LuckyMeterRing.jsx:112
+```
+
+The two warnings are the existing suppression rule on real
+`eslint-disable-next-line` comments. The new rules produced **no** findings on
+that diff; manual inspection of the added files confirms there is no same-line
+empty catch, no `forEach(async ...)`, no focused test and no unused import, so
+these are true negatives rather than misses. A multi-line `catch { /* comment */ }`
+in `cosmic-event-engine.js` is intentional and outside the same-line rule.
+
+## 3. Browser reliability
+
+`__tests__/visual-qa-chromium-cache.test.js` executes the real cache check:
+
+| Cache state | Output |
+| --- | --- |
+| executable `chromium-1234/chrome-linux/chrome` | `ready=true` |
+| empty directory | `ready=false` |
+| non-executable file with the browser path | `ready=false` |
+| directory named `chrome` | `ready=false` |
+| missing path | `ready=false` |
+
+Workflow guard assertions confirm the install is gated on
+`steps.playwright-browser.outputs.ready`, the system-dependency install still runs
+for a usable cached browser, the version-keyed cache key and the two Playwright
+shards are unchanged, and `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD` is still set on both
+dependency installs.
+
+## 4. Classifier coverage
+
+Executed classifier assertions now include performance-related paths
+(`app/lib/gpu-particles.js`, `components/cosmic-event-engine.js`,
+`scripts/measure-performance.mjs`, `tests/performance/*.spec.ts`) → 
+`visual_required=true`, mixed performance + documentation → `true`, and ordinary
+application code under `app/lib/` → `true` (fail closed). Existing documentation,
+tooling, CI-only, agent-skill and Spec Kit cases still return
+`visual_required=false`, and the empty/unclassifiable list still returns `true`.
+
+## 5. Commands actually run
+
+| Command | Result |
+| --- | --- |
+| `python3 -m unittest test_check_qa_pr_scope test_report_visual_qa_install_timings test_review_pr_changes test_summarize_devskim_findings test_verify_pr_verification_status` | 155 tests, OK |
+| `pnpm exec vitest run` | 80 files, 793 tests, pass |
+| `pnpm exec vitest run __tests__/visual-qa-chromium-cache.test.js` | 35 tests, pass |
+| `pnpm exec tsc --noEmit` | exit 0 |
+| `bash -n .github/scripts/verify-playwright-cache.sh` | OK |
+| `python3 -m py_compile .github/scripts/review_pr_changes.py` | OK |
+| `./freebuff-verify.sh` | exit 0 (Spec Kit gate, governance suites, type check, production build, docs tests) |
+| Production build size (`.next` + `public`) | 340,039,798 bytes = 324.29 MiB, below the 495 MiB cap |
+
+## 6. Limitations
+
+- Playwright visual regression was not executed here: this runner has no GPU and
+  no browser install. The committed baselines and both shards are unchanged, and
+  the cache change only adds a fallback when the restored browser is unusable.
+- The new rules are line-oriented: a multi-line empty catch or a multi-line
+  import statement can be missed, and by design neither is guessed.
+- External reviewer behaviour (Amazon Q, Graphite, Pullfrog) is unchanged and
+  stays advisory; Graphite's size limit and Pullfrog's quota are outside the
+  repository's control.
+- The 6 Visual QA annotations on PR #1924 shard 2/2 were not retrievable through
+  the connected tools, so the specific failing assertions remain unverified.

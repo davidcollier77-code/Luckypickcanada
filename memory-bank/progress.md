@@ -1,3 +1,10 @@
+## 2026-11-16 — QA checker effectiveness from the PR #1924 review cycle
+- Evaluated the repository checkers against the Lucky Meter review cycle: 18 inline comments (Amazon Q, Pullfrog), Graphite skipped for PR size, Pullfrog failing twice on provider quota, Verification Integrity cancelled, PR Scope Verification failing for a missing scope declaration, and Visual QA shard 2 failing.
+- Verified 18 findings against head `6eb2ae7e`: 1 confirmed defect (no WebGL context-restore path) fixed in PR #1924, 3 already fixed, 4 not defects, 12 byte-identical duplicates.
+- Changed-code reviewer now records `confirmed`/`potential` classification, collapses duplicates by path and line with a count, and detects focused tests, `forEach(async ...)`, empty catch blocks and unused imports in fully added files.
+- Visual QA validates the restored Chromium cache and installs a matching browser when the cache has no executable, instead of failing every test at launch on a corrupt archive.
+- Classifier regression coverage extended to performance paths and ambiguous application code.
+
 ## 2026-11-15 — Visual QA install timing reporter corrections
 - Fixed six confirmed defects in the PR #1917 reporter without reverting or re-implementing it: a
   Chromium hit now requires a successfully completed restore step; pagination no longer stops after

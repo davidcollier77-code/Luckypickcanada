@@ -8,11 +8,16 @@ reviewer adds narrow, patch-level evidence for:
 
 * private key blocks, recognizable provider tokens and merge markers (hard);
 * unsafe HTML/code-execution sinks, insecure links, hardcoded credential
-  assignments and dependency additions (advisory warnings).
+  assignments and dependency additions (advisory warnings);
+* focused tests, floating promises in `forEach`, empty catch blocks and
+  unused imports in fully added files (advisory warnings).
 
-Every finding names the changed file, the new-file line, the rule, a confidence
-level, and the matched excerpt. Placeholder and environment-variable patterns
-are suppressed for advisory rules. Findings are deduplicated.
+Every finding names the changed file, the new-file line, the rule, a severity, a
+confidence level, whether it is a confirmed defect or a potential concern, a
+recommended correction, and the matched excerpt. Placeholder and
+environment-variable patterns are suppressed for advisory rules. Findings are
+deduplicated by location and rule, so the same defect reported twice for
+different excerpts collapses to one entry.
 
 Read-only: no network request is made here. The workflow supplies GitHub's
 changed-file records, including their unified-diff patches.
@@ -67,6 +72,23 @@ DEPRECATED_API_PATTERN = re.compile(
     r"\bdocument\.execCommand\b|\bcomponentWillMount\b|"
     r"\bcomponentWillReceiveProps\b|\bReactDOM\.render\("
 )
+# A committed focused test silently shrinks the suite: everything else in the
+# file stops running. Only runner calls are matched, not a `.only` property read.
+FOCUSED_TEST_PATTERN = re.compile(
+    r"\b(?:describe|it|test|context|suite|fit|fdescribe)\s*\.\s*only\s*\("
+)
+# `forEach(async ...)` cannot be awaited, so its promises float: rejections are
+# lost and the loop finishes before the work does. `map(async ...)` is excluded
+# because collecting promises and awaiting them is a valid, common pattern.
+AWAIT_IN_FOR_EACH_PATTERN = re.compile(r"\.\s*forEach\s*\(\s*async\b")
+# An empty catch swallows the failure, including resource and validation errors.
+EMPTY_CATCH_PATTERN = re.compile(r"\bcatch\s*(?:\([^)]*\))?\s*\{\s*\}\s*;?\s*$")
+IMPORT_STATEMENT_PATTERN = re.compile(
+    r"^\s*import\s+(?:type\s+)?(.*?)\s*from\s*['\"]", re.DOTALL
+)
+# `React` is imported by convention; an unused default import is not evidence of
+# a defect in this codebase, so it is never reported as an unused binding.
+IGNORED_IMPORT_BINDINGS = frozenset({"React"})
 PLACEHOLDER_PATTERN = re.compile(
     r"(?i)(?:example|placeholder|dummy|fake|redacted|your[_-]?|replace[_-]?me|"
     r"changeme|xxxx|sample|do[ -]?not[ -]?use)"
@@ -163,17 +185,30 @@ def _finding(
     message: str,
     recommendation: str,
     excerpt: str,
+    classification: str | None = None,
 ) -> dict:
+    # A hard rule has a proven payload (a key, a token, a conflict marker); an
+    # advisory rule reports a pattern whose intent is not proven from the patch.
+    if classification is None:
+        classification = "confirmed" if severity == HARD else "potential"
     return {
         "path": path,
         "line": line,
         "rule": rule,
         "severity": severity,
         "confidence": confidence,
+        "classification": classification,
         "message": message,
         "recommendation": recommendation,
         "excerpt": excerpt.strip()[:180],
     }
+
+
+def _test_path(path: str) -> bool:
+    return (
+        path.startswith(("__tests__/", "tests/"))
+        or re.search(r"\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$", path) is not None
+    )
 
 
 def _in_comment_context(text: str, position: int) -> bool:
@@ -376,6 +411,50 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
             )
         )
 
+    if not documentation and _test_path(path) and FOCUSED_TEST_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "focused-test",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "A focused test was committed, so every other test in this file is silently skipped.",
+                "Remove .only (and any .skip you did not intend) so the whole suite runs.",
+                stripped,
+                classification="confirmed",
+            )
+        )
+
+    if not documentation and AWAIT_IN_FOR_EACH_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "await-in-for-each",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "An async callback passed to forEach cannot be awaited: its promises float and rejections are lost.",
+                "Use for...of with await, or collect the promises and await Promise.all.",
+                stripped,
+                classification="confirmed",
+            )
+        )
+
+    if not documentation and EMPTY_CATCH_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "empty-catch-block",
+                WARNING,
+                CONFIDENCE_MEDIUM,
+                "An empty catch block discards the error, so a real failure becomes silent.",
+                "Handle the error, log it with context, or rethrow after cleanup.",
+                stripped,
+            )
+        )
+
     if path.endswith("package.json"):
         package_match = PACKAGE_ENTRY_PATTERN.match(text)
         if package_match and package_match.group(1) not in EXCLUDED_PACKAGE_KEYS:
@@ -392,6 +471,82 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                 )
             )
 
+    return findings
+
+
+def _import_bindings(clause: str) -> list[str]:
+    """Return the local names bound by one single-line import clause."""
+    bindings: list[str] = []
+    clause = clause.strip()
+    if not clause:
+        return bindings
+    namespace = re.match(r"\*\s+as\s+([A-Za-z_$][\w$]*)", clause)
+    if namespace:
+        return [namespace.group(1)]
+    default_match = re.match(r"([A-Za-z_$][\w$]*)\s*(?:,|$)", clause)
+    if default_match:
+        bindings.append(default_match.group(1))
+    named = re.search(r"\{([^}]*)\}", clause)
+    if named:
+        for part in named.group(1).split(","):
+            part = part.strip()
+            if not part:
+                continue
+            local = part.split(" as ")[-1].strip()
+            if re.fullmatch(r"[A-Za-z_$][\w$]*", local):
+                bindings.append(local)
+    return bindings
+
+
+def _unused_import_findings(path: str, added: list[tuple[int, str]]) -> list[dict]:
+    """Report import bindings that are referenced nowhere in a fully added file.
+
+    Only fully added files are reviewed: GitHub supplies every line of them, so a
+    missing reference is evidence. A modified file exposes only its hunks, and
+    treating an unmentioned name as unused there would be a false positive.
+
+    Multi-line import statements are not parsed, so this rule can miss an unused
+    binding but does not invent one.
+    """
+    bindings: list[tuple[int, str, str]] = []
+    import_lines: set[int] = set()
+    for line_number, text in added:
+        match = IMPORT_STATEMENT_PATTERN.match(text)
+        if not match:
+            continue
+        found = _import_bindings(match.group(1))
+        if not found:
+            continue
+        import_lines.add(line_number)
+        for binding in found:
+            bindings.append((line_number, binding, text))
+    if not bindings:
+        return []
+
+    body = "\n".join(
+        text for line_number, text in added if line_number not in import_lines
+    )
+    findings: list[dict] = []
+    reported: set[str] = set()
+    for line_number, binding, text in bindings:
+        if binding in IGNORED_IMPORT_BINDINGS or binding in reported:
+            continue
+        if re.search(r"(?<![\w$])%s(?![\w$])" % re.escape(binding), body):
+            continue
+        reported.add(binding)
+        findings.append(
+            _finding(
+                path,
+                line_number,
+                "unused-import",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "The added file imports %r but never references it." % binding,
+                "Remove the unused binding, or use it in the file.",
+                text,
+                classification="confirmed",
+            )
+        )
     return findings
 
 
@@ -427,21 +582,25 @@ def review_files(file_records) -> dict:
             window = added[max(0, idx - 5):idx + 6]
             nearby_text = "\n".join(line for _, line in window)
             findings.extend(_line_findings(path, line_number, text, nearby_text))
+        if str(record.get("status") or "").lower() == "added" and not _documentation_path(path):
+            findings.extend(_unused_import_findings(path, added))
 
+    # Collapse by location and rule: one defect reported twice for slightly
+    # different excerpts is one finding, and the duplicate count is reported.
     deduplicated = {}
+    duplicates_collapsed = 0
     for finding in findings:
-        key = (
-            finding["path"],
-            finding["line"],
-            finding["rule"],
-            finding["excerpt"],
-        )
-        deduplicated.setdefault(key, finding)
+        key = (finding["path"], finding["line"], finding["rule"])
+        if key in deduplicated:
+            duplicates_collapsed += 1
+            continue
+        deduplicated[key] = finding
 
     ordered = sorted(
         deduplicated.values(),
         key=lambda item: (
             0 if item["severity"] == HARD else 1,
+            0 if item["classification"] == "confirmed" else 1,
             item["path"],
             item["line"],
             item["rule"],
@@ -457,6 +616,10 @@ def review_files(file_records) -> dict:
         "findings": ordered,
         "hard_count": hard_count,
         "warning_count": warning_count,
+        "duplicates_collapsed": duplicates_collapsed,
+        "confirmed_count": sum(
+            1 for item in ordered if item["classification"] == "confirmed"
+        ),
         "note": (
             "Warnings are advisory and are not confirmed vulnerabilities. "
             "DevSkim, CodeQL, TypeScript, tests and reviewer judgment remain authoritative."
@@ -472,6 +635,8 @@ def render_markdown(report: dict) -> str:
         f"- Files without a textual patch: {len(report.get('skipped_files', []))}",
         f"- Hard findings: {report.get('hard_count', 0)}",
         f"- Advisory warnings: {report.get('warning_count', 0)}",
+        f"- Confirmed findings (hard and advisory): {report.get('confirmed_count', 0)}",
+        f"- Duplicate findings collapsed: {report.get('duplicates_collapsed', 0)}",
         "",
         report.get("note", ""),
     ]
@@ -480,16 +645,17 @@ def render_markdown(report: dict) -> str:
         lines.extend(
             [
                 "",
-                "| Severity | Rule | Location | Confidence | Evidence |",
-                "| --- | --- | --- | --- | --- |",
+                "| Severity | Classification | Rule | Location | Confidence | Evidence |",
+                "| --- | --- | --- | --- | --- | --- |",
             ]
         )
         for item in findings:
             evidence = item["excerpt"].replace("|", "\\|")
             lines.append(
-                "| %s | %s | `%s:%s` | %s | `%s` |"
+                "| %s | %s | %s | `%s:%s` | %s | `%s` |"
                 % (
                     item["severity"],
+                    item["classification"],
                     item["rule"],
                     item["path"],
                     item["line"],
@@ -498,7 +664,7 @@ def render_markdown(report: dict) -> str:
                 )
             )
             lines.append(
-                "|  |  |  |  | %s |"
+                "|  |  |  |  |  | %s |"
                 % item["recommendation"].replace("|", "\\|")
             )
     else:
