@@ -43,6 +43,11 @@ const RENDER_QUALITY_PROFILES = Object.freeze({
     foreground: true,
     haze: true,
     sparkBudget: 900,
+    // Radial segment count for the medallion lathe. Higher is a smoother rim.
+    meshSegments: 192,
+    // Golden maple-leaf ornaments per layer. The near layer is the expensive
+    // one because those leaves are large, so it is dropped first.
+    ornament: Object.freeze({ far: 9, near: 5 }),
   }),
   balanced: Object.freeze({
     tier: 'balanced',
@@ -51,6 +56,8 @@ const RENDER_QUALITY_PROFILES = Object.freeze({
     foreground: true,
     haze: true,
     sparkBudget: 560,
+    meshSegments: 160,
+    ornament: Object.freeze({ far: 7, near: 3 }),
   }),
   constrained: Object.freeze({
     tier: 'constrained',
@@ -59,6 +66,8 @@ const RENDER_QUALITY_PROFILES = Object.freeze({
     foreground: false,
     haze: false,
     sparkBudget: 280,
+    meshSegments: 128,
+    ornament: Object.freeze({ far: 5, near: 0 }),
   }),
 });
 

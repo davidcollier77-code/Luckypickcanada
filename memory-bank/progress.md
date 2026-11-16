@@ -1,13 +1,29 @@
+## 2026-11-16 — Independent checker suite (P1–P5)
+- Split the checking system by responsibility in a new PR: test quality, performance
+  (resource leaks), security alerts and a Visual QA summary each publish their own
+  sticky comment, while the general defect reviewer stays in PR #1925.
+- `checker_suite.py` holds four advisory modes with block-safe rendering and a
+  suggested fix per finding; `upsert_pr_comment.sh` updates a comment in place and
+  refuses an unmarked or over-60,000-byte body instead of truncating a fix.
+- Visual QA keeps running PR code read-only; a `workflow_run` job publishes the
+  result afterwards, and a skipped shard is labelled NOT RUN, never a pass.
+- Security alerts reuse the existing DevSkim/CodeQL code scanning through the
+  alerts API: no new scanner, dependency, service or paid reviewer.
+- Verified: 28 controlled fixtures, workflow hygiene suite, full unit suite, type
+  check, repository gate and build below the 495 MiB cap. A measured runtime
+  performance budget is deliberately deferred (no browser baseline here).
+
+## 2026-11-16 — QA checker effectiveness from the PR #1924 review cycle
 - Responsibility separation recorded, not implemented: the general code-defect reviewer gained `assignment-in-condition` only, while the inventory, category ownership, gaps and the P0–P5 sequence for separate test-quality, security, performance and browser-reporting checkers are in `specs/171-qa-checker-effectiveness/plan.md`. No new workflow, dependency, paid service or external reviewer configuration.
 
 - Verified after the rule: 183 QA infrastructure tests, 81 files / 801 Vitest tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, production build below the 495 MiB cap.
 
-## 2026-11-16 — QA checker effectiveness from the PR #1924 review cycle
 - Evaluated the repository checkers against the Lucky Meter review cycle: 18 inline comments (Amazon Q, Pullfrog), Graphite skipped for PR size, Pullfrog failing twice on provider quota, Verification Integrity cancelled, PR Scope Verification failing for a missing scope declaration, and Visual QA shard 2 failing.
 - Verified 18 findings against head `6eb2ae7e`: 1 confirmed defect (no WebGL context-restore path) fixed in PR #1924, 3 already fixed, 4 not defects, 12 byte-identical duplicates.
 - Changed-code reviewer now records `confirmed`/`potential` classification, collapses duplicates by path and line with a count, and detects focused tests, `forEach(async ...)`, empty catch blocks and unused imports in fully added files.
 - Visual QA validates the restored Chromium cache and installs a matching browser when the cache has no executable, instead of failing every test at launch on a corrupt archive.
 - Classifier regression coverage extended to performance paths and ambiguous application code.
+
 
 ## 2026-11-15 — Visual QA install timing reporter corrections
 - Fixed six confirmed defects in the PR #1917 reporter without reverting or re-implementing it: a
