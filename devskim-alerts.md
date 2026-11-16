@@ -17,3 +17,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `.github/scripts/test_review_pr_changes.py:140` — Do not leave debug code in production <!-- devskim-id:69b342f83ca7a9c6f432 -->
 - **NOTE — DS162092** — `.github/scripts/review_pr_changes.py:570` — Do not leave debug code in production <!-- devskim-id:8ead838136051be8a6fb -->
 - **NOTE — DS162092** — `.github/scripts/review_pr_changes.py:569` — Do not leave debug code in production <!-- devskim-id:b1471a0d0f21395cc4e8 -->
+
+- **NOTE — DS172411** — `components/DailyResonance.tsx:184` — Review setTimeout for untrusted data <!-- devskim-id:c26252ce25724a8e75f9 -->
