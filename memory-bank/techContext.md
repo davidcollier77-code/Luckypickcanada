@@ -1,5 +1,10 @@
 # Technical Context
 
+## QA checker suite
+- `.github/scripts/checker_suite.py` holds four independent advisory checkers: `test-quality`, `performance`, `security-summary` and `browser-summary`. Each writes a marker-first sticky comment through `.github/scripts/upsert_pr_comment.sh`, which updates in place and refuses an unmarked or over-60,000-byte body.
+- `.github/workflows/checker-suite.yml` runs test quality, performance and security alerts from `pull_request_target` with a trusted `main` checkout; `.github/workflows/visual-qa-summary.yml` runs from `workflow_run` after Visual QA and labels a skipped shard NOT RUN.
+- Security findings come from the existing DevSkim/CodeQL code scanning through the code-scanning alerts API; no additional scanner, dependency or paid service is used.
+
 ## Application Stack
 - **Framework:** Next.js App Router 16.4.3, React 19.3.1 and TypeScript.
 - **Runtime:** Node.js 26.x.

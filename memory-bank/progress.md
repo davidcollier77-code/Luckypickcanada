@@ -1,3 +1,18 @@
+## 2026-11-16 — Independent checker suite (P1–P5)
+- Split the checking system by responsibility in a new PR: test quality, performance
+  (resource leaks), security alerts and a Visual QA summary each publish their own
+  sticky comment, while the general defect reviewer stays in PR #1925.
+- `checker_suite.py` holds four advisory modes with block-safe rendering and a
+  suggested fix per finding; `upsert_pr_comment.sh` updates a comment in place and
+  refuses an unmarked or over-60,000-byte body instead of truncating a fix.
+- Visual QA keeps running PR code read-only; a `workflow_run` job publishes the
+  result afterwards, and a skipped shard is labelled NOT RUN, never a pass.
+- Security alerts reuse the existing DevSkim/CodeQL code scanning through the
+  alerts API: no new scanner, dependency, service or paid reviewer.
+- Verified: 28 controlled fixtures, workflow hygiene suite, full unit suite, type
+  check, repository gate and build below the 495 MiB cap. A measured runtime
+  performance budget is deliberately deferred (no browser baseline here).
+
 ## 2026-11-15 — Visual QA install timing reporter corrections
 - Fixed six confirmed defects in the PR #1917 reporter without reverting or re-implementing it: a
   Chromium hit now requires a successfully completed restore step; pagination no longer stops after
