@@ -85,19 +85,39 @@ describe('DailyResonance Lifecycle & Audio', () => {
   });
 
   it('continues the reveal when the audio library cannot load', async () => {
+    const audioWarning = vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.doMock('howler', () => {
       throw new Error('Mock network failure');
     });
 
-    render(<DailyResonance isCompact={false} />);
+    const { unmount } = render(<DailyResonance isCompact={false} />);
     fireEvent.click(screen.getByText('Reveal My Resonance'));
 
     // Audio is optional: a failed import must not cancel or block the reveal.
-    await waitFor(() => {
-      expect(screen.queryByText(/Reading today/i)).not.toBeNull();
-    });
+    // Wait for the asynchronous import rejection as well as the visible reading.
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/Reading today/i)).not.toBeNull();
+        expect(audioWarning).toHaveBeenCalledWith(
+          'Lucky Meter audio unavailable; continuing without sound.',
+          expect.any(Error),
+        );
+      },
+      { interval: 1 },
+    );
     expect(window.localStorage.getItem('lucky-pick-canada-lucky-meter-v1')).not.toBeNull();
 
+    // Let the import continuation and visit-counter promise chain settle inside
+    // React act before unmounting, so the test leaves no pending React work.
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    unmount();
     vi.doUnmock('howler');
   });
 });
