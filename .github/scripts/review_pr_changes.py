@@ -676,6 +676,11 @@ def _import_bindings(clause: str) -> list[str]:
     return bindings
 
 
+def _import_line(text: str) -> bool:
+    """True for an import statement or a side-effect import of a module path."""
+    return bool(re.match(r"\s*import\b", text))
+
+
 def _unused_import_findings(path: str, added: list[tuple[int, str]]) -> list[dict]:
     """Report import bindings that are referenced nowhere in a fully added file.
 
@@ -687,23 +692,19 @@ def _unused_import_findings(path: str, added: list[tuple[int, str]]) -> list[dic
     binding but does not invent one.
     """
     bindings: list[tuple[int, str, str]] = []
-    import_lines: set[int] = set()
     for line_number, text in added:
         match = IMPORT_STATEMENT_PATTERN.match(text)
         if not match:
             continue
-        found = _import_bindings(match.group(1))
-        if not found:
-            continue
-        import_lines.add(line_number)
-        for binding in found:
+        for binding in _import_bindings(match.group(1)):
             bindings.append((line_number, binding, text))
     if not bindings:
         return []
 
-    body = "\n".join(
-        text for line_number, text in added if line_number not in import_lines
-    )
+    # No import statement can use a binding, so every import line is excluded
+    # from the reference search. Including one would let a module path such as
+    # './alpha-legacy' or a re-export count as a use of an unused binding.
+    body = "\n".join(text for line_number, text in added if not _import_line(text))
     findings: list[dict] = []
     reported: set[str] = set()
     for line_number, binding, text in bindings:
@@ -769,12 +770,13 @@ def review_files(file_records) -> dict:
         if str(record.get("status") or "").lower() == "added" and not _documentation_path(path):
             findings.extend(_unused_import_findings(path, added))
 
-    # Collapse by location and rule: one defect reported twice for slightly
-    # different excerpts is one finding, and the duplicate count is reported.
+    # Collapse identical reports only. Two unused bindings on one import line are
+    # two defects with the same location and rule but different messages, and
+    # dropping one of them would hide a finding and misreport it as a duplicate.
     deduplicated = {}
     duplicates_collapsed = 0
     for finding in findings:
-        key = (finding["path"], finding["line"], finding["rule"])
+        key = (finding["path"], finding["line"], finding["rule"], finding["message"])
         if key in deduplicated:
             duplicates_collapsed += 1
             continue

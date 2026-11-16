@@ -467,6 +467,66 @@ class SuggestedFixTests(unittest.TestCase):
         self.assertIn("Suggested fix:", markdown)
 
 
+class FindingIdentityTests(unittest.TestCase):
+    """Distinct defects at one location stay distinct; repeats still collapse."""
+
+    def test_one_focused_test_is_reported_once(self):
+        # The rule reads the added line only, not its surrounding window, so a
+        # single .only must not be reported once per line of that window.
+        result = review_files(
+            [
+                record(
+                    "__tests__/hero.test.js",
+                    "describe('hero', () => {",
+                    "  it.only('a', () => {});",
+                    "  it('b', () => {});",
+                    "});",
+                )
+            ]
+        )
+        self.assertEqual([item["rule"] for item in result["findings"]], ["focused-test"])
+        self.assertEqual(result["duplicates_collapsed"], 0)
+
+    def test_two_focused_tests_are_reported_separately(self):
+        result = review_files(
+            [
+                record(
+                    "__tests__/hero.test.js",
+                    "it.only('a', () => {});",
+                    "it.only('b', () => {});",
+                )
+            ]
+        )
+        self.assertEqual(len([i for i in result["findings"] if i["rule"] == "focused-test"]), 2)
+
+    def test_two_unused_bindings_on_one_line_stay_two_findings(self):
+        result = review_files(
+            [
+                added_record(
+                    "app/lib/page.js",
+                    "import { alpha, beta } from './math';",
+                    "export default 1;",
+                )
+            ]
+        )
+        unused = [item for item in result["findings"] if item["rule"] == "unused-import"]
+        self.assertEqual(len(unused), 2)
+        self.assertEqual(result["duplicates_collapsed"], 0)
+
+    def test_import_path_text_does_not_mask_an_unused_binding(self):
+        result = review_files(
+            [
+                added_record(
+                    "app/lib/page.js",
+                    "import { alpha } from './math';",
+                    "import './alpha-legacy';",
+                    "export default 1;",
+                )
+            ]
+        )
+        self.assertEqual([item["rule"] for item in result["findings"]], ["unused-import"])
+
+
 class SuggestedVerificationTests(unittest.TestCase):
     """Playwright is suggested for rendering and performance work, not everything."""
 

@@ -79,7 +79,7 @@ A pull request that changes rendering, effect or performance tooling must still 
 ### Functional Requirements
 
 - **FR-001**: Every changed-code review finding MUST carry `classification` of `confirmed` or `potential` alongside severity and confidence.
-- **FR-002**: The reviewer MUST collapse findings that share a path, line and rule, and MUST report how many were collapsed.
+- **FR-002**: The reviewer MUST collapse identical findings (same path, line, rule and detail) and MUST report how many were collapsed, while keeping distinct defects at one location separate — two unused bindings on one import line are two findings, not one finding plus a duplicate.
 - **FR-003**: The reviewer MUST report a focused test committed in a test file, a floating promise passed to `forEach`, an empty catch block and an unused import binding in a fully added file.
 - **FR-004**: The reviewer MUST NOT report the corresponding harmless patterns: `.only` outside a test file, `describe.skip`, `Promise.all(...map(async ...))`, a handled catch, a JSX-referenced import, the `React` default import, or an "unused" binding inferred from a modified file's partial patch.
 - **FR-005**: The Visual QA job MUST validate the restored Chromium cache before treating it as usable, and MUST install Chromium when no executable is present.

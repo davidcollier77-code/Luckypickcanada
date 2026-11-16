@@ -135,6 +135,14 @@ Observed suggestion output for controlled defects:
 - `document.execCommand('copy')` → "Replace `document.execCommand` with the Clipboard API (`await navigator.clipboard.writeText(text)`)."
 - Unused `import { alpha }` → "Delete `import { alpha } from './math';` (line 1) or reference `alpha` in this file."
 
+### Peer-review disposition (Graphite AI review of this PR)
+
+| Claim | Verdict | Action |
+| --- | --- | --- |
+| `focused-test` matches the surrounding window, so one `.only` yields up to eleven findings | **Rejected — premise is wrong.** `_line_findings` receives the single added line as `text`; `nearby_text` is the window. | Pinned by two executed tests: one `.only` produces one finding, two `.only` lines produce two. |
+| An import line with no bindings stays in the reference body, so a module path can count as a use | **Accepted — real false negative.** | Every line beginning with `import` is excluded from the reference search; regression test uses `import './alpha-legacy'` beside an unused `alpha`. |
+| Collapsing by `(path, line, rule)` discards the second unused binding on one import line | **Accepted — real dropped finding.** | Key now includes the finding message; `import { alpha, beta }` reports two findings and zero duplicates. |
+
 ## 7. Limitations
 
 - Playwright visual regression was not executed here: this runner has no GPU and

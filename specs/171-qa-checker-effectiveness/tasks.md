@@ -54,3 +54,4 @@ Keep the change inside the QA infrastructure: the changed-code reviewer, the vis
 - [x] T022 Compute `suggested_verification` from the changed paths and mirror `classify-visual-changes.sh`; suggest visual work only for rendering paths and performance measurement only for performance-sensitive paths.
 - [x] T023 Add executed fixtures for every suggestion, the documentation/visual/performance suggestions, and a twelve-case parity test against the shell classifier.
 - [x] T024 Guard the comment step (permission, marker, PATCH path, `if: always()`, `continue-on-error`, size limit) with an executed workflow test.
+- [x] T025 Verify the AI review of this PR against the code: keep two distinct findings on one import line, exclude every import statement from the reference search, and pin the single-line focused-test behaviour that a review claim disputed.
