@@ -26,6 +26,12 @@ import {
 } from '../app/lib/graphics-capabilities';
 import { buildMapleLeafGeometry } from '../app/lib/gpu-geometry';
 import {
+  AUTUMN_LEAF_COLOURS,
+  pickLeafColour,
+  sampleLeafTravel,
+  sampleWindField,
+} from '../app/lib/lucky-meter/leaf-wind';
+import {
   beginMeshFrame,
   createMeshBuffers,
   createMeshProgram,
@@ -45,14 +51,14 @@ const OUTLINE_HEIGHT = 1.69;
 const LAYER_PROFILES = {
   far: {
     leaves: { high: 9, balanced: 7, constrained: 5 },
-    heightRange: [26, 54],
+    heightRange: [28, 58],
     depthRange: [0.34, 0.72],
-    opacity: 0.92,
+    opacity: 0.98,
     fog: [0.035, 0.055, 0.105],
   },
   near: {
     leaves: { high: 5, balanced: 3, constrained: 0 },
-    heightRange: [76, 124],
+    heightRange: [82, 132],
     depthRange: [1.15, 1.75],
     opacity: 1,
     fog: [0.02, 0.03, 0.06],
@@ -66,7 +72,11 @@ const LAYER_PROFILES = {
  * only one that can actually hide a headline. The far layer sits behind the
  * copy and reads as background, so it keeps its full spread.
  */
-const COPY_LANE = { halfWidth: 0.24, top: 0.26, bottom: 0.58 };
+// The lane covers the reading as well as the headline: the medallion, the
+// Lucky Numbers plate, the supporting panels and the Share and countdown block
+// all sit inside it, so a foreground leaf frames the reading instead of
+// crossing its text or controls.
+const COPY_LANE = { halfWidth: 0.24, top: 0.26, bottom: 0.93 };
 
 /**
  * Picks a near-layer base position outside the copy lane.
@@ -76,14 +86,14 @@ const COPY_LANE = { halfWidth: 0.24, top: 0.26, bottom: 0.58 };
  * is too narrow for the side margins to clear the lane the surviving bands are
  * the ones above and below the copy, which is also where the meter sits.
  */
-function nearBaseSpot(random, leafHeight, viewport) {
+export function nearBaseSpot(random, leafHeight, viewport) {
   const vw = Math.max(1, viewport.width);
   const vh = Math.max(1, viewport.height);
   const padX = (leafHeight * 0.5 + 48) / vw;
   const padY = (leafHeight * 0.5 + 36) / vh;
   const leftEdge = 0.06;
   const rightEdge = 0.94;
-  const topEdge = 0.12;
+  const topEdge = 0.04;
   const bottomEdge = 0.9;
   const innerLeft = 0.5 - COPY_LANE.halfWidth - padX;
   const innerRight = 0.5 + COPY_LANE.halfWidth + padX;
@@ -97,7 +107,14 @@ function nearBaseSpot(random, leafHeight, viewport) {
   if (bottomEdge - (COPY_LANE.bottom + padY) > 0.05) {
     bands.push([leftEdge, rightEdge, COPY_LANE.bottom + padY, bottomEdge]);
   }
-  if (bands.length === 0) return { x: 0.5, y: 0.92 };
+  if (bands.length === 0) {
+    // If a viewport is too short for a full band, keep the leaf above the
+    // reading lane and vary its position rather than stacking every leaf on it.
+    return {
+      x: leftEdge + random() * (rightEdge - leftEdge),
+      y: Math.min(topEdge, COPY_LANE.top - padY - 0.02),
+    };
+  }
 
   const band = bands[Math.floor(random() * bands.length) % bands.length];
   return {
@@ -133,6 +150,9 @@ function createLeaves(count, layer, random, viewport = { width: 1440, height: 90
       baseX,
       baseY,
       height,
+      // Autumn pigment is chosen per leaf and deliberately takes no tier or
+      // event input, so the colour variation never tracks the daily reading.
+      colour: pickLeafColour(random),
       driftX: 14 + random() * 34,
       driftY: 10 + random() * 26,
       driftSpeed: 0.06 + random() * 0.1,
@@ -141,6 +161,10 @@ function createLeaves(count, layer, random, viewport = { width: 1440, height: 90
       spinZ: (random() > 0.5 ? 1 : -1) * (0.04 + random() * 0.1),
       phase: random() * Math.PI * 2,
       tilt: -0.35 + random() * 0.7,
+      // Wind-carried travel for the far layer: a slow crossing that wraps and
+      // gives every leaf a real path through the scene instead of an orbit.
+      travelOffset: random(),
+      travelSpeed: 0.008 + random() * 0.009,
     });
   }
 
@@ -220,7 +244,15 @@ export function createLuckyMeterOrnamentEngine({
   function buildResources() {
     // A little more thickness than a real leaf so an edge-on ornament reads as a
     // solid gold sliver with a lit edge instead of a one-pixel needle.
-    geometry = buildMapleLeafGeometry({ thickness: 0.155, bevel: 0.07, dome: 0.042 });
+    // Thinner, sharper bevel and a deeper dome: the edge catches a crisp
+    // highlight and the face carries a soft curve instead of a flat card.
+    // A neutral albedo lets each leaf's autumn tint define its pigment.
+    geometry = buildMapleLeafGeometry({
+      thickness: 0.125,
+      bevel: 0.05,
+      dome: 0.058,
+      albedo: [1, 1, 1],
+    });
     meshProgram = createMeshProgram(gl);
     buffers = meshProgram ? createMeshBuffers(gl, geometry) : null;
     if (!meshProgram || !buffers) {
@@ -292,6 +324,9 @@ export function createLuckyMeterOrnamentEngine({
     if (destroyed) return;
 
     const seconds = elapsed / 1000;
+    // One shared wind field: every leaf is carried by the same gust, which is
+    // what makes the motion read as weather rather than independent spin.
+    const wind = sampleWindField(seconds);
     gl.clearColor(0, 0, 0, 0);
     gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -320,10 +355,23 @@ export function createLuckyMeterOrnamentEngine({
 
     for (const leaf of activeLeaves) {
       const time = reducedMotion ? leaf.phase : seconds;
-      const orbitX = Math.sin(time * leaf.driftSpeed + leaf.phase) * leaf.driftX;
-      const orbitY = Math.cos(time * leaf.driftSpeed * 0.74 + leaf.phase) * leaf.driftY;
-      const x = (leaf.baseX - 0.5) * width + orbitX;
-      const y = (0.5 - leaf.baseY) * height + orbitY;
+      // Far leaves cross the frame with the wind and wrap; near leaves sway
+      // inside their safe band so they can never drift over the copy.
+      const travelX =
+        layer === 'far' && !reducedMotion
+          ? sampleLeafTravel(leaf, seconds, wind).x
+          : leaf.baseX;
+      const orbitX = reducedMotion
+        ? 0
+        : Math.sin(time * leaf.driftSpeed + leaf.phase) * leaf.driftX * 0.55;
+      const orbitY = reducedMotion
+        ? 0
+        : Math.cos(time * leaf.driftSpeed * 0.74 + leaf.phase) * leaf.driftY * 0.6;
+      // The gust pushes and lifts every leaf together, with depth-scaled force.
+      const gustX = reducedMotion ? 0 : wind.gust * leaf.driftX * 0.7;
+      const gustY = reducedMotion ? 0 : wind.lift * leaf.driftY * 0.5;
+      const x = (travelX - 0.5) * width + orbitX + gustX;
+      const y = (0.5 - leaf.baseY) * height + orbitY + gustY;
 
       const depthScale = 0.7 / Math.max(0.2, leaf.depth);
       const worldScale = (leaf.height / OUTLINE_HEIGHT) * depthScale;
@@ -340,9 +388,15 @@ export function createLuckyMeterOrnamentEngine({
           // a dozen leaves a third of them were edge-on at any moment; keeping
           // them near face-on means the gold always reads as a maple leaf while
           // still turning enough to catch the light.
-          rotationX: reducedMotion ? leaf.tilt : Math.sin(time * leaf.spinX + leaf.phase) * 0.45 + leaf.tilt,
-          rotationY: reducedMotion ? leaf.tilt : Math.sin(time * leaf.spinY + leaf.phase) * 0.62,
-          rotationZ: reducedMotion ? 0 : Math.sin(time * leaf.spinZ + leaf.phase) * 0.2,
+          rotationX: reducedMotion
+            ? leaf.tilt
+            : Math.sin(time * leaf.spinX + leaf.phase) * 0.45 + leaf.tilt + wind.lift * 0.16,
+          rotationY: reducedMotion
+            ? leaf.tilt
+            : Math.sin(time * leaf.spinY + leaf.phase) * 0.62 + wind.gust * 0.2,
+          rotationZ: reducedMotion
+            ? 0
+            : Math.sin(time * leaf.spinZ + leaf.phase) * 0.2 + wind.cross * 0.12,
           scale: worldScale,
         },
         model,
@@ -352,8 +406,10 @@ export function createLuckyMeterOrnamentEngine({
       drawMesh(gl, meshProgram, buffers, {
         model,
         normalMatrix,
-        metal: 1,
+        // Gold stays metallic; the reds, russet and burgundy read as pigment.
+        metal: leaf.colour.metal,
         exposure: profile.opacity,
+        albedoTint: leaf.colour.albedo,
       });
     }
 
@@ -366,6 +422,8 @@ export function createLuckyMeterOrnamentEngine({
         width,
         height,
         pixelRatio,
+        palette: AUTUMN_LEAF_COLOURS.length,
+        colours: activeLeaves.map((leaf) => leaf.colour.id),
       };
     }
 

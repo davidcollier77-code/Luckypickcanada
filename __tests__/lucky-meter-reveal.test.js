@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EVENTS } from '../app/lib/lucky-meter/config';
 import {
   buildRevealKeyframes,
+  EVENT_START_MS,
   getEventDurationMs,
   REVEAL_TIMING,
   sampleRevealNumber,
@@ -15,8 +16,12 @@ describe('reveal timing', () => {
     expect(REVEAL_TIMING.flashCount).toBeGreaterThanOrEqual(2);
     expect(REVEAL_TIMING.flashCount).toBeLessThanOrEqual(3);
     expect(REVEAL_TIMING.flashMs).toBe(600);
-    expect(REVEAL_TIMING.detailsDelayMs).toBe(800);
+    // Percentage/tier land first, then the tier's numbers, then the supporting
+    // panels, then the event. Every beat is long enough to be read.
+    expect(REVEAL_TIMING.numbersDelayMs).toBe(800);
+    expect(REVEAL_TIMING.detailsDelayMs).toBe(600);
     expect(REVEAL_TIMING.eventDelayMs).toBe(600);
+    expect(EVENT_START_MS).toBe(6500);
   });
 });
 

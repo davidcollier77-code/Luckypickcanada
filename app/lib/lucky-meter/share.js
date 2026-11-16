@@ -9,7 +9,8 @@ import { ENTERTAINMENT_DISCLAIMER, SHARE_TITLE, SHARE_URL } from './config';
 
 export function buildShareText(result) {
   if (!result) return '';
-  const numbers = result.event?.numbers?.join(', ') || '';
+  // The numbers belong to the tier, so they read the same whichever event ran.
+  const numbers = result.tier?.numbers?.join(', ') || '';
   const spark = result.spark?.message ? `“${result.spark.message}”` : '';
 
   return [

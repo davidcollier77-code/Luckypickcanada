@@ -9,8 +9,13 @@ import {
 const result = {
   dateKey: '2026-11-14',
   percentage: 78,
-  tier: { id: 'medium', label: 'Medium Resonance', message: 'Your luck is in the mid-range today.' },
-  event: { id: 'meteor', name: 'Meteor Shower', numbers: [3, 9, 21] },
+  tier: {
+    id: 'medium',
+    label: 'Medium Resonance',
+    message: 'Your luck is in the mid-range today.',
+    numbers: [11, 22, 33],
+  },
+  event: { id: 'meteor', name: 'Meteor Shower' },
   colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32' },
   spark: { id: 'spark-01', message: 'Even a small step forward can change the direction of your day.' },
 };
@@ -21,7 +26,8 @@ describe('share text', () => {
     expect(text).toContain('78%');
     expect(text).toContain('Medium Resonance');
     expect(text).toContain("Today's event: Meteor Shower");
-    expect(text).toContain('Your Lucky Numbers: 3, 9, 21');
+    // Medium's numbers travel with the tier, not with the Meteor Shower event.
+    expect(text).toContain('Your Lucky Numbers: 11, 22, 33');
     expect(text).toContain('Maple Red (#B52B32)');
     expect(text).toContain(result.spark.message);
     expect(text).toContain(SHARE_URL);

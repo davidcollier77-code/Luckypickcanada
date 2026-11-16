@@ -6,6 +6,7 @@ import {
   LUCKY_NUMBERS_LABEL,
   PERCENTAGE_MAX,
   PERCENTAGE_MIN,
+  TIERS,
 } from '../app/lib/lucky-meter/config';
 import { LITTLE_SPARKS } from '../app/lib/lucky-meter/little-sparks';
 import {
@@ -115,17 +116,47 @@ describe('daily percentage selection', () => {
   });
 });
 
-describe('event selection and fixed Lucky Numbers', () => {
-  it('uses the exact fixed, unique numbers and never 13', () => {
-    expect(EVENTS.map((event) => ({ id: event.id, numbers: event.numbers }))).toEqual([
-      { id: 'meteor', numbers: [3, 9, 21] },
-      { id: 'lightning', numbers: [11, 22, 33] },
-      { id: 'fireworks', numbers: [7, 8, 77] },
+describe('event selection and tier Lucky Numbers', () => {
+  it('keeps the three approved triplets fixed on Low, Medium and High', () => {
+    expect(TIERS.map((tier) => ({ id: tier.id, numbers: tier.numbers }))).toEqual([
+      { id: 'low', numbers: [3, 9, 21] },
+      { id: 'medium', numbers: [11, 22, 33] },
+      { id: 'high', numbers: [7, 8, 77] },
     ]);
-    for (const event of EVENTS) {
-      expect(new Set(event.numbers).size).toBe(3);
-      expect(event.numbers).not.toContain(13);
+    for (const tier of TIERS) {
+      expect(new Set(tier.numbers).size).toBe(3);
+      expect(tier.numbers).not.toContain(13);
     }
+    // The numbers belong to the tier: events carry no numbers of their own.
+    for (const event of EVENTS) {
+      expect(event.numbers).toBeUndefined();
+    }
+  });
+
+  it('gives the same tier the same numbers for every event', () => {
+    // Fixed random source: each draw below differs only in the event history.
+    const draws = [];
+    for (const eventHistory of [['meteor'], ['lightning'], ['fireworks']]) {
+      draws.push(
+        createDailyResult({
+          dateKey: '2026-11-14',
+          history: { events: eventHistory },
+          random: () => 0.5,
+        }),
+      );
+    }
+    const byTier = new Map();
+    for (const result of draws) {
+      byTier.set(result.tier.id, result.tier.numbers);
+    }
+    // All three events landed on the same percentage, so they share one tier...
+    expect(new Set(draws.map((result) => result.tier.id)).size).toBe(1);
+    const numbers = [...byTier.values()][0];
+    for (const result of draws) {
+      expect(result.tier.numbers).toEqual(numbers);
+    }
+    // ...and that tier keeps its approved triplet.
+    expect(numbers).toEqual(TIERS.find((tier) => tier.id === draws[0].tier.id).numbers);
   });
 
   it('draws with the documented 42/38/20 weights', () => {
@@ -251,11 +282,13 @@ describe('complete daily result', () => {
     expect(result.percentage).toBeGreaterThanOrEqual(PERCENTAGE_MIN);
     expect(result.percentage).toBeLessThanOrEqual(PERCENTAGE_MAX);
     expect(result.tier.id).toBe(getTierForPercentage(result.percentage).id);
-    expect(result.event.numbers).toEqual(EVENTS.find((event) => event.id === result.event.id).numbers);
+    expect(result.tier.numbers).toEqual(
+      TIERS.find((tier) => tier.id === result.tier.id).numbers,
+    );
     expect(COLOURS.map((colour) => colour.id)).toContain(result.colour.id);
     expect(LITTLE_SPARKS.map((spark) => spark.id)).toContain(result.spark.id);
-    expect(result.event.numbers).not.toContain(13);
-    expect(new Set(result.event.numbers).size).toBe(3);
+    expect(result.tier.numbers).not.toContain(13);
+    expect(new Set(result.tier.numbers).size).toBe(3);
   });
 
   it('marks light colours from the shared palette rather than hard-coded ids', () => {
@@ -289,7 +322,11 @@ describe('complete daily result', () => {
         dateKey,
         percentage: result.percentage,
         tier: expect.objectContaining({ id: result.tier.id }),
-        event: expect.objectContaining({ id: result.event.id, numbers: result.event.numbers }),
+        event: expect.objectContaining({ id: result.event.id }),
+        tier: expect.objectContaining({
+          id: result.tier.id,
+          numbers: result.tier.numbers,
+        }),
         colour: expect.objectContaining({ id: result.colour.id, hex: result.colour.hex }),
         spark: expect.objectContaining({ id: result.spark.id }),
       }),

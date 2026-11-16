@@ -193,14 +193,16 @@ export function buildMapleLeafGeometry({
   bevel = 0.055,
   dome = 0.035,
   size = 1,
+  albedo = [0.92, 0.7, 0.3],
 } = {}) {
   const outline = mapleLeafOutline();
   const halfThickness = Math.max(0.004, thickness / 2);
   const bevelDepth = Math.min(halfThickness * 0.92, Math.max(0.004, bevel));
 
-  // One shared gold albedo: the material is uniform, the shading supplies the
-  // variation. Slight warm bias keeps the leaf on the same metal as the ring.
-  const albedo = [0.92, 0.7, 0.3];
+  // The default is a warm gold pigment, so existing callers keep the same look.
+  // The ornament layer passes a neutral albedo and supplies the autumn colour
+  // per leaf through the shader's per-draw tint.
+  const pigment = [albedo[0], albedo[1], albedo[2]];
 
   const positions = [];
   const normals = [];
@@ -210,7 +212,7 @@ export function buildMapleLeafGeometry({
   const pushVertex = (x, y, z, nx, ny, nz) => {
     positions.push(x * size, y * size, z * size);
     normals.push(nx, ny, nz);
-    albedos.push(albedo[0], albedo[1], albedo[2]);
+    albedos.push(pigment[0], pigment[1], pigment[2]);
     return positions.length / 3 - 1;
   };
 

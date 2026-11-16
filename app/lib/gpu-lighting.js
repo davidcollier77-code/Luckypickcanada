@@ -29,6 +29,9 @@ uniform mat4 u_projection;
 uniform mat4 u_view;
 uniform mat4 u_model;
 uniform mat3 u_normalMatrix;
+// Per-draw pigment. Defaults to white, so a caller that supplies nothing keeps
+// the mesh's authored albedo exactly as before.
+uniform vec3 u_albedoTint;
 
 varying vec3 v_world;
 varying vec3 v_normal;
@@ -39,7 +42,7 @@ void main() {
   vec4 world = u_model * vec4(a_position, 1.0);
   v_world = world.xyz;
   v_normal = normalize(u_normalMatrix * a_normal);
-  v_albedo = a_albedo;
+  v_albedo = a_albedo * u_albedoTint;
   vec4 view = u_view * world;
   // View space looks down -Z, so the positive distance is the negated Z.
   v_viewDepth = -view.z;
@@ -234,6 +237,7 @@ export function createMeshProgram(gl) {
       view: gl.getUniformLocation(program, 'u_view'),
       model: gl.getUniformLocation(program, 'u_model'),
       normalMatrix: gl.getUniformLocation(program, 'u_normalMatrix'),
+      albedoTint: gl.getUniformLocation(program, 'u_albedoTint'),
       camera: gl.getUniformLocation(program, 'u_camera'),
       keyDir: gl.getUniformLocation(program, 'u_keyDir'),
       keyColor: gl.getUniformLocation(program, 'u_keyColor'),
@@ -300,6 +304,7 @@ export function beginMeshFrame(gl, meshProgram, frame) {
 // Reused between frames; never resized, so no per-frame allocation.
 const LIGHT_PACK = new Float32Array(16);
 const LIGHT_COLOR_PACK = new Float32Array(12);
+const WHITE_TINT = new Float32Array([1, 1, 1]);
 
 /**
  * Uploads one mesh geometry into GPU buffers.
@@ -351,7 +356,13 @@ export function createMeshBuffers(gl, geometry) {
  * @param {WebGLRenderingContext} gl
  * @param {object} meshProgram Result of `createMeshProgram`.
  * @param {object} buffers Result of `createMeshBuffers`.
- * @param {{ model: Float32Array, normalMatrix: Float32Array, metal: number, exposure: number }} draw
+ * @param {{
+ *   model: Float32Array,
+ *   normalMatrix: Float32Array,
+ *   metal: number,
+ *   exposure: number,
+ *   albedoTint?: number[],
+ * }} draw
  */
 export function drawMesh(gl, meshProgram, buffers, draw) {
   const { uniforms, attributes } = meshProgram;
@@ -359,6 +370,7 @@ export function drawMesh(gl, meshProgram, buffers, draw) {
   gl.uniformMatrix3fv(uniforms.normalMatrix, false, draw.normalMatrix);
   gl.uniform1f(uniforms.metal, draw.metal);
   gl.uniform1f(uniforms.exposure, draw.exposure ?? 1);
+  gl.uniform3fv(uniforms.albedoTint, draw.albedoTint ?? WHITE_TINT);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionBuffer);
   gl.enableVertexAttribArray(attributes.position);

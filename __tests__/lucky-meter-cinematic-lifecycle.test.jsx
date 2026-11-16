@@ -54,7 +54,10 @@ import { REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
 
 const TODAY = '2026-11-14';
 const EVENT_START_MS =
-  REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs + REVEAL_TIMING.eventDelayMs;
+  REVEAL_TIMING.scrambleMs +
+  REVEAL_TIMING.numbersDelayMs +
+  REVEAL_TIMING.detailsDelayMs +
+  REVEAL_TIMING.eventDelayMs;
 
 function readStoredResult() {
   return JSON.parse(window.localStorage.getItem(METER_STORAGE_KEY) || '{}');
@@ -142,9 +145,16 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.detailsDelayMs);
+      vi.advanceTimersByTime(REVEAL_TIMING.numbersDelayMs);
     });
     expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed');
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.detailsDelayMs);
+    });
+    expect(screen.getByText('Cream')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
 
     act(() => {

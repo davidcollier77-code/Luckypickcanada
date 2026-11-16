@@ -1,0 +1,99 @@
+{
+  "label": "after",
+  "capturedAt": "2026-11-16T08:23:15.941Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "shots": [
+    "welcome-desktop",
+    "welcome-mobile-390",
+    "result-low-meteor",
+    "result-low-lightning",
+    "result-low-fireworks",
+    "result-medium-meteor",
+    "result-medium-lightning",
+    "result-medium-fireworks",
+    "result-high-meteor",
+    "result-high-lightning",
+    "result-high-fireworks",
+    "event-meteor",
+    "event-lightning",
+    "event-fireworks",
+    "result-mobile-high-fireworks",
+    "reduced-motion-low-meteor",
+    "webgl-fallback-lightning"
+  ],
+  "low-meteor": {
+    "numbers": [
+      "3",
+      "9",
+      "21"
+    ],
+    "text": "3\n9\n21"
+  },
+  "low-lightning": {
+    "numbers": [
+      "3",
+      "9",
+      "21"
+    ],
+    "text": "3\n9\n21"
+  },
+  "low-fireworks": {
+    "numbers": [
+      "3",
+      "9",
+      "21"
+    ],
+    "text": "3\n9\n21"
+  },
+  "medium-meteor": {
+    "numbers": [
+      "11",
+      "22",
+      "33"
+    ],
+    "text": "11\n22\n33"
+  },
+  "medium-lightning": {
+    "numbers": [
+      "11",
+      "22",
+      "33"
+    ],
+    "text": "11\n22\n33"
+  },
+  "medium-fireworks": {
+    "numbers": [
+      "11",
+      "22",
+      "33"
+    ],
+    "text": "11\n22\n33"
+  },
+  "high-meteor": {
+    "numbers": [
+      "7",
+      "8",
+      "77"
+    ],
+    "text": "7\n8\n77"
+  },
+  "high-lightning": {
+    "numbers": [
+      "7",
+      "8",
+      "77"
+    ],
+    "text": "7\n8\n77"
+  },
+  "high-fireworks": {
+    "numbers": [
+      "7",
+      "8",
+      "77"
+    ],
+    "text": "7\n8\n77"
+  },
+  "mobileNumbers": "7\n8\n77",
+  "reducedMotionStage": 0,
+  "fallbackGlow": 1
+}

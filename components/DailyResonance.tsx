@@ -33,12 +33,17 @@ import {
   EVENTS_BY_ID,
   LUCKY_NUMBERS_LABEL,
 } from '../app/lib/lucky-meter/config';
+import {
+  getCueLayers,
+  isEventCue,
+  SUSTAINED_EVENT_SOUNDS,
+} from '../app/lib/lucky-meter/event-audio';
 
 interface DailyResult {
   dateKey: string;
   percentage: number;
-  tier: { id: string; label: string; message: string };
-  event: { id: string; name: string; numbers: number[] };
+  tier: { id: string; label: string; message: string; numbers: number[] };
+  event: { id: string; name: string };
   colour: { id: string; name: string; hex: string; light: boolean };
   spark: { id: string; message: string };
 }
@@ -54,7 +59,6 @@ const EMPTY_SOUNDS = () => ({
   buildup: null as any,
   impactMeteor: null as any,
   impactLightning: null as any,
-  impactFireworks: null as any,
   fireworkBurst: null as any,
   fireworkBurstAlt: null as any,
   willowCrackle: null as any,
@@ -87,6 +91,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [isRevealed, setIsRevealed] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [detailsVisible, setDetailsVisible] = useState(false);
+  // The tier's Lucky Numbers arrive as their own beat between the percentage
+  // and the supporting panels, so every tier is presented in the same order.
+  const [numbersVisible, setNumbersVisible] = useState(false);
   const [stageActive, setStageActive] = useState(false);
   const [stageDuration, setStageDuration] = useState(0);
   const [eventCompleted, setEventCompleted] = useState(false);
@@ -115,7 +122,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const historyRef = useRef(emptyMeterHistory());
   const stageDurationRef = useRef(0);
   const eventCompletedRef = useRef(false);
-  const thunderRef = useRef({ count: 0, lastAt: 0 });
+  const thunderRef = useRef({ count: 0, lastAt: 0, finalePlayed: false });
+  const eventSoundInstancesRef = useRef<Record<string, Array<{ id: number; volume: number }>>>({});
+  // Fade-out timers for cues that can outlive their action (thunder, crackle).
+  const audioStopTimersRef = useRef<number[]>([]);
 
   const ringPhase: RingPhase = isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
 
@@ -137,6 +147,52 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const timer = window.setTimeout(callback, delayMs);
     timersRef.current.push(timer);
     return timer;
+  }, []);
+
+  /**
+   * Fades out any cue that could outlive its action and then stops it. Called
+   * when the cinematic finishes, when the day rolls over and on unmount, so no
+   * thunder, crackle or boom continues after the animation has gone.
+   */
+  const stopEventAudio = useCallback((fadeMs = 320) => {
+    const sounds = soundsRef.current;
+    const activeInstances = eventSoundInstancesRef.current;
+    SUSTAINED_EVENT_SOUNDS.forEach((key) => {
+      const sound = sounds[key];
+      const instances = activeInstances[key] ?? [];
+      if (!sound || instances.length === 0) return;
+
+      instances.forEach(({ id, volume }) => {
+        let shouldScheduleStop = false;
+        try {
+          if (typeof sound.fade === 'function') {
+            // Howler's id argument targets this cue instance and its authored gain.
+            sound.fade(volume, 0, fadeMs, id);
+            shouldScheduleStop = true;
+          } else {
+            sound.stop(id);
+          }
+        } catch {
+          try {
+            sound.stop(id);
+          } catch {
+            // Optional audio only.
+          }
+        }
+
+        if (shouldScheduleStop) {
+          const timer = window.setTimeout(() => {
+            try {
+              sound.stop(id);
+            } catch {
+              // Optional audio only.
+            }
+          }, fadeMs + 60);
+          audioStopTimersRef.current.push(timer);
+        }
+      });
+    });
+    eventSoundInstancesRef.current = {};
   }, []);
 
   const persistLifecycle = useCallback(
@@ -207,11 +263,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       resultRef.current = saved;
       stageDurationRef.current = duration;
       eventCompletedRef.current = completed;
-      thunderRef.current = { count: 0, lastAt: 0 };
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
 
       setResult(saved);
       setDisplayPercentage(saved.percentage);
       setIsRevealed(true);
+      setNumbersVisible(true);
       setDetailsVisible(true);
       setStageDuration(duration);
       setEventCompleted(completed);
@@ -246,16 +303,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (!ready || !dateKey) return;
     if (result && result.dateKey !== dateKey) {
       clearSequence();
+      stopEventAudio();
       resultRef.current = null;
       historyRef.current = emptyMeterHistory();
       stageDurationRef.current = 0;
       eventCompletedRef.current = false;
-      thunderRef.current = { count: 0, lastAt: 0 };
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
       setResult(null);
       setDisplayPercentage(0);
       setIsRevealing(false);
       setIsRevealed(false);
       setIsFlashing(false);
+      setNumbersVisible(false);
       setDetailsVisible(false);
       setStageActive(false);
       setEventCompleted(false);
@@ -263,7 +322,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setAnnouncement('');
       auroraRef.current?.setPhase('idle');
     }
-  }, [ready, dateKey, result, clearSequence]);
+  }, [ready, dateKey, result, clearSequence, stopEventAudio]);
 
   // Unload only the Howl instances this component created.
   useEffect(() => {
@@ -272,6 +331,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       visitsAbortRef.current?.abort();
       visitsAbortRef.current = null;
       if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
+
+      audioStopTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      audioStopTimersRef.current = [];
 
       const sounds = soundsRef.current;
       Object.values(sounds).forEach((sound) => {
@@ -300,7 +362,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8, onloaderror: onLoadError }),
         impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0, onloaderror: onLoadError }),
         impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0, onloaderror: onLoadError }),
-        impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0, onloaderror: onLoadError }),
         fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], onloaderror: onLoadError }),
         fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'], onloaderror: onLoadError }),
         willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0, onloaderror: onLoadError }),
@@ -315,50 +376,43 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   const playEventCue = useCallback((cue: string) => {
-    if (!isMountedRef.current) return;
+    if (!isMountedRef.current || !isEventCue(cue)) return;
     const sounds = soundsRef.current;
-    const play = (key: string, rate = 1, volume = 0.6) => {
+    const play = (key: string, rate: number, volume: number) => {
       const sound = sounds[key];
       if (!sound) return;
       try {
         const id = sound.play();
         if (typeof sound.rate === 'function') sound.rate(rate, id);
         if (typeof sound.volume === 'function') sound.volume(volume, id);
+        if (SUSTAINED_EVENT_SOUNDS.includes(key) && typeof id === 'number') {
+          const instances = eventSoundInstancesRef.current[key] ?? [];
+          instances.push({ id, volume });
+          eventSoundInstancesRef.current[key] = instances;
+        }
       } catch {
         // A failed cue never affects the visual sequence.
       }
     };
-    const variation = (spread = 0.08) => 1 + (Math.random() * 2 - 1) * spread;
 
-    // Subtle recorded thunder, linked to the strike and deliberately throttled
-    // so overlapping strikes never become a wall of noise.
-    const maybeThunder = (isFinale: boolean) => {
+    // Normal strikes are capped at two. The finale has one reserved rumble slot,
+    // while the same spacing guard prevents any two thunder cues from stacking.
+    if (cue.startsWith('thunder-')) {
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (thunderRef.current.count >= 2) return;
-      // The first rumble always plays; later ones keep a minimum spacing.
-      if (thunderRef.current.count > 0 && now - thunderRef.current.lastAt < 2500) return;
-      thunderRef.current = { count: thunderRef.current.count + 1, lastAt: now };
-      play('thunderRumble', variation(0.05), isFinale ? 0.32 : 0.22);
-    };
+      const isFinaleThunder = cue === 'thunder-finale';
+      if (isFinaleThunder && thunderRef.current.finalePlayed) return;
+      if (!isFinaleThunder && thunderRef.current.count >= 2) return;
+      if (thunderRef.current.count > 0 && now - thunderRef.current.lastAt < 2200) return;
+      thunderRef.current = {
+        count: thunderRef.current.count + 1,
+        lastAt: now,
+        finalePlayed: thunderRef.current.finalePlayed || isFinaleThunder,
+      };
+    }
 
-    if (cue === 'meteor') play('impactMeteor', 1.2, 0.5);
-    else if (cue === 'meteor-finale') play('impactMeteor', 0.7, 0.95);
-    else if (cue === 'lightning') {
-      // The existing lightning sound is preserved exactly as it was.
-      play('impactLightning', 1, 0.55);
-      maybeThunder(false);
-    } else if (cue === 'lightning-finale') {
-      play('impactLightning', 0.8, 1);
-      maybeThunder(true);
-    } else if (cue === 'firework-launch') play('fireworkLaunch', variation(0.06), 0.4);
-    else if (cue === 'firework-burst') play('fireworkBurst', variation(0.07), 0.55);
-    else if (cue === 'firework-burst-silver') play('fireworkBurstAlt', 1.12 * variation(0.05), 0.42);
-    else if (cue === 'firework-finale') play('fireworkLaunch', 0.8, 0.7);
-    else if (cue === 'finale-boom') {
-      // A real recording, mixed noticeably louder and deeper than the opening
-      // bursts but kept below unity so the extra low end cannot clip.
-      play('finaleBoom', 1, 0.96);
-    } else if (cue === 'firework-willow') play('willowCrackle', 1, 0.85);
+    // One action, one sound. The cue map owns the rate and the mix, including
+    // the layered, deeper finale boom.
+    getCueLayers(cue).forEach((layer) => play(layer.sound, layer.rate, layer.volume));
   }, []);
 
   const handleReveal = useCallback(() => {
@@ -382,7 +436,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     historyRef.current = nextHistory;
     stageDurationRef.current = duration;
     eventCompletedRef.current = false;
-    thunderRef.current = { count: 0, lastAt: 0 };
+    thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
 
     setHistory(nextHistory);
     saveMeterState({
@@ -437,6 +491,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setDisplayPercentage(next.percentage);
       setIsRevealing(false);
       setIsRevealed(true);
+      setNumbersVisible(true);
       setDetailsVisible(true);
       setAnnouncement(
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message}`,
@@ -453,6 +508,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setDisplayPercentage(5);
     setIsRevealing(true);
     setIsRevealed(false);
+    setNumbersVisible(false);
     setDetailsVisible(false);
     setStageActive(false);
     auroraRef.current?.setPhase('awaken');
@@ -503,16 +559,25 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       REVEAL_TIMING.scrambleMs + REVEAL_TIMING.flashMs + 40,
     );
 
-    // Reveal colour, numbers, Little Spark and event after the percentage.
+    // Beat two: the tier's Lucky Numbers, before any supporting panel.
     schedule(
-      () => setDetailsVisible(true),
-      REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs,
+      () => setNumbersVisible(true),
+      REVEAL_TIMING.scrambleMs + REVEAL_TIMING.numbersDelayMs,
     );
 
-    // Start the cinematic event after its short beat of anticipation.
+    // Beat three: event, colour and Little Spark.
+    schedule(
+      () => setDetailsVisible(true),
+      REVEAL_TIMING.scrambleMs + REVEAL_TIMING.numbersDelayMs + REVEAL_TIMING.detailsDelayMs,
+    );
+
+    // Beat four: the cinematic event, after its short anticipation.
     schedule(
       () => setStageActive(true),
-      REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs + REVEAL_TIMING.eventDelayMs,
+      REVEAL_TIMING.scrambleMs +
+        REVEAL_TIMING.numbersDelayMs +
+        REVEAL_TIMING.detailsDelayMs +
+        REVEAL_TIMING.eventDelayMs,
     );
   }, [
     clearSequence,
@@ -531,6 +596,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setStageActive(false);
     setEventCompleted(true);
     eventCompletedRef.current = true;
+    // The animation is over; nothing it started may keep sounding.
+    stopEventAudio();
     // Persist only after the event has actually completed, including the last
     // visible golden sparks. A refresh before this point resumes the event.
     persistLifecycle(
@@ -756,13 +823,38 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
           {isRevealed && result && (
             <div className={`w-full ${isCompact ? 'mt-2' : 'mt-4 sm:mt-5'}`}>
-              {detailsVisible && (
+              {(numbersVisible || detailsVisible) && (
                 <div
                   className={`mx-auto w-full ${
                     isCompact ? 'max-w-[260px]' : 'max-w-2xl'
                   } animate-resonance-rise`}
                 >
                   <div className="grid grid-cols-2 gap-2">
+                    {numbersVisible && (
+                      <section
+                        className={`${panelClass} col-span-2 p-3 sm:p-4`}
+                        data-testid="lucky-numbers-panel"
+                      >
+                        <h2 className="lucky-panel-label text-[12px] uppercase">
+                          {LUCKY_NUMBERS_LABEL}
+                        </h2>
+                        <div
+                          className="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-3"
+                          data-testid="lucky-numbers-values"
+                        >
+                          {result.tier.numbers.map((number) => (
+                            <span
+                              key={number}
+                              className="inline-flex min-w-12 items-center justify-center rounded-xl border border-amber-300/45 bg-amber-400/10 px-2.5 py-1.5 text-lg font-semibold text-amber-100 sm:min-w-14 sm:px-3 sm:py-2 sm:text-xl"
+                            >
+                              {number}
+                            </span>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                    {detailsVisible && (
+                      <>
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
                       <h2 className="lucky-panel-label text-[12px] uppercase">
                         Today&apos;s Event
@@ -801,23 +893,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                       </div>
                     </section>
 
-                    <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="lucky-panel-label text-[12px] uppercase">
-                        {LUCKY_NUMBERS_LABEL}
-                      </h2>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {result.event.numbers.map((number) => (
-                          <span
-                            key={number}
-                            className="inline-flex min-w-8 items-center justify-center rounded-lg border border-amber-300/40 bg-amber-400/10 px-1.5 py-1 text-sm font-semibold text-amber-100 sm:min-w-9 sm:px-2 sm:text-base"
-                          >
-                            {number}
-                          </span>
-                        ))}
-                      </div>
-                    </section>
-
-                    <section className={`${panelClass} p-2.5 sm:p-3`}>
+                    <section className={`${panelClass} col-span-2 p-2.5 sm:p-3`}>
                       <h2 className="lucky-panel-label text-[12px] uppercase">
                         Little Spark
                       </h2>
@@ -831,14 +907,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                         </span>
                       </p>
                     </section>
+                      </>
+                    )}
                   </div>
 
-                  {!isCompact && (
+                  {detailsVisible && !isCompact && (
                     <p className="mt-2 text-center text-[12px] leading-relaxed text-slate-400">
                       {ENTERTAINMENT_DISCLAIMER}
                     </p>
                   )}
 
+                  {detailsVisible && (
                   <div className="mt-3 flex w-full flex-col items-center">
                     <button
                       type="button"
@@ -868,6 +947,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                       </p>
                     )}
                   </div>
+                  )}
                 </div>
               )}
             </div>
