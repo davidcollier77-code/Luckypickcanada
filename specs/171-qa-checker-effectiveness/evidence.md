@@ -143,6 +143,72 @@ Observed suggestion output for controlled defects:
 | An import line with no bindings stays in the reference body, so a module path can count as a use | **Accepted — real false negative.** | Every line beginning with `import` is excluded from the reference search; regression test uses `import './alpha-legacy'` beside an unused `alpha`. |
 | Collapsing by `(path, line, rule)` discards the second unused binding on one import line | **Accepted — real dropped finding.** | Key now includes the finding message; `import { alpha, beta }` reports two findings and zero duplicates. |
 
+### Executed proof of the published comment
+
+Fixture diff: focused test, floating `forEach` promise, empty catch, deprecated API,
+insecure URL, provider token, HTML sink, added dependency and an unused import.
+The real renderer produced a 3,988-byte body with 9 findings; every finding block
+contains `What happened`, `Evidence` and a non-empty `Suggested fix`:
+
+```
+<!-- qa-review-report -->
+
+## Changed-code review: FAIL
+...
+- **warning · confirmed · focused-test** `__tests__/lucky-meter.test.js:1` (confidence: high)
+  - What happened: A focused test was committed, so every other test in this file is silently skipped.
+  - Evidence: `it.only('renders the medallion', () => {});`
+  - Suggested fix: Remove the focus so the whole suite runs: `it('renders the medallion', () => {});`
+- **hard · confirmed · aws-access-key** `app/config.js:1` (confidence: high)
+  - What happened: A provider token pattern was added to the repository.
+  - Evidence: `[redacted provider token]`
+  - Suggested fix: Revoke and rotate the token, remove it from the diff, and read the replacement from the environment or a secret store.
+```
+
+The workflow's publish step was extracted from `pr-scope-verification.yml` and
+executed with a stub `gh` against that body:
+
+| Scenario | API calls captured | Posted body |
+| --- | --- | --- |
+| First run, no existing comment | `POST repos/o/r/issues/1925/comments` | byte-identical to the rendered comment |
+| Later run, existing id 77 | `PATCH repos/o/r/issues/comments/77` | byte-identical to the rendered comment |
+| Body without the sticky marker | none (warns and exits 0) | not published |
+| Body over 60,000 bytes | none (warns and exits 0) | refused, never truncated mid-fix |
+
+That execution caught a real defect the tests previously only asserted: the POST
+URL had been mangled to `issues/comments/<pr>/comments`, which would have failed
+the first publish. The URL is fixed and `__tests__/qa-review-comment.test.js` now
+executes the whole chain (fixture diff → Python renderer → workflow step) and
+asserts both the create and update paths.
+
+Truncation is now block-safe: `render_comment` admits whole finding blocks while
+they fit and replaces the remainder with an omission count that points at the job
+summary, so a fix can never be cut in half. A 400-finding report rendered inside
+an 8,000-byte cap with every admitted block complete and `N more finding(s)
+omitted` recorded.
+
+### Executed gating matrix
+
+Classifier output (executed) and the jobs/steps it controls (taken from
+`visual-qa.yml`): the `verify` job has no job-level `if`, so QA checker tests,
+the unit suite and the TypeScript check run for every change set, while the
+`visual` job, its Chromium install and the baseline check carry
+`if: needs.changes.outputs.visual_required == 'true'`.
+
+| Change set | Classifier | Non-browser verification | Browser shards + Chromium install |
+| --- | --- | --- | --- |
+| Visual (`components/...-engine.js`) | `visual_required=true` | runs | runs |
+| Performance (`components/cosmic-event-engine.js`) | `visual_required=true` | runs | runs |
+| Ordinary application code (`app/lib/credit-format.js`) | `visual_required=true` (fail closed) | runs | runs |
+| Documentation (`docs/qa-checkers.md`) | `visual_required=false` | runs | skipped |
+| Tooling / CI (`.github/workflows/visual-qa.yml`, `.freebuff/ci.md`) | `visual_required=false` | runs | skipped |
+| Ambiguous (`data/unknown-blob.bin`) | `visual_required=true` (fail closed) | runs | runs |
+
+Scripts under `scripts/` stay fail-closed on purpose: a performance or capture
+script is not positively non-rendering, and exempting the directory broke the
+repository's existing performance-path expectations, so the exemption was
+reverted rather than weakening coverage.
+
 ## 7. Limitations
 
 - Playwright visual regression was not executed here: this runner has no GPU and

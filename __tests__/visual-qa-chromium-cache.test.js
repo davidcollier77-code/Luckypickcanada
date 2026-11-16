@@ -169,6 +169,20 @@ describe('visual QA change classification', () => {
     ).toBe('visual_required=true');
   });
 
+  it('skips browser QA for repository automation, agent instructions and local instructions', () => {
+    // These paths are never bundled by the build.
+    expect(classify(['.github/workflows/visual-qa.yml'])).toBe('visual_required=false');
+    expect(classify(['.freebuff/ci.md'])).toBe('visual_required=false');
+    expect(classify(['.agents/governance.md'])).toBe('visual_required=false');
+    // A repository change never hides a rendering change in the same pull request.
+    expect(classify(['.github/workflows/visual-qa.yml', 'components/Hero.tsx'])).toBe(
+      'visual_required=true',
+    );
+    // Scripts stay fail-closed: a performance or capture script is not proven
+    // non-rendering, so it keeps visual QA.
+    expect(classify(['scripts/measure-performance.mjs'])).toBe('visual_required=true');
+  });
+
   it('skips visual QA for standalone Playwright configurations but not the QA configuration', () => {
     expect(classify(['playwright.swiftshader.config.ts'])).toBe('visual_required=false');
     expect(classify(['playwright.experimental.config.ts'])).toBe('visual_required=false');
@@ -450,6 +464,64 @@ describe('package.json scripts-only classification', () => {
         stdio: 'ignore',
       }),
     ).toThrow();
+  });
+});
+
+describe('visual QA gating matrix', () => {
+  // Derived from the workflow definitions above: `verify` has no job-level
+  // condition, so its non-browser checks run for every change set, while the
+  // `visual` job, its Chromium install and the baseline check are gated on the
+  // classifier output.
+  const workflow = read(workflowPath);
+  const verifyJob = workflow.slice(
+    workflow.indexOf('\n  verify:'),
+    workflow.indexOf('\n  visual:'),
+  );
+  const visualJob = workflow.slice(workflow.indexOf('\n  visual:'));
+
+  const matrix = [
+    { kind: 'visual', paths: ['components/lucky-meter-medallion-engine.js'], browser: true },
+    { kind: 'performance', paths: ['components/cosmic-event-engine.js'], browser: true },
+    { kind: 'ordinary application code', paths: ['app/lib/credit-format.js'], browser: true },
+    { kind: 'documentation', paths: ['docs/qa-checkers.md'], browser: false },
+    { kind: 'tooling and CI', paths: ['.github/workflows/visual-qa.yml', '.freebuff/ci.md'], browser: false },
+    { kind: 'ambiguous unknown path', paths: ['data/unknown-blob.bin'], browser: true },
+  ];
+
+  it('runs verification for every change set and never installs a browser there', () => {
+    expect(verifyJob).not.toMatch(/^    if:/m);
+    expect(verifyJob).toContain('Test QA infrastructure checkers');
+    expect(verifyJob).toContain('Run all unit tests');
+    expect(verifyJob).toContain('Run standalone TypeScript check');
+    expect(verifyJob).toContain("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'");
+    expect(verifyJob).not.toContain('playwright install');
+  });
+
+  it('gates the browser job, Chromium install and baselines on the classifier', () => {
+    expect(visualJob).toMatch(
+      /^    if: needs\.changes\.outputs\.visual_required == 'true'/m,
+    );
+    expect(visualJob).toContain('playwright install --with-deps chromium');
+    expect(visualJob).toContain('playwright install-deps chromium');
+    expect(visualJob).toContain('Verify committed visual baselines');
+    expect(visualJob).toContain('Run visual regression tests');
+  });
+
+  it('matches the workflow decision for real visual, performance, ordinary, docs, tooling and ambiguous changes', () => {
+    const decisions = matrix.map((row) => ({
+      kind: row.kind,
+      visualRequired: classify(row.paths) === 'visual_required=true',
+      expected: row.browser,
+    }));
+    for (const decision of decisions) {
+      expect(decision.visualRequired).toBe(decision.expected);
+    }
+    // Documentation and tooling are the only non-browser rows: ordinary
+    // application code stays fail-closed because it can feed a component.
+    expect(decisions.filter((d) => !d.visualRequired).map((d) => d.kind)).toEqual([
+      'documentation',
+      'tooling and CI',
+    ]);
   });
 });
 

@@ -1,6 +1,13 @@
 import unittest
 
-from review_pr_changes import WARNING, ReviewError, render_markdown, review_files
+from review_pr_changes import (
+    WARNING,
+    ReviewError,
+    main,
+    render_comment,
+    render_markdown,
+    review_files,
+)
 
 
 def patch(*lines, start=1):
@@ -581,6 +588,8 @@ class SuggestedVerificationTests(unittest.TestCase):
             ["__tests__/thing.test.js"],
             ["docs/notes.md"],
             [".github/workflows/visual-qa.yml"],
+            [".freebuff/ci.md"],
+            [".agents/governance.md"],
             ["app/api/route.js"],
             ["playwright.config.ts"],
             ["playwright.swiftshader.config.ts"],
@@ -602,6 +611,136 @@ class SuggestedVerificationTests(unittest.TestCase):
                 else "visual_required=false"
             )
             self.assertEqual(actual, expected, paths)
+
+
+def fabricated_report(count, suggestion=None):
+    """A report with `count` findings, independent of rule fixtures."""
+    findings = []
+    for index in range(count):
+        findings.append(
+            {
+                "path": "app/lib/module%02d.js" % index,
+                "line": index + 1,
+                "rule": "focused-test",
+                "severity": WARNING,
+                "confidence": "high",
+                "classification": "confirmed",
+                "message": "Finding number %d was reported." % index,
+                "recommendation": "Remove the focus.",
+                "suggestion": suggestion
+                or "Remove the focus so the whole suite runs: `it('case %d', () => {});`"
+                % index,
+                "excerpt": "it.only('case %03d', () => { expect(true).toBe(true); });" % index,
+            }
+        )
+    return {
+        "status": "PASS",
+        "reviewed_files": ["app/lib/module00.js"],
+        "skipped_files": [],
+        "hard_count": 0,
+        "warning_count": count,
+        "confirmed_count": count,
+        "duplicates_collapsed": 0,
+        "findings": findings,
+        "note": "Warnings are advisory.",
+        "suggested_verification": {"playwright_visual": False, "playwright_performance": False},
+    }
+
+
+class CommentBodyTests(unittest.TestCase):
+    """The published comment must carry a practical fix for every finding."""
+
+    def test_comment_starts_with_the_sticky_marker(self):
+        body = render_comment(fabricated_report(2))
+        self.assertTrue(body.startswith("<!-- qa-review-report -->\n"))
+
+    def test_every_rendered_finding_has_the_three_part_structure(self):
+        body = render_comment(fabricated_report(3))
+        self.assertEqual(body.count("  - What happened: "), 3)
+        self.assertEqual(body.count("  - Evidence: "), 3)
+        self.assertEqual(body.count("  - Suggested fix: "), 3)
+        for number in range(3):
+            self.assertIn("`it('case %d', () => {});`" % number, body)
+
+    def test_comment_keeps_all_findings_when_it_fits(self):
+        body = render_comment(fabricated_report(40), limit=60000)
+        self.assertLessEqual(len(body.encode("utf-8")), 60000)
+        self.assertEqual(body.count("  - Suggested fix: "), 40)
+        self.assertNotIn("omitted to fit GitHub", body)
+
+    def test_comment_truncates_between_findings_and_never_inside_one(self):
+        body = render_comment(fabricated_report(400), limit=8000)
+        self.assertLessEqual(len(body.encode("utf-8")), 8000)
+        rendered = body.count("- **warning · confirmed · focused-test**")
+        self.assertGreater(rendered, 0)
+        self.assertLess(rendered, 400)
+        # Every rendered block is complete: no block stops before its fix.
+        self.assertEqual(body.count("  - What happened: "), rendered)
+        self.assertEqual(body.count("  - Evidence: "), rendered)
+        self.assertEqual(body.count("  - Suggested fix: "), rendered)
+        self.assertIn("%d more finding(s) omitted to fit GitHub's comment limit" % (400 - rendered), body)
+        self.assertIn("workflow job summary lists all of them", body)
+
+    def test_a_tiny_limit_still_keeps_the_marker_and_stays_inside_the_cap(self):
+        body = render_comment(fabricated_report(10), limit=400)
+        self.assertLessEqual(len(body.encode("utf-8")), 400)
+        self.assertTrue(body.startswith("<!-- qa-review-report -->"))
+        self.assertNotIn("Suggested fix: \n", body)
+
+    def test_render_falls_back_when_a_finding_has_no_suggestion(self):
+        report = fabricated_report(1)
+        report["findings"][0]["rule"] = "empty-catch-block"
+        report["findings"][0]["suggestion"] = ""
+        report["findings"][0]["excerpt"] = "} catch { }"
+        body = render_comment(report)
+        self.assertIn("  - Suggested fix: ", body)
+        self.assertIn("catch (error)", body)
+
+    def test_every_rule_renders_the_same_actionable_fix_as_the_finding(self):
+        token = "AKIA" + "1234567890ABCDEF"
+        result = review_files(
+            [
+                record("__tests__/hero.test.js", "it.only('runs alone', () => {});"),
+                record("app/lib/io.js", "items.forEach(async (item) => { await save(item); });"),
+                record("app/lib/queue.js", "} catch { }"),
+                record("app/lib/legacy.js", "document.execCommand('copy');"),
+                record("app/config.js", 'const key = "%s";' % token),
+                record("components/Hero.tsx", "<div " + "dangerouslySet" + "InnerHTML={html} />"),
+                record("package.json", '"left-pad": "^1.3.0"'),
+                record("app/lib/debug.js", "debugger;"),
+            ]
+        )
+        body = render_comment(result)
+        self.assertGreater(len(result["findings"]), 6)
+        for finding in result["findings"]:
+            self.assertGreaterEqual(len(finding["suggestion"].strip()), 24, finding["rule"])
+            self.assertIn("  - Suggested fix: " + finding["suggestion"], body, finding["rule"])
+        self.assertNotIn("Suggested fix: \n", body)
+
+    def test_cli_writes_the_comment_file(self):
+        import json as json_module
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            files_path = directory + "/files.json"
+            comment_path = directory + "/comment.md"
+            with open(files_path, "w", encoding="utf-8") as handle:
+                json_module.dump(
+                    [
+                        {
+                            "filename": "__tests__/hero.test.js",
+                            "status": "modified",
+                            "patch": patch("it.only('runs alone', () => {});"),
+                        }
+                    ],
+                    handle,
+                )
+            status = main(["--files", files_path, "--comment", comment_path])
+            self.assertEqual(status, 0)
+            with open(comment_path, encoding="utf-8") as handle:
+                body = handle.read()
+        self.assertTrue(body.startswith("<!-- qa-review-report -->"))
+        self.assertIn("Suggested fix: Remove the focus", body)
 
 
 if __name__ == "__main__":

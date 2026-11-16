@@ -212,7 +212,8 @@ NON_RENDERING_ANY_DEPTH = (
     "specs/*",
     "memory-bank/*",
     ".docs/*",
-    ".agents/skills/*",
+    ".agents/*",
+    ".freebuff/*",
 )
 NON_RENDERING_EXACT_GLOBS = (
     ".specify/feature.json",
@@ -814,9 +815,15 @@ def review_files(file_records) -> dict:
     }
 
 
+COMMENT_MARKER = "<!-- qa-review-report -->"
+COMMENT_LIMIT = 60000
+
+
 def _inline_code(text: str) -> str:
     """Render evidence as one inline-code span that cannot break the Markdown."""
     cleaned = " ".join(str(text).split()).replace("`", "'")
+    if len(cleaned) > 300:
+        cleaned = cleaned[:297] + "..."
     return "`%s`" % cleaned
 
 
@@ -863,7 +870,7 @@ def _render_suggested_verification(report: dict) -> list[str]:
     return lines
 
 
-def render_markdown(report: dict) -> str:
+def _render_summary(report: dict) -> list[str]:
     lines = [
         "## Changed-code review: " + report["status"],
         "",
@@ -877,33 +884,107 @@ def render_markdown(report: dict) -> str:
         report.get("note", ""),
     ]
     lines.extend(_render_suggested_verification(report))
-    findings = report.get("findings", [])
-    if findings:
-        lines.extend(["", "### Findings", ""])
-        for item in findings:
-            lines.append(
-                "- **%s · %s · %s** `%s:%s` (confidence: %s)"
-                % (
-                    item["severity"],
-                    item["classification"],
-                    item["rule"],
-                    item["path"],
-                    item["line"],
-                    item["confidence"],
-                )
-            )
-            lines.append("  - What happened: %s" % item["message"])
-            lines.append("  - Evidence: %s" % _inline_code(item["excerpt"]))
-            lines.append("  - Suggested fix: %s" % item["suggestion"])
-        lines.append("")
-    else:
-        lines.extend(["", "No added-line findings were detected."])
+    return lines
 
+
+def _render_finding(item: dict) -> list[str]:
+    # A finding must never render without a correction: fall back to the
+    # rule-derived correction if an upstream change leaves the field empty.
+    suggestion = (item.get("suggestion") or "").strip() or _suggestion(
+        item.get("rule", ""),
+        item.get("excerpt", ""),
+        item.get("message", ""),
+        item.get("recommendation", ""),
+    )
+    return [
+        "- **%s · %s · %s** `%s:%s` (confidence: %s)"
+        % (
+            item["severity"],
+            item["classification"],
+            item["rule"],
+            item["path"],
+            item["line"],
+            item["confidence"],
+        ),
+        "  - What happened: %s" % item["message"],
+        "  - Evidence: %s" % _inline_code(item.get("excerpt", "")),
+        "  - Suggested fix: %s" % suggestion,
+    ]
+
+
+def _render_skipped(report: dict) -> list[str]:
+    lines: list[str] = []
     if report.get("skipped_files"):
         lines.extend(["", "Files not reviewed because GitHub supplied no textual patch:"])
         for item in report["skipped_files"]:
             lines.append(f"- `{item['path']}`: {item['reason']}")
+    return lines
+
+
+def render_markdown(report: dict) -> str:
+    lines = _render_summary(report)
+    findings = report.get("findings", [])
+    if findings:
+        lines.extend(["", "### Findings", ""])
+        for item in findings:
+            lines.extend(_render_finding(item))
+        lines.append("")
+    else:
+        lines.extend(["", "No added-line findings were detected."])
+    lines.extend(_render_skipped(report))
     return "\n".join(lines) + "\n"
+
+
+def render_comment(report: dict, limit: int = COMMENT_LIMIT) -> str:
+    """Render the sticky pull-request comment, truncated only between findings.
+
+    The comment exists to deliver the corrections, so a byte cap that cut a
+    finding in half would defeat it. Whole finding blocks are admitted while the
+    next one still fits; the remainder is replaced by a count that points at the
+    job summary. The sticky marker stays the first line, so a later run can still
+    find and update this comment when the body is truncated.
+    """
+    findings = report.get("findings", [])
+    header = [COMMENT_MARKER, ""] + _render_summary(report)
+    if findings:
+        header.extend(["", "### Findings", ""])
+    else:
+        header.extend(["", "No added-line findings were detected."])
+    blocks = [_render_finding(item) for item in findings]
+
+    def assemble(admitted: list[list[str]], omitted: int) -> str:
+        lines = list(header)
+        for block in admitted:
+            lines.extend(block)
+        if omitted:
+            lines.extend(
+                [
+                    "",
+                    "- _%d more finding(s) omitted to fit GitHub's comment limit; "
+                    "the workflow job summary lists all of them._" % omitted,
+                ]
+            )
+        lines.extend(_render_skipped(report))
+        return "\n".join(lines) + "\n"
+
+    admitted: list[list[str]] = []
+    for index, block in enumerate(blocks):
+        if len(assemble(admitted + [block], len(blocks) - index - 1).encode("utf-8")) > limit:
+            break
+        admitted.append(block)
+
+    body = assemble(admitted, len(blocks) - len(admitted))
+    if len(body.encode("utf-8")) > limit:
+        # Pathological input: even the header does not fit. Keep the marker and
+        # the status so the comment is still updatable and still truthful.
+        body = "\n".join(
+            [COMMENT_MARKER, "", "## Changed-code review: " + report.get("status", "UNKNOWN"), ""]
+            + [
+                "- _The full report is in the workflow job summary; it was too "
+                "large to publish as a comment._"
+            ]
+        ) + "\n"
+    return body
 
 
 def _read_json(path: str):
@@ -916,6 +997,9 @@ def main(argv=None) -> int:
     parser.add_argument("--files", required=True, help="GitHub changed-file records JSON")
     parser.add_argument("--summary", help="append the Markdown report here")
     parser.add_argument("--json", help="write the machine-readable report here")
+    parser.add_argument(
+        "--comment", help="write the sticky pull-request comment body here"
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -928,6 +1012,20 @@ def main(argv=None) -> int:
         if args.json:
             with open(args.json, "w", encoding="utf-8") as handle:
                 json.dump(report, handle, indent=2)
+        if args.comment:
+            with open(args.comment, "w", encoding="utf-8") as handle:
+                handle.write(
+                    "\n".join(
+                        [
+                            COMMENT_MARKER,
+                            "",
+                            "## Changed-code review: BLOCKED",
+                            "",
+                            "The changed-code review could not run: " + str(error),
+                        ]
+                    )
+                    + "\n"
+                )
         print(f"Changed-code review BLOCKED: {error}", file=sys.stderr)
         return 2
 
@@ -938,6 +1036,9 @@ def main(argv=None) -> int:
     if args.json:
         with open(args.json, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
+    if args.comment:
+        with open(args.comment, "w", encoding="utf-8") as handle:
+            handle.write(render_comment(report))
     print(markdown, end="")
     return 0 if report["status"] == "PASS" else 1
 
