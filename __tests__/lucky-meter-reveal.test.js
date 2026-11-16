@@ -1,14 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { EVENTS } from '../app/lib/lucky-meter/config';
 import {
-  buildRevealKeyframes,
+  angleToPercentage,
+  buildDialSpin,
+  DIAL_TURNS,
+  dialEase,
   EVENT_START_MS,
   getEventDurationMs,
+  normalizeAngle,
+  percentageToAngle,
   REVEAL_TIMING,
-  sampleRevealNumber,
+  sampleDialSpin,
 } from '../app/lib/lucky-meter/reveal';
 
 const noJitter = () => 0.5;
+
+/** Smallest absolute difference between two angles on a circle, in degrees. */
+const angularGap = (left, right) => {
+  const difference = Math.abs(normalizeAngle(left) - normalizeAngle(right));
+  return Math.min(difference, 360 - difference);
+};
 
 describe('reveal timing', () => {
   it('holds the real percentage for 4.5 seconds, flashes, then reveals the details', () => {
@@ -25,45 +36,88 @@ describe('reveal timing', () => {
   });
 });
 
-describe('unpredictable scramble', () => {
-  it('builds a climb-drop-jump path with anchors that never equal the result', () => {
-    const final = 53;
-    const keyframes = buildRevealKeyframes(final, noJitter);
-    expect(keyframes).toHaveLength(8);
-    expect(keyframes[0].at).toBe(0);
-    expect(keyframes[keyframes.length - 1].at).toBe(REVEAL_TIMING.scrambleMs);
-    for (let index = 1; index < keyframes.length; index += 1) {
-      expect(keyframes[index].at).toBeGreaterThan(keyframes[index - 1].at);
+describe('dial geometry', () => {
+  it('maps the whole percentage range onto one turn of the dial', () => {
+    expect(percentageToAngle(5)).toBeCloseTo(18, 6);
+    expect(percentageToAngle(50)).toBeCloseTo(180, 6);
+    expect(percentageToAngle(100)).toBeCloseTo(360, 6);
+    for (const percentage of [5, 30, 31, 65, 66, 100]) {
+      expect(angleToPercentage(percentageToAngle(percentage))).toBe(percentage);
     }
-    expect(keyframes.every((frame) => frame.value !== final)).toBe(true);
+    // Wrapping is stable for the multi-turn values the animation produces.
+    expect(normalizeAngle(360)).toBe(0);
+    expect(normalizeAngle(-90)).toBe(270);
+    expect(normalizeAngle(1170)).toBe(90);
+  });
+});
 
-    const sampled = keyframes.map((frame) => sampleRevealNumber(frame.at, keyframes, final, noJitter));
-    expect(Math.max(...sampled)).toBeGreaterThan(80);
-    expect(Math.min(...sampled)).toBeLessThan(20);
-    // The path climbs high, drops low, then climbs high again.
-    expect(sampled[1]).toBeGreaterThan(80);
-    expect(sampled[2]).toBeLessThan(20);
-    expect(sampled[3]).toBeGreaterThan(80);
+describe('dial spin', () => {
+  it('spins three to five full turns and lands on the exact result angle', () => {
+    for (const percentage of [5, 6, 30, 31, 65, 66, 79, 99, 100]) {
+      const spin = buildDialSpin(percentage, noJitter);
+      expect(spin.turns).toBeGreaterThanOrEqual(DIAL_TURNS.min);
+      expect(spin.turns).toBeLessThanOrEqual(DIAL_TURNS.max);
+      expect(spin.startAngle).toBeGreaterThanOrEqual(0);
+      expect(spin.startAngle).toBeLessThan(360);
+      expect(spin.endAngle).toBeCloseTo(percentageToAngle(percentage), 6);
+      // The final pointer position is the percentage, not a rounded neighbour.
+      expect(angularGap(spin.startAngle + spin.totalSweep, spin.endAngle)).toBeLessThan(1e-6);
+      expect(spin.totalSweep).toBeGreaterThan(360);
+    }
   });
 
-  it('never shows the real percentage and never leaves the 5–100 range', () => {
-    for (const final of [5, 6, 40, 53, 79, 80, 99, 100]) {
-      const keyframes = buildRevealKeyframes(final, noJitter);
-      for (let elapsed = 0; elapsed <= REVEAL_TIMING.scrambleMs; elapsed += 25) {
-        const value = sampleRevealNumber(elapsed, keyframes, final, () => 0.13);
-        expect(value).not.toBe(final);
-        expect(value).toBeGreaterThanOrEqual(5);
-        expect(value).toBeLessThanOrEqual(100);
-        expect(Number.isInteger(value)).toBe(true);
-        expect(value).not.toBe(0);
+  it('is unpredictable: different draws produce different spins', () => {
+    const first = buildDialSpin(53, () => 0.1);
+    const second = buildDialSpin(53, () => 0.9);
+    expect(first.startAngle).not.toBeCloseTo(second.startAngle, 3);
+    expect(first.turns).not.toBe(second.turns);
+  });
+
+  it('decelerates heavily so the pointer creeps into its last degrees', () => {
+    expect(dialEase(0)).toBe(0);
+    expect(dialEase(1)).toBe(1);
+    expect(dialEase(0.5)).toBeGreaterThan(0.9);
+    // Monotonic, so the pointer never runs backwards.
+    let previous = -1;
+    for (let step = 0; step <= 20; step += 1) {
+      const value = dialEase(step / 20);
+      expect(value).toBeGreaterThanOrEqual(previous);
+      previous = value;
+    }
+  });
+});
+
+describe('sampled dial and number', () => {
+  it('reads the number from the pointer and never shows the result early', () => {
+    for (const final of [5, 6, 30, 31, 53, 65, 66, 91, 99, 100]) {
+      const spin = buildDialSpin(final, () => 0.37);
+      let previousAngle = -Infinity;
+      for (let elapsed = 0; elapsed < REVEAL_TIMING.scrambleMs; elapsed += 25) {
+        const sample = sampleDialSpin(elapsed, spin, final);
+        expect(sample.angle).toBeGreaterThanOrEqual(previousAngle);
+        previousAngle = sample.angle;
+        expect(sample.percentage).not.toBe(final);
+        expect(sample.percentage).toBeGreaterThanOrEqual(5);
+        expect(sample.percentage).toBeLessThanOrEqual(100);
+        expect(Number.isInteger(sample.percentage)).toBe(true);
+        expect(sample.percentage).not.toBe(0);
       }
     }
   });
 
-  it('produces a different path for different jitter', () => {
-    const first = buildRevealKeyframes(53, () => 0.1).map((frame) => frame.value);
-    const second = buildRevealKeyframes(53, () => 0.9).map((frame) => frame.value);
-    expect(first).not.toEqual(second);
+  it('finishes on the result angle, so the stop and the number agree', () => {
+    for (const final of [5, 30, 31, 65, 66, 100]) {
+      const spin = buildDialSpin(final, () => 0.62);
+      const landed = sampleDialSpin(REVEAL_TIMING.scrambleMs, spin, final);
+      expect(angularGap(landed.angle, percentageToAngle(final))).toBeLessThan(1e-6);
+      expect(angleToPercentage(landed.angle)).toBe(final);
+    }
+  });
+
+  it('survives a missing spin without throwing', () => {
+    const sample = sampleDialSpin(1200, null, 42);
+    expect(Number.isFinite(sample.angle)).toBe(true);
+    expect(sample.percentage).not.toBe(42);
   });
 });
 
@@ -75,7 +129,6 @@ describe('event duration selection', () => {
       expect(shortest).toBe(event.minDurationMs);
       expect(longest).toBe(event.maxDurationMs);
     }
-    expect([8500, 9500]).toContain(getEventDurationMs('meteor', () => 0));
     expect(getEventDurationMs('lightning', () => 0.5)).toBe(10000);
     expect(getEventDurationMs('fireworks', () => 0)).toBe(11000);
     expect(getEventDurationMs('unknown', () => 0.5)).toBe(0);

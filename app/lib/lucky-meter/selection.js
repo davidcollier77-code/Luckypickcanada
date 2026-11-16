@@ -1,24 +1,28 @@
 /**
- * Independent daily selections for the Lucky Meter.
+ * Daily selections for the Lucky Meter.
  *
- * Percentage, event, colour and Little Spark are drawn independently. The tier
- * is derived from the percentage because the tier definitions are percentage
- * ranges, but the other three selections never depend on the percentage. The
- * Lucky Numbers are a property of that tier, so they cannot change with the
- * event and stay stable for the whole local day.
+ * The percentage is generated first and is the single source of truth for the
+ * reveal: it decides the tier, the tier decides the event and the number set,
+ * and the dial is animated to that same percentage. Colour and Little Spark
+ * remain independent choices.
+ *
+ * Repeat protection is preserved without breaking that mapping. Three days in a
+ * row must not repeat an event, and because the event follows from the tier,
+ * the third draw avoids the whole tier band that would repeat it. Percentages
+ * from the last three days are still avoided too.
  *
  * Every selector accepts an injectable random function so the distributions and
- * repeat guards can be tested deterministically.
+ * guards can be tested deterministically.
  */
 import {
   COLOURS,
   COLOURS_BY_ID,
-  EVENTS,
   EVENTS_BY_ID,
   HISTORY_LIMITS,
   PERCENTAGE_MAX,
   PERCENTAGE_MIN,
   TIERS,
+  TIERS_BY_ID,
 } from './config';
 import { LITTLE_SPARKS, SPARKS_BY_ID } from './little-sparks';
 
@@ -39,10 +43,38 @@ export function getTierForPercentage(percentage) {
 }
 
 /**
- * Draws an integer percentage in [5, 100], never 0, avoiding the last three
- * persisted values. A bounded retry keeps the draw unbiased in practice.
+ * The one event a percentage may show. `null` outside the valid 5–100 range.
+ *
+ * @param {number} percentage
+ * @returns {{ id: string, name: string } | null}
  */
-export function pickPercentage(recentPercentages = [], random = Math.random) {
+export function getEventForPercentage(percentage) {
+  const tier = getTierForPercentage(percentage);
+  if (!tier) return null;
+  return EVENTS_BY_ID.get(tier.eventId) || null;
+}
+
+/** The canonical event id for a tier id, or null for an unknown tier. */
+export function getEventIdForTier(tierId) {
+  const tier = TIERS_BY_ID.get(tierId);
+  return tier ? tier.eventId : null;
+}
+
+/**
+ * Draws an integer percentage in [5, 100], never 0, avoiding the last three
+ * persisted values and — when supplied — any value whose tier would repeat a
+ * blocked event.
+ *
+ * @param {number[]} [recentPercentages] Last known results, newest first.
+ * @param {() => number} [random] Injectable random source.
+ * @param {string | null} [blockedEventId] Event the next draw must not produce.
+ * @returns {number} Percentage inside the generated range.
+ */
+export function pickPercentage(
+  recentPercentages = [],
+  random = Math.random,
+  blockedEventId = null,
+) {
   const avoid = new Set(
     (Array.isArray(recentPercentages) ? recentPercentages : [])
       .map((value) => Number(value))
@@ -50,13 +82,19 @@ export function pickPercentage(recentPercentages = [], random = Math.random) {
       .slice(0, HISTORY_LIMITS.percentages),
   );
 
-  for (let attempt = 0; attempt < 240; attempt += 1) {
-    const value = PERCENTAGE_MIN + randomIndex(PERCENTAGE_MAX - PERCENTAGE_MIN + 1, random);
-    if (!avoid.has(value)) return value;
+  const candidates = [];
+  for (let value = PERCENTAGE_MIN; value <= PERCENTAGE_MAX; value += 1) {
+    if (avoid.has(value)) continue;
+    if (blockedEventId && getEventForPercentage(value)?.id === blockedEventId) continue;
+    candidates.push(value);
   }
 
-  // Deterministic fallback: the distribution is 96 values wide, so at most three
-  // are ever excluded. Start from a random offset and find the first free value.
+  if (candidates.length > 0) {
+    return candidates[randomIndex(candidates.length, random)];
+  }
+
+  // Defensive only: 96 values exist and at most three percentages plus one
+  // event band are excluded, so an empty pool cannot occur in practice.
   const span = PERCENTAGE_MAX - PERCENTAGE_MIN + 1;
   const offset = randomIndex(span, random);
   for (let step = 0; step < span; step += 1) {
@@ -64,31 +102,6 @@ export function pickPercentage(recentPercentages = [], random = Math.random) {
     if (!avoid.has(value)) return value;
   }
   return PERCENTAGE_MIN;
-}
-
-function weightedPick(candidates, random) {
-  const total = candidates.reduce((sum, item) => sum + item.weight, 0);
-  let threshold = clampRandom(random()) * total;
-  for (const item of candidates) {
-    threshold -= item.weight;
-    if (threshold < 0) return item;
-  }
-  return candidates[candidates.length - 1];
-}
-
-/**
- * Weighted event selection: Meteor 42%, Lightning 38%, Fireworks 20%.
- *
- * Three consecutive repeats are prevented by re-selecting from the full weight
- * table with the repeated event excluded — not by rotating through a fixed
- * order. When the last two events differ (or history is short), a normal
- * weighted draw is used.
- */
-export function pickEvent(eventHistory = [], random = Math.random) {
-  const recent = (Array.isArray(eventHistory) ? eventHistory : []).filter((id) => EVENTS_BY_ID.has(id));
-  const blockedId = recent.length >= 2 && recent[0] === recent[1] ? recent[0] : null;
-  const pool = blockedId ? EVENTS.filter((event) => event.id !== blockedId) : EVENTS;
-  return weightedPick(pool, random);
 }
 
 /** Equal-probability colour selection from the twelve approved colours. */
@@ -110,6 +123,10 @@ export function pickSpark(sparkHistory = [], random = Math.random) {
  * Builds the complete, self-contained daily result that is persisted and later
  * re-rendered without any further random choices.
  *
+ * The percentage is drawn first; the tier, event and numbers are all read from
+ * it. The only repeat guard that influences the draw is the three-day event
+ * guard, which is expressed as "do not draw this event's tier band".
+ *
  * @param {{ dateKey: string, history?: object, random?: () => number }} options
  * @returns {object} Complete daily result.
  */
@@ -118,9 +135,16 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
     throw new TypeError('createDailyResult requires a local date key');
   }
 
-  const percentage = pickPercentage(history.percentages, random);
+  const recentEvents = (Array.isArray(history.events) ? history.events : []).filter((id) =>
+    EVENTS_BY_ID.has(id),
+  );
+  // Two identical events in a row would make a third a three-peat.
+  const blockedEventId =
+    recentEvents.length >= 2 && recentEvents[0] === recentEvents[1] ? recentEvents[0] : null;
+
+  const percentage = pickPercentage(history.percentages, random, blockedEventId);
   const tier = getTierForPercentage(percentage);
-  const event = pickEvent(history.events, random);
+  const event = getEventForPercentage(percentage);
   const colour = pickColour(random);
   const spark = pickSpark(history.sparks, random);
 
@@ -150,9 +174,13 @@ function isPlainObject(value) {
 }
 
 /**
- * Validates a persisted result against the current definitions. A corrupt or
- * out-of-date record returns null and is treated as "no result today" rather
- * than rendering partial data or crashing the page.
+ * Validates a persisted result against the current definitions.
+ *
+ * The percentage is the authority: the tier, event and numbers are recomputed
+ * from it, so a result saved under the old independent event weighting (or an
+ * old tier band) keeps its percentage, colour, Spark and date while its reveal
+ * is normalised to the event that percentage now means. Only genuinely invalid
+ * data returns null.
  */
 export function validateDailyResult(value, expectedDateKey) {
   if (!isPlainObject(value)) return null;
@@ -166,18 +194,14 @@ export function validateDailyResult(value, expectedDateKey) {
 
   const tier = getTierForPercentage(percentage);
   if (!tier) return null;
-
-  const event = EVENTS_BY_ID.get(value.event?.id);
+  const event = getEventForPercentage(percentage);
   if (!event) return null;
+
   const colour = COLOURS_BY_ID.get(value.colour?.id);
   if (!colour) return null;
   const spark = SPARKS_BY_ID.get(value.spark?.id);
   if (!spark) return null;
 
-  // Numbers are always recomputed from the canonical tier definition. This also
-  // migrates a result stored by the earlier event-keyed payload without a
-  // storage-version bump: the same day keeps its percentage, tier, colour and
-  // Spark, and the numbers now follow the tier.
   return {
     dateKey,
     percentage,
@@ -195,6 +219,8 @@ export function validateDailyResult(value, expectedDateKey) {
       light: colour.light === true,
     },
     spark: { id: spark.id, message: spark.message },
+    // A saved date, colour and Spark are preserved; only the derived reveal is
+    // normalised, so storage is never cleared or rolled again.
     createdAt: Number.isFinite(value.createdAt) ? value.createdAt : 0,
   };
 }

@@ -21,9 +21,14 @@ import { createLuckyMeterMedallionEngine } from './lucky-meter-medallion-engine'
  * All decorative layers are hidden from assistive technology; the centre
  * content is regular DOM text, not canvas pixels.
  *
+ * The `dialAngle` is the pointer's absolute rotation in degrees. DailyResonance
+ * animates it from the generated spin to the exact angle for the result, so the
+ * pointer's resting position is the displayed percentage.
+ *
  * @param {{
  *   phase?: 'idle' | 'scrambling' | 'landed',
  *   compact?: boolean,
+ *   dialAngle?: number | null,
  *   children?: React.ReactNode,
  *   className?: string,
  * }} props
@@ -31,6 +36,7 @@ import { createLuckyMeterMedallionEngine } from './lucky-meter-medallion-engine'
 export default function LuckyMeterRing({
   phase = 'idle',
   compact = false,
+  dialAngle = null,
   children,
   className = '',
 }) {
@@ -69,6 +75,11 @@ export default function LuckyMeterRing({
       data-testid="lucky-meter-ring"
       data-phase={phase}
       data-medallion={renderMode}
+      data-dial-angle={
+        typeof dialAngle === 'number' && Number.isFinite(dialAngle)
+          ? dialAngle.toFixed(2)
+          : undefined
+      }
       className={`resonance-ring relative isolate aspect-square shrink-0 ${
         compact ? 'w-[min(52vw,150px)]' : ''
       } ${className}`}
@@ -131,6 +142,21 @@ export default function LuckyMeterRing({
           renderMode === 'gpu' ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      {/* Pointer. It rides the milled rim and stops on the result's exact angle;
+          it is decorative because the percentage is real DOM text. */}
+      {typeof dialAngle === 'number' && Number.isFinite(dialAngle) && (
+        <div
+          aria-hidden="true"
+          data-testid="lucky-meter-dial"
+          data-spinning={phase === 'scrambling' ? 'true' : 'false'}
+          className="resonance-dial pointer-events-none absolute inset-0 z-[16] rounded-full"
+          style={{ transform: `rotate(${dialAngle}deg)` }}
+        >
+          <span className="resonance-dial__arm" />
+          <span className="resonance-dial__head" />
+        </div>
+      )}
 
       {/* Readability scrim: a very soft inner shadow keeps gold type legible on
           the enamel well without hiding the lit bevel behind the text. */}

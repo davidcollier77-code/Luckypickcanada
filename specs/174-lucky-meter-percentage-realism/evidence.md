@@ -1,0 +1,109 @@
+# Evidence: Percentage-Owned Reveal and Natural Leaf Realism
+
+**Feature**: `specs/174-lucky-meter-percentage-realism`
+
+**Date**: 2026-11-16
+
+**Branch**: `freebuff/e2195ad8bebbd7fee909bb91`
+
+All evidence below was produced in this workspace. The AZ Screen Recorder video
+referenced in the mission was **not** available and was not viewed; the
+observations used are the owner's written notes plus the fresh captures here.
+
+## 1. Boundary mapping (unit + browser)
+
+`app/lib/lucky-meter/config.js` now carries:
+
+| Band | Tier | Event | Numbers |
+| --- | --- | --- | --- |
+| 5–30 | Low | Meteor Shower | 3, 9, 21 |
+| 31–65 | Medium | Lightning | 11, 22, 33 |
+| 66–100 | High | Fireworks | 7, 8, 77 |
+
+Covered by `__tests__/lucky-meter-selection.test.js` (all boundaries, clamping,
+event derivation, repeat guard) and by the Playwright spec:
+
+```
+[desktop]  5% is low with its tier's event and numbers
+[desktop]  30% is low with its tier's event and numbers
+[desktop]  31% is medium with its tier's event and numbers
+[desktop]  65% is medium with its tier's event and numbers
+[desktop]  66% is high with its tier's event and numbers
+[desktop]  100% is high with its tier's event and numbers
+... same six on mobile-390 and mobile-412
+```
+
+Each assertion compares `data-value`, the tier label, the event name and the
+three number chips against the same percentage.
+
+## 2. The dial lands on the number it shows
+
+`DailyResonance` seeds a reading, spins to `percentage × 3.6°` and exposes
+`data-dial-angle` on `[data-testid="lucky-meter-ring"]`. The Playwright test
+"stops on the displayed percentage and reveals that percentage's tier" reads
+both the angle and the number after the ring reports `data-phase="landed"` and
+asserts `|angle − value × 3.6| ≤ 1°`, including the 0°/100 % wrap.
+
+Captured pointer positions confirm the mapping by eye:
+
+- 49 % → pointer at 176° (just left of six o'clock) — `desktop-dial-spin.png`
+- 90 % → pointer at 324° (upper left) — `desktop-landed.png`
+- 94 % → pointer at 338° (upper left) — `desktop-result.png`
+- 75 % → pointer at 270° (nine o'clock) — `mobile-390-result.png`
+
+## 3. Saved-result normalization
+
+Seeding `{ percentage: 72, tier: low, event: low-meteor, colour: maple-red,
+spark: spark-12, dateKey: today }` renders High / Fireworks / 7-8-77 while the
+percentage, colour and Spark are unchanged. Covered by
+"normalises a stale saved tier and event from its percentage" on all three
+projects and by `lucky-meter-selection.test.js`.
+
+## 4. Commands and results
+
+| Command | Result |
+| --- | --- |
+| `pnpm exec vitest run` (9 Lucky Meter suites) | 90 tests passed |
+| `pnpm exec tsc --noEmit` | clean |
+| `pnpm exec playwright test tests/visual/lucky-meter-daily-resonance.spec.ts --workers=3` | 45 passed, 6 skipped (capture block), 1.9 min |
+| `pnpm build` | compiled successfully, `Build completed successfully` |
+| `du -smc .next public` | 423 MiB total (`.next` 389, `public` 34) — below the 495 MiB cap |
+| `./freebuff-verify.sh` | see `artifacts/lucky-meter-visual-realism-20261116/freebuff-verify.log` |
+
+The Playwright spec also covers reveal ordering (percentage/tier → numbers →
+details → event), reduced motion, the no-WebGL fallback, and stage cleanup
+returning Home after the cinematic.
+
+## 5. Screenshots
+
+Before (baseline, captured from the commit `8ae82df0` worktree):
+`artifacts/lucky-meter-visual-realism-20261116/before/`
+— `desktop-1440-welcome.png`, `desktop-1440-result.png`,
+`mobile-390-result.png`, `mobile-412-result.png`.
+
+After (`artifacts/lucky-meter-visual-realism-20261116/after/`, captured by the
+opt-in Playwright block with `LUCKY_METER_CAPTURE=1`):
+
+| File | What it shows |
+| --- | --- |
+| `desktop-welcome.png` | welcome state, thin leaves against the Milky Way |
+| `desktop-dial-spin.png` | dial mid-spin, pointer at 176° while the number reads 49 % |
+| `desktop-landed.png` | dial landed at 90 % with the pointer matching |
+| `desktop-result.png` | finished reading at 94 %, panels and CTA |
+| `desktop-fireworks-finale.png` | golden finale with embers over the reading |
+| `mobile-390-welcome/-dial-spin/-landed/-result.png` | 390×844 equivalent |
+| `mobile-412-welcome/-dial-spin/-landed/-result.png` | 412×915 equivalent |
+| `mobile-390-fireworks-finale.png`, `mobile-412-fireworks-finale.png` | finale on phones |
+
+The finale capture waits for the engine's own `finaleSpawned` flag through
+`window.__LUCKY_METER_DEBUG__` (enabled only by the capture test), so it lands
+on the golden shell rather than guessing at wall-clock time.
+
+## 6. What was not verified
+
+- Audio was not recorded or listened to in this environment. The existing cues
+  and their scheduling are unchanged by this work; the audio playback suites
+  pass, but "audible" is not something these captures can prove.
+- The AZ Screen Recorder video was not watched.
+- Screenshots are static frames; motion smoothness was assessed through the
+  Playwright interactions, not by watching a recording.

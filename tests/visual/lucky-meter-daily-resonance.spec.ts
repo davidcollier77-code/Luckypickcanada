@@ -4,10 +4,13 @@ import { expect, test, type Page } from '@playwright/test';
  * Daily Resonance browser coverage.
  *
  * The daily result is seeded into Local Storage before the page loads, so each
- * scenario is deterministic without touching production data or a server.
- * These tests protect the contract that the Lucky Numbers belong to the tier
- * (not the event), the reveal order, reduced motion, the WebGL fallback and the
- * clean end of the cinematic.
+ * stored-reading scenario is deterministic without touching production data or a
+ * server. The dial scenario performs a real reveal, then compares the pointer's
+ * resting angle with the displayed percentage and the reveal it produced.
+ *
+ * These tests protect the contract that one percentage decides the tier, the
+ * event, the number set and the dial position, and that colour, Spark, sharing,
+ * reduced motion, the WebGL fallback and the cinematic lifecycle still work.
  */
 
 const STORAGE_KEY = 'lucky-pick-canada-lucky-meter-v1';
@@ -17,30 +20,42 @@ const TIERS = {
     percentage: 24,
     label: 'Low Resonance',
     message: "You're riding a little low today, but you're still okay!",
+    event: { id: 'meteor', name: 'Meteor Shower', duration: 9000 },
     numbers: ['3', '9', '21'],
   },
   medium: {
     percentage: 57,
     label: 'Medium Resonance',
     message: 'Your luck is in the mid-range today.',
+    event: { id: 'lightning', name: 'Cosmic Lightning', duration: 10000 },
     numbers: ['11', '22', '33'],
   },
   high: {
     percentage: 91,
     label: 'High Resonance',
-    message: 'Your luck is running high today!',
+    message: "Your luck is running high today!",
+    event: { id: 'fireworks', name: 'Fireworks', duration: 11500 },
     numbers: ['7', '8', '77'],
   },
 } as const;
 
-const EVENTS = {
-  meteor: { name: 'Meteor Shower', duration: 9000 },
-  lightning: { name: 'Cosmic Lightning', duration: 10000 },
-  fireworks: { name: 'Fireworks', duration: 11500 },
-} as const;
+/** The exact boundaries the mission defines, including both sides of each edge. */
+const BOUNDARIES = [
+  { percentage: 5, tier: 'low' },
+  { percentage: 30, tier: 'low' },
+  { percentage: 31, tier: 'medium' },
+  { percentage: 65, tier: 'medium' },
+  { percentage: 66, tier: 'high' },
+  { percentage: 100, tier: 'high' },
+] as const;
 
 type TierId = keyof typeof TIERS;
-type EventId = keyof typeof EVENTS;
+
+function tierForPercentage(percentage: number): TierId {
+  if (percentage <= 30) return 'low';
+  if (percentage <= 65) return 'medium';
+  return 'high';
+}
 
 function localDateKey() {
   const now = new Date();
@@ -49,18 +64,27 @@ function localDateKey() {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
-function buildState(tierId: TierId, eventId: EventId, completed: boolean) {
+function buildState({
+  tierId,
+  percentage = TIERS[tierId].percentage,
+  completed,
+  staleEvent,
+}: {
+  tierId: TierId;
+  percentage?: number;
+  completed: boolean;
+  staleEvent?: { id: string; name: string };
+}) {
   const tier = TIERS[tierId];
-  const event = EVENTS[eventId];
   const dateKey = localDateKey();
   return {
     version: 1,
     dateKey,
     result: {
       dateKey,
-      percentage: tier.percentage,
+      percentage,
       tier: { id: tierId, label: tier.label, message: tier.message },
-      event: { id: eventId, name: event.name },
+      event: staleEvent ?? { id: tier.event.id, name: tier.event.name },
       colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32', light: false },
       spark: {
         id: 'spark-01',
@@ -68,18 +92,18 @@ function buildState(tierId: TierId, eventId: EventId, completed: boolean) {
       },
       createdAt: Date.now(),
     },
-    history: { percentages: [tier.percentage], events: [eventId], sparks: ['spark-01'] },
+    history: { percentages: [percentage], events: [tier.event.id], sparks: ['spark-01'] },
     eventCompleted: completed,
-    stageDurationMs: event.duration,
+    stageDurationMs: tier.event.duration,
   };
 }
 
-async function seed(page: Page, tierId: TierId, eventId: EventId, completed: boolean) {
+async function seed(page: Page, state: ReturnType<typeof buildState>) {
   await page.addInitScript(
     ([key, value]) => {
       window.localStorage.setItem(key, value);
     },
-    [STORAGE_KEY, JSON.stringify(buildState(tierId, eventId, completed))],
+    [STORAGE_KEY, JSON.stringify(state)],
   );
   await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
 }
@@ -109,54 +133,127 @@ async function startReveal(page: Page) {
   }).toPass({ timeout: 15_000 });
 }
 
-test.describe('Daily Resonance numbers belong to the tier', () => {
-  for (const tierId of Object.keys(TIERS) as TierId[]) {
-    for (const eventId of Object.keys(EVENTS) as EventId[]) {
-      test(`${tierId} keeps its numbers during ${eventId}`, async ({ page }) => {
-        await seed(page, tierId, eventId, true);
+async function readDialAngle(page: Page) {
+  const value = await page.getByTestId('lucky-meter-ring').getAttribute('data-dial-angle');
+  return Number(value);
+}
 
-        await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible();
-        expect(await readNumbers(page)).toEqual(TIERS[tierId].numbers);
-        // The tier plate is the visible label; the same words also appear in the
-        // screen-reader live region, so the plate itself is the target.
-        await expect(page.locator('.lucky-tier-plate__label')).toHaveText(
-          TIERS[tierId].label,
-        );
-        await expect(page.getByText(EVENTS[eventId].name).first()).toBeVisible();
-      });
-    }
+test.describe('Daily Resonance percentage mapping', () => {
+  for (const { percentage, tier } of BOUNDARIES) {
+    test(`${percentage}% is ${tier} with its tier's event and numbers`, async ({ page }) => {
+      await seed(page, buildState({ tierId: tier, percentage, completed: true }));
+
+      // A cold dev server can take a while to compile and hydrate the route;
+      // the assertion waits for the client-rendered reading rather than
+      // shortening the check.
+      await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
+        'data-value',
+        String(percentage),
+        { timeout: 20_000 },
+      );
+      await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tier].label);
+      await expect(page.getByTestId('lucky-numbers-values')).toBeVisible();
+      expect(await readNumbers(page)).toEqual([...TIERS[tier].numbers]);
+      await expect(page.getByText(TIERS[tier].event.name).first()).toBeVisible();
+    });
   }
+
+  for (const tierId of Object.keys(TIERS) as TierId[]) {
+    test(`${tierId} keeps its numbers and its derived event`, async ({ page }) => {
+      await seed(page, buildState({ tierId, completed: true }));
+
+      await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 20_000 });
+      expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
+      await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tierId].label);
+      await expect(page.getByText(TIERS[tierId].event.name).first()).toBeVisible();
+    });
+  }
+
+  test('normalises a stale saved tier and event from its percentage', async ({ page }) => {
+    // The percentage is High, but the stored payload claims Low/Meteor.
+    await seed(
+      page,
+      buildState({
+        tierId: 'low',
+        percentage: 91,
+        completed: true,
+        staleEvent: { id: 'meteor', name: 'Meteor Shower' },
+      }),
+    );
+
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '91', {
+      timeout: 20_000,
+    });
+    await expect(page.locator('.lucky-tier-plate__label')).toHaveText('High Resonance');
+    await expect(page.getByText('Fireworks').first()).toBeVisible();
+    expect(await readNumbers(page)).toEqual(['7', '8', '77']);
+    // The rest of the saved reading is preserved rather than rerolled.
+    await expect(page.getByText('Maple Red')).toBeVisible();
+    await expect(page.getByText('Even a small step forward', { exact: false })).toBeVisible();
+  });
 });
 
-test.describe('Daily Resonance reveal order', () => {
+test.describe('Daily Resonance dial landing', () => {
+  test('stops on the displayed percentage and reveals that percentage’s tier', async ({
+    page,
+  }) => {
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await startReveal(page);
+
+    // The dial is genuinely spinning: its angle is finite during the scramble.
+    const spinning = await readDialAngle(page);
+    expect(Number.isFinite(spinning)).toBe(true);
+
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-phase',
+      'landed',
+      { timeout: 12_000 },
+    );
+
+    const percentage = Number(
+      await page.getByTestId('lucky-meter-value').getAttribute('data-value'),
+    );
+    expect(percentage).toBeGreaterThanOrEqual(5);
+    expect(percentage).toBeLessThanOrEqual(100);
+
+    // The pointer's resting position is exactly the percentage.
+    const angle = await readDialAngle(page);
+    const expected = (percentage * 3.6) % 360;
+    const actual = ((angle % 360) + 360) % 360;
+    expect(Math.abs(actual - expected)).toBeLessThan(0.02);
+
+    // The tier, event and numbers all come from that same number.
+    const tierId = tierForPercentage(percentage);
+    await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tierId].label);
+    await expect(page.getByText(TIERS[tierId].event.name).first()).toBeVisible();
+    await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 4000 });
+    expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
+  });
+
   test('reveals percentage and tier, then numbers, then details, then the event', async ({
     page,
   }) => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
-    // Landing: percentage and tier only.
     await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
       'data-phase',
       'landed',
-      { timeout: 8000 },
+      { timeout: 12_000 },
     );
     // Snapshot counts rather than retrying: the next beat is only 800 ms away,
     // and a retrying zero-count would race with it by design.
     expect(await page.getByTestId('lucky-numbers-panel').count()).toBe(0);
     expect(await page.getByRole('button', { name: /Share My Resonance/i }).count()).toBe(0);
 
-    // Numbers arrive before any supporting panel.
     await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 4000 });
     expect((await readNumbers(page)).length).toBe(3);
     expect(await page.getByRole('button', { name: /Share My Resonance/i }).count()).toBe(0);
 
-    // Then colour, Little Spark and the event card.
     await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
     await expect(page.getByText('Little Spark')).toBeVisible({ timeout: 4000 });
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
 
-    // Finally the cinematic stage.
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 4000 });
   });
 });
@@ -164,15 +261,24 @@ test.describe('Daily Resonance reveal order', () => {
 test.describe('Daily Resonance reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
-  test('presents the whole reading calmly without the cinematic', async ({ page }) => {
+  test('presents the whole reading calmly with the dial already at its value', async ({
+    page,
+  }) => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
-    await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
+    await expect(page.getByText('Your Lucky Numbers')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Little Spark')).toBeVisible();
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
+
+    const percentage = Number(
+      await page.getByTestId('lucky-meter-value').getAttribute('data-value'),
+    );
+    const angle = await readDialAngle(page);
+    const actual = ((angle % 360) + 360) % 360;
+    expect(Math.abs(actual - ((percentage * 3.6) % 360))).toBeLessThan(0.02);
   });
 });
 
@@ -193,8 +299,8 @@ test.describe('Daily Resonance WebGL fallback', () => {
       } as typeof HTMLCanvasElement.prototype.getContext;
     });
 
-    await seed(page, 'medium', 'lightning', false);
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible();
+    await seed(page, buildState({ tierId: 'medium', completed: false }));
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
@@ -205,13 +311,66 @@ test.describe('Daily Resonance WebGL fallback', () => {
   });
 });
 
+test.describe('Daily Resonance visual evidence', () => {
+  // Opt-in only: CI keeps the standard run free of artifact writes. Set
+  // LUCKY_METER_CAPTURE=1 to refresh the task's before/after screenshots.
+  test.skip(
+    process.env.LUCKY_METER_CAPTURE !== '1',
+    'Set LUCKY_METER_CAPTURE=1 to write visual evidence screenshots.',
+  );
+
+  test('captures the welcome reading and the fireworks finale', async ({ page }, testInfo) => {
+    const directory = 'artifacts/lucky-meter-visual-realism-20261116/after';
+    const prefix = `${testInfo.project.name}`;
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible({
+      timeout: 20_000,
+    });
+    await page.screenshot({ path: `${directory}/${prefix}-welcome.png` });
+
+    // A real reveal: the dial mid-spin and then the landed reading.
+    await startReveal(page);
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: `${directory}/${prefix}-dial-spin.png` });
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed', {
+      timeout: 12_000,
+    });
+    await page.screenshot({ path: `${directory}/${prefix}-landed.png` });
+
+    await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible({
+      timeout: 20_000,
+    });
+    await page.screenshot({ path: `${directory}/${prefix}-result.png` });
+  });
+
+  test('captures the golden fireworks finale', async ({ page }, testInfo) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __LUCKY_METER_DEBUG__?: boolean }).__LUCKY_METER_DEBUG__ = true;
+    });
+    await seed(page, buildState({ tierId: 'high', percentage: 91, completed: false }));
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
+    // The engine exposes its own scene clock under the debug flag, so the shot
+    // lands on the golden finale instead of guessing at wall-clock time.
+    await page.waitForFunction(
+      () => (window as unknown as { __luckyCosmic?: { finaleSpawned?: boolean } }).__luckyCosmic?.finaleSpawned === true,
+      undefined,
+      { timeout: 40_000 },
+    );
+    await page.waitForTimeout(2400);
+    await page.screenshot({
+      path: `artifacts/lucky-meter-visual-realism-20261116/after/${testInfo.project.name}-fireworks-finale.png`,
+    });
+  });
+});
+
 test.describe('Daily Resonance cleanup', () => {
   test('removes the stage and restores Home after the cinematic', async ({ page }) => {
     const failures: string[] = [];
     page.on('pageerror', (error) => failures.push(String(error)));
 
-    await seed(page, 'high', 'meteor', false);
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible();
+    await seed(page, buildState({ tierId: 'high', completed: false }));
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 14_000 });
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
