@@ -343,6 +343,39 @@ class DefectPatternTests(unittest.TestCase):
         )
         self.assertEqual(result["findings"], [])
 
+    def test_assignment_in_condition_is_a_confirmed_warning(self):
+        result = review_files([record("app/lib/pick.js", "if (count = limit) {")])
+        self.assertEqual(result["status"], "PASS")
+        finding = result["findings"][0]
+        self.assertEqual(finding["rule"], "assignment-in-condition")
+        self.assertEqual(finding["classification"], "confirmed")
+        self.assertIn("count === limit", finding["suggestion"])
+
+    def test_comparison_operators_in_a_condition_are_not_reported(self):
+        result = review_files(
+            [
+                record(
+                    "app/lib/pick.js",
+                    "if (count === limit) {",
+                    "if (low <= high) {",
+                    "while (index < total) {",
+                )
+            ]
+        )
+        self.assertEqual(result["findings"], [])
+
+    def test_deliberate_assignment_and_test_is_not_reported(self):
+        result = review_files(
+            [
+                record(
+                    "app/lib/read.js",
+                    "while ((line = read()) !== null) {",
+                    "if ((ready = check()) && ready) {",
+                )
+            ]
+        )
+        self.assertEqual(result["findings"], [])
+
     def test_unused_import_in_a_fully_added_file_is_reported(self):
         result = review_files(
             [

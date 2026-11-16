@@ -1,3 +1,7 @@
+- Responsibility separation recorded, not implemented: the general code-defect reviewer gained `assignment-in-condition` only, while the inventory, category ownership, gaps and the P0–P5 sequence for separate test-quality, security, performance and browser-reporting checkers are in `specs/171-qa-checker-effectiveness/plan.md`. No new workflow, dependency, paid service or external reviewer configuration.
+
+- Verified after the rule: 183 QA infrastructure tests, 81 files / 801 Vitest tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, production build below the 495 MiB cap.
+
 ## 2026-11-16 — QA checker effectiveness from the PR #1924 review cycle
 - Evaluated the repository checkers against the Lucky Meter review cycle: 18 inline comments (Amazon Q, Pullfrog), Graphite skipped for PR size, Pullfrog failing twice on provider quota, Verification Integrity cancelled, PR Scope Verification failing for a missing scope declaration, and Visual QA shard 2 failing.
 - Verified 18 findings against head `6eb2ae7e`: 1 confirmed defect (no WebGL context-restore path) fixed in PR #1924, 3 already fixed, 4 not defects, 12 byte-identical duplicates.

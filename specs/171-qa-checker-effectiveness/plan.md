@@ -106,3 +106,92 @@ None of the four defect classes now added was detected by any repository checker
 - The review report is posted once per pull request and updated in place using a
   sticky marker, with the same text as the job summary. The step is
   `continue-on-error` because the review step already decided pass/fail.
+
+## Checker responsibility separation (follow-up design)
+
+The owner's direction is that one changed-code reviewer must not accumulate every
+responsibility. This section records the inventory as built, what belongs
+elsewhere, and the order in which separate checkers should be added. Only the
+general code-defect row is implemented in this PR.
+
+### Inventory: what runs today
+
+| Responsibility | Mechanism (inspected) | Trigger | Where a developer sees it |
+| --- | --- | --- | --- |
+| General code defects | `review_pr_changes.py`, 20 rule identifiers (7 hard, 13 advisory) | every pull request (`pull_request_target`) | one sticky PR comment, updated in place |
+| Regression / type safety | Vitest suite and `tsc --noEmit` in the Visual QA `verify` job | every pull request | check conclusion and annotations |
+| Secrets, tokens, merge markers | reviewer hard rules (5 provider families, private-key block, conflict markers) | every pull request | sticky comment, fails the review |
+| Security scanning | DevSkim (`push` main, `pull_request` main, weekly) → SARIF upload, reviewed-false-positive filter, `devskim-alerts.md`; CodeQL default setup | PR, push, schedule | Security tab, `devskim-alerts.md`, check |
+| Dependency risk | `.github/dependabot.yml` (npm + github-actions, weekly); reviewer `dependency-addition` | schedule, PR | Dependabot alerts/PRs, sticky comment |
+| Protected configuration | `protected-files.yml` (path-filtered), `agents_md_protection.py`, `check_qa_pr_scope.py` | only when those paths change | check with required owner approval |
+| Visual / browser | `visual-qa.yml`: `changes` classifier → `verify` (no browser) + 2 gated Playwright shards, Chromium cache validation, 3 projects, committed baselines, `tests/visual/mobile-accessibility.spec.ts`, `security-headers.spec.ts` | `pull_request` on visual/ambiguous paths | shard checks and artifacts |
+| Stale or skipped results | `verification-integrity.yml` audits check runs for the current head and reports skipped/unrun as NOT RUN | PR, edited, owner `/approve-` | check conclusion |
+| Advisory AI review | `pullfrog.yml` (manual `workflow_dispatch` only), Graphite, Amazon Q | manual / app-driven | PR inline comments (advisory only) |
+
+### Ownership of the requested categories
+
+- **Code QA (general defects)** — this reviewer. Logic and condition errors, error
+  handling, deprecated APIs, debug leftovers, unused imports, dependency
+  additions. No security triage, no test-quality judgement, no performance
+  measurement, no browser work.
+- **Security** — DevSkim + CodeQL + Dependabot remain the scanners. The reviewer
+  keeps only the hard secret/merge-marker rules that are provable from a patch
+  and useful within seconds; injection, XSS and dependency CVEs stay with the
+  scanners and `/.freebuff/security.md`.
+- **Test quality** — belongs to a separate checker: assertion strength,
+  tautological expectations, tests that assert nothing, un-restored mocks,
+  missing edge cases. Today only `focused-test` lives here, because a committed
+  `.only` is a provable defect rather than a judgement call.
+- **Performance** — belongs to a measured budget inside the existing Playwright
+  run for performance-sensitive paths, not to a static rule set. The reviewer
+  only *suggests* the frame probe.
+- **Visual / browser** — `visual-qa.yml` owns it, including responsive layout,
+  interactions, accessibility assertions and baselines.
+- **Scope, governance, reporting freshness** — the existing scope, protected-file
+  and integrity workflows.
+
+### Gaps, and what is already covered
+
+- Covered: general defects, secrets, merge markers, dependency additions,
+  visual regressions, stale-check detection, protected configuration.
+- Gap: no assertion-quality analysis, so weak tests are found only by humans or
+  advisory AI review.
+- Gap: no measured performance budget in CI; timing assertions exist in
+  `tests/visual/homepage.spec.ts` but nothing fails on a regression.
+- Gap: DevSkim and CodeQL findings never reach the PR page as text; a developer
+  must open the Security tab.
+- Gap: a failing Playwright shard reports a check name and artifacts, not a
+  short "what/where/how to fix" line on the PR.
+- Manual by design: Lucky Meter thresholds and business rules, architecture,
+  dependency upgrade strategy, secret rotation, accessibility judgement beyond
+  the automated assertions, visual taste approval, AI-review triage.
+
+### Prioritised implementation sequence (each step is its own small PR)
+
+1. **P0 — general code defects only (this PR).** Add `assignment-in-condition`
+   for the `if (x = y)` class, keep the reviewer free of every other
+   responsibility. Accepted when the controlled fixtures pass and the report
+   still renders one actionable fix per finding.
+2. **P1 — test-quality checker.** New dependency-free script over changed test
+   files only (`.test.*`, `__tests__/`, `tests/`), with its own sticky comment:
+   a test body with no assertion, `expect(true)`/`toBeTruthy()` on a literal,
+   `jest.mock`/`vi.mock` without `restoreAllMocks`, and a test whose only
+   assertion is a snapshot without a name. Trigger on changed test files; keep
+   `focused-test` where it is until the new checker demonstrably covers it.
+3. **P2 — security summary on the PR page.** Reuse `summarize_devskim_findings.py`
+   output in one comment (and the CodeQL SARIF summary) so findings are readable
+   without the Security tab. No new scanner, no new dependency.
+4. **P3 — performance budget.** Assert transfer size and a frame-time ceiling in
+   the existing Playwright run, on performance-sensitive paths only, using the
+   existing shards. Report the measured numbers in the shard summary.
+5. **P4 — browser failure summary.** One comment per failing shard listing the
+   failing test, its baseline name and the diff artifact link, updated in place.
+6. **P5 — reporting hygiene.** One sticky comment per checker, `FAIL` versus
+   `WARN` labels, and no new comment on re-run.
+
+### Zero-cost guardrails
+
+Every step uses the existing GitHub Actions minutes, the existing Playwright
+install and committed baselines, and repository Python/Node tooling already in
+the lockfile. No paid reviewer, metered API, credit card, new service or new
+dependency is introduced; Pullfrog stays manual-dispatch and advisory.

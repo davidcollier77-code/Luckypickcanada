@@ -18,9 +18,15 @@ QA checkers, using the PR #1924 review and fix cycle as the evaluation.
 - Changed-code reviewer findings now carry a `confirmed`/`potential`
   classification beside severity and confidence, collapse by path, line and rule,
   and report how many duplicates were collapsed.
-- Four new advisory rules: `focused-test`, `await-in-for-each`,
-  `empty-catch-block`, and `unused-import` (fully added, non-documentation files
-  only; the `React` default import is excluded).
+- Five advisory code-defect rules: `focused-test`, `await-in-for-each`,
+  `empty-catch-block`, `unused-import` (fully added, non-documentation files
+  only; the `React` default import is excluded) and `assignment-in-condition`
+  (balanced-parenthesis condition parsing; comparisons and deliberate
+  assign-and-test forms are excluded).
+- Checker responsibility separation is designed, not implemented: the inventory,
+  category ownership, covered-versus-gap analysis, manual-only list and the
+  P0–P5 sequence live in `specs/171-qa-checker-effectiveness/plan.md`. Only the
+  general code-defect reviewer changed here; no new workflow or dependency.
 - The Markdown report shows classification, confirmed count and duplicate count.
 - Every finding carries a concrete suggested fix, rendered as "Suggested fix",
   and the report is published as one sticky pull request comment that is
@@ -40,8 +46,8 @@ QA checkers, using the PR #1924 review and fix cycle as the evaluation.
 
 ## Verification
 
-- QA checker suites: 155 tests passed.
-- `pnpm exec vitest run`: 80 files / 793 tests passed.
+- QA checker suites: 183 tests passed.
+- `pnpm exec vitest run`: 81 files / 801 tests passed.
 - `pnpm exec tsc --noEmit`: exit 0.
 - `./freebuff-verify.sh`: exit 0 (Spec Kit gate, governance suites, type check,
   production build, docs tests).

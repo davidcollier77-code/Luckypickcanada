@@ -9,8 +9,9 @@ reviewer adds narrow, patch-level evidence for:
 * private key blocks, recognizable provider tokens and merge markers (hard);
 * unsafe HTML/code-execution sinks, insecure links, hardcoded credential
   assignments and dependency additions (advisory warnings);
-* focused tests, floating promises in `forEach`, empty catch blocks and
-  unused imports in fully added files (advisory warnings).
+* focused tests, floating promises in `forEach`, empty catch blocks, conditions
+  that assign instead of compare, and unused imports in fully added files
+  (advisory warnings).
 
 Every finding names the changed file, the new-file line, the rule, a severity, a
 confidence level, whether it is a confirmed defect or a potential concern, the
@@ -91,6 +92,16 @@ FOCUSED_TEST_PATTERN = re.compile(
 AWAIT_IN_FOR_EACH_PATTERN = re.compile(r"\.\s*forEach\s*\(\s*async\b")
 # An empty catch swallows the failure, including resource and validation errors.
 EMPTY_CATCH_PATTERN = re.compile(r"\bcatch\s*(?:\([^)]*\))?\s*\{\s*\}\s*;?\s*$")
+# `if (count = limit)` stores a value instead of comparing it, so the branch
+# tests whatever the assignment produced. A deliberate assignment-and-test such
+# as `while ((line = read()) !== null)` also compares, so any condition carrying
+# a comparison operator is left alone, as are compound assignments and arrows.
+CONDITION_STATEMENT_PATTERN = re.compile(r"\b(?P<keyword>if|while)\s*\(")
+COMPARISON_OPERATOR_PATTERN = re.compile(r"===|!==|==|!=|<=|>=|<|>")
+# A compound condition such as `if ((a = b) && c)` is a deliberate
+# assign-and-test, so only a bare single assignment is reported.
+COMPOUND_CONDITION_PATTERN = re.compile(r"&&|\|\||,|\?")
+BARE_ASSIGNMENT_PATTERN = re.compile(r"(?<![=!<>+\-*/%&|^?~])=(?!=|>)")
 IMPORT_STATEMENT_PATTERN = re.compile(
     r"^\s*import\s+(?:type\s+)?(.*?)\s*from\s*['\"]", re.DOTALL
 )
@@ -195,6 +206,10 @@ _STATIC_SUGGESTIONS = {
     "empty-catch-block": (
         "Do something with the failure: `catch (error) { console.error(error); }`, "
         "or rethrow after cleanup so the error is not hidden."
+    ),
+    "assignment-in-condition": (
+        "Compare instead of assigning: `if (left === right)`, or assign on its "
+        "own line above the condition."
     ),
 }
 PROVIDER_TOKEN_SUGGESTION = (
@@ -346,6 +361,39 @@ def _suggested_verification(paths) -> dict:
         "rendering_paths": rendering[:5],
         "performance_paths": performance[:5],
     }
+
+
+def _condition_statements(text: str):
+    """Yield (keyword, condition) per if/while, matching nested parentheses."""
+    for match in CONDITION_STATEMENT_PATTERN.finditer(text):
+        opening = match.end() - 1
+        depth = 0
+        for index in range(opening, len(text)):
+            character = text[index]
+            if character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+                if depth == 0:
+                    yield match.group("keyword"), text[opening + 1 : index]
+                    break
+
+
+def _assignment_in_condition(text: str):
+    """Return (keyword, left, right) when a condition assigns instead of tests."""
+    for keyword, condition in _condition_statements(text):
+        if COMPARISON_OPERATOR_PATTERN.search(condition):
+            continue
+        if COMPOUND_CONDITION_PATTERN.search(condition):
+            continue
+        assignment = BARE_ASSIGNMENT_PATTERN.search(condition)
+        if not assignment:
+            continue
+        left = condition[: assignment.start()].strip()
+        right = condition[assignment.end() :].strip()
+        if left and right:
+            return keyword, left, right
+    return None
 
 
 def _suggestion(rule: str, excerpt: str, message: str, recommendation: str) -> str:
@@ -627,6 +675,31 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                 stripped,
             )
         )
+
+    if not documentation:
+        assignment_condition = _assignment_in_condition(text)
+        if assignment_condition:
+            keyword, left, right = assignment_condition
+            findings.append(
+                _finding(
+                    path,
+                    line,
+                    "assignment-in-condition",
+                    WARNING,
+                    CONFIDENCE_HIGH,
+                    "The `%s` condition assigns `%s = %s` instead of comparing, "
+                    "so the branch tests the assigned value."
+                    % (keyword, left, right),
+                    "Compare with === or ==, or assign on its own line before the condition.",
+                    stripped,
+                    classification="confirmed",
+                    suggestion=(
+                        "Compare instead of assigning: `%s (%s === %s)`, or move "
+                        "`%s = %s` onto its own line above the `%s`."
+                        % (keyword, left, right, left, right, keyword)
+                    ),
+                )
+            )
 
     if path.endswith("package.json"):
         package_match = PACKAGE_ENTRY_PATTERN.match(text)

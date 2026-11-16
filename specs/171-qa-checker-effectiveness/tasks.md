@@ -57,3 +57,8 @@ Keep the change inside the QA infrastructure: the changed-code reviewer, the vis
 - [x] T025 Verify the AI review of this PR against the code: keep two distinct findings on one import line, exclude every import statement from the reference search, and pin the single-line focused-test behaviour that a review claim disputed.
 - [x] T026 Move comment rendering into `render_comment` with block-safe truncation, render it from the CLI, and execute the workflow's publish step against a stub `gh`; the execution exposed a mangled POST URL, which is fixed and guarded.
 - [x] T027 Add an executed gating matrix (visual, performance, ordinary application code, documentation, tooling/CI, ambiguous) and derive the job and Chromium-install outcomes from the workflow definitions.
+
+## Phase 7: General code-defect coverage and responsibility separation
+
+- [x] T028 Add `assignment-in-condition` to the general code-defect reviewer only: balanced-parenthesis condition parsing, exclusion of comparisons and deliberate compound assign-and-test forms, a suggestion naming the exact comparison, and three controlled fixtures (two defects flagged, harmless forms not).
+- [x] T029 Record the checker inventory, category ownership, covered-versus-gap analysis, manual-only responsibilities and the P0–P5 sequence in the plan; no new workflow, dependency, paid service or external reviewer configuration.
