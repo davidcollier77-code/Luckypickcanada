@@ -164,3 +164,22 @@ height 51.83 px and the brass gradient, with the head at 9 px, at 1440, 390 and
 - Every changed path is inside the Lucky Meter, its tests, the spec/evidence,
   the task artifacts or the Memory Bank; the filtered diff outside those
   prefixes is empty.
+
+### CI failure on the follow-up PR
+
+The first Visual QA run on PR #1932 (run 43946548353) failed shard 1 in
+`reveals percentage and tier, then numbers, then details, then the event`:
+the test waited for `data-phase="landed"` and then snapshotted a zero count for
+`lucky-numbers-panel` and the share button. Those beats are 800 ms and 1,400 ms
+away by design, so a loaded runner can observe the landing after the next beat
+already mounted — the zero-count snapshot then reads 1. Shard 2 hit the same
+race on `mobile-412` and passed only on retry.
+
+Fix: an init script records the first moment each marker appears (numbers, share,
+the event stage) together with the ring phase, the displayed percentage and the
+tier label at that moment. The test now asserts that the numbers panel first
+appears on a landed dial with a matching percentage and tier, and that details
+and the event stage each arrive after it, using the recorded timestamps. The
+assertions no longer depend on how quickly the test observes a transient state.
+`45 passed, 6 skipped` locally across desktop, mobile-390 and mobile-412 after
+the change.

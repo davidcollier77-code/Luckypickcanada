@@ -76,3 +76,6 @@
       at 1440, 390 and 412 widths and confirm the dial angle still matches.
 - [X] T027 Confirm the Milky Way picture markup and all six sky assets are
       unchanged from `main`, and that no path outside the Lucky Meter changed.
+- [X] T028 Fix the Visual QA failure on PR #1932 by recording each reveal beat's
+      first appearance instead of snapshotting zero counts inside an 800 ms
+      window; re-run the spec across all three projects (`45 passed, 6 skipped`).
