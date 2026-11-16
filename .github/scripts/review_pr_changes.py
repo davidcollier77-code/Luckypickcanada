@@ -8,11 +8,24 @@ reviewer adds narrow, patch-level evidence for:
 
 * private key blocks, recognizable provider tokens and merge markers (hard);
 * unsafe HTML/code-execution sinks, insecure links, hardcoded credential
-  assignments and dependency additions (advisory warnings).
+  assignments and dependency additions (advisory warnings);
+* focused tests, floating promises in `forEach`, empty catch blocks, conditions
+  that assign instead of compare, and unused imports in fully added files
+  (advisory warnings).
 
-Every finding names the changed file, the new-file line, the rule, a confidence
-level, and the matched excerpt. Placeholder and environment-variable patterns
-are suppressed for advisory rules. Findings are deduplicated.
+Every finding names the changed file, the new-file line, the rule, a severity, a
+confidence level, whether it is a confirmed defect or a potential concern, the
+matched excerpt, a short recommendation, and a concrete suggested fix that a
+developer can apply or reject without asking what was meant. Placeholder and
+environment-variable patterns are suppressed for advisory rules. Findings are
+deduplicated by location and rule, so the same defect reported twice for
+different excerpts collapses to one entry.
+
+The report also states which verification it suggests. Playwright visual or
+performance work is suggested only when the change set actually touches
+rendering or performance-sensitive paths; documentation, tooling, CI and
+unit-test-only changes are told plainly that no browser verification is
+suggested. The Visual QA workflow remains the authority for what CI requires.
 
 Read-only: no network request is made here. The workflow supplies GitHub's
 changed-file records, including their unified-diff patches.
@@ -21,6 +34,7 @@ changed-file records, including their unified-diff patches.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -67,6 +81,33 @@ DEPRECATED_API_PATTERN = re.compile(
     r"\bdocument\.execCommand\b|\bcomponentWillMount\b|"
     r"\bcomponentWillReceiveProps\b|\bReactDOM\.render\("
 )
+# A committed focused test silently shrinks the suite: everything else in the
+# file stops running. Only runner calls are matched, not a `.only` property read.
+FOCUSED_TEST_PATTERN = re.compile(
+    r"\b(?:describe|it|test|context|suite|fit|fdescribe)\s*\.\s*only\s*\("
+)
+# `forEach(async ...)` cannot be awaited, so its promises float: rejections are
+# lost and the loop finishes before the work does. `map(async ...)` is excluded
+# because collecting promises and awaiting them is a valid, common pattern.
+AWAIT_IN_FOR_EACH_PATTERN = re.compile(r"\.\s*forEach\s*\(\s*async\b")
+# An empty catch swallows the failure, including resource and validation errors.
+EMPTY_CATCH_PATTERN = re.compile(r"\bcatch\s*(?:\([^)]*\))?\s*\{\s*\}\s*;?\s*$")
+# `if (count = limit)` stores a value instead of comparing it, so the branch
+# tests whatever the assignment produced. A deliberate assignment-and-test such
+# as `while ((line = read()) !== null)` also compares, so any condition carrying
+# a comparison operator is left alone, as are compound assignments and arrows.
+CONDITION_STATEMENT_PATTERN = re.compile(r"\b(?P<keyword>if|while)\s*\(")
+COMPARISON_OPERATOR_PATTERN = re.compile(r"===|!==|==|!=|<=|>=|<|>")
+# A compound condition such as `if ((a = b) && c)` is a deliberate
+# assign-and-test, so only a bare single assignment is reported.
+COMPOUND_CONDITION_PATTERN = re.compile(r"&&|\|\||,|\?")
+BARE_ASSIGNMENT_PATTERN = re.compile(r"(?<![=!<>+\-*/%&|^?~])=(?!=|>)")
+IMPORT_STATEMENT_PATTERN = re.compile(
+    r"^\s*import\s+(?:type\s+)?(.*?)\s*from\s*['\"]", re.DOTALL
+)
+# `React` is imported by convention; an unused default import is not evidence of
+# a defect in this codebase, so it is never reported as an unused binding.
+IGNORED_IMPORT_BINDINGS = frozenset({"React"})
 PLACEHOLDER_PATTERN = re.compile(
     r"(?i)(?:example|placeholder|dummy|fake|redacted|your[_-]?|replace[_-]?me|"
     r"changeme|xxxx|sample|do[ -]?not[ -]?use)"
@@ -103,6 +144,107 @@ EXCLUDED_PACKAGE_KEYS = frozenset(
     }
 )
 KNOWN_EXAMPLE_TOKENS = frozenset({"AKIAIOSFODNN7EXAMPLE"})
+
+
+FOCUSED_TEST_REWRITE = re.compile(
+    r"\b(describe|it|test|context|suite|fit|fdescribe)\s*\.\s*only\s*\("
+)
+AWAIT_IN_FOR_EACH_CALL = re.compile(
+    r"(?P<collection>[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\.\s*forEach\s*"
+    r"\(\s*async\s*\(?\s*(?P<param>[A-Za-z_$][\w$]*)?"
+)
+_DEPRECATED_REPLACEMENTS = (
+    (
+        "document.execcommand",
+        "Replace `document.execCommand` with the Clipboard API "
+        "(`await navigator.clipboard.writeText(text)`).",
+    ),
+    (
+        "componentwillmount",
+        "Run the initialisation in `useEffect(() => { ... }, [])` or in the "
+        "state initialiser instead of `componentWillMount`.",
+    ),
+    (
+        "componentwillreceiveprops",
+        "Derive the value during render, or use `getDerivedStateFromProps`/"
+        "`useEffect` instead of `componentWillReceiveProps`.",
+    ),
+    (
+        "reactdom.render(",
+        "Use `createRoot(container).render(<App />)` from `react-dom/client`.",
+    ),
+)
+_STATIC_SUGGESTIONS = {
+    "merge-conflict-marker": (
+        "Delete the `<<<<<<<`, `=======` and `>>>>>>>` lines and keep the "
+        "intended side, then re-run the tests."
+    ),
+    "private-key-block": (
+        "Remove the key, rotate it, and load the replacement from the secret "
+        "store at runtime."
+    ),
+    "hardcoded-credential": (
+        "Read the value from `process.env` or the approved secret store, or "
+        "replace it with an obviously non-secret fixture value."
+    ),
+    "unsafe-html-or-dynamic-code": (
+        "Render the value as text, or sanitise it with a reviewed allowlist "
+        "before it reaches the sink."
+    ),
+    "target-blank-without-noopener": (
+        'Add `rel="noopener noreferrer"` beside `target="_blank"`.'
+    ),
+    "insecure-http-url": (
+        "Change the URL to `https://`; if the endpoint cannot use TLS, document "
+        "why and keep it out of production paths."
+    ),
+    "type-or-lint-suppression": (
+        "Fix the underlying diagnostic, or narrow the suppression to the "
+        "affected line and record the reason in the comment."
+    ),
+    "debugger-statement": "Delete the `debugger` line before merging.",
+    "empty-catch-block": (
+        "Do something with the failure: `catch (error) { console.error(error); }`, "
+        "or rethrow after cleanup so the error is not hidden."
+    ),
+    "assignment-in-condition": (
+        "Compare instead of assigning: `if (left === right)`, or assign on its "
+        "own line above the condition."
+    ),
+}
+PROVIDER_TOKEN_SUGGESTION = (
+    "Revoke and rotate the token, remove it from the diff, and read the "
+    "replacement from the environment or a secret store."
+)
+PROVIDER_TOKEN_RULES = frozenset(rule for rule, _pattern in PROVIDER_TOKEN_PATTERNS)
+# The change classifier in .github/scripts/classify-visual-changes.sh is the
+# authority for whether CI requires the browser job. These patterns mirror its
+# non-rendering list so the advisory suggestion matches that decision; an
+# unknown path is treated as rendering-affecting, exactly as the shell classifier
+# fails closed.
+NON_RENDERING_ANY_DEPTH = (
+    "*.md",
+    "specs/*",
+    "memory-bank/*",
+    ".docs/*",
+    ".agents/skills/*",
+)
+NON_RENDERING_EXACT_GLOBS = (
+    ".specify/feature.json",
+    ".github/*",
+    "app/api/*",
+    "pages/api/*",
+    "__tests__/*.test.js",
+    "__tests__/*.test.jsx",
+    "__tests__/*.test.ts",
+    "__tests__/*.test.tsx",
+    "playwright.*.config.ts",
+    "playwright-*.config.ts",
+)
+PERFORMANCE_PATH_PATTERN = re.compile(
+    r"(?:engine|renderer|shader|gpu|perf|animation|canvas|webgl|frame)", re.I
+)
+PERFORMANCE_CODE_SUFFIXES = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs")
 
 
 class ReviewError(ValueError):
@@ -163,17 +305,131 @@ def _finding(
     message: str,
     recommendation: str,
     excerpt: str,
+    classification: str | None = None,
+    suggestion: str | None = None,
 ) -> dict:
+    # A hard rule has a proven payload (a key, a token, a conflict marker); an
+    # advisory rule reports a pattern whose intent is not proven from the patch.
+    if classification is None:
+        classification = "confirmed" if severity == HARD else "potential"
     return {
         "path": path,
         "line": line,
         "rule": rule,
         "severity": severity,
         "confidence": confidence,
+        "classification": classification,
         "message": message,
         "recommendation": recommendation,
+        "suggestion": suggestion
+        or _suggestion(rule, excerpt, message, recommendation),
         "excerpt": excerpt.strip()[:180],
     }
+
+
+def _is_non_rendering_path(path: str) -> bool:
+    """Mirror the non-rendering exemptions of classify-visual-changes.sh."""
+    if any(fnmatch.fnmatchcase(path, pattern) for pattern in NON_RENDERING_ANY_DEPTH):
+        return True
+    if any(fnmatch.fnmatchcase(path, pattern) for pattern in NON_RENDERING_EXACT_GLOBS):
+        return True
+    if path == "open-next.config.ts":
+        return True
+    # The committed Playwright configuration decides how CI produces the
+    # baselines, so it stays rendering-affecting; package.json needs a manifest
+    # comparison this checker cannot make, so it is treated as rendering-affecting.
+    return False
+
+
+def _is_performance_path(path: str) -> bool:
+    """True for code that plausibly changes measured rendering or frame timing."""
+    if _documentation_path(path) or _test_path(path):
+        return False
+    if not path.casefold().endswith(PERFORMANCE_CODE_SUFFIXES):
+        return False
+    return bool(PERFORMANCE_PATH_PATTERN.search(path))
+
+
+def _suggested_verification(paths) -> dict:
+    rendering = sorted({path for path in paths if not _is_non_rendering_path(path)})
+    performance = sorted({path for path in paths if _is_performance_path(path)})
+    return {
+        "playwright_visual": bool(rendering),
+        "playwright_performance": bool(performance),
+        "rendering_path_count": len(rendering),
+        "performance_path_count": len(performance),
+        "rendering_paths": rendering[:5],
+        "performance_paths": performance[:5],
+    }
+
+
+def _condition_statements(text: str):
+    """Yield (keyword, condition) per if/while, matching nested parentheses."""
+    for match in CONDITION_STATEMENT_PATTERN.finditer(text):
+        opening = match.end() - 1
+        depth = 0
+        for index in range(opening, len(text)):
+            character = text[index]
+            if character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+                if depth == 0:
+                    yield match.group("keyword"), text[opening + 1 : index]
+                    break
+
+
+def _assignment_in_condition(text: str):
+    """Return (keyword, left, right) when a condition assigns instead of tests."""
+    for keyword, condition in _condition_statements(text):
+        if COMPARISON_OPERATOR_PATTERN.search(condition):
+            continue
+        if COMPOUND_CONDITION_PATTERN.search(condition):
+            continue
+        assignment = BARE_ASSIGNMENT_PATTERN.search(condition)
+        if not assignment:
+            continue
+        left = condition[: assignment.start()].strip()
+        right = condition[assignment.end() :].strip()
+        if left and right:
+            return keyword, left, right
+    return None
+
+
+def _suggestion(rule: str, excerpt: str, message: str, recommendation: str) -> str:
+    """Return a concrete correction a developer can apply from the comment."""
+    if rule == "focused-test":
+        rewritten = FOCUSED_TEST_REWRITE.sub(r"\1(", excerpt.strip())
+        return "Remove the focus so the whole suite runs: `%s`" % rewritten
+    if rule == "await-in-for-each":
+        match = AWAIT_IN_FOR_EACH_CALL.search(excerpt)
+        if match:
+            param = match.group("param") or "item"
+            return (
+                "Await the work instead of dropping it: "
+                "`for (const %s of %s) { await ... }`, or collect the promises "
+                "and `await Promise.all(...)`."
+                % (param, match.group("collection"))
+            )
+        return (
+            "Use `for...of` with `await`, or collect the promises and "
+            "`await Promise.all(...)`."
+        )
+    if rule == "deprecated-api":
+        lowered = excerpt.casefold()
+        for needle, replacement in _DEPRECATED_REPLACEMENTS:
+            if needle in lowered:
+                return replacement
+    if rule in PROVIDER_TOKEN_RULES:
+        return PROVIDER_TOKEN_SUGGESTION
+    return _STATIC_SUGGESTIONS.get(rule, recommendation)
+
+
+def _test_path(path: str) -> bool:
+    return (
+        path.startswith(("__tests__/", "tests/"))
+        or re.search(r"\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$", path) is not None
+    )
 
 
 def _in_comment_context(text: str, position: int) -> bool:
@@ -376,6 +632,75 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
             )
         )
 
+    if not documentation and _test_path(path) and FOCUSED_TEST_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "focused-test",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "A focused test was committed, so every other test in this file is silently skipped.",
+                "Remove .only (and any .skip you did not intend) so the whole suite runs.",
+                stripped,
+                classification="confirmed",
+            )
+        )
+
+    if not documentation and AWAIT_IN_FOR_EACH_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "await-in-for-each",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "An async callback passed to forEach cannot be awaited: its promises float and rejections are lost.",
+                "Use for...of with await, or collect the promises and await Promise.all.",
+                stripped,
+                classification="confirmed",
+            )
+        )
+
+    if not documentation and EMPTY_CATCH_PATTERN.search(text):
+        findings.append(
+            _finding(
+                path,
+                line,
+                "empty-catch-block",
+                WARNING,
+                CONFIDENCE_MEDIUM,
+                "An empty catch block discards the error, so a real failure becomes silent.",
+                "Handle the error, log it with context, or rethrow after cleanup.",
+                stripped,
+            )
+        )
+
+    if not documentation:
+        assignment_condition = _assignment_in_condition(text)
+        if assignment_condition:
+            keyword, left, right = assignment_condition
+            findings.append(
+                _finding(
+                    path,
+                    line,
+                    "assignment-in-condition",
+                    WARNING,
+                    CONFIDENCE_HIGH,
+                    "The `%s` condition assigns `%s = %s` instead of comparing, "
+                    "so the branch tests the assigned value."
+                    % (keyword, left, right),
+                    "Compare with === or ==, or assign on its own line before the condition.",
+                    stripped,
+                    classification="confirmed",
+                    suggestion=(
+                        "Compare instead of assigning: `%s (%s === %s)`, or move "
+                        "`%s = %s` onto its own line above the `%s`."
+                        % (keyword, left, right, left, right, keyword)
+                    ),
+                )
+            )
+
     if path.endswith("package.json"):
         package_match = PACKAGE_ENTRY_PATTERN.match(text)
         if package_match and package_match.group(1) not in EXCLUDED_PACKAGE_KEYS:
@@ -389,9 +714,95 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                     f"A dependency entry for {package_match.group(1)!r} was added or changed.",
                     "Confirm the package is necessary, reviewed, and reflected in the lockfile and build size.",
                     stripped,
+                    suggestion=(
+                        "Confirm `%s` is needed, add it with `pnpm add %s` so "
+                        "`pnpm-lock.yaml` matches, and check the build-size budget."
+                        % (package_match.group(1), package_match.group(1))
+                    ),
                 )
             )
 
+    return findings
+
+
+def _import_bindings(clause: str) -> list[str]:
+    """Return the local names bound by one single-line import clause."""
+    bindings: list[str] = []
+    clause = clause.strip()
+    if not clause:
+        return bindings
+    namespace = re.match(r"\*\s+as\s+([A-Za-z_$][\w$]*)", clause)
+    if namespace:
+        return [namespace.group(1)]
+    default_match = re.match(r"([A-Za-z_$][\w$]*)\s*(?:,|$)", clause)
+    if default_match:
+        bindings.append(default_match.group(1))
+    named = re.search(r"\{([^}]*)\}", clause)
+    if named:
+        for part in named.group(1).split(","):
+            part = part.strip()
+            if not part:
+                continue
+            local = part.split(" as ")[-1].strip()
+            if re.fullmatch(r"[A-Za-z_$][\w$]*", local):
+                bindings.append(local)
+    return bindings
+
+
+def _import_line(text: str) -> bool:
+    """True for an import statement or a side-effect import of a module path."""
+    return bool(re.match(r"\s*import\b", text))
+
+
+def _unused_import_findings(path: str, added: list[tuple[int, str]]) -> list[dict]:
+    """Report import bindings that are referenced nowhere in a fully added file.
+
+    Only fully added files are reviewed: GitHub supplies every line of them, so a
+    missing reference is evidence. A modified file exposes only its hunks, and
+    treating an unmentioned name as unused there would be a false positive.
+
+    Multi-line import statements are not parsed, so this rule can miss an unused
+    binding but does not invent one.
+    """
+    bindings: list[tuple[int, str, str]] = []
+    for line_number, text in added:
+        match = IMPORT_STATEMENT_PATTERN.match(text)
+        if not match:
+            continue
+        for binding in _import_bindings(match.group(1)):
+            bindings.append((line_number, binding, text))
+    if not bindings:
+        return []
+
+    # No import statement can use a binding, so every import line is excluded
+    # from the reference search. Including one would let a module path such as
+    # './alpha-legacy' or a re-export count as a use of an unused binding.
+    body = "\n".join(text for line_number, text in added if not _import_line(text))
+    findings: list[dict] = []
+    reported: set[str] = set()
+    for line_number, binding, text in bindings:
+        if binding in IGNORED_IMPORT_BINDINGS or binding in reported:
+            continue
+        if re.search(r"(?<![\w$])%s(?![\w$])" % re.escape(binding), body):
+            continue
+        reported.add(binding)
+        findings.append(
+            _finding(
+                path,
+                line_number,
+                "unused-import",
+                WARNING,
+                CONFIDENCE_HIGH,
+                "The added file imports %r but never references it." % binding,
+                "Remove the unused binding, or use it in the file.",
+                text,
+                classification="confirmed",
+                suggestion=(
+                    "Delete `%s` (line %d) or reference `%s` in this file."
+                    % (text.strip(), line_number, binding)
+                ),
+            )
+        )
     return findings
 
 
@@ -405,6 +816,7 @@ def review_files(file_records) -> dict:
     findings = []
     reviewed = []
     skipped = []
+    all_paths = []
     for record in file_records:
         if not isinstance(record, dict):
             raise ReviewError("GitHub changed-file evidence contains a malformed record")
@@ -412,6 +824,7 @@ def review_files(file_records) -> dict:
         if not isinstance(filename, str) or not filename.strip():
             raise ReviewError("GitHub changed-file evidence contains a record without a filename")
         path = filename.strip()
+        all_paths.append(path)
         patch = record.get("patch")
         if not isinstance(patch, str) or not patch.strip():
             skipped.append(
@@ -427,21 +840,26 @@ def review_files(file_records) -> dict:
             window = added[max(0, idx - 5):idx + 6]
             nearby_text = "\n".join(line for _, line in window)
             findings.extend(_line_findings(path, line_number, text, nearby_text))
+        if str(record.get("status") or "").lower() == "added" and not _documentation_path(path):
+            findings.extend(_unused_import_findings(path, added))
 
+    # Collapse identical reports only. Two unused bindings on one import line are
+    # two defects with the same location and rule but different messages, and
+    # dropping one of them would hide a finding and misreport it as a duplicate.
     deduplicated = {}
+    duplicates_collapsed = 0
     for finding in findings:
-        key = (
-            finding["path"],
-            finding["line"],
-            finding["rule"],
-            finding["excerpt"],
-        )
-        deduplicated.setdefault(key, finding)
+        key = (finding["path"], finding["line"], finding["rule"], finding["message"])
+        if key in deduplicated:
+            duplicates_collapsed += 1
+            continue
+        deduplicated[key] = finding
 
     ordered = sorted(
         deduplicated.values(),
         key=lambda item: (
             0 if item["severity"] == HARD else 1,
+            0 if item["classification"] == "confirmed" else 1,
             item["path"],
             item["line"],
             item["rule"],
@@ -457,6 +875,11 @@ def review_files(file_records) -> dict:
         "findings": ordered,
         "hard_count": hard_count,
         "warning_count": warning_count,
+        "duplicates_collapsed": duplicates_collapsed,
+        "suggested_verification": _suggested_verification(all_paths),
+        "confirmed_count": sum(
+            1 for item in ordered if item["classification"] == "confirmed"
+        ),
         "note": (
             "Warnings are advisory and are not confirmed vulnerabilities. "
             "DevSkim, CodeQL, TypeScript, tests and reviewer judgment remain authoritative."
@@ -464,7 +887,62 @@ def review_files(file_records) -> dict:
     }
 
 
-def render_markdown(report: dict) -> str:
+COMMENT_MARKER = "<!-- qa-review-report -->"
+COMMENT_LIMIT = 60000
+
+
+def _inline_code(text: str) -> str:
+    """Render evidence as one inline-code span that cannot break the Markdown."""
+    cleaned = " ".join(str(text).split()).replace("`", "'")
+    if len(cleaned) > 300:
+        cleaned = cleaned[:297] + "..."
+    return "`%s`" % cleaned
+
+
+def _render_suggested_verification(report: dict) -> list[str]:
+    suggestion = report.get("suggested_verification") or {}
+    lines = ["", "### Suggested verification", ""]
+    rendered = False
+    if suggestion.get("playwright_visual"):
+        examples = ", ".join(
+            "`%s`" % path for path in suggestion.get("rendering_paths", [])[:3]
+        )
+        lines.append(
+            "- Playwright visual verification is suggested: %d rendering path(s) "
+            "changed%s. Run `./scripts/playwright-cli.sh test` for desktop, "
+            "mobile-390 and mobile-412."
+            % (
+                suggestion.get("rendering_path_count", 0),
+                " (for example %s)" % examples if examples else "",
+            )
+        )
+        rendered = True
+    if suggestion.get("playwright_performance"):
+        paths = suggestion.get("performance_paths", [])
+        examples = ", ".join("`%s`" % path for path in paths[:3])
+        lines.append(
+            "- Playwright performance measurement is suggested: %d "
+            "performance-sensitive path(s) changed%s. Drive the real interaction, "
+            "then run the frame probe."
+            % (
+                suggestion.get("performance_path_count", 0),
+                " (for example %s)" % examples if examples else "",
+            )
+        )
+        rendered = True
+    if not rendered:
+        lines.append(
+            "- No Playwright verification is suggested: every changed path is "
+            "documentation, tooling, CI or unit-test-only."
+        )
+    lines.append(
+        "- Playwright is not required for every change. The Visual QA workflow "
+        "makes the required decision from the same changed-path evidence."
+    )
+    return lines
+
+
+def _render_summary(report: dict) -> list[str]:
     lines = [
         "## Changed-code review: " + report["status"],
         "",
@@ -472,43 +950,113 @@ def render_markdown(report: dict) -> str:
         f"- Files without a textual patch: {len(report.get('skipped_files', []))}",
         f"- Hard findings: {report.get('hard_count', 0)}",
         f"- Advisory warnings: {report.get('warning_count', 0)}",
+        f"- Confirmed findings (hard and advisory): {report.get('confirmed_count', 0)}",
+        f"- Duplicate findings collapsed: {report.get('duplicates_collapsed', 0)}",
         "",
         report.get("note", ""),
     ]
-    findings = report.get("findings", [])
-    if findings:
-        lines.extend(
-            [
-                "",
-                "| Severity | Rule | Location | Confidence | Evidence |",
-                "| --- | --- | --- | --- | --- |",
-            ]
-        )
-        for item in findings:
-            evidence = item["excerpt"].replace("|", "\\|")
-            lines.append(
-                "| %s | %s | `%s:%s` | %s | `%s` |"
-                % (
-                    item["severity"],
-                    item["rule"],
-                    item["path"],
-                    item["line"],
-                    item["confidence"],
-                    evidence,
-                )
-            )
-            lines.append(
-                "|  |  |  |  | %s |"
-                % item["recommendation"].replace("|", "\\|")
-            )
-    else:
-        lines.extend(["", "No added-line findings were detected."])
+    lines.extend(_render_suggested_verification(report))
+    return lines
 
+
+def _render_finding(item: dict) -> list[str]:
+    # A finding must never render without a correction: fall back to the
+    # rule-derived correction if an upstream change leaves the field empty.
+    suggestion = (item.get("suggestion") or "").strip() or _suggestion(
+        item.get("rule", ""),
+        item.get("excerpt", ""),
+        item.get("message", ""),
+        item.get("recommendation", ""),
+    )
+    return [
+        "- **%s · %s · %s** `%s:%s` (confidence: %s)"
+        % (
+            item["severity"],
+            item["classification"],
+            item["rule"],
+            item["path"],
+            item["line"],
+            item["confidence"],
+        ),
+        "  - What happened: %s" % item["message"],
+        "  - Evidence: %s" % _inline_code(item.get("excerpt", "")),
+        "  - Suggested fix: %s" % suggestion,
+    ]
+
+
+def _render_skipped(report: dict) -> list[str]:
+    lines: list[str] = []
     if report.get("skipped_files"):
         lines.extend(["", "Files not reviewed because GitHub supplied no textual patch:"])
         for item in report["skipped_files"]:
             lines.append(f"- `{item['path']}`: {item['reason']}")
+    return lines
+
+
+def render_markdown(report: dict) -> str:
+    lines = _render_summary(report)
+    findings = report.get("findings", [])
+    if findings:
+        lines.extend(["", "### Findings", ""])
+        for item in findings:
+            lines.extend(_render_finding(item))
+        lines.append("")
+    else:
+        lines.extend(["", "No added-line findings were detected."])
+    lines.extend(_render_skipped(report))
     return "\n".join(lines) + "\n"
+
+
+def render_comment(report: dict, limit: int = COMMENT_LIMIT) -> str:
+    """Render the sticky pull-request comment, truncated only between findings.
+
+    The comment exists to deliver the corrections, so a byte cap that cut a
+    finding in half would defeat it. Whole finding blocks are admitted while the
+    next one still fits; the remainder is replaced by a count that points at the
+    job summary. The sticky marker stays the first line, so a later run can still
+    find and update this comment when the body is truncated.
+    """
+    findings = report.get("findings", [])
+    header = [COMMENT_MARKER, ""] + _render_summary(report)
+    if findings:
+        header.extend(["", "### Findings", ""])
+    else:
+        header.extend(["", "No added-line findings were detected."])
+    blocks = [_render_finding(item) for item in findings]
+
+    def assemble(admitted: list[list[str]], omitted: int) -> str:
+        lines = list(header)
+        for block in admitted:
+            lines.extend(block)
+        if omitted:
+            lines.extend(
+                [
+                    "",
+                    "- _%d more finding(s) omitted to fit GitHub's comment limit; "
+                    "the workflow job summary lists all of them._" % omitted,
+                ]
+            )
+        lines.extend(_render_skipped(report))
+        return "\n".join(lines) + "\n"
+
+    admitted: list[list[str]] = []
+    for index, block in enumerate(blocks):
+        if len(assemble(admitted + [block], len(blocks) - index - 1).encode("utf-8")) > limit:
+            break
+        admitted.append(block)
+
+    body = assemble(admitted, len(blocks) - len(admitted))
+    if len(body.encode("utf-8")) > limit:
+        # Pathological input: even the header does not fit. Keep the marker and
+        # the status so the comment is still updatable and still truthful.
+        body = "\n".join(
+            [COMMENT_MARKER, "", "## Changed-code review: " + report.get("status", "UNKNOWN"), ""]
+            + [
+                "- _The full report is in the workflow job summary; it was too "
+                "large to publish as a comment._"
+            ]
+        ) + "\n"
+    return body
 
 
 def _read_json(path: str):
@@ -521,6 +1069,9 @@ def main(argv=None) -> int:
     parser.add_argument("--files", required=True, help="GitHub changed-file records JSON")
     parser.add_argument("--summary", help="append the Markdown report here")
     parser.add_argument("--json", help="write the machine-readable report here")
+    parser.add_argument(
+        "--comment", help="write the sticky pull-request comment body here"
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -533,6 +1084,20 @@ def main(argv=None) -> int:
         if args.json:
             with open(args.json, "w", encoding="utf-8") as handle:
                 json.dump(report, handle, indent=2)
+        if args.comment:
+            with open(args.comment, "w", encoding="utf-8") as handle:
+                handle.write(
+                    "\n".join(
+                        [
+                            COMMENT_MARKER,
+                            "",
+                            "## Changed-code review: BLOCKED",
+                            "",
+                            "The changed-code review could not run: " + str(error),
+                        ]
+                    )
+                    + "\n"
+                )
         print(f"Changed-code review BLOCKED: {error}", file=sys.stderr)
         return 2
 
@@ -543,6 +1108,9 @@ def main(argv=None) -> int:
     if args.json:
         with open(args.json, "w", encoding="utf-8") as handle:
             json.dump(report, handle, indent=2)
+    if args.comment:
+        with open(args.comment, "w", encoding="utf-8") as handle:
+            handle.write(render_comment(report))
     print(markdown, end="")
     return 0 if report["status"] == "PASS" else 1
 

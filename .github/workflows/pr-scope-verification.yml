@@ -11,7 +11,9 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  # Findings are published once, as a single updated comment on the pull
+  # request, so the developer reads the problem and the suggested fix together.
+  pull-requests: write
   issues: read
 
 concurrency:
@@ -87,6 +89,7 @@ jobs:
           FILES_FILE: ${{ runner.temp }}/files.json
           SUMMARY_FILE: ${{ runner.temp }}/qa-review-summary.md
           REPORT_FILE: ${{ runner.temp }}/qa-review-report.json
+          COMMENT_FILE: ${{ runner.temp }}/qa-review-comment.md
         shell: bash
         run: |
           set -euo pipefail
@@ -94,7 +97,8 @@ jobs:
           python3 .github/scripts/review_pr_changes.py \
             --files "$FILES_FILE" \
             --summary "$SUMMARY_FILE" \
-            --json "$REPORT_FILE"
+            --json "$REPORT_FILE" \
+            --comment "$COMMENT_FILE"
           status=$?
           set -e
           if [[ -f "$SUMMARY_FILE" ]]; then
@@ -107,4 +111,56 @@ jobs:
           if [[ "$status" -ne 0 ]]; then
             echo "::error::The changed-code review found a hard security or merge-integrity failure."
             exit "$status"
+          fi
+
+      # The job summary is only visible to someone who opens the run. This
+      # republishes the same report where the developer already is, with the
+      # suggested fix beside every finding, and rewrites that one comment on
+      # later runs instead of stacking a new comment each time. The review step
+      # above has already decided pass/fail, so a transient comment failure must
+      # not change the gate result. The body, including the sticky marker and the
+      # between-findings truncation, is rendered by review_pr_changes.py so it is
+      # covered by unit tests instead of untested shell string handling.
+      - name: Publish the changed-code review as a pull request comment
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          COMMENT_FILE: ${{ runner.temp }}/qa-review-comment.md
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='<!-- qa-review-report -->'
+          if [[ ! -s "$COMMENT_FILE" ]]; then
+            echo "::warning::No changed-code review comment was rendered, so no comment is published."
+            exit 0
+          fi
+          if [[ "$(head -n 1 "$COMMENT_FILE")" != "$marker" ]]; then
+            echo "::warning::The rendered comment is missing its sticky marker, so it would be duplicated on every run; not publishing."
+            exit 0
+          fi
+          # The renderer caps the body at 60000 bytes. This guard protects the
+          # API from a regression that would make GitHub reject the comment; it
+          # never truncates, because truncation could cut a suggested fix.
+          if [[ "$(wc -c < "$COMMENT_FILE")" -gt 60000 ]]; then
+            echo "::warning::The rendered comment exceeds the 60000-byte cap; not publishing the oversized body."
+            exit 0
+          fi
+          existing="$(
+            gh api --paginate --slurp \
+              "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
+              | jq -r --arg marker "$marker" \
+                'add | .[] | select((.body // "") | startswith($marker)) | .id' \
+              | head -n 1
+          )"
+          if [[ -n "$existing" ]]; then
+            gh api --method PATCH "repos/${REPOSITORY}/issues/comments/${existing}" \
+              -F body=@"$COMMENT_FILE" > /dev/null
+            echo "Updated changed-code review comment ${existing}."
+          else
+            gh api --method POST "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments" \
+              -F body=@"$COMMENT_FILE" > /dev/null
+            echo "Published the changed-code review as a new comment."
           fi

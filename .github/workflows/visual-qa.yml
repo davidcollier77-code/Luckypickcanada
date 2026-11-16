@@ -276,12 +276,27 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
-      - name: Install Playwright Chromium (cache miss)
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      # A version-keyed cache normally restores a matching browser, but a partial
+      # or corrupt archive restores "successfully" with nothing runnable inside.
+      # Verify the archive before skipping the download so that case reinstalls
+      # instead of failing every test at launch.
+      - name: Validate restored Playwright Chromium
+        id: playwright-browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          state="$(bash .github/scripts/verify-playwright-cache.sh)"
+          printf '%s\n' "$state" >> "$GITHUB_OUTPUT"
+          if [[ "$state" != 'ready=true' ]]; then
+            echo "::warning::The restored Playwright cache has no usable Chromium executable; installing a matching build."
+          fi
+
+      - name: Install Playwright Chromium (browser unavailable)
+        if: steps.playwright-browser.outputs.ready != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Install Playwright system dependencies (cache hit)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
+      - name: Install Playwright system dependencies (browser cached)
+        if: steps.playwright-browser.outputs.ready == 'true'
         run: pnpm exec playwright install-deps chromium
 
       - name: Verify committed visual baselines

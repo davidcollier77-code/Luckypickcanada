@@ -13,6 +13,18 @@
   check, repository gate and build below the 495 MiB cap. A measured runtime
   performance budget is deliberately deferred (no browser baseline here).
 
+## 2026-11-16 — QA checker effectiveness from the PR #1924 review cycle
+- Responsibility separation recorded, not implemented: the general code-defect reviewer gained `assignment-in-condition` only, while the inventory, category ownership, gaps and the P0–P5 sequence for separate test-quality, security, performance and browser-reporting checkers are in `specs/171-qa-checker-effectiveness/plan.md`. No new workflow, dependency, paid service or external reviewer configuration.
+
+- Verified after the rule: 183 QA infrastructure tests, 81 files / 801 Vitest tests, `tsc --noEmit` exit 0, `./freebuff-verify.sh` exit 0, production build below the 495 MiB cap.
+
+- Evaluated the repository checkers against the Lucky Meter review cycle: 18 inline comments (Amazon Q, Pullfrog), Graphite skipped for PR size, Pullfrog failing twice on provider quota, Verification Integrity cancelled, PR Scope Verification failing for a missing scope declaration, and Visual QA shard 2 failing.
+- Verified 18 findings against head `6eb2ae7e`: 1 confirmed defect (no WebGL context-restore path) fixed in PR #1924, 3 already fixed, 4 not defects, 12 byte-identical duplicates.
+- Changed-code reviewer now records `confirmed`/`potential` classification, collapses duplicates by path and line with a count, and detects focused tests, `forEach(async ...)`, empty catch blocks and unused imports in fully added files.
+- Visual QA validates the restored Chromium cache and installs a matching browser when the cache has no executable, instead of failing every test at launch on a corrupt archive.
+- Classifier regression coverage extended to performance paths and ambiguous application code.
+
+
 ## 2026-11-15 — Visual QA install timing reporter corrections
 - Fixed six confirmed defects in the PR #1917 reporter without reverting or re-implementing it: a
   Chromium hit now requires a successfully completed restore step; pagination no longer stops after
@@ -435,3 +447,6 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Do not restore routine PR transcripts here. Add a new entry only for a durable project milestone or decision that materially helps future work.
 
 - 2026-11-15 follow-up: fixed protected-files workflow parsing by switching the GitHub changed-file stream to NUL-delimited fields, preserving empty previous filenames and preventing status values from being misread as paths. Added parser/workflow regression coverage and moved the Spec Kit evidence record under the classifier's existing allowed `evidence/` directory. The first CI run's changed-code review passed with zero findings; the protected-file check failed before this correction and must be rerun on the new head.
+- 2026-11-16 milestone: the changed-code reviewer now publishes one sticky pull request comment whose findings each carry a concrete suggested fix, and it suggests Playwright visual or performance work only for rendering or performance-sensitive paths. The advisory classifier mirrors `classify-visual-changes.sh` under a twelve-case parity test, so browser verification is never proposed as a blanket requirement.
+- 2026-11-16 proof pass: the publish step was executed against a stub `gh`, which caught a mangled POST URL that would have blocked the first comment; the URL is fixed and the whole chain (fixture diff → renderer → step shell) is now a test. Comment truncation moved into the renderer and cuts only between findings, so a suggested fix is never split.
+- 2026-11-16 correction from AI review: deduplicating by location and rule hid the second unused binding on one import line, so the key now includes the finding detail, and every import statement is excluded from the unused-reference search. The reviewer workflow runs under `pull_request_target` with a base-branch checkout, so the comment step takes effect only once these changes reach `main`.
