@@ -212,8 +212,7 @@ NON_RENDERING_ANY_DEPTH = (
     "specs/*",
     "memory-bank/*",
     ".docs/*",
-    ".agents/*",
-    ".freebuff/*",
+    ".agents/skills/*",
 )
 NON_RENDERING_EXACT_GLOBS = (
     ".specify/feature.json",

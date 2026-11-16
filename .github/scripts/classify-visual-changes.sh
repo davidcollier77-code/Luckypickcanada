@@ -37,13 +37,8 @@ non_rendering_path() {
     # bundles them and they cannot change rendered output.
     .agents/skills/*) return 0 ;;
 
-    # Repository automation, QA checkers, agent instructions and backend API
-    # route handlers. None of these are bundled by the Next.js build, so none of
-    # them can change rendered output. Files under scripts/ are deliberately not
-    # exempt: a performance or capture script is not positively non-rendering, so
-    # the classifier keeps visual QA (fail closed).
-    .specify/feature.json | .github/* | .freebuff/* | .agents/* \
-      | app/api/* | pages/api/*) return 0 ;;
+    # Repository automation, QA checkers and backend API route handlers.
+    .specify/feature.json | .github/* | app/api/* | pages/api/*) return 0 ;;
 
     # OpenNext queue/cache runtime configuration does not change rendered output.
     open-next.config.ts) return 0 ;;
