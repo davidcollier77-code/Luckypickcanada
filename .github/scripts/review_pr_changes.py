@@ -13,11 +13,18 @@ reviewer adds narrow, patch-level evidence for:
   unused imports in fully added files (advisory warnings).
 
 Every finding names the changed file, the new-file line, the rule, a severity, a
-confidence level, whether it is a confirmed defect or a potential concern, a
-recommended correction, and the matched excerpt. Placeholder and
+confidence level, whether it is a confirmed defect or a potential concern, the
+matched excerpt, a short recommendation, and a concrete suggested fix that a
+developer can apply or reject without asking what was meant. Placeholder and
 environment-variable patterns are suppressed for advisory rules. Findings are
 deduplicated by location and rule, so the same defect reported twice for
 different excerpts collapses to one entry.
+
+The report also states which verification it suggests. Playwright visual or
+performance work is suggested only when the change set actually touches
+rendering or performance-sensitive paths; documentation, tooling, CI and
+unit-test-only changes are told plainly that no browser verification is
+suggested. The Visual QA workflow remains the authority for what CI requires.
 
 Read-only: no network request is made here. The workflow supplies GitHub's
 changed-file records, including their unified-diff patches.
@@ -26,6 +33,7 @@ changed-file records, including their unified-diff patches.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -127,6 +135,103 @@ EXCLUDED_PACKAGE_KEYS = frozenset(
 KNOWN_EXAMPLE_TOKENS = frozenset({"AKIAIOSFODNN7EXAMPLE"})
 
 
+FOCUSED_TEST_REWRITE = re.compile(
+    r"\b(describe|it|test|context|suite|fit|fdescribe)\s*\.\s*only\s*\("
+)
+AWAIT_IN_FOR_EACH_CALL = re.compile(
+    r"(?P<collection>[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\.\s*forEach\s*"
+    r"\(\s*async\s*\(?\s*(?P<param>[A-Za-z_$][\w$]*)?"
+)
+_DEPRECATED_REPLACEMENTS = (
+    (
+        "document.execcommand",
+        "Replace `document.execCommand` with the Clipboard API "
+        "(`await navigator.clipboard.writeText(text)`).",
+    ),
+    (
+        "componentwillmount",
+        "Run the initialisation in `useEffect(() => { ... }, [])` or in the "
+        "state initialiser instead of `componentWillMount`.",
+    ),
+    (
+        "componentwillreceiveprops",
+        "Derive the value during render, or use `getDerivedStateFromProps`/"
+        "`useEffect` instead of `componentWillReceiveProps`.",
+    ),
+    (
+        "reactdom.render(",
+        "Use `createRoot(container).render(<App />)` from `react-dom/client`.",
+    ),
+)
+_STATIC_SUGGESTIONS = {
+    "merge-conflict-marker": (
+        "Delete the `<<<<<<<`, `=======` and `>>>>>>>` lines and keep the "
+        "intended side, then re-run the tests."
+    ),
+    "private-key-block": (
+        "Remove the key, rotate it, and load the replacement from the secret "
+        "store at runtime."
+    ),
+    "hardcoded-credential": (
+        "Read the value from `process.env` or the approved secret store, or "
+        "replace it with an obviously non-secret fixture value."
+    ),
+    "unsafe-html-or-dynamic-code": (
+        "Render the value as text, or sanitise it with a reviewed allowlist "
+        "before it reaches the sink."
+    ),
+    "target-blank-without-noopener": (
+        'Add `rel="noopener noreferrer"` beside `target="_blank"`.'
+    ),
+    "insecure-http-url": (
+        "Change the URL to `https://`; if the endpoint cannot use TLS, document "
+        "why and keep it out of production paths."
+    ),
+    "type-or-lint-suppression": (
+        "Fix the underlying diagnostic, or narrow the suppression to the "
+        "affected line and record the reason in the comment."
+    ),
+    "debugger-statement": "Delete the `debugger` line before merging.",
+    "empty-catch-block": (
+        "Do something with the failure: `catch (error) { console.error(error); }`, "
+        "or rethrow after cleanup so the error is not hidden."
+    ),
+}
+PROVIDER_TOKEN_SUGGESTION = (
+    "Revoke and rotate the token, remove it from the diff, and read the "
+    "replacement from the environment or a secret store."
+)
+PROVIDER_TOKEN_RULES = frozenset(rule for rule, _pattern in PROVIDER_TOKEN_PATTERNS)
+# The change classifier in .github/scripts/classify-visual-changes.sh is the
+# authority for whether CI requires the browser job. These patterns mirror its
+# non-rendering list so the advisory suggestion matches that decision; an
+# unknown path is treated as rendering-affecting, exactly as the shell classifier
+# fails closed.
+NON_RENDERING_ANY_DEPTH = (
+    "*.md",
+    "specs/*",
+    "memory-bank/*",
+    ".docs/*",
+    ".agents/skills/*",
+)
+NON_RENDERING_EXACT_GLOBS = (
+    ".specify/feature.json",
+    ".github/*",
+    "app/api/*",
+    "pages/api/*",
+    "__tests__/*.test.js",
+    "__tests__/*.test.jsx",
+    "__tests__/*.test.ts",
+    "__tests__/*.test.tsx",
+    "playwright.*.config.ts",
+    "playwright-*.config.ts",
+)
+PERFORMANCE_PATH_PATTERN = re.compile(
+    r"(?:engine|renderer|shader|gpu|perf|animation|canvas|webgl|frame)", re.I
+)
+PERFORMANCE_CODE_SUFFIXES = (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs")
+
+
 class ReviewError(ValueError):
     """The changed-file evidence cannot be reviewed safely."""
 
@@ -186,6 +291,7 @@ def _finding(
     recommendation: str,
     excerpt: str,
     classification: str | None = None,
+    suggestion: str | None = None,
 ) -> dict:
     # A hard rule has a proven payload (a key, a token, a conflict marker); an
     # advisory rule reports a pattern whose intent is not proven from the patch.
@@ -200,8 +306,75 @@ def _finding(
         "classification": classification,
         "message": message,
         "recommendation": recommendation,
+        "suggestion": suggestion
+        or _suggestion(rule, excerpt, message, recommendation),
         "excerpt": excerpt.strip()[:180],
     }
+
+
+def _is_non_rendering_path(path: str) -> bool:
+    """Mirror the non-rendering exemptions of classify-visual-changes.sh."""
+    if any(fnmatch.fnmatchcase(path, pattern) for pattern in NON_RENDERING_ANY_DEPTH):
+        return True
+    if any(fnmatch.fnmatchcase(path, pattern) for pattern in NON_RENDERING_EXACT_GLOBS):
+        return True
+    if path == "open-next.config.ts":
+        return True
+    # The committed Playwright configuration decides how CI produces the
+    # baselines, so it stays rendering-affecting; package.json needs a manifest
+    # comparison this checker cannot make, so it is treated as rendering-affecting.
+    return False
+
+
+def _is_performance_path(path: str) -> bool:
+    """True for code that plausibly changes measured rendering or frame timing."""
+    if _documentation_path(path) or _test_path(path):
+        return False
+    if not path.casefold().endswith(PERFORMANCE_CODE_SUFFIXES):
+        return False
+    return bool(PERFORMANCE_PATH_PATTERN.search(path))
+
+
+def _suggested_verification(paths) -> dict:
+    rendering = sorted({path for path in paths if not _is_non_rendering_path(path)})
+    performance = sorted({path for path in paths if _is_performance_path(path)})
+    return {
+        "playwright_visual": bool(rendering),
+        "playwright_performance": bool(performance),
+        "rendering_path_count": len(rendering),
+        "performance_path_count": len(performance),
+        "rendering_paths": rendering[:5],
+        "performance_paths": performance[:5],
+    }
+
+
+def _suggestion(rule: str, excerpt: str, message: str, recommendation: str) -> str:
+    """Return a concrete correction a developer can apply from the comment."""
+    if rule == "focused-test":
+        rewritten = FOCUSED_TEST_REWRITE.sub(r"\1(", excerpt.strip())
+        return "Remove the focus so the whole suite runs: `%s`" % rewritten
+    if rule == "await-in-for-each":
+        match = AWAIT_IN_FOR_EACH_CALL.search(excerpt)
+        if match:
+            param = match.group("param") or "item"
+            return (
+                "Await the work instead of dropping it: "
+                "`for (const %s of %s) { await ... }`, or collect the promises "
+                "and `await Promise.all(...)`."
+                % (param, match.group("collection"))
+            )
+        return (
+            "Use `for...of` with `await`, or collect the promises and "
+            "`await Promise.all(...)`."
+        )
+    if rule == "deprecated-api":
+        lowered = excerpt.casefold()
+        for needle, replacement in _DEPRECATED_REPLACEMENTS:
+            if needle in lowered:
+                return replacement
+    if rule in PROVIDER_TOKEN_RULES:
+        return PROVIDER_TOKEN_SUGGESTION
+    return _STATIC_SUGGESTIONS.get(rule, recommendation)
 
 
 def _test_path(path: str) -> bool:
@@ -468,6 +641,11 @@ def _line_findings(path: str, line: int, text: str, nearby_text: str = "") -> li
                     f"A dependency entry for {package_match.group(1)!r} was added or changed.",
                     "Confirm the package is necessary, reviewed, and reflected in the lockfile and build size.",
                     stripped,
+                    suggestion=(
+                        "Confirm `%s` is needed, add it with `pnpm add %s` so "
+                        "`pnpm-lock.yaml` matches, and check the build-size budget."
+                        % (package_match.group(1), package_match.group(1))
+                    ),
                 )
             )
 
@@ -545,6 +723,10 @@ def _unused_import_findings(path: str, added: list[tuple[int, str]]) -> list[dic
                 "Remove the unused binding, or use it in the file.",
                 text,
                 classification="confirmed",
+                suggestion=(
+                    "Delete `%s` (line %d) or reference `%s` in this file."
+                    % (text.strip(), line_number, binding)
+                ),
             )
         )
     return findings
@@ -560,6 +742,7 @@ def review_files(file_records) -> dict:
     findings = []
     reviewed = []
     skipped = []
+    all_paths = []
     for record in file_records:
         if not isinstance(record, dict):
             raise ReviewError("GitHub changed-file evidence contains a malformed record")
@@ -567,6 +750,7 @@ def review_files(file_records) -> dict:
         if not isinstance(filename, str) or not filename.strip():
             raise ReviewError("GitHub changed-file evidence contains a record without a filename")
         path = filename.strip()
+        all_paths.append(path)
         patch = record.get("patch")
         if not isinstance(patch, str) or not patch.strip():
             skipped.append(
@@ -617,6 +801,7 @@ def review_files(file_records) -> dict:
         "hard_count": hard_count,
         "warning_count": warning_count,
         "duplicates_collapsed": duplicates_collapsed,
+        "suggested_verification": _suggested_verification(all_paths),
         "confirmed_count": sum(
             1 for item in ordered if item["classification"] == "confirmed"
         ),
@@ -625,6 +810,55 @@ def review_files(file_records) -> dict:
             "DevSkim, CodeQL, TypeScript, tests and reviewer judgment remain authoritative."
         ),
     }
+
+
+def _inline_code(text: str) -> str:
+    """Render evidence as one inline-code span that cannot break the Markdown."""
+    cleaned = " ".join(str(text).split()).replace("`", "'")
+    return "`%s`" % cleaned
+
+
+def _render_suggested_verification(report: dict) -> list[str]:
+    suggestion = report.get("suggested_verification") or {}
+    lines = ["", "### Suggested verification", ""]
+    rendered = False
+    if suggestion.get("playwright_visual"):
+        examples = ", ".join(
+            "`%s`" % path for path in suggestion.get("rendering_paths", [])[:3]
+        )
+        lines.append(
+            "- Playwright visual verification is suggested: %d rendering path(s) "
+            "changed%s. Run `./scripts/playwright-cli.sh test` for desktop, "
+            "mobile-390 and mobile-412."
+            % (
+                suggestion.get("rendering_path_count", 0),
+                " (for example %s)" % examples if examples else "",
+            )
+        )
+        rendered = True
+    if suggestion.get("playwright_performance"):
+        paths = suggestion.get("performance_paths", [])
+        examples = ", ".join("`%s`" % path for path in paths[:3])
+        lines.append(
+            "- Playwright performance measurement is suggested: %d "
+            "performance-sensitive path(s) changed%s. Drive the real interaction, "
+            "then run the frame probe."
+            % (
+                suggestion.get("performance_path_count", 0),
+                " (for example %s)" % examples if examples else "",
+            )
+        )
+        rendered = True
+    if not rendered:
+        lines.append(
+            "- No Playwright verification is suggested: every changed path is "
+            "documentation, tooling, CI or unit-test-only."
+        )
+    lines.append(
+        "- Playwright is not required for every change. The Visual QA workflow "
+        "makes the required decision from the same changed-path evidence."
+    )
+    return lines
 
 
 def render_markdown(report: dict) -> str:
@@ -640,19 +874,13 @@ def render_markdown(report: dict) -> str:
         "",
         report.get("note", ""),
     ]
+    lines.extend(_render_suggested_verification(report))
     findings = report.get("findings", [])
     if findings:
-        lines.extend(
-            [
-                "",
-                "| Severity | Classification | Rule | Location | Confidence | Evidence |",
-                "| --- | --- | --- | --- | --- | --- |",
-            ]
-        )
+        lines.extend(["", "### Findings", ""])
         for item in findings:
-            evidence = item["excerpt"].replace("|", "\\|")
             lines.append(
-                "| %s | %s | %s | `%s:%s` | %s | `%s` |"
+                "- **%s · %s · %s** `%s:%s` (confidence: %s)"
                 % (
                     item["severity"],
                     item["classification"],
@@ -660,13 +888,12 @@ def render_markdown(report: dict) -> str:
                     item["path"],
                     item["line"],
                     item["confidence"],
-                    evidence,
                 )
             )
-            lines.append(
-                "|  |  |  |  |  | %s |"
-                % item["recommendation"].replace("|", "\\|")
-            )
+            lines.append("  - What happened: %s" % item["message"])
+            lines.append("  - Evidence: %s" % _inline_code(item["excerpt"]))
+            lines.append("  - Suggested fix: %s" % item["suggestion"])
+        lines.append("")
     else:
         lines.extend(["", "No added-line findings were detected."])
 

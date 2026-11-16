@@ -408,5 +408,141 @@ class DefectPatternTests(unittest.TestCase):
         self.assertEqual(classifications["unsafe-html-or-dynamic-code"], "potential")
 
 
+FLAGGED_LINES = (
+    ("__tests__/hero.test.js", "it.only('runs alone', () => {});"),
+    ("app/lib/io.js", "items.forEach(async (item) => { await save(item); });"),
+    ("app/lib/queue.js", "} catch { }"),
+    ("app/config.js", 'const key = "%s";' % ("AKIA" + "1234567890ABCDEF")),
+    ("components/Hero.tsx", "<div " + "dangerouslySet" + "InnerHTML={html} />"),
+    ("app/lib/legacy.js", "document.execCommand('copy');"),
+    ("package.json", '"left-pad": "^1.3.0"'),
+)
+
+
+class SuggestedFixTests(unittest.TestCase):
+    """Every finding must carry a correction the developer can act on."""
+
+    def test_every_finding_carries_a_specific_suggestion(self):
+        result = review_files([record(path, line) for path, line in FLAGGED_LINES])
+        self.assertEqual(len(result["findings"]), len(FLAGGED_LINES))
+        for finding in result["findings"]:
+            self.assertTrue(finding["suggestion"].strip(), finding["rule"])
+            self.assertGreaterEqual(len(finding["suggestion"]), 24, finding["rule"])
+
+    def test_focused_test_suggestion_rewrites_the_line(self):
+        finding = findings_for("__tests__/hero.test.js", "it.only('runs alone', () => {});")[0]
+        self.assertIn("it('runs alone'", finding["suggestion"])
+        self.assertNotIn(".only", finding["suggestion"])
+
+    def test_for_each_suggestion_names_the_collection_and_binding(self):
+        finding = findings_for(
+            "app/lib/io.js", "items.forEach(async (entry) => { await save(entry); });"
+        )[0]
+        self.assertIn("for (const entry of items)", finding["suggestion"])
+
+    def test_empty_catch_suggestion_shows_a_handling_form(self):
+        finding = findings_for("app/lib/queue.js", "} catch { }")[0]
+        self.assertIn("catch (error)", finding["suggestion"])
+
+    def test_unused_import_suggestion_names_the_binding(self):
+        result = review_files(
+            [added_record("app/lib/page.js", "import { alpha } from './math';", "export default 1;")]
+        )
+        finding = result["findings"][0]
+        self.assertEqual(finding["rule"], "unused-import")
+        self.assertIn("alpha", finding["suggestion"])
+
+    def test_deprecated_api_suggestion_names_the_replacement(self):
+        finding = findings_for("app/lib/legacy.js", "document.execCommand('copy');")[0]
+        self.assertIn("navigator.clipboard", finding["suggestion"])
+
+    def test_dependency_suggestion_names_the_package(self):
+        finding = findings_for("package.json", '"left-pad": "^1.3.0"')[0]
+        self.assertIn("left-pad", finding["suggestion"])
+
+    def test_markdown_states_the_suggested_fix_for_each_finding(self):
+        markdown = render_markdown(
+            review_files([record("__tests__/hero.test.js", "it.only('x', () => {});")])
+        )
+        self.assertIn("Suggested fix:", markdown)
+
+
+class SuggestedVerificationTests(unittest.TestCase):
+    """Playwright is suggested for rendering and performance work, not everything."""
+
+    def test_documentation_only_change_suggests_no_browser_work(self):
+        result = review_files([added_record("docs/notes.md", "Updated the copy.")])
+        suggestion = result["suggested_verification"]
+        self.assertFalse(suggestion["playwright_visual"])
+        self.assertFalse(suggestion["playwright_performance"])
+        self.assertIn("No Playwright verification is suggested", render_markdown(result))
+
+    def test_visual_change_suggests_playwright_visual_verification(self):
+        result = review_files([record("components/Hero.tsx", "export const a = 1;")])
+        self.assertTrue(result["suggested_verification"]["playwright_visual"])
+        markdown = render_markdown(result)
+        self.assertIn("Playwright visual verification is suggested", markdown)
+        self.assertIn("./scripts/playwright-cli.sh test", markdown)
+
+    def test_performance_change_suggests_playwright_measurement(self):
+        result = review_files(
+            [record("components/cosmic-event-engine.js", "export const tick = 1;")]
+        )
+        suggestion = result["suggested_verification"]
+        self.assertTrue(suggestion["playwright_visual"])
+        self.assertTrue(suggestion["playwright_performance"])
+        self.assertIn("Playwright performance measurement is suggested", render_markdown(result))
+
+    def test_ci_and_unit_test_changes_need_no_browser(self):
+        result = review_files(
+            [
+                added_record(".github/workflows/example.yml", "name: example"),
+                added_record("__tests__/thing.test.js", "export const one = 1;"),
+                added_record("specs/170-example/spec.md", "Requirement."),
+            ]
+        )
+        self.assertFalse(result["suggested_verification"]["playwright_visual"])
+
+    def test_suggestion_agrees_with_the_visual_qa_classifier(self):
+        import pathlib
+        import subprocess
+
+        script = (
+            pathlib.Path(__file__).resolve().parents[2]
+            / ".github"
+            / "scripts"
+            / "classify-visual-changes.sh"
+        )
+        cases = (
+            ["components/Hero.tsx"],
+            ["app/lib/io.js"],
+            ["app/globals.css"],
+            ["public/og.png"],
+            ["__tests__/thing.test.js"],
+            ["docs/notes.md"],
+            [".github/workflows/visual-qa.yml"],
+            ["app/api/route.js"],
+            ["playwright.config.ts"],
+            ["playwright.swiftshader.config.ts"],
+            ["scripts/unknown.mjs"],
+            ["specs/170/spec.md", "components/Hero.tsx"],
+        )
+        for paths in cases:
+            expected = subprocess.run(
+                ["bash", str(script)],
+                input="\n".join(paths),
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            review = review_files([record(path, "export const x = 1;") for path in paths])
+            actual = (
+                "visual_required=true"
+                if review["suggested_verification"]["playwright_visual"]
+                else "visual_required=false"
+            )
+            self.assertEqual(actual, expected, paths)
+
+
 if __name__ == "__main__":
     unittest.main()

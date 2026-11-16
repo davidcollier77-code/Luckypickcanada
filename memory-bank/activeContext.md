@@ -22,6 +22,13 @@ QA checkers, using the PR #1924 review and fix cycle as the evaluation.
   `empty-catch-block`, and `unused-import` (fully added, non-documentation files
   only; the `React` default import is excluded).
 - The Markdown report shows classification, confirmed count and duplicate count.
+- Every finding carries a concrete suggested fix, rendered as "Suggested fix",
+  and the report is published as one sticky pull request comment that is
+  updated in place instead of posted once per run.
+- The report suggests Playwright visual verification only when rendering paths
+  changed and performance measurement only for performance-sensitive paths; it
+  states plainly that no browser verification is suggested for documentation,
+  tooling, CI or unit-test-only changes, mirroring the Visual QA classifier.
 - `.github/scripts/verify-playwright-cache.sh` validates a restored Playwright
   cache; the Visual QA job installs Chromium when the cache has no executable and
   keeps the system-dependency install and both shards when it does.

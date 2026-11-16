@@ -87,3 +87,22 @@ None of the four defect classes now added was detected by any repository checker
 - `./freebuff-verify.sh`, which installs from the lockfile, runs the Spec Kit gate,
   the governance and verification-integrity suites, the type check and the build.
 - Production build size measured against the 495 MiB cap.
+
+## Refinement: actionable findings and targeted browser verification
+
+- Each rule gains a `suggestion` produced at finding time: a deterministic
+  rewrite where the correction follows from the matched line (focused test,
+  `forEach(async ...)`, unused import binding), a named replacement for a
+  deprecated API, and a reviewed static correction otherwise. The report renders
+  it as "Suggested fix" under evidence, so the comment answers "what now?".
+- `suggested_verification` classifies the changed paths once. Rendering paths
+  (everything `classify-visual-changes.sh` does not positively exempt) suggest
+  the Playwright suite; code paths whose names mark rendering or frame work
+  additionally suggest the frame probe. Documentation, tooling, CI and
+  unit-test-only changes are told that no browser verification is suggested.
+- The classifier stays authoritative: the reviewer mirrors its exemptions and a
+  parity test executes both against the same twelve path lists, so the advisory
+  suggestion cannot drift from the required gate silently.
+- The review report is posted once per pull request and updated in place using a
+  sticky marker, with the same text as the job summary. The step is
+  `continue-on-error` because the review step already decided pass/fail.

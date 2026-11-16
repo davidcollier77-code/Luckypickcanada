@@ -117,7 +117,25 @@ tooling, CI-only, agent-skill and Spec Kit cases still return
 | `./freebuff-verify.sh` | exit 0 (Spec Kit gate, governance suites, type check, production build, docs tests) |
 | Production build size (`.next` + `public`) | 340,039,798 bytes = 324.29 MiB, below the 495 MiB cap |
 
-## 6. Limitations
+## 6. Refinement evidence — suggested fixes and targeted browser verification
+
+| Check | Result |
+| --- | --- |
+| `PYTHONPATH=.github/scripts python3 -m unittest test_review_pr_changes` | 58 tests OK (13 added: suggestions, verification suggestions, classifier parity) |
+| `pnpm exec vitest run __tests__/qa-review-comment.test.js` | 5 tests passed |
+| Sample report render | findings show "Suggested fix" per rule; a docs-only change set prints "No Playwright verification is suggested" |
+| Classifier parity | 12 path lists produce the same decision from the reviewer and `classify-visual-changes.sh`, including CI-only, API, `playwright.config.ts`, standalone Playwright configuration and unknown paths |
+| Workflow YAML parse | `pr-scope-verification.yml` parses; permissions `contents: read`, `pull-requests: write`, `issues: read` |
+
+Observed suggestion output for controlled defects:
+
+- `it.only('runs alone', () => {});` → "Remove the focus so the whole suite runs: `it('runs alone', () => {});`"
+- `items.forEach(async (item) => ...)` → "Await the work instead of dropping it: `for (const item of items) { await ... }`, or collect the promises and `await Promise.all(...)`."
+- `} catch { }` → "`catch (error) { console.error(error); }`, or rethrow after cleanup."
+- `document.execCommand('copy')` → "Replace `document.execCommand` with the Clipboard API (`await navigator.clipboard.writeText(text)`)."
+- Unused `import { alpha }` → "Delete `import { alpha } from './math';` (line 1) or reference `alpha` in this file."
+
+## 7. Limitations
 
 - Playwright visual regression was not executed here: this runner has no GPU and
   no browser install. The committed baselines and both shards are unchanged, and

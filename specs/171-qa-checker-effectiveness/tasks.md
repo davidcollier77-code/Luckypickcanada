@@ -45,3 +45,12 @@
 ## Implementation Strategy
 
 Keep the change inside the QA infrastructure: the changed-code reviewer, the visual QA workflow and the scripts and tests that guard them. Do not change application code, dependencies, Playwright baselines, external reviewer configuration or any required check's blocking behaviour.
+
+## Phase 6: Refinement — actionable findings and targeted browser verification
+
+- [x] T019 Give every rule a concrete `suggestion` (rewritten focused test, awaited loop form, `catch (error)` handler, unused binding, deprecated-API replacement, added package) and keep a static fallback per rule.
+- [x] T020 Render findings as "What happened / Evidence / Suggested fix" and keep the report readable in both the job summary and a pull request comment.
+- [x] T021 Publish the report as a single sticky pull request comment that is updated in place, sized below GitHub's limit, and marked `continue-on-error` so a comment failure cannot change the gate.
+- [x] T022 Compute `suggested_verification` from the changed paths and mirror `classify-visual-changes.sh`; suggest visual work only for rendering paths and performance measurement only for performance-sensitive paths.
+- [x] T023 Add executed fixtures for every suggestion, the documentation/visual/performance suggestions, and a twelve-case parity test against the shell classifier.
+- [x] T024 Guard the comment step (permission, marker, PATCH path, `if: always()`, `continue-on-error`, size limit) with an executed workflow test.

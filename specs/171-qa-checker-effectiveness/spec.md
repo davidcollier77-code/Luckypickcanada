@@ -86,6 +86,10 @@ A pull request that changes rendering, effect or performance tooling must still 
 - **FR-006**: The Visual QA job MUST continue to install system dependencies when the cached browser is usable and MUST keep running the full Playwright suite in both shards.
 - **FR-007**: The visual change classifier's existing fail-closed behaviour MUST be preserved and MUST be covered for visual, performance, ordinary-code, documentation, tooling and ambiguous change sets.
 - **FR-008**: No existing required check may be weakened, skipped or made non-blocking by this change.
+- **FR-009**: Every finding MUST carry a concrete `suggestion` that names the correction (the rewritten line, the awaited form, the binding to delete, the replacement API) and MUST be rendered as "Suggested fix" wherever the finding is shown.
+- **FR-010**: The review report MUST be published as a pull request comment, updated in place through a sticky marker rather than posted once per run, and a comment failure MUST NOT change the review's pass/fail result.
+- **FR-011**: The report MUST suggest Playwright visual verification only when the change set contains rendering paths, and Playwright performance measurement only when it contains performance-sensitive paths.
+- **FR-012**: The report MUST state plainly that Playwright is not required for every change, and its suggestion MUST agree with the Visual QA classifier's decision for the same path list.
 
 ## Success Criteria
 
@@ -96,6 +100,9 @@ A pull request that changes rendering, effect or performance tooling must still 
 - **SC-003**: The cache check returns `ready=false` for missing, empty, non-executable and directory-only caches, and `ready=true` only for an executable browser.
 - **SC-004**: The classifier suite covers at least one visual, performance, ordinary-code, documentation, tooling and ambiguous path list with executed assertions.
 - **SC-005**: The full unit suite, the QA checker suites and the standalone TypeScript check pass, and the production build stays below the 495 MiB cap.
+- **SC-006**: Every flagged fixture has a non-empty suggestion of at least 24 characters, and rule-specific fixtures produce the exact correction (rewritten focused test, `for (const entry of items)`, `catch (error)`, the unused binding, `navigator.clipboard`, the added package).
+- **SC-007**: A documentation-only change set reports "No Playwright verification is suggested", a rendering change set reports visual verification, and an effect-engine change set reports both visual and performance verification.
+- **SC-008**: Twelve path lists produce the same decision from the reviewer's suggestion and from `classify-visual-changes.sh`, including CI-only, API, `playwright.config.ts`, standalone Playwright configuration and unknown paths.
 
 ## Assumptions
 
