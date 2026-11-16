@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
+import LuckyMeterOrnaments from './LuckyMeterOrnaments';
 import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
 import { useDailyResetCountdown } from './daily-reset-countdown';
@@ -573,8 +574,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const isLightColour = result?.colour?.light === true;
 
   const ringSizeClasses = isCompact ? 'mt-3' : 'mt-8 sm:mt-9';
-  const panelClass =
-    'rounded-2xl border border-amber-300/20 bg-slate-950/55 shadow-[inset_0_1px_0_rgba(255,240,190,0.08)] backdrop-blur-sm';
+  const panelClass = 'lucky-panel rounded-2xl';
 
   return (
     <div
@@ -613,6 +613,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         />
       </picture>
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
+
+      {/* Golden maple leaves: a far layer behind the scene and, on capable
+          profiles, a near layer in front of the meter and its panels. */}
+      {!reducedMotion && <LuckyMeterOrnaments reducedMotion={reducedMotion} />}
 
       {stageActive && result && (
         <CosmicEventStage
@@ -725,10 +729,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   {displayPercentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-1.5 text-[clamp(12px,1.4vh,15px)] font-semibold uppercase tracking-[0.12em] text-amber-100">
-                  {result.tier.label}
-                </p>
-                <p className="mt-1 max-w-[14rem] text-[clamp(12px,1.25vh,13px)] leading-snug text-slate-200/85">
+                <div className="lucky-tier-plate mt-1.5">
+                  <span aria-hidden="true" className="lucky-tier-plate__rule" />
+                  <p className="lucky-tier-plate__label whitespace-nowrap">{result.tier.label}</p>
+                  <span aria-hidden="true" className="lucky-tier-plate__rule" />
+                </div>
+                <p className="mt-1.5 w-full max-w-full text-[clamp(11px,1.2vh,13px)] leading-snug text-slate-200/85">
                   {result.tier.message}
                 </p>
               </div>
@@ -758,7 +764,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                 >
                   <div className="grid grid-cols-2 gap-2">
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                      <h2 className="lucky-panel-label text-[12px] uppercase">
                         Today&apos;s Event
                       </h2>
                       <p className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base">
@@ -773,7 +779,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                      <h2 className="lucky-panel-label text-[12px] uppercase">
                         Today&apos;s Colour
                       </h2>
                       <div className="mt-1 flex items-center gap-2.5">
@@ -796,7 +802,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                      <h2 className="lucky-panel-label text-[12px] uppercase">
                         {LUCKY_NUMBERS_LABEL}
                       </h2>
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -812,11 +818,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     </section>
 
                     <section className={`${panelClass} p-2.5 sm:p-3`}>
-                      <h2 className="text-[12px] uppercase tracking-[0.18em] text-amber-200/70">
+                      <h2 className="lucky-panel-label text-[12px] uppercase">
                         Little Spark
                       </h2>
-                      <p className="mt-0.5 text-[12px] italic leading-snug text-amber-50/90 sm:text-[13px]">
-                        “{result.spark.message}”
+                      <p className="lucky-spark-quote mt-1 text-[12px] leading-snug sm:text-[13px]">
+                        <span aria-hidden="true" className="lucky-spark-quote__mark">
+                          “
+                        </span>
+                        {result.spark.message}
+                        <span aria-hidden="true" className="lucky-spark-quote__mark">
+                          ”
+                        </span>
                       </p>
                     </section>
                   </div>
@@ -831,7 +843,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     <button
                       type="button"
                       onClick={handleShare}
-                      className="gold-3d-btn w-full rounded-full px-6 py-2.5 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
+                      className="gold-3d-btn lucky-share-btn w-full rounded-full px-6 py-2.5 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
                     >
                       <span className="gold-cta-emoji" aria-hidden="true">
                         ✦
@@ -839,12 +851,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                       {shareLabel}
                     </button>
 
-                    <div className="mt-3 flex flex-wrap items-baseline justify-center gap-x-2.5 gap-y-0.5">
-                      <p className="text-[12px] text-slate-400 uppercase tracking-[0.18em]">
+                    <div className="lucky-countdown mt-3">
+                      <p className="text-[12px] uppercase tracking-[0.18em] text-slate-400">
                         Next Resonance In
                       </p>
                       <div
-                        className="text-xl font-mono text-amber-200 tracking-wider drop-shadow-md tabular-nums sm:text-2xl"
+                        className="lucky-countdown__value text-xl tabular-nums sm:text-2xl"
                         aria-label="Time until daily reset"
                       >
                         {resetCountdown}

@@ -1,26 +1,30 @@
 /**
  * Cosmic event stage for the Daily Resonance reveal.
  *
- * Three GPU-rendered set pieces share one additive WebGL point pipeline:
- *   - Meteor Shower: depth-varied meteors with plasma trails; near meteors and
- *     the close finale cross in front of the meter.
- *   - Cosmic Lightning: branching strikes at several depths, with atmospheric
- *     haze, cloud bloom and a huge close finale.
- *   - Fireworks: dense red peonies, fine white/silver crackle and a golden
- *     chrysanthemum + willow finale whose sparks fall across the interface.
+ * Three set pieces share one additive WebGL pipeline:
+ *   - Meteor Shower: depth-varied meteors with a colour-graded plasma trail, a
+ *     widening smoke wake, shed fragments and a close foreground sweep.
+ *   - Cosmic Lightning: branching discharges drawn at several distances with a
+ *     white-hot core and a cool sheath, each briefly lighting the atmosphere.
+ *   - Fireworks: red peonies and white/silver crackle in three dimensions, smoke
+ *     that takes colour from the light around it, and a golden finale that is
+ *     much larger and the warmest moment of the whole sequence.
  *
- * Two transparent surfaces are used so depth is real rather than simulated:
- * the far surface sits behind the meter and interface, the near surface above
- * them. The near surface is optional (and pointer-transparent), so constrained
- * devices keep one context. Every particle is additive light, so the existing
- * Milky Way artwork underneath is never replaced, covered or dimmed.
+ * Depth is projected, not simulated. Every effect is authored at a depth
+ * multiplier, and one camera turns that into screen size, brightness and motion,
+ * so a near meteor is genuinely larger and faster than a distant one and a
+ * distant lightning channel genuinely converges.
  *
- * Design notes:
- *   - Positions are CSS pixels, converted to clip space in the vertex shader.
- *   - Particle point sizes are multiplied by the device pixel ratio because
- *     gl_PointSize is expressed in physical pixels.
- *   - Nothing here runs when WebGL is unavailable; the caller shows a static
- *     fallback and keeps its own completion timer.
+ * Two transparent surfaces carry the result so depth ordering with the interface
+ * is real: the far surface sits behind the meter and its panels, the near surface
+ * above them. The near surface is optional and pointer-transparent, so
+ * constrained devices keep a single context.
+ *
+ * Lighting is shared. Each strike and each detonation publishes a coloured light
+ * into `gpu-scene-light`, which the sky-light pass uses to brighten the
+ * atmosphere and which the medallion and the maple leaves read to light
+ * themselves. That is what stops the effects from looking like separate flat
+ * animations over a photograph.
  */
 
 import {
@@ -40,6 +44,9 @@ import {
   randomBetween,
   readMaxPointSize,
 } from '../app/lib/gpu-particles';
+import { createSkyLightProgram } from '../app/lib/gpu-lighting';
+import { clearSceneLights, publishSceneLights } from '../app/lib/gpu-scene-light';
+import { depthScale } from '../app/lib/gpu-math';
 
 const HAZE_VERTEX_SHADER = `
 attribute vec2 a_uv;
@@ -100,37 +107,46 @@ void main() {
   float flash = u_flash * exp(-flashDistance / (u_resolution.y * 0.55));
 
   vec3 cloudColor = mix(vec3(0.34, 0.41, 0.62), vec3(0.93, 0.96, 1.0), clamp(flash * 1.6, 0.0, 1.0));
-  // A light veil only: the Milky Way must stay legible through the storm, so
-  // the cloud body contributes a fraction of the strike's own illumination,
-  // while the strike's flash does the real lighting.
+  // A light veil only: the Milky Way must stay legible through the storm, so the
+  // cloud body contributes a fraction of the strike's own illumination while the
+  // strike's flash does the real lighting.
   float alpha = density * u_alpha * 0.22 + flash * 0.5 * u_alpha;
   gl_FragColor = vec4(cloudColor * (0.55 + flash * 2.6), alpha);
 }
 `;
 
-const DEFAULT_WEBGL_ATTRIBUTES = {
-  alpha: true,
-  antialias: false,
-  depth: false,
-  stencil: false,
-  premultipliedAlpha: false,
-};
+const QUAD_VERTICES = new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]);
+
+// Meteor trail grade, head to tail. Module constants so the per-sample loop
+// never re-parses a hex string: this runs thousands of times per frame.
+const TRAIL_HOT = hexToRgb('#ffdca0');
+const TRAIL_WARM = hexToRgb('#ff9a4a');
+const TRAIL_COOL = hexToRgb('#e0562f');
+const TRAIL_EMBER = hexToRgb('#8c2f22');
+const METEOR_HEAD = hexToRgb('#ffffff');
+const METEOR_HEAD_FINALE = hexToRgb('#fff4d6');
 
 /**
  * One WebGL canvas: programs, attribute buffers and its own backing store.
- * The engine owns two of these only when the resolved quality profile supports
- * the near layer.
  */
-function createSurface(canvas, { haze = false } = {}) {
+function createSurface(canvas, { haze = false, skyLight = false } = {}) {
   if (!canvas) return null;
-  const gl = getWebGLContext(canvas, DEFAULT_WEBGL_ATTRIBUTES);
+  const gl = getWebGLContext(canvas, {
+    alpha: true,
+    antialias: false,
+    depth: false,
+    stencil: false,
+    premultipliedAlpha: false,
+  });
   if (!gl) return null;
 
   let pointProgram = createProgram(gl, POINT_VERTEX_SHADER, POINT_FRAGMENT_SHADER);
   let hazeProgram = haze ? createProgram(gl, HAZE_VERTEX_SHADER, HAZE_FRAGMENT_SHADER) : null;
+  const skyProgram = skyLight ? createSkyLightProgram(gl) : null;
   if (!pointProgram || (haze && !hazeProgram)) {
     if (pointProgram) gl.deleteProgram(pointProgram);
     if (hazeProgram) gl.deleteProgram(hazeProgram);
+    if (skyProgram) gl.deleteProgram(skyProgram.program);
     return null;
   }
 
@@ -156,15 +172,11 @@ function createSurface(canvas, { haze = false } = {}) {
   const positionBuffer = gl.createBuffer();
   const colorBuffer = gl.createBuffer();
   const sizeBuffer = gl.createBuffer();
-  let hazeBuffer = null;
-  if (hazeProgram) {
-    hazeBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, hazeBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]),
-      gl.STATIC_DRAW,
-    );
+  let quadBuffer = null;
+  if (hazeProgram || skyProgram) {
+    quadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, QUAD_VERTICES, gl.STATIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
@@ -176,6 +188,7 @@ function createSurface(canvas, { haze = false } = {}) {
     gl,
     maxPointSize,
     hazeAvailable: Boolean(hazeProgram),
+    skyLightAvailable: Boolean(skyProgram),
     get width() {
       return width;
     },
@@ -196,9 +209,9 @@ function createSurface(canvas, { haze = false } = {}) {
       gl.clear(gl.COLOR_BUFFER_BIT);
     },
     drawHaze({ time, alpha, flash, flashPosition }) {
-      if (!hazeProgram || !hazeLocations || !hazeBuffer) return;
+      if (!hazeProgram || !hazeLocations || !quadBuffer) return;
       gl.useProgram(hazeProgram);
-      gl.bindBuffer(gl.ARRAY_BUFFER, hazeBuffer);
+      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
       gl.enableVertexAttribArray(hazeLocations.uv);
       gl.vertexAttribPointer(hazeLocations.uv, 2, gl.FLOAT, false, 0, 0);
       gl.uniform1f(hazeLocations.time, time);
@@ -206,6 +219,37 @@ function createSurface(canvas, { haze = false } = {}) {
       gl.uniform2f(hazeLocations.resolution, width, height);
       gl.uniform2f(hazeLocations.flashPosition, flashPosition[0], flashPosition[1]);
       gl.uniform1f(hazeLocations.flash, flash);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    },
+    /**
+     * Additive sky illumination. This is the pass that makes an explosion or a
+     * strike visibly brighten the surrounding night sky.
+     */
+    drawSkyLight({ time, alpha, lights, count }) {
+      if (!skyProgram || !quadBuffer) return;
+      for (let index = 0; index < count; index += 1) {
+        const light = lights[index];
+        const offset = index * 4;
+        SKY_PACK[offset] = light.x;
+        SKY_PACK[offset + 1] = light.y;
+        SKY_PACK[offset + 2] = light.radius;
+        SKY_PACK[offset + 3] = light.intensity;
+        SKY_COLOR_PACK[index * 3] = light.color[0];
+        SKY_COLOR_PACK[index * 3 + 1] = light.color[1];
+        SKY_COLOR_PACK[index * 3 + 2] = light.color[2];
+      }
+      gl.useProgram(skyProgram.program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+      gl.enableVertexAttribArray(skyProgram.attributes.uv);
+      gl.vertexAttribPointer(skyProgram.attributes.uv, 2, gl.FLOAT, false, 0, 0);
+      gl.uniform2f(skyProgram.uniforms.resolution, width, height);
+      gl.uniform1f(skyProgram.uniforms.time, time);
+      gl.uniform1f(skyProgram.uniforms.global, alpha);
+      gl.uniform1f(skyProgram.uniforms.lightCount, count);
+      if (count > 0) {
+        gl.uniform4fv(skyProgram.uniforms.lights, SKY_PACK);
+        gl.uniform3fv(skyProgram.uniforms.lightColors, SKY_COLOR_PACK);
+      }
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     },
     drawPoints(batch, alpha) {
@@ -245,13 +289,12 @@ function createSurface(canvas, { haze = false } = {}) {
         gl.deleteBuffer(positionBuffer);
         gl.deleteBuffer(colorBuffer);
         gl.deleteBuffer(sizeBuffer);
-        if (hazeBuffer) gl.deleteBuffer(hazeBuffer);
+        if (quadBuffer) gl.deleteBuffer(quadBuffer);
         if (pointProgram) gl.deleteProgram(pointProgram);
         if (hazeProgram) gl.deleteProgram(hazeProgram);
+        if (skyProgram) gl.deleteProgram(skyProgram.program);
         pointProgram = null;
         hazeProgram = null;
-        // Do not force-lose the context: the same canvas can be reused by a
-        // Strict Mode remount, and a deliberately lost context cannot render.
       } catch {
         // Releasing a context is an optimisation, never a requirement.
       }
@@ -261,6 +304,14 @@ function createSurface(canvas, { haze = false } = {}) {
   return surface;
 }
 
+// Reused between frames; never resized.
+const SKY_PACK = new Float32Array(16);
+const SKY_COLOR_PACK = new Float32Array(12);
+
+/**
+ * Recursive lightning branching, authored in a local unit space where x is a
+ * fraction of the bolt's width and y runs 0 (origin) to 1 (tip).
+ */
 function buildBranchSegments({
   startX,
   startY,
@@ -279,9 +330,7 @@ function buildBranchSegments({
   const dy = endY - startY;
   const length = Math.hypot(dx, dy);
 
-  // Hard geometry budget. Without it a forked finale grows into a full-screen
-  // fractal web that hides the interface instead of reading as one strike.
-  if (generation >= maxGeneration || length < 8 || segments.length >= maxSegments) {
+  if (generation >= maxGeneration || length < 0.004 || segments.length >= maxSegments) {
     segments.push({ startX, startY, endX, endY, generation });
     return;
   }
@@ -290,7 +339,7 @@ function buildBranchSegments({
   const normalY = dx / (length || 1);
   const variance = (random() - 0.5) * roughness;
   const midX = (startX + endX) / 2 + normalX * variance;
-  const midY = (startY + endY) / 2 + normalY * variance + roughness * 0.12;
+  const midY = (startY + endY) / 2 + normalY * variance + roughness * 0.09;
 
   buildBranchSegments({
     startX,
@@ -325,8 +374,7 @@ function buildBranchSegments({
   for (let fork = 0; fork < forks; fork += 1) {
     if (random() >= branchProbability * (fork === 0 ? 1 : 0.55)) continue;
     const direction = fork === 0 ? 1 : -1;
-    const angle =
-      Math.atan2(dy, dx) + direction * randomBetween(random, 0.32, 1.02);
+    const angle = Math.atan2(dy, dx) + direction * randomBetween(random, 0.32, 1.02);
     const branchLength = length * randomBetween(random, 0.34, 0.78);
     buildBranchSegments({
       startX: midX,
@@ -345,34 +393,18 @@ function buildBranchSegments({
   }
 }
 
-function rasterizeSegments(segments, { step, coreSize, depth, near }) {
-  const points = [];
-  for (const segment of segments) {
-    const branchDepth = depth * (1 - segment.generation * 0.06);
-    const dx = segment.endX - segment.startX;
-    const dy = segment.endY - segment.startY;
-    const length = Math.hypot(dx, dy);
-    const steps = Math.max(1, Math.ceil(length / step));
-    const taper = segment.generation === 0 ? 1 : Math.max(0.32, 1 - segment.generation * 0.12);
-    for (let index = 0; index <= steps; index += 1) {
-      const progress = index / steps;
-      // A real channel narrows and brightens again at its tip.
-      const width = taper * (0.78 + Math.sin(progress * Math.PI) * 0.22);
-      points.push({
-        x: segment.startX + dx * progress,
-        y: segment.startY + dy * progress,
-        // The lower bound keeps consecutive samples overlapping. A thin branch
-        // drawn with tiny sprites would otherwise read as a string of beads.
-        size: Math.max(
-          step * 1.7,
-          coreSize * width * (0.85 + branchDepth * 0.3) * (near ? 1.35 : 1),
-        ),
-        alpha: (segment.generation === 0 ? 1 : 0.72) * (0.66 + branchDepth * 0.34),
-        core: true,
-      });
-    }
-  }
-  return points;
+/**
+ * A three-dimensional Fibonacci sphere direction. Distributing burst particles
+ * on a real sphere is what makes one shell read as a sphere seen from below and
+ * another as an ellipse seen across the sky.
+ */
+function sphereDirection(index, count) {
+  const offset = 2 / Math.max(1, count);
+  const increment = Math.PI * (3 - Math.sqrt(5));
+  const y = index * offset - 1 + offset / 2;
+  const radius = Math.sqrt(Math.max(0, 1 - y * y));
+  const phi = index * increment;
+  return [Math.cos(phi) * radius, y, Math.sin(phi) * radius];
 }
 
 /**
@@ -401,12 +433,12 @@ export function createCosmicEventEngine({
   if (!canvas || typeof window === 'undefined') return null;
 
   const quality = getRenderQuality();
-  const farSurface = createSurface(canvas, { haze: quality.haze });
+  const farSurface = createSurface(canvas, { haze: quality.haze, skyLight: true });
   if (!farSurface) return null;
 
   const nearSurface =
     quality.foreground && foregroundCanvas
-      ? createSurface(foregroundCanvas, { haze: false })
+      ? createSurface(foregroundCanvas, { haze: false, skyLight: false })
       : null;
 
   const reducedMotion = prefersReducedMotion();
@@ -420,22 +452,20 @@ export function createCosmicEventEngine({
   let qualityScale = 1;
   let qualitySteps = 0;
   // Particle sizes are authored against a 1440 x 900 stage. This factor keeps
-  // the same apparent grain size on a phone and on a large display instead of
-  // turning every spark into a 2-pixel dot on big screens.
+  // the same apparent grain size on a phone and on a large display.
   let effectScale = 1;
+  let centreX = width / 2;
+  let centreY = height / 2;
 
-  // Budgets are per frame across both surfaces. They are high enough for the
-  // finale's trails and foreground sparks on capable hardware, and step down
-  // with the resolved quality profile rather than being fixed globally.
   const basePointBudget =
-    quality.tier === 'high' ? 56000 : quality.tier === 'balanced' ? 30000 : 13000;
+    quality.tier === 'high' ? 44000 : quality.tier === 'balanced' ? 24000 : 11000;
   const farLimit = Math.round(basePointBudget * (nearSurface ? 0.6 : 1));
   const nearLimit = Math.round(basePointBudget * 0.65);
   const farBatch = new PointBatch(Math.round(farLimit * 0.6), farLimit);
   const nearBatch = nearSurface ? new PointBatch(Math.round(nearLimit * 0.6), nearLimit) : null;
 
   const maxLiveParticles =
-    quality.tier === 'high' ? 6800 : quality.tier === 'balanced' ? 4400 : 2200;
+    quality.tier === 'high' ? 7200 : quality.tier === 'balanced' ? 4600 : 2200;
 
   // Opening bursts are strictly red and white; gold/amber is reserved for the finale.
   const redPalette = [
@@ -461,12 +491,16 @@ export function createCosmicEventEngine({
   const boltCore = hexToRgb('#ffffff');
   const boltHalo = hexToRgb('#9cc4ff');
   const boltDepth = hexToRgb('#6f9bff');
+  const smokeGrey = hexToRgb('#9aa3b2');
 
   const meteors = [];
   const lightningStrikes = [];
   const rockets = [];
   const fireworks = [];
   const embers = [];
+  const smoke = [];
+  /** Active coloured lights: sky illumination plus shared scene lighting. */
+  const activeLights = [];
 
   let elapsed = 0;
   let lastFrame = 0;
@@ -489,6 +523,7 @@ export function createCosmicEventEngine({
   let hazeStrength = 0;
   let frameAccum = 0;
   let frameCount = 0;
+  let droppedPoints = 0;
 
   function canUseNear() {
     return Boolean(nearSurface) && !nearDead;
@@ -497,10 +532,11 @@ export function createCosmicEventEngine({
   function resize() {
     width = Math.max(1, window.innerWidth);
     height = Math.max(1, window.innerHeight);
+    centreX = width / 2;
+    centreY = height / 2;
     const previousWidth = farSurface.width || width;
     const previousHeight = farSurface.height || height;
-    pixelRatio =
-      Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio) * resolutionScale;
+    pixelRatio = Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio) * resolutionScale;
     pixelRatio = Math.max(1, pixelRatio);
     effectScale = clamp(Math.sqrt((width * height) / (1440 * 900)), 0.82, 1.55);
 
@@ -513,42 +549,28 @@ export function createCosmicEventEngine({
     if (Math.abs(scaleX - 1) < 0.001 && Math.abs(scaleY - 1) < 0.001) return;
 
     for (const meteor of meteors) {
-      meteor.x *= scaleX;
-      meteor.y *= scaleY;
+      meteor.worldX *= scaleX;
+      meteor.worldY *= scaleY;
     }
     for (const strike of lightningStrikes) {
-      for (const point of strike.points) {
-        point.x *= scaleX;
-        point.y *= scaleY;
-      }
-      strike.rootX *= scaleX;
-      strike.rootY *= scaleY;
-      strike.groundX *= scaleX;
-      strike.groundY *= scaleY;
+      strike.anchorX *= scaleX;
+      strike.anchorY *= scaleY;
+    }
+    for (const light of activeLights) {
+      light.x *= scaleX;
+      light.y *= scaleY;
+    }
+    for (const puff of smoke) {
+      puff.x *= scaleX;
+      puff.y *= scaleY;
+    }
+    for (const particle of embers) {
+      particle.x *= scaleX;
+      particle.y *= scaleY;
     }
     for (const firework of fireworks) {
-      for (const particle of firework.particles) {
-        particle.x *= scaleX;
-        particle.y *= scaleY;
-        particle.history = particle.history.map((entry) => ({
-          x: entry.x * scaleX,
-          y: entry.y * scaleY,
-        }));
-      }
-    }
-    for (const rocket of rockets) {
-      rocket.x *= scaleX;
-      rocket.y *= scaleY;
-      rocket.targetX *= scaleX;
-      rocket.targetY *= scaleY;
-      rocket.history = rocket.history.map((entry) => ({
-        x: entry.x * scaleX,
-        y: entry.y * scaleY,
-      }));
-    }
-    for (const ember of embers) {
-      ember.x *= scaleX;
-      ember.y *= scaleY;
+      firework.screenX *= scaleX;
+      firework.screenY *= scaleY;
     }
   }
 
@@ -558,21 +580,12 @@ export function createCosmicEventEngine({
     if (cueHandler) cueHandler(cue);
   }
 
-  /**
-   * Stores one point on the surface that matches its depth. If the near layer
-   * is unavailable, the point falls back to the far surface rather than being
-   * lost, which keeps the composition complete on constrained devices.
-   */
-  // Aggregate of every point both surfaces rejected during this run, so budget
-  // pressure during the finale is observable without a per-drop log in the
-  // render loop. It is surfaced through the debug hook below.
-  let droppedPoints = 0;
-
   function pushPoint(x, y, size, color, alpha, near = false) {
     if (alpha <= 0.003 || size <= 0) return;
+    const surface = near && canUseNear() ? nearSurface : farSurface;
     const batch = near && canUseNear() ? nearBatch : farBatch;
-    if (!batch) return;
-    if (!batch.push(x, y, size, color, alpha, pixelRatio, farSurface.maxPointSize)) {
+    if (!batch || !surface) return;
+    if (!batch.push(x, y, size, color, alpha, pixelRatio, surface.maxPointSize)) {
       droppedPoints += 1;
     }
   }
@@ -583,80 +596,247 @@ export function createCosmicEventEngine({
     return count;
   }
 
+  /**
+   * Publishes one coloured light that illuminates sky, smoke, gold and leaves.
+   * Returns the entry so a moving source can keep updating it.
+   */
+  function addLight({ x, y, radius, intensity, color, life, kind }) {
+    if (activeLights.length >= 8) activeLights.shift();
+    const entry = { x, y, radius, intensity, peak: intensity, age: 0, life, color, kind };
+    activeLights.push(entry);
+    return entry;
+  }
+
+  // --- Meteors ------------------------------------------------------------
+
   function spawnMeteor(spec, isFinale = false) {
-    const depth = isFinale ? 1.25 : randomBetween(planRandom, 0.16, 0.95);
+    // Depth is a multiplier: 0.35 is a distant meteor, 1.7 is close enough to
+    // cross the frame. It drives screen size, speed and brightness together.
+    const depth = isFinale ? 1.7 : randomBetween(planRandom, 0.35, 1.5);
+    const scale = depthScale(depth);
+    const near = isFinale || (canUseNear() && depth > 0.92);
+
+    // Back-project the authored screen entry point so the meteor still enters
+    // where the choreography wants it while living in projected space.
+    const startScreenX = spec.x;
+    const startScreenY = spec.y;
+    const worldX = (startScreenX - centreX) / scale;
+    const worldY = (startScreenY - centreY) / scale;
+
     const angle = spec.fromRight
-      ? -randomBetween(planRandom, 0.34, 0.68)
-      : randomBetween(planRandom, 0.34, 0.68);
-    const speed = 170 + depth * 430;
-    const near = isFinale ? true : canUseNear() && depth > 0.62;
+      ? -randomBetween(planRandom, 0.42, 0.85)
+      : randomBetween(planRandom, 0.42, 0.85);
+
+    // A meteor carries its own light: this is what gives it an atmospheric
+    // presence instead of looking like a bright streak on a photograph.
+    const light = addLight({
+      x: startScreenX,
+      y: startScreenY,
+      radius: 280 * effectScale * (isFinale ? 1.7 : 1),
+      intensity: isFinale ? 1.2 : 0.34 + depth * 0.3,
+      color: [1, 0.74, 0.46],
+      life: 4,
+      kind: 'meteor',
+    });
 
     meteors.push({
-      x: spec.x,
-      y: spec.y,
-      // The finale crosses the foreground horizontally instead of falling
-      // straight down, which reads as a dominant close sweep.
-      vx: isFinale ? width * 1.05 : Math.sin(angle) * speed,
-      vy: isFinale ? height * 0.45 : Math.cos(angle) * speed,
+      worldX,
+      worldY,
+      light,
       depth,
       near,
-      length: isFinale
-        ? Math.max(width, height) * 1.3
-        : (300 + depth * 520) * effectScale,
-      thickness: (isFinale ? 9 : 2.8 + depth * 4.4) * (near ? 1.25 : 1) * effectScale,
-      color: isFinale
-        ? hexToRgb('#fff1c4')
-        : depth > 0.6
-          ? hexToRgb('#ffffff')
-          : hexToRgb('#a8dcff'),
-      trailColor: depth > 0.6 ? hexToRgb('#ffd9a0') : hexToRgb('#5fa8ff'),
-      alpha: isFinale ? 1 : 0.45 + depth * 0.5,
-      // Dense samples keep the trail a continuous streak instead of dots.
-      samples: Math.round(
-        (isFinale ? 460 : 240 + depth * 180) *
-          clamp(qualityScale * quality.particleScale, 0.55, 1.25),
-      ),
+      // World-space velocity and size. One world unit is about 1.4 screen pixels
+      // at depth 1, so these are authored as pixels divided by that factor: the
+      // same speed then projects far faster when the meteor is near.
+      speed: isFinale ? 1500 : randomBetween(planRandom, 620, 900),
+      directionX: isFinale ? 1 : Math.sin(angle),
+      directionY: isFinale ? 0.55 : Math.cos(angle),
+      lengthWorld: isFinale ? 330 : randomBetween(planRandom, 120, 250),
+      thicknessWorld: isFinale ? 5.2 : randomBetween(planRandom, 2.2, 4.2),
+      headColor: isFinale ? METEOR_HEAD_FINALE : METEOR_HEAD,
       isFinale,
+      age: 0,
+      seed: planRandom() * 1000,
     });
     emitCue(isFinale ? 'meteor-finale' : 'meteor');
   }
 
+  /**
+   * Projects one point of a meteor's trail.
+   *
+   * The trail recedes: each sample further back along the path is also further
+   * from the camera, so it shrinks and converges toward the vanishing point
+   * instead of being a uniform line attached to a glowing dot.
+   */
+  function projectMeteorSample(meteor, progress, out) {
+    const sampleDepth = clamp(meteor.depth * (1 + progress * 0.62), 0.3, 2.6);
+    const sampleScale = depthScale(sampleDepth);
+    out.x = centreX + (meteor.worldX - meteor.directionX * meteor.lengthWorld * progress) * sampleScale;
+    out.y = centreY + (meteor.worldY - meteor.directionY * meteor.lengthWorld * progress) * sampleScale;
+    out.scale = sampleScale;
+    return out;
+  }
+
+  const meteorSample = { x: 0, y: 0, scale: 1 };
+  // Scratch probes for measuring a trail's projected length.
+  const HEAD_PROBE = { x: 0, y: 0, scale: 1 };
+  const TAIL_PROBE = { x: 0, y: 0, scale: 1 };
+
+  function updateMeteors(deltaSeconds, globalAlpha) {
+    for (let index = meteors.length - 1; index >= 0; index -= 1) {
+      const meteor = meteors[index];
+      meteor.age += deltaSeconds;
+      meteor.worldX += meteor.directionX * meteor.speed * deltaSeconds;
+      meteor.worldY += meteor.directionY * meteor.speed * deltaSeconds;
+
+      const headScale = depthScale(meteor.depth);
+      const headX = centreX + meteor.worldX * headScale;
+      const headY = centreY + meteor.worldY * headScale;
+      if (headY > height + 320 || headX < -width * 0.8 || headX > width * 1.8) {
+        if (meteor.light) meteor.light.peak = 0;
+        meteors.splice(index, 1);
+        continue;
+      }
+
+      if (meteor.light) {
+        // Keep the light attached to the head for as long as the meteor lives.
+        meteor.light.age = 0;
+        meteor.light.x = headX;
+        meteor.light.y = headY;
+        meteor.light.peak = meteor.isFinale ? 1.2 : 0.3 + meteor.depth * 0.26;
+      }
+
+      // Sample density comes from the trail's measured on-screen length, so the
+      // plasma always reads as one continuous streak: about one sample every
+      // 1.6 px regardless of depth, speed or how the projection is stretched.
+      projectMeteorSample(meteor, 0, HEAD_PROBE);
+      projectMeteorSample(meteor, 1, TAIL_PROBE);
+      const trailPixels = Math.hypot(
+        HEAD_PROBE.x - TAIL_PROBE.x,
+        HEAD_PROBE.y - TAIL_PROBE.y,
+      );
+      const samples = Math.round(
+        clamp(trailPixels / 1.6, 40, 400) * clamp(qualityScale, 0.5, 1),
+      );
+
+      // Guarded denominator: a single-sample trail would otherwise divide by
+      // zero and poison every colour and alpha downstream with NaN.
+      const sampleSpan = Math.max(1, samples - 1);
+      for (let sample = 0; sample < samples; sample += 1) {
+        const progress = sample / sampleSpan;
+        projectMeteorSample(meteor, progress, meteorSample);
+        const { x, y, scale } = meteorSample;
+
+        // Head-to-tail grade: white-hot, gold, orange, deep red, then ember.
+        let color;
+        if (progress < 0.05) color = meteor.headColor;
+        else if (progress < 0.22) color = TRAIL_HOT;
+        else if (progress < 0.48) color = TRAIL_WARM;
+        else if (progress < 0.75) color = TRAIL_COOL;
+        else color = TRAIL_EMBER;
+
+        const thickness = meteor.thicknessWorld * scale * effectScale;
+        // The tail widens as it cools and expands into the wake. The floor keeps
+        // consecutive samples overlapping into one streak rather than a dotted
+        // line, whatever the frame rate does to the sample count.
+        const size = Math.max(4.4, thickness * (1.1 + progress * 1.4));
+        const alpha = meteor.alpha ?? (meteor.isFinale ? 1 : 0.5 + meteor.depth * 0.32);
+        const fade = Math.pow(1 - progress, 1.35);
+
+        pushPoint(x, y, size, color, fade * alpha * globalAlpha, meteor.near);
+        // Ionised sheath around the core.
+        pushPoint(x, y, size * 2.9, color, fade * alpha * 0.16 * globalAlpha, meteor.near);
+      }
+
+      // Hot head: a tight nucleus, a compact flare and a wide atmospheric halo.
+      const headAlpha = (meteor.isFinale ? 1 : 0.55 + meteor.depth * 0.4) * globalAlpha;
+      const headRadius = Math.max(1.4, meteor.thicknessWorld * headScale * effectScale);
+      pushPoint(headX, headY, headRadius * 26, meteor.headColor, headAlpha * 0.18, meteor.near);
+      pushPoint(headX, headY, headRadius * 9, meteor.headColor, headAlpha * 0.42, meteor.near);
+      pushPoint(headX, headY, headRadius * 3.2, meteor.headColor, headAlpha, meteor.near);
+
+      // Shed fragments: small bright grains that inherit a little of the head's
+      // velocity and then slow down, which reads as material breaking off.
+      if (!coarsePointer && meteor.age > 0.08) {
+        const shed = meteor.isFinale ? 3 : 1;
+        for (let fragment = 0; fragment < shed; fragment += 1) {
+          if (planRandom() > 0.55) continue;
+          smoke.push({
+            kind: 'fragment',
+            x: headX + randomBetween(planRandom, -6, 6),
+            y: headY + randomBetween(planRandom, -6, 6),
+            vx: randomBetween(planRandom, -46, 46) - meteor.directionX * 40,
+            vy: randomBetween(planRandom, -18, 62),
+            size: randomBetween(planRandom, 1.2, 2.6) * effectScale,
+            age: 0,
+            life: randomBetween(planRandom, 0.35, 0.85),
+            color: planRandom() > 0.5 ? hexToRgb('#ffcf7a') : hexToRgb('#ff8a3d'),
+            drag: 0.94,
+            near: meteor.near,
+          });
+        }
+      }
+
+      // Smoke wake: neutral puffs that grow, drift and outlive the head.
+      if (!coarsePointer && meteor.age > 0.06) {
+        smoke.push({
+          kind: 'smoke',
+          x: headX + randomBetween(planRandom, -4, 4),
+          y: headY + randomBetween(planRandom, -4, 4),
+          vx: randomBetween(planRandom, -12, 12) - meteor.directionX * 26,
+          vy: randomBetween(planRandom, 8, 34),
+          size: randomBetween(planRandom, 6, 12) * effectScale * (meteor.near ? 1.35 : 1),
+          growth: randomBetween(planRandom, 22, 46) * effectScale,
+          age: 0,
+          life: randomBetween(planRandom, 1.1, 2.1),
+          drag: 0.985,
+          near: meteor.near,
+        });
+      }
+    }
+  }
+
+  // --- Lightning ----------------------------------------------------------
+
   function spawnLightning(spec, isFinale = false) {
-    const depth = isFinale ? 1.35 : randomBetween(planRandom, 0.35, 1);
-    const scale = (isFinale ? 1.85 : 0.75 + depth * 0.75) * (width < 768 ? 0.84 : 1);
+    // `band` places the strike in the near, middle or far distance. The finale is
+    // deliberately in front of everything.
+    const depth = isFinale ? 1.9 : spec.depth ?? randomBetween(planRandom, 0.42, 1.45);
+    const scale = depthScale(depth);
+    const near = isFinale || (canUseNear() && depth > 0.95);
+
+    const anchorX = spec.x;
+    const anchorY = -40;
     const segments = [];
     const maxGeneration = coarsePointer ? 5 : isFinale ? 7 : 6;
-    const startX = spec.x;
-    const startY = -30;
-    const targetX = startX + randomBetween(planRandom, -0.3, 0.3) * width * scale;
-    const targetY = startY + height * (isFinale ? 1.08 : 0.56 + depth * 0.26) * scale;
-    const near = isFinale || (canUseNear() && (spec.near === true || depth > 0.9));
+
+    // Authored in unit space: x is a fraction of the bolt's width, y runs from
+    // the origin to the tip. Projection happens when the channel is rasterised.
+    const spread = isFinale ? 0.62 : 0.2 + depth * 0.2;
+    const reach = isFinale ? 0.92 : 0.44 + depth * 0.34;
 
     buildBranchSegments({
-      startX,
-      startY,
-      endX: targetX,
-      endY: targetY,
-      roughness: (width < 768 ? 150 : 240) * scale,
+      startX: 0,
+      startY: 0,
+      endX: randomBetween(planRandom, -spread * 0.35, spread * 0.35),
+      endY: reach,
+      roughness: (isFinale ? 0.16 : 0.12 + depth * 0.04),
       generation: 0,
       maxGeneration,
-      branchProbability: isFinale ? 0.34 : 0.16 + depth * 0.12,
+      branchProbability: isFinale ? 0.34 : 0.17 + depth * 0.1,
       segments,
       random: planRandom,
       maxSegments: isFinale ? 260 : 170,
     });
 
-    // The finale's outer branches spread toward the viewer, reading as an
-    // enormous close strike that reaches past the frame. Three main forks only:
-    // enough to feel colossal, few enough that the channel still reads.
     if (isFinale) {
-      for (let index = 0; index < 3; index += 1) {
+      for (let extra = 0; extra < 3; extra += 1) {
         buildBranchSegments({
-          startX,
-          startY,
-          endX: startX + randomBetween(planRandom, -0.38, 0.38) * width,
-          endY: height * randomBetween(planRandom, 0.9, 1.18),
-          roughness: 118,
+          startX: 0,
+          startY: 0,
+          endX: randomBetween(planRandom, -0.4, 0.4),
+          endY: reach * randomBetween(planRandom, 0.9, 1.15),
+          roughness: 0.1,
           generation: 2,
           maxGeneration: 4,
           branchProbability: 0.22,
@@ -667,46 +847,138 @@ export function createCosmicEventEngine({
       }
     }
 
-    // Bound the samples per strike before rasterising. A deeply forked finale
-    // can otherwise produce far more points than the surface budget allows,
-    // and a saturated batch would start dropping parts of the channel and draw
-    // a dashed bolt. Spacing is widened instead, so the full bolt always draws.
-    const totalSegmentLength = segments.reduce(
-      (total, segment) =>
-        total + Math.hypot(segment.endX - segment.startX, segment.endY - segment.startY),
-      0,
-    );
-    const maxSamples =
-      coarsePointer || quality.tier === 'constrained' ? 1800 : isFinale ? 5200 : 3000;
-    const adaptiveStep = Math.max(1.9, totalSegmentLength / Math.max(1, maxSamples));
-
-    const points = rasterizeSegments(segments, {
-      // Spacing never exceeds a third of the core width, so the three additive
-      // passes still overlap into one continuous channel.
-      step: adaptiveStep,
-      // CSS pixels; PointBatch applies the device pixel ratio once. The core is
-      // deliberately narrow: a thick point sprite turns a strike into a white
-      // tube. Width comes from the additive bloom passes instead.
-      coreSize: Math.max(adaptiveStep * 2.4, (isFinale ? 8 : 3.6 + depth * 2.6) * effectScale),
-      depth,
-      near,
-    });
-
     lightningStrikes.push({
-      points,
-      age: 0,
-      life: isFinale ? 1.65 : randomBetween(planRandom, 0.62, 1.15),
-      peakFlash: isFinale ? 1 : 0.5 + depth * 0.55,
-      rootX: startX,
-      rootY: startY,
-      groundX: targetX,
-      groundY: Math.min(height, targetY),
+      segments,
+      anchorX,
+      anchorY,
+      depth,
+      scale,
+      // Channel width in screen pixels at the strike's own depth.
+      width: (isFinale ? 9.5 : 3.4 + depth * 3) * effectScale,
+      reach: reach * height,
       near,
-      isFinale,
+      age: 0,
+      life: isFinale ? 1.7 : randomBetween(planRandom, 0.7, 1.2),
       seed: planRandom() * 100,
+      isFinale,
+      color: boltHalo,
     });
+
+    addLight({
+      x: anchorX,
+      y: Math.max(60, anchorY + height * reach * 0.55),
+      radius: (isFinale ? 1.5 : 0.85) * Math.max(width, height) * 0.55,
+      intensity: isFinale ? 1.35 : 0.45 + depth * 0.35,
+      color: [0.68, 0.8, 1.0],
+      life: isFinale ? 0.9 : 0.55,
+      kind: 'lightning',
+    });
+
     emitCue(isFinale ? 'lightning-finale' : 'lightning');
   }
+
+  function updateLightning(deltaSeconds, globalAlpha) {
+    let strongestFlash = 0;
+
+    for (let index = lightningStrikes.length - 1; index >= 0; index -= 1) {
+      const strike = lightningStrikes[index];
+      strike.age += deltaSeconds;
+      if (strike.age > strike.life) {
+        lightningStrikes.splice(index, 1);
+        continue;
+      }
+
+      const lifeProgress = strike.age / strike.life;
+      const attack = Math.min(1, strike.age / 0.04);
+      const decay = Math.pow(1 - lifeProgress, 0.5);
+      const phase = strike.age * 74 + strike.seed;
+      const flicker =
+        lifeProgress < 0.45
+          ? Math.sin(phase) > -0.4
+            ? 1
+            : 0.72
+          : Math.sin(phase * 0.7) > 0.2
+            ? 0.9
+            : 0.56;
+      // The channel retracts as it fades: a real strike thins before it goes.
+      const retraction = 1 - Math.max(0, lifeProgress - 0.35) * 0.55;
+      const intensity = attack * decay * flicker;
+
+      if (intensity > strongestFlash) {
+        strongestFlash = intensity;
+        flashPosition = [strike.anchorX, Math.max(40, strike.anchorY + strike.reach * 0.4)];
+      }
+
+      // Sample densely enough that the channel is continuous rather than beaded.
+      const step = Math.max(1.2, 1.8 * effectScale);
+
+      for (const segment of strike.segments) {
+        // Project both ends. The tip uses a shallower depth than the origin, so
+        // the channel converges at the top and widens toward the viewer.
+        const startDepth = strike.depth * (1 + (1 - segment.startY) * 0.34);
+        const endDepth = strike.depth * (1 + (1 - segment.endY) * 0.34);
+        const startScale = depthScale(startDepth);
+        const endScale = depthScale(endDepth);
+
+        // Horizontal fan: a wider view toward the bottom of the bolt.
+        const startFan = 0.5 + 0.5 * segment.startY;
+        const endFan = 0.5 + 0.5 * segment.endY;
+
+        const sx = strike.anchorX + segment.startX * width * 0.5 * startScale * startFan;
+        const sy = strike.anchorY + segment.startY * strike.reach;
+        const ex = strike.anchorX + segment.endX * width * 0.5 * endScale * endFan;
+        const ey = strike.anchorY + segment.endY * strike.reach;
+
+        const dx = ex - sx;
+        const dy = ey - sy;
+        const length = Math.hypot(dx, dy);
+        const steps = Math.max(1, Math.ceil(length / step));
+        const taper = segment.generation === 0 ? 1 : Math.max(0.3, 1 - segment.generation * 0.14);
+        const localScale = (startScale + endScale) * 0.5;
+
+        for (let sample = 0; sample <= steps; sample += 1) {
+          const progress = sample / steps;
+          const x = sx + dx * progress;
+          const y = sy + dy * progress;
+          const coreSize = Math.max(
+            step * 2.6,
+            strike.width * taper * localScale * effectScale * (0.85 + 0.25 * Math.sin(progress * Math.PI)),
+          );
+          const alpha = (segment.generation === 0 ? 1 : 0.68) * intensity * retraction * globalAlpha;
+
+          pushPoint(x, y, coreSize, boltCore, alpha * 1.25, strike.near);
+          pushPoint(x, y, coreSize * 2.6, boltHalo, alpha * 0.4, strike.near);
+          if (sample % 2 === 0) {
+            pushPoint(x, y, coreSize * 7.5, boltDepth, alpha * 0.12, strike.near);
+          }
+        }
+      }
+
+      // Origin bloom and ground illumination: wide, low-alpha light that reads
+      // as the atmosphere responding rather than a painted disc.
+      pushPoint(
+        strike.anchorX,
+        Math.max(30, strike.anchorY + 18),
+        (strike.isFinale ? 300 : 180) * effectScale,
+        boltDepth,
+        intensity * 0.16 * globalAlpha,
+        strike.near,
+      );
+      pushPoint(
+        strike.anchorX,
+        Math.min(height, strike.anchorY + strike.reach),
+        (strike.isFinale ? 240 : 150) * effectScale,
+        boltHalo,
+        intensity * 0.13 * globalAlpha,
+        strike.near,
+      );
+    }
+
+    flash += (strongestFlash - flash) * Math.min(1, deltaSeconds * 26);
+    flash = clamp(flash, 0, 1.3);
+  }
+
+  // --- Fireworks ----------------------------------------------------------
 
   function createParticle({
     x,
@@ -721,6 +993,7 @@ export function createCosmicEventEngine({
     trail,
     kind,
     near,
+    depth,
     branchAt = 0,
   }) {
     return {
@@ -740,13 +1013,14 @@ export function createCosmicEventEngine({
       twinkleSpeed: randomBetween(planRandom, 5.5, 13),
       kind,
       near,
+      depth,
       branchAt,
       branched: false,
     };
   }
 
-  function spawnBurst(x, y, spec) {
-    if (fireworks.length > 6) return;
+  function spawnBurst(screenX, screenY, spec) {
+    if (fireworks.length > 7) return;
     const remaining = Math.max(0, maxLiveParticles - liveParticleCount());
     if (remaining <= 0) return;
 
@@ -754,157 +1028,102 @@ export function createCosmicEventEngine({
     const particles = [];
     const kind = spec.kind;
     const palette =
-      kind === 'silver' ? silverPalette : kind === 'gold' ? finalePalette : redPalette;
+      kind === 'silver' ? silverPalette : kind === 'gold' || kind === 'willow' || kind === 'goldCore'
+        ? finalePalette
+        : redPalette;
     const count = Math.min(remaining, Math.round(spec.count * scale * (coarsePointer ? 0.85 : 1)));
     if (count <= 0) return;
 
+    const depth = spec.depth ?? 0.85;
+    const projection = depthScale(depth);
     const nearForParticle = (index) =>
       canUseNear() && (spec.foreground === true || (spec.nearRatio ?? 0) * count > index);
 
-    if (kind === 'silver') {
-      // Fine, intricate crackle: smaller grains, longer trails, faster twinkle
-      // and two branching child sparks from most of the shell.
-      const layers = [1, 0.88, 0.72, 0.54];
-      const perLayer = Math.max(1, Math.round(count / layers.length));
-      for (const layer of layers) {
-        for (let index = 0; index < perLayer; index += 1) {
-          const angle = planRandom() * Math.PI * 2;
-          const speedScale = layer * (0.84 + Math.pow(planRandom(), 0.4) * 0.26);
-          particles.push(
-            createParticle({
-              x,
-              y,
-              vx: Math.cos(angle) * spec.speed * speedScale,
-              vy: Math.sin(angle) * spec.speed * speedScale,
-              colour: palette[index % palette.length],
-              size:
-                randomBetween(planRandom, 2.3, 4.4) *
-                (0.9 + (spec.sizeMultiplier ?? 1) * 0.2) *
-                effectScale,
-              life: randomBetween(planRandom, 2.2, 3.2),
-              gravity: 48,
-              drag: 0.989,
-              trail: 16,
-              kind,
-              near: nearForParticle(index),
-              branchAt: randomBetween(planRandom, 0.34, 0.58),
-            }),
-          );
-        }
-      }
-    } else if (kind === 'willow') {
-      for (let index = 0; index < count; index += 1) {
-        const angle = (index / count) * Math.PI * 2 + randomBetween(planRandom, -0.035, 0.035);
-        const speed = spec.speed * randomBetween(planRandom, 0.58, 1);
-        particles.push(
-          createParticle({
-            x,
-            y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            colour: palette[index % palette.length],
-            size: randomBetween(planRandom, 3.2, 6.0) * effectScale,
-            life: randomBetween(planRandom, 4.5, 5.3),
-            gravity: 118,
-            drag: 0.994,
-            trail: 22,
-            kind,
-            near: canUseNear() && index % 3 !== 0,
-          }),
-        );
-      }
-    } else if (kind === 'gold') {
-      // A full spherical chrysanthemum: four shells, soft warm cores and dense
-      // long trails. This is the grand finale's body.
-      const layers = [1, 0.9, 0.78, 0.62];
-      const perLayer = Math.max(1, Math.round(count / layers.length));
-      for (const layer of layers) {
-        for (let index = 0; index < perLayer; index += 1) {
-          const angle = planRandom() * Math.PI * 2;
-          const speedScale = layer * (0.82 + Math.pow(planRandom(), 0.35) * 0.3);
-          particles.push(
-            createParticle({
-              x,
-              y,
-              vx: Math.cos(angle) * spec.speed * speedScale,
-              vy: Math.sin(angle) * spec.speed * speedScale,
-              colour: palette[index % palette.length],
-              size: randomBetween(planRandom, 5.4, 9.6) * effectScale,
-              life: randomBetween(planRandom, 3.4, 4.4),
-              gravity: 62,
-              drag: 0.988,
-              trail: 14,
-              kind,
-              near: canUseNear() && (index % 2 === 0 || index % 7 === 0),
-            }),
-          );
-        }
-      }
-    } else {
-      // Red identity: dense rounded peony shells with heavier grains, short
-      // soft trails and a strong warm core. Deliberately unlike the silver.
-      const layers = [1, 0.86, 0.68];
-      const perLayer = Math.max(1, Math.round(count / layers.length));
-      for (const layer of layers) {
-        for (let index = 0; index < perLayer; index += 1) {
-          const angle = planRandom() * Math.PI * 2;
-          const speedScale = layer * (0.86 + Math.pow(planRandom(), 0.3) * 0.24);
-          particles.push(
-            createParticle({
-              x,
-              y,
-              vx: Math.cos(angle) * spec.speed * speedScale,
-              vy: Math.sin(angle) * spec.speed * speedScale,
-              colour: palette[index % palette.length],
-              size:
-                randomBetween(planRandom, 5.0, 9.0) *
-                (0.86 + (spec.sizeMultiplier ?? 1) * 0.2) *
-                effectScale,
-              life: randomBetween(planRandom, 2.5, 3.5),
-              gravity: 76,
-              drag: 0.976,
-              trail: 9,
-              kind,
-              near: nearForParticle(index),
-            }),
-          );
-        }
-      }
+    for (let index = 0; index < count; index += 1) {
+      // A real sphere, not a ring: the depth component gives each particle its
+      // own brightness and size, which is what makes the shell read as volume.
+      const [dx, dy, dz] = sphereDirection(index, count);
+      const jitter = 0.86 + Math.pow(planRandom(), 0.4) * 0.3;
+      const speed = spec.speed * jitter;
+
+      const isWillow = kind === 'willow';
+      const isSilver = kind === 'silver';
+      const isGold = kind === 'gold' || kind === 'goldCore';
+
+      particles.push(
+        createParticle({
+          x: screenX,
+          y: screenY,
+          vx: dx * speed * projection,
+          // Screen Y grows downward while the sphere's Y is up.
+          vy: -dy * speed * projection,
+          colour: palette[index % palette.length],
+          size:
+            (isGold ? randomBetween(planRandom, 5.5, 9.6)
+              : isSilver ? randomBetween(planRandom, 2.6, 4.6)
+                : randomBetween(planRandom, 5.2, 9.4)) *
+            (0.9 + (spec.sizeMultiplier ?? 1) * 0.18) *
+            effectScale,
+          life: isWillow
+            ? randomBetween(planRandom, 4.6, 5.4)
+            : isGold
+              ? randomBetween(planRandom, 3.5, 4.6)
+              : isSilver
+                ? randomBetween(planRandom, 2.2, 3.2)
+                : randomBetween(planRandom, 2.5, 3.5),
+          gravity: isWillow ? 118 : isGold ? 66 : isSilver ? 48 : 78,
+          drag: isWillow ? 0.994 : isGold ? 0.989 : isSilver ? 0.989 : 0.977,
+          trail: isWillow ? 14 : isGold ? 10 : isSilver ? 13 : 8,
+          kind: isWillow ? 'willow' : kind,
+          near: nearForParticle(index),
+          depth: depth + dz * 0.32,
+          branchAt: isSilver ? randomBetween(planRandom, 0.34, 0.58) : 0,
+        }),
+      );
     }
 
     if (particles.length === 0) return;
     fireworks.push({
       particles,
       bornAt: elapsed,
-      x,
-      y,
-      light: spec.sizeMultiplier ?? 1,
+      screenX,
+      screenY,
+      flash: kind === 'gold' || kind === 'goldCore' ? 1.6 : kind === 'willow' ? 0 : 1,
+      // A brief bloom, not a lamp: a huge opaque disc hides the shell it belongs to.
+      flashSize:
+        Math.max(70, Math.min(240, (spec.speed ?? 160) * 0.42)) *
+        (kind.startsWith('gold') ? 1.3 : 1),
       lightColor: palette[0],
-      flash: kind === 'gold' ? 1.5 : 1,
-      flashSize: Math.max(160, (spec.speed ?? 150) * (kind === 'gold' ? 1.9 : 1.35)),
+    });
+
+    // The detonation lights the sky, the smoke and the gold around it.
+    const lightStrength =
+      spec.light ?? (kind === 'gold' || kind === 'goldCore' ? 1.35 : kind === 'willow' ? 0.55 : 0.62);
+    addLight({
+      x: screenX,
+      y: screenY,
+      radius: Math.max(220, (spec.speed ?? 200) * projection * 2.4),
+      intensity: lightStrength,
+      color: palette[0],
+      life: kind.startsWith('gold') ? 1.7 : 1.05,
+      kind: 'firework',
     });
   }
 
-  /**
-   * Golden sparks dedicated to the foreground layer. They launch downward from
-   * the finale centre and are long-lived enough to cross the meter, Little
-   * Spark, the colour, the numbers, Share and the countdown before fading.
-   */
-  function spawnGoldenFall(x, y, count) {
+  /** Golden rain that falls across the interface in front of everything. */
+  function spawnGoldenFall(screenX, screenY, count) {
     const remaining = Math.max(0, maxLiveParticles - liveParticleCount());
     const total = Math.min(remaining, Math.round(count * quality.particleScale * qualityScale));
     if (total <= 0) return;
 
     const particles = [];
     for (let index = 0; index < total; index += 1) {
-      // Predominantly downward, with just enough lateral spread to rain across
-      // the whole composition. Gravity then carries them over the interface.
       const angle = Math.PI / 2 + randomBetween(planRandom, -0.82, 0.82);
       const speed = randomBetween(planRandom, width * 0.022, width * 0.07);
       particles.push(
         createParticle({
-          x: x + randomBetween(planRandom, -18, 18),
-          y: y + randomBetween(planRandom, -10, 26),
+          x: screenX + randomBetween(planRandom, -18, 18),
+          y: screenY + randomBetween(planRandom, -10, 26),
           vx: Math.cos(angle) * speed + randomBetween(planRandom, -24, 24),
           vy: Math.abs(Math.sin(angle) * speed) + randomBetween(planRandom, 12, 48),
           colour: finalePalette[Math.floor(planRandom() * finalePalette.length)],
@@ -915,34 +1134,29 @@ export function createCosmicEventEngine({
           trail: 4,
           kind: 'gold',
           near: canUseNear(),
+          depth: 1.5,
         }),
       );
     }
 
     if (particles.length === 0) return;
-    fireworks.push({
-      particles,
-      bornAt: elapsed,
-      light: 1.4,
-      lightColor: finalePalette[0],
-    });
+    fireworks.push({ particles, bornAt: elapsed, screenX, screenY, flash: 0 });
   }
 
   function launchFirework(spec, isFinale = false) {
     const originX = spec.originX;
-    const targetY = spec.targetY;
     const speed = isFinale ? height * 0.72 : randomBetween(planRandom, 520, 700);
 
     rockets.push({
       x: originX,
       y: height + 8,
       targetX: spec.targetX,
-      targetY,
+      targetY: spec.targetY,
       vy: -speed,
-      vx: ((spec.targetX - originX) / Math.max(1, height + 8 - targetY)) * speed,
+      vx: ((spec.targetX - originX) / Math.max(1, height + 8 - spec.targetY)) * speed,
       spec,
       isFinale,
-      near: canUseNear() && targetY > height * 0.46,
+      near: canUseNear() && spec.targetY > height * 0.46,
       history: [],
     });
     emitCue(isFinale ? 'firework-finale' : 'firework-launch');
@@ -965,7 +1179,7 @@ export function createCosmicEventEngine({
     }
   }
 
-  // --- Event choreography -------------------------------------------------
+  // --- Event choreography ------------------------------------------------
 
   const meteorCount = Math.round(randomBetween(planRandom, 12, 16));
   const lightningCount = Math.round(randomBetween(planRandom, 5, 7));
@@ -980,8 +1194,7 @@ export function createCosmicEventEngine({
           randomBetween(planRandom, 0, 380),
         type: 'meteor',
         fromRight,
-        // Enter just outside the frame so every meteor actually crosses the
-        // sky instead of falling unseen far beyond the edge.
+        // Enter just outside the frame so every meteor actually crosses the sky.
         x: fromRight
           ? width * randomBetween(planRandom, 1.02, 1.2)
           : -width * randomBetween(planRandom, 0.02, 0.18),
@@ -989,32 +1202,33 @@ export function createCosmicEventEngine({
       });
     }
   } else if (eventId === 'lightning') {
-    hazeStrength = 0.5;
     for (let index = 0; index < lightningCount - 1; index += 1) {
+      // Distance bands cycle so every run contains far, middle and near strikes.
+      const band = index % 3;
       plan.push({
         at: 220 + (index / Math.max(1, lightningCount - 1)) * durationMs * 0.6,
         type: 'lightning',
-        x: width * randomBetween(planRandom, 0.07, 0.93),
-        // Guarantee both background and foreground strikes in every run.
-        near: index % 2 === 1,
+        x: width * randomBetween(planRandom, 0.12, 0.88),
+        depth: band === 0 ? randomBetween(planRandom, 0.4, 0.55)
+          : band === 1 ? randomBetween(planRandom, 0.85, 1.05)
+            : randomBetween(planRandom, 1.3, 1.55),
       });
     }
   } else if (eventId === 'fireworks') {
     for (let index = 0; index < fireworkCount - 1; index += 1) {
       const kind = index % 2 === 0 ? 'red' : 'silver';
       plan.push({
-        // Leave the last third of the event to the finale, so the opening
-        // red/white bursts have largely dissipated before the golden show.
+        // Leave the last third of the event to the finale.
         at: 180 + (index / Math.max(1, fireworkCount - 1)) * durationMs * 0.36,
         type: 'firework',
         spec: {
           originX: width * randomBetween(planRandom, 0.1, 0.9),
           targetX: width * randomBetween(planRandom, 0.14, 0.86),
-          // Burst in the open sky above the meter rather than behind its disc.
-          targetY: height * randomBetween(planRandom, 0.1, 0.29),
+          // Kept clear of the very top so the whole shell opens on screen.
+          targetY: height * randomBetween(planRandom, 0.17, 0.36),
           kind,
-          // Expansion speed of the burst itself (the rocket ascent is chosen in
-          // launchFirework). These remain tight enough to read as dense shells.
+          // Burst depth varies per shell, so some open nearby and some far away.
+          depth: randomBetween(planRandom, 0.55, 1.25),
           speed:
             randomBetween(planRandom, kind === 'silver' ? 200 : 155, kind === 'silver' ? 275 : 235) *
             (width < 768 ? 0.86 : 1),
@@ -1024,6 +1238,7 @@ export function createCosmicEventEngine({
               : randomBetween(planRandom, 380, 480),
           sizeMultiplier: randomBetween(planRandom, 0.85, 1.35),
           nearRatio: kind === 'red' ? 0.18 : 0.22,
+          light: randomBetween(planRandom, 0.5, 0.72),
         },
       });
     }
@@ -1036,218 +1251,127 @@ export function createCosmicEventEngine({
     if (eventId === 'meteor') {
       spawnMeteor({ x: -width * 0.32, y: height * 0.14 }, true);
     } else if (eventId === 'lightning') {
-      spawnLightning({ x: width * randomBetween(planRandom, 0.42, 0.58) }, true);
+      spawnLightning({ x: width * randomBetween(planRandom, 0.44, 0.56) }, true);
     } else if (eventId === 'fireworks') {
-      const centerX = width * 0.5;
-      // High enough that the full chrysanthemum reads around and above the
-      // ring, while its golden rain still crosses the whole interface.
-      const burstY = height * 0.18;
+      const centreScreenX = width * 0.5;
+      // High enough that the full shell reads above the meter while its golden
+      // rain still crosses the whole interface.
+      const burstY = height * 0.17;
       const maxDimension = Math.max(width, height);
 
-      // Large spherical chrysanthemum.
-      spawnBurst(centerX, burstY, {
+      // Outer shell and an inner core, both far larger than any opening burst.
+      spawnBurst(centreScreenX, burstY, {
         kind: 'gold',
-        speed: maxDimension * 0.27,
-        count: 1400,
-        sizeMultiplier: 2.8,
-        foreground: false,
+        speed: maxDimension * 0.29,
+        count: 1150,
+        sizeMultiplier: 2.9,
         nearRatio: 0.55,
+        depth: 1.15,
+        light: 1.5,
       });
-      // Inner bright core.
-      spawnBurst(centerX, burstY, {
-        kind: 'gold',
+      spawnBurst(centreScreenX, burstY, {
+        kind: 'goldCore',
         speed: maxDimension * 0.15,
-        count: 560,
+        count: 420,
         sizeMultiplier: 2.4,
         nearRatio: 0.6,
+        depth: 1.15,
+        light: 0.7,
       });
-      // Long graceful willow streamers.
-      spawnBurst(centerX, burstY + height * 0.015, {
+      spawnBurst(centreScreenX, burstY + height * 0.015, {
         kind: 'willow',
-        speed: maxDimension * 0.19,
-        count: 700,
+        speed: maxDimension * 0.2,
+        count: 520,
         sizeMultiplier: 2.2,
+        depth: 1.1,
+        light: 0.5,
       });
-      // Dedicated foreground sparks that travel down across the interface.
-      spawnGoldenFall(centerX, burstY, Math.round(quality.sparkBudget * 2));
+      spawnGoldenFall(centreScreenX, burstY, Math.round(quality.sparkBudget * 1.2));
       spawnEmbers(quality.tier === 'constrained' ? 14 : 28);
       emitCue('finale-boom');
       cueQueue.push({ at: elapsed + 140, cue: 'firework-willow' });
     }
   }
 
-  // --- Rendering ----------------------------------------------------------
+  // --- Smoke and embers ---------------------------------------------------
 
-  function updateMeteors(deltaSeconds, globalAlpha) {
-    for (let index = meteors.length - 1; index >= 0; index -= 1) {
-      const meteor = meteors[index];
-      meteor.x += meteor.vx * deltaSeconds;
-      meteor.y += meteor.vy * deltaSeconds;
-
-      if (meteor.y > height + 280 || meteor.x < -width * 0.7 || meteor.x > width * 1.7) {
-        meteors.splice(index, 1);
+  function updateSmoke(deltaSeconds, globalAlpha) {
+    for (let index = smoke.length - 1; index >= 0; index -= 1) {
+      const puff = smoke[index];
+      puff.age += deltaSeconds;
+      if (puff.age >= puff.life) {
+        smoke.splice(index, 1);
         continue;
       }
 
-      const speed = Math.hypot(meteor.vx, meteor.vy) || 1;
-      const directionX = meteor.vx / speed;
-      const directionY = meteor.vy / speed;
-      const near = meteor.near;
+      const dragFactor = Math.pow(puff.drag ?? 0.98, deltaSeconds * 60);
+      puff.vx *= dragFactor;
+      puff.vy *= dragFactor;
+      puff.x += puff.vx * deltaSeconds;
+      puff.y += puff.vy * deltaSeconds;
 
-      // Sample at roughly one third of the core diameter so successive sprites
-      // overlap into a continuous streak of plasma instead of a line of beads.
-      const step = Math.max(1.5, 2.0 * effectScale);
-      const samples = Math.max(20, Math.min(meteor.samples, Math.ceil(meteor.length / step)));
+      const progress = puff.age / puff.life;
 
-      for (let sample = 0; sample < samples; sample += 1) {
-        const progress = sample / (samples - 1);
-        const trailX = meteor.x - directionX * meteor.length * progress;
-        const trailY = meteor.y - directionY * meteor.length * progress;
-        const trailAlpha = meteor.alpha * Math.pow(1 - progress, 1.5);
-        const size = meteor.thickness * (1 - progress * 0.74) * (sample < 2 ? 2.1 : 1);
-        pushPoint(
-          trailX,
-          trailY,
-          Math.max(1.1, size),
-          sample < 3 ? meteor.color : meteor.trailColor,
-          trailAlpha * 1.15 * globalAlpha,
-          near,
-        );
-        // Sheath of ionised light around the core: the plasma feel of a real
-        // meteor rather than a hard line.
-        pushPoint(
-          trailX,
-          trailY,
-          Math.max(2.6, size * 3.4),
-          meteor.trailColor,
-          trailAlpha * 0.24 * globalAlpha,
-          near,
-        );
-        if (sample % 3 === 0) {
-          pushPoint(
-            trailX,
-            trailY,
-            Math.max(5, size * 10),
-            meteor.trailColor,
-            trailAlpha * 0.06 * globalAlpha,
-            near,
-          );
-        }
-      }
-
-      // Hot head, atmospheric halo and a small shock ring.
-      pushPoint(
-        meteor.x,
-        meteor.y,
-        meteor.thickness * 22,
-        meteor.trailColor,
-        meteor.alpha * 0.26 * globalAlpha,
-        near,
-      );
-      pushPoint(
-        meteor.x,
-        meteor.y,
-        meteor.thickness * 7,
-        meteor.trailColor,
-        meteor.alpha * 0.5 * globalAlpha,
-        near,
-      );
-      pushPoint(
-        meteor.x,
-        meteor.y,
-        meteor.thickness * 2.6,
-        meteor.color,
-        meteor.alpha * globalAlpha,
-        near,
-      );
-    }
-  }
-
-  function updateLightning(deltaSeconds, globalAlpha) {
-    let strongestFlash = 0;
-    for (let index = lightningStrikes.length - 1; index >= 0; index -= 1) {
-      const strike = lightningStrikes[index];
-      strike.age += deltaSeconds;
-      if (strike.age > strike.life) {
-        lightningStrikes.splice(index, 1);
+      if (puff.kind === 'fragment') {
+        puff.vy += 120 * deltaSeconds;
+        const alpha = Math.pow(1 - progress, 1.6) * globalAlpha;
+        pushPoint(puff.x, puff.y, puff.size, puff.color, alpha, puff.near);
+        pushPoint(puff.x, puff.y, puff.size * 4.5, puff.color, alpha * 0.24, puff.near);
         continue;
       }
 
-      const lifeProgress = strike.age / strike.life;
-      // Sharp attack, irregular multi-flicker, quick decay, then a short
-      // afterglow that keeps the scene lit like a real strike.
-      const attack = Math.min(1, strike.age / 0.045);
-      const decay = Math.pow(1 - lifeProgress, 0.42);
-      const phase = strike.age * 74 + strike.seed;
-      const flicker =
-        lifeProgress < 0.5
-          ? Math.sin(phase) > -0.4
-            ? 1
-            : 0.76
-          : Math.sin(phase * 0.7) > 0.2
-            ? 0.92
-            : 0.62;
-      const afterglow = lifeProgress > 0.72 ? 0.45 : 1;
-      const intensity = attack * decay * flicker * afterglow;
-
-      if (intensity * strike.peakFlash > strongestFlash) {
-        strongestFlash = intensity * strike.peakFlash;
-        flashPosition = [strike.rootX, Math.max(30, strike.rootY)];
+      // Smoke: neutral albedo tinted by whatever light is currently near it, so
+      // a burst's colour visibly catches in its own smoke.
+      puff.size += (puff.growth ?? 20) * deltaSeconds;
+      let tintR = smokeGrey[0];
+      let tintG = smokeGrey[1];
+      let tintB = smokeGrey[2];
+      let nearest = 0;
+      for (let lightIndex = 0; lightIndex < activeLights.length; lightIndex += 1) {
+        const light = activeLights[lightIndex];
+        if (light.intensity <= 0.02) continue;
+        const distance = Math.hypot(puff.x - light.x, puff.y - light.y);
+        const falloff = Math.max(0, 1 - distance / light.radius);
+        if (falloff <= 0) continue;
+        const amount = falloff * falloff * Math.min(1, light.intensity);
+        if (amount > nearest) nearest = amount;
+        tintR += light.color[0] * amount * 0.85;
+        tintG += light.color[1] * amount * 0.85;
+        tintB += light.color[2] * amount * 0.85;
       }
 
-      // Cloud bloom at the origin and ground/sky illumination at the tip. Both
-      // are wide, low-alpha light so they illuminate the atmosphere rather
-      // than painting a disc over the artwork.
-      pushPoint(
-        strike.rootX,
-        Math.max(24, strike.rootY + 20),
-        (strike.isFinale ? 260 : 170) * effectScale,
-        boltDepth,
-        intensity * 0.16 * globalAlpha,
-        strike.near,
-      );
-      pushPoint(
-        strike.groundX,
-        strike.groundY,
-        (strike.isFinale ? 210 : 130) * effectScale,
-        boltHalo,
-        intensity * 0.14 * globalAlpha,
-        strike.near,
-      );
-
-      for (const point of strike.points) {
-        const pointSize = point.size * (1 + (1 - lifeProgress) * 0.14);
-        pushPoint(
-          point.x,
-          point.y,
-          pointSize,
-          boltCore,
-          point.alpha * intensity * 1.35 * globalAlpha,
-          strike.near,
-        );
-        // Two additive bloom passes: a tight electric sheath and a wide
-        // atmospheric halo. Together they read as light in the sky.
-        pushPoint(
-          point.x,
-          point.y,
-          pointSize * 2.6,
-          boltHalo,
-          point.alpha * intensity * 0.46 * globalAlpha,
-          strike.near,
-        );
-        pushPoint(
-          point.x,
-          point.y,
-          pointSize * 7.5,
-          strike.isFinale ? boltHalo : boltDepth,
-          point.alpha * intensity * 0.14 * globalAlpha,
-          strike.near,
-        );
-      }
+      const fade = Math.sin(Math.min(1, progress) * Math.PI * 0.9) * (0.28 + nearest * 0.5);
+      const tint = [
+        Math.min(1, tintR),
+        Math.min(1, tintG),
+        Math.min(1, tintB),
+      ];
+      pushPoint(puff.x, puff.y, puff.size, tint, fade * globalAlpha * 0.32, puff.near);
     }
-
-    flash += (strongestFlash - flash) * Math.min(1, deltaSeconds * 26);
   }
+
+  function updateEmbers(deltaSeconds, globalAlpha) {
+    for (let index = embers.length - 1; index >= 0; index -= 1) {
+      const ember = embers[index];
+      ember.age += deltaSeconds;
+      if (ember.age >= ember.life || ember.y < -30) {
+        embers.splice(index, 1);
+        continue;
+      }
+
+      ember.vx += Math.sin(ember.age * 2.2 + ember.phase) * 9 * deltaSeconds;
+      ember.x += ember.vx * deltaSeconds;
+      ember.y += ember.vy * deltaSeconds;
+
+      const lifeProgress = ember.age / ember.life;
+      const alpha =
+        Math.sin(lifeProgress * Math.PI) * (0.5 + 0.5 * Math.sin(ember.age * 7 + ember.phase));
+      pushPoint(ember.x, ember.y, ember.size, ember.color, alpha * globalAlpha, ember.near);
+      pushPoint(ember.x, ember.y, ember.size * 5, ember.color, alpha * 0.16 * globalAlpha, ember.near);
+    }
+  }
+
+  // --- Fireworks update ---------------------------------------------------
 
   function updateFireworks(deltaSeconds, globalAlpha) {
     // Rockets
@@ -1282,6 +1406,7 @@ export function createCosmicEventEngine({
             speed: spec.speed * 0.62,
             sizeMultiplier: spec.sizeMultiplier * 0.82,
             nearRatio: 0.1,
+            light: 0,
           });
           emitCue(spec.kind === 'silver' ? 'firework-burst-silver' : 'firework-burst');
         }
@@ -1290,36 +1415,28 @@ export function createCosmicEventEngine({
     }
 
     // Burst particles with cascading trails.
-    //
-    // This is a snapshot taken before the loop. Children added by silver
-    // branching below are not visited in this same pass (the loop walks
-    // backwards from the pre-existing tail), so the snapshot intentionally
-    // lags by one frame; it gates branching, not the per-frame draw budget,
-    // which PointBatch.maxPoints enforces at push time.
     let liveParticles = liveParticleCount();
     for (let fireworkIndex = fireworks.length - 1; fireworkIndex >= 0; fireworkIndex -= 1) {
       const firework = fireworks[fireworkIndex];
       const particles = firework.particles;
       let alive = 0;
 
-      // The ignition flash is what makes a shell read as an explosion instead
-      // of a cloud of dots: a short, broad bloom of the shell's own colour.
       if (firework.flash > 0) {
-        firework.flash = Math.max(0, firework.flash - deltaSeconds * 2.2);
+        firework.flash = Math.max(0, firework.flash - deltaSeconds * 3.6);
         pushPoint(
-          firework.x,
-          firework.y,
-          firework.flashSize * (1.2 - firework.flash * 0.25),
+          firework.screenX,
+          firework.screenY,
+          firework.flashSize * (1.15 - firework.flash * 0.2),
           firework.lightColor,
-          firework.flash * 0.5 * globalAlpha,
+          firework.flash * 0.26 * globalAlpha,
           false,
         );
         pushPoint(
-          firework.x,
-          firework.y,
-          firework.flashSize * 0.42,
+          firework.screenX,
+          firework.screenY,
+          firework.flashSize * 0.34,
           firework.lightColor,
-          Math.min(1, firework.flash * 1.4) * globalAlpha,
+          Math.min(1, firework.flash * 0.75) * globalAlpha,
           false,
         );
       }
@@ -1345,7 +1462,6 @@ export function createCosmicEventEngine({
 
         const lifeProgress = particle.age / particle.life;
 
-        // Silver crackle branches into short-lived child sparks mid-flight.
         if (
           particle.kind === 'silver' &&
           !particle.branched &&
@@ -1371,9 +1487,8 @@ export function createCosmicEventEngine({
                 trail: 4,
                 kind: 'silver',
                 near: particle.near,
-                // Children are terminal sparkles. A child must never branch
-                // again, or the crackle chain reacts without end and consumes
-                // the whole particle and point budget.
+                depth: particle.depth,
+                // A child is terminal: it must never branch again.
                 branchAt: 2,
               }),
             );
@@ -1384,32 +1499,56 @@ export function createCosmicEventEngine({
         const twinkle =
           particle.kind === 'silver'
             ? 0.55 + 0.45 * Math.sin(particle.twinkle + particle.age * 19)
-            : particle.kind === 'gold'
+            : particle.kind === 'gold' || particle.kind === 'goldCore'
               ? 0.6 + 0.4 * Math.sin(particle.twinkle + particle.age * 10)
               : 0.82 + 0.18 * Math.sin(particle.twinkle + particle.age * 7);
-        // The golden show must stay legible for its whole fall; the red peony
-        // fades faster so the finale always reads as the bigger moment.
         const fadeExponent =
-          particle.kind === 'gold' ? 0.82 : particle.kind === 'willow' ? 0.92 : 1.28;
+          particle.kind === 'gold' || particle.kind === 'goldCore'
+            ? 0.82
+            : particle.kind === 'willow'
+              ? 0.92
+              : 1.28;
         const alpha = Math.pow(1 - lifeProgress, fadeExponent) * twinkle;
 
-        for (let trailIndex = 0; trailIndex < particle.history.length; trailIndex += 1) {
-          const point = particle.history[trailIndex];
-          const trailProgress = trailIndex / Math.max(1, particle.history.length - 1);
-          pushPoint(
-            point.x,
-            point.y,
-            particle.size * (0.52 + trailProgress * 0.48),
-            particle.colour,
-            alpha * trailProgress * 0.72 * globalAlpha,
-            particle.near,
-          );
+        // Per-particle depth: the near half of a shell is larger and brighter,
+        // which is what turns a ring of dots into a sphere.
+        const depthFactor = clamp(particle.depth ?? 1, 0.4, 2);
+        const sizeFactor = 0.82 + depthFactor * 0.22;
+
+        // History is sampled once per frame, so at a low frame rate the raw
+        // points are far apart. Interpolating between them keeps the streak
+        // continuous on a slow device without recording more history.
+        const history = particle.history;
+        for (let trailIndex = 0; trailIndex < history.length; trailIndex += 1) {
+          const point = history[trailIndex];
+          const previous = trailIndex > 0 ? history[trailIndex - 1] : null;
+          const trailProgress = trailIndex / Math.max(1, history.length - 1);
+          const trailSize = particle.size * sizeFactor * (0.52 + trailProgress * 0.48);
+          const trailAlpha = alpha * trailProgress * 0.72 * globalAlpha;
+
+          if (previous) {
+            const gap = Math.hypot(point.x - previous.x, point.y - previous.y);
+            const steps = clamp(Math.round(gap / 5), 1, 3);
+            for (let step = 1; step < steps; step += 1) {
+              const fraction = step / steps;
+              pushPoint(
+                previous.x + (point.x - previous.x) * fraction,
+                previous.y + (point.y - previous.y) * fraction,
+                trailSize,
+                particle.colour,
+                trailAlpha,
+                particle.near,
+              );
+            }
+          }
+
+          pushPoint(point.x, point.y, trailSize, particle.colour, trailAlpha, particle.near);
         }
 
         pushPoint(
           particle.x,
           particle.y,
-          particle.size,
+          particle.size * sizeFactor,
           particle.colour,
           alpha * globalAlpha,
           particle.near,
@@ -1417,7 +1556,7 @@ export function createCosmicEventEngine({
         pushPoint(
           particle.x,
           particle.y,
-          particle.size * 5.2,
+          particle.size * sizeFactor * 5.2,
           particle.colour,
           alpha * 0.2 * globalAlpha,
           particle.near,
@@ -1428,31 +1567,41 @@ export function createCosmicEventEngine({
     }
   }
 
-  function updateEmbers(deltaSeconds, globalAlpha) {
-    for (let index = embers.length - 1; index >= 0; index -= 1) {
-      const ember = embers[index];
-      ember.age += deltaSeconds;
-      if (ember.age >= ember.life || ember.y < -30) {
-        embers.splice(index, 1);
+  // --- Frame --------------------------------------------------------------
+
+  /** Reused each frame for the shared-light selection; never reallocated. */
+  const topLights = [];
+
+  function updateLights(deltaSeconds) {
+    for (let index = activeLights.length - 1; index >= 0; index -= 1) {
+      const light = activeLights[index];
+      light.age += deltaSeconds;
+      if (light.age >= light.life || light.peak <= 0.001) {
+        activeLights.splice(index, 1);
         continue;
       }
-
-      ember.vx += Math.sin(ember.age * 2.2 + ember.phase) * 9 * deltaSeconds;
-      ember.x += ember.vx * deltaSeconds;
-      ember.y += ember.vy * deltaSeconds;
-
-      const lifeProgress = ember.age / ember.life;
-      const alpha =
-        Math.sin(lifeProgress * Math.PI) *
-        (0.5 + 0.5 * Math.sin(ember.age * 7 + ember.phase));
-      pushPoint(ember.x, ember.y, ember.size, ember.color, alpha * globalAlpha, ember.near);
-      pushPoint(ember.x, ember.y, ember.size * 5, ember.color, alpha * 0.16 * globalAlpha, ember.near);
+      const progress = light.age / light.life;
+      // Fast attack, slow tail: a burst is bright immediately and lingers.
+      light.intensity = light.peak * Math.pow(1 - progress, 1.7);
     }
+
+    // Publish the strongest lights to the shared bus, which the medallion and
+    // the maple leaves read so the whole scene shares one illumination. The
+    // selection reuses one array: nothing is allocated per frame.
+    topLights.length = 0;
+    for (let index = 0; index < activeLights.length; index += 1) {
+      const candidate = activeLights[index];
+      if (candidate.intensity <= 0.01) continue;
+      let slot = 0;
+      while (slot < topLights.length && topLights[slot].intensity >= candidate.intensity) slot += 1;
+      if (slot >= 4) continue;
+      topLights.splice(slot, 0, candidate);
+      if (topLights.length > 4) topLights.pop();
+    }
+    publishSceneLights(topLights);
   }
 
   function trackPerformance(deltaMs) {
-    // Ignore the first moments after mount: loading and shader compilation are
-    // not representative of the device's sustained frame rate.
     if (elapsed < 1000 || (qualitySteps >= 2 && (nearDead || !nearSurface))) return;
     frameAccum += deltaMs;
     frameCount += 1;
@@ -1466,17 +1615,10 @@ export function createCosmicEventEngine({
       qualitySteps += 1;
       qualityScale = qualitySteps === 1 ? 0.78 : 0.56;
       resolutionScale = qualitySteps === 1 ? 0.86 : 0.7;
-      // Reduce future spawn counts and resolution, never the current draw:
-      // dropping the newest points would erase the finale while older trails
-      // survive. The point budgets still cap total allocation.
       resize();
       return;
     }
 
-    // Two reductions were not enough. On a genuinely slow renderer, stop
-    // compositing the optional foreground surface as well. Its points move to
-    // the far surface, so the show continues without a second full-viewport
-    // framebuffer and text stays readable.
     if (fps < 18 && qualitySteps >= 2 && nearSurface && !nearDead) {
       nearDead = true;
       nearSurface.clear();
@@ -1488,14 +1630,16 @@ export function createCosmicEventEngine({
     if (destroyed || contextLost) return;
 
     if (!lastFrame) lastFrame = timestamp;
-    const deltaMs = Math.min(64, timestamp - lastFrame);
+    // Two clocks. The timeline must follow real time so the reveal keeps its
+    // documented duration on a slow device, while the simulation step is capped
+    // so a long frame cannot teleport particles or tunnel through a curve.
+    const wallDeltaMs = Math.min(120, Math.max(0, timestamp - lastFrame));
     lastFrame = timestamp;
-    const deltaSeconds = deltaMs / 1000;
-    elapsed += deltaMs;
+    const deltaSeconds = Math.min(0.064, wallDeltaMs / 1000);
+    elapsed += wallDeltaMs;
 
-    trackPerformance(deltaMs);
+    trackPerformance(wallDeltaMs);
 
-    // Spawn scheduled beats and any deferred cues.
     while (nextSpawnIndex < plan.length && elapsed >= plan[nextSpawnIndex].at) {
       const beat = plan[nextSpawnIndex];
       if (beat.type === 'meteor') spawnMeteor(beat);
@@ -1508,14 +1652,11 @@ export function createCosmicEventEngine({
     }
 
     const finaleAt =
-      durationMs -
-      (eventId === 'meteor' ? 1900 : eventId === 'lightning' ? 2300 : 5600);
+      durationMs - (eventId === 'meteor' ? 1900 : eventId === 'lightning' ? 2300 : 5600);
     if (!finaleSpawned && elapsed >= Math.max(0, finaleAt)) {
       spawnFinale();
     }
 
-    // Fade in quickly, fade out cleanly before the stage unmounts. The near
-    // layer gets its own, later fade so golden sparks are never cut abruptly.
     const fadeIn = clamp(elapsed / 340, 0, 1);
     const fadeOut = clamp((durationMs - elapsed) / 900, 0, 1);
     const nearFadeOut = clamp((durationMs - elapsed) / 700, 0, 1);
@@ -1523,7 +1664,7 @@ export function createCosmicEventEngine({
     const nearAlpha = fadeIn * nearFadeOut;
 
     flash *= Math.pow(0.02, deltaSeconds);
-    flash = clamp(flash, 0, 1.2);
+    flash = clamp(flash, 0, 1.3);
 
     farSurface.clear();
     if (nearSurface && !nearDead) nearSurface.clear();
@@ -1536,7 +1677,6 @@ export function createCosmicEventEngine({
       nearSurface.gl.disable(nearSurface.gl.DEPTH_TEST);
     }
 
-    // Update first so the lightning haze and light use this frame's flash.
     farBatch.reset();
     nearBatch?.reset();
     if (meteors.length > 0) updateMeteors(deltaSeconds, globalAlpha);
@@ -1544,9 +1684,12 @@ export function createCosmicEventEngine({
     if (rockets.length > 0 || fireworks.length > 0) {
       updateFireworks(deltaSeconds, globalAlpha);
     }
+    if (smoke.length > 0) updateSmoke(deltaSeconds, globalAlpha);
     if (embers.length > 0) updateEmbers(deltaSeconds, globalAlpha);
 
-    hazeStrength = eventId === 'lightning' ? 0.26 * globalAlpha + flash * 0.55 : 0;
+    updateLights(deltaSeconds);
+
+    hazeStrength = eventId === 'lightning' ? 0.26 * globalAlpha + flash * 0.6 : 0;
     if (hazeStrength > 0.001 && farSurface.hazeAvailable) {
       farSurface.drawHaze({
         time: elapsed / 1000,
@@ -1555,6 +1698,17 @@ export function createCosmicEventEngine({
         flashPosition,
       });
     }
+
+    // Sky illumination: the pass that makes explosions and strikes light the sky.
+    if (farSurface.skyLightAvailable && activeLights.length > 0) {
+      farSurface.drawSkyLight({
+        time: elapsed / 1000,
+        alpha: globalAlpha,
+        lights: activeLights,
+        count: Math.min(4, activeLights.length),
+      });
+    }
+
     if (typeof window !== 'undefined' && window.__LUCKY_METER_DEBUG__ === true) {
       window.__luckyCosmic = {
         elapsed: Math.round(elapsed),
@@ -1564,26 +1718,16 @@ export function createCosmicEventEngine({
         rockets: rockets.length,
         meteors: meteors.length,
         strikes: lightningStrikes.length,
+        smoke: smoke.length,
+        lights: activeLights.length,
         finaleSpawned,
         farDropped: farBatch.dropped,
         nearDropped: nearBatch ? nearBatch.dropped : 0,
         droppedPoints,
-        byKind: fireworks.reduce((totals, shell) => {
-          for (const particle of shell.particles) {
-            totals[particle.kind] = (totals[particle.kind] || 0) + 1;
-          }
-          return totals;
-        }, {}),
-        qualitySteps: qualitySteps,
-        nearDead: nearDead,
-        globalAlpha: globalAlpha,
+        qualitySteps,
+        nearDead,
+        globalAlpha,
         lost: farSurface.gl.isContextLost(),
-        // Deliberately no gl.getError() here: it synchronises the GPU pipeline
-        // on every frame and would distort the timing this hook exists to
-        // measure. Use the browser devtools or a one-off call instead.
-        firstPoints: Array.from(farBatch.positions.slice(0, 8)),
-        firstColors: Array.from(farBatch.colors.slice(0, 8)),
-        firstSizes: Array.from(farBatch.sizes.slice(0, 6)),
       };
     }
 
@@ -1603,12 +1747,12 @@ export function createCosmicEventEngine({
     completed = true;
     if (animationFrame) window.cancelAnimationFrame(animationFrame);
     animationFrame = 0;
-    // Let the last frame's particles fade with the canvas, then clear it so no
-    // frame is left over the artwork after the event.
     if (!contextLost) {
       farSurface.clear();
       if (nearSurface && !nearDead) nearSurface.clear();
     }
+    // The stage is over: stop lighting the page.
+    clearSceneLights();
     if (doneHandler) doneHandler();
   }
 
@@ -1620,7 +1764,6 @@ export function createCosmicEventEngine({
   window.addEventListener('orientationchange', handleResize);
 
   const stopVisibilityListener = onVisibilityChange((visible) => {
-    // Resume with a fresh frame delta so a hidden tab never skips the finale.
     lastFrame = 0;
     if (!visible) {
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
@@ -1638,9 +1781,8 @@ export function createCosmicEventEngine({
       contextLost = true;
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       animationFrame = 0;
-      // Release the JS-side handles immediately for the same reason as the
-      // near surface: destroy() would otherwise delete them on a dead context.
       farSurface.dispose();
+      clearSceneLights();
       if (lostHandler) lostHandler();
     },
   });
@@ -1649,14 +1791,9 @@ export function createCosmicEventEngine({
     foregroundCanvas && nearSurface
       ? watchContextLoss(foregroundCanvas, {
           onLost: () => {
-            // Losing only the near context must not end the event; its points
-            // fall back to the far surface for the remainder of the sequence.
             nearDead = true;
             try {
               nearSurface.clear();
-              // Release the JS-side handles now rather than at teardown: the
-              // driver has already dropped this context, and holding the
-              // buffers/programs until destroy() would keep them reachable.
               nearSurface.dispose();
             } catch {
               // The context is already gone.
@@ -1668,8 +1805,6 @@ export function createCosmicEventEngine({
   if (!reducedMotion) {
     animationFrame = window.requestAnimationFrame(frame);
   } else {
-    // The caller normally does not mount the stage under reduced motion; if it
-    // does, complete immediately instead of animating.
     finish();
   }
 
@@ -1692,6 +1827,9 @@ export function createCosmicEventEngine({
     rockets.length = 0;
     fireworks.length = 0;
     embers.length = 0;
+    smoke.length = 0;
+    activeLights.length = 0;
+    clearSceneLights();
 
     farSurface.dispose();
     if (nearSurface) nearSurface.dispose();

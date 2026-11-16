@@ -746,3 +746,114 @@ body {
   }
 }
 
+
+/* ── Dimensional medallion ──────────────────────────────────────────────────
+   The lit WebGL medallion paints over these layers once it has produced a
+   frame. They stay in the document as the no-WebGL fallback so the meter is
+   never an empty hole; nothing here is load-bearing for the 3D path. */
+.resonance-medallion-fallback {
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+/* ── Tier plate ─────────────────────────────────────────────────────────────
+   A framed title rather than loose text: hairlines either side, wide tracking
+   and a struck-gold fill that matches the medallion metal. */
+.lucky-tier-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.lucky-tier-plate__rule {
+  display: block;
+  height: 1px;
+  flex: 0 1 1.15rem;
+  min-width: 0.3rem;
+  background: linear-gradient(90deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.5));
+}
+.lucky-tier-plate__rule:last-child {
+  background: linear-gradient(270deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.5));
+}
+.lucky-tier-plate__label {
+  margin: 0;
+  font-size: clamp(9px, 1.1vh, 12px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-indent: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffbe4 0%, #f8e3a4 38%, #e0b45c 70%, #b6822f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+
+/* ── Supporting panels ─────────────────────────────────────────────────────
+   One shared chrome so the Little Spark panel, the next-resonance panel and
+   the share row read as one set. */
+.lucky-panel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(234, 190, 82, 0.17);
+  background: linear-gradient(158deg, rgba(18, 24, 33, 0.8), rgba(5, 9, 15, 0.66));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 190, 0.09),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 12px 28px -12px rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(7px) saturate(110%);
+  backdrop-filter: blur(7px) saturate(110%);
+}
+.lucky-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(255, 226, 160, 0.08), rgba(255, 226, 160, 0) 60%);
+}
+.lucky-panel-label {
+  color: rgba(255, 228, 168, 0.75);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1.25;
+}
+
+/* ── Countdown ─────────────────────────────────────────────────────────────*/
+.lucky-countdown {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.15rem 0.6rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(234, 190, 82, 0.14);
+  border-radius: 9999px;
+  background: rgba(2, 7, 12, 0.5);
+}
+.lucky-countdown__value {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+  color: #ffe7b0;
+  text-shadow: 0 0 16px rgba(255, 196, 80, 0.4);
+}
+
+/* ── Share ─────────────────────────────────────────────────────────────────*/
+.lucky-share-btn {
+  letter-spacing: 0.05em;
+}
+
+/* ── Little Spark ──────────────────────────────────────────────────────────*/
+.lucky-spark-quote {
+  font-style: italic;
+  color: rgba(255, 247, 228, 0.93);
+  text-wrap: pretty;
+}
+.lucky-spark-quote__mark {
+  font-style: normal;
+  color: rgba(255, 214, 130, 0.55);
+}
