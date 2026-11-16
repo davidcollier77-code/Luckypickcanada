@@ -119,13 +119,26 @@ export function createLuckyMeterMedallionEngine({
     return null;
   }
 
-  const meshProgram = createMeshProgram(gl);
-  const geometry = meshProgram
-    ? buildMedallionGeometry({ segments: quality.meshSegments ?? 160 })
-    : null;
-  const buffers = geometry ? createMeshBuffers(gl, geometry) : null;
-  if (!meshProgram || !buffers) {
-    if (meshProgram) gl.deleteProgram(meshProgram.program);
+  // Rebuildable, because a lost WebGL context invalidates every program and
+  // buffer while the same canvas and context object come back on restore.
+  let meshProgram = null;
+  let geometry = null;
+  let buffers = null;
+
+  function buildResources() {
+    geometry = buildMedallionGeometry({ segments: quality.meshSegments ?? 160 });
+    meshProgram = createMeshProgram(gl);
+    buffers = meshProgram ? createMeshBuffers(gl, geometry) : null;
+    if (!meshProgram || !buffers) {
+      if (meshProgram) gl.deleteProgram(meshProgram.program);
+      meshProgram = null;
+      buffers = null;
+      return false;
+    }
+    return true;
+  }
+
+  if (!buildResources()) {
     onUnavailable?.();
     return null;
   }
@@ -318,6 +331,23 @@ export function createLuckyMeterMedallionEngine({
       stop();
       onUnavailable?.();
     },
+    onRestored: () => {
+      if (destroyed) return;
+      contextLost = false;
+      // Every WebGL object was invalidated by the loss, so the program and the
+      // buffers have to exist again before another frame is drawn.
+      if (!buildResources()) {
+        onUnavailable?.();
+        return;
+      }
+      // The interface switched to the static fallback while the context was
+      // gone; re-announce ready so it returns to the lit renderer on the next
+      // completed frame instead of staying on the fallback for good.
+      announcedReady = false;
+      lastFrame = 0;
+      resize();
+      start();
+    },
   });
 
   resize();
@@ -346,8 +376,10 @@ export function createLuckyMeterMedallionEngine({
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerleave', handlePointerLeave);
       }
-      buffers.dispose();
+      buffers?.dispose();
       if (meshProgram) gl.deleteProgram(meshProgram.program);
+      buffers = null;
+      meshProgram = null;
       // The context itself is left to the browser: forcing a loss poisons the
       // same canvas when React re-runs the effect after a Strict Mode remount.
       onReady = null;

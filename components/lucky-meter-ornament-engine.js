@@ -211,13 +211,28 @@ export function createLuckyMeterOrnamentEngine({
     return null;
   }
 
-  const meshProgram = createMeshProgram(gl);
-  // A little more thickness than a real leaf so an edge-on ornament reads as a
-  // solid gold sliver with a lit edge instead of a one-pixel needle.
-  const geometry = buildMapleLeafGeometry({ thickness: 0.155, bevel: 0.07, dome: 0.042 });
-  const buffers = meshProgram ? createMeshBuffers(gl, geometry) : null;
-  if (!meshProgram || !buffers) {
-    if (meshProgram) gl.deleteProgram(meshProgram.program);
+  // Rebuildable, because a lost WebGL context invalidates every program and
+  // buffer while the same canvas and context object come back on restore.
+  let meshProgram = null;
+  let geometry = null;
+  let buffers = null;
+
+  function buildResources() {
+    // A little more thickness than a real leaf so an edge-on ornament reads as a
+    // solid gold sliver with a lit edge instead of a one-pixel needle.
+    geometry = buildMapleLeafGeometry({ thickness: 0.155, bevel: 0.07, dome: 0.042 });
+    meshProgram = createMeshProgram(gl);
+    buffers = meshProgram ? createMeshBuffers(gl, geometry) : null;
+    if (!meshProgram || !buffers) {
+      if (meshProgram) gl.deleteProgram(meshProgram.program);
+      meshProgram = null;
+      buffers = null;
+      return false;
+    }
+    return true;
+  }
+
+  if (!buildResources()) {
     onUnavailable?.();
     return null;
   }
@@ -443,6 +458,20 @@ export function createLuckyMeterOrnamentEngine({
       stop();
       onUnavailable?.();
     },
+    onRestored: () => {
+      if (destroyed) return;
+      contextLost = false;
+      // The loss invalidated the program and the buffers; recreate them before
+      // the next draw, then carry on with the same leaf composition.
+      if (!buildResources()) {
+        onUnavailable?.();
+        return;
+      }
+      announcedReady = false;
+      lastFrame = 0;
+      resize();
+      start();
+    },
   });
 
   resize();
@@ -459,8 +488,10 @@ export function createLuckyMeterOrnamentEngine({
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
       activeLeaves = [];
-      buffers.dispose();
+      buffers?.dispose();
       if (meshProgram) gl.deleteProgram(meshProgram.program);
+      buffers = null;
+      meshProgram = null;
       // The browser owns the context; forcing a loss would poison the canvas on
       // a Strict Mode remount.
       onReady = null;
