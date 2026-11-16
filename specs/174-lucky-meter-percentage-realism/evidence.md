@@ -107,3 +107,60 @@ on the golden shell rather than guessing at wall-clock time.
 - The AZ Screen Recorder video was not watched.
 - Screenshots are static frames; motion smoothness was assessed through the
   Playwright interactions, not by watching a recording.
+
+## 7. Live deployment verification (2026-11-16)
+
+The merged deployment (squash commit `21d03280` on `main`, served from
+https://luckypickcanada.ca/lucky-meter) was driven directly. The random source
+was pinned only around the draw so each generated percentage was exact rather
+than a lucky landing; every expectation below is read from the live DOM and the
+live `localStorage` record.
+
+| Forced % | Displayed | `data-dial-angle` | Tier shown | Event (stage) | Numbers |
+| --- | --- | --- | --- | --- | --- |
+| 5 | 5 | 18.00° | Low Resonance | meteor | 3/9/21 |
+| 30 | 30 | 108.00° | Low Resonance | meteor | 3/9/21 |
+| 31 | 31 | 111.60° | Medium Resonance | lightning | 11/22/33 |
+| 65 | 65 | 234.00° | Medium Resonance | lightning | 11/22/33 |
+| 66 | 66 | 237.60° | High Resonance | fireworks | 7/8/77 |
+| 100 | 100 | 360.00° | High Resonance | fireworks | 7/8/77 |
+
+- **Saved result**: a seeded `{percentage: 72, tier: low, event: meteor,
+  colour: maple-red, spark: spark-12, createdAt: 1700000000000}` renders
+  High / Fireworks / 7-8-77, keeps Maple Red, #B52B32, the Spark id and the
+  original `createdAt`, and does not clear the record (the stored tier stays
+  `low`; the reveal is normalized on every read). `storedTier: low, shown: high`.
+- **Three-day guard**: with `events: ['lightning','lightning',…]` and a forced
+  50 %, the live draw landed on **67 % High**, so the Lightning band was blocked
+  and the range still produced a reading.
+- **Reduced motion**: the live 31 % reading presented with angle 111.60° and no
+  cinematic stage.
+- **WebGL**: the reveal completed at 66 % with the Fireworks stage. The probe's
+  context override did not force the fallback on the live bundle (the medallion
+  still reported `gpu`), so the no-WebGL layout itself is evidenced by the
+  local Playwright suite, not by this live run.
+
+### Defect found on the live site
+
+The deployed script contained the new dial logic (`data-dial-angle`) but the
+deployed stylesheet contained **none** of the `.resonance-dial*` rules, so the
+index rendered as two unstyled spans: computed `position: static`, `width:
+auto`, `background: none`. The dial's stopping position was therefore invisible
+on production — the live 31 % screenshot shows a clean rim with no pointer.
+
+Fix: the arm and head now carry their geometry, gradient and glow as inline
+styles with `data-testid` hooks, and the dead CSS block was removed. A local
+production build then reported `position: absolute`, `width: 2px`, resolved
+height 51.83 px and the brass gradient, with the head at 9 px, at 1440, 390 and
+412 widths, while every boundary angle above stayed exact.
+
+### Preservation proof
+
+- All six Milky Way assets (`lucky-meter-night-sky*` AVIF/WebP at 640/1024/1400)
+  are byte-identical to `main`: `git diff --stat main..HEAD -- public/images/…`
+  is empty.
+- The `<picture>` element in `components/DailyResonance.tsx` is byte-identical
+  to `main` (1184 characters compared programmatically).
+- Every changed path is inside the Lucky Meter, its tests, the spec/evidence,
+  the task artifacts or the Memory Bank; the filtered diff outside those
+  prefixes is empty.

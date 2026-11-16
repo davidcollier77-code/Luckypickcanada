@@ -122,6 +122,10 @@ widest event of the sequence in the captured frame, with the finale cue audible.
 
 ### Edge cases
 
+- **Stylesheet miss**: a deployment can ship the new script with an older or
+  partial stylesheet. The index must still be visible and must still sit at the
+  displayed percentage's angle (verified on the live site, see evidence.md).
+
 - **0° wrap**: a 100 % reading normalizes 360° back to 0°. `angleToPercentage`
   treats 0° as 100 %, and the landing never displays a value ahead of the dial.
 - **Reduced motion**: the dial is presented already at its value, the reveal
@@ -154,6 +158,9 @@ widest event of the sequence in the captured frame, with the finale cue audible.
   distinct, synchronized and synchronized to their tier; the golden finale MUST
   be the dominant moment.
 - **FR-010** The Milky Way background markup and assets MUST NOT change.
+- **FR-011** The dial's brass index MUST paint from styles carried by its own
+  elements, so its resting position remains visible even when a deployment's
+  stylesheet omits or lags the component CSS.
 
 ## Key entities
 

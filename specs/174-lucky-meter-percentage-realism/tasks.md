@@ -62,3 +62,17 @@
       including a mid-spin frame and the golden finale.
 - [X] T022 Run the focused unit suites, the type check, the Playwright spec and
       the production build; confirm the build stays below 495 MiB.
+
+## Task Group 7 — Live-site proof and pointer fix
+
+- [X] T023 Verify the deployed merge on https://luckypickcanada.ca/lucky-meter at
+      5, 30, 31, 65, 66 and 100 with the random source forced around the draw.
+- [X] T024 Verify saved-result normalization, the three-day guard, reduced motion
+      and the WebGL path on the live site.
+- [X] T025 Find and fix the deployed defect where the stylesheet omitted every
+      `.resonance-dial*` rule, leaving the index invisible: move the arm and head
+      to inline styles with test ids and delete the dead CSS.
+- [X] T026 Re-verify the fixed pointer's computed geometry in a production build
+      at 1440, 390 and 412 widths and confirm the dial angle still matches.
+- [X] T027 Confirm the Milky Way picture markup and all six sky assets are
+      unchanged from `main`, and that no path outside the Lucky Meter changed.

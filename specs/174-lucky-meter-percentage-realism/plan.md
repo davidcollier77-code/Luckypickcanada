@@ -60,7 +60,10 @@ touched.
 ### 4. Meter and buttons (`components/LuckyMeterRing.jsx`, `app/globals.css`)
 
 - Brass index: a 2 px tapering arm with a 9 px struck head, rotating with
-  `dialAngle`, sitting above the medallion and below the reading.
+  `dialAngle`, sitting above the medallion and below the reading. Its geometry
+  and metal are inline styles on the two spans (`data-testid="lucky-meter-dial-arm"`
+  / `-head`), so a deployment cannot lose the pointer to a stale or dropped CSS
+  chunk; the corresponding rules were removed from `globals.css`.
 - Medallion fallback highlight, tier plate and gold CTA gradients refined
   without changing dimensions, labels or focus behaviour.
 
@@ -88,6 +91,7 @@ touched.
 | Old saved readings show the wrong event | `validateDailyResult` normalizes tier/event/numbers from the stored percentage and persists the correction. |
 | Repeat guard over-blocks | The guard is scoped to the blocked tier band and lifted when it would empty the range. |
 | Leaves covering copy | Near-layer placement pads the copy lane by leaf footprint and drift; captured at 390/412/1440. |
+| Pointer missing after deploy | The live verification found the deployed CSS lacked the dial rules. The index is now styled inline and asserted by computed style against a production build and the live site. |
 | Finale overwhelming the opening | Finale amplification is gated to the finale spawn; opening shells untouched. |
 
 ## Rollout
