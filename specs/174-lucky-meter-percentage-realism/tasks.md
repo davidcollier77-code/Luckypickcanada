@@ -62,3 +62,26 @@
       including a mid-spin frame and the golden finale.
 - [X] T022 Run the focused unit suites, the type check, the Playwright spec and
       the production build; confirm the build stays below 495 MiB.
+
+## Task Group 7 — Live-site proof and pointer fix
+
+- [X] T023 Verify the deployed merge on https://luckypickcanada.ca/lucky-meter at
+      5, 30, 31, 65, 66 and 100 with the random source forced around the draw.
+- [X] T024 Verify saved-result normalization, the three-day guard and reduced
+      motion on the live site. The WebGL/no-WebGL path is covered by the local
+      Playwright suite; the live probe could not force the fallback.
+- [X] T025 Find and fix the deployed defect where the stylesheet omitted every
+      `.resonance-dial*` rule, leaving the index invisible: move the arm and head
+      to inline styles with test ids and delete the dead CSS.
+- [X] T026 Re-verify the fixed pointer's computed geometry in a production build
+      at 1440, 390 and 412 widths and confirm the dial angle still matches.
+- [X] T027 Confirm the Milky Way picture markup and all six sky assets are
+      unchanged from `main`, and that no path outside the Lucky Meter changed.
+- [X] T028 Fix the Visual QA failure on PR #1932 by recording each reveal beat's
+      first appearance instead of snapshotting zero counts inside an 800 ms
+      window; re-run the spec across all three projects.
+- [X] T029 Add a committed computed-style guard for the dial index: the arm and
+      head paint with absolute positioning, 2 px/9 px widths, their gradients and
+      9999 px radii while no `.resonance-dial` rule is loaded, at the displayed
+      angle. Remove the dead `data-spinning` attribute, scope `will-change` to the
+      spin and use explicit pixel units in the inline styles.

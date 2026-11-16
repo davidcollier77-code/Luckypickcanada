@@ -103,3 +103,13 @@ QA checkers, using the PR #1924 review and fix cycle as the evaluation.
 - The dev server's CSS bundle went stale in `.next/dev` during this task; a CSS
   edit only appeared after removing `.next`. If a visual change seems to have no
   effect in dev, clear `.next` before re-capturing.
+
+### Follow-up after merge — live-site verification
+
+- The merged deployment was driven at 5/30/31/65/66/100 with the random source
+  pinned: every tier, event, number set and dial angle matched, and saved-result
+  normalization, the three-day guard and reduced motion held on production.
+- The live stylesheet did not contain the `.resonance-dial*` rules, so the brass
+  index was invisible on production. The arm and head now carry inline styles
+  with test ids; the dead CSS was removed and the fixed production build was
+  re-verified at 1440, 390 and 412 px.

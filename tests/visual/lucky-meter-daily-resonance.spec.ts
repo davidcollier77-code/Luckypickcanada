@@ -51,6 +51,28 @@ const BOUNDARIES = [
 
 type TierId = keyof typeof TIERS;
 
+type RevealMilestone = {
+  at: number;
+  phase: string | null;
+  value: string | null;
+  tier: string | null;
+  hasNumbers: boolean;
+  hasShare: boolean;
+};
+
+type RevealTimeline = {
+  numbers: RevealMilestone | null;
+  share: RevealMilestone | null;
+  event: RevealMilestone | null;
+  numbersBeforeLanding: boolean;
+};
+
+declare global {
+  interface Window {
+    __revealTimeline?: RevealTimeline;
+  }
+}
+
 function tierForPercentage(percentage: number): TierId {
   if (percentage <= 30) return 'low';
   if (percentage <= 65) return 'medium';
@@ -230,9 +252,120 @@ test.describe('Daily Resonance dial landing', () => {
     expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
   });
 
+  test('paints the dial index from its own elements even with no dial CSS', async ({ page }) => {
+    await seed(page, buildState({ tierId: 'medium', completed: true }));
+
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '57', {
+      timeout: 20_000,
+    });
+
+    // This reproduces the production defect: the deployed stylesheet carried no
+    // `.resonance-dial*` rule, so the index has to paint from its own elements.
+    const dialRules = await page.evaluate(() => {
+      const countDialRules = (rules: CSSRuleList): number =>
+        Array.from(rules).reduce((total, rule) => {
+          const selectorText = (rule as CSSStyleRule).selectorText ?? '';
+          const nested = (rule as CSSGroupingRule).cssRules;
+          const nestedCount = nested ? countDialRules(nested) : 0;
+          return total + (selectorText.includes('.resonance-dial') ? 1 : 0) + nestedCount;
+        }, 0);
+      return Array.from(document.styleSheets).reduce((total, sheet) => {
+        try {
+          return total + countDialRules(sheet.cssRules);
+        } catch {
+          return total;
+        }
+      }, 0);
+    });
+    expect(dialRules).toBe(0);
+
+    const arm = page.getByTestId('lucky-meter-dial-arm');
+    const head = page.getByTestId('lucky-meter-dial-head');
+    await expect(arm).toBeVisible();
+    await expect(head).toBeVisible();
+
+    const armStyle = await arm.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        position: style.position,
+        width: style.width,
+        height: style.height,
+        borderRadius: style.borderRadius,
+        backgroundImage: style.backgroundImage,
+      };
+    });
+    expect(armStyle.position).toBe('absolute');
+    expect(armStyle.width).toBe('2px');
+    expect(parseFloat(armStyle.height)).toBeGreaterThan(20);
+    expect(parseFloat(armStyle.borderRadius)).toBeGreaterThan(0);
+    expect(armStyle.backgroundImage).toContain('linear-gradient');
+
+    const headStyle = await head.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        position: style.position,
+        width: style.width,
+        height: style.height,
+        backgroundImage: style.backgroundImage,
+      };
+    });
+    expect(headStyle.position).toBe('absolute');
+    expect(headStyle.width).toBe('9px');
+    expect(headStyle.height).toBe('9px');
+    expect(headStyle.backgroundImage).toContain('radial-gradient');
+
+    // The index still bears exactly the displayed percentage's angle.
+    const angle = await readDialAngle(page);
+    expect(((angle % 360) + 360) % 360).toBeCloseTo((57 * 3.6) % 360, 1);
+  });
+
   test('reveals percentage and tier, then numbers, then details, then the event', async ({
     page,
   }) => {
+    // The beats are 800/600/600 ms apart. A loaded runner can miss the window
+    // between two of them, so a zero-count snapshot after landing is a race, not
+    // a fact about the experience. Record each panel the first time it appears
+    // instead; the ordering assertions then hold however slowly the test polls.
+    await page.addInitScript(() => {
+      const timeline: RevealTimeline = {
+        numbers: null,
+        share: null,
+        event: null,
+        numbersBeforeLanding: false,
+      };
+      window.__revealTimeline = timeline;
+
+      const ring = () =>
+        document.querySelector('[data-testid="lucky-meter-ring"]')?.getAttribute('data-phase') ??
+        null;
+      const hasNumbers = () => Boolean(document.querySelector('[data-testid="lucky-numbers-panel"]'));
+      const hasShare = () =>
+        Array.from(document.querySelectorAll('button')).some((button) =>
+          /Share My Resonance/i.test(button.textContent ?? ''),
+        );
+      const milestone = (at: number): RevealMilestone => ({
+        at,
+        phase: ring(),
+        value:
+          document
+            .querySelector('[data-testid="lucky-meter-value"]')
+            ?.getAttribute('data-value') ?? null,
+        tier: document.querySelector('.lucky-tier-plate__label')?.textContent?.trim() ?? null,
+        hasNumbers: hasNumbers(),
+        hasShare: hasShare(),
+      });
+
+      new MutationObserver(() => {
+        const at = performance.now();
+        if (hasNumbers() && ring() !== 'landed') timeline.numbersBeforeLanding = true;
+        if (!timeline.numbers && hasNumbers()) timeline.numbers = milestone(at);
+        if (!timeline.share && hasShare()) timeline.share = milestone(at);
+        if (!timeline.event && document.querySelector('[data-testid="cosmic-event-stage"]')) {
+          timeline.event = milestone(at);
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
+
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
@@ -241,20 +374,37 @@ test.describe('Daily Resonance dial landing', () => {
       'landed',
       { timeout: 12_000 },
     );
-    // Snapshot counts rather than retrying: the next beat is only 800 ms away,
-    // and a retrying zero-count would race with it by design.
-    expect(await page.getByTestId('lucky-numbers-panel').count()).toBe(0);
-    expect(await page.getByRole('button', { name: /Share My Resonance/i }).count()).toBe(0);
 
     await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 4000 });
     expect((await readNumbers(page)).length).toBe(3);
-    expect(await page.getByRole('button', { name: /Share My Resonance/i }).count()).toBe(0);
 
     await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
     await expect(page.getByText('Little Spark')).toBeVisible({ timeout: 4000 });
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
 
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 4000 });
+
+    const timeline = await page.evaluate(() => window.__revealTimeline);
+    expect(timeline?.numbersBeforeLanding).toBe(false);
+    expect(timeline?.numbers).not.toBeNull();
+    expect(timeline?.share).not.toBeNull();
+    expect(timeline?.event).not.toBeNull();
+
+    // Numbers arrive only after the dial has landed, on a reading that already
+    // shows its percentage and the tier derived from it.
+    expect(timeline?.numbers?.phase).toBe('landed');
+    const landedValue = Number(timeline?.numbers?.value);
+    expect(landedValue).toBeGreaterThanOrEqual(5);
+    expect(landedValue).toBeLessThanOrEqual(100);
+    expect(timeline?.numbers?.tier).toBe(TIERS[tierForPercentage(landedValue)].label);
+
+    // Details arrive after the numbers, and the event after the details.
+    expect(timeline?.share?.hasNumbers).toBe(true);
+    expect(timeline?.event?.hasNumbers).toBe(true);
+    expect(timeline?.event?.hasShare).toBe(true);
+    expect(timeline?.numbers?.at ?? -1).toBeGreaterThan(0);
+    expect(timeline?.numbers?.at ?? -1).toBeLessThanOrEqual(timeline?.share?.at ?? -1);
+    expect(timeline?.share?.at ?? -1).toBeLessThanOrEqual(timeline?.event?.at ?? -1);
   });
 });
 
