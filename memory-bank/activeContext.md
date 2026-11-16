@@ -65,3 +65,41 @@ QA checkers, using the PR #1924 review and fix cycle as the evaluation.
   size and Pullfrog failed on provider quota.
 - The six Visual QA annotations on PR #1924 shard 2/2 were not retrievable through
   the connected tools.
+
+## 2026-11-16 — Lucky Meter percentage-owned reveal and natural leaves
+
+- The percentage is now the single source of truth: `config.js` holds the
+  inclusive bands 5–30 / 31–65 / 66–100, each tier owns its `eventId`, and the
+  event weights and independent event draw are gone. `selection.js` derives
+  tier, event and numbers from the sampled percentage and normalizes stale saved
+  records in place without rerolling or clearing storage.
+- `reveal.js` defines the 3.6°-per-percent contract with the 0°/100 % wrap; the
+  dial spins 3–5 turns from a random start with a quintic ease-out and lands on
+  `percentage × 3.6°`. `DailyResonance` reads the displayed number from the dial
+  angle, hides the true value until landing, and the ring exposes
+  `data-dial-angle`.
+- Leaves are thinner (0.02 blade, 0.012 bevel) with a 0.052 dome and 0.044 cup,
+  dry-pigment metal values and per-leaf flutter/pitch/roll/bank from the shared
+  wind field. The near layer stays outside the padded copy lane.
+- A brass index sweeps the milled rim; the medallion fallback and gold CTAs got
+  tighter highlights without dimension, label or focus changes. The golden
+  finale alone was amplified (bigger gold/willow shells, longer trails, more
+  embers, two shockwaves, warmer light); the red/silver opening is untouched.
+
+### Verification
+
+- Focused Lucky Meter unit suites: 9 files / 90 tests passed.
+- `pnpm exec tsc --noEmit`: exit 0.
+- Playwright `tests/visual/lucky-meter-daily-resonance.spec.ts` on desktop,
+  mobile-390 and mobile-412: 45 passed, 6 skipped (capture-only block).
+- Production build: `.next` 389 MiB + `public` 34 MiB = 423 MiB, below 495 MiB.
+- Evidence: `artifacts/lucky-meter-visual-realism-20261116/` (`before/`,
+  `after/`, `playwright.log`, `build.log`, `freebuff-verify.log`).
+
+### Limitations
+
+- Audio cues were not listened to; their scheduling is unchanged and the audio
+  suites pass.
+- The dev server's CSS bundle went stale in `.next/dev` during this task; a CSS
+  edit only appeared after removing `.next`. If a visual change seems to have no
+  effect in dev, clear `.next` before re-capturing.

@@ -22,10 +22,11 @@ import {
 } from '../app/lib/lucky-meter/storage';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
-  buildRevealKeyframes,
+  buildDialSpin,
   getEventDurationMs,
+  percentageToAngle,
   REVEAL_TIMING,
-  sampleRevealNumber,
+  sampleDialSpin,
 } from '../app/lib/lucky-meter/reveal';
 import { shareDailyResult } from '../app/lib/lucky-meter/share';
 import {
@@ -87,6 +88,9 @@ const EMPTY_SOUNDS = () => ({
 export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
   const [result, setResult] = useState<DailyResult | null>(null);
   const [displayPercentage, setDisplayPercentage] = useState(0);
+  // Absolute rotation of the dial pointer. It finishes on the exact angle that
+  // represents the displayed percentage, so the two can never disagree.
+  const [dialAngle, setDialAngle] = useState(0);
   const [isRevealing, setIsRevealing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -114,7 +118,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const rafRef = useRef<number | null>(null);
   const shareTimerRef = useRef<number | null>(null);
   const finalPercentageRef = useRef(0);
-  const keyframesRef = useRef<Array<{ at: number; value: number }>>([]);
+  const dialSpinRef = useRef<ReturnType<typeof buildDialSpin> | null>(null);
   const revealStartRef = useRef(0);
   const isMountedRef = useRef(true);
   const visitsAbortRef = useRef<AbortController | null>(null);
@@ -267,6 +271,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       setResult(saved);
       setDisplayPercentage(saved.percentage);
+      setDialAngle(percentageToAngle(saved.percentage));
       setIsRevealed(true);
       setNumbersVisible(true);
       setDetailsVisible(true);
@@ -311,6 +316,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
       setResult(null);
       setDisplayPercentage(0);
+      setDialAngle(0);
       setIsRevealing(false);
       setIsRevealed(false);
       setIsFlashing(false);
@@ -451,7 +457,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setEventCompleted(false);
     setAnnouncement('Preparing today’s resonance.');
     finalPercentageRef.current = next.percentage;
-    keyframesRef.current = buildRevealKeyframes(next.percentage);
+    dialSpinRef.current = buildDialSpin(next.percentage);
     setStageDuration(duration);
     clearSequence();
 
@@ -489,6 +495,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     if (reducedMotion) {
       setDisplayPercentage(next.percentage);
+      setDialAngle(percentageToAngle(next.percentage));
       setIsRevealing(false);
       setIsRevealed(true);
       setNumbersVisible(true);
@@ -505,7 +512,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       return;
     }
 
+    const spin = dialSpinRef.current;
     setDisplayPercentage(5);
+    setDialAngle(spin ? spin.startAngle : 0);
     setIsRevealing(true);
     setIsRevealed(false);
     setNumbersVisible(false);
@@ -519,9 +528,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       if (!isMountedRef.current) return;
       const elapsed = performance.now() - revealStartRef.current;
       if (elapsed >= REVEAL_TIMING.scrambleMs) return;
-      setDisplayPercentage(
-        sampleRevealNumber(elapsed, keyframesRef.current, finalPercentageRef.current),
-      );
+      const currentSpin = dialSpinRef.current;
+      if (!currentSpin) return;
+      const sample = sampleDialSpin(elapsed, currentSpin, finalPercentageRef.current);
+      // One source of motion: the number is read from the pointer's angle.
+      setDialAngle(sample.angle);
+      setDisplayPercentage(sample.percentage);
       rafRef.current = window.requestAnimationFrame(step);
     };
     rafRef.current = window.requestAnimationFrame(step);
@@ -532,6 +544,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setIsRevealing(false);
       setIsRevealed(true);
       setDisplayPercentage(next.percentage);
+      // Land on the exact dial position for the result, not a rounded one.
+      setDialAngle(percentageToAngle(next.percentage));
       setIsFlashing(true);
       setAnnouncement(
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message}`,
@@ -767,14 +781,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             </div>
           )}
 
-          <LuckyMeterRing phase={ringPhase} compact={isCompact} className={ringSizeClasses}>
+          <LuckyMeterRing
+            phase={ringPhase}
+            compact={isCompact}
+            dialAngle={isRevealing || isRevealed ? dialAngle : null}
+            className={ringSizeClasses}
+          >
             {isRevealing ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
                 <p className="mb-2 text-[clamp(12px,1.5vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
                   Reading today&apos;s resonance
                 </p>
-                <div className="text-gold-gradient text-[clamp(1.9rem,7vh,4.25rem)] font-bold leading-none tabular-nums">
+                <div
+                  data-testid="lucky-meter-value"
+                  data-value={displayPercentage}
+                  className="text-gold-gradient text-[clamp(1.9rem,7vh,4.25rem)] font-bold leading-none tabular-nums"
+                >
                   {displayPercentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
@@ -789,6 +812,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   Daily Resonance
                 </p>
                 <div
+                  data-testid="lucky-meter-value"
+                  data-value={displayPercentage}
                   className={`text-gold-gradient font-bold leading-none tabular-nums ${
                     isCompact ? 'text-4xl' : 'text-[clamp(2rem,7.4vh,4.5rem)]'
                   } ${isFlashing ? 'animate-lucky-flash' : ''}`}

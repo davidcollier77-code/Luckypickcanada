@@ -1134,7 +1134,9 @@ export function createCosmicEventEngine({
   }
 
   function spawnBurst(screenX, screenY, spec) {
-    if (fireworks.length > 7) return;
+    // The finale layers four shells and its golden fall, so the live-burst cap
+    // has room for them without ever dropping a finale shell.
+    if (fireworks.length > 9) return;
     const remaining = Math.max(0, maxLiveParticles - liveParticleCount());
     if (remaining <= 0) return;
 
@@ -1187,7 +1189,7 @@ export function createCosmicEventEngine({
                 : randomBetween(planRandom, 2.5, 3.5),
           gravity: isWillow ? 118 : isGold ? 66 : isSilver ? 48 : 78,
           drag: isWillow ? 0.994 : isGold ? 0.989 : isSilver ? 0.989 : 0.977,
-          trail: isWillow ? 14 : isGold ? 10 : isSilver ? 13 : 8,
+          trail: isWillow ? 16 : isGold ? 12 : isSilver ? 13 : 8,
           kind: isWillow ? 'willow' : kind,
           near: nearForParticle(index),
           depth: depth + dz * 0.32,
@@ -1205,8 +1207,8 @@ export function createCosmicEventEngine({
       flash: kind === 'gold' || kind === 'goldCore' ? 1.6 : kind === 'willow' ? 0 : 1,
       // A brief bloom, not a lamp: a huge opaque disc hides the shell it belongs to.
       flashSize:
-        Math.max(70, Math.min(240, (spec.speed ?? 160) * 0.42)) *
-        (kind.startsWith('gold') ? 1.3 : 1),
+        Math.max(70, Math.min(320, (spec.speed ?? 160) * 0.42)) *
+        (kind.startsWith('gold') ? 1.45 : 1),
       lightColor: palette[0],
     });
 
@@ -1387,47 +1389,75 @@ export function createCosmicEventEngine({
       const burstY = height * 0.17;
       const maxDimension = Math.max(width, height);
 
-      // Outer shell and an inner core, both far larger than any opening burst.
+      // The finale is deliberately a class above every opening burst: two gold
+      // shells at different depths, a willow curtain, a small far shell behind
+      // them for perspective, golden rain over the interface and embers rising
+      // from below. Nothing here appears in the red/silver opening.
       spawnBurst(centreScreenX, burstY, {
         kind: 'gold',
-        speed: maxDimension * 0.29,
-        count: 1150,
-        sizeMultiplier: 2.9,
-        nearRatio: 0.55,
+        speed: maxDimension * 0.32,
+        count: 1500,
+        sizeMultiplier: 3.2,
+        nearRatio: 0.6,
         depth: 1.15,
-        light: 1.5,
+        light: 1.6,
       });
       spawnBurst(centreScreenX, burstY, {
         kind: 'goldCore',
-        speed: maxDimension * 0.15,
-        count: 420,
-        sizeMultiplier: 2.4,
-        nearRatio: 0.6,
+        speed: maxDimension * 0.16,
+        count: 520,
+        sizeMultiplier: 2.6,
+        nearRatio: 0.62,
         depth: 1.15,
-        light: 0.7,
+        light: 0.8,
       });
       spawnBurst(centreScreenX, burstY + height * 0.015, {
         kind: 'willow',
-        speed: maxDimension * 0.2,
-        count: 520,
-        sizeMultiplier: 2.2,
+        speed: maxDimension * 0.22,
+        count: 700,
+        sizeMultiplier: 2.35,
         depth: 1.1,
-        light: 0.5,
+        light: 0.55,
       });
-      spawnGoldenFall(centreScreenX, burstY, Math.round(quality.sparkBudget * 1.2));
-      spawnEmbers(quality.tier === 'constrained' ? 14 : 28);
+      // A smaller, farther shell behind the rest: its finer grain is what makes
+      // the main shells read as huge rather than merely busy.
+      spawnBurst(centreScreenX, burstY - height * 0.018, {
+        kind: 'gold',
+        speed: maxDimension * 0.17,
+        count: 340,
+        sizeMultiplier: 1.7,
+        nearRatio: 0.08,
+        depth: 0.62,
+        light: 0.35,
+      });
+      spawnGoldenFall(centreScreenX, burstY, Math.round(quality.sparkBudget * 1.55));
+      spawnEmbers(quality.tier === 'constrained' ? 20 : 42);
       spawnShockwave(centreScreenX, burstY, {
-        radius: Math.max(width, height) * 0.34,
-        life: 1.25,
+        radius: Math.max(width, height) * 0.42,
+        life: 1.45,
       });
-      // The strongest, warmest environmental illumination of the sequence.
+      spawnShockwave(centreScreenX, burstY, {
+        radius: Math.max(width, height) * 0.26,
+        life: 0.9,
+      });
+      // The strongest, warmest environmental illumination of the sequence, plus
+      // a lower wash so the meter and its panels are lit by the finale too.
       addLight({
         x: centreScreenX,
         y: burstY,
-        radius: Math.max(width, height) * 0.72,
-        intensity: 1.7,
+        radius: Math.max(width, height) * 0.82,
+        intensity: 2.1,
         color: [1, 0.78, 0.4],
-        life: 2.2,
+        life: 2.6,
+        kind: 'firework-finale',
+      });
+      addLight({
+        x: centreScreenX,
+        y: burstY + height * 0.3,
+        radius: Math.max(width, height) * 0.58,
+        intensity: 0.85,
+        color: [1, 0.7, 0.34],
+        life: 1.9,
         kind: 'firework-finale',
       });
       emitCue('finale-boom');

@@ -333,17 +333,24 @@ body {
   background-color: var(--gold-cta-main);
   background-image: linear-gradient(
     180deg,
-    #fff2a8 0%,
-    #fbe59a 14%,
-    #e8c970 38%,
-    #dcae4e 62%,
-    #c8942c 82%,
-    #b8801f 100%
+    #fff8cc 0%,
+    #fbe9a6 11%,
+    #eecd74 30%,
+    #dcae4e 52%,
+    #c8942c 74%,
+    #bc8622 90%,
+    #b07a1a 100%
   );
   transform: translateY(0);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    /* Machined metal: a bright top bevel, an engraved step just below it, a
+       soft ambient occlusion under the face and the same raised edge as the
+       established button, so its footprint and height are unchanged. */
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 2px 1px rgba(255, 250, 214, 0.35),
+    inset 0 -1px 0 rgba(255, 226, 150, 0.22),
     inset 0 -2px 0 rgba(95, 55, 5, 0.42),
+    inset 0 -8px 14px rgba(95, 55, 5, 0.16),
     0 3px 0 var(--gold-cta-edge),
     0 6px 0 rgba(95, 55, 5, 0.45),
     0 9px 20px rgba(0, 0, 0, 0.42),
@@ -355,10 +362,13 @@ body {
 .gold-3d-btn:focus-visible {
   transform: translateY(-2px);
   filter: brightness(1.06);
-  background-image: linear-gradient(180deg, #fff6c4 0%, #ffeeb0 14%, #f0d685 38%, #e6bb60 62%, #d2a038 82%, #c08a24 100%);
+  background-image: linear-gradient(180deg, #fffad2 0%, #fff2b8 11%, #f4dc8e 30%, #e8c266 52%, #d6a63e 74%, #c69029 90%, #b9821e 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88),
+    inset 0 2px 1px rgba(255, 252, 222, 0.42),
+    inset 0 -1px 0 rgba(255, 226, 150, 0.24),
     inset 0 -2px 0 rgba(95, 55, 5, 0.38),
+    inset 0 -8px 14px rgba(95, 55, 5, 0.14),
     0 5px 0 var(--gold-cta-edge),
     0 8px 0 rgba(95, 55, 5, 0.42),
     0 15px 28px rgba(0, 0, 0, 0.45),
@@ -754,6 +764,67 @@ body {
 .resonance-medallion-fallback {
   border-radius: 9999px;
   overflow: hidden;
+}
+
+/* A single grazing highlight across the disc. It is what separates a polished
+   struck medal from a flat radial gradient, and it moves with the pointer
+   highlight on the WebGL path. */
+.resonance-medallion-fallback::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(148deg, rgba(255, 249, 220, 0.16) 0%, rgba(255, 249, 220, 0.05) 26%, rgba(255, 249, 220, 0) 46%),
+    radial-gradient(140% 42% at 50% -8%, rgba(255, 236, 178, 0.22), rgba(255, 236, 178, 0) 62%);
+  mix-blend-mode: screen;
+}
+
+/* ── Dial pointer ───────────────────────────────────────────────────────────
+   A weighted brass index that sweeps the milled rim. It stops exactly where the
+   displayed percentage says it should, and it never crosses the reading. */
+.resonance-dial {
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.resonance-dial__arm {
+  position: absolute;
+  left: 50%;
+  top: 2.6%;
+  width: 2px;
+  height: 16%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #fffbe4 0%, #ffdc92 34%, #e5b257 72%, rgba(229, 178, 87, 0) 100%);
+  box-shadow:
+    0 0 10px rgba(255, 206, 120, 0.75),
+    0 0 2px rgba(255, 248, 220, 0.9);
+}
+.resonance-dial__head {
+  position: absolute;
+  left: 50%;
+  top: 1.1%;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(circle at 34% 28%, #fffdf0 0%, #ffe4a0 38%, #e0a83f 74%, #a4721c 100%);
+  box-shadow:
+    0 0 16px rgba(255, 214, 130, 0.85),
+    0 1px 2px rgba(0, 0, 0, 0.65);
+}
+.resonance-dial[data-spinning='true'] .resonance-dial__head {
+  box-shadow:
+    0 0 22px rgba(255, 224, 154, 0.95),
+    0 1px 2px rgba(0, 0, 0, 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resonance-dial {
+    will-change: auto;
+  }
 }
 
 /* ── Tier plate ─────────────────────────────────────────────────────────────

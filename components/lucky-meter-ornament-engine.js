@@ -15,6 +15,12 @@
  * The layer is decorative: it is pointer-transparent, hidden from assistive
  * technology, and drawn at a capped backing-store ratio because these are soft
  * depth elements rather than crisp foreground detail.
+ *
+ * The blades are thin — a few thousandths of a unit — with a small bevel, a
+ * gentle dome and a cross-blade cup, and every one carries its own flutter,
+ * turn and bank rates on top of the shared gust. Nothing spins in lockstep and
+ * nothing spins in place: the far layer is carried across the frame while the
+ * near layer rocks and turns inside its safe band.
  */
 
 import {
@@ -156,11 +162,19 @@ function createLeaves(count, layer, random, viewport = { width: 1440, height: 90
       driftX: 14 + random() * 34,
       driftY: 10 + random() * 26,
       driftSpeed: 0.06 + random() * 0.1,
-      spinY: (random() > 0.5 ? 1 : -1) * (0.16 + random() * 0.34),
-      spinX: (random() > 0.5 ? 1 : -1) * (0.1 + random() * 0.22),
-      spinZ: (random() > 0.5 ? 1 : -1) * (0.04 + random() * 0.1),
+      spinY: (random() > 0.5 ? 1 : -1) * (0.1 + random() * 0.26),
+      spinX: (random() > 0.5 ? 1 : -1) * (0.07 + random() * 0.16),
+      spinZ: (random() > 0.5 ? 1 : -1) * (0.03 + random() * 0.08),
       phase: random() * Math.PI * 2,
       tilt: -0.35 + random() * 0.7,
+      // Turning: some leaves swing wide enough to show their edge, others stay
+      // near face-on. Flutter is a faster, smaller pitch/roll on top of the slow
+      // tumble, which is what a leaf does in a gust rather than a turntable.
+      turnAmp: 0.5 + random() * 0.72,
+      flutterSpeed: 2.1 + random() * 2.6,
+      flutterPhase: random() * Math.PI * 2,
+      pitchAmp: 0.16 + random() * 0.3,
+      rollAmp: 0.12 + random() * 0.24,
       // Wind-carried travel for the far layer: a slow crossing that wraps and
       // gives every leaf a real path through the scene instead of an orbit.
       travelOffset: random(),
@@ -242,15 +256,16 @@ export function createLuckyMeterOrnamentEngine({
   let buffers = null;
 
   function buildResources() {
-    // A little more thickness than a real leaf so an edge-on ornament reads as a
-    // solid gold sliver with a lit edge instead of a one-pixel needle.
-    // Thinner, sharper bevel and a deeper dome: the edge catches a crisp
-    // highlight and the face carries a soft curve instead of a flat card.
-    // A neutral albedo lets each leaf's autumn tint define its pigment.
+    // A real dry leaf is thin. The blade is now a few thousandths thick with a
+    // hairline bevel, so an edge-on turn reads as paper catching the light
+    // rather than a solid gold plaque. The dome and the cross-blade cup supply
+    // the curvature, and a neutral albedo lets each leaf's autumn tint define
+    // its pigment.
     geometry = buildMapleLeafGeometry({
-      thickness: 0.125,
-      bevel: 0.05,
-      dome: 0.058,
+      thickness: 0.02,
+      bevel: 0.012,
+      dome: 0.052,
+      cup: 0.044,
       albedo: [1, 1, 1],
     });
     meshProgram = createMeshProgram(gl);
@@ -390,13 +405,20 @@ export function createLuckyMeterOrnamentEngine({
           // still turning enough to catch the light.
           rotationX: reducedMotion
             ? leaf.tilt
-            : Math.sin(time * leaf.spinX + leaf.phase) * 0.45 + leaf.tilt + wind.lift * 0.16,
+            : Math.sin(time * leaf.spinX + leaf.phase) * 0.28 +
+              Math.sin(time * leaf.flutterSpeed + leaf.flutterPhase) * leaf.pitchAmp +
+              leaf.tilt +
+              wind.lift * 0.2,
           rotationY: reducedMotion
             ? leaf.tilt
-            : Math.sin(time * leaf.spinY + leaf.phase) * 0.62 + wind.gust * 0.2,
+            : Math.sin(time * leaf.spinY + leaf.phase) * leaf.turnAmp +
+              wind.gust * 0.26 +
+              Math.sin(time * leaf.flutterSpeed * 0.63 + leaf.flutterPhase) * 0.1,
           rotationZ: reducedMotion
             ? 0
-            : Math.sin(time * leaf.spinZ + leaf.phase) * 0.2 + wind.cross * 0.12,
+            : Math.sin(time * leaf.spinZ + leaf.phase) * 0.16 +
+              Math.sin(time * leaf.flutterSpeed * 1.17 + leaf.phase) * leaf.rollAmp +
+              wind.cross * 0.16,
           scale: worldScale,
         },
         model,

@@ -185,13 +185,18 @@ export function mapleLeafOutline() {
  * Each band owns its own vertices so normals break at the crease, which is what
  * gives the ornament a crisp bevelled edge instead of a soft blob.
  *
- * @param {{ thickness?: number, bevel?: number, dome?: number, size?: number }} [options]
+ * `cup` lifts the lobes away from the midrib so the blade curves rather than
+ * sitting flat, and every vertex carries a subtle tonal falloff toward the stem
+ * so the face has surface variation instead of one flat pigment.
+ *
+ * @param {{ thickness?: number, bevel?: number, dome?: number, cup?: number, size?: number, albedo?: number[] }} [options]
  * @returns {{ positions: Float32Array, normals: Float32Array, albedos: Float32Array, indices: Uint16Array }}
  */
 export function buildMapleLeafGeometry({
   thickness = 0.1,
   bevel = 0.055,
   dome = 0.035,
+  cup = 0,
   size = 1,
   albedo = [0.92, 0.7, 0.3],
 } = {}) {
@@ -212,7 +217,11 @@ export function buildMapleLeafGeometry({
   const pushVertex = (x, y, z, nx, ny, nz) => {
     positions.push(x * size, y * size, z * size);
     normals.push(nx, ny, nz);
-    albedos.push(pigment[0], pigment[1], pigment[2]);
+    // Subtle surface detail: the blade deepens toward the stem and lightens
+    // toward the lobe tips, so light reads across the face. It is a gentle
+    // gradation, not a pattern, and it multiplies the per-leaf pigment tint.
+    const tone = 0.82 + 0.18 * Math.max(0, Math.min(1, (y + 0.782) / 1.69));
+    albedos.push(pigment[0] * tone, pigment[1] * tone, pigment[2] * tone);
     return positions.length / 3 - 1;
   };
 
@@ -237,7 +246,11 @@ export function buildMapleLeafGeometry({
 
     for (const point of ring) {
       const radius = Math.hypot(point[0], point[1]);
-      const lift = direction * dome * Math.max(0, 1 - (radius / 0.62) ** 2);
+      const domeLift = dome * Math.max(0, 1 - (radius / 0.62) ** 2);
+      // Curvature across the width: the lobes lift relative to the midrib, so
+      // the blade cups naturally instead of reading as a flat cut card.
+      const cupLift = cup * Math.min(1, Math.abs(point[0]) / 0.7) ** 1.7;
+      const lift = direction * (domeLift + cupLift);
       const index = pushVertex(point[0], point[1], zAt + lift, 0, 0, direction);
       vertexNormals.push(index);
     }

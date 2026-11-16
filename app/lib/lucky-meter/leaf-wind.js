@@ -10,6 +10,10 @@
  * Warm gold is weighted most heavily so the scene still reads as the golden
  * maple-leaf ornament of the established visual identity; the other six
  * colours provide the variation that stops the leaves looking like copies.
+ *
+ * The pigments are deliberately dielectric. These are dry autumn leaves lit by
+ * a cold night sky, so each entry carries a low `metal` value: enough sheen to
+ * catch the moon, nowhere near the polished metal the earlier values produced.
  */
 
 export const AUTUMN_LEAF_COLOURS = Object.freeze([
@@ -17,49 +21,49 @@ export const AUTUMN_LEAF_COLOURS = Object.freeze([
     id: 'warm-gold',
     name: 'Warm Gold',
     albedo: [0.95, 0.72, 0.28],
-    metal: 0.95,
+    metal: 0.32,
     weight: 3,
   },
   {
     id: 'amber',
     name: 'Amber',
     albedo: [0.93, 0.58, 0.18],
-    metal: 0.8,
+    metal: 0.26,
     weight: 2,
   },
   {
     id: 'copper',
     name: 'Copper',
     albedo: [0.78, 0.4, 0.19],
-    metal: 0.85,
+    metal: 0.28,
     weight: 1.4,
   },
   {
     id: 'maple-red',
     name: 'Maple Red',
     albedo: [0.72, 0.12, 0.12],
-    metal: 0.45,
+    metal: 0.14,
     weight: 1.2,
   },
   {
     id: 'burnt-orange',
     name: 'Burnt Orange',
     albedo: [0.8, 0.32, 0.09],
-    metal: 0.6,
+    metal: 0.18,
     weight: 1.2,
   },
   {
     id: 'burgundy',
     name: 'Burgundy',
     albedo: [0.42, 0.09, 0.13],
-    metal: 0.35,
+    metal: 0.11,
     weight: 0.8,
   },
   {
     id: 'russet',
     name: 'Russet',
     albedo: [0.55, 0.28, 0.13],
-    metal: 0.4,
+    metal: 0.13,
     weight: 1,
   },
 ]);
