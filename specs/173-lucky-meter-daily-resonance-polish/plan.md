@@ -41,21 +41,25 @@ New `app/lib/lucky-meter/event-audio.js`:
 - `getCueLayers(cue, random)` — neutral at `random() === 0.5`, opt-in jitter.
 - `getThunderDelayMs(depth, isFinale)` / `getThunderCue(depth, isFinale)` —
   distance-based delay (260 ms near … 980 ms far) and near/far/finale rumble.
-- `SUSTAINED_EVENT_SOUNDS` — sounds faded when the stage ends.
+- `SUSTAINED_EVENT_SOUNDS` — sounds faded when the stage ends; transient
+  firework body layers are deliberately excluded so their tails can finish.
 - `getCueLoudness` — used to keep the finale above every pop.
 
-`DailyResonance` replaces the if/else cue chain with the map, keeps the
-two-rumble throttle, and gains `stopEventAudio()` (fade → stop) called on stage
-completion, midnight rollover and unmount; its timers are tracked and cleared.
+`DailyResonance` replaces the if/else cue chain with the map. Ordinary thunder
+strikes remain capped at two with the 2.2 s spacing guard, while the finale has
+one reserved rumble slot. Sustained Howler instances are tracked by Sound ID and
+faded from their authored cue gain before that same instance is stopped. This
+avoids reading or fading the shared Howl group volume and preserves the slowed
+finale firework body layer. Cleanup remains wired to stage completion, midnight
+rollover and unmount; its timers are tracked and cleared.
 
 ## 4. Event engine synchronisation
 
 `components/cosmic-event-engine.js`:
 
-- Meteor: the whoosh moves from spawn to the first on-screen frame
-  (`meteor-enter`), with an ignition flare and light; leaving the frame emits
-  `meteor-impact` with a warm flare, shed embers and, for the finale, a
-  shockwave.
+- Meteor: the whoosh fires only once the head enters the viewport, with an
+  ignition flare and light; on the first frame the head leaves, the burnout
+  flare, embers, thud and finale shockwave spawn at its last visible coordinate.
 - Lightning: the strike cue stays at the flash; thunder is queued through
   `queueCue()` at `getThunderDelayMs(depth)`, so it can never stack on the
   crack.
@@ -81,7 +85,8 @@ the medallion. `app/lib/gpu-geometry.js` accepts an `albedo` argument
 `components/lucky-meter-ornament-engine.js`: per-leaf colour and metal, sharper
 bevel/doming, larger size ranges, shared wind travel for the far layer, sway for
 the near layer, and a reading lane (`COPY_LANE.bottom` 0.93) that keeps
-foreground leaves off every panel and control.
+foreground leaves off every panel and control. The near layer retains a reachable
+upper safe band at 390 px and 412 px viewport widths.
 
 ## 6. Tests and evidence
 

@@ -56,3 +56,37 @@ No audio or image asset was added, replaced or removed. The existing recordings
 cover the cues, the new layers reuse them at different rates and gains, and the
 provenance record in `public/sounds/lucky-meter-cinematic-audio-sources.md`
 remains accurate without change.
+
+## Post-submission repair pass — 16 November 2026
+
+A source-level review of the submitted PR confirmed defects in thunder cue
+throttling, sustained Howler cleanup, meteor burnout positioning, narrow-screen
+near-leaf placement and the tier-owned number payload consumed by the manual QA
+harnesses. The corrective changes are confined to those behaviors and their
+existing test/Spec Kit files.
+
+- The finale now has a once-only reserved thunder slot; ordinary strikes retain
+  the two-rumble cap and the 2.2 s spacing guard.
+- Stop/fade now targets each recorded Howler Sound ID from its authored cue
+  gain. The transient `fireworkBurst` body layer is no longer stopped with
+  sustained sounds.
+- Meteor burnout now appears at the last visible head position at the frame it
+  leaves the viewport.
+- Near-layer leaves retain a safe upper placement band on 390 px and 412 px
+  mobile viewports, with deterministic regression coverage.
+- Both manual QA harnesses now seed/assert `tier.numbers`.
+
+### Repair-pass verification status
+
+The new/updated tests and source changes were not executed in this ChatGPT
+workspace. The required startup script reported Node.js 22.16.0 while the repo
+requires Node 26.x; NVM was unavailable and Corepack could not retrieve pnpm
+10.30.3. Repository shell scripts, Playwright setup and Playwright CLI execution
+are prohibited by the ChatGPT-only governance rules. The previous 413 MiB build
+and original 39-test Playwright result belong to the earlier implementation
+verification and are not evidence that this repair commit passes.
+
+Required on the repair head: focused/full Vitest, TypeScript, the three-project
+Playwright suite, approved repository/PR checkers, and a fresh production build
+size measurement. No visual baseline was modified.
+

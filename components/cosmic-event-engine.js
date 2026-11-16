@@ -675,6 +675,8 @@ export function createCosmicEventEngine({
       // The whoosh belongs to the moment the head actually enters the frame,
       // not to the off-screen spawn, so entry, motion and sound line up.
       entered: false,
+      lastVisibleX: null,
+      lastVisibleY: null,
       flash: 0,
       seed: planRandom() * 1000,
     });
@@ -748,30 +750,45 @@ export function createCosmicEventEngine({
       const headX = centreX + meteor.worldX * headScale;
       const headY = centreY + meteor.worldY * headScale;
 
-      // Entrance: the first frame the head is actually on screen. The flare and
-      // the cue fire together, so the visitor sees and hears the same event.
-      if (!meteor.entered) {
-        const onScreen =
-          headX > -30 && headX < width + 30 && headY > -30 && headY < height + 30;
-        if (onScreen) {
-          meteor.entered = true;
-          meteor.flash = 1;
-          emitCue(meteor.isFinale ? 'meteor-finale' : 'meteor-enter');
-          addLight({
-            x: headX,
-            y: headY,
-            radius: (meteor.isFinale ? 280 : 120) * effectScale,
-            intensity: meteor.isFinale ? 0.95 : 0.35,
-            color: [1, 0.86, 0.7],
-            life: 0.45,
-            kind: 'meteor-entry',
-          });
-        }
+      const headOnScreen =
+        headX >= 0 && headX <= width && headY >= 0 && headY <= height;
+
+      // Entry and burnout both happen at visible head positions. Remember the
+      // final on-screen coordinate so the impact never spawns beyond the frame.
+      if (!meteor.entered && headOnScreen) {
+        meteor.entered = true;
+        meteor.flash = 1;
+        emitCue(meteor.isFinale ? 'meteor-finale' : 'meteor-enter');
+        addLight({
+          x: headX,
+          y: headY,
+          radius: (meteor.isFinale ? 280 : 120) * effectScale,
+          intensity: meteor.isFinale ? 0.95 : 0.35,
+          color: [1, 0.86, 0.7],
+          life: 0.45,
+          kind: 'meteor-entry',
+        });
       }
 
-      if (headY > height + 320 || headX < -width * 0.8 || headX > width * 1.8) {
+      if (headOnScreen) {
+        meteor.lastVisibleX = headX;
+        meteor.lastVisibleY = headY;
+      } else if (meteor.entered) {
         if (meteor.light) meteor.light.peak = 0;
-        if (meteor.entered) spawnMeteorImpact(meteor, headX, headY);
+        const impactX = Number.isFinite(meteor.lastVisibleX)
+          ? meteor.lastVisibleX
+          : Math.max(0, Math.min(width, headX));
+        const impactY = Number.isFinite(meteor.lastVisibleY)
+          ? meteor.lastVisibleY
+          : Math.max(0, Math.min(height, headY));
+        spawnMeteorImpact(meteor, impactX, impactY);
+        meteors.splice(index, 1);
+        continue;
+      }
+
+      // A meteor that never entered the viewport is discarded quietly.
+      if (!meteor.entered && (headY > height + 320 || headX < -width * 0.8 || headX > width * 1.8)) {
+        if (meteor.light) meteor.light.peak = 0;
         meteors.splice(index, 1);
         continue;
       }

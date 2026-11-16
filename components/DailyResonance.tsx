@@ -122,7 +122,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const historyRef = useRef(emptyMeterHistory());
   const stageDurationRef = useRef(0);
   const eventCompletedRef = useRef(false);
-  const thunderRef = useRef({ count: 0, lastAt: 0 });
+  const thunderRef = useRef({ count: 0, lastAt: 0, finalePlayed: false });
+  const eventSoundInstancesRef = useRef<Record<string, Array<{ id: number; volume: number }>>>({});
   // Fade-out timers for cues that can outlive their action (thunder, crackle).
   const audioStopTimersRef = useRef<number[]>([]);
 
@@ -155,28 +156,43 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
    */
   const stopEventAudio = useCallback((fadeMs = 320) => {
     const sounds = soundsRef.current;
+    const activeInstances = eventSoundInstancesRef.current;
     SUSTAINED_EVENT_SOUNDS.forEach((key) => {
       const sound = sounds[key];
-      if (!sound) return;
-      try {
-        const current = typeof sound.volume === 'function' ? sound.volume() : 1;
-        if (typeof sound.fade === 'function') sound.fade(current, 0, fadeMs);
-        const timer = window.setTimeout(() => {
+      const instances = activeInstances[key] ?? [];
+      if (!sound || instances.length === 0) return;
+
+      instances.forEach(({ id, volume }) => {
+        let shouldScheduleStop = false;
+        try {
+          if (typeof sound.fade === 'function') {
+            // Howler's id argument targets this cue instance and its authored gain.
+            sound.fade(volume, 0, fadeMs, id);
+            shouldScheduleStop = true;
+          } else {
+            sound.stop(id);
+          }
+        } catch {
           try {
-            sound.stop();
+            sound.stop(id);
           } catch {
             // Optional audio only.
           }
-        }, fadeMs + 60);
-        audioStopTimersRef.current.push(timer);
-      } catch {
-        try {
-          sound.stop();
-        } catch {
-          // Optional audio only.
         }
-      }
+
+        if (shouldScheduleStop) {
+          const timer = window.setTimeout(() => {
+            try {
+              sound.stop(id);
+            } catch {
+              // Optional audio only.
+            }
+          }, fadeMs + 60);
+          audioStopTimersRef.current.push(timer);
+        }
+      });
     });
+    eventSoundInstancesRef.current = {};
   }, []);
 
   const persistLifecycle = useCallback(
@@ -247,7 +263,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       resultRef.current = saved;
       stageDurationRef.current = duration;
       eventCompletedRef.current = completed;
-      thunderRef.current = { count: 0, lastAt: 0 };
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
 
       setResult(saved);
       setDisplayPercentage(saved.percentage);
@@ -292,7 +308,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       historyRef.current = emptyMeterHistory();
       stageDurationRef.current = 0;
       eventCompletedRef.current = false;
-      thunderRef.current = { count: 0, lastAt: 0 };
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
       setResult(null);
       setDisplayPercentage(0);
       setIsRevealing(false);
@@ -369,19 +385,29 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         const id = sound.play();
         if (typeof sound.rate === 'function') sound.rate(rate, id);
         if (typeof sound.volume === 'function') sound.volume(volume, id);
+        if (SUSTAINED_EVENT_SOUNDS.includes(key) && typeof id === 'number') {
+          const instances = eventSoundInstancesRef.current[key] ?? [];
+          instances.push({ id, volume });
+          eventSoundInstancesRef.current[key] = instances;
+        }
       } catch {
         // A failed cue never affects the visual sequence.
       }
     };
 
-    // Thunder is queued by the engine after the flash, so it is already late by
-    // the time it arrives. It stays throttled so a storm never becomes a wall
-    // of noise, and the first rumble is never dropped.
+    // Normal strikes are capped at two. The finale has one reserved rumble slot,
+    // while the same spacing guard prevents any two thunder cues from stacking.
     if (cue.startsWith('thunder-')) {
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      if (thunderRef.current.count >= 2) return;
+      const isFinaleThunder = cue === 'thunder-finale';
+      if (isFinaleThunder && thunderRef.current.finalePlayed) return;
+      if (!isFinaleThunder && thunderRef.current.count >= 2) return;
       if (thunderRef.current.count > 0 && now - thunderRef.current.lastAt < 2200) return;
-      thunderRef.current = { count: thunderRef.current.count + 1, lastAt: now };
+      thunderRef.current = {
+        count: thunderRef.current.count + 1,
+        lastAt: now,
+        finalePlayed: thunderRef.current.finalePlayed || isFinaleThunder,
+      };
     }
 
     // One action, one sound. The cue map owns the rate and the mix, including
@@ -410,7 +436,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     historyRef.current = nextHistory;
     stageDurationRef.current = duration;
     eventCompletedRef.current = false;
-    thunderRef.current = { count: 0, lastAt: 0 };
+    thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
 
     setHistory(nextHistory);
     saveMeterState({

@@ -123,7 +123,8 @@ async function runEvent({ name, random, viewport, isMobile = false }) {
     `${name}: percentage out of range (${stored.result.percentage})`,
   );
   expect(resultText.includes('Your Lucky Numbers'), `${name}: numbers label missing`);
-  for (const number of stored.result.event.numbers) {
+  expect(Array.isArray(stored.result.tier?.numbers), `${name}: tier-owned numbers missing`);
+  for (const number of stored.result.tier.numbers) {
     expect(resultText.includes(String(number)), `${name}: lucky number ${number} missing`);
   }
   expect(resultText.includes(stored.result.colour.name), `${name}: colour name missing`);

@@ -86,14 +86,14 @@ const COPY_LANE = { halfWidth: 0.24, top: 0.26, bottom: 0.93 };
  * is too narrow for the side margins to clear the lane the surviving bands are
  * the ones above and below the copy, which is also where the meter sits.
  */
-function nearBaseSpot(random, leafHeight, viewport) {
+export function nearBaseSpot(random, leafHeight, viewport) {
   const vw = Math.max(1, viewport.width);
   const vh = Math.max(1, viewport.height);
   const padX = (leafHeight * 0.5 + 48) / vw;
   const padY = (leafHeight * 0.5 + 36) / vh;
   const leftEdge = 0.06;
   const rightEdge = 0.94;
-  const topEdge = 0.12;
+  const topEdge = 0.04;
   const bottomEdge = 0.9;
   const innerLeft = 0.5 - COPY_LANE.halfWidth - padX;
   const innerRight = 0.5 + COPY_LANE.halfWidth + padX;
@@ -107,7 +107,14 @@ function nearBaseSpot(random, leafHeight, viewport) {
   if (bottomEdge - (COPY_LANE.bottom + padY) > 0.05) {
     bands.push([leftEdge, rightEdge, COPY_LANE.bottom + padY, bottomEdge]);
   }
-  if (bands.length === 0) return { x: 0.5, y: 0.92 };
+  if (bands.length === 0) {
+    // If a viewport is too short for a full band, keep the leaf above the
+    // reading lane and vary its position rather than stacking every leaf on it.
+    return {
+      x: leftEdge + random() * (rightEdge - leftEdge),
+      y: Math.min(topEdge, COPY_LANE.top - padY - 0.02),
+    };
+  }
 
   const band = bands[Math.floor(random() * bands.length) % bands.length];
   return {

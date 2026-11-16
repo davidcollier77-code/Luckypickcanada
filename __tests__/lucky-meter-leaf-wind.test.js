@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { nearBaseSpot } from '../components/lucky-meter-ornament-engine';
 import {
   AUTUMN_LEAF_COLOURS,
   pickLeafColour,
@@ -63,6 +64,32 @@ describe('autumn maple-leaf palette', () => {
     expect(pickLeafColour.length).toBeLessThanOrEqual(1);
     expect(pickLeafColour(() => 0).id).toBe('warm-gold');
     expect(pickLeafColour(() => 0.999999).id).toBe('russet');
+  });
+});
+
+describe('near-layer placement', () => {
+  it('keeps leaves above the reading lane on narrow mobile viewports', () => {
+    const viewports = [
+      { width: 390, height: 844 },
+      { width: 412, height: 915 },
+    ];
+
+    for (const viewport of viewports) {
+      for (const leafHeight of [82, 132]) {
+        const padY = (leafHeight * 0.5 + 36) / viewport.height;
+        const spots = Array.from({ length: 20 }, (_, index) =>
+          nearBaseSpot(mulberry32(viewport.width + leafHeight * 17 + index), leafHeight, viewport),
+        );
+
+        for (const spot of spots) {
+          expect(spot.x).toBeGreaterThanOrEqual(0.06);
+          expect(spot.x).toBeLessThanOrEqual(0.94);
+          expect(spot.y + padY).toBeLessThanOrEqual(0.26);
+        }
+        expect(new Set(spots.map((spot) => `${spot.x.toFixed(3)}:${spot.y.toFixed(3)}`)).size)
+          .toBeGreaterThan(1);
+      }
+    }
   });
 });
 

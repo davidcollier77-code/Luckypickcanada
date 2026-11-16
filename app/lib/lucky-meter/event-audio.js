@@ -61,7 +61,6 @@ export const SUSTAINED_EVENT_SOUNDS = Object.freeze([
   'thunderRumble',
   'willowCrackle',
   'finaleBoom',
-  'fireworkBurst',
 ]);
 
 /** Thunder follows the flash by a distance-dependent delay instead of stacking on it. */

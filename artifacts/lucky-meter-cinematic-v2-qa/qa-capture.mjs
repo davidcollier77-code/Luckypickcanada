@@ -44,13 +44,24 @@ function buildState(eventId, { percentage = 87, completed = false } = {}) {
   const event = EVENTS[eventId];
   const tier =
     percentage >= 80
-      ? { id: 'high', label: 'High Resonance', message: 'Your luck is running high today!' }
+      ? {
+          id: 'high',
+          label: 'High Resonance',
+          message: 'Your luck is running high today!',
+          numbers: [7, 8, 77],
+        }
       : percentage >= 40
-        ? { id: 'medium', label: 'Medium Resonance', message: 'Your luck is in the mid-range today.' }
+        ? {
+            id: 'medium',
+            label: 'Medium Resonance',
+            message: 'Your luck is in the mid-range today.',
+            numbers: [11, 22, 33],
+          }
         : {
             id: 'low',
             label: 'Low Resonance',
             message: "You're riding a little low today, but you're still okay!",
+            numbers: [3, 9, 21],
           };
 
   return {
@@ -60,7 +71,7 @@ function buildState(eventId, { percentage = 87, completed = false } = {}) {
       dateKey: localDateKey(),
       percentage,
       tier,
-      event: { id: eventId, name: event.name, numbers: [...event.numbers] },
+      event: { id: eventId, name: event.name },
       colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32', light: false },
       spark: {
         id: 'spark-06',

@@ -67,3 +67,15 @@ performance budgets. No dependency, workflow or infrastructure change.
 - [X] T036 Run `./freebuff-verify.sh` and measure the production build against the 495 MiB cap
 - [X] T037 Self-review the complete diff against the applicable checker requirements
 - [X] T038 Prepare and open one regular, non-draft PR following `PR_SUBMISSION.md`
+
+## Phase 8: Review-identified surgical repairs
+
+- [X] T039 Reserve one finale thunder slot while retaining the ordinary two-rumble cap and spacing guard in `components/DailyResonance.tsx`; add playback regression coverage.
+- [X] T040 Fade and stop each sustained Howler instance by Sound ID and its authored cue gain; keep the transient finale firework body out of the sustained list.
+- [X] T041 Trigger meteor burnout on the first frame its head leaves the viewport and place the effect at its last visible coordinates.
+- [X] T042 Keep foreground leaves outside the copy lane on 390 px and 412 px viewports; add deterministic placement regression coverage.
+- [X] T043 Update both manual QA harnesses to seed and read `tier.numbers`, not `event.numbers`.
+
+## Phase 9: Post-repair verification
+
+- [ ] T044 Re-run focused and full Vitest, TypeScript, Playwright on desktop/mobile-390/mobile-412, PR checkers and the production build-size measurement on the repair commit.

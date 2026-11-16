@@ -122,6 +122,12 @@ describe('Lucky Meter event cue playback', () => {
     expect(finale.play).toHaveBeenCalledTimes(1);
     expect(burst.play).toHaveBeenCalledTimes(2);
     expect(burst.rate).toHaveBeenLastCalledWith(0.72, 1);
+
+    // The slow firework body is transient, not part of the sustained stop list.
+    act(() => stageControl.onComplete());
+    expect(burst.fade).not.toHaveBeenCalled();
+    expect(burst.stop).not.toHaveBeenCalled();
+    expect(finale.fade).toHaveBeenCalledWith(0.96, 0, 320, 1);
   });
 
   it('never plays thunder on top of the strike and throttles the rumble', async () => {
@@ -148,6 +154,14 @@ describe('Lucky Meter event cue playback', () => {
     });
     act(() => stageControl.onCue('thunder-near'));
     expect(thunder.play).toHaveBeenCalledTimes(2);
+
+    // The finale owns a reserved third slot, but must still respect spacing.
+    await act(async () => {
+      vi.advanceTimersByTime(2400);
+    });
+    act(() => stageControl.onCue('thunder-finale'));
+    expect(thunder.play).toHaveBeenCalledTimes(3);
+    expect(thunder.volume).toHaveBeenLastCalledWith(0.34, 1);
   });
 
   it('ignores cues that are not part of the event vocabulary', async () => {
@@ -165,11 +179,11 @@ describe('Lucky Meter event cue playback', () => {
     expect(thunder.play).toHaveBeenCalledTimes(1);
 
     act(() => stageControl.onComplete());
-    expect(thunder.fade).toHaveBeenCalledTimes(1);
+    expect(thunder.fade).toHaveBeenCalledWith(0.3, 0, 320, 1);
     await act(async () => {
       vi.advanceTimersByTime(400);
     });
-    expect(thunder.stop).toHaveBeenCalledTimes(1);
+    expect(thunder.stop).toHaveBeenCalledWith(1);
     expect(stageControl.onCue).toBeTruthy();
   });
 

@@ -93,6 +93,7 @@ describe('event audio cue map', () => {
     for (const sound of ['thunderRumble', 'willowCrackle', 'finaleBoom']) {
       expect(SUSTAINED_EVENT_SOUNDS).toContain(sound);
     }
+    expect(SUSTAINED_EVENT_SOUNDS).not.toContain('fireworkBurst');
   });
 });
 
