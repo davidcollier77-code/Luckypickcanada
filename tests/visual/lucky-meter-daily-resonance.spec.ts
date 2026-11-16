@@ -252,6 +252,73 @@ test.describe('Daily Resonance dial landing', () => {
     expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
   });
 
+  test('paints the dial index from its own elements even with no dial CSS', async ({ page }) => {
+    await seed(page, buildState({ tierId: 'medium', completed: true }));
+
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '57', {
+      timeout: 20_000,
+    });
+
+    // This reproduces the production defect: the deployed stylesheet carried no
+    // `.resonance-dial*` rule, so the index has to paint from its own elements.
+    const dialRules = await page.evaluate(() => {
+      const countDialRules = (rules: CSSRuleList): number =>
+        Array.from(rules).reduce((total, rule) => {
+          const selectorText = (rule as CSSStyleRule).selectorText ?? '';
+          const nested = (rule as CSSGroupingRule).cssRules;
+          const nestedCount = nested ? countDialRules(nested) : 0;
+          return total + (selectorText.includes('.resonance-dial') ? 1 : 0) + nestedCount;
+        }, 0);
+      return Array.from(document.styleSheets).reduce((total, sheet) => {
+        try {
+          return total + countDialRules(sheet.cssRules);
+        } catch {
+          return total;
+        }
+      }, 0);
+    });
+    expect(dialRules).toBe(0);
+
+    const arm = page.getByTestId('lucky-meter-dial-arm');
+    const head = page.getByTestId('lucky-meter-dial-head');
+    await expect(arm).toBeVisible();
+    await expect(head).toBeVisible();
+
+    const armStyle = await arm.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        position: style.position,
+        width: style.width,
+        height: style.height,
+        borderRadius: style.borderRadius,
+        backgroundImage: style.backgroundImage,
+      };
+    });
+    expect(armStyle.position).toBe('absolute');
+    expect(armStyle.width).toBe('2px');
+    expect(parseFloat(armStyle.height)).toBeGreaterThan(20);
+    expect(parseFloat(armStyle.borderRadius)).toBeGreaterThan(0);
+    expect(armStyle.backgroundImage).toContain('linear-gradient');
+
+    const headStyle = await head.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        position: style.position,
+        width: style.width,
+        height: style.height,
+        backgroundImage: style.backgroundImage,
+      };
+    });
+    expect(headStyle.position).toBe('absolute');
+    expect(headStyle.width).toBe('9px');
+    expect(headStyle.height).toBe('9px');
+    expect(headStyle.backgroundImage).toContain('radial-gradient');
+
+    // The index still bears exactly the displayed percentage's angle.
+    const angle = await readDialAngle(page);
+    expect(((angle % 360) + 360) % 360).toBeCloseTo((57 * 3.6) % 360, 1);
+  });
+
   test('reveals percentage and tier, then numbers, then details, then the event', async ({
     page,
   }) => {

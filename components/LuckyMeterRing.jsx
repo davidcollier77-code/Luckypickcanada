@@ -149,7 +149,6 @@ export default function LuckyMeterRing({
         <div
           aria-hidden="true"
           data-testid="lucky-meter-dial"
-          data-spinning={phase === 'scrambling' ? 'true' : 'false'}
           className="pointer-events-none absolute inset-0 z-[16] rounded-full"
           // The pointer's geometry and metal are inline on purpose: the index is
           // the proof of where the dial stopped, so it must not depend on a
@@ -157,7 +156,9 @@ export default function LuckyMeterRing({
           style={{
             transform: `rotate(${dialAngle}deg)`,
             transformOrigin: '50% 50%',
-            willChange: 'transform',
+            // Only the spin needs a compositor hint; a static dial keeps the
+            // default, matching the reduced-motion override the old CSS had.
+            willChange: phase === 'scrambling' ? 'transform' : 'auto',
           }}
         >
           <span
@@ -166,10 +167,10 @@ export default function LuckyMeterRing({
               position: 'absolute',
               left: '50%',
               top: '2.6%',
-              width: 2,
+              width: '2px',
               height: '16%',
               transform: 'translateX(-50%)',
-              borderRadius: 9999,
+              borderRadius: '9999px',
               backgroundImage:
                 'linear-gradient(180deg, #fffbe4 0%, #ffdc92 34%, #e5b257 72%, rgba(229, 178, 87, 0) 100%)',
               boxShadow: '0 0 10px rgba(255, 206, 120, 0.75), 0 0 2px rgba(255, 248, 220, 0.9)',
@@ -181,10 +182,10 @@ export default function LuckyMeterRing({
               position: 'absolute',
               left: '50%',
               top: '1.1%',
-              width: 9,
-              height: 9,
+              width: '9px',
+              height: '9px',
               transform: 'translateX(-50%)',
-              borderRadius: 9999,
+              borderRadius: '9999px',
               backgroundImage:
                 'radial-gradient(circle at 34% 28%, #fffdf0 0%, #ffe4a0 38%, #e0a83f 74%, #a4721c 100%)',
               boxShadow:

@@ -181,5 +181,19 @@ tier label at that moment. The test now asserts that the numbers panel first
 appears on a landed dial with a matching percentage and tier, and that details
 and the event stage each arrive after it, using the recorded timestamps. The
 assertions no longer depend on how quickly the test observes a transient state.
-`45 passed, 6 skipped` locally across desktop, mobile-390 and mobile-412 after
-the change.
+`48 passed, 6 skipped` locally across desktop, mobile-390 and mobile-412 after
+the change and the pointer guard below.
+
+### Pointer regression guard (review follow-up)
+
+`paints the dial index from its own elements even with no dial CSS` seeds a
+completed Medium reading, counts the loaded `.resonance-dial*` rules (zero) and
+then asserts the arm's computed `position: absolute`, `width: 2px`, a height above
+20 px, a positive radius and a `linear-gradient`; the head at 9 × 9 px with a
+`radial-gradient`; and the dial angle equal to 57 % × 3.6°. The production defect
+is therefore asserted in CI: the pointer must paint with no such stylesheet rule
+present. The same review removed two leftovers from the CSS migration — the dead
+`data-spinning` attribute, and an unconditional `will-change: transform`, which
+now applies only while the dial is scrambling (matching the reduced-motion
+override the deleted rule provided) — and made every inline dimension an explicit
+pixel string.
