@@ -13,11 +13,20 @@ export const REVEAL_TIMING = Object.freeze({
   /** Two or three flashes of the real number on landing. */
   flashMs: 600,
   flashCount: 3,
-  /** Percentage and tier are revealed at landing; the rest follows. */
-  detailsDelayMs: 800,
+  /** After the percentage and tier, the tier's Lucky Numbers arrive. */
+  numbersDelayMs: 800,
+  /** After the numbers, the supporting detail panels follow. */
+  detailsDelayMs: 600,
   /** After the details, wait before the cinematic event starts. */
   eventDelayMs: 600,
 });
+
+/** Milliseconds from the Start press until the cinematic event begins. */
+export const EVENT_START_MS =
+  REVEAL_TIMING.scrambleMs +
+  REVEAL_TIMING.numbersDelayMs +
+  REVEAL_TIMING.detailsDelayMs +
+  REVEAL_TIMING.eventDelayMs;
 
 /** Anchor values deliberately alternate high and low. */
 const SCRAMBLE_ANCHORS = [

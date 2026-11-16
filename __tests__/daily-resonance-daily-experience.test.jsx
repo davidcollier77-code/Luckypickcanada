@@ -116,11 +116,8 @@ describe('Daily Resonance daily experience', () => {
     expect(stored.dateKey).toBe(TODAY);
     expect(stored.result.percentage).toBe(53);
     expect(stored.result.tier.label).toBe('Medium Resonance');
-    expect(stored.result.event).toEqual({
-      id: 'lightning',
-      name: 'Cosmic Lightning',
-      numbers: [11, 22, 33],
-    });
+    expect(stored.result.tier.numbers).toEqual([11, 22, 33]);
+    expect(stored.result.event).toEqual({ id: 'lightning', name: 'Cosmic Lightning' });
     expect(stored.result.colour).toEqual({
       id: 'cream',
       name: 'Cream',
@@ -140,14 +137,22 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.getByText('Your luck is in the mid-range today.')).toBeInTheDocument();
     expect(screen.queryByText('Your Lucky Numbers')).not.toBeInTheDocument();
 
-    // +0.8s: colour, numbers, Little Spark and event.
+    // +0.8s: the tier's Lucky Numbers arrive before any supporting panel.
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.detailsDelayMs);
+      vi.advanceTimersByTime(REVEAL_TIMING.numbersDelayMs);
     });
     expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
     expect(screen.getByText('11')).toBeInTheDocument();
     expect(screen.getByText('22')).toBeInTheDocument();
     expect(screen.getByText('33')).toBeInTheDocument();
+    expect(screen.queryByText('Cream')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cosmic Lightning')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Share My Resonance/i })).not.toBeInTheDocument();
+
+    // +0.6s: colour, Little Spark, event, disclaimer and controls.
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.detailsDelayMs);
+    });
     expect(screen.getByText('Cream')).toBeInTheDocument();
     expect(screen.getByText('#F1E8D5')).toBeInTheDocument();
     expect(screen.getByText('Cosmic Lightning')).toBeInTheDocument();
@@ -187,9 +192,7 @@ describe('Daily Resonance daily experience', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     act(() => {
-      vi.advanceTimersByTime(
-        REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs,
-      );
+      vi.advanceTimersByTime(REVEAL_TIMING.scrambleMs + REVEAL_TIMING.numbersDelayMs);
     });
     expect(screen.getByText('53')).toBeInTheDocument();
     // Home disappeared at Start and stays hidden through the unfinished event.
@@ -218,9 +221,7 @@ describe('Daily Resonance daily experience', () => {
     const view = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     act(() => {
-      vi.advanceTimersByTime(
-        REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs,
-      );
+      vi.advanceTimersByTime(REVEAL_TIMING.scrambleMs + REVEAL_TIMING.numbersDelayMs);
     });
     expect(screen.getByText('53')).toBeInTheDocument();
 
@@ -239,7 +240,7 @@ describe('Daily Resonance daily experience', () => {
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     act(() => {
       vi.advanceTimersByTime(
-        REVEAL_TIMING.scrambleMs + REVEAL_TIMING.detailsDelayMs,
+        REVEAL_TIMING.scrambleMs + REVEAL_TIMING.numbersDelayMs + REVEAL_TIMING.detailsDelayMs,
       );
     });
     expect(screen.getByText('07:30:00')).toBeInTheDocument();

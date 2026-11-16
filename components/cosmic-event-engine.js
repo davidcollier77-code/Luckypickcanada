@@ -47,6 +47,7 @@ import {
 import { createSkyLightProgram } from '../app/lib/gpu-lighting';
 import { clearSceneLights, publishSceneLights } from '../app/lib/gpu-scene-light';
 import { depthScale } from '../app/lib/gpu-math';
+import { getThunderCue, getThunderDelayMs } from '../app/lib/lucky-meter/event-audio';
 
 const HAZE_VERTEX_SHADER = `
 attribute vec2 a_uv;
@@ -499,6 +500,8 @@ export function createCosmicEventEngine({
   const fireworks = [];
   const embers = [];
   const smoke = [];
+  /** Expanding rings that make the finale's scale readable at a glance. */
+  const shockwaves = [];
   /** Active coloured lights: sky illumination plus shared scene lighting. */
   const activeLights = [];
 
@@ -580,6 +583,19 @@ export function createCosmicEventEngine({
     if (cueHandler) cueHandler(cue);
   }
 
+  /**
+   * Queues a cue for a later frame, keeping the queue sorted.
+   *
+   * Delayed sound is how the sequence stays physical: thunder trails its
+   * flash, and the finale's launch whistle precedes its detonation.
+   */
+  function queueCue(at, cue) {
+    const time = Math.max(0, Number(at) || 0);
+    let index = cueQueue.length;
+    while (index > 0 && cueQueue[index - 1].at > time) index -= 1;
+    cueQueue.splice(index, 0, { at: time, cue });
+  }
+
   function pushPoint(x, y, size, color, alpha, near = false) {
     if (alpha <= 0.003 || size <= 0) return;
     const surface = near && canUseNear() ? nearSurface : farSurface;
@@ -656,9 +672,48 @@ export function createCosmicEventEngine({
       headColor: isFinale ? METEOR_HEAD_FINALE : METEOR_HEAD,
       isFinale,
       age: 0,
+      // The whoosh belongs to the moment the head actually enters the frame,
+      // not to the off-screen spawn, so entry, motion and sound line up.
+      entered: false,
+      flash: 0,
       seed: planRandom() * 1000,
     });
-    emitCue(isFinale ? 'meteor-finale' : 'meteor');
+  }
+
+  /**
+   * A meteor burning out: a short warm flare, shed embers and a matching thud.
+   * Called when the head leaves the frame, so every started pass has an ending.
+   */
+  function spawnMeteorImpact(meteor, x, y) {
+    emitCue(meteor.isFinale ? 'meteor-finale-impact' : 'meteor-impact');
+    addLight({
+      x,
+      y,
+      radius: (meteor.isFinale ? 320 : 150) * effectScale,
+      intensity: meteor.isFinale ? 1.15 : 0.5,
+      color: [1, 0.72, 0.4],
+      life: meteor.isFinale ? 0.65 : 0.4,
+      kind: 'meteor-impact',
+    });
+    if (meteor.isFinale) {
+      spawnShockwave(x, y, { radius: Math.max(width, height) * 0.22, life: 0.9 });
+    }
+    const count = meteor.isFinale ? 30 : 10;
+    for (let index = 0; index < count; index += 1) {
+      smoke.push({
+        kind: 'fragment',
+        x: x + randomBetween(planRandom, -8, 8),
+        y: y + randomBetween(planRandom, -8, 8),
+        vx: randomBetween(planRandom, -95, 95),
+        vy: randomBetween(planRandom, -95, 35),
+        size: randomBetween(planRandom, 1.6, 3.8) * effectScale,
+        age: 0,
+        life: randomBetween(planRandom, 0.4, 0.95),
+        color: planRandom() > 0.5 ? hexToRgb('#ffcf7a') : hexToRgb('#ff8a3d'),
+        drag: 0.93,
+        near: meteor.near,
+      });
+    }
   }
 
   /**
@@ -692,8 +747,31 @@ export function createCosmicEventEngine({
       const headScale = depthScale(meteor.depth);
       const headX = centreX + meteor.worldX * headScale;
       const headY = centreY + meteor.worldY * headScale;
+
+      // Entrance: the first frame the head is actually on screen. The flare and
+      // the cue fire together, so the visitor sees and hears the same event.
+      if (!meteor.entered) {
+        const onScreen =
+          headX > -30 && headX < width + 30 && headY > -30 && headY < height + 30;
+        if (onScreen) {
+          meteor.entered = true;
+          meteor.flash = 1;
+          emitCue(meteor.isFinale ? 'meteor-finale' : 'meteor-enter');
+          addLight({
+            x: headX,
+            y: headY,
+            radius: (meteor.isFinale ? 280 : 120) * effectScale,
+            intensity: meteor.isFinale ? 0.95 : 0.35,
+            color: [1, 0.86, 0.7],
+            life: 0.45,
+            kind: 'meteor-entry',
+          });
+        }
+      }
+
       if (headY > height + 320 || headX < -width * 0.8 || headX > width * 1.8) {
         if (meteor.light) meteor.light.peak = 0;
+        if (meteor.entered) spawnMeteorImpact(meteor, headX, headY);
         meteors.splice(index, 1);
         continue;
       }
@@ -751,6 +829,22 @@ export function createCosmicEventEngine({
       // Hot head: a tight nucleus, a compact flare and a wide atmospheric halo.
       const headAlpha = (meteor.isFinale ? 1 : 0.55 + meteor.depth * 0.4) * globalAlpha;
       const headRadius = Math.max(1.4, meteor.thicknessWorld * headScale * effectScale);
+
+      // A brief ignition flare as the meteor crosses into the frame.
+      if (meteor.flash > 0) {
+        meteor.flash = Math.max(0, meteor.flash - deltaSeconds * 4.2);
+        const flare = meteor.flash * globalAlpha;
+        pushPoint(
+          headX,
+          headY,
+          110 * effectScale * (meteor.isFinale ? 1.8 : 1),
+          meteor.headColor,
+          flare * 0.34,
+          meteor.near,
+        );
+        pushPoint(headX, headY, 36 * effectScale, [1, 1, 1], flare * 0.72, meteor.near);
+      }
+
       pushPoint(headX, headY, headRadius * 26, meteor.headColor, headAlpha * 0.18, meteor.near);
       pushPoint(headX, headY, headRadius * 9, meteor.headColor, headAlpha * 0.42, meteor.near);
       pushPoint(headX, headY, headRadius * 3.2, meteor.headColor, headAlpha, meteor.near);
@@ -875,6 +969,9 @@ export function createCosmicEventEngine({
     });
 
     emitCue(isFinale ? 'lightning-finale' : 'lightning');
+    // Thunder is a separate, delayed cue: the flash is seen first, and a
+    // distant strike arrives later and softer than a close one.
+    queueCue(elapsed + getThunderDelayMs(depth, isFinale), getThunderCue(depth, isFinale));
   }
 
   function updateLightning(deltaSeconds, globalAlpha) {
@@ -1185,6 +1282,15 @@ export function createCosmicEventEngine({
   const lightningCount = Math.round(randomBetween(planRandom, 5, 7));
   const fireworkCount = Math.round(randomBetween(planRandom, 6, 8));
 
+  // The finale's start follows from the event's duration. The fireworks finale
+  // also gets a deeper launch whistle queued before it, so its build-up is
+  // audible and distinct from the opening pops.
+  const finaleAt = Math.max(
+    0,
+    durationMs - (eventId === 'meteor' ? 1900 : eventId === 'lightning' ? 2300 : 5600),
+  );
+  if (eventId === 'fireworks') queueCue(Math.max(0, finaleAt - 520), 'firework-finale');
+
   if (eventId === 'meteor') {
     for (let index = 0; index < meteorCount - 1; index += 1) {
       const fromRight = index % 2 === 1;
@@ -1244,6 +1350,11 @@ export function createCosmicEventEngine({
     }
   }
 
+  /** Expanding ring used to make the finale's scale readable at a glance. */
+  function spawnShockwave(x, y, { radius = 320, life = 1.1 } = {}) {
+    shockwaves.push({ x, y, age: 0, life, maxRadius: radius });
+  }
+
   function spawnFinale() {
     if (finaleSpawned) return;
     finaleSpawned = true;
@@ -1288,8 +1399,22 @@ export function createCosmicEventEngine({
       });
       spawnGoldenFall(centreScreenX, burstY, Math.round(quality.sparkBudget * 1.2));
       spawnEmbers(quality.tier === 'constrained' ? 14 : 28);
+      spawnShockwave(centreScreenX, burstY, {
+        radius: Math.max(width, height) * 0.34,
+        life: 1.25,
+      });
+      // The strongest, warmest environmental illumination of the sequence.
+      addLight({
+        x: centreScreenX,
+        y: burstY,
+        radius: Math.max(width, height) * 0.72,
+        intensity: 1.7,
+        color: [1, 0.78, 0.4],
+        life: 2.2,
+        kind: 'firework-finale',
+      });
       emitCue('finale-boom');
-      cueQueue.push({ at: elapsed + 140, cue: 'firework-willow' });
+      queueCue(elapsed + 140, 'firework-willow');
     }
   }
 
@@ -1347,6 +1472,33 @@ export function createCosmicEventEngine({
         Math.min(1, tintB),
       ];
       pushPoint(puff.x, puff.y, puff.size, tint, fade * globalAlpha * 0.32, puff.near);
+    }
+  }
+
+  /** Expanding rings, drawn as dense point rings so they stay additive. */
+  function updateShockwaves(deltaSeconds, globalAlpha) {
+    for (let index = shockwaves.length - 1; index >= 0; index -= 1) {
+      const wave = shockwaves[index];
+      wave.age += deltaSeconds;
+      if (wave.age >= wave.life) {
+        shockwaves.splice(index, 1);
+        continue;
+      }
+      const progress = wave.age / wave.life;
+      const radius = wave.maxRadius * effectScale * Math.pow(progress, 0.55);
+      const alpha = Math.pow(1 - progress, 1.5) * 0.55 * globalAlpha;
+      const points = 56;
+      for (let step = 0; step < points; step += 1) {
+        const angle = (step / points) * Math.PI * 2;
+        pushPoint(
+          wave.x + Math.cos(angle) * radius,
+          wave.y + Math.sin(angle) * radius,
+          3.4 * effectScale,
+          finalePalette[0],
+          alpha,
+          canUseNear(),
+        );
+      }
     }
   }
 
@@ -1651,9 +1803,7 @@ export function createCosmicEventEngine({
       emitCue(cueQueue.shift().cue);
     }
 
-    const finaleAt =
-      durationMs - (eventId === 'meteor' ? 1900 : eventId === 'lightning' ? 2300 : 5600);
-    if (!finaleSpawned && elapsed >= Math.max(0, finaleAt)) {
+    if (!finaleSpawned && elapsed >= finaleAt) {
       spawnFinale();
     }
 
@@ -1686,6 +1836,7 @@ export function createCosmicEventEngine({
     }
     if (smoke.length > 0) updateSmoke(deltaSeconds, globalAlpha);
     if (embers.length > 0) updateEmbers(deltaSeconds, globalAlpha);
+    if (shockwaves.length > 0) updateShockwaves(deltaSeconds, globalAlpha);
 
     updateLights(deltaSeconds);
 
@@ -1828,6 +1979,7 @@ export function createCosmicEventEngine({
     fireworks.length = 0;
     embers.length = 0;
     smoke.length = 0;
+    shockwaves.length = 0;
     activeLights.length = 0;
     clearSceneLights();
 

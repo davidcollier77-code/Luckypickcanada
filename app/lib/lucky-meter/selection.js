@@ -3,7 +3,9 @@
  *
  * Percentage, event, colour and Little Spark are drawn independently. The tier
  * is derived from the percentage because the tier definitions are percentage
- * ranges, but the other three selections never depend on the percentage.
+ * ranges, but the other three selections never depend on the percentage. The
+ * Lucky Numbers are a property of that tier, so they cannot change with the
+ * event and stay stable for the whole local day.
  *
  * Every selector accepts an injectable random function so the distributions and
  * repeat guards can be tested deterministically.
@@ -125,8 +127,13 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
   return {
     dateKey,
     percentage,
-    tier: { id: tier.id, label: tier.label, message: tier.message },
-    event: { id: event.id, name: event.name, numbers: [...event.numbers] },
+    tier: {
+      id: tier.id,
+      label: tier.label,
+      message: tier.message,
+      numbers: [...tier.numbers],
+    },
+    event: { id: event.id, name: event.name },
     colour: {
       id: colour.id,
       name: colour.name,
@@ -167,11 +174,20 @@ export function validateDailyResult(value, expectedDateKey) {
   const spark = SPARKS_BY_ID.get(value.spark?.id);
   if (!spark) return null;
 
+  // Numbers are always recomputed from the canonical tier definition. This also
+  // migrates a result stored by the earlier event-keyed payload without a
+  // storage-version bump: the same day keeps its percentage, tier, colour and
+  // Spark, and the numbers now follow the tier.
   return {
     dateKey,
     percentage,
-    tier: { id: tier.id, label: tier.label, message: tier.message },
-    event: { id: event.id, name: event.name, numbers: [...event.numbers] },
+    tier: {
+      id: tier.id,
+      label: tier.label,
+      message: tier.message,
+      numbers: [...tier.numbers],
+    },
+    event: { id: event.id, name: event.name },
     colour: {
       id: colour.id,
       name: colour.name,

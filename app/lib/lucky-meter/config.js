@@ -21,6 +21,16 @@ export const HISTORY_LIMITS = {
   sparks: 8,
 };
 
+/**
+ * Tier definitions. Lucky Numbers belong to the tier, never to the visual
+ * event: once a day's tier is drawn, its three numbers are that visitor's
+ * numbers for the day whichever event plays.
+ *
+ * The three approved triplets are preserved exactly as first specified
+ * (3/9/21, 11/22/33, 7/8/77). They are keyed to Low, Medium and High in the
+ * order the specification recorded them, and are never randomised, never 13
+ * and never duplicated.
+ */
 export const TIERS = [
   {
     id: 'low',
@@ -28,6 +38,7 @@ export const TIERS = [
     min: PERCENTAGE_MIN,
     max: 39,
     message: "You're riding a little low today, but you're still okay!",
+    numbers: [3, 9, 21],
   },
   {
     id: 'medium',
@@ -35,6 +46,7 @@ export const TIERS = [
     min: 40,
     max: 79,
     message: 'Your luck is in the mid-range today.',
+    numbers: [11, 22, 33],
   },
   {
     id: 'high',
@@ -42,19 +54,21 @@ export const TIERS = [
     min: 80,
     max: PERCENTAGE_MAX,
     message: "Your luck is running high today!",
+    numbers: [7, 8, 77],
   },
 ];
 
+export const TIERS_BY_ID = new Map(TIERS.map((tier) => [tier.id, tier]));
+
 /**
- * Event weights and durations. `numbers` are fixed per event and must never be
- * randomised; the displayed list is always the three values below, in order.
+ * Event weights and durations. Events carry presentation and timing only; the
+ * Lucky Numbers shown alongside an event come from the visitor's tier.
  */
 export const EVENTS = [
   {
     id: 'meteor',
     name: 'Meteor Shower',
     weight: 42,
-    numbers: [3, 9, 21],
     minDurationMs: 8500,
     maxDurationMs: 9500,
     accent: '#a8dcff',
@@ -63,7 +77,6 @@ export const EVENTS = [
     id: 'lightning',
     name: 'Cosmic Lightning',
     weight: 38,
-    numbers: [11, 22, 33],
     minDurationMs: 9500,
     maxDurationMs: 10500,
     accent: '#c9d8ff',
@@ -72,7 +85,6 @@ export const EVENTS = [
     id: 'fireworks',
     name: 'Fireworks',
     weight: 20,
-    numbers: [7, 8, 77],
     minDurationMs: 11000,
     maxDurationMs: 12000,
     accent: '#ffcf7a',
@@ -98,6 +110,12 @@ export const COLOURS = [
 ];
 
 export const COLOURS_BY_ID = new Map(COLOURS.map((colour) => [colour.id, colour]));
+
+/** The tier's fixed numbers, copied so a consumer can never mutate the definition. */
+export function getTierNumbers(tierId) {
+  const tier = TIERS_BY_ID.get(tierId);
+  return tier ? [...tier.numbers] : [];
+}
 
 /** Shown wherever Lucky Numbers appear. */
 export const LUCKY_NUMBERS_LABEL = 'Your Lucky Numbers';
