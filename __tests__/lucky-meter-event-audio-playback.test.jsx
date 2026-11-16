@@ -173,10 +173,10 @@ describe('Lucky Meter event cue playback', () => {
     expect(stageControl.onCue).toBeTruthy();
   });
 
+
   it('releases every sound on unmount', async () => {
     await startEvent();
-    const view = render(<DailyResonance />);
-    view.unmount();
+    expect(howls.length).toBeGreaterThan(0);
     cleanup();
     for (const sound of howls) {
       expect(sound.unload).toHaveBeenCalled();
