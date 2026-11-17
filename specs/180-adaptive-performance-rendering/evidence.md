@@ -1,6 +1,6 @@
 # Evidence: Shared Adaptive Performance and Rendering System
 
-**Date**: 2026-11-17 (re-verified after runner restart)
+**Date**: 2026-11-17 (re-verified after review repairs)
 **Branch**: `freebuff/1716deb7870376472b3b3bb7`
 **Base**: `main` at `ec4b5258`
 **Task groups**: creation, testing, polishing (performance/rendering)
@@ -37,8 +37,8 @@
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Full suite | `pnpm exec vitest run` | 90 files; **910 passed, 1 failed of 911**. The failure is the pre-existing governance assertion proven below. |
-| Focused adaptive suites | `pnpm exec vitest run __tests__/adaptive-performance.test.js __tests__/intent-prefetch-link.test.jsx __tests__/audio-adaptive-release.test.js` | PASS — 3 files, 52 tests (run earlier in this task; the full suite above re-includes them) |
+| Full suite | `pnpm exec vitest run` | 90 files; **914 passed, 1 failed of 915**. The failure is the pre-existing governance assertion proven below. |
+| Focused adaptive suites | `pnpm exec vitest run __tests__/adaptive-performance.test.js __tests__/intent-prefetch-link.test.jsx __tests__/audio-adaptive-release.test.js` | PASS — 3 files, 56 tests |
 | Audio regression suites | `pnpm exec vitest run __tests__/audio-adaptive-release.test.js __tests__/lucky-reveal-phase3.test.js __tests__/lucky-reveal-confetti-phase1.test.js __tests__/lucky-reveal-finish-phase2.test.js __tests__/reveal-applause-retry.test.js __tests__/audio-exports.test.js` | PASS — 6 files, 65 tests |
 | Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
 | Spec Kit task-artifact gate | `SPEC_KIT_BASE_REF=ec4b5258 bash scripts/verify-speckit-task.sh` | PASS — spec/plan/tasks verified for this feature directory |
@@ -77,22 +77,59 @@ Coverage added by this task:
 - Device: missing/zero/non-numeric hints, feature report, capable fallback.
 - Profiles: low/medium/high mobile and low/medium/high desktop, plus reason attribution.
 - Accessibility: reduced motion pauses animation while every functional budget is unchanged.
-- Changing conditions: debounced reassessment, recovery from slow to fast, hidden/visible, throwing
-  subscriber isolation.
+- Changing conditions: the connection object's real `change` event (not a resize proxy), debounced
+  reassessment, recovery from slow to fast, hidden/visible, throwing subscriber isolation.
+- Explicit refresh: `getAdaptivePlan({ refresh: true })` delivers the new plan to subscribers instead of
+  absorbing it into the cache.
 - Cleanup: two subscribers share one listener set, last unsubscribe removes every listener, no timers.
 - Frame governor: 60 fps capable, 30 fps constrained, recovery mid-loop, hidden/reduced-motion stop,
-  cancel/dispose, real rAF path.
-- Resources: release once per episode, failure isolation, idle-audio unload/reload, playing sound preserved.
+  cancel/dispose, real rAF path, and a lone loop with no subscriber refreshing its plan after the cache TTL.
+- Resources: release once per episode, failure isolation, idle-audio unload/reload, playing sound preserved,
+  and a playing Crystal Ball energy loop remaining targetable for its fade after an idle release.
+- Accessibility resume: Aurora restarts its draw loop when reduced motion is turned back off.
 - Preservation: every ambient renderer uses the governor, density constants, reduced-motion branches and
   artwork calls remain; no cookie/storage/user-agent reads.
+
+## Review repairs (this pass)
+
+Reviewed all 12 inline comments, three submitted reviews and the Visual QA/scope annotations. Disposition:
+
+**Fixed with regression coverage**
+
+- `getAdaptivePlan({ refresh: true })` bypassed `emitIfChanged`, so it cached a new signature without
+  notifying subscribers and the next refresh was suppressed. It now delegates to `refreshAdaptivePlan`.
+- A page whose only consumer is a frame loop had no subscriber, so the plan never refreshed after mount.
+  `getAdaptivePlan` now re-reads an unrefreshed cache after 1000 ms, preserving the single-subscription
+  design while allowing mid-session constraint recovery on canvas-only pages.
+- Aurora flipped `isReducedMotion` without restarting the governor, leaving the canvas frozen after the
+  preference was turned back off. Its motion handler now cancels, repaints and re-requests the loop.
+- `releaseIdleAudio` unconditionally cleared the Crystal Ball energy id/request. A preserved playing loop
+  could no longer be targeted for its fade, and a pending energy start was cancelled. The release now
+  skips a requested energy loop and only clears the id when that Howl was actually released.
+- The connection-change test dispatched `resize` instead of the connection's `change` event. It now captures
+  and fires the real handler against the object the wiring listens to.
+- DevSkim DS172411 flagged the two local timer callbacks; both now carry the repository's reviewed
+  false-positive suppression comment. No untrusted data reaches either callback.
+
+**Reviewed, not a defect**
+
+- Module-level singleton state: the subscription path is client-only (`typeof window` guard), the server
+  returns the immutable `SERVER_PLAN`, and every test reloads the module. Unsubscribe removes all listeners
+  and timers; no cross-request state is reachable.
+- Frame-loop `finally` scheduling: `request()` during a draw schedules only when `frameId` is 0, so the
+  finally block cannot double-schedule; `cancel()` clears the callback, so an explicit stop wins.
+- `pressureReleaseApplied` persistence: it is an episode latch, reset by the next plan that no longer
+  requests release; re-running the same release for every new subscriber would be the bug.
+- The `Visual QA` check is red because its job includes the pre-existing governance assertion above; the
+  two Playwright visual shards on this commit both succeeded. No screenshot or baseline failure occurred.
 
 ## Production build (fresh rebuild in this pass)
 
 | Check | Result |
 | --- | --- |
 | `rm -rf .next && pnpm run build` | PASS — compiled successfully, 21/21 static pages, exit 0 (`artifacts/adaptive-performance-20261117/build.txt`) |
-| Production build size (`.next` + `public`) | **344,157,126 bytes = 328.21 MiB**, below the 495 MiB cap |
-| Earlier build of the same commit | 344,342,416 bytes = 328.39 MiB (the figure in the PR description). Both builds are valid; the fresh rebuild supersedes it. |
+| Production build size (`.next` + `public`) | **344,194,328 bytes = 328.25 MiB**, below the 495 MiB cap |
+| Earlier builds of the same source | 344,157,126 bytes = 328.21 MiB and 344,342,416 bytes = 328.39 MiB. All are valid; the clean rebuild on the final tree supersedes them. |
 | `./freebuff-verify.sh` | Spec Kit gate PASS, type check PASS, build PASS, refresh-docs 47/48 |
 | Refresh-docs failure | Pre-existing: `every snapshot is valid Markdown or safely identified as legacy HTML` inspects the read-only `.docs/` library, which this task did not modify. |
 

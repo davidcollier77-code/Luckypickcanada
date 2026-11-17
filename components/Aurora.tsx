@@ -94,9 +94,6 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
 
 
     let isReducedMotion = prefersReducedMotion();
-    const stopMotionListener = onReducedMotionChange((matches) => {
-      isReducedMotion = matches;
-    });
 
     const drawWisp = (ctx, x, y, angle, w, h, colorRGB, opacity) => {
       ctx.save();
@@ -195,6 +192,14 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
         frameLoop.request(draw);
       }
     };
+
+    const stopMotionListener = onReducedMotionChange((matches) => {
+      isReducedMotion = matches;
+      // The governor stops scheduling while motion is reduced, so toggling the
+      // preference back off must repaint and restart the loop explicitly.
+      frameLoop.cancel();
+      draw();
+    });
 
     const handleResize = () => {
       initCanvas();

@@ -407,7 +407,16 @@ describe('shared subscription and cleanup', () => {
   it('reassesses after a connection change and recovers when it improves', async () => {
     vi.useFakeTimers();
     stubDevice({ memory: 8, cores: 8 });
-    stubConnection({ downlink: 0.4, rtt: 700, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    let changeHandler = null;
+    const connection = {
+      downlink: 0.4,
+      rtt: 700,
+      addEventListener: (type, handler) => {
+        if (type === 'change') changeHandler = handler;
+      },
+      removeEventListener: vi.fn(),
+    };
+    stubConnection(connection);
 
     const adaptive = await loadModule();
     const listener = vi.fn();
@@ -417,10 +426,13 @@ describe('shared subscription and cleanup', () => {
       prefetch: 'none',
       imageQuality: 'economy',
     });
+    expect(typeof changeHandler).toBe('function');
 
-    // The browser reports a better connection; the change event is debounced.
-    stubConnection({ downlink: 30, rtt: 30, addEventListener: vi.fn(), removeEventListener: vi.fn() });
-    window.dispatchEvent(new Event('resize'));
+    // The browser reports a better connection on the object the wiring is
+    // already listening to; the change event is debounced.
+    connection.downlink = 30;
+    connection.rtt = 30;
+    changeHandler();
     vi.advanceTimersByTime(150);
 
     expect(listener.mock.calls.at(-1)[0]).toMatchObject({
@@ -431,6 +443,24 @@ describe('shared subscription and cleanup', () => {
 
     unsubscribe();
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('delivers a forced refresh to subscribers instead of caching it silently', async () => {
+    stubDevice({ memory: 8, cores: 8 });
+    stubConnection({ downlink: 30, rtt: 30, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+
+    const adaptive = await loadModule();
+    const listener = vi.fn();
+    const unsubscribe = adaptive.subscribeToAdaptivePlan(listener);
+
+    stubConnection({ downlink: 0.4, rtt: 700, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    const refreshed = adaptive.getAdaptivePlan({ refresh: true });
+
+    expect(refreshed.networkClass).toBe('slow');
+    // A forced read must reach existing subscribers, not just update the cache.
+    expect(listener.mock.calls.at(-1)[0].networkClass).toBe('slow');
+
+    unsubscribe();
   });
 
   it('isolates a throwing subscriber', async () => {
@@ -602,6 +632,33 @@ describe('animation frame governor', () => {
     expect(raf).toHaveBeenCalled();
     loop.dispose();
   });
+
+  it('keeps a lone frame loop fresh without a component subscriber', async () => {
+    vi.useFakeTimers();
+    stubDevice({ memory: 8, cores: 8 });
+    stubConnection({ downlink: 30, rtt: 30, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+
+    const adaptive = await loadModule();
+    const scheduler = createFakeScheduler();
+    const draw = vi.fn();
+    const loop = adaptive.createAdaptiveFrameLoop(scheduler);
+    loop.request(draw);
+
+    scheduler.runNext(0);
+    expect(draw).toHaveBeenCalledTimes(1);
+
+    // A constraint appears with no event and no subscriber to hear it.
+    stubDevice({ memory: 1, cores: 2 });
+    vi.advanceTimersByTime(1_100);
+
+    scheduler.runNext(1000); // Paints at the refreshed, constrained cadence.
+    expect(draw).toHaveBeenCalledTimes(2);
+    scheduler.runNext(1016); // Skipped, still inside 33 ms.
+    expect(draw).toHaveBeenCalledTimes(2);
+    scheduler.runNext(1034); // Paints.
+    expect(draw).toHaveBeenCalledTimes(3);
+    loop.dispose();
+  });
 });
 
 describe('resource release registry', () => {
@@ -699,6 +756,13 @@ describe('preservation guards', () => {
     expect(shooting).toContain('const maxStars = 3;');
     expect(aurora).toContain('isReducedMotion ? 0.0005 : 0.001');
     expect(homepage).toContain('Math.floor((width * height * particleScale) / 2000)');
+  });
+
+  it('restarts Aurora when reduced motion is turned back off', () => {
+    const source = readSource('components/Aurora.tsx');
+    expect(source).toMatch(
+      /onReducedMotionChange\(\(matches\) => \{[\s\S]{0,240}?frameLoop\.cancel\(\);[\s\S]{0,120}?draw\(\);/,
+    );
   });
 
   it('does not disable features, remove animation branches or weaken accessibility', () => {

@@ -10,6 +10,8 @@ vi.mock('howler', () => {
       this.unloaded = false;
       this.played = false;
       this.playCount = 0;
+      this.stopCalls = [];
+      this.fadeCalls = [];
       audioMocks.instances.push(this);
       audioMocks.constructed += 1;
     }
@@ -30,7 +32,8 @@ vi.mock('howler', () => {
       return this.playCount;
     }
 
-    stop() {
+    stop(...args) {
+      this.stopCalls.push(args);
       this.played = false;
     }
 
@@ -45,7 +48,9 @@ vi.mock('howler', () => {
 
     volume() {}
 
-    fade() {}
+    fade(...args) {
+      this.fadeCalls.push(args);
+    }
   }
 
   return { Howl };
@@ -158,5 +163,23 @@ describe('adaptive audio loading', () => {
 
     expect(audio.releaseIdleAudio()).toBe(0);
     expect(audioMocks.instances[0].unloaded).toBe(false);
+  });
+
+  it('keeps a playing Crystal Ball energy loop stoppable after an idle release', async () => {
+    setConnection({ downlink: 30, rtt: 30 });
+    setDevice();
+    const { audio } = await loadAudio();
+
+    await audio.preloadCrystalBallAudio();
+    audio.playCrystalBallEnergy();
+    const energy = audioMocks.instances.find((instance) => instance.played);
+    expect(energy).toBeDefined();
+
+    audio.releaseIdleAudio();
+    expect(energy.unloaded).toBe(false);
+
+    audio.stopCrystalBallEnergy();
+    // The preserved loop must still be faded by its own playback id.
+    expect(energy.fadeCalls.at(-1)).toEqual([expect.any(Number), 0, 160, energy.playCount]);
   });
 });

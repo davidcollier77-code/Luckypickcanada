@@ -1,4 +1,1020 @@
-543:[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
-545:[41m[1m FAIL [22m[49m __tests__/agent-governance-single-source.test.js[2m > [22msingle-source agent governance[2m > [22mdocuments Freebuff Playwright modes and excludes ChatGPT from the CLI system
-1020:[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m89 passed[39m[22m[90m (90)[39m
-1021:[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m910 passed[39m[22m[90m (911)[39m
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.0 [39m[90m/workspace/chats/1716deb7870376472b3b3bb7[39m
+
+(node:41106) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+classify-visual-changes: 1 changed path(s) reviewed; 'app/page.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'components/Hero.jsx' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'app/globals.css' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'styles/globals.css' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'themes/default/homepage.css' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'public/themes/default/hero.webp' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'public/images/hero.avif' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'public/fonts/inter.woff2' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'next.config.mjs' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'tailwind.config.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'tests/visual/homepage.spec.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'tests/e2e/homepage.spec.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'playwright.config.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'app/lib/gpu-particles.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'components/cosmic-event-engine.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'scripts/measure-performance.mjs' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'tests/performance/lucky-meter-fps.spec.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 2 changed path(s) reviewed; 'app/lib/gpu-particles.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'app/lib/rate-limit.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 3 changed path(s) reviewed; 'app/homepage/Hero.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 3 changed path(s) reviewed; 'app/page.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 2 changed path(s) reviewed; 'public/themes/default/hero.webp' is not positively classified as non-rendering, so visual QA is required.
+ [31m❯[39m __tests__/agent-governance-single-source.test.js [2m([22m[2m10 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 171[2mms[22m[39m
+   [31m❯[39m single-source agent governance [2m(10)[22m
+     [32m✓[39m uses AGENTS.md as the current repository-governance entrypoint[32m 4[2mms[22m[39m
+     [32m✓[39m requires PR submission to complete repository-changing tasks without forcing PRs for read-only work[32m 1[2mms[22m[39m
+     [32m✓[39m checks the current repository QA and implementation requirements[32m 1[2mms[22m[39m
+[31m     [31m×[31m documents Freebuff Playwright modes and excludes ChatGPT from the CLI system[39m[32m 13[2mms[22m[39m
+     [32m✓[39m requires the protection workflow and owner rule for AGENTS.md[32m 1[2mms[22m[39m
+     [32m✓[39m allows a dedicated governance PR but refuses AGENTS.md inside an unrelated PR[32m 93[2mms[22m[39m
+     [32m✓[39m does not accept a title or description as an authorization bypass[32m 53[2mms[22m[39m
+     [32m✓[39m retains every specialist task-group instruction[32m 1[2mms[22m[39m
+     [32m✓[39m requires the current Spec Kit workflow and all nine command definitions[32m 1[2mms[22m[39m
+     [32m✓[39m retains the Freebuff Spec Kit command directory[32m 1[2mms[22m[39m
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 4 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 2 changed path(s) reviewed; 'components/Hero.jsx' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 2 changed path(s) reviewed; 'components/Hero.tsx' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'scripts/measure-performance.mjs' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 changed path(s) reviewed; 'playwright.config.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'playwright.helpers.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'tests/visual/playwright-fontconfig.ts' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'package.json' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'package.json' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'package.json' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'package.json' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 2 changed path(s) reviewed; 'app/page.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'workers/updater-scheduler/package.json' is not positively classified as non-rendering, so visual QA is required.
+package-json-scripts-only: only test/tooling scripts changed (test:visual, test:visual:swiftshader); visual QA is not required for package.json.
+classify-visual-changes: 16 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: no changed paths were supplied; requesting visual QA (fail closed).
+classify-visual-changes: no changed paths were supplied; requesting visual QA (fail closed).
+classify-visual-changes: 1 changed path(s) reviewed; 'scripts/unknown-tool.sh' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'LICENSE' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 2 known non-rendering path(s) reviewed; visual QA is not required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: only test/tooling scripts changed (test:visual, test:visual:swiftshader); visual QA is not required for package.json.
+package-json-scripts-only: only test/tooling scripts changed (lint, test, test:unit); visual QA is not required for package.json.
+package-json-scripts-only: package.json is unchanged; visual QA is not required for it.
+package-json-scripts-only: package.json is unchanged; visual QA is not required for it.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: package.json differs outside "scripts"; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: build; visual QA is required.
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: dev; visual QA is required.
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: start; visual QA is required.
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: deploy; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: prepare; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: postinstall; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/freebuff-startup-command.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1041[2mms[22m[39m
+   [32m✓[39m documented startup command behaviour (executed) [2m(4)[22m
+     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under bash[33m 353[2mms[22m[39m
+     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under sh[33m 337[2mms[22m[39m
+     [33m[2m✓[22m[39m proves the rejected `bash scripts/...` form loses the bootstrap PATH[33m 335[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: prebuild; visual QA is required.
+package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: generate-assets; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+package-json-scripts-only: package.json differs outside "scripts"; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/lucky-meter-cinematic-lifecycle.test.jsx [2m([22m[2m10 tests[22m[2m)[22m[33m 774[2mms[22m[39m
+package-json-scripts-only: package.json differs outside "scripts"; visual QA is required.
+package-json-scripts-only: the base manifest is not valid JSON: Expected property name or '}' in JSON at position 2 (line 1 column 3)
+ [32m✓[39m __tests__/playwright-config-fontconfig.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 1292[2mms[22m[39m
+   [32m✓[39m Playwright config Chromium runtime [2m(2)[22m
+     [33m[2m✓[22m[39m replaces an inherited fontconfig path that no longer exists[33m 1287[2mms[22m[39m
+package-json-scripts-only: the head manifest is not a JSON object
+package-json-scripts-only: the head manifest's scripts field is not a JSON object
+package-json-scripts-only: the head manifest's "test" script is not a string
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+classify-visual-changes: 1 changed path(s) reviewed; 'components/lucky-meter-medallion-engine.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'components/cosmic-event-engine.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 changed path(s) reviewed; 'app/lib/credit-format.js' is not positively classified as non-rendering, so visual QA is required.
+classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 2 known non-rendering path(s) reviewed; visual QA is not required.
+classify-visual-changes: 1 changed path(s) reviewed; 'data/unknown-blob.bin' is not positively classified as non-rendering, so visual QA is required.
+ [32m✓[39m __tests__/visual-qa-chromium-cache.test.js [2m([22m[2m39 tests[22m[2m)[22m[33m 1589[2mms[22m[39m
+   [32m✓[39m package.json scripts-only classification [2m(8)[22m
+     [33m[2m✓[22m[39m rejects renderer and lifecycle script changes[33m 346[2mms[22m[39m
+     [33m[2m✓[22m[39m fails closed on invalid JSON, wrong shapes, unreadable input and bad usage[33m 325[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/setup-chromium-runtime-detect.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 2002[2mms[22m[39m
+   [32m✓[39m Chromium runtime detection [2m(9)[22m
+     [33m[2m✓[22m[39m uses a read-only prebaked root that holds the pinned revision[33m 402[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a read-only prebaked root with a different revision[33m 332[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/daily-resonance-daily-experience.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 840[2mms[22m[39m
+   [32m✓[39m Daily Resonance daily experience [2m(6)[22m
+     [33m[2m✓[22m[39m persists one complete result before the reveal, then stages the reveal beats[33m 470[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/setup-chromium-env-shell-safety.test.js [2m([22m[2m22 tests[22m[2m)[22m[33m 2730[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/components/CheckoutModal.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[33m 603[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/lucky-meter-event-audio-playback.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 655[2mms[22m[39m
+   [32m✓[39m Lucky Meter event cue playback [2m(6)[22m
+     [33m[2m✓[22m[39m plays no event cue before the cinematic starts[33m 386[2mms[22m[39m
+Not implemented: HTMLMediaElement's play() method
+Not implemented: HTMLMediaElement's load() method
+ [32m✓[39m __tests__/crystal-ball-preview-client.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 553[2mms[22m[39m
+   [32m✓[39m Crystal Ball preview client [2m(1)[22m
+     [33m[2m✓[22m[39m renders the selected local moment without touching the real daily allowance[33m 552[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-selection.test.js [2m([22m[2m24 tests[22m[2m)[22m[33m 513[2mms[22m[39m
+[90mstderr[2m | app/turnstile-field.test.jsx[2m > [22m[2mTurnstileField[2m > [22m[2mshows error if fetching site key fails and keeps button disabled
+[22m[39mFailed to load Turnstile configuration: Error: Failed to fetch
+    at [90m/workspace/chats/1716deb7870376472b3b3bb7/[39mapp/turnstile-field.test.jsx:288:49
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:1628:35
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:2783:26
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3314:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
+
+ [32m✓[39m app/turnstile-field.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 442[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-dimensional-renderers.test.js [2m([22m[2m12 tests[22m[2m)[22m[33m 536[2mms[22m[39m
+   [32m✓[39m medallion construction [2m(2)[22m
+     [33m[2m✓[22m[39m builds a well-formed lit mesh at every quality level[33m 500[2mms[22m[39m
+Not implemented: HTMLMediaElement's play() method
+Not implemented: HTMLMediaElement's load() method
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/crystal-ball-client-follow-up.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 466[2mms[22m[39m
+   [32m✓[39m Crystal Ball follow-up outage [2m(2)[22m
+     [33m[2m✓[22m[39m shows the exact outage message and stores no question or answer text[33m 372[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/components/LuckyRevealCelebration.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 371[2mms[22m[39m
+ [32m✓[39m __tests__/qa-review-comment.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 385[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/daily-resonance-lifecycle.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 299[2mms[22m[39m
+ [32m✓[39m __tests__/bootstrap-pnpm.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 320[2mms[22m[39m
+ [32m✓[39m __tests__/devskim-dedup.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 275[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-persistence.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32m✓[39m __tests__/intent-prefetch-link.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 341[2mms[22m[39m
+ [32m✓[39m __tests__/spam-protection.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 95[2mms[22m[39m
+ [32m✓[39m __tests__/cosmic-event-stage-fallback.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m __tests__/reveal-applause-retry.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 172[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-cli-wrapper.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m __tests__/components/AboutSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 262[2mms[22m[39m
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2massigns a stable fallback ID and skips the supplied previous-day ID
+[22m[39mOracle Error: Missing content in Groq API response {"mode":"fortune","finishReason":null,"completionTokens":null,"reasoningTokens":null}
+
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2massigns a stable fallback ID and skips the supplied previous-day ID
+[22m[39mOracle Error: Missing content in Groq API response {"mode":"fortune","finishReason":null,"completionTokens":null,"reasoningTokens":null}
+
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2mreturns a usable fallback when the provider returns blank content
+[22m[39mOracle Error: Missing content in Groq API response {"mode":"fortune","finishReason":null,"completionTokens":null,"reasoningTokens":null}
+
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2mreturns the exact follow-up outage notice when the provider response is malformed JSON
+[22m[39mOracle Route Exception: SyntaxError: Unexpected token 'o', "not-json" is not valid JSON
+    at JSON.parse (<anonymous>)
+[90m    at parseJSONFromBytes (node:internal/deps/undici/undici:3226:19)[39m
+[90m    at successSteps (node:internal/deps/undici/undici:7169:27)[39m
+[90m    at readAllBytes (node:internal/deps/undici/undici:4682:13)[39m
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2mreturns a respectful fallback with no humour on Remembrance Day
+[22m[39mOracle Error: Missing content in Groq API response {"mode":"fortune","finishReason":null,"completionTokens":null,"reasoningTokens":null}
+
+[90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2mreturns only the outage notice for a Remembrance Day follow-up failure
+[22m[39mOracle Error: Missing content in Groq API response {"mode":"follow-up","finishReason":null,"completionTokens":null,"reasoningTokens":null}
+
+ [32m✓[39m __tests__/oracle-route-validation.test.js [2m([22m[2m36 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-reveal.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 117[2mms[22m[39m
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare returns a different status
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare did not confirm the resolved status (reported: active).
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare rejects the update
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare rejected the status update (HTTP 403): Authentication error
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a network failure without leaking the API token
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare request failed: connect ECONNREFUSED with token [redacted]
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a partial batch as unresolved instead of a success
+[22m[39mCloudflare issue resolution failed: f8607191-3b38-4c40-84e3-6ff40a036b1f: Cloudflare did not confirm the resolved status (reported: active).
+
+ [32m✓[39m __tests__/cloudflare-observability-issues.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+(node:43734) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/chats/1716deb7870376472b3b3bb7/app/lib/daily-reset.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/chats/1716deb7870376472b3b3bb7/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m __tests__/crystal-ball-local-time.test.js [2m([22m[2m29 tests[22m[2m)[22m[32m 59[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/adaptive-performance.test.js [2m([22m[2m41 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-map-refresh.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+[90mstderr[2m | __tests__/gift-email-error-handling.test.js[2m > [22m[2mGift delivery error handling[2m > [22m[2mkeeps a thrown network attempt pending without falsely marking it delivered
+[22m[39mUnexpected error during gift email delivery: Error: Network error
+    at [90m/workspace/chats/1716deb7870376472b3b3bb7/[39m__tests__/gift-email-error-handling.test.js:112:36
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:1628:35
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:2783:26
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3314:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
+
+[90mstderr[2m | __tests__/gift-email-error-handling.test.js[2m > [22m[2mGift delivery error handling[2m > [22m[2mkeeps a non-success Resend response pending for a same-key retry
+[22m[39mGift email was not accepted by Resend: Temporary provider rejection
+
+[90mstderr[2m | __tests__/gift-email-error-handling.test.js[2m > [22m[2mGift delivery error handling[2m > [22m[2mretries with the same payload if Stripe cannot record a successful Resend response
+[22m[39mUnexpected error during gift email delivery: Error: Stripe update timeout
+    at [90m/workspace/chats/1716deb7870376472b3b3bb7/[39m__tests__/gift-email-error-handling.test.js:186:34
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:1628:35
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:2783:26
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3314:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
+
+[90mstderr[2m | __tests__/gift-email-error-handling.test.js[2m > [22m[2mGift delivery error handling[2m > [22m[2mreleases the lock when the pending Stripe update throws before sending
+[22m[39mUnexpected error during gift email delivery: Error: Stripe API error
+    at [90m/workspace/chats/1716deb7870376472b3b3bb7/[39m__tests__/gift-email-error-handling.test.js:216:63
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:1628:35
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:2783:26
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3314:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
+    at [90mfile:///workspace/chats/1716deb7870376472b3b3bb7/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
+
+ [32m✓[39m __tests__/gift-email-error-handling.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m __tests__/graphics-capabilities.test.js [2m([22m[2m21 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-preview.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-phase3.test.js [2m([22m[2m32 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-leaf-wind.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m app/admin/suggestions/route.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m __tests__/feature-image-social-sharing.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-shared.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m __tests__/mobile-accessibility.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-fortunes.test.js [2m([22m[2m14 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-stories-pagination.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m __tests__/audio-adaptive-release.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-context-restore.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-greetings.test.js [2m([22m[2m19 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-event-audio.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-content-refresh.test.js [2m([22m[2m19 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-stories.test.js [2m([22m[2m30 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-counter.test.js [2m([22m[2m18 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-stories-refresh.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-calendar.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-daily-usage.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m __tests__/security-payment.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-polish.test.js [2m([22m[2m22 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-celebration.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-audio-assets.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-confetti-phase1.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-finish-phase2.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-card-reveal-presentation.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile token is missing
+[22m[39mPublic form spam protection triggered {
+  formName: [32m'test-form'[39m,
+  ip: [32m'127.0.0.1'[39m,
+  reason: [32m'missing_turnstile_token'[39m,
+  at: [32m'2026-11-17T18:55:54.356Z'[39m
+}
+
+[90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns unsuccessful verification
+[22m[39mPublic form spam protection triggered {
+  formName: [32m'test-form'[39m,
+  ip: [32m'127.0.0.2'[39m,
+  reason: [32m'turnstile_invalid_hostname'[39m,
+  at: [32m'2026-11-17T18:55:54.359Z'[39m
+}
+
+[90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns invalid hostname
+[22m[39mPublic form spam protection triggered {
+  formName: [32m'test-form'[39m,
+  ip: [32m'127.0.0.3'[39m,
+  reason: [32m'turnstile_invalid_hostname'[39m,
+  at: [32m'2026-11-17T18:55:54.361Z'[39m
+}
+
+[90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns invalid action
+[22m[39mPublic form spam protection triggered {
+  formName: [32m'test-form'[39m,
+  ip: [32m'127.0.0.4'[39m,
+  reason: [32m'turnstile_invalid_action'[39m,
+  at: [32m'2026-11-17T18:55:54.362Z'[39m
+}
+
+ [32m✓[39m app/spam-protection.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-storage.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m __tests__/dependency-management.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/first-screen-and-naming.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-card-tier-presentation.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-hero-preload.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/docs-library-retirement.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-background.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-hero-layout.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/hsts-policy.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-nav-gold-shimmer.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-followup.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-version-alignment.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/security-headers.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-share.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m __tests__/workflow-pnpm-setup-order.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/stripe-product-alignment.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-card-collection.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-fallback-history.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-agent-toolkit.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/daily-reset-countdown.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-config-modes.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/map-url-redirects.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-map-image-loading.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/reviewer-retirement.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m __tests__/checker-suite-workflows.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/freebuff-verify.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m __tests__/undici-security-override.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/audio-exports.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m __tests__/agent-governance-single-source.test.js[2m > [22msingle-source agent governance[2m > [22mdocuments Freebuff Playwright modes and excludes ChatGPT from the CLI system
+[31m[1mAssertionError[22m: expected 'AGENTS.md — REPOSITORY GOVERNANCE\n\n…' to contain 'ChatGPT must not load, modify or main…'[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- ChatGPT must not load, modify or maintain the repository Playwright CLI[39m
+[31m+ AGENTS.md — REPOSITORY GOVERNANCE[39m
+[31m+[39m
+[31m+ INSTRUCTION AUTHORITY AND APPLICABILITY[39m
+[31m+[39m
+[31m+ This document establishes the repository governance and operating requirements for ChatGPT and Freebuff.[39m
+[31m+[39m
+[31m+ Every instruction must be interpreted according to its intended applicability.[39m
+[31m+[39m
+[31m+ INSTRUCTION CLASSIFICATIONS[39m
+[31m+[39m
+[31m+ 🟢 [BOTH — CHATGPT AND FREEBUFF][39m
+[31m+[39m
+[31m+ Applies equally to ChatGPT and Freebuff. Both agents must follow these requirements whenever working on, reviewing, modifying or making decisions about this repository.[39m
+[31m+[39m
+[31m+ 🔵 [FREEBUFF ONLY][39m
+[31m+[39m
+[31m+ Applies exclusively to Freebuff. ChatGPT must not treat these instructions as requirements for its own operating procedures.[39m
+[31m+[39m
+[31m+ 🟣 [CHATGPT ONLY][39m
+[31m+[39m
+[31m+ Applies exclusively to ChatGPT. Freebuff must not treat these instructions as requirements for its own operating procedures.[39m
+[31m+[39m
+[31m+ WHICH SECTIONS EACH AGENT MUST FOLLOW[39m
+[31m+[39m
+[31m+ ChatGPT: Follow all sections marked 🟢 BOTH and 🟣 CHATGPT ONLY. Do not apply Freebuff-only operating instructions to ChatGPT.[39m
+[31m+[39m
+[31m+ Freebuff: Follow all sections marked 🟢 BOTH and 🔵 FREEBUFF ONLY. Do not apply ChatGPT-only operating restrictions to Freebuff.[39m
+[31m+[39m
+[31m+ INTERPRETATION RULES[39m
+[31m+[39m
+[31m+ 1. Each section inherits the classification of its parent heading unless it has its own explicit classification.[39m
+[31m+ 2. An explicitly classified subsection establishes its own applicability.[39m
+[31m+ 3. Shared requirements remain binding on both agents, regardless of where they appear in the document.[39m
+[31m+ 4. Agent-specific instructions supplement shared requirements; they do not cancel or weaken shared requirements.[39m
+[31m+ 5. The written classification is authoritative. Colour and emoji are visual indicators to make the document easier to navigate.[39m
+[31m+ 6. Neither agent may assume that an instruction intended exclusively for the other agent applies to its own operating workflow.[39m
+[31m+[39m
+[31m+ ---[39m
+[31m+[39m
+[31m+ 🟢 SHARED REPOSITORY REQUIREMENTS[39m
+[31m+[39m
+[31m+ [BOTH — CHATGPT AND FREEBUFF][39m
+[31m+[39m
+[31m+ These requirements apply equally to both agents whenever they work on, review, modify or make decisions about the Luckypickcanada repository.[39m
+[31m+[39m
+[31m+ PROJECT PLATFORMS AND DOCUMENTATION[39m
+[31m+[39m
+[31m+ Lucky Pick Canada uses GitHub for source control, repository management and pull requests, and Cloudflare for its production hosting and deployment. Follow the existing configurations and workflows for both platforms.[39m
+[31m+[39m
+[31m+ Production website: https://luckypickcanada.ca[39m
+[31m+[39m
+[31m+ PR SUBMISSION DOCUMENTATION[39m
+[31m+[39m
+[31m+ "PR_SUBMISSION.md" is mandatory. Read and follow it whenever preparing or submitting a pull request.[39m
+[31m+[39m
+[31m+ It is the single source of truth for PR preparation, reporting, submission, handoff and the hard stop after submission. Do not duplicate its procedures in this file.[39m
+[31m+[39m
+[31m+ 1. TASK SCOPE AND EXISTING WORK[39m
+[31m+[39m
+[31m+ Identify the requested outcome, scope, restrictions and acceptance criteria. Follow the owner's instructions.[39m
+[31m+[39m
+[31m+ Do not expand the task or introduce unrelated work.[39m
+[31m+[39m
+[31m+ Account for existing repository changes and active work. Avoid duplicating work, overwriting existing changes or introducing unnecessary conflicts.[39m
+[31m+[39m
+[31m+ 2. PRESERVATION AND IMPLEMENTATION[39m
+[31m+[39m
+[31m+ Make focused changes. Preserve existing functionality and unrelated artwork, visuals, wording, layout, navigation, audio, monetization, integrations and data boundaries.[39m
+[31m+[39m
+[31m+ Make the smallest correct change that satisfies the requested outcome.[39m
+[31m+[39m
+[31m+ Identify affected components, dependencies and workflows. Consider related behaviour that could be affected by the changes.[39m
+[31m+[39m
+[31m+ 3. PROTECTED AREAS[39m
+[31m+[39m
+[31m+ Changes to protected governance, payment, database, authentication, security, hosting, deployment, environment or secrets configuration require the applicable owner approval.[39m
+[31m+[39m
+[31m+ 4. PRODUCTION BUILD-SIZE LIMIT[39m
+[31m+[39m
+[31m+ The production build must remain strictly below 495 MiB.[39m
+[31m+[39m
+[31m+ Both agents must consider expected build impact when planning or proposing repository changes.[39m
+[31m+[39m
+[31m+ Measure the actual production build size whenever performing an authorized production build or verification.[39m
+[31m+[39m
+[31m+ If an agent cannot perform that measurement because of its operating restrictions or unavailable tools, it must identify the measurement as unverified and ensure the required verification is completed in an authorized environment.[39m
+[31m+[39m
+[31m+ Complete as much of the requested task as can be safely delivered while staying below the limit.[39m
+[31m+[39m
+[31m+ If the remaining work would bring the build to 495 MiB or higher, stop at a safe, complete point. Do not compromise functionality, security or quality to fit more work into the PR.[39m
+[31m+[39m
+[31m+ Clearly document what was completed and what remains for a future task or PR. Never leave the application broken or in an incomplete state.[39m
+[31m+[39m
+[31m+ 5. PRODUCTION PLATFORM[39m
+[31m+[39m
+[31m+ The production platform is Cloudflare Pages. Follow the existing project configuration.[39m
+[31m+[39m
+[31m+ Do not introduce unnecessary platform changes or additional paid infrastructure.[39m
+[31m+[39m
+[31m+ 6. SECURITY AND DATA INTEGRITY[39m
+[31m+[39m
+[31m+ Never weaken security, privacy, validation, authentication, CAPTCHA, Turnstile, rate limiting, duplicate protection or data integrity.[39m
+[31m+[39m
+[31m+ Avoid exposing sensitive information, credentials, API keys or secrets.[39m
+[31m+[39m
+[31m+ 7. COST CONTROL[39m
+[31m+[39m
+[31m+ Keep the repository, integrations and production infrastructure as close to zero cost as possible.[39m
+[31m+[39m
+[31m+ Prefer existing free services, free tiers and already available integrations. Avoid unnecessary paid usage, duplicated services and unnecessary resource consumption.[39m
+[31m+[39m
+[31m+ 8. SPEC KIT REQUIREMENTS[39m
+[31m+[39m
+[31m+ Both ChatGPT and Freebuff must follow the current Spec Kit workflow and instructions in the repository.[39m
+[31m+[39m
+[31m+ - Review and follow the current Spec Kit command definitions, workflow instructions, templates and project-constitution requirements.[39m
+[31m+ - Use the current repository instructions rather than relying on remembered procedures, outdated documentation or assumptions about available commands.[39m
+[31m+ - Complete all required workflow stages in their prescribed order for repository-changing tasks.[39m
+[31m+ - Complete all mandatory template sections and applicable conditional requirements.[39m
+[31m+ - Use supporting commands when their instructions or the task require them. Do not mechanically run optional commands when they are not applicable.[39m
+[31m+ - If the available workflow, commands, stages, sequence, templates or required instructions change, identify the changes and notify the owner.[39m
+[31m+ - Preserve existing repository governance. Any necessary update to AGENTS.md to keep it aligned with the current Spec Kit workflow must be limited strictly to affected wording, preserve unrelated requirements and be reported.[39m
+[31m+ - Do not silently change the established project workflow.[39m
+[31m+[39m
+[31m+ Neither agent should rely on a fixed Spec Kit version, hardcoded command count or outdated snapshot of the workflow.[39m
+[31m+[39m
+[31m+ 9. QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION[39m
+[31m+[39m
+[31m+ Both ChatGPT and Freebuff must understand the applicable repository QA checker requirements before preparing or approving a task specification for work that may be checked by repository QA infrastructure.[39m
+[31m+[39m
+[31m+ This is a task-planning requirement, not something to defer until implementation or pre-submission review.[39m
+[31m+[39m
+[31m+ - Identify the workflows, checker scripts, configurations, test suites and written requirements that will evaluate the proposed changes.[39m
+[31m+ - Understand what each applicable checker is designed to detect, enforce or prevent, including its scope, triggers, required inputs, evidence, thresholds, approval conditions and pass/fail behaviour.[39m
+[31m+ - Determine which changed files, application behaviours, safeguards and evidence the checkers will examine. Do not infer their purpose from workflow or script names; inspect their actual definitions and relevant tests.[39m
+[31m+ - Use those requirements when defining the task's scope, constraints, implementation approach, acceptance criteria and verification plan. The task must be designed to satisfy the applicable checks, not discover their expectations after implementation.[39m
+[31m+ - Identify gaps, conflicts, unclear requirements or checker changes needed to support the task. Record them in the specification and raise material conflicts with the owner before implementation.[39m
+[31m+ - Do not weaken, bypass, suppress or redefine an existing check merely to make a task pass.[39m
+[31m+ - Any proposed change to checker requirements must be explicit, separately justified and authorized where protected files or governance are involved.[39m
+[31m+[39m
+[31m+ Execution distinction: Both agents must understand and account for the checker requirements. Each agent must perform only the verification activities permitted by its own operating instructions. An inability to execute a check does not remove the requirement to understand it or ensure that it is completed by an authorized environment.[39m
+[31m+[39m
+[31m+ 10. AUTOMATIC PR-CHECKER WORKFLOWS[39m
+[31m+[39m
+[31m+ Automatic PR-checker workflows must continue to use Playwright.[39m
+[31m+[39m
+[31m+ Do not replace or weaken these automated checks as a consequence of an individual agent's browser-tool limitations or fallback arrangements.[39m
+[31m+[39m
+[31m+ 11. INTEGRATIONS AND TOOL AVAILABILITY[39m
+[31m+[39m
+[31m+ Use only integrations and tools that are actually available and authorized for the agent performing the task.[39m
+[31m+[39m
+[31m+ Do not assume that an integration, skill or tool provides access to capabilities that are not actually available.[39m
+[31m+[39m
+[31m+ 12. EXTERNAL REVIEW APPLICATIONS[39m
+[31m+[39m
+[31m+ External review applications provide advisory feedback only. They do not replace required repository checks or established verification requirements.[39m
+[31m+[39m
+[31m+ 13. REPOSITORY SCRIPT EXECUTION[39m
+[31m+[39m
+[31m+ Both ChatGPT and Freebuff are authorized to execute repository scripts when relevant to the current task and when the required runtime and tools are available.[39m
+[31m+[39m
+[31m+ This shared permission includes, but is not limited to:[39m
+[31m+[39m
+[31m+ - Repository verification scripts, including "./freebuff-verify.sh".[39m
+[31m+ - Governance and compliance checkers.[39m
+[31m+ - Test scripts and test runners.[39m
+[31m+ - Production build and validation scripts.[39m
+[31m+ - Documentation and maintenance scripts.[39m
+[31m+ - Task-specific scripts maintained in the repository.[39m
+[31m+ - Other relevant repository scripts required to complete or verify authorized work.[39m
+[31m+[39m
+[31m+ Both agents must:[39m
+[31m+[39m
+[31m+ 1. Read and understand the relevant script before executing it.[39m
+[31m+ 2. Check what the script actually does, including any secondary scripts or commands it invokes.[39m
+[31m+ 3. Confirm that its operations are appropriate for the current task.[39m
+[31m+ 4. Confirm that the required runtime, dependencies and permissions are available.[39m
+[31m+ 5. Respect protected-file and owner-approval requirements.[39m
+[31m+ 6. Avoid unauthorized deployments, infrastructure changes, destructive operations, secret access or modifications outside the approved scope.[39m
+[31m+ 7. Avoid unnecessary dependency installations, network downloads, paid usage or environment changes.[39m
+[31m+ 8. Report exact execution results accurately, including failures, skipped checks and unavailable requirements.[39m
+[31m+[39m
+[31m+ This permission does not authorize either agent to bypass the applicable agent-specific restrictions in this document.[39m
+[31m+[39m
+[31m+ Neither agent may claim a script passed unless it was actually executed and its result was verified.[39m
+[31m+[39m
+[31m+ 14. EVIDENCE AND REPORTING[39m
+[31m+[39m
+[31m+ Do not claim work or checks are complete without evidence.[39m
+[31m+[39m
+[31m+ Distinguish between completed, attempted, failed, unavailable and unverified work. Report limitations and unresolved issues accurately.[39m
+[31m+[39m
+[31m+ NO EVIDENCE = NO CLAIM.[39m
+[31m+[39m
+[31m+ NO VERIFIED RESULT = NO VERIFIED COMPLETION.[39m
+[31m+[39m
+[31m+ ---[39m
+[31m+[39m
+[31m+ 🔵 FREEBUFF OPERATING INSTRUCTIONS[39m
+[31m+[39m
+[31m+ [FREEBUFF ONLY][39m
+[31m+[39m
+[31m+ The following sections establish Freebuff's repository preparation, planning, implementation, verification and submission workflow.[39m
+[31m+[39m
+[31m+ They do not prescribe ChatGPT's operating procedures.[39m
+[31m+[39m
+[31m+ A — PREPARE AND PLAN[39m
+[31m+[39m
+[31m+ 1. UNDERSTAND THE TASK[39m
+[31m+[39m
+[31m+ Translate the owner's request into a clear task scope, restrictions and acceptance criteria. Follow the shared task-scope requirements.[39m
+[31m+[39m
+[31m+ Do not introduce unapproved work.[39m
+[31m+[39m
+[31m+ 2. CHECK EXISTING WORK[39m
+[31m+[39m
+[31m+ Inspect the current branch, worktree, relevant files, Spec Kit artifacts, existing branches and PRs.[39m
+[31m+[39m
+[31m+ Avoid duplicating active work or overwriting existing changes.[39m
+[31m+[39m
+[31m+ Handle one active task per run.[39m
+[31m+[39m
+[31m+ 3. LOAD PROJECT CONTEXT[39m
+[31m+[39m
+[31m+ Read all four Memory Bank files once:[39m
+[31m+[39m
+[31m+ - "memory-bank/projectBrief.md"[39m
+[31m+ - "memory-bank/activeContext.md"[39m
+[31m+ - "memory-bank/techContext.md"[39m
+[31m+ - "memory-bank/progress.md"[39m
+[31m+[39m
+[31m+ 4. SELECT TASK GROUPS[39m
+[31m+[39m
+[31m+ Review the available task-group instructions in ".freebuff/".[39m
+[31m+[39m
+[31m+ Select the groups that apply to the task: creation, troubleshooting, polishing, testing, security, audio, deep-dive or SEO.[39m
+[31m+[39m
+[31m+ Read and follow the instructions in the selected files. Do not force unrelated groups onto the task.[39m
+[31m+[39m
+[31m+ 5. FIND RELEVANT PROJECT DOCUMENTATION[39m
+[31m+[39m
+[31m+ Read ".docs/manifest.json" to identify reference documents that apply to the task.[39m
+[31m+[39m
+[31m+ Read only the documents you need. Do not load the entire library.[39m
+[31m+[39m
+[31m+ Treat these documents as reference material, not automatic instructions. Keep ".docs/" read-only unless the owner authorizes changes.[39m
+[31m+[39m
+[31m+ Keep a record of the task groups selected and the reference documents actually used.[39m
+[31m+[39m
+[31m+ In the completion report, identify the selected groups, list the library documents that were useful to the task, and identify any Freebuff integrations and enabled skills used.[39m
+[31m+[39m
+[31m+ 6. CHECK ENABLED SKILLS[39m
+[31m+[39m
+[31m+ Check Freebuff's Settings → Skills.[39m
+[31m+[39m
+[31m+ Use any enabled skills relevant to the task and read their instructions before use. Confirm that any required tools are actually available.[39m
+[31m+[39m
+[31m+ 7. CHECK INTEGRATIONS AND TOOLS[39m
+[31m+[39m
+[31m+ Confirm that required integrations and tools are available and operational.[39m
+[31m+[39m
+[31m+ Use applicable integrations as needed for the task.[39m
+[31m+[39m
+[31m+ Do not assume an integration or skill provides access to a tool that is not actually available.[39m
+[31m+[39m
+[31m+ 8. PLAYWRIGHT BROWSER TESTING[39m
+[31m+[39m
+[31m+ For any task involving Playwright, browser testing, visual QA, performance or rendering profiling, WebGL/WebGPU inspection or graphics work, read and follow both authoritative repository documents before using or modifying the Playwright setup:[39m
+[31m+[39m
+[31m+ - ".agents/skills/playwright-cli/SKILL.md"[39m
+[31m+ - ".agents/skills/playwright-cli/references/lucky-pick-canada.md"[39m
+[31m+[39m
+[31m+ These two documents contain the authoritative Playwright instructions, commands, procedures, configurations and setup conventions.[39m
+[31m+[39m
+[31m+ Follow their documented CLI commands, wrapper, installation, browser-runtime and setup conventions.[39m
+[31m+[39m
+[31m+ For interactive browser sessions, use the documented repository wrapper:[39m
+[31m+[39m
+[31m+ "./scripts/playwright-cli.sh"[39m
+[31m+[39m
+[31m+ Playwright is Freebuff's primary browser automation tool.[39m
+[31m+[39m
+[31m+ Preserve the existing Playwright configuration and setup. Do not introduce a competing CLI or browser automation setup.[39m
+[31m+[39m
+[31m+ Troubleshooting before fallback[39m
+[31m+[39m
+[31m+ If Playwright encounters an installation, startup, configuration or browser-runtime issue, use the documented troubleshooting procedures and existing repository setup scripts to investigate and resolve it before considering a fallback.[39m
+[31m+[39m
+[31m+ Crawlbase fallback[39m
+[31m+[39m
+[31m+ Only if the Playwright issue cannot be resolved after troubleshooting may Freebuff use Crawlbase as a fallback.[39m
+[31m+[39m
+[31m+ - Crawlbase is Freebuff's first and only fallback for supported content-retrieval and crawling tasks.[39m
+[31m+ - Use it only when necessary for the task.[39m
+[31m+ - Keep retrieval focused on the information required. Avoid unnecessary crawling and resource consumption.[39m
+[31m+ - Crawlbase does not replace interactive browser rendering, visual browser testing or end-to-end browser automation.[39m
+[31m+ - If the task requires browser capabilities that Crawlbase cannot provide and Playwright remains unavailable, document the exact blocker and identify what remains unverified.[39m
+[31m+[39m
+[31m+ Do not introduce additional browser fallback tools.[39m
+[31m+[39m
+[31m+ B — IMPLEMENT[39m
+[31m+[39m
+[31m+ 1. FOLLOW THE APPROVED PLAN[39m
+[31m+[39m
+[31m+ Implement the approved specification, plan and task list.[39m
+[31m+[39m
+[31m+ Do not skip required Spec Kit stages or introduce unapproved work.[39m
+[31m+[39m
+[31m+ 2. CHECK THE IMPACT[39m
+[31m+[39m
+[31m+ Identify affected components, dependencies and workflows. Test related behaviour where changes could cause regressions.[39m
+[31m+[39m
+[31m+ 3. RESPECT PROTECTED AREAS[39m
+[31m+[39m
+[31m+ Follow the shared protected-area and owner-approval requirements.[39m
+[31m+[39m
+[31m+ 4. RESPECT THE BUILD-SIZE LIMIT[39m
+[31m+[39m
+[31m+ Follow the shared 495 MiB production build-size requirement.[39m
+[31m+[39m
+[31m+ Consider expected build impact during planning and measure the actual build size during verification.[39m
+[31m+[39m
+[31m+ If the remaining work would bring the build to 495 MiB or higher, stop at a safe, complete point. Do not compromise functionality, security or quality to fit more work into the PR.[39m
+[31m+[39m
+[31m+ Clearly document what was completed and what remains for a future task or PR.[39m
+[31m+[39m
+[31m+ 5. USE THE CORRECT PRODUCTION PLATFORM[39m
+[31m+[39m
+[31m+ The production platform is Cloudflare Pages. Follow the existing project configuration and shared platform requirements.[39m
+[31m+[39m
+[31m+ C — VERIFY AND SUBMIT[39m
+[31m+[39m
+[31m+ 1. VERIFY THE IMPLEMENTATION[39m
+[31m+[39m
+[31m+ Run "./freebuff-verify.sh" and all applicable task-group checks, tests, builds, browser QA and integration checks.[39m
+[31m+[39m
+[31m+ 2. COMPLETE THE FINAL CHECKER-REQUIREMENT REVIEW[39m
+[31m+[39m
+[31m+ Before submission, review the completed implementation and complete diff against every applicable checker requirement identified in the shared QA Checker Requirements section and documented in "PR_SUBMISSION.md".[39m
+[31m+[39m
+[31m+ Resolve unmet in-scope requirements or record the exact blocker.[39m
+[31m+[39m
+[31m+ A passing or pending CI result does not replace this independent review.[39m
+[31m+[39m
+[31m+ 3. CONFIRM BUILD SIZE[39m
+[31m+[39m
+[31m+ Measure the production build and confirm it remains strictly below 495 MiB, as required by the shared production build-size requirement.[39m
+[31m+[39m
+[31m+ 4. SUBMIT THE PR[39m
+[31m+[39m
+[31m+ Every task in which the owner authorizes repository changes must proceed directly from implementation and pre-submission verification to PR preparation and submission, following "PR_SUBMISSION.md".[39m
+[31m+[39m
+[31m+ Opening the PR is mandatory task completion, not an optional follow-up.[39m
+[31m+[39m
+[31m+ Do not stop after implementation, testing or a completion report, and do not wait for the owner to request the PR or give separate permission.[39m
+[31m+[39m
+[31m+ Read-only investigations, audits, recommendations and advice do not require a PR.[39m
+[31m+[39m
+[31m+ If the owner explicitly directs that no PR be opened, follow that instruction.[39m
+[31m+[39m
+[31m+ If a PR cannot safely be opened, report the exact blocker and preserve the completed work for owner direction.[39m
+[31m+[39m
+[31m+ A repository-changing task is not complete until its PR has been successfully opened and handed off.[39m
+[31m+[39m
+[31m+ ---[39m
+[31m+[39m
+[31m+ 🟣 CHATGPT OPERATING INSTRUCTIONS[39m
+[31m+[39m
+[31m+ [CHATGPT ONLY][39m
+[31m+[39m
+[31m+ These instructions govern ChatGPT's repository access, information verification and tool usage.[39m
+[31m+[39m
+[31m+ They do not change or weaken the shared repository requirements.[39m
+[31m+[39m
+[31m+ 1. REPOSITORY INFORMATION VERIFICATION[39m
+[31m+[39m
+[31m+ Before providing factual information about Luckypickcanada, verify the relevant information against the actual repository files in GitHub.[39m
+[31m+[39m
+[31m+ Do not rely on memory, previous conversation summaries, old drafts or assumptions as a substitute for checking the current repository when the information can be verified directly.[39m
+[31m+[39m
+[31m+ When repository files have changed, use the current versions as the source of truth.[39m
+[31m+[39m
+[31m+ 2. BROWSER AND CONTENT-RETRIEVAL TOOL USAGE[39m
+[31m+[39m
+[31m+ Use browser and content-retrieval tools only when they are genuinely necessary for the task.[39m
+[31m+[39m
+[31m+ First determine whether the task can be completed accurately using repository files, existing conversation context or information already available.[39m
+[31m+[39m
+[31m+ Do not open browser sessions or make external retrieval requests merely because the tools are available.[39m
+[31m+[39m
+[31m+ Primary tool — Browserless[39m
+[31m+[39m
+[31m+ - Browserless is ChatGPT's primary browser tool.[39m
+[31m+ - Use it when the task genuinely requires browser access.[39m
+[31m+ - Minimize usage by keeping sessions, navigation and page requests focused on the exact task.[39m
+[31m+ - Avoid unnecessary repeated visits, requests, page loads and browser sessions.[39m
+[31m+[39m
+[31m+ Fallback — Firecrawl[39m
+[31m+[39m
+[31m+ - Use Firecrawl only when Browserless is unavailable or not working.[39m
+[31m+ - Firecrawl is the fallback for supported content-retrieval tasks.[39m
+[31m+ - Use targeted retrieval. Obtain only the information needed rather than unnecessarily crawling entire websites.[39m
+[31m+ - Do not treat Firecrawl as a replacement for interactive browser rendering or end-to-end browser testing.[39m
+[31m+[39m
+[31m+ If both tools fail[39m
+[31m+[39m
+[31m+ If Browserless and Firecrawl are both unavailable or cannot complete the required task:[39m
+[31m+[39m
+[31m+ - Stop attempting alternative tools.[39m
+[31m+ - Document what failed and what was attempted.[39m
+[31m+ - Identify what remains unverified or incomplete.[39m
+[31m+ - Report that no further fallback is available.[39m
+[31m+[39m
+[31m+ There is no third fallback.[39m
+[31m+[39m
+[31m+ 3. TOOLS UNAVAILABLE TO CHATGPT[39m
+[31m+[39m
+[31m+ ChatGPT must not use or attempt to use:[39m
+[31m+[39m
+[31m+ - The repository Playwright CLI.[39m
+[31m+ - Repository Playwright startup scripts or associated setup scripts.[39m
+[31m+ - Crawlbase.[39m
+[31m+[39m
+[31m+ Do not spend time attempting to initialize, troubleshoot or maintain tools that are not available to ChatGPT.[39m
+[31m+[39m
+[31m+ 4. FREEBUFF STARTUP AND ENVIRONMENT INITIALIZATION RESTRICTIONS[39m
+[31m+[39m
+[31m+ ChatGPT must never execute Freebuff's dedicated startup command or its complete startup sequence.[39m
+[31m+[39m
+[31m+ This includes:[39m
+[31m+[39m
+[31m+ - The combined Freebuff startup command documented in the repository README.md or Freebuff Project Settings.[39m
+[31m+ - Freebuff's dedicated startup initialization procedures.[39m
+[31m+ - Scripts specifically intended to initialize or configure Freebuff's workspace.[39m
+[31m+ - Scripts that provision or configure Freebuff's environment.[39m
+[31m+ - Scripts that install or configure Playwright or Chromium.[39m
+[31m+ - Procedures that persist Freebuff-specific shell configuration or environment changes.[39m
+[31m+[39m
+[31m+ These restrictions exist because Freebuff's startup sequence may install dependencies, configure the shell environment, modify persistent workspace settings or initialize browser tooling that ChatGPT must not use.[39m
+[31m+[39m
+[31m+ This restriction does not prohibit ChatGPT from executing other task-relevant repository scripts under the shared Repository Script Execution requirements.[39m
+[31m+[39m
+[31m+ In particular, ChatGPT may execute "./freebuff-verify.sh", applicable test scripts, build scripts, governance checkers and maintenance scripts when relevant, safe, authorized and supported by the available runtime.[39m
+[31m+[39m
+[31m+ 5. REPOSITORY CHANGES AND RECOMMENDATIONS[39m
+[31m+[39m
+[31m+ Keep proposed repository changes focused and consistent with the actual repository.[39m
+[31m+[39m
+[31m+ Follow all applicable shared repository requirements, including the production build-size limit, Spec Kit workflow, QA checker requirements, security protections, owner approvals and documentation restrictions.[39m
+[31m+[39m
+[31m+ Do not claim that a repository change has been committed, merged or deployed unless that action has actually been completed and verified.[39m
+[31m+[39m
+[31m+ Whenever preparing or submitting a pull request, read and follow "PR_SUBMISSION.md".[39m
+[31m+[39m
+[31m+ When a required check cannot be performed within ChatGPT's operating restrictions, clearly identify the limitation and the outstanding verification.[39m
+
+[36m [2m❯[22m __tests__/agent-governance-single-source.test.js:[2m149:20[22m[39m
+    [90m147|[39m
+    [90m148|[39m     // ChatGPT's exclusion remains explicit in its own operating instr…
+    [90m149|[39m     expect(agents).toContain(
+    [90m   |[39m                    [31m^[39m
+    [90m150|[39m       'ChatGPT must not load, modify or maintain the repository Playwr…
+    [90m151|[39m     );
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m89 passed[39m[22m[90m (90)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m914 passed[39m[22m[90m (915)[39m
+[2m   Start at [22m 18:55:42
+[2m   Duration [22m 15.96s[2m (environment 61%, tests 19%, setup 12%, import 3%, transform 3%, worker 1%)[22m
+
+[2mEnvironment [22m [33mjsdom was created 90 times[39m[2m · 58.75s total, 61% of tracked time[22m
+[2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+

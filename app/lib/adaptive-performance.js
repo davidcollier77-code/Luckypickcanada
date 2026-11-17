@@ -72,6 +72,9 @@ const SLOW_RTT_MS = 500;
 const HEAP_PRESSURE_RATIO = 0.85;
 const HEAP_POLL_INTERVAL_MS = 20_000;
 const REASSESS_DEBOUNCE_MS = 120;
+// Consumer reads without a subscription would otherwise keep the first plan
+// forever; re-read at most once per second instead.
+const PLAN_CACHE_TTL_MS = 1000;
 
 const FRAME_RATE = Object.freeze({ FULL: 60, CONSTRAINED: 30, PAUSED: 0 });
 
@@ -111,6 +114,7 @@ const DEFAULT_NETWORK = Object.freeze({
 });
 
 let cachedPlan = null;
+let cachedPlanAt = 0;
 let lastPlanSignature = '';
 
 /** @returns {Navigator|null} */
@@ -408,6 +412,7 @@ function planSignature(plan) {
 }
 
 const subscribers = new Set();
+let notificationCount = 0;
 let wiring = null;
 let debounceTimer = 0;
 let pressureReleaseApplied = false;
@@ -417,6 +422,7 @@ function runRegisteredReleases() {
 }
 
 function notifySubscribers(plan) {
+  notificationCount += 1;
   if (plan.releaseIdleResources && !pressureReleaseApplied) {
     pressureReleaseApplied = true;
     runRegisteredReleases();
@@ -445,7 +451,7 @@ function emitIfChanged(plan) {
 function scheduleReassessment() {
   if (typeof window === 'undefined' || subscribers.size === 0) return;
   if (debounceTimer) window.clearTimeout(debounceTimer);
-  debounceTimer = window.setTimeout(() => {
+  debounceTimer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
     debounceTimer = 0;
     refreshAdaptivePlan();
   }, REASSESS_DEBOUNCE_MS);
@@ -533,21 +539,22 @@ function attachWiring() {
 }
 
 /**
- * Returns the current plan, computing it once and caching it until a condition
- * change or an explicit refresh.
+ * Returns the current plan.
+ *
+ * Subscribers keep the cache fresh through the shared listeners, but a page
+ * whose only consumer is a frame loop has no subscription; an unrefreshed
+ * cache is re-read on a short interval so those pages still adapt. A forced
+ * refresh is delegated to `refreshAdaptivePlan` so subscribers are notified
+ * rather than having the change silently absorbed into the cache.
  *
  * @param {{ refresh?: boolean }} [options]
  * @returns {typeof SERVER_PLAN}
  */
 export function getAdaptivePlan({ refresh = false } = {}) {
   if (typeof window === 'undefined') return SERVER_PLAN;
-  if (refresh || !cachedPlan) {
-    const plan = computeLivePlan();
-    cachedPlan = plan;
-    lastPlanSignature = planSignature(plan);
-    return plan;
-  }
-  return cachedPlan;
+  if (refresh || !cachedPlan) return refreshAdaptivePlan();
+  if (Date.now() - cachedPlanAt < PLAN_CACHE_TTL_MS) return cachedPlan;
+  return refreshAdaptivePlan();
 }
 
 /**
@@ -558,7 +565,9 @@ export function getAdaptivePlan({ refresh = false } = {}) {
  */
 export function refreshAdaptivePlan() {
   if (typeof window === 'undefined') return SERVER_PLAN;
-  return emitIfChanged(computeLivePlan());
+  const plan = computeLivePlan();
+  cachedPlanAt = Date.now();
+  return emitIfChanged(plan);
 }
 
 /**
@@ -576,8 +585,11 @@ export function subscribeToAdaptivePlan(listener, { immediate = true } = {}) {
   subscribers.add(listener);
   if (typeof window !== 'undefined') {
     attachWiring();
-    if (immediate) {
-      const plan = getAdaptivePlan();
+    // Refreshing may already broadcast to this listener when the plan changed;
+    // deliver the current plan directly only when it did not.
+    const deliveriesBefore = notificationCount;
+    const plan = refreshAdaptivePlan();
+    if (immediate && notificationCount === deliveriesBefore) {
       if (plan.releaseIdleResources && !pressureReleaseApplied) {
         pressureReleaseApplied = true;
         runRegisteredReleases();
@@ -678,7 +690,7 @@ export function createAdaptiveFrameLoop({ requestFrame, cancelFrame } = {}) {
     requestFrame ??
     (typeof requestAnimationFrame === 'function'
       ? (callback) => requestAnimationFrame(callback)
-      : (callback) => setTimeout(() => callback(nowMs()), 16));
+      : (callback) => /* DevSkim: ignore DS172411 */ setTimeout(() => callback(nowMs()), 16));
   const cancel =
     cancelFrame ??
     (typeof cancelAnimationFrame === 'function'

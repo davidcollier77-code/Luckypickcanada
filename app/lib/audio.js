@@ -496,8 +496,9 @@ export function stopCrystalBallEnergy() {
  * load promises, so the next interaction can load the sound again.
  *
  * Registered with the shared adaptive layer: it runs only when the plan reports
- * memory pressure or a hidden constrained page. A playing sound is never
- * interrupted, and every playback path reloads on demand, so no cue is lost.
+ * memory pressure or a hidden constrained page. A playing or pending sound is
+ * never interrupted or cancelled, and every playback path reloads on demand, so
+ * no cue is lost.
  *
  * @returns {number} Number of cached sounds released.
  */
@@ -505,6 +506,7 @@ export function releaseIdleAudio() {
   if (typeof window === 'undefined') return 0;
 
   let released = 0;
+  const releasedKeys = new Set();
   for (const [key, value] of Object.entries(audioCache)) {
     if (!value || typeof value !== 'object' || typeof value.unload !== 'function') continue;
 
@@ -516,17 +518,26 @@ export function releaseIdleAudio() {
     }
     if (isPlaying) continue;
 
+    // Keep an energy loop that was requested but has not started yet: its
+    // pending load still calls back into startWhenReady, and unloading it here
+    // would cancel the cue the visitor already triggered.
+    if (key === 'crystalEnergy' && audioCache.crystalEnergyRequested === true) continue;
+
     try {
       value.unload();
     } catch {
       // A failed unload must not block the remaining releases.
     }
     delete audioCache[key];
+    releasedKeys.add(key);
     released += 1;
   }
 
-  audioCache.crystalEnergyRequested = false;
-  audioCache.crystalEnergyId = null;
+  // Only forget the energy playback id when its Howl was actually released; a
+  // playing or pending loop must stay targetable for its fade-out.
+  if (releasedKeys.has('crystalEnergy')) {
+    audioCache.crystalEnergyId = null;
+  }
   confettiPopLoadPromise = null;
   revealSparkleLoadPromise = null;
   revealApplauseLoadPromise = null;
