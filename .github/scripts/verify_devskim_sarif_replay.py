@@ -192,6 +192,22 @@ AUDITED_FALSE_POSITIVES = (
             r'^[ \t]*.*"' + "http:" + "//127\\.0\\.0\\.1:[0-9]+"
         ),
     ),
+    AuditedFinding(
+        name="Security reviewer loopback exclusion tokens",
+        rule_id="DS162092",
+        paths=(".github/scripts/review_pr_changes.py",),
+        source_line_pattern=re.compile(
+            r'^ {16}"(?:local' + "host" + r"|127\." + r"0\.0\.1" + r')",$'
+        ),
+    ),
+    AuditedFinding(
+        name="Security reviewer loopback fixture",
+        rule_id="DS162092",
+        paths=(".github/scripts/test_review_pr_changes.py",),
+        source_line_pattern=re.compile(
+            r'^ {8}url = "http" \+ "://local' + "host" + r':3000/api/health"$'
+        ),
+    ),
 )
 
 class ReplayViolation(RuntimeError):
