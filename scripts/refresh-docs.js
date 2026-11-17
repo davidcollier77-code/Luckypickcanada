@@ -54,9 +54,13 @@ function isRawHtmlFragment(content) {
   const prefix = content.replace(/^\uFEFF?\s*/, '');
   const opening = prefix.match(/^<([a-z][a-z0-9-]*)\b[^<>]*>/i);
   if (!opening) return false;
-  const closing = new RegExp('</' + opening[1] + '\\s*>', 'i').exec(prefix);
-  if (!closing) return true;
-  const remainder = prefix.slice(closing.index + closing[0].length).trimStart();
+  const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+  const closing = voidElements.has(opening[1].toLowerCase())
+    ? null
+    : new RegExp('</' + opening[1] + '\\s*>', 'i').exec(prefix);
+  if (!closing && !voidElements.has(opening[1].toLowerCase())) return true;
+  const closingEnd = closing ? closing.index + closing[0].length : opening[0].length;
+  const remainder = prefix.slice(closingEnd).trimStart();
   // A leading HTML block followed by Markdown structure is a valid Markdown
   // document (common in READMEs); a standalone HTML fragment is not.
   return !/^(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/.test(remainder);
