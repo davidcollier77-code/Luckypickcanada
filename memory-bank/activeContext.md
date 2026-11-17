@@ -1,3 +1,46 @@
+# Active Context — Homepage mobile LCP delivery
+
+- **Updated:** 2026-11-17
+- **Branch:** freebuff/11aafabede64e67ce700edda
+- **Base:** main at c9b346da (merged PR #1933)
+- **Spec Kit feature:** specs/179-homepage-mobile-lcp-delivery
+
+## Current Task
+
+Improve the homepage's mobile first load on top of PR #1933 without touching the
+Milky Way, any animation, homepage functionality or desktop performance.
+
+## Implemented State
+
+- PSI baselines on the live site: mobile 76 (LCP 4.1 s, TBT 350 ms), desktop 98;
+  no CrUX field data for this origin. Local production baselines: mobile median
+  68 (LCP 4.1 s), desktop 98.
+- The mobile LCP is the hero AVIF and is byte-bound: 3.28 s of the 4.1 s LCP is
+  the image's own transfer on a 1.6 Mbps pipe.
+- Added 768 w AVIF/WebP derivatives of the existing painting and inserted them
+  into the ascending candidate ladder (669/768/1024) used by both `<picture>`
+  sources, the `<img>` fallback and the preload hint. No artwork, layer, colour,
+  animation or layout changed; no device is served fewer device pixels than it
+  requests.
+- Measured: local PSI-profile mobile median 68 → 77, LCP 4.1 → 3.1 s, hero
+  transfer 199 → 143 KiB; desktop unchanged at 98.
+- Investigated and rejected with measurements: `Link` response-header preload
+  (no LCP change), `experimental.cssChunking: 'strict'` (1.9 KiB), any night-sky
+  renderer change (CPU profile: canvas < 0.3 % of samples), and any 669 w
+  phone asset (1.7× DPR, a fidelity trade).
+
+## Limitations
+
+- PSI reports the deployed site; this branch cannot change that number until it
+  is merged and deployed.
+- Mobile 90+ was not reached and cannot be without a fidelity trade or feature
+  removal: the LCP painting plus non-deferrable framework JS saturate the pipe.
+- This workspace has no GPU, so local TBT is harsher than PSI's.
+- One Vitest governance test and one docs-refresh test fail identically on
+  pristine `main`; neither reads a file this change touches.
+
+---
+
 # Active Context — QA checker effectiveness and reliability
 
 - **Updated:** 2026-11-16

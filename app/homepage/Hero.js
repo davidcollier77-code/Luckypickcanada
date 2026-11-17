@@ -8,6 +8,13 @@ import IntentPrefetchLink from '../../components/IntentPrefetchLink';
  * ring, the tagline, the gold wordmark, a painted subtitle, a maple-leaf divider
  * and the "EXPLORE YOUR LUCK" line with its chevron.
  *
+ * The candidates are that same painting at 669, 768 and 1024 pixels wide. The
+ * 768 w step exists because `sizes` resolves to 100vw on phones: a 412 px-wide
+ * phone at a 1.75 device-pixel ratio needs ~721 device pixels, which used to fall
+ * in the gap between 669 w and 1024 w and pull the 1024 w file (203 KiB) to paint
+ * ~721 pixels. A device only ever picks a candidate at least as wide as its own
+ * pixel need, so no device is served a smaller image than it asks for.
+ *
  * specs/117-homepage-hero-reference-layout shows that same painting through
  * measured row windows so the reference layout can place the existing welcome
  * panel between the painting's own maple-leaf divider and the Explore line.
@@ -23,12 +30,12 @@ import IntentPrefetchLink from '../../components/IntentPrefetchLink';
 function HeroArtwork({ alt = '', fetchPriority = 'auto', loading = 'lazy' }) {
   return (
     <picture className="hero-art-picture">
-      <source type="image/avif" srcSet="/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
-      <source type="image/webp" srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
+      <source type="image/avif" srcSet="/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada-768w.avif 768w, /homepage-hero-lucky-pick-canada.avif 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
+      <source type="image/webp" srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada-768w.webp 768w, /homepage-hero-lucky-pick-canada.webp 1024w" sizes="(max-width: 768px) 100vw, 1024px" />
       <img
         className="hero-art-image"
         src="/homepage-hero-lucky-pick-canada.webp"
-        srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w"
+        srcSet="/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada-768w.webp 768w, /homepage-hero-lucky-pick-canada.webp 1024w"
         sizes="(max-width: 768px) 100vw, 1024px"
         alt={alt}
         loading={loading}
@@ -54,7 +61,7 @@ export default function Hero() {
     as: "image",
     fetchPriority: "high",
     type: "image/avif",
-    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada-768w.avif 768w, /homepage-hero-lucky-pick-canada.avif 1024w",
     imageSizes: "(max-width: 768px) 100vw, 1024px"
   });
 
