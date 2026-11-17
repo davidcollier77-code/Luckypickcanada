@@ -232,6 +232,13 @@ async function normalizeDocumentationResponse(response, sourceUrl) {
   if (!response || typeof response.content !== 'string') return '';
   if (!isHtmlResponse(response.content, response.contentType)) return response.content;
 
+  // Preserve the original markers so the existing validator can reject HTTP
+  // error and bot-challenge pages before HTML conversion hides their structure.
+  const sample = response.content.slice(0, 200000);
+  if (ERROR_PAGE_PATTERNS.some((rule) => rule.pattern.test(sample))) {
+    return response.content;
+  }
+
   const pageUrl = response.url || sourceUrl;
   const alternateUrl = findMarkdownAlternateUrl(response.content, pageUrl);
   if (alternateUrl) {
