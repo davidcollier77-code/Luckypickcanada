@@ -5457,6 +5457,13 @@ When called it will be passed an event object with the following properties:
 Handle a Checkout Element loaderstart event
 ```
 
+## Available payment methods change event
+
+`element.on(event: 'availablepaymentmethodschange', handler: function)`
+
+Triggered when the set of available payment methods changes. Also fires on initial render.
+Supported by `paymentElement` and `expressCheckoutElement`.
+
 ## Confirm event
 
 `element.on(event: string, handler: function)`
