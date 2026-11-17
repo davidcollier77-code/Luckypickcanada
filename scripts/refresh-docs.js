@@ -39,10 +39,14 @@ const ERROR_PAGE_PATTERNS = [
 ];
 
 
-function isHtmlDocumentContent(content) {
+function isHtmlDocumentContent(content, contentType = '') {
   if (typeof content !== 'string') return false;
+  const mime = String(contentType).split(';', 1)[0].trim().toLowerCase();
+  // Markdown explicitly permits leading HTML blocks such as <p>, <div> and <img>.
+  // Keep those intact; detect document-level HTML even when a server labels it text/plain.
+  if (['text/markdown', 'text/x-markdown', 'application/markdown'].includes(mime)) return false;
   const prefix = content.replace(/^\uFEFF?\s*(?:<!--[\s\S]*?-->\s*)*/, '').slice(0, 2048);
-  return /^(?:<\?xml\b|<!doctype\s+html\b|<\/?[a-z][a-z0-9-]*(?:\s+[^<>]*|\/?)>)/i.test(prefix);
+  return /^(?:<\?xml\b|<!doctype\s+html\b|<(?:html|head|body|script|iframe)(?:\s[^<>]*|\/?)>)/i.test(prefix);
 }
 
 function getContentType(headers = {}) {
@@ -53,7 +57,7 @@ function getContentType(headers = {}) {
 function isHtmlResponse(content, contentType = '') {
   const mime = String(contentType).split(';', 1)[0].trim().toLowerCase();
   return mime === 'text/html' || mime === 'application/xhtml+xml' ||
-    isHtmlDocumentContent(content);
+    isHtmlDocumentContent(content, mime);
 }
 
 function parseDocumentationUrl(value, baseUrl) {
@@ -160,7 +164,7 @@ function convertHtmlToMarkdown(html, baseUrl) {
     const rows = Array.from(element.querySelectorAll('tr')).map((row) =>
       Array.from(row.children)
         .filter((cell) => ['th', 'td'].includes(cell.tagName.toLowerCase()))
-        .map((cell) => inline(cell).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|'))
+        .map((cell) => inline(cell).replace(/\s+/g, ' ').trim().replace(/\\/g, '\\\\').replace(/\|/g, '\\|'))
     ).filter((row) => row.length);
     if (!rows.length) return '';
     const width = Math.max(...rows.map((row) => row.length));
@@ -195,7 +199,13 @@ function convertHtmlToMarkdown(html, baseUrl) {
     }
     if (tag === 'dt') return '\n\n**' + inline(node).trim() + '**\n';
     if (tag === 'dd') return '\n' + inline(node).trim() + '\n';
-    if (['div', 'section', 'main', 'article', 'figure', 'details', 'summary'].includes(tag)) {
+    if (['div', 'section', 'main', 'article', 'header', 'figure', 'details', 'summary', 'dl'].includes(tag)) {
+      return '\n\n' + Array.from(node.childNodes).map(block).join('') + '\n\n';
+    }
+    // Documentation commonly wraps semantic blocks in custom elements, tbody,
+    // or other layout containers. Recurse when block descendants are present
+    // instead of flattening headings, lists, code and tables into inline text.
+    if (node.querySelector('h1,h2,h3,h4,h5,h6,p,pre,ul,ol,table,dl,dt,dd,blockquote,div,section,article,header,figure,details,summary,hr')) {
       return '\n\n' + Array.from(node.childNodes).map(block).join('') + '\n\n';
     }
     return inline(node);
@@ -244,14 +254,17 @@ async function normalizeDocumentationResponse(response, sourceUrl) {
   if (alternateUrl) {
     try {
       const origin = parseDocumentationUrl(pageUrl).origin;
-      const alternate = await fetchUrlResponse(alternateUrl, origin, 5);
+      const alternate = await fetchUrlResponse(alternateUrl, origin, 2);
       if (!isHtmlResponse(alternate.content, alternate.contentType)) return alternate.content;
       console.warn('Markdown alternate for ' + sourceUrl + ' returned HTML; converting the original page instead.');
     } catch (error) {
       console.warn('Markdown alternate for ' + sourceUrl + ' could not be fetched (' + error.message + '); converting the original page instead.');
     }
   }
-  return convertHtmlToMarkdown(response.content, pageUrl) || response.content;
+  const converted = convertHtmlToMarkdown(response.content, pageUrl);
+  if (converted) return converted;
+  console.warn('HTML response for ' + sourceUrl + ' could not be converted to Markdown; rejecting it without replacing any existing snapshot.');
+  return response.content;
 }
 
 function safeJoinDocs(...segments) {
