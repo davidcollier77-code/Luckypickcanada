@@ -272,6 +272,17 @@ async function runTests() {
     assert.match(validateDocumentContent(markdown || html).reason, /raw HTML/);
   });
   
+  await test('failed HTML normalization retains an explicit raw-HTML rejection marker', async () => {
+    const html = '<!doctype html><html><body><script>document.write("no documentation");</script></body></html>';
+    const normalized = await normalizeDocumentationResponse(
+      { content: html, contentType: 'text/html', url: 'https://example.com/docs/empty' },
+      'https://example.com/docs/empty'
+    );
+    const validation = validateDocumentContent(normalized);
+    assert.strictEqual(validation.ok, false);
+    assert.match(validation.reason, /raw HTML/);
+  });
+  
   await test('HTML detection preserves Markdown documents that begin with an HTML block', () => {
     const markdown = '<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n' +
       '# Project documentation\n\nThis is ordinary Markdown content following the HTML block.';
