@@ -67,8 +67,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${manrope.variable} ${playfair.variable} ${cinzel.variable}`}>
       <head>
-                <link rel="preconnect" href="https://challenges.cloudflare.com" />
-
+        {/* The Turnstile runtime is requested only when a protected field
+            approaches the viewport, so no third-party connection is opened
+            during the initial load of any route. */}
         <JsonLd data={websiteSchema} />
       </head>
       <body className="m-0 p-0">

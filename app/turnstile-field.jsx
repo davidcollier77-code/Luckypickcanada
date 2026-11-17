@@ -42,7 +42,11 @@ export default function TurnstileField({ submitButtonId, action }) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) requestWidget();
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        // The widget is requested once, so stop observing here instead of
+        // waiting for the effect cleanup that follows this state change.
+        observer.disconnect();
+        requestWidget();
       },
       { rootMargin: WIDGET_MOUNT_ROOT_MARGIN },
     );
@@ -202,8 +206,10 @@ export default function TurnstileField({ submitButtonId, action }) {
           <button type="button" aria-label="Retry security check" onClick={onRetry} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>Retry</button>
         </div>
       ) : null}
-      {status === 'loading' && !error ? <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Security check loading, please wait a moment.</p> : null}
-      {status === 'verified' ? <p role="status" style={{ margin: 0, color: '#bbf7d0', fontWeight: 700 }}>Security check verified.</p> : null}
+      {/* Both messages describe the widget, so they stay hidden until the
+          visitor's proximity actually requests it. */}
+      {isWidgetRequested && status === 'loading' && !error ? <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Security check loading, please wait a moment.</p> : null}
+      {isWidgetRequested && status === 'verified' ? <p role="status" style={{ margin: 0, color: '#bbf7d0', fontWeight: 700 }}>Security check verified.</p> : null}
       <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 247, 214, 0.72)', lineHeight: 1.45 }}>
         Complete this quick check before sending. It helps keep spam out without affecting checkout or payment processing.
       </p>

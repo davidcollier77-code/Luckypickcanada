@@ -219,3 +219,26 @@ One measurement trap worth recording: an orphaned `next start` process from an e
 kept serving a `.next` directory that had since been deleted, so its chunk requests returned 500
 and the page never hydrated. That looked exactly like a hydration regression in the split.
 Killing the listeners by PID and re-measuring cleared it; no orphaned server may survive a probe.
+
+## Automated review response
+
+No new performance work was performed for this section. It records how the automated review
+findings on the submitted work were resolved, with the same production build and suite used
+before.
+
+| Finding | Disposition |
+| --- | --- |
+| Turnstile status text rendered before the field was approached | Fixed: both status lines now require `isWidgetRequested`, so the initial HTML (and first paint) carries neither |
+| Intersection observer kept observing after requesting the widget | Fixed: the callback disconnects before requesting |
+| `IntentPrefetchLink` built four closures per render, defeating `useCallback` | Fixed: four stable callbacks with explicit dependencies |
+| No unit test for the intent-gating contract | Improved: `__tests__/intent-prefetch-link.test.jsx` (6 tests) covers the off-by-default prefetch, each intent event and handler forwarding |
+| Missing server slot would silently drop the `#community-stories` anchor | Fixed: fallback anchor when a slot is absent; the supplied slots are unchanged |
+| Unconditional `preconnect` to `challenges.cloudflare.com` survived the deferral | Fixed: removed from `app/layout.js`, and `turnstile-loading.spec.ts` now asserts no preconnect hint on the homepage or on routes without a protected form |
+
+Rebuilt and re-measured on the same machine after the fixes: `tsc --noEmit` exit 0, Vitest 88
+files passed (one new file), `./freebuff-verify.sh` exit 0, clean production build 309,262,524
+bytes = 294.94 MiB. Playwright in the CI configuration: desktop 76 passed, mobile-390 75 passed
+with one flaky Crystal Ball greeting test that passed on retry, mobile-412 75 passed with the
+same flaky test, 4 skipped per project, 0 failed. The built homepage no longer contains the
+Turnstile loading sentence or any `rel="preconnect"` hint, and still contains the server-rendered
+`#community-stories` card and `.homepage-about-teaser`.

@@ -502,7 +502,12 @@ export default function HomePage({ slots }) {
 
       {/* Rendered by the server (app/homepage/HomeStaticSections.js) and streamed
           in as a slot, so this markup never enters the client hydration tree. */}
-      {slots?.communityStories}
+      {slots?.communityStories ?? (
+        // Defensive: the slot is always supplied by app/page.js. Keeping an
+        // anchor here means a future wiring mistake cannot silently break the
+        // navigation's #community-stories target.
+        <div id="community-stories" aria-hidden="true" />
+      )}
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
         <SectionHeading eyebrow="One reveal, two ways to receive it" id="picks-heading" title="Lucky Reveals — Your Little Touch of Luck">
@@ -581,7 +586,7 @@ export default function HomePage({ slots }) {
       </section>
 
       {/* About the Creator teaser: server-rendered slot, see above. */}
-      {slots?.aboutTeaser}
+      {slots?.aboutTeaser ?? <div aria-hidden="true" />}
 
 
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}

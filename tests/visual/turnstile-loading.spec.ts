@@ -10,6 +10,11 @@ const TURNSTILE_SCRIPT_PREFIX = 'https://challenges.cloudflare.com/turnstile/v0/
 const TURNSTILE_PRELOAD_SELECTOR =
   'head link[rel="preload"][as="script"][href^="https://challenges.cloudflare.com/turnstile/v0/api.js"]';
 
+// A preconnect is also a hint: it opens a third-party connection during the
+// initial load, which is the cost this deferral exists to remove.
+const TURNSTILE_CONNECT_SELECTOR =
+  'head link[rel="preconnect"][href^="https://challenges.cloudflare.com"]';
+
 test('homepage defers the Turnstile API until the Suggestion Box is approached', async ({ page }) => {
   const turnstileScriptRequests: string[] = [];
   page.on('request', (request) => {
@@ -20,6 +25,7 @@ test('homepage defers the Turnstile API until the Suggestion Box is approached',
 
   // No resource hint and no script fetch while the visitor is at the top of the page.
   await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
+  await expect(page.locator(TURNSTILE_CONNECT_SELECTOR)).toHaveCount(0);
   expect(turnstileScriptRequests).toEqual([]);
 
   const section = page.locator('#suggestion-box');
@@ -47,5 +53,6 @@ test('other routes do not preload the Turnstile API', async ({ page }) => {
   for (const route of ['/about', '/map']) {
     await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
+    await expect(page.locator(TURNSTILE_CONNECT_SELECTOR)).toHaveCount(0);
   }
 });

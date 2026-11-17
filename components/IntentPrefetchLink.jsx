@@ -23,22 +23,48 @@ export default function IntentPrefetchLink({ children, onPointerEnter, onPointer
 
   const markIntent = useCallback(() => setHasIntent(true), []);
 
-  const handleIntent = useCallback(
-    (handler) => (event) => {
+  // One stable handler per event rather than a factory that builds four new
+  // closures on every render.
+  const handlePointerEnter = useCallback(
+    (event) => {
       markIntent();
-      if (typeof handler === 'function') handler(event);
+      if (typeof onPointerEnter === 'function') onPointerEnter(event);
     },
-    [markIntent],
+    [markIntent, onPointerEnter],
+  );
+
+  const handlePointerDown = useCallback(
+    (event) => {
+      markIntent();
+      if (typeof onPointerDown === 'function') onPointerDown(event);
+    },
+    [markIntent, onPointerDown],
+  );
+
+  const handleFocus = useCallback(
+    (event) => {
+      markIntent();
+      if (typeof onFocus === 'function') onFocus(event);
+    },
+    [markIntent, onFocus],
+  );
+
+  const handleTouchStart = useCallback(
+    (event) => {
+      markIntent();
+      if (typeof onTouchStart === 'function') onTouchStart(event);
+    },
+    [markIntent, onTouchStart],
   );
 
   return (
     <Link
       {...props}
       prefetch={hasIntent ? undefined : false}
-      onPointerEnter={handleIntent(onPointerEnter)}
-      onPointerDown={handleIntent(onPointerDown)}
-      onFocus={handleIntent(onFocus)}
-      onTouchStart={handleIntent(onTouchStart)}
+      onPointerEnter={handlePointerEnter}
+      onPointerDown={handlePointerDown}
+      onFocus={handleFocus}
+      onTouchStart={handleTouchStart}
     >
       {children}
     </Link>
