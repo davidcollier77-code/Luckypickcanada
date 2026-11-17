@@ -49,6 +49,19 @@ function isHtmlDocumentContent(content, contentType = '') {
   return /^(?:<\?xml\b|<!doctype\s+html\b|<(?:html|head|body|script|iframe)(?:\s[^<>]*|\/?)>)/i.test(prefix);
 }
 
+function isRawHtmlFragment(content) {
+  if (typeof content !== 'string' || isHtmlDocumentContent(content)) return false;
+  const prefix = content.replace(/^\uFEFF?\s*/, '');
+  const opening = prefix.match(/^<([a-z][a-z0-9-]*)\b[^<>]*>/i);
+  if (!opening) return false;
+  const closing = new RegExp('</' + opening[1] + '\\s*>', 'i').exec(prefix);
+  if (!closing) return true;
+  const remainder = prefix.slice(closing.index + closing[0].length).trimStart();
+  // A leading HTML block followed by Markdown structure is a valid Markdown
+  // document (common in READMEs); a standalone HTML fragment is not.
+  return !/^(?:#{1,6}\\s|[-*+]\\s|\\d+\\.\\s|>\\s)/.test(remainder);
+}
+
 function getContentType(headers = {}) {
   return String(headers['content-type'] || headers['Content-Type'] || '')
     .split(';', 1)[0].trim().toLowerCase();
@@ -403,7 +416,7 @@ function validateDocumentContent(content) {
     }
   }
 
-  if (isHtmlDocumentContent(content)) {
+  if (isHtmlDocumentContent(content) || isRawHtmlFragment(content)) {
     return { ok: false, reason: 'download is raw HTML and was not converted to Markdown' };
   }
 
