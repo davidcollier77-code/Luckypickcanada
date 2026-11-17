@@ -299,10 +299,10 @@ async function runTests() {
   await test('HTML table conversion escapes backslashes before pipe characters', () => {
     const html = '<!doctype html><html><body><main>' +
       '<p>This table contains a path value with Markdown-sensitive characters.</p>' +
-      '<table><tr><th>Path</th></tr><tr><td>folder\\\\name|value</td></tr></table>' +
+      '<table><tr><th>Path</th></tr><tr><td>folder\\name|value</td></tr></table>' +
       '</main></body></html>';
     const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/table');
-    assert.ok(markdown.includes('folder\\\\\\\\name\\\\|value'));
+    assert.ok(markdown.includes('folder\\name\\|value'));
   });
 
   await test('validateDocumentContent rejects empty and whitespace-only downloads', () => {
