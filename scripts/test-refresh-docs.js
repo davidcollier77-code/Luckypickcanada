@@ -140,7 +140,7 @@ async function runTests() {
   await test('validateDocumentContent accepts Markdown and plain text but rejects raw HTML', () => {
     assert.ok(validateDocumentContent('# Title\n\nA readable documentation paragraph with details.\n').ok);
     assert.ok(validateDocumentContent('Plain text documentation\n\nSecond paragraph with words.\n').ok);
-    assert.ok(validateDocumentContent('<p align="center"><img src="logo.svg" alt="Project logo"></p>\\n\\n# Project documentation\\n\\nThis is valid Markdown with a leading HTML block.').ok);
+    assert.ok(validateDocumentContent('<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n# Project documentation\n\nThis is valid Markdown with a leading HTML block.').ok);
     assert.ok(validateDocumentContent('See <https://example.com/docs> for details about the API and supported usage examples.').ok);
     assert.match(
       validateDocumentContent('<!DOCTYPE html><html><head><title>Web Platform</title></head><body><h1>Web Platform</h1><p>Read the documentation for web platform APIs and browser support.</p></body></html>').reason,
