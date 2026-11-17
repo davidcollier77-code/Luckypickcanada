@@ -78,18 +78,18 @@ When a local snapshot is already raw HTML from an earlier updater run, the next 
 - **FR-008**: Existing raw-HTML snapshots MUST bypass the unchanged-upstream-SHA skip so the next refresh can normalize them.
 - **FR-009**: Ordinary Markdown and plain-text sources, manifest source URLs, retry behaviour, link repair, atomic writes, reporting, schedule, timezone, workflow triggers and documentation-size limits MUST remain intact.
 - **FR-010**: The implementation MUST NOT add a dependency when the existing project dependencies provide a safe conversion mechanism.
-- **FR-011**: The updater MUST preserve valid Markdown documents that begin with a supported HTML block followed by Markdown content, while continuing to reject full HTML documents and standalone unconverted HTML fragments.
+- **FR-011**: The updater MUST preserve valid Markdown documents that begin with supported Markdown HTML block elements (`div`, `h1`–`h6`, `img`, `p`, `picture`, `span` or `br`), while continuing to reject full HTML documents and unsupported standalone HTML fragments.
 
 ## Success Criteria
 
 ### Measurable Outcomes
 
 - **SC-001**: Every HTML response that advertises a valid same-origin Markdown alternate is processed using that alternate when it returns valid non-HTML documentation.
-- **SC-002**: Every accepted HTML response is saved as Markdown or readable plain text; no accepted `.md` snapshot begins with a raw HTML document or fragment.
+- **SC-002**: Every accepted HTML response is saved as Markdown or readable plain text; no accepted `.md` snapshot begins with a rendered HTML document or unsupported unconverted HTML fragment. Supported Markdown HTML blocks remain valid.
 - **SC-003**: Every unconvertible or invalid HTML response is rejected before write, and an existing snapshot remains byte-identical.
 - **SC-004**: Legacy HTML snapshots are re-fetched even when their upstream SHA matches the stored SHA.
 - **SC-005**: Markdown and plain-text source handling retains existing behaviour and all existing updater safeguards remain unchanged.
-- **SC-006**: A valid Markdown document beginning with a supported HTML block is accepted without conversion, while standalone HTML fragments and full HTML documents are rejected unless successfully normalized.
+- **SC-006**: A valid Markdown document beginning with a supported HTML block is accepted without conversion, while unsupported standalone HTML fragments and full HTML documents are rejected unless successfully normalized.
 
 ## Assumptions
 
