@@ -104,7 +104,7 @@ async function run() {
   // must discover its official same-origin Markdown alternate and replace it.
   const nextSourceUrl = manifest.sources[realSampleLib].url;
   const nextMarkdownUrl = new URL('/docs/app.md', nextSourceUrl).href;
-  const nextMarkdown = '# App Router\\n\\nThe App Router documentation explains file-based routing, layouts, pages, server components and navigation.\\n';
+  const nextMarkdown = '# App Router\n\nThe App Router documentation explains file-based routing, layouts, pages, server components and navigation.\n';
   routes[nextSourceUrl] = {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
