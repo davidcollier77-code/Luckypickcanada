@@ -59,7 +59,7 @@ function isRawHtmlFragment(content) {
   const remainder = prefix.slice(closing.index + closing[0].length).trimStart();
   // A leading HTML block followed by Markdown structure is a valid Markdown
   // document (common in READMEs); a standalone HTML fragment is not.
-  return !/^(?:#{1,6}\\s|[-*+]\\s|\\d+\\.\\s|>\\s)/.test(remainder);
+  return !/^(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/.test(remainder);
 }
 
 function getContentType(headers = {}) {
