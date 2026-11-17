@@ -54,6 +54,10 @@ function isRawHtmlFragment(content) {
   const prefix = content.replace(/^\uFEFF?\s*/, '');
   const opening = prefix.match(/^<([a-z][a-z0-9-]*)\b[^<>]*>/i);
   if (!opening) return false;
+  // These common block elements are valid Markdown HTML blocks, not evidence
+  // that the source is a rendered HTML snapshot.
+  const markdownHtmlBlockTags = new Set(['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'p', 'picture', 'span', 'br']);
+  if (markdownHtmlBlockTags.has(opening[1].toLowerCase())) return false;
   const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
   let closing = null;
   if (!voidElements.has(opening[1].toLowerCase())) {
