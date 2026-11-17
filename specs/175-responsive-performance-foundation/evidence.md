@@ -167,3 +167,55 @@ Three source-location assertions in `__tests__/first-screen-and-naming.test.js`,
 `__tests__/homepage-content-refresh.test.js` and `__tests__/homepage-nav-gold-shimmer.test.js`
 read the homepage source directly. They now read `HomePage.js` plus `HomeStaticSections.js`
 together; every assertion itself is unchanged.
+
+## Round 4 verification — behavioural parity with 32b2a7c7
+
+The split was measured but not behaviourally re-verified before it was committed, so this pass
+closes that gap on the committed tree (`0fa5666c`). The workspace reset had removed the
+dependencies and Chromium's shared libraries; `pnpm install --frozen-lockfile` and the
+repository wrapper's own provisioning (`./scripts/setup-playwright-agent.sh --probe-browser`,
+PASS) restored them. No sudo and no system packages were needed.
+
+**Markup equivalence.** With both production builds served side by side, the outerHTML of the
+two moved sections is byte-identical: `#community-section` 1,873 characters on both, and
+`.homepage-about-teaser` 1,109 characters on both. The `<nav>` label list is identical too.
+
+**Behavioural parity** (390x844, production builds, same profiler):
+
+| Observation | `32b2a7c7` | Round 4 split |
+| --- | --- | --- |
+| Star canvas size | 390x844 | 390x844 |
+| Lit canvas pixels, two reads 900 ms apart | 1,025 -> 1,022 | 1,033 -> 1,020 |
+| Turnstile fallback notice | "Spam check is not configured" | same |
+| Suggestion submit disabled | yes | yes |
+| Horizontal overflow | 0 | 0 |
+
+**Full Playwright suite**, in the CI configuration (`CI=1`: 2 workers, 1 retry):
+
+| Project | Result |
+| --- | --- |
+| desktop | 76 passed, 4 skipped, 0 failed |
+| mobile-390 | 76 passed, 4 skipped, 0 failed |
+| mobile-412 | 75 passed, 1 flaky (passed on retry), 4 skipped, 0 failed |
+
+Two tests fail intermittently in a local run without CI's retry: `gold-cta.spec.ts` "hover
+lifts and press flattens each representative CTA" and `mobile-accessibility.spec.ts` "all
+audited routes render one main landmark". Both were reproduced on a `32b2a7c7` worktree with
+its own production build, and both pass when run alone on the split tree, so neither is caused
+by the split: the first is a hover-transform timing race, the second reads `<nav>` labels while
+the development server is still streaming.
+
+**Six-experience drive on the split production build**, at 390x844 and 1440x900 and again after
+rotating to 844x390: the Daily Card Reveal flips (0 -> 2 canvases, text 628 -> 547), the Crystal
+Ball produces its reading (5 -> 20 running animations, text 873 -> 1,201), the Lucky Meter
+responds, the Community Map renders 4 stories, the homepage runs 21 animations with its canvas
+painting, and every route at every size reports 0 horizontal overflow. Console output contains
+only the pre-existing `/api/lucky-stories` 500s, because that route needs the deployed database.
+
+`tsc --noEmit` exit 0, Vitest 87 files / 857 tests passed, `./freebuff-verify.sh` exit 0, clean
+production build 344,255,379 bytes = 328.31 MiB.
+
+One measurement trap worth recording: an orphaned `next start` process from an earlier probe
+kept serving a `.next` directory that had since been deleted, so its chunk requests returned 500
+and the page never hydrated. That looked exactly like a hydration regression in the split.
+Killing the listeners by PID and re-measuring cleared it; no orphaned server may survive a probe.
