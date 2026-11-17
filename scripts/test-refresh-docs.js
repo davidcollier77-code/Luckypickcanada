@@ -553,6 +553,39 @@ async function runTests() {
     assert.strictEqual(sha, null);
   });
 
+  await test('runRefresh re-fetches a legacy HTML snapshot even when its upstream SHA is unchanged', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    const library = '/lib/doc';
+    const sourceUrl = 'https://raw.githubusercontent.com/lib/doc/main/README.md';
+    const apiUrl = 'https://api.github.com/repos/lib/doc/commits/main';
+    const existingHtml = '<!doctype html><html><body><main><h1>Old HTML</h1><p>Legacy snapshot content that must be normalized.</p></main></body></html>';
+    const replacement = '# Current Documentation\n\nThe current Markdown response contains the supported documentation content and reference examples.\n';
+    mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'same-sha' }) };
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown' },
+      data: replacement
+    };
+    fs.writeFileSync(path.join(root, 'creation', '_lib_doc.md'), existingHtml);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url: sourceUrl, branch: 'main' } },
+      inventory: [library],
+      githubShas: { [library]: 'same-sha' }
+    }, null, 2));
+
+    const report = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, report);
+    assert.ok(requestedUrls.includes(sourceUrl), 'legacy HTML must bypass the unchanged-SHA skip');
+    assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_lib_doc.md'), 'utf8'), replacement);
+    assert.strictEqual(report.updated, 1);
+    assert.strictEqual(report.consistencyIssues.length, 0);
+    restoreDocsDirectory();
+  });
+
   await test('fetchDocumentation: Relative redirect', async () => {
     mockResponses['https://example.com/docs'] = { statusCode: 301, headers: { location: '/new-docs' } };
     mockResponses['https://example.com/new-docs'] = { statusCode: 200, data: 'new content' };
