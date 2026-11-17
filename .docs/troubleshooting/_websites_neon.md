@@ -120,7 +120,7 @@ Managed authentication built on Better Auth that branches with your database.
 - [Managed Better Auth](https://neon.com/docs/auth/overview.md): Managed authentication that branches with your database
 - [Use Managed Better Auth with Next.js (API methods)](https://neon.com/docs/auth/quick-start/nextjs-api-only.md): Build your own auth UI using SDK methods
 - [Use Managed Better Auth with React (API methods)](https://neon.com/docs/auth/quick-start/react.md): Build your own auth UI
-- [Set up OAuth](https://neon.com/docs/auth/guides/setup-oauth.md): Add Google, GitHub, Vercel, Microsoft, or Apple sign-in to your application
+- [Set up OAuth](https://neon.com/docs/auth/guides/setup-oauth.md): Add Google, GitHub, Vercel, Microsoft, Apple, or Discord sign-in to your application
 - [Auth production checklist](https://neon.com/docs/auth/production-checklist.md): Required configuration before launching with Managed Better Auth
 
 ## Neon Functions
@@ -216,7 +216,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 163 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 160 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
@@ -298,7 +298,7 @@ Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701,
 
 Postgres extensions supported by Neon, with install and usage instructions.
 
-- [All 48 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
+- [All 46 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
 
 - [Postgres extensions](https://neon.com/docs/extensions/pg-extensions.md)
 - [The pg_stat_statements extension](https://neon.com/docs/extensions/pg_stat_statements.md): Track planning and execution statistics for all SQL statements

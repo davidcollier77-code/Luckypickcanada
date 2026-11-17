@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-13T16:55:14-04:00",
+  "lastUpdated": "2026-11-17T00:20:34-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -179,7 +179,7 @@
     },
     "/websites/ai_google_dev_gemini-api": {
       "type": "url",
-      "url": "https://ai.google.dev/gemini-api/docs.md.txt"
+      "url": "https://aistudio.google.com/llms.txt"
     },
     "/vercel/next.js": {
       "type": "url",
@@ -497,26 +497,26 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "8d37a0aed33c4923bd0a71fdd068f269fa1a371d",
+    "/github/docs": "afa12590d70a884d59f2c22852fbd8dc2adb7553",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
-    "/lucide-icons/lucide": "55782beff3a0133df79c417eb68f96e8f19e2404",
+    "/lucide-icons/lucide": "f8feea7a02ea461c9f2a4b4d851512aae6ec933f",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "e02dcd623ca915f35e5c418f5384f4732bafa925",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
-    "/bvaughn/react-error-boundary": "4bc599908663852319724580d81682c2cf5204b3",
-    "/cloudflare/cloudflare-docs/turnstile": "d27dee90f792d56ddc6550a3a77157ceb76f33fc",
-    "/cloudflare/cloudflare-docs/pages": "d27dee90f792d56ddc6550a3a77157ceb76f33fc",
-    "/dequelabs/axe-core": "d991e05ac6eb42df88f9e61c1679692534bb92e2",
+    "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
+    "/cloudflare/cloudflare-docs/turnstile": "39a00b0ffb01edc3860c4ca5a52fa5db9d6eac34",
+    "/cloudflare/cloudflare-docs/pages": "39a00b0ffb01edc3860c4ca5a52fa5db9d6eac34",
+    "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "0ad21f1d34e40a51649a97e14da787172d68d073",
+    "/microsoft/playwright": "354e6fa33a899f8e0ee1ef5428eaf9a934378615",
     "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
     "/colinhacks/zod": "19c40d2072288b4cafec851e9d056a72a88e5973",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
-    "/opennextjs/opennextjs-cloudflare": "f5a2d09b239214f9c08afcc371bc6e1d0d98e1e5",
+    "/opennextjs/opennextjs-cloudflare": "e751dd8884537ff115b494bbb00f01f8538dd6b1",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
     "/cloudflare/workers-sdk": "56459a561b7b133a9152b993336e1e5470b1d290",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
