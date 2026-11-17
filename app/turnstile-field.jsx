@@ -8,6 +8,14 @@ import { TURNSTILE_SITE_KEY } from './turnstile-config';
 const TURNSTILE_ERROR_MESSAGE =
   'The security check had a problem. Please use Troubleshoot or refresh, then try again.';
 
+// Rendering the widget pulls the challenge runtime and its payload from
+// challenges.cloudflare.com. The Suggestion Box and the story form both sit far
+// below the fold, so the widget is requested once the field is this close to the
+// viewport instead of during the initial load. Token validation is unchanged:
+// the submit control stays disabled until a token exists, and the server still
+// verifies every token.
+const WIDGET_MOUNT_ROOT_MARGIN = '600px 0px';
+
 export default function TurnstileField({ submitButtonId, action }) {
   const containerRef = useRef(null);
   const turnstileRef = useRef(null);
@@ -16,6 +24,42 @@ export default function TurnstileField({ submitButtonId, action }) {
   const [status, setStatus] = useState('loading');
   const [siteKey, setSiteKey] = useState(TURNSTILE_SITE_KEY);
   const [keyError, setKeyError] = useState(false);
+  const [isWidgetRequested, setIsWidgetRequested] = useState(false);
+
+  useEffect(() => {
+    if (isWidgetRequested) return undefined;
+
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    const requestWidget = () => setIsWidgetRequested(true);
+
+    // Browsers without IntersectionObserver keep the original eager behaviour.
+    if (typeof IntersectionObserver !== 'function') {
+      requestWidget();
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) requestWidget();
+      },
+      { rootMargin: WIDGET_MOUNT_ROOT_MARGIN },
+    );
+
+    observer.observe(container);
+
+    // Pointer or keyboard visitors who reach the form never wait on the observer.
+    const form = container.closest('form');
+    form?.addEventListener('focusin', requestWidget);
+    form?.addEventListener('pointerdown', requestWidget);
+
+    return () => {
+      observer.disconnect();
+      form?.removeEventListener('focusin', requestWidget);
+      form?.removeEventListener('pointerdown', requestWidget);
+    };
+  }, [isWidgetRequested]);
 
   useEffect(() => {
     let isMounted = true;
@@ -132,6 +176,7 @@ export default function TurnstileField({ submitButtonId, action }) {
         <>
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       <div className={status === 'verified' ? 'hidden' : 'block'}>
+      {isWidgetRequested ? (
       <Turnstile
         ref={turnstileRef}
         siteKey={siteKey}
@@ -149,6 +194,7 @@ export default function TurnstileField({ submitButtonId, action }) {
         onTimeout={onTimeout}
         onUnsupported={onUnsupported}
       />
+      ) : null}
       </div>
       {error ? (
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
