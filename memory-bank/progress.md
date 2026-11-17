@@ -1,3 +1,15 @@
+## 2026-11-17 — Exact-span DevSkim suppression for CI loopback tokens
+- Added a DS162092-only suppression family for the changed-line reviewer and its test: a two-file allowlist,
+  exact 16-space/8-space line patterns, the preceding `if host.casefold() not in {` requirement, and a
+  verified justification that removes the results from the uploaded SARIF.
+- Covered both reviewer exclusion-set tokens and the reviewer-test fixture with three positive tests, plus
+  negative controls for a different set member, missing context, unreviewed path, external host and partial
+  span. The focused suite passes 110 tests.
+- Replayed the real scanner SARIF: 5 results, 3 suppressed, 3 removed, 2 DS176209 placeholder results
+  remaining; the second pass found nothing left to suppress.
+- Left the two DS176209 placeholder fixtures untouched by design; the owner narrowed the original five-finding
+  proposal to DS162092 and these two files.
+
 ## 2026-11-17 — DevSkim alert report review and cleanup
 - Audited all ten bullets in `devskim-alerts.md` (the request counted nine) against current source, the Git
   revision that produced each identity, and a DevSkim 1.0.103 scan of every affected file.
