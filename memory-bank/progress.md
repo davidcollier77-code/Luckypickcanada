@@ -10,6 +10,17 @@
 - Left the two DS176209 placeholder fixtures untouched by design; the owner narrowed the original five-finding
   proposal to DS162092 and these two files.
 
+## 2026-11-17 — DevSkim alert report review and cleanup
+- Audited all ten bullets in `devskim-alerts.md` (the request counted nine) against current source, the Git
+  revision that produced each identity, and a DevSkim 1.0.103 scan of every affected file.
+- Current scan: five live findings (two DS176209 `TODO` fixtures, three DS162092 loopback tokens), four stale
+  positional duplicates from the pre-`bc6f2016` layout, and one remediated DS173237 error (40-hex fixture
+  replaced in PR #1920; pre-fix scan reproduced the error, current scan reports zero).
+- All five live findings are false positives in CI-only tooling: loopback-host exclusion-set members and
+  placeholder-rejection test inputs, with no production path, attacker control, or security impact.
+- Cleared the report to its header and append marker. No suppression, rule, workflow, scanner, application,
+  dependency, or deployment change; durable suppression of the live false positives is left for owner approval.
+
 ## 2026-11-17 — Shared adaptive performance and rendering system
 - Added one shared, dependency-free layer (`app/lib/adaptive-performance.js` plus a React binding) that
   resolves a single adaptation plan from measured network throughput/latency, Save-Data, device

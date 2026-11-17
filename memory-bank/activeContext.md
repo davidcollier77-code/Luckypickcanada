@@ -46,6 +46,51 @@ cleanup in PR #1948 but does not depend on that unmerged branch.
 
 ---
 
+# Active Context — DevSkim alert report review and cleanup
+
+- **Updated:** 2026-11-17
+- **Branch:** freebuff/c3e3aea4b5256eb42e63e937
+- **Base:** main at 44b2b3b7
+- **Spec Kit feature:** specs/182-devskim-alert-report-review
+
+## Current Task
+
+Audit every entry in `devskim-alerts.md`, remove only verified false
+positives and stale entries, and report any genuine issue for owner approval
+without implementing security changes.
+
+## Reviewed State
+
+- The file held ten bullets, not the nine counted in the request; all ten were
+audited individually.
+- A DevSkim 1.0.103 scan at HEAD reports five live findings: two DS176209
+  `TODO` test fixtures in `test_check_qa_pr_scope.py` and three DS162092
+  loopback tokens in `review_pr_changes.py` and `test_review_pr_changes.py`.
+- Four entries are stale positional duplicates created when `bc6f2016` moved
+  the tokens (313/314 to 569/570 and 133 to 140); the older identities came
+  from an earlier scan at `e5b86a99`.
+- One entry is the DS173237 error at the pre-fix `0b12cd86` timing test; PR
+  #1920 replaced the 40-hex fixture and the current scan reports zero findings.
+- All five live findings are verified false positives in CI-only tooling: the
+  DS162092 tokens are members of a loopback-host exclusion set or a test
+  fixture, and the DS176209 tokens are test inputs asserting placeholder
+  rejection. No production path, attacker control, or security impact exists.
+- No genuine or unresolved finding remains. No suppression, scanner, workflow,
+  application, dependency, or deployment change was made.
+
+## Limitations
+
+- The five live false positives were removed from the report without an
+  audited suppression, because suppression changes require owner approval.
+  The next scheduled scan will append them again until a separate exact-span
+  suppression is approved.
+
+## Verification
+
+See `specs/182-devskim-alert-report-review/evidence.md`.
+
+---
+
 # Active Context — Shared adaptive performance and rendering system
 
 - **Updated:** 2026-11-17
