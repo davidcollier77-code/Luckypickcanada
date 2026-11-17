@@ -11,6 +11,8 @@
 - Additional live source probes confirmed `text/html` responses from the configured TypeScript and Motion documentation URLs. React.dev and Tailwind probes were rate-limited with HTTP 429, so their response formats were not verified in that sample.
 - The repository already includes `jsdom` 30.0.1 as a development dependency, installed by the documentation refresh workflow. No new package is required.
 - The current refresh workflow has a manual `workflow_dispatch` trigger. Its schedules, retry interval, timezone and permissions are not required to change.
+- Review of the full legacy snapshot inventory found 10 of 77 HTML snapshots whose documentation is not statically extractable because it is held in JavaScript hydration data or encoded `<noscript><pre>` content. These must be safely rejected and reported rather than treated as converter failures or forced into an impossible success assertion.
+- Valid Markdown can begin with supported HTML block elements (for example a centered paragraph or image); the detector and validator must preserve these blocks while still rejecting rendered HTML documents and unsupported standalone fragments.
 
 ## Decisions
 
