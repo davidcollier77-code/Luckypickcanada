@@ -293,7 +293,9 @@ async function normalizeDocumentationResponse(response, sourceUrl) {
   const converted = convertHtmlToMarkdown(response.content, pageUrl);
   if (converted) return converted;
   console.warn('HTML response for ' + sourceUrl + ' could not be converted to Markdown; rejecting it without replacing any existing snapshot.');
-  return response.content;
+  // Retain a document-level HTML marker so the existing validator records a
+  // specific raw-HTML rejection even when the original response was only a fragment.
+  return '<!doctype html>\\n' + response.content;
 }
 
 function safeJoinDocs(...segments) {
