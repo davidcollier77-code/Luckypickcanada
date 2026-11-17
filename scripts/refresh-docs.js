@@ -42,7 +42,7 @@ const ERROR_PAGE_PATTERNS = [
 function isHtmlDocumentContent(content) {
   if (typeof content !== 'string') return false;
   const prefix = content.replace(/^\uFEFF?\s*(?:<!--[\s\S]*?-->\s*)*/, '').slice(0, 2048);
-  return /^(?:<\?xml\b|<!doctype\s+html\b|<(?:html|head|body|main|article|nav|section|div|h[1-6]|p|table|link|meta|title|style|script|svg|pre)\b)/i.test(prefix);
+  return /^(?:<\?xml\b|<!doctype\s+html\b|<\/?[a-z][a-z0-9-]*(?:\s+[^<>]*|\/?)>)/i.test(prefix);
 }
 
 function getContentType(headers = {}) {
