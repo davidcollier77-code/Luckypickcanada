@@ -335,7 +335,7 @@
     },
     "/websites/web_dev_images": {
       "type": "url",
-      "url": "https://web.dev/learn/images"
+      "url": "https://web.dev/learn/images/cms"
     },
     "/websites/mdn_image_types": {
       "type": "url",
