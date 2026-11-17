@@ -47,13 +47,13 @@ rm -rf .open-next
 npm run build
 ```
 
-### 2. Verify CSS in Build Output
-```bash
-# Check that theme CSS is accessible
-ls -la public/themes/default/
+### 2. Verify Theme CSS in Build Output
 
-# Should show:
-# index.css, default.css, homepage.css, etc.
+The active theme source lives under `themes/default/` and is imported by the application. Next.js emits the compiled CSS into `.next/static/css/`; the retired `public/themes/default/` mirror is not part of the active stylesheet pipeline.
+
+```bash
+# Inspect the generated Next.js CSS bundles
+ls -la .next/static/css/
 ```
 
 ### 3. Test Production Build Locally
@@ -76,8 +76,8 @@ console.log(getComputedStyle(document.body).backgroundColor);
 // Should include 'Manrope'
 console.log(getComputedStyle(document.body).fontFamily);
 
-// Check if theme CSS loaded
-console.log([...document.styleSheets].map(s => s.href).filter(h => h?.includes('theme')));
+// Check that Next.js-generated CSS bundles are linked
+console.log([...document.styleSheets].map(s => s.href).filter(h => h?.includes('/_next/static/css/')));
 ```
 
 ### 2. Database Connection Test
@@ -105,10 +105,10 @@ console.log([...document.styleSheets].map(s => s.href).filter(h => h?.includes('
 
 If issues occur after deployment:
 
-1. **CSS Issue:** 
-   - Verify `/themes/default/` folder exists in deployed files
-   - Check CloudFront/CDN cache settings
-   - Clear CDN cache for CSS files
+1. **CSS Issue:**
+   - Confirm the active imports in `app/layout.js` and the affected route still point to files under `themes/default/`.
+   - Verify the generated `/_next/static/css/` responses return successfully.
+   - Check the affected elements' computed styles and the deployment's asset responses.
 
 2. **Database Issue:**
    - Verify `POSTGRES_URL` environment variable is set
@@ -119,10 +119,11 @@ If issues occur after deployment:
 
 ### Issue: White Homepage
 **Symptoms:** Homepage renders with white background and default fonts
-**Fix:** 
-- Verify `/themes/default/index.css` is loaded in `<head>`
-- Check Network tab for CSS 404 errors
-- Clear CDN cache
+**Fix:**
+- Verify the active imports in `app/layout.js` and the affected route still point to files under `themes/default/`.
+- Check that the production HTML references generated `/_next/static/css/` bundles and that those requests succeed.
+- Inspect computed styles and identify any overriding CSS rule.
+- Do not restore the retired `public/themes/default/` copy or add a direct stylesheet link to it.
 
 ### Issue: "Database needs to be available" error
 **Symptoms:** Lucky Map shows fallback message

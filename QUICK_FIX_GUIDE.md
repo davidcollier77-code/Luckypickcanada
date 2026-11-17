@@ -1,28 +1,26 @@
 # QUICK FIX: Production Bugs - Immediate Action Required
 
-## Bug #1: White Homepage (CRITICAL - User-Facing)
+## Bug #1: White Homepage (CSS Loading)
 
-### Root Cause
-CSS files in `/themes/default/` not loading due to Next.js import path resolution in production.
+### Current CSS delivery
 
-### Immediate Fix Applied
-**File:** `app/layout.js`
-- **Changed:** Removed CSS import statement `import '../themes/default/index.css';`
-- **Added:** Direct `<link>` tag in HTML `<head>`: `<link rel="stylesheet" href="/themes/default/index.css" />`
-- **Why:** Next.js App Router handles static assets in `/public` and `/themes` differently in production vs development
+The old troubleshooting instructions for copying theme CSS into `public/themes/default/` and linking `/themes/default/index.css` are obsolete. The active application imports its styles from `themes/default/`, and Next.js compiles them into generated `/_next/static/css/` bundles.
 
-### What This Fixes
-✅ Dark background with aurora gradients will render  
-✅ Cinzel and Manrope fonts will load from Google Fonts  
-✅ All theme colors (gold, emerald, aurora effects) will display  
-✅ Homepage styling will match development environment  
+Current imports:
 
-### Verify After Deploy
-```javascript
-// Run in browser console on production site
-getComputedStyle(document.body).backgroundColor 
-// Should return: "rgb(2, 7, 12)" NOT "rgb(255, 255, 255)"
-```
+- `app/layout.js`: `../themes/default/index.css`
+- `app/homepage/HomePage.js`: `../../themes/default/homepage.css`
+- `app/homepage/Hero.js`: `../../themes/default/hero.css`
+- `app/map/page.js`, `app/crystal-ball/page.js`, and `app/crystal-ball/preview/page.js`: active `homepage.css`
+- `app/lucky-map-of-canada/lucky-map-of-canada.js`: active `map.css`
+
+### Verification
+
+Inspect the production HTML and Network panel. The page should load generated `/_next/static/css/[hash].css` files successfully. Check the affected element's computed styles and confirm its active source CSS import still exists.
+
+Do not recreate `public/themes/default/` or add a direct link to `/themes/default/index.css`. Those files are a retired duplicate, not the application stylesheet source.
+
+---
 
 ---
 
