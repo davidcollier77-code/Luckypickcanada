@@ -57,7 +57,7 @@ function isRawHtmlFragment(content) {
   const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
   let closing = null;
   if (!voidElements.has(opening[1].toLowerCase())) {
-    const closingPattern = /<\\/([a-z][a-z0-9-]*)\\s*>/ig;
+    const closingPattern = /<\/([a-z][a-z0-9-]*)\s*>/ig;
     let candidate;
     while ((candidate = closingPattern.exec(prefix))) {
       if (candidate[1].toLowerCase() === opening[1].toLowerCase()) {
