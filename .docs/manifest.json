@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-17T06:22:10-04:00",
+  "lastUpdated": "2026-11-17T15:13:58-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,11 +497,11 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "63b6c72cd1ec626d5d9278df5678236ba4a893ec",
+    "/github/docs": "7257848b585e3197683fa3d4a3deb57356671e3d",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
-    "/lucide-icons/lucide": "6f674729c39d1f2bfaf0c7caab641895fb2fe7b1",
+    "/lucide-icons/lucide": "149eba0aea48178a5ab1efe2c701de1da94f4be8",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "f14fc25bbf205e92266c8abf8512b3b517bcae4a",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",

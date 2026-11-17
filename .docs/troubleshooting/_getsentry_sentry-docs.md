@@ -1,15 +1,10 @@
 ---
 title: "Next.js"
-description: "Learn how to set up Sentry in your Next.js application using the installation wizard and capture your first events."
+description: "Learn how to set up Sentry in your Next.js application using the Sentry CLI and capture your first events."
 url: https://docs.sentry.io/platforms/javascript/guides/nextjs/
 ---
 
 # Sentry for Next.js
-
-Runtime
-
-* [Node.js (current page)](https://docs.sentry.io/platforms/javascript/guides/nextjs.md)
-* [Cloudflare](https://docs.sentry.io/platforms/javascript/guides/nextjs/cloudflare.md)
 
 ## Set up with Sentry CLI
 
@@ -51,21 +46,15 @@ You need:
 
 ## [Install](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#install)
 
-### [Run the Installation Wizard](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#run-the-installation-wizard)
+The AI-powered `sentry init` flow is currently experimental. To use the existing framework-specific setup instead, see the option below, or check out the [Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md) guide.
 
-Run the Sentry wizard to automatically install the SDK and configure Sentry in your Next.js application:
+Run the Sentry init command in your project directory to automatically configure Sentry in your Next.js application.
+
+The command guides you through setup and asks which optional Sentry features you want to enable beyond error monitoring.
 
 ```bash
-npx @sentry/wizard@latest -i nextjs
+npx sentry@latest init
 ```
-
-The wizard asks whether you want to enable **Tracing** and **Session Replay**, route browser requests through your server to avoid ad blockers, and create an example page. To match the configuration in this guide, answer **Yes** to each.
-
-Prefer to set things up yourself? Check out the [Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md) guide.
-
-## [Configure](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#configure)
-
-**Error Monitoring** starts working as soon as you call `Sentry.init()`. **Logs** and **Application Metrics** need no extra configuration, and you'll learn how to send them in steps [#3](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#send-logs) and [#4](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#send-application-metrics-). This guide also enables **Tracing**, **Session Replay**, and **User Feedback**.
 
 Want to learn more about these features?
 
@@ -76,184 +65,30 @@ Want to learn more about these features?
 * [**Application Metrics**](https://docs.sentry.io/product/metrics.md) (always enabled): Track and analyze custom application metrics, such as response times and database query durations, to understand trends and patterns in your application's performance and behavior over time.
 * [**User Feedback**](https://docs.sentry.io/product/user-feedback.md): Collect feedback directly from users when they encounter errors, allowing them to describe what happened and provide context that helps you understand and resolve issues faster.
 
-### [Initialize the SDK](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#initialize-the-sdk)
+How does sentry init work?
 
-Next.js runs code in different environments, so the wizard creates a separate initialization file for each in your project's root directory (or `src` folder):
+The `sentry init` command is AI-powered. It analyzes your project and generates a tailored integration, rather than applying a fixed template. Here's what it does:
 
-* `instrumentation-client.ts`: runs in the browser
-* `sentry.server.config.ts`: runs in the Node.js runtime
-* `sentry.edge.config.ts`: runs in the Edge runtime
+* **Analyzes your project** — reads project files and manifests to understand your Next.js app structure, including monorepos. It also respects AI instruction files such as `CLAUDE.md`, `AGENTS.md`, and `.cursorrules`.
+* **Detects your framework** — identifies Next.js and selects the `@sentry/nextjs` SDK.
+* **Fetches official Sentry docs** — uses the current Sentry documentation as the source of truth when generating integration code.
+* **Installs dependencies** — adds `@sentry/nextjs` using your project's package manager.
+* **Creates and modifies files** — sets up client-side, server-side, and edge initialization, the Next.js instrumentation file, `withSentryConfig` in your Next.js config, and other selected features based on your Next.js version and project structure.
+* **Verifies the integration** — re-reads modified files after writing to confirm Sentry was integrated.
 
-Use the tabs in the code box below to view each file.
+For full details on what each file does, see the [Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md) guide.
 
-The snippets also turn on:
+Prefer the existing Next.js wizard?
 
-* Tracing: via [`tracesSampleRate`](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options.md#tracesSampleRate) in all three files
-* Session Replay: via `replayIntegration()`, sampled with [`replaysSessionSampleRate`](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options.md#replaysSessionSampleRate) and [`replaysOnErrorSampleRate`](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options.md#replaysOnErrorSampleRate)
-* User Feedback: via [`feedbackIntegration()`](https://docs.sentry.io/platforms/javascript/guides/nextjs/user-feedback/configuration.md). The wizard doesn't add this integration, so add it to `instrumentation-client.ts` yourself.
-
-Don't need a feature? Remove its integration and options from the snippets.
-
-**\[Client] instrumentation-client.ts**
-
-```typescript
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: "https://<key>@o<orgId>.ingest.sentry.io/<projectId>",
-  integrations: [
-    // enables Session Replay
-    Sentry.replayIntegration(),
-    // enables User Feedback
-    Sentry.feedbackIntegration({
-      // Additional integration configuration goes in here
-      colorScheme: "system",
-    }),
-  ],
-
-  // Enables Tracing.
-  // Set to 1.0 to capture 100% of spans for tracing.
-  // We recommend reducing this value in production.
-  tracesSampleRate: 1.0,
-
-  // Capture replays for 10% of all sessions,
-  // plus for 100% of sessions with an error
-  // Requires Sentry.replayIntegration()
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-});
-
-// Instruments client-side navigations
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
-```
-
-**\[Server] sentry.server.config.ts**
-
-```typescript
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: "https://<key>@o<orgId>.ingest.sentry.io/<projectId>",
-
-  // Enables Tracing.
-  // Set to 1.0 to capture 100% of spans for tracing.
-  // We recommend reducing this value in production.
-  tracesSampleRate: 1.0,
-});
-```
-
-**\[Edge] sentry.edge.config.ts**
-
-```typescript
-import * as Sentry from "@sentry/nextjs";
-
-Sentry.init({
-  dsn: "https://<key>@o<orgId>.ingest.sentry.io/<projectId>",
-
-  // Enables Tracing.
-  // Set to 1.0 to capture 100% of spans for tracing.
-  // We recommend reducing this value in production.
-  tracesSampleRate: 1.0,
-});
-```
-
-### [Register the Server-Side Configuration](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#register-the-server-side-configuration)
-
-The wizard creates a [Next.js instrumentation file](https://nextjs.org/docs/app/guides/instrumentation) named `instrumentation.ts`. It loads your server and edge configurations, and exports `onRequestError` to capture errors from Server Components, route handlers, and middleware.
-
-```typescript
-import * as Sentry from "@sentry/nextjs";
-
-export async function register() {
-  if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("./sentry.server.config");
-  }
-
-  if (process.env.NEXT_RUNTIME === "edge") {
-    await import("./sentry.edge.config");
-  }
-}
-
-export const onRequestError = Sentry.captureRequestError;
-```
-
-### [Capture React Render Errors](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#capture-react-render-errors)
-
-If you use the App Router, the wizard adds Sentry to `app/global-error.tsx` to capture React rendering errors. If you use the Pages Router, it adds Sentry to `pages/_error.tsx` instead.
-
-```tsx
-"use client";
-
-import * as Sentry from "@sentry/nextjs";
-import NextError from "next/error";
-import { useEffect } from "react";
-
-export default function GlobalError({
-  error,
-}: {
-  error: Error & { digest?: string };
-}) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
-  return (
-    <html>
-      <body>
-        {/* `NextError` is the default Next.js error page component. Its type
-        definition requires a `statusCode` prop. However, since the App Router
-        does not expose status codes for errors, we simply pass 0 to render a
-        generic error message. */}
-        <NextError statusCode={0} />
-      </body>
-    </html>
-  );
-}
-```
-
-*Other available variations of the above snippet: jsx*
-
-### [Apply Instrumentation to Your App](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#apply-instrumentation-to-your-app)
-
-The wizard wraps your Next.js configuration with `withSentryConfig`. This instruments your app at build time, uploads source maps, and, if you said yes in the wizard, routes browser requests to Sentry through your server to avoid ad blockers.
-
-To forward only the request body to Sentry, add a tunnel route handler (SDK version `10.77.1` and later on v10, `11.9.0` and later on v11). Use the handler if Vercel Deployment Protection or another login protects your app. Learn more about the [`tunnelRoute` option](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/build.md#tunnelRoute).
-
-```typescript
-import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs/config";
-
-const nextConfig: NextConfig = {
-  // Your existing Next.js configuration
-};
-
-export default withSentryConfig(nextConfig, {
-  org: "<your-org-slug>",
-  project: "<your-project-slug>",
-
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Route browser requests to Sentry through a Next.js rewrite to avoid ad blockers.
-  // This can increase your server load as well as your hosting bill.
-  tunnelRoute: "/monitoring",
-});
-```
-
-### [Add Readable Stack Traces With Source Maps](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#add-readable-stack-traces-with-source-maps)
-
-The wizard stores your auth token in `.env.sentry-build-plugin` and adds the file to `.gitignore`. The Sentry build plugin uses this token to upload source maps when you build your app locally.
-
-For CI/CD builds, set the `SENTRY_AUTH_TOKEN` environment variable in your build system instead.
+If you don't want to use the experimental AI-powered flow, run the framework-specific installation wizard instead:
 
 ```bash
-SENTRY_AUTH_TOKEN=<your-sentry-auth-token>
+npx @sentry/wizard@latest -i nextjs
 ```
 
-### [Control the Data You Send to Sentry](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#control-the-data-you-send-to-sentry)
+To configure Sentry manually, follow the [Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md) guide.
+
+## [Control the Data You Send to Sentry](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#control-the-data-you-send-to-sentry)
 
 By default, the SDK sends user identity data (IP address, ID, and similar) and other data like HTTP bodies and URL query parameters. This will give you rich debugging context.
 
@@ -315,21 +150,7 @@ In the Node.js runtime, [`nodeRuntimeMetricsIntegration`](https://docs.sentry.io
 
 ## [Verify Your Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs.md#verify-your-setup)
 
-Let's test your setup and confirm that Sentry is working correctly and sending data to your Sentry project.
-
-The wizard created an example page that sends a test error from both your frontend and your backend:
-
-1. Start your development server:
-
-   ```bash
-   npm run dev
-   ```
-
-2. Open [localhost:3000/sentry-example-page](http://localhost:3000/sentry-example-page) in your browser.
-
-3. Click **Throw Sample Error**.
-
-If you skipped the example page, add a test button to one of your pages instead. Clicking it will trigger an error for Sentry to capture.
+The `sentry init` command checks the integration files it creates or modifies before it finishes. To confirm runtime events are reaching Sentry, add a test button to one of your pages. Clicking it will trigger an error for Sentry to capture.
 
 ```tsx
 "use client";
@@ -347,6 +168,18 @@ export default function Page() {
   );
 }
 ```
+
+If you used the Next.js wizard instead, it created an example page that sends a test error from both your frontend and your backend:
+
+1. Start your development server:
+
+   ```bash
+   npm run dev
+   ```
+
+2. Open [localhost:3000/sentry-example-page](http://localhost:3000/sentry-example-page) in your browser.
+
+3. Click **Throw Sample Error**.
 
 ##### Important
 
@@ -371,11 +204,11 @@ At this point, you should have integrated Sentry into your Next.js application. 
 
 * Explore [practical guides](https://docs.sentry.io/get-started/guides.md) on what to monitor, log, track, and investigate after setup
 * [Set up Agent Tracing](https://docs.sentry.io/platforms/javascript/guides/nextjs/agent-tracing.md) to monitor agents built with the Vercel AI SDK, LangChain, and more
-* [Set up tunneling](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tunneling.md) to avoid ad blockers blocking Sentry events, if you didn't enable it in the wizard
+* [Set up tunneling](https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tunneling.md) to avoid ad blockers blocking Sentry events
 
 Are you having problems setting up the SDK?
 
-* If you encountered issues with our installation wizard, try [setting up Sentry manually](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md)
+* If you encountered issues with `sentry init` or the installation wizard, try [setting up Sentry manually](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md)
 * Find various topics in [Troubleshooting](https://docs.sentry.io/platforms/javascript/guides/nextjs/troubleshooting.md)
 * [Get support](https://www.sentry.help/en/)
 
@@ -423,7 +256,6 @@ Are you having problems setting up the SDK?
 
 ## Topics
 
-- [Quick Start (Cloudflare)](https://docs.sentry.io/platforms/javascript/guides/nextjs/cloudflare.md)
 - [Manual Setup](https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup.md)
 - [Capturing Errors](https://docs.sentry.io/platforms/javascript/guides/nextjs/capturing-errors.md)
 - [Source Maps](https://docs.sentry.io/platforms/javascript/guides/nextjs/sourcemaps.md)
