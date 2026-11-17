@@ -1,108 +1,115 @@
 {
   "baseUrl": "http://127.0.0.1:3100",
-  "measuredAt": "2026-11-17T18:21:26.225Z",
+  "runs": 3,
+  "method": "median of 3 runs; 2.5 s measurement window after a 0.9 s settle; canvas clearRect counted per ambient paint",
   "results": [
     {
       "profile": "low-capability-mobile",
       "viewport": "360x740@2x",
       "cpuThrottle": "4x",
       "reducedMotion": "no-preference",
-      "paintsPerSecond": 24.4,
-      "longTaskCount": 1,
-      "longTaskTotalMs": 60,
-      "longestTaskMs": 60,
+      "medianPaintsPerSecond": 30,
+      "runsPaintsPerSecond": [
+        30,
+        30,
+        30
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 253,
-      "domContentLoadedMs": 208,
-      "loadEventMs": 1069,
+      "medianLoadMs": 150,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     },
     {
       "profile": "medium-capability-mobile",
       "viewport": "390x844@3x",
       "cpuThrottle": "2x",
       "reducedMotion": "no-preference",
-      "paintsPerSecond": 45.2,
-      "longTaskCount": 0,
-      "longTaskTotalMs": 0,
-      "longestTaskMs": 0,
+      "medianPaintsPerSecond": 59.6,
+      "runsPaintsPerSecond": [
+        60,
+        59.6,
+        56.8
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 525,
-      "domContentLoadedMs": 523,
-      "loadEventMs": 523,
+      "medianLoadMs": 363,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     },
     {
       "profile": "same-viewport-capable",
       "viewport": "390x844@2x",
       "cpuThrottle": "1x",
       "reducedMotion": "no-preference",
-      "paintsPerSecond": 56.4,
-      "longTaskCount": 0,
-      "longTaskTotalMs": 0,
-      "longestTaskMs": 0,
+      "medianPaintsPerSecond": 59.2,
+      "runsPaintsPerSecond": [
+        59.2,
+        60,
+        56
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 105,
-      "domContentLoadedMs": 96,
-      "loadEventMs": 308,
+      "medianLoadMs": 203,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     },
     {
       "profile": "same-viewport-constrained",
       "viewport": "390x844@2x",
       "cpuThrottle": "1x",
       "reducedMotion": "no-preference",
-      "paintsPerSecond": 29.6,
-      "longTaskCount": 0,
-      "longTaskTotalMs": 0,
-      "longestTaskMs": 0,
+      "medianPaintsPerSecond": 30,
+      "runsPaintsPerSecond": [
+        30,
+        30,
+        28.8
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 93,
-      "domContentLoadedMs": 91,
-      "loadEventMs": 289,
+      "medianLoadMs": 225,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     },
     {
       "profile": "high-capability-desktop",
       "viewport": "1440x900@1x",
       "cpuThrottle": "1x",
       "reducedMotion": "no-preference",
-      "paintsPerSecond": 20.8,
-      "longTaskCount": 0,
-      "longTaskTotalMs": 0,
-      "longestTaskMs": 0,
+      "medianPaintsPerSecond": 24.4,
+      "runsPaintsPerSecond": [
+        25.2,
+        24.4,
+        20.8
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 146,
-      "domContentLoadedMs": 142,
-      "loadEventMs": 323,
+      "medianLoadMs": 186,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     },
     {
       "profile": "high-capability-desktop-reduced-motion",
       "viewport": "1440x900@1x",
       "cpuThrottle": "1x",
       "reducedMotion": "reduce",
-      "paintsPerSecond": 0,
-      "longTaskCount": 0,
-      "longTaskTotalMs": 0,
-      "longestTaskMs": 0,
+      "medianPaintsPerSecond": 0,
+      "runsPaintsPerSecond": [
+        0,
+        0,
+        0
+      ],
+      "medianLongTaskTotalMs": 0,
+      "maxLongTaskCount": 0,
       "heapUsedMb": 9.5,
-      "loadMs": 85,
-      "domContentLoadedMs": 78,
-      "loadEventMs": 293,
+      "medianLoadMs": 225,
       "canvasCount": 1,
-      "visibility": "visible",
-      "consoleErrors": []
+      "consoleErrors": 0
     }
   ]
 }
