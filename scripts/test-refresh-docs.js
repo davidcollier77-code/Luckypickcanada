@@ -97,6 +97,7 @@ const {
   normalizeDocumentationResponse,
   convertHtmlToMarkdown,
   isHtmlDocumentContent,
+  isHtmlResponse,
   getUpstreamSha
 } = refreshDocs;
 
