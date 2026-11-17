@@ -271,7 +271,7 @@ async function runTests() {
   });
   
   await test('HTML detection preserves Markdown documents that begin with an HTML block', () => {
-    const markdown = '<p align="center"><img src="logo.svg" alt="Project logo"></p>\\n\\n' +
+    const markdown = '<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n' +
       '# Project documentation\\n\\nThis is ordinary Markdown content following the HTML block.';
     assert.strictEqual(isHtmlDocumentContent(markdown), false);
     assert.strictEqual(isHtmlResponse(markdown, 'text/markdown; charset=utf-8'), false);
@@ -284,15 +284,15 @@ async function runTests() {
 
   await test('HTML conversion preserves semantic blocks inside wrapper elements', () => {
     const html = '<!doctype html><html><body><main><header><h1>Wrapped documentation</h1></header>' +
-      '<custom-panel><pre><code class="language-js">const value = 1;\\n</code></pre></custom-panel>' +
+      '<custom-panel><pre><code class="language-js">const value = 1;\n</code></pre></custom-panel>' +
       '<dl><dt>Important term</dt><dd>This definition contains enough descriptive documentation text to remain meaningful.</dd></dl>' +
       '<p>This paragraph provides additional useful documentation content for the semantic conversion test.</p>' +
       '</main></body></html>';
     const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/wrapped');
     assert.match(markdown, /^# Wrapped documentation$/m);
     const fence = String.fromCharCode(96).repeat(3);
-    assert.ok(markdown.includes(fence + 'js\\nconst value = 1;\\n' + fence));
-    assert.match(markdown, /\\*\\*Important term\\*\\*/);
+    assert.ok(markdown.includes(fence + 'js\nconst value = 1;\n' + fence));
+    assert.match(markdown, /\*\*Important term\*\*/);
     assert.match(markdown, /This definition contains enough descriptive documentation text/);
   });
 
