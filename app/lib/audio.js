@@ -1,4 +1,8 @@
 import { CONFETTI_POP_URL } from './confettiPopSource.mjs';
+import {
+  allowSpeculativeAudio,
+  registerReleasableResource,
+} from './adaptive-performance.js';
 
 const audioCache = {};
 
@@ -31,7 +35,7 @@ export async function playButtonClick() {
  */
 let confettiPopLoadPromise = null;
 
-export function preloadConfettiPop() {
+function loadConfettiPop() {
   if (typeof window === 'undefined') return Promise.resolve();
 
   if (audioCache.confettiPop?.state() === 'loaded') return Promise.resolve();
@@ -71,6 +75,17 @@ export function preloadConfettiPop() {
 }
 
 /**
+ * Prepares the chime before the visitor commits, unless the shared adaptive plan
+ * has deferred speculative audio; the activation path loads it directly.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready or the preload was deferred.
+ */
+export function preloadConfettiPop() {
+  if (!allowSpeculativeAudio()) return Promise.resolve();
+  return loadConfettiPop();
+}
+
+/**
  * Starts the already-loaded chime synchronously in the button activation path.
  * If preload has not finished, prepare it for the next activation instead of
  * allowing an unexpected sound to start after the scroll has completed.
@@ -86,7 +101,7 @@ export function playConfettiPop() {
     return Promise.resolve();
   }
 
-  return preloadConfettiPop();
+  return loadConfettiPop();
 }
 
 
@@ -105,7 +120,7 @@ let revealSparkleLoadPromise = null;
  *
  * @returns {Promise<void>} Resolves when the sound is ready to play.
  */
-export function preloadRevealSparkle() {
+function loadRevealSparkle() {
   if (typeof window === 'undefined') return Promise.resolve();
 
   if (audioCache.revealSparkle?.state() === 'loaded') return Promise.resolve();
@@ -146,6 +161,17 @@ export function preloadRevealSparkle() {
 }
 
 /**
+ * Prepares the opening sparkle ahead of the reveal unless speculative audio is
+ * deferred; opening the reveal still loads it.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready or the preload was deferred.
+ */
+export function preloadRevealSparkle() {
+  if (!allowSpeculativeAudio()) return Promise.resolve();
+  return loadRevealSparkle();
+}
+
+/**
  * Plays the already-loaded opening sparkle once for this reveal.
  *
  * @returns {Promise<void>} Resolves after requesting playback or preload.
@@ -161,7 +187,7 @@ export function playRevealSparkle() {
     return Promise.resolve();
   }
 
-  return preloadRevealSparkle();
+  return loadRevealSparkle();
 }
 
 
@@ -230,7 +256,7 @@ function stopApplausePlayback() {
  *
  * @returns {Promise<void>} Resolves when the sound is ready to play.
  */
-export function preloadRevealApplause() {
+function loadRevealApplause() {
   if (typeof window === 'undefined') return Promise.resolve();
 
   if (audioCache.revealApplause?.state() === 'loaded') return Promise.resolve();
@@ -271,6 +297,17 @@ export function preloadRevealApplause() {
 }
 
 /**
+ * Prepares the recorded applause unless speculative audio is deferred; the
+ * celebration's finish still loads it.
+ *
+ * @returns {Promise<void>} Resolves when the sound is ready or the preload was deferred.
+ */
+export function preloadRevealApplause() {
+  if (!allowSpeculativeAudio()) return Promise.resolve();
+  return loadRevealApplause();
+}
+
+/**
  * Plays the applause once for the given reveal session. If the sound is still
  * loading, playback begins only when the load completes *and* that same reveal
  * session is still active; a late load after a close does nothing. Repeated
@@ -299,7 +336,7 @@ export function playRevealApplause(sessionId) {
 
   if (startPlayback()) return Promise.resolve(true);
 
-  return preloadRevealApplause()
+  return loadRevealApplause()
     .then(startPlayback)
     .catch((error) => {
       console.warn('Reveal applause unavailable', error);
@@ -335,7 +372,7 @@ const CRYSTAL_BALL_SOUNDS = {
   },
 };
 
-export function preloadCrystalBallAudio() {
+function loadCrystalBallAudio() {
   if (typeof window === 'undefined') return Promise.resolve();
   const keys = Object.keys(CRYSTAL_BALL_SOUNDS);
   if (keys.every((key) => audioCache[key]?.state() === 'loaded')) return Promise.resolve();
@@ -389,6 +426,17 @@ export function preloadCrystalBallAudio() {
   return crystalBallAudioLoadPromise;
 }
 
+/**
+ * Prepares the Crystal Ball sounds when the visitor shows intent, unless the
+ * adaptive plan defers speculative audio; each playback path loads on demand.
+ *
+ * @returns {Promise<void>} Resolves when the sounds are ready or the preload was deferred.
+ */
+export function preloadCrystalBallAudio() {
+  if (!allowSpeculativeAudio()) return Promise.resolve();
+  return loadCrystalBallAudio();
+}
+
 function playCrystalBallOneShot(key) {
   if (typeof window === 'undefined') return;
   const sound = audioCache[key];
@@ -398,7 +446,7 @@ function playCrystalBallOneShot(key) {
     return;
   }
   // Prepare for the next visitor action; never play after the animation moves on.
-  void preloadCrystalBallAudio();
+  void loadCrystalBallAudio();
 }
 
 export function playCrystalBallEnergy() {
@@ -417,7 +465,7 @@ export function playCrystalBallEnergy() {
 
   startWhenReady();
   // Start after decode only if the visitor is still in the loading phase.
-  void preloadCrystalBallAudio().then(startWhenReady);
+  void loadCrystalBallAudio().then(startWhenReady);
 }
 
 export function stopCrystalBallEnergy() {
@@ -442,6 +490,67 @@ export function stopCrystalBallEnergy() {
     audioCache.crystalEnergyId = null;
   }
 }
+
+/**
+ * Releases decoded audio that is not currently playing and clears the memoised
+ * load promises, so the next interaction can load the sound again.
+ *
+ * Registered with the shared adaptive layer: it runs only when the plan reports
+ * memory pressure or a hidden constrained page. A playing or pending sound is
+ * never interrupted or cancelled, and every playback path reloads on demand, so
+ * no cue is lost.
+ *
+ * @returns {number} Number of cached sounds released.
+ */
+export function releaseIdleAudio() {
+  if (typeof window === 'undefined') return 0;
+
+  let released = 0;
+  const releasedKeys = new Set();
+  for (const [key, value] of Object.entries(audioCache)) {
+    if (!value || typeof value !== 'object' || typeof value.unload !== 'function') continue;
+
+    let isPlaying = false;
+    try {
+      isPlaying = typeof value.playing === 'function' && value.playing();
+    } catch {
+      isPlaying = false;
+    }
+    if (isPlaying) continue;
+
+    // Keep an energy loop that was requested but has not started yet: its
+    // pending load still calls back into startWhenReady, and unloading it here
+    // would cancel the cue the visitor already triggered.
+    if (key === 'crystalEnergy' && audioCache.crystalEnergyRequested === true) continue;
+
+    try {
+      value.unload();
+    } catch {
+      // A failed unload must not block the remaining releases.
+    }
+    delete audioCache[key];
+    releasedKeys.add(key);
+    released += 1;
+  }
+
+  // Only forget the energy playback id when its Howl was actually released; a
+  // playing or pending loop must stay targetable for its fade-out.
+  if (releasedKeys.has('crystalEnergy')) {
+    audioCache.crystalEnergyId = null;
+  }
+  confettiPopLoadPromise = null;
+  revealSparkleLoadPromise = null;
+  revealApplauseLoadPromise = null;
+  crystalBallAudioLoadPromise = null;
+  applauseRequestedSessionId = null;
+  applauseSoundId = null;
+
+  return released;
+}
+
+registerReleasableResource(() => {
+  releaseIdleAudio();
+});
 
 export function playCrystalBallReveal() {
   playCrystalBallOneShot('crystalReveal');

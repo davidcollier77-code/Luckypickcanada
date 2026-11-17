@@ -1,3 +1,45 @@
+# Active Context — Shared adaptive performance and rendering system
+
+- **Updated:** 2026-11-17
+- **Branch:** freebuff/1716deb7870376472b3b3bb7
+- **Base:** main at ec4b5258
+- **Spec Kit feature:** specs/180-adaptive-performance-rendering
+
+## Current Task
+
+Build a shared adaptive capability layer that evaluates network, device,
+accessibility and memory conditions, governs ambient animation cadence and
+speculative loading, reassesses on change and preserves the complete existing
+experience for capable devices.
+
+## Implemented State
+
+- `app/lib/adaptive-performance.js` resolves one plan from measured downlink/RTT
+  (labels are fallback only; no 5G inference), Save-Data, device memory/cores,
+  reduced motion, visibility and optional `performance.memory` pressure.
+- One shared subscription serves every consumer with a 120 ms debounce, an
+  optional 20 s heap poll, connection/resize/visibility/motion/online listeners
+  and complete teardown on the last unsubscribe.
+- `createAdaptiveFrameLoop` keeps 60 fps on capable devices, 30 fps on
+  constrained ones, pauses on hidden/reduced-motion and recovers on improvement;
+  the homepage star canvas, Starfield, TwinklingStars, ShootingStars and Aurora
+  all use it.
+- `IntentPrefetchLink` requires a press/tap/focus instead of hover on a moderate
+  connection and skips prefetch entirely on slow/Save-Data, recovering when the
+  connection improves.
+- Audio preloads defer under constraint while every playback path loads on
+  demand; `releaseIdleAudio` unloads decoded sounds on memory pressure without
+  interrupting playback.
+- Image delivery stays on the approved native `srcset`/`sizes` ladders; the plan
+  exposes `imageQuality` for future derivative selection rather than rewriting
+  asserted markup.
+
+## Verification
+
+See `specs/180-adaptive-performance-rendering/evidence.md`.
+
+---
+
 # Active Context — Homepage mobile LCP delivery
 
 - **Updated:** 2026-11-17

@@ -9,6 +9,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from "../app/lib/graphics-capabilities";
+import { createAdaptiveFrameLoop } from "../app/lib/adaptive-performance";
 
 const TwinklingStars: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,15 +20,14 @@ const TwinklingStars: React.FC = () => {
     const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId = 0;
+    const frameLoop = createAdaptiveFrameLoop();
     let contextLost = false;
     let width = window.innerWidth;
     let height = window.innerHeight;
     let isReducedMotion = prefersReducedMotion();
 
     const stopAnimation = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = 0;
+      frameLoop.cancel();
     };
 
     // We only want stars in the upper part of the sky (e.g. top 60%),
@@ -105,7 +105,7 @@ const TwinklingStars: React.FC = () => {
       });
 
       if (!isReducedMotion && !contextLost && isPageVisible()) {
-        animationFrameId = requestAnimationFrame(draw);
+        frameLoop.request(draw);
       }
     };
 
@@ -152,7 +152,7 @@ const TwinklingStars: React.FC = () => {
       stopMotionListener();
       stopVisibilityListener();
       stopContextWatcher();
-      stopAnimation();
+      frameLoop.dispose();
     };
   }, []);
 

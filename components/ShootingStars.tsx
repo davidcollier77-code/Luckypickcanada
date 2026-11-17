@@ -9,6 +9,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from "../app/lib/graphics-capabilities";
+import { createAdaptiveFrameLoop } from "../app/lib/adaptive-performance";
 
 export default function ShootingStars() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,7 +23,7 @@ export default function ShootingStars() {
     const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId = 0;
+    const frameLoop = createAdaptiveFrameLoop();
     let contextLost = false;
 
     type ShootingStar = {
@@ -130,13 +131,12 @@ export default function ShootingStars() {
 
       ctx.globalCompositeOperation = 'source-over'; // Restore default
       if (!reducedMotion && !contextLost && isPageVisible()) {
-        animationFrameId = requestAnimationFrame(draw);
+        frameLoop.request(draw);
       }
     };
 
     const stopAnimation = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = 0;
+      frameLoop.cancel();
     };
 
     const handleResize = () => {
@@ -185,7 +185,7 @@ export default function ShootingStars() {
       stopMotionListener();
       stopVisibilityListener();
       stopContextWatcher();
-      stopAnimation();
+      frameLoop.dispose();
     };
   }, []);
 
