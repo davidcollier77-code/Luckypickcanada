@@ -38,6 +38,266 @@ const ERROR_PAGE_PATTERNS = [
   { pattern: /^\s*\{\s*"(?:message|error)"\s*:/i, reason: 'download is a JSON error response' }
 ];
 
+
+function isHtmlDocumentContent(content, contentType = '') {
+  if (typeof content !== 'string') return false;
+  const mime = String(contentType).split(';', 1)[0].trim().toLowerCase();
+  // Markdown explicitly permits leading HTML blocks such as <p>, <div> and <img>.
+  // Keep those intact; detect document-level HTML even when a server labels it text/plain.
+  if (['text/markdown', 'text/x-markdown', 'application/markdown'].includes(mime)) return false;
+  const prefix = content.replace(/^\uFEFF?\s*(?:<!--[\s\S]*?-->\s*)*/, '').slice(0, 2048);
+  return /^(?:<\?xml\b|<!doctype\s+html\b|<(?:html|head|body|script|iframe)(?:\s[^<>]*|\/?)>)/i.test(prefix);
+}
+
+function isRawHtmlFragment(content) {
+  if (typeof content !== 'string' || isHtmlDocumentContent(content)) return false;
+  const prefix = content.replace(/^\uFEFF?\s*/, '');
+  const opening = prefix.match(/^<([a-z][a-z0-9-]*)\b[^<>]*>/i);
+  if (!opening) return false;
+  // These common block elements are valid Markdown HTML blocks, not evidence
+  // that the source is a rendered HTML snapshot.
+  const markdownHtmlBlockTags = new Set(['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'p', 'picture', 'span', 'br']);
+  if (markdownHtmlBlockTags.has(opening[1].toLowerCase())) return false;
+  const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
+  let closing = null;
+  if (!voidElements.has(opening[1].toLowerCase())) {
+    const closingPattern = /<\/([a-z][a-z0-9-]*)\s*>/ig;
+    let candidate;
+    while ((candidate = closingPattern.exec(prefix))) {
+      if (candidate[1].toLowerCase() === opening[1].toLowerCase()) {
+        closing = candidate;
+        break;
+      }
+    }
+  }
+  if (!closing && !voidElements.has(opening[1].toLowerCase())) return true;
+  const closingEnd = closing ? closing.index + closing[0].length : opening[0].length;
+  const remainder = prefix.slice(closingEnd).trimStart();
+  // A leading HTML block followed by Markdown structure is a valid Markdown
+  // document (common in READMEs); a standalone HTML fragment is not.
+  return !/^(?:#{1,6}\s|[-*+]\s|\d+\.\s|>\s)/.test(remainder);
+}
+
+function getContentType(headers = {}) {
+  return String(headers['content-type'] || headers['Content-Type'] || '')
+    .split(';', 1)[0].trim().toLowerCase();
+}
+
+function isHtmlResponse(content, contentType = '') {
+  const mime = String(contentType).split(';', 1)[0].trim().toLowerCase();
+  return mime === 'text/html' || mime === 'application/xhtml+xml' ||
+    isHtmlDocumentContent(content, mime);
+}
+
+function parseDocumentationUrl(value, baseUrl) {
+  let parsed;
+  try {
+    parsed = baseUrl ? new URL(value, baseUrl) : new URL(value);
+  } catch (error) {
+    throw new Error('Invalid documentation URL.');
+  }
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) {
+    throw new Error('Documentation URLs must use HTTPS and must not contain credentials.');
+  }
+  return parsed;
+}
+
+function convertHtmlToMarkdown(html, baseUrl) {
+  if (typeof html !== 'string' || !html.trim()) return '';
+  let document;
+  try {
+    const JSDOM = require('jsdom').JSDOM;
+    document = new JSDOM(html, { url: parseDocumentationUrl(baseUrl).href }).window.document;
+  } catch (error) {
+    return '';
+  }
+
+  const selectors = [
+    'main', 'article', '[role="main"]', '#content', '#main-content', '#docs-content',
+    '.markdown-body', '.prose', '.documentation', '.doc-content'
+  ];
+  let root = null;
+  for (const selector of selectors) {
+    const candidate = document.querySelector(selector);
+    if (candidate && candidate.textContent.trim().length >= 80) {
+      root = candidate;
+      break;
+    }
+  }
+  root = root || document.body || document.documentElement;
+  if (!root) return '';
+
+  const remove = [
+    'script', 'style', 'noscript', 'template', 'iframe', 'svg', 'canvas', 'nav',
+    'footer', 'aside', 'form', 'button', 'input', 'select', 'textarea',
+    '[role="navigation"]', '[role="contentinfo"]', '[role="complementary"]',
+    '[aria-hidden="true"]', '[hidden]', '[class*="cookie" i]', '[id*="cookie" i]',
+    '[class*="consent" i]', '[id*="consent" i]', '[class*="banner" i]',
+    '[id*="banner" i]', '[class*="sidebar" i]', '[id*="sidebar" i]'
+  ];
+  root.querySelectorAll(remove.join(',')).forEach((element) => element.remove());
+
+  const tick = String.fromCharCode(96);
+  const safeHref = (href) => {
+    try {
+      const url = new URL(href, baseUrl);
+      return ['https:', 'http:', 'mailto:'].includes(url.protocol) ? url.href : null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const inline = (node) => {
+    if (node.nodeType === 3) return node.nodeValue.replace(/\s+/g, ' ');
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    const children = () => Array.from(node.childNodes).map(inline).join('');
+    if (tag === 'br') return '\n';
+    if (tag === 'img') {
+      const alt = (node.getAttribute('alt') || '').trim();
+      const src = safeHref(node.getAttribute('src'));
+      return alt && src ? '![' + alt + '](' + src + ')' : alt;
+    }
+    if (tag === 'a') {
+      const label = children().trim();
+      const href = safeHref(node.getAttribute('href'));
+      return label && href ? '[' + label + '](' + href + ')' : label;
+    }
+    if (['strong', 'b'].includes(tag)) return '**' + children().trim() + '**';
+    if (['em', 'i'].includes(tag)) return '*' + children().trim() + '*';
+    if (['del', 's', 'strike'].includes(tag)) return '~~' + children().trim() + '~~';
+    if (tag === 'code') {
+      const value = node.textContent.replace(/\s+/g, ' ').trim();
+      const runs = value.match(new RegExp(tick + '+', 'g')) || [];
+      const fence = tick.repeat(Math.max(1, ...runs.map((run) => run.length + 1)));
+      return fence + value + fence;
+    }
+    return children();
+  };
+
+  const list = (element, depth = 0) => {
+    const ordered = element.tagName.toLowerCase() === 'ol';
+    const startNumber = Math.max(1, Number(element.getAttribute('start')) || 1);
+    return Array.from(element.children).filter((item) => item.tagName.toLowerCase() === 'li').map((item, index) => {
+      const nested = Array.from(item.children).filter((child) => ['ul', 'ol'].includes(child.tagName.toLowerCase()));
+      const body = Array.from(item.childNodes)
+        .filter((child) => !(child.nodeType === 1 && ['ul', 'ol'].includes(child.tagName.toLowerCase())))
+        .map(inline).join('').replace(/\s+/g, ' ').trim();
+      const marker = ordered ? String(startNumber + index) + '.' : '-';
+      const nestedText = nested.map((child) => list(child, depth + 1)).filter(Boolean).join('\n');
+      return '  '.repeat(depth) + marker + ' ' + body + (nestedText ? '\n' + nestedText : '');
+    }).filter(Boolean).join('\n');
+  };
+
+  const table = (element) => {
+    const rows = Array.from(element.querySelectorAll('tr')).map((row) =>
+      Array.from(row.children)
+        .filter((cell) => ['th', 'td'].includes(cell.tagName.toLowerCase()))
+        .map((cell) => inline(cell).replace(/\s+/g, ' ').trim().replace(/\\/g, '\\\\').replace(/\|/g, '\\|'))
+    ).filter((row) => row.length);
+    if (!rows.length) return '';
+    const width = Math.max(...rows.map((row) => row.length));
+    const padded = rows.map((row) => Array.from({ length: width }, (_, index) => row[index] || ''));
+    const header = padded[0];
+    return '\n\n| ' + header.join(' | ') + ' |\n| ' + header.map(() => '---').join(' | ') + ' |' +
+      (padded.length > 1 ? '\n' + padded.slice(1).map((row) => '| ' + row.join(' | ') + ' |').join('\n') : '') +
+      '\n\n';
+  };
+
+  const block = (node) => {
+    if (node.nodeType === 3) return node.nodeValue.replace(/\s+/g, ' ');
+    if (node.nodeType !== 1) return '';
+    const tag = node.tagName.toLowerCase();
+    if (tag === 'pre') {
+      const code = node.querySelector('code');
+      const value = (code || node).textContent.replace(/\r\n/g, '\n').replace(/\n+$/, '');
+      const classes = (node.className || '') + ' ' + (code ? code.className || '' : '');
+      const language = (classes.match(/(?:language|lang)-([a-z0-9_+-]+)/i) || [])[1] || '';
+      const runs = value.match(new RegExp(tick + '+', 'g')) || [];
+      const fence = tick.repeat(Math.max(3, ...runs.map((run) => run.length + 1)));
+      return '\n\n' + fence + language + '\n' + value + '\n' + fence + '\n\n';
+    }
+    if (/^h[1-6]$/.test(tag)) return '\n\n' + '#'.repeat(Number(tag.slice(1))) + ' ' + inline(node).trim() + '\n\n';
+    if (tag === 'p') return '\n\n' + inline(node).trim() + '\n\n';
+    if (tag === 'ul' || tag === 'ol') return '\n\n' + list(node) + '\n\n';
+    if (tag === 'table') return table(node);
+    if (tag === 'hr') return '\n\n---\n\n';
+    if (tag === 'blockquote') {
+      const quote = Array.from(node.childNodes).map(block).join('').trim();
+      return '\n\n' + quote.split('\n').map((line) => line ? '> ' + line : '>').join('\n') + '\n\n';
+    }
+    if (tag === 'dt') return '\n\n**' + inline(node).trim() + '**\n';
+    if (tag === 'dd') return '\n' + inline(node).trim() + '\n';
+    if (['div', 'section', 'main', 'article', 'header', 'figure', 'details', 'summary', 'dl'].includes(tag)) {
+      return '\n\n' + Array.from(node.childNodes).map(block).join('') + '\n\n';
+    }
+    // Documentation commonly wraps semantic blocks in custom elements, tbody,
+    // or other layout containers. Recurse when block descendants are present
+    // instead of flattening headings, lists, code and tables into inline text.
+    if (node.querySelector('h1,h2,h3,h4,h5,h6,p,pre,ul,ol,table,dl,dt,dd,blockquote,div,section,article,header,figure,details,summary,hr')) {
+      return '\n\n' + Array.from(node.childNodes).map(block).join('') + '\n\n';
+    }
+    return inline(node);
+  };
+
+  const markdown = Array.from(root.childNodes).map(block).join('')
+    .replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  return markdown ? markdown + '\n' : '';
+}
+
+function findMarkdownAlternateUrl(html, pageUrl) {
+  try {
+    const JSDOM = require('jsdom').JSDOM;
+    const safePageUrl = parseDocumentationUrl(pageUrl);
+    const document = new JSDOM(html, { url: safePageUrl.href }).window.document;
+    for (const link of document.querySelectorAll('link[rel][type][href]')) {
+      const rel = (link.getAttribute('rel') || '').toLowerCase().split(/\s+/);
+      const mime = (link.getAttribute('type') || '').split(';', 1)[0].trim().toLowerCase();
+      if (!rel.includes('alternate') || !['text/markdown', 'text/x-markdown', 'application/markdown'].includes(mime)) continue;
+      try {
+        const alternate = parseDocumentationUrl(link.getAttribute('href'), safePageUrl.href);
+        if (alternate.origin === safePageUrl.origin && alternate.href !== safePageUrl.href) return alternate.href;
+      } catch (error) {
+        // Ignore malformed, non-HTTPS or cross-origin alternate URLs.
+      }
+    }
+  } catch (error) {
+    // The fallback converter or validator handles malformed HTML.
+  }
+  return null;
+}
+
+async function normalizeDocumentationResponse(response, sourceUrl) {
+  if (!response || typeof response.content !== 'string') return '';
+  if (!isHtmlResponse(response.content, response.contentType)) return response.content;
+
+  // Preserve the original markers so the existing validator can reject HTTP
+  // error and bot-challenge pages before HTML conversion hides their structure.
+  const sample = response.content.slice(0, 200000);
+  if (ERROR_PAGE_PATTERNS.some((rule) => rule.pattern.test(sample))) {
+    return response.content;
+  }
+
+  const pageUrl = response.url || sourceUrl;
+  const alternateUrl = findMarkdownAlternateUrl(response.content, pageUrl);
+  if (alternateUrl) {
+    try {
+      const origin = parseDocumentationUrl(pageUrl).origin;
+      const alternate = await fetchUrlResponse(alternateUrl, origin, 2);
+      if (!isHtmlResponse(alternate.content, alternate.contentType)) return alternate.content;
+      console.warn('Markdown alternate for ' + sourceUrl + ' returned HTML; converting the original page instead.');
+    } catch (error) {
+      console.warn('Markdown alternate for ' + sourceUrl + ' could not be fetched (' + error.message + '); converting the original page instead.');
+    }
+  }
+  const converted = convertHtmlToMarkdown(response.content, pageUrl);
+  if (converted) return converted;
+  console.warn('HTML response for ' + sourceUrl + ' could not be converted to Markdown; rejecting it without replacing any existing snapshot.');
+  // Retain a document-level HTML marker so the existing validator records a
+  // specific raw-HTML rejection even when the original response was only a fragment.
+  return '<!doctype html>' + response.content;
+}
+
 function safeJoinDocs(...segments) {
   const resolved = path.resolve(DOCS_BASE_DIR, ...segments);
   if (resolved !== DOCS_BASE_DIR && !resolved.startsWith(DOCS_BASE_DIR + path.sep)) {
@@ -172,6 +432,10 @@ function validateDocumentContent(content) {
     if (rule.pattern.test(sample)) {
       return { ok: false, reason: rule.reason };
     }
+  }
+
+  if (isHtmlDocumentContent(content) || isRawHtmlFragment(content)) {
+    return { ok: false, reason: 'download is raw HTML and was not converted to Markdown' };
   }
 
   const compact = sample.replace(/\s+/g, '');
@@ -681,62 +945,98 @@ function convertLineEndings(content, lineEnding) {
   return normalized;
 }
 
-function fetchDocumentation(lib, sourceConfig) {
+function fetchUrlResponse(requestUrl, allowedOrigin, redirectCount = 5) {
   return new Promise((resolve, reject) => {
-    if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
-      return reject(new Error('Invalid or missing source configuration.'));
+    let parsedUrl;
+    try {
+      parsedUrl = parseDocumentationUrl(requestUrl);
+    } catch (error) {
+      reject(error);
+      return;
     }
 
-    const fetchWithRedirects = (currentUrl, redirectCount) => {
-      if (redirectCount <= 0) {
-        return reject(new Error('Too many redirects'));
+    if (parsedUrl.origin !== allowedOrigin) {
+      reject(new Error('Cross-origin documentation request refused.'));
+      return;
+    }
+    if (redirectCount <= 0) {
+      reject(new Error('Too many redirects'));
+      return;
+    }
+
+    https.get(parsedUrl.href, {
+      headers: {
+        'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0',
+        'Accept': 'text/markdown, text/plain;q=0.9, text/html;q=0.8'
+      },
+      timeout: 15000
+    }, (res) => {
+      const responseHeaders = res.headers || {};
+      if (res.statusCode >= 300 && res.statusCode < 400 && responseHeaders.location) {
+        res.resume();
+        let redirectUrl;
+        try {
+          redirectUrl = parseDocumentationUrl(responseHeaders.location, parsedUrl.href);
+        } catch (error) {
+          reject(new Error('Unsafe or invalid redirect URL: ' + error.message));
+          return;
+        }
+        if (redirectUrl.origin !== allowedOrigin) {
+          reject(new Error('Cross-origin redirect refused.'));
+          return;
+        }
+        fetchUrlResponse(redirectUrl.href, allowedOrigin, redirectCount - 1).then(resolve, reject);
+        return;
       }
 
-      https.get(currentUrl, {
-        headers: {
-          'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
-        },
-        timeout: 15000
-      }, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          // Drain the response so socket can be closed/reused
-          res.resume();
-          let redirectUrl = res.headers.location;
-          try {
-            redirectUrl = new URL(redirectUrl, currentUrl).href;
-          } catch (e) {
-            return reject(new Error('Invalid redirect URL'));
-          }
-          return fetchWithRedirects(redirectUrl, redirectCount - 1);
+      if (res.statusCode !== 200) {
+        res.resume();
+        reject(new Error('HTTP ' + res.statusCode + ': ' + res.statusMessage));
+        return;
+      }
+
+      let data = '';
+      let totalSize = 0;
+      res.on('data', (chunk) => {
+        totalSize += chunk.length;
+        if (totalSize > MAX_DOWNLOAD_BYTES) {
+          res.destroy(new Error('Response size exceeds 10MB limit'));
+          return;
         }
-
-        if (res.statusCode !== 200) {
-          res.resume();
-          return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-        }
-
-        let data = '';
-        let totalSize = 0;
-        res.on('data', chunk => {
-          totalSize += chunk.length;
-          if (totalSize > MAX_DOWNLOAD_BYTES) {
-            res.destroy(new Error('Response size exceeds 10MB limit'));
-            return;
-          }
-          data += chunk;
+        data += chunk;
+      });
+      res.on('end', () => {
+        const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
+        resolve({
+          content: sanitizedData,
+          contentType: getContentType(responseHeaders),
+          url: parsedUrl.href
         });
-        res.on('end', () => {
-          // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
-          const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
-          resolve(sanitizedData);
-        });
-      }).on('error', reject).on('timeout', function () { this.destroy(new Error('Request Timeout')); });
-    };
-
-    fetchWithRedirects(sourceConfig.url, 5);
+      });
+    }).on('error', reject).on('timeout', function () {
+      this.destroy(new Error('Request Timeout'));
+    });
   });
 }
 
+function fetchDocumentationResponse(lib, sourceConfig) {
+  if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
+    return Promise.reject(new Error('Invalid or missing source configuration.'));
+  }
+
+  let sourceUrl;
+  try {
+    sourceUrl = parseDocumentationUrl(sourceConfig.url);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
+  return fetchUrlResponse(sourceUrl.href, sourceUrl.origin, 5);
+}
+
+function fetchDocumentation(lib, sourceConfig) {
+  return fetchDocumentationResponse(lib, sourceConfig).then((response) => response.content);
+}
 function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
     if (!lib.startsWith('/')) {
@@ -1261,7 +1561,9 @@ async function runRefresh(options, report) {
       }
 
       const upstreamSha = await getUpstreamSha(lib, sourceConfig);
-      if (upstreamSha && upstreamSha === githubShas[lib] && allDocsExist) {
+      const existingSnapshotNeedsNormalization =
+        contentBefore !== null && isHtmlDocumentContent(contentBefore);
+      if (upstreamSha && upstreamSha === githubShas[lib] && allDocsExist && !existingSnapshotNeedsNormalization) {
         console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
         stats.skipped++;
         stats.pending--;
@@ -1273,7 +1575,8 @@ async function runRefresh(options, report) {
 
       try {
         console.log(`Fetching docs for ${lib} using configured source to determine exact size BEFORE downloading into .docs...`);
-        output = await fetchDocumentation(lib, sourceConfig);
+        const response = await fetchDocumentationResponse(lib, sourceConfig);
+        output = await normalizeDocumentationResponse(response, sourceConfig.url);
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
@@ -1283,7 +1586,8 @@ async function runRefresh(options, report) {
 
         try {
           console.log(`Retrying fetch for ${lib}...`);
-          output = await fetchDocumentation(lib, sourceConfig);
+          const response = await fetchDocumentationResponse(lib, sourceConfig);
+          output = await normalizeDocumentationResponse(response, sourceConfig.url);
           fetchSuccess = true;
         } catch (retryError) {
           console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
@@ -1600,5 +1904,11 @@ module.exports = {
   getLibraryFilename,
   configureDocsDirectory,
   fetchDocumentation,
+  fetchDocumentationResponse,
+  normalizeDocumentationResponse,
+  convertHtmlToMarkdown,
+  findMarkdownAlternateUrl,
+  isHtmlDocumentContent,
+  isHtmlResponse,
   getUpstreamSha
 };

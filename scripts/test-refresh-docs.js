@@ -93,6 +93,11 @@ const {
   getLibraryFilename,
   configureDocsDirectory,
   fetchDocumentation,
+  fetchDocumentationResponse,
+  normalizeDocumentationResponse,
+  convertHtmlToMarkdown,
+  isHtmlDocumentContent,
+  isHtmlResponse,
   getUpstreamSha
 } = refreshDocs;
 
@@ -133,10 +138,185 @@ async function runTests() {
   // Document integrity validation
   // ---------------------------------------------------------------------------
 
-  await test('validateDocumentContent accepts Markdown, plain text and HTML documentation', () => {
+  await test('validateDocumentContent accepts Markdown and plain text but rejects raw HTML', () => {
     assert.ok(validateDocumentContent('# Title\n\nA readable documentation paragraph with details.\n').ok);
     assert.ok(validateDocumentContent('Plain text documentation\n\nSecond paragraph with words.\n').ok);
-    assert.ok(validateDocumentContent('<!DOCTYPE html><html><head><title>Web Platform</title></head><body><h1>Web Platform</h1><p>Read the documentation for web platform APIs and browser support.</p></body></html>').ok);
+    assert.ok(validateDocumentContent('<p align="center">Project logo and documentation preview</p>').ok);
+    assert.ok(validateDocumentContent('<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n# Project documentation\n\nThis is valid Markdown with a leading HTML block.').ok);
+    assert.ok(validateDocumentContent('See <https://example.com/docs> for details about the API and supported usage examples.').ok);
+    assert.match(
+      validateDocumentContent('<!DOCTYPE html><html><head><title>Web Platform</title></head><body><h1>Web Platform</h1><p>Read the documentation for web platform APIs and browser support.</p></body></html>').reason,
+      /raw HTML/
+    );
+    assert.match(
+      validateDocumentContent('<ul><li>First item</li><li>Second item</li></ul>').reason,
+      /raw HTML/
+    );
+    assert.match(
+      validateDocumentContent('<custom-doc-element>Unconverted documentation fragment.</custom-doc-element>').reason,
+      /raw HTML/
+    );
+  });
+
+  await test('convertHtmlToMarkdown extracts semantic content and preserves documentation structures', () => {
+    const html = '<!doctype html><html><head><title>Reference</title></head><body>' +
+      '<nav>Sidebar navigation must be excluded</nav><main><h1>API Guide</h1>' +
+      '<p>Use the <a href="/reference">reference guide</a> to configure the API safely.</p>' +
+      '<ul><li>First item</li><li>Second item</li></ul>' +
+      '<pre><code class="language-js">const answer = 42;\nconsole.log(answer);</code></pre>' +
+      '<table><tr><th>Name</th><th>Value</th></tr><tr><td>Timeout</td><td>15000</td></tr></table>' +
+      '<div class="cookie-banner">Cookie consent is unrelated to the documentation.</div>' +
+      '</main><script>window.shouldNotRun = true;</script></body></html>';
+    const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/page');
+    assert.match(markdown, /^# API Guide/m);
+    assert.match(markdown, /\[reference guide\]\(https:\/\/example\.com\/reference\)/);
+    assert.match(markdown, /- First item/);
+    assert.match(markdown, /\`\`\`js[\s\S]*const answer = 42;/);
+    assert.match(markdown, /\| Name \| Value \|/);
+    assert.doesNotMatch(markdown, /Sidebar navigation|Cookie consent|window\.shouldNotRun|<html/i);
+    assert.ok(validateDocumentContent(markdown).ok);
+  });
+
+  await test('normalizeDocumentationResponse prefers a same-origin Markdown alternate', async () => {
+    const sourceUrl = 'https://example.com/docs/app';
+    const markdownUrl = 'https://example.com/docs/app.md';
+    const markdown = '# App Router\n\nThis Markdown version contains the official application routing documentation and examples.\n';
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+      data: '<!doctype html><html><head><link rel="alternate" type="text/markdown" href="/docs/app.md"></head>' +
+        '<body><main><h1>App Router HTML fallback</h1><p>This page includes enough visible text to be converted if the alternate is unavailable.</p></main></body></html>'
+    };
+    mockResponses[markdownUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      data: markdown
+    };
+
+    const response = await fetchDocumentationResponse('/example/docs', { type: 'url', url: sourceUrl });
+    const normalized = await normalizeDocumentationResponse(response, sourceUrl);
+    assert.strictEqual(normalized, markdown);
+    assert.deepStrictEqual(requestedUrls, [sourceUrl, markdownUrl]);
+    assert.strictEqual(response.contentType, 'text/html');
+  });
+
+  await test('normalizeDocumentationResponse detects HTML with missing or misleading Content-Type', async () => {
+    const sourceUrl = 'https://example.com/docs/no-header';
+    const mislabeledUrl = 'https://example.com/docs/mislabeled';
+    const html = '<!doctype html><html><body><main><h1>Fallback Guide</h1>' +
+      '<p>This guide explains the supported API configuration and the important request lifecycle.</p>' +
+      '</main></body></html>';
+    mockResponses[sourceUrl] = { statusCode: 200, data: html };
+    mockResponses[mislabeledUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/plain; charset=utf-8' },
+      data: html
+    };
+
+    const first = await fetchDocumentationResponse('/example/docs', { type: 'url', url: sourceUrl });
+    const firstMarkdown = await normalizeDocumentationResponse(first, sourceUrl);
+    const second = await fetchDocumentationResponse('/example/docs', { type: 'url', url: mislabeledUrl });
+    const secondMarkdown = await normalizeDocumentationResponse(second, mislabeledUrl);
+    assert.match(firstMarkdown, /^# Fallback Guide/m);
+    assert.match(secondMarkdown, /^# Fallback Guide/m);
+    assert.ok(validateDocumentContent(firstMarkdown).ok);
+    assert.ok(validateDocumentContent(secondMarkdown).ok);
+  });
+
+  await test('normalizeDocumentationResponse leaves HTML error and challenge pages for rejection', async () => {
+    const errorUrl = 'https://example.com/docs/missing';
+    const challengeUrl = 'https://example.com/docs/challenge';
+    mockResponses[errorUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html' },
+      data: '<!doctype html><html><head><title>404 Not Found</title></head><body><h1>Not found</h1></body></html>'
+    };
+    mockResponses[challengeUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html' },
+      data: '<!doctype html><html><body><main><h1>Just a moment...</h1><p>Verify you are human before continuing.</p></main></body></html>'
+    };
+
+    for (const url of [errorUrl, challengeUrl]) {
+      const response = await fetchDocumentationResponse('/example/docs', { type: 'url', url });
+      const normalized = await normalizeDocumentationResponse(response, url);
+      assert.ok(isHtmlDocumentContent(normalized), 'error/challenge HTML must not be converted');
+      assert.strictEqual(validateDocumentContent(normalized).ok, false);
+    }
+    assert.strictEqual(requestedUrls.length, 2);
+  });
+
+  await test('normalizeDocumentationResponse ignores unsafe and cross-origin Markdown alternates', async () => {
+    const sourceUrl = 'https://example.com/docs/unsafe';
+    const html = '<!doctype html><html><head>' +
+      '<link rel="alternate" type="text/markdown" href="https://outside.example/steal.md">' +
+      '<link rel="alternate" type="text/markdown" href="javascript:alert(1)">' +
+      '</head><body><main><h1>Safe Fallback</h1>' +
+      '<p>The local documentation remains usable without following an unsafe alternate URL.</p></main></body></html>';
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html' },
+      data: html
+    };
+    const response = await fetchDocumentationResponse('/example/docs', { type: 'url', url: sourceUrl });
+    const normalized = await normalizeDocumentationResponse(response, sourceUrl);
+    assert.match(normalized, /^# Safe Fallback/m);
+    assert.deepStrictEqual(requestedUrls, [sourceUrl]);
+    assert.ok(validateDocumentContent(normalized).ok);
+  });
+
+  await test('unconvertible HTML remains HTML and is rejected before writing', () => {
+    const html = '<!doctype html><html><head><title>Empty page</title></head>' +
+      '<body><script>document.write("no documentation");</script></body></html>';
+    const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/empty');
+    assert.strictEqual(markdown, '');
+    assert.match(validateDocumentContent(markdown || html).reason, /raw HTML/);
+  });
+  
+  await test('failed HTML normalization retains an explicit raw-HTML rejection marker', async () => {
+    const html = '<!doctype html><html><body><script>document.write("no documentation");</script></body></html>';
+    const normalized = await normalizeDocumentationResponse(
+      { content: html, contentType: 'text/html', url: 'https://example.com/docs/empty' },
+      'https://example.com/docs/empty'
+    );
+    const validation = validateDocumentContent(normalized);
+    assert.strictEqual(validation.ok, false);
+    assert.match(validation.reason, /raw HTML/);
+  });
+  
+  await test('HTML detection preserves Markdown documents that begin with an HTML block', () => {
+    const markdown = '<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n' +
+      '# Project documentation\n\nThis is ordinary Markdown content following the HTML block.';
+    assert.strictEqual(isHtmlDocumentContent(markdown), false);
+    assert.strictEqual(isHtmlResponse(markdown, 'text/markdown; charset=utf-8'), false);
+    assert.strictEqual(
+      isHtmlResponse('<!doctype html><html><body>Rendered page</body></html>', 'text/plain'),
+      true,
+      'a document-level HTML response must still be detected when mislabeled text/plain'
+    );
+  });
+
+  await test('HTML conversion preserves semantic blocks inside wrapper elements', () => {
+    const html = '<!doctype html><html><body><main><header><h1>Wrapped documentation</h1></header>' +
+      '<custom-panel><pre><code class="language-js">const value = 1;\n</code></pre></custom-panel>' +
+      '<dl><dt>Important term</dt><dd>This definition contains enough descriptive documentation text to remain meaningful.</dd></dl>' +
+      '<p>This paragraph provides additional useful documentation content for the semantic conversion test.</p>' +
+      '</main></body></html>';
+    const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/wrapped');
+    assert.match(markdown, /^# Wrapped documentation$/m);
+    const fence = String.fromCharCode(96).repeat(3);
+    assert.ok(markdown.includes(fence + 'js\nconst value = 1;\n' + fence));
+    assert.match(markdown, /\*\*Important term\*\*/);
+    assert.match(markdown, /This definition contains enough descriptive documentation text/);
+  });
+
+  await test('HTML table conversion escapes backslashes before pipe characters', () => {
+    const html = '<!doctype html><html><body><main>' +
+      '<p>This table contains a path value with Markdown-sensitive characters.</p>' +
+      '<table><tr><th>Path</th></tr><tr><td>folder\\name|value</td></tr></table>' +
+      '</main></body></html>';
+    const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/table');
+    assert.ok(markdown.includes('folder\\\\name\\|value'));
   });
 
   await test('validateDocumentContent rejects empty and whitespace-only downloads', () => {
@@ -169,23 +349,46 @@ async function runTests() {
     assert.match(validateDocumentContent('Hi there').reason, /too short/);
   });
 
-  await test('every snapshot in the current library passes integrity validation', () => {
+  await test('every snapshot is valid Markdown or safely identified as legacy HTML', () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(realDocsDir, 'manifest.json'), 'utf8'));
     const seen = new Set();
     let validated = 0;
+    let legacyHtml = 0;
+    let safelyUnconvertible = 0;
     for (const [group, libraries] of Object.entries(manifest.groups)) {
       for (const library of libraries) {
         if (seen.has(library)) continue;
         seen.add(library);
         const snapshot = path.join(realDocsDir, group, getLibraryFilename(library));
         assert.ok(fs.existsSync(snapshot), `missing snapshot ${group}/${library}`);
-        const validation = validateDocumentContent(fs.readFileSync(snapshot, 'utf8'));
-        assert.ok(validation.ok, `${library} failed validation: ${validation.reason}`);
-        validated++;
+        const snapshotContent = fs.readFileSync(snapshot, 'utf8');
+        const validation = validateDocumentContent(snapshotContent);
+        if (isHtmlDocumentContent(snapshotContent)) {
+          legacyHtml++;
+          assert.strictEqual(validation.ok, false, `${library} legacy HTML must never be accepted as a Markdown snapshot`);
+          const source = manifest.sources[library];
+          const normalized = source && source.url
+            ? convertHtmlToMarkdown(snapshotContent, source.url)
+            : '';
+          if (normalized) {
+            const normalizedValidation = validateDocumentContent(normalized);
+            assert.ok(normalizedValidation.ok, `${library} produced non-empty but invalid normalized content: ${normalizedValidation.reason}`);
+          } else {
+            // Some upstream JavaScript-shell pages contain no statically
+            // extractable documentation. The updater must reject them safely.
+            assert.strictEqual(validateDocumentContent(normalized).ok, false);
+            safelyUnconvertible++;
+          }
+        } else {
+          assert.ok(validation.ok, `${library} failed validation: ${validation.reason}`);
+          validated++;
+        }
       }
     }
-    assert.strictEqual(validated, seen.size);
+    assert.strictEqual(validated + legacyHtml, seen.size);
     assert.ok(validated > 0);
+    assert.ok(legacyHtml > 0);
+    assert.ok(safelyUnconvertible > 0);
   });
 
   await test('every routed documentation link resolves to its canonical snapshot inside .docs', () => {
@@ -445,6 +648,39 @@ async function runTests() {
     assert.strictEqual(sha, null);
   });
 
+  await test('runRefresh re-fetches a legacy HTML snapshot even when its upstream SHA is unchanged', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    const library = '/lib/doc';
+    const sourceUrl = 'https://raw.githubusercontent.com/lib/doc/main/README.md';
+    const apiUrl = 'https://api.github.com/repos/lib/doc/commits/main';
+    const existingHtml = '<!doctype html><html><body><main><h1>Old HTML</h1><p>Legacy snapshot content that must be normalized.</p></main></body></html>';
+    const replacement = '# Current Documentation\n\nThe current Markdown response contains the supported documentation content and reference examples.\n';
+    mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'same-sha' }) };
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown' },
+      data: replacement
+    };
+    fs.writeFileSync(path.join(root, 'creation', '_lib_doc.md'), existingHtml);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url: sourceUrl, branch: 'main' } },
+      inventory: [library],
+      githubShas: { [library]: 'same-sha' }
+    }, null, 2));
+
+    const report = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, report);
+    assert.ok(requestedUrls.includes(sourceUrl), 'legacy HTML must bypass the unchanged-SHA skip');
+    assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_lib_doc.md'), 'utf8'), replacement);
+    assert.strictEqual(report.updated, 1);
+    assert.strictEqual(report.consistencyIssues.length, 0);
+    restoreDocsDirectory();
+  });
+
   await test('fetchDocumentation: Relative redirect', async () => {
     mockResponses['https://example.com/docs'] = { statusCode: 301, headers: { location: '/new-docs' } };
     mockResponses['https://example.com/new-docs'] = { statusCode: 200, data: 'new content' };
@@ -453,11 +689,23 @@ async function runTests() {
     assert.strictEqual(requestedUrls.length, 2);
   });
 
-  await test('fetchDocumentation: Absolute redirect', async () => {
+  await test('fetchDocumentation: Cross-origin redirect is rejected', async () => {
     mockResponses['https://example.com/docs'] = { statusCode: 302, headers: { location: 'https://other.com/docs' } };
-    mockResponses['https://other.com/docs'] = { statusCode: 200, data: 'other content' };
-    const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
-    assert.strictEqual(data, 'other content');
+    await assert.rejects(
+      () => fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' }),
+      /Cross-origin redirect refused/
+    );
+    assert.deepStrictEqual(requestedUrls, ['https://example.com/docs']);
+  });
+
+  await test('fetchDocumentation: HTTPS downgrade redirect is rejected', async () => {
+    const downgradeUrl = ['http:', '//example.com/docs'].join('');
+    mockResponses['https://example.com/docs'] = { statusCode: 302, headers: { location: downgradeUrl } };
+    await assert.rejects(
+      () => fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' }),
+      /must use HTTPS/
+    );
+    assert.deepStrictEqual(requestedUrls, ['https://example.com/docs']);
   });
 
   await test('fetchDocumentation: Redirect to 404', async () => {
@@ -502,7 +750,7 @@ async function runTests() {
   });
 
   await test('fetchDocumentation: 15-second timeout', async () => {
-    mockResponses['https://timeout.example.com'] = { timeout: true };
+    mockResponses['https://timeout.example.com/'] = { timeout: true };
     await assert.rejects(
       () => fetchDocumentation('/test/timeout', { type: 'url', url: 'https://timeout.example.com' }),
       /Request Timeout/
@@ -511,7 +759,7 @@ async function runTests() {
   });
 
   await test('fetchDocumentation: 10MB response-size limit', async () => {
-    mockResponses['https://toolarge.example.com'] = { tooLarge: true };
+    mockResponses['https://toolarge.example.com/'] = { tooLarge: true };
     await assert.rejects(
       () => fetchDocumentation('/test/toolarge', { type: 'url', url: 'https://toolarge.example.com' }),
       /Response size exceeds 10MB limit/

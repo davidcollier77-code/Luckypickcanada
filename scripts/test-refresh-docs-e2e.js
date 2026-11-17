@@ -99,6 +99,24 @@ async function run() {
       routes[source.url] = { status: 200, body: fs.readFileSync(snapshot, 'utf8') };
     }
   }
+
+  // The existing Next.js snapshot is a legacy rendered HTML page. The refresh
+  // must discover its official same-origin Markdown alternate and replace it.
+  const nextSourceUrl = manifest.sources[realSampleLib].url;
+  const nextMarkdownUrl = new URL('/docs/app.md', nextSourceUrl).href;
+  const nextMarkdown = '# App Router\n\nThe App Router documentation explains file-based routing, layouts, pages, server components and navigation.\n';
+  routes[nextSourceUrl] = {
+    status: 200,
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+    body: '<!doctype html><html><head><link rel="alternate" type="text/markdown" href="/docs/app.md"></head>' +
+      '<body><nav>Site navigation is not documentation.</nav><main><h1>App Router</h1>' +
+      '<p>This HTML page advertises an official Markdown representation.</p></main></body></html>'
+  };
+  routes[nextMarkdownUrl] = {
+    status: 200,
+    headers: { 'content-type': 'text/markdown; charset=utf-8' },
+    body: nextMarkdown
+  };
   routes[manifest.sources[emptyLib].url] = { status: 200, body: '' };
   routes[manifest.sources[garbledLib].url] = {
     status: 200,
@@ -171,6 +189,13 @@ async function run() {
     'the existing first-attempt plus retry behaviour must be preserved'
   );
 
+  // The legacy HTML snapshot is refreshed into the advertised Markdown format.
+  const normalizedNextPath = primaryPath(docsDir, manifest, realSampleLib);
+  const normalizedNext = fs.readFileSync(normalizedNextPath, 'utf8');
+  assert.strictEqual(normalizedNext, nextMarkdown, 'Next.js snapshot must use the official Markdown alternate');
+  assert.ok(requests.includes(nextMarkdownUrl), 'the advertised Markdown alternate must be fetched');
+  assert.ok(!/^\s*(?:<!doctype\s+html|<html\b)/i.test(normalizedNext), 'no raw HTML may be saved for the normalized source');
+
   // Existing good documents are preserved when a download is invalid.
   for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib]) {
     const filePath = primaryPath(docsDir, manifest, library);
@@ -233,7 +258,7 @@ async function run() {
     report.includes('missing snapshot at .docs/testing/_example_failing-new-doc.md'),
     'report must list the missing snapshot for the document that failed to download'
   );
-  assert.strictEqual(updatedManifest.lastUpdated, originalLastUpdated, 'a reconciliation-only run must not change lastUpdated');
+  assert.notStrictEqual(updatedManifest.lastUpdated, originalLastUpdated, 'normalizing an existing HTML snapshot must update lastUpdated');
 
   fs.rmSync(tmpRoot, { recursive: true, force: true });
   return output;
