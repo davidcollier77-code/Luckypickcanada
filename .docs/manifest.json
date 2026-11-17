@@ -179,7 +179,7 @@
     },
     "/websites/ai_google_dev_gemini-api": {
       "type": "url",
-      "url": "https://ai.google.dev/gemini-api/docs.md.txt"
+      "url": "https://aistudio.google.com/llms.txt"
     },
     "/vercel/next.js": {
       "type": "url",
