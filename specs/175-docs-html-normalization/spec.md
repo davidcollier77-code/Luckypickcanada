@@ -62,6 +62,7 @@ When a local snapshot is already raw HTML from an earlier updater run, the next 
 - The response exceeds the existing 10 MB limit or times out.
 - An existing snapshot is HTML and its upstream SHA is unchanged.
 - A non-HTML Markdown or plain-text source must not be unnecessarily transformed.
+- Valid Markdown may begin with an HTML block such as a centered paragraph or image followed by Markdown content; it must not be mistaken for a rendered HTML document. Standalone unconverted HTML fragments remain rejected.
 
 ## Requirements
 
@@ -77,6 +78,7 @@ When a local snapshot is already raw HTML from an earlier updater run, the next 
 - **FR-008**: Existing raw-HTML snapshots MUST bypass the unchanged-upstream-SHA skip so the next refresh can normalize them.
 - **FR-009**: Ordinary Markdown and plain-text sources, manifest source URLs, retry behaviour, link repair, atomic writes, reporting, schedule, timezone, workflow triggers and documentation-size limits MUST remain intact.
 - **FR-010**: The implementation MUST NOT add a dependency when the existing project dependencies provide a safe conversion mechanism.
+- **FR-011**: The updater MUST preserve valid Markdown documents that begin with a supported HTML block followed by Markdown content, while continuing to reject full HTML documents and standalone unconverted HTML fragments.
 
 ## Success Criteria
 
@@ -87,6 +89,7 @@ When a local snapshot is already raw HTML from an earlier updater run, the next 
 - **SC-003**: Every unconvertible or invalid HTML response is rejected before write, and an existing snapshot remains byte-identical.
 - **SC-004**: Legacy HTML snapshots are re-fetched even when their upstream SHA matches the stored SHA.
 - **SC-005**: Markdown and plain-text source handling retains existing behaviour and all existing updater safeguards remain unchanged.
+- **SC-006**: A valid Markdown document beginning with a supported HTML block is accepted without conversion, while standalone HTML fragments and full HTML documents are rejected unless successfully normalized.
 
 ## Assumptions
 
