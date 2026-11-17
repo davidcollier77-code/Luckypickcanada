@@ -211,6 +211,29 @@ async function runTests() {
     assert.ok(validateDocumentContent(secondMarkdown).ok);
   });
 
+  await test('normalizeDocumentationResponse leaves HTML error and challenge pages for rejection', async () => {
+    const errorUrl = 'https://example.com/docs/missing';
+    const challengeUrl = 'https://example.com/docs/challenge';
+    mockResponses[errorUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html' },
+      data: '<!doctype html><html><head><title>404 Not Found</title></head><body><h1>Not found</h1></body></html>'
+    };
+    mockResponses[challengeUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html' },
+      data: '<!doctype html><html><body><main><h1>Just a moment...</h1><p>Verify you are human before continuing.</p></main></body></html>'
+    };
+
+    for (const url of [errorUrl, challengeUrl]) {
+      const response = await fetchDocumentationResponse('/example/docs', { type: 'url', url });
+      const normalized = await normalizeDocumentationResponse(response, url);
+      assert.ok(isHtmlDocumentContent(normalized), 'error/challenge HTML must not be converted');
+      assert.strictEqual(validateDocumentContent(normalized).ok, false);
+    }
+    assert.strictEqual(requestedUrls.length, 2);
+  });
+
   await test('normalizeDocumentationResponse ignores unsafe and cross-origin Markdown alternates', async () => {
     const sourceUrl = 'https://example.com/docs/unsafe';
     const html = '<!doctype html><html><head>' +
