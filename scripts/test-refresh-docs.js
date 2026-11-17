@@ -272,7 +272,7 @@ async function runTests() {
   
   await test('HTML detection preserves Markdown documents that begin with an HTML block', () => {
     const markdown = '<p align="center"><img src="logo.svg" alt="Project logo"></p>\n\n' +
-      '# Project documentation\\n\\nThis is ordinary Markdown content following the HTML block.';
+      '# Project documentation\n\nThis is ordinary Markdown content following the HTML block.';
     assert.strictEqual(isHtmlDocumentContent(markdown), false);
     assert.strictEqual(isHtmlResponse(markdown, 'text/markdown; charset=utf-8'), false);
     assert.strictEqual(
@@ -302,7 +302,7 @@ async function runTests() {
       '<table><tr><th>Path</th></tr><tr><td>folder\\name|value</td></tr></table>' +
       '</main></body></html>';
     const markdown = convertHtmlToMarkdown(html, 'https://example.com/docs/table');
-    assert.ok(markdown.includes('folder\\name\\|value'));
+    assert.ok(markdown.includes('folder\\\\name\\|value'));
   });
 
   await test('validateDocumentContent rejects empty and whitespace-only downloads', () => {
@@ -374,7 +374,7 @@ async function runTests() {
     assert.strictEqual(validated + legacyHtml, seen.size);
     assert.ok(validated > 0);
     assert.ok(legacyHtml > 0);
-    assert.ok(safelyUnconvertible >= 0);
+    assert.ok(safelyUnconvertible > 0);
   });
 
   await test('every routed documentation link resolves to its canonical snapshot inside .docs', () => {
