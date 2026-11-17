@@ -156,7 +156,36 @@ Do not assume that an integration, skill or tool provides access to capabilities
 
 External review applications provide advisory feedback only. They do not replace required repository checks or established verification requirements.
 
-13. EVIDENCE AND REPORTING
+13. REPOSITORY SCRIPT EXECUTION
+
+Both ChatGPT and Freebuff are authorized to execute repository scripts when relevant to the current task and when the required runtime and tools are available.
+
+This shared permission includes, but is not limited to:
+
+- Repository verification scripts, including "./freebuff-verify.sh".
+- Governance and compliance checkers.
+- Test scripts and test runners.
+- Production build and validation scripts.
+- Documentation and maintenance scripts.
+- Task-specific scripts maintained in the repository.
+- Other relevant repository scripts required to complete or verify authorized work.
+
+Both agents must:
+
+1. Read and understand the relevant script before executing it.
+2. Check what the script actually does, including any secondary scripts or commands it invokes.
+3. Confirm that its operations are appropriate for the current task.
+4. Confirm that the required runtime, dependencies and permissions are available.
+5. Respect protected-file and owner-approval requirements.
+6. Avoid unauthorized deployments, infrastructure changes, destructive operations, secret access or modifications outside the approved scope.
+7. Avoid unnecessary dependency installations, network downloads, paid usage or environment changes.
+8. Report exact execution results accurately, including failures, skipped checks and unavailable requirements.
+
+This permission does not authorize either agent to bypass the applicable agent-specific restrictions in this document.
+
+Neither agent may claim a script passed unless it was actually executed and its result was verified.
+
+14. EVIDENCE AND REPORTING
 
 Do not claim work or checks are complete without evidence.
 
@@ -395,21 +424,24 @@ ChatGPT must not use or attempt to use:
 
 Do not spend time attempting to initialize, troubleshoot or maintain tools that are not available to ChatGPT.
 
-4. REPOSITORY SCRIPTS AND VERIFICATION RESTRICTIONS
+4. FREEBUFF STARTUP AND ENVIRONMENT INITIALIZATION RESTRICTIONS
 
-ChatGPT must not execute "./freebuff-verify.sh" or any other repository shell script.
+ChatGPT must never execute Freebuff's dedicated startup command or its complete startup sequence.
 
-This is a ChatGPT-specific operating restriction. It does not remove or modify Freebuff's verification requirements.
+This includes:
 
-When verification requires a repository shell script, Playwright or another unavailable tool:
+- The combined Freebuff startup command documented in the repository README.md or Freebuff Project Settings.
+- Freebuff's dedicated startup initialization procedures.
+- Scripts specifically intended to initialize or configure Freebuff's workspace.
+- Scripts that provision or configure Freebuff's environment.
+- Scripts that install or configure Playwright or Chromium.
+- Procedures that persist Freebuff-specific shell configuration or environment changes.
 
-- Identify the required check.
-- Do not attempt to execute the unavailable tool or script.
-- Report the verification as outstanding.
-- Identify what must be verified in an authorized environment.
-- Do not claim that the check passed.
+These restrictions exist because Freebuff's startup sequence may install dependencies, configure the shell environment, modify persistent workspace settings or initialize browser tooling that ChatGPT must not use.
 
-ChatGPT must not load, modify or maintain the repository Playwright CLI or its associated startup and setup scripts.
+This restriction does not prohibit ChatGPT from executing other task-relevant repository scripts under the shared Repository Script Execution requirements.
+
+In particular, ChatGPT may execute "./freebuff-verify.sh", applicable test scripts, build scripts, governance checkers and maintenance scripts when relevant, safe, authorized and supported by the available runtime.
 
 5. REPOSITORY CHANGES AND RECOMMENDATIONS
 
