@@ -75,3 +75,54 @@ Lighthouse reports "properly size images: est savings of 105 KiB" for the hero a
 - `pagespeed.web.dev` itself was not driven; the API quota block above is the reason.
 - The full Playwright visual-baseline suite was not run; verification covered the updated Turnstile spec, the Turnstile unit suite, a browser probe at 390/1440 px, and the repository gate.
 - Lighthouse run-to-run variance on this shared CPU is ±3 points and ±90 ms TBT, which is why before/after are reported as run sets with medians rather than single runs.
+
+## Round 2 — where the mobile LCP render delay actually goes
+
+Method: production build served with `next start`, Lighthouse 12.8.2 with the PageSpeed
+Insights mobile profile, plus a CDP probe that reproduces the PSI network profile
+(1.6384 Mbps down, 750 kbps up, 150 ms RTT) with a 4x CPU throttle and mobile device
+metrics. Averages of repeated runs; the shared CPU varies by ±3-4 score points.
+
+| Probe | Mobile LCP | Images on the wire |
+| --- | --- | --- |
+| Baseline | 3,880 ms | 694 KiB |
+| All JavaScript blocked | 2,576 ms | 519 KiB |
+| Mobile sky backdrop blocked | 2,748 ms | 519 KiB |
+| Every backdrop-filter, mix-blend-mode and filter disabled | 3,660 ms | 694 KiB |
+| Star canvas animation loop disabled | 3,756 ms | 694 KiB |
+
+What the numbers say:
+
+- The LCP element is `img.hero-art-image`. Lighthouse attributes 4,039 ms (80%) of its
+  5,050 ms LCP to render delay, and only 9% to load time.
+- That delay is byte-bound, not paint-bound: the hero request starts at ~55 ms and
+  completes at ~3.6 s because 694 KiB of imagery shares a 1.6 Mbps pipe. LCP lands on
+  the `load` event within a few milliseconds in every run.
+- Expensive compositing is not the bottleneck. Disabling every blur, blend mode and
+  filter saves ~220 ms; stopping the star canvas loop saves ~70 ms. Both remain
+  untouched.
+- Blocking all JavaScript saves 1,304 ms, so hydration is the second-largest cost, but
+  the page cannot ship without its interactive client component.
+
+Change kept: the mobile sky backdrop is re-encoded as AVIF (quality 58) and listed first
+in the mobile `image-set`. 175 KiB -> 139 KiB at slightly better fidelity (PSNR 38.1 dB
+against the JPEG master, versus 36.9 dB for the WebP that was being served). Total mobile
+transfer 777 KiB -> 742 KiB.
+
+Changes measured and reverted, because they made the build worse:
+
+- `sizes="calc(100vw - 21px)"` on the hero artwork. It measured -220 ms in the emulated
+  probe, but in the real build Chrome's preload scanner does not evaluate `calc()` in
+  `sizes`: it falls back to `100vw`, starts the 1024w request, and the parser then starts
+  a second one. Transfer rose to 878 KiB and LCP to 5.6 s. Reverted.
+- A 768w hero candidate and a matching `<link rel="preload">` for the hero image: the same
+  double fetch, 878 KiB and 4,320 ms LCP. Reverted.
+- Re-encoding the hero AVIF at matched quality saves at most 4 KiB, so it was left alone.
+
+Conclusion for this round: mobile 90+ is not reachable by changing rendering behaviour.
+On the PSI mobile profile the page must deliver roughly 400 KiB to paint the hero inside
+2.5 s, and the first viewport is made of protected artwork (the 199 KiB hero and the
+139 KiB Milky Way backdrop) plus the React/Next runtime (174 KiB JS, 56 KiB CSS across
+five render-blocking files). The remaining levers are to shrink or withhold that artwork,
+which this task forbids, or to replace the single client component with server-rendered
+sections, which is a redesign.
