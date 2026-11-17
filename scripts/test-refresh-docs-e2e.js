@@ -194,7 +194,7 @@ async function run() {
   const normalizedNext = fs.readFileSync(normalizedNextPath, 'utf8');
   assert.strictEqual(normalizedNext, nextMarkdown, 'Next.js snapshot must use the official Markdown alternate');
   assert.ok(requests.includes(nextMarkdownUrl), 'the advertised Markdown alternate must be fetched');
-  assert.ok(!/^\\s*(?:<!doctype\\s+html|<html\\b)/i.test(normalizedNext), 'no raw HTML may be saved for the normalized source');
+  assert.ok(!/^\s*(?:<!doctype\s+html|<html\b)/i.test(normalizedNext), 'no raw HTML may be saved for the normalized source');
 
   // Existing good documents are preserved when a download is invalid.
   for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib]) {
