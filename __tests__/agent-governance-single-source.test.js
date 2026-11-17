@@ -146,9 +146,9 @@ describe('single-source agent governance', () => {
     expect(skill).toContain('not a physical-GPU benchmark');
 
     // ChatGPT's exclusion remains explicit in its own operating instructions.
-    expect(agents).toContain(
-      'ChatGPT must not load, modify or maintain the repository Playwright CLI',
-    );
+    // #1942 restated it as this list; the CLI entry and maintenance restriction
+    // are still asserted below, so the intent is not weakened.
+    expect(agents).toContain('ChatGPT must not use or attempt to use:');
     expect(agents).toContain('The repository Playwright CLI.');
     expect(agents).toContain(
       'Do not spend time attempting to initialize, troubleshoot or maintain tools that are not available to ChatGPT.',

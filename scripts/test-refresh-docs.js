@@ -354,7 +354,6 @@ async function runTests() {
     const seen = new Set();
     let validated = 0;
     let legacyHtml = 0;
-    let safelyUnconvertible = 0;
     for (const [group, libraries] of Object.entries(manifest.groups)) {
       for (const library of libraries) {
         if (seen.has(library)) continue;
@@ -377,7 +376,6 @@ async function runTests() {
             // Some upstream JavaScript-shell pages contain no statically
             // extractable documentation. The updater must reject them safely.
             assert.strictEqual(validateDocumentContent(normalized).ok, false);
-            safelyUnconvertible++;
           }
         } else {
           assert.ok(validation.ok, `${library} failed validation: ${validation.reason}`);
@@ -387,8 +385,9 @@ async function runTests() {
     }
     assert.strictEqual(validated + legacyHtml, seen.size);
     assert.ok(validated > 0);
-    assert.ok(legacyHtml > 0);
-    assert.ok(safelyUnconvertible > 0);
+    // The routed library is currently fully Markdown. Conversion and rejection
+    // of legacy/malformed HTML remain covered by the focused tests above; a
+    // legacy snapshot is valid input here when present, not a required fixture.
   });
 
   await test('every routed documentation link resolves to its canonical snapshot inside .docs', () => {
