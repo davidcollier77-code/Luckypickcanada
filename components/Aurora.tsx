@@ -9,6 +9,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from "../app/lib/graphics-capabilities";
+import { createAdaptiveFrameLoop } from "../app/lib/adaptive-performance";
 
 export interface AuroraHandle {
   setPhase: (phase: 'idle' | 'awaken' | 'gather' | 'impact' | 'settled', tier?: string) => void;
@@ -71,7 +72,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
     const ctx = getCanvas2DContext(canvas, { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number;
+    const frameLoop = createAdaptiveFrameLoop();
     let time = 0;
     let contextLost = false;
 
@@ -191,7 +192,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
 
       ctx.globalCompositeOperation = 'source-over';
       if (isPageVisible()) {
-        animationFrameId = requestAnimationFrame(draw);
+        frameLoop.request(draw);
       }
     };
 
@@ -199,24 +200,24 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       initCanvas();
       // Cancel the pending animation frame to prevent duplicate animation loops,
       // then restart the draw loop so the Aurora keeps rendering after resize.
-      cancelAnimationFrame(animationFrameId);
+      frameLoop.cancel();
       draw();
     };
 
     const stopVisibilityListener = onVisibilityChange((visible) => {
-      cancelAnimationFrame(animationFrameId);
+      frameLoop.cancel();
       if (visible) draw();
     });
 
     const stopContextWatcher = watchContextLoss(canvas, {
       onLost: () => {
         contextLost = true;
-        cancelAnimationFrame(animationFrameId);
+        frameLoop.cancel();
       },
       onRestored: () => {
         contextLost = false;
         initCanvas();
-        cancelAnimationFrame(animationFrameId);
+        frameLoop.cancel();
         draw();
       },
     });
@@ -233,7 +234,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       stopMotionListener();
       stopVisibilityListener();
       stopContextWatcher();
-      cancelAnimationFrame(animationFrameId);
+      frameLoop.dispose();
     };
   }, []);
 

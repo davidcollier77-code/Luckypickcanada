@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
+import { shouldPrefetchOnIntent } from '../app/lib/adaptive-performance';
+import { useAdaptivePlan } from '../app/lib/use-adaptive-plan';
 
 /**
  * A Next.js link that warms its route only once the visitor shows intent.
@@ -14,53 +16,67 @@ import { useCallback, useState } from 'react';
  * instant-navigation warm-up for visitors who actually reach for a link while
  * leaving the initial load clean.
  *
+ * The shared adaptive plan decides how strong that intent must be. A measured
+ * slow connection or Save-Data waits for a press, tap or keyboard focus instead
+ * of a hover, and skips the speculative fetch entirely; a fast connection keeps
+ * hover prefetching. The link itself always navigates, and the policy recovers
+ * as soon as the connection improves.
+ *
  * @param {Object} props Link props; `children` and navigation props pass through.
  * @param {import('react').ReactNode} props.children The link contents.
  * @returns {import('react').ReactElement} The same link, prefetching on intent.
  */
 export default function IntentPrefetchLink({ children, onPointerEnter, onPointerDown, onFocus, onTouchStart, ...props }) {
-  const [hasIntent, setHasIntent] = useState(false);
+  const plan = useAdaptivePlan();
+  // 'hover' is a weak signal; a press, tap or focus is a strong one.
+  const [intent, setIntent] = useState(null);
 
-  const markIntent = useCallback(() => setHasIntent(true), []);
+  const markHover = useCallback(
+    () => setIntent((previous) => (previous === 'strong' ? previous : 'hover')),
+    [],
+  );
+  const markStrong = useCallback(() => setIntent('strong'), []);
+
+  const prefetchEnabled = intent !== null && shouldPrefetchOnIntent(plan, intent);
 
   // One stable handler per event rather than a factory that builds four new
   // closures on every render.
   const handlePointerEnter = useCallback(
     (event) => {
-      markIntent();
+      markHover();
       if (typeof onPointerEnter === 'function') onPointerEnter(event);
     },
-    [markIntent, onPointerEnter],
+    [markHover, onPointerEnter],
   );
 
   const handlePointerDown = useCallback(
     (event) => {
-      markIntent();
+      markStrong();
       if (typeof onPointerDown === 'function') onPointerDown(event);
     },
-    [markIntent, onPointerDown],
+    [markStrong, onPointerDown],
   );
 
   const handleFocus = useCallback(
     (event) => {
-      markIntent();
+      markStrong();
       if (typeof onFocus === 'function') onFocus(event);
     },
-    [markIntent, onFocus],
+    [markStrong, onFocus],
   );
 
   const handleTouchStart = useCallback(
     (event) => {
-      markIntent();
+      markStrong();
       if (typeof onTouchStart === 'function') onTouchStart(event);
     },
-    [markIntent, onTouchStart],
+    [markStrong, onTouchStart],
   );
 
   return (
     <Link
       {...props}
-      prefetch={hasIntent ? undefined : false}
+      prefetch={prefetchEnabled ? undefined : false}
       onPointerEnter={handlePointerEnter}
       onPointerDown={handlePointerDown}
       onFocus={handleFocus}

@@ -161,3 +161,39 @@ profile, visibility pausing and context-loss handling.
 
 Quality budgets are resolved once per page (`resolveRenderQuality`) and add
 `meshSegments` and `ornament: { far, near }` to the existing tier profile.
+
+## Adaptive performance layer
+
+`app/lib/adaptive-performance.js` sits above the capability probes and answers
+what the current device and connection can actually sustain. It does not replace
+`graphics-capabilities`: probes, context acquisition and the cinematic quality
+tiers stay there, and the adaptive layer composes with them.
+
+- **Measurement over labels.** Downlink and RTT decide the network class.
+  `effectiveType` is only a fallback when no measurement exists, and no label is
+  read as 5G or 5G Advanced because the API does not identify either reliably.
+- **Missing hints mean capable.** `deviceMemory`, `hardwareConcurrency` and the
+  Network Information API are privacy-reduced or absent in several browsers.
+  Absence never reduces a budget, and no cookie, storage or user-agent value is
+  consulted for memory.
+- **One plan, one subscription.** The plan carries tier, frame rate, animation
+  budget, prefetch/audio/image policies, a parallel-request limit and a release
+  flag, each with a `reasons` entry naming the signal that caused it. All
+  consumers share one listener set (connection, resize, visibility, motion,
+  online/offline, optional heap poll) and the last unsubscribe removes it.
+- **Cadence, not removal.** `createAdaptiveFrameLoop` keeps capable devices at
+  60 fps, steps constrained devices to 30 fps, stops when the page is hidden or
+  reduced motion is preferred, and resumes when conditions improve. Artwork,
+  density, interactions and features are unchanged.
+- **Deferred loading recovers.** Prefetch waits for strong intent on a moderate
+  connection and is skipped on slow/Save-Data; speculative audio is skipped under
+  constraint while every playback path loads on demand. Image delivery remains
+  the approved native `srcset`/`sizes` ladders; `imageQuality` is a hint for
+  future derivatives, not a rewrite of asserted markup.
+- **Bounded memory.** `registerReleasableResource` runs best-effort releases once
+  per pressure episode (for example unloading idle decoded audio) and never
+  interrupts an active sound.
+
+`docs/graphics-rendering-architecture.md` remains the rendering contract;
+`specs/180-adaptive-performance-rendering/` holds this layer's specification,
+plan, tasks and evidence.

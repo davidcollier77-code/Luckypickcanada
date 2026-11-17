@@ -12,6 +12,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from '../lib/graphics-capabilities';
+import { createAdaptiveFrameLoop } from '../lib/adaptive-performance';
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -183,7 +184,7 @@ export default function HomePage({ slots }) {
 
     let reducedMotion = prefersReducedMotion();
     const particleScale = getGraphicsProfile().particleScale;
-    let animationFrameId;
+    const frameLoop = createAdaptiveFrameLoop();
     let contextLost = false;
 
     let ambientStars = [];
@@ -366,13 +367,12 @@ export default function HomePage({ slots }) {
       ctx.globalCompositeOperation = 'source-over';
 
       if (!reducedMotion && !contextLost && isPageVisible()) {
-        animationFrameId = requestAnimationFrame(draw);
+        frameLoop.request(draw);
       }
     };
 
     const stopAnimation = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = undefined;
+      frameLoop.cancel();
     };
 
     draw();
@@ -429,7 +429,7 @@ export default function HomePage({ slots }) {
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
       if (typeof resizeTimeout !== 'undefined') clearTimeout(resizeTimeout);
-      stopAnimation();
+      frameLoop.dispose();
     };
   }, []);
 

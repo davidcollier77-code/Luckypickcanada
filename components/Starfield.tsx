@@ -10,6 +10,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from "../app/lib/graphics-capabilities";
+import { createAdaptiveFrameLoop } from "../app/lib/adaptive-performance";
 
 export default function Starfield() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -21,7 +22,9 @@ export default function Starfield() {
     const ctx = getCanvas2DContext(canvas, { alpha: false });
     if (!ctx) return;
 
-    let animationFrameId = 0;
+    // The shared governor keeps a capable device at 60 fps and steps a
+    // constrained one down without ever removing the effect.
+    const frameLoop = createAdaptiveFrameLoop();
     let contextLost = false;
     let reducedMotion = prefersReducedMotion();
     const particleScale = getGraphicsProfile().particleScale;
@@ -82,13 +85,12 @@ export default function Starfield() {
 
       ctx.globalAlpha = 1.0;
       if (!reducedMotion && !contextLost && isPageVisible()) {
-        animationFrameId = requestAnimationFrame(draw);
+        frameLoop.request(draw);
       }
     };
 
     const stopAnimation = () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      animationFrameId = 0;
+      frameLoop.cancel();
     };
 
     const handleResize = () => {
@@ -137,7 +139,7 @@ export default function Starfield() {
       stopMotionListener();
       stopVisibilityListener();
       stopContextWatcher();
-      stopAnimation();
+      frameLoop.dispose();
     };
   }, []);
 

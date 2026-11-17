@@ -1,3 +1,16 @@
+## 2026-11-17 — Shared adaptive performance and rendering system
+- Added one shared, dependency-free layer (`app/lib/adaptive-performance.js` plus a React binding) that
+  resolves a single adaptation plan from measured network throughput/latency, Save-Data, device
+  memory/cores, reduced motion, visibility and optional heap pressure. Network labels are fallback only and
+  no label is read as 5G; missing hints always keep the full experience.
+- One shared subscription (120 ms debounce, complete teardown) replaced per-consumer listeners, and a frame
+  governor now drives the homepage star canvas, Starfield, TwinklingStars, ShootingStars and Aurora at
+  60 fps on capable devices, 30 fps on constrained ones, and paused when hidden or reduced-motion is set.
+- Intent prefetching waits for a press/tap/focus on a moderate connection and skips on slow/Save-Data;
+  audio preloads defer under constraint while playback still loads on demand; idle decoded audio is
+  released on memory pressure without interrupting a playing sound.
+- Added profile, fallback, condition-change, cleanup, accessibility and preservation tests.
+
 ## 2026-11-17 — Homepage mobile LCP delivery after PR #1933
 - Filled the hero artwork's candidate-ladder gap with 768 w AVIF/WebP derivatives, so Lighthouse's
   mobile profile (412 px at DPR 1.75 = 721 device pixels) no longer downloads the 1024 w file while
