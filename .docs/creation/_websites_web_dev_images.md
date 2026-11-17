@@ -1,176 +1,159 @@
-As it stands now, images are the web's biggest assets in terms of both [total transfer size](https://almanac.httparchive.org/en/2022/page-weight#fig-8)
-and [number of requests](https://almanac.httparchive.org/en/2022/page-weight#fig-3) per page. The median webpage's total transfer size is roughly
-[2MB, as of June 2022](https://httparchive.org/reports/page-weight), with images alone accounting for nearly half of that. It's no exaggeration
-to say that optimizing image requests may be the single biggest performance optimization you can make.
+Discover how CMSs such as WordPress, and other site generators can make it
+easier to use responsive images.
 
-Later, you'll learn how responsive images have evolved to help with the issues created by trying to serve one image for all eventualities.
-In this section, discover key performance metrics that relate to images, and how to improve them.
+While certainly an improvement over manually saving alternate cuts of each image and hand-optimizing them through a tool like
+[Squoosh.app](https://squoosh.app/), automating image compression as a step in the development process has some limitations. For one, you may not
+always have full control over the images used throughout a site---most user-facing images on the web are *content* concerns more
+than development concerns, uploaded by users or editors, rather than living in a repository alongside development assets like
+JavaScript and stylesheets.
 
-## Deferring image requests
+This will typically necessitate more than one process for image management: a development-level task for the image assets used in
+building and maintaining a site---backgrounds, icons, logos, and so on---and another concerned with image assets generated through *use*
+of the site, such as photographs embedded in a post by an editorial team, or an avatar uploaded by a user. While the context may
+differ, the end goals are the same: automated encoding and compression based on settings defined by the development team.
 
-While you're about to learn a number of ways to ensure your image requests are as small and efficient as possible, the fastest image request
-will always be the one that never gets made. So, right up front, I want to share what may be the most impactful change you can make to the way
-you deliver image assets to your users: the `loading="lazy"` attribute.
+Fortunately, the image processing libraries you've come to understand from your local development workflows can be used in any number
+of contexts. And while there can never be a one-size-fits-all approach to your responsive image markup, these systems provide sensible
+defaults, configuration options, and API hooks to ease their implementation.
 
-```html
-<img src="image.jpg" loading="lazy" alt="...">
-```
+## Static Site Generators
 
-This attribute ensures that requests for images aren't made until they fall close to the user's viewport, deferring them from the initial
-page load---the time when the browser is at its busiest---and removing those requests from the critical rendering path.
+Compared to task-runners, there's some similarity in the way static site generators such as Jekyll or Eleventy approach images. Using
+these tools to produce a deployment-ready website requires management of assets, including CSS minification or transpiling and bundling
+of JavaScript. As you might imagine, this means these tools enable you to process image assets the same way, using many of the libraries
+you've already learned about.
 
-Simple as it may be in practice, using this attribute can have a huge positive impact on performance: an image that never falls within
-the user's viewport will never be requested, and no bandwidth will be wasted on images that the user will never see.
+The official [image plugin for Eleventy](https://www.11ty.dev/docs/plugins/image/) uses [Sharp](https://www.npmjs.com/package/sharp) to provide resizing, generation of multiple source sizes, re-encoding, and compression, just like some of the tasks you've learned about here.
 
-There's a catch, however: deferring those requests means not taking advantage of browsers' hyper-optimized processes for requesting
-images as early as possible. If `loading="lazy"` is used on `img` elements toward the top of the layout---and thus more likely
-to be in the user's viewport when the page is first loaded---these images can feel significantly slower to the end user.
+Unlike a task-runner, a static site generator has direct insight into both the configuration and usage of those libraries,
+and the markup being generated for the production site---meaning it can do a great deal more to automate our responsive image
+markup. For example, when [invoked as part of a shortcode for displaying images](https://www.aleksandrhovhannisyan.com/blog/eleventy-image-plugin/), this plugin will output HTML according
+to the configuration options passed along to Sharp.
 
-## Fetch Priority
+```javascript
 
-The `loading` attribute is an example of a larger web standards effort to give developers more power over how web browsers
-prioritize requests.
+const Image = require("@11ty/eleventy-img");
+module.exports = function(eleventyConfig) {
 
-You're likely aware of browsers' [basic approaches to fetch priority](https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit#):
-for example, a request for an external CSS file in the `<head>` of a document is considered essential enough to block render, while a request for an
-external JavaScript file just above `</body>` will be deferred until render is complete. If the value of a `loading` attribute on an `<img>` is 'lazy',
-the associated image request will be deferred until the browser determines that it will be shown to a user. Otherwise, that image will have the same
-priority as any other image on the page.
+async function imageShortcode(src, alt, sizes="100vw") {
+  let metadata = await Image(src, {
+  formats: ["avif", "webp", "jpeg"],
+  widths: [1000, 800, 400],
+  outputDir: "_dist/img/",
+  filenameFormat: function( id, src, width, format, options ) {
+      const ext = path.extname( src ),
+        name = path.basename( src, ext );
 
-The [`fetchpriority` attribute](https://caniuse.com/mdn-html_elements_img_fetchpriority) is intended to give
-developers [finer-grained control over the priority of assets](https://web.dev/articles/fetch-priority.md.txt), allowing you to flag resources
-as 'high' and 'low' priority relative to resources of the same type. The use cases for `fetchpriority` are similar to the `loading`
-attribute, though much more broad. For example, you might use `fetchpriority="low"` on an image only revealed following user interaction
-(whether that image falls within the user's viewport or not) in order to prioritize visible images elsewhere on the page, or `fetchpriority="high"`
-to prioritize an image you know will be immediately visible in the viewport as soon as the page is rendered.
+      return `${name}-${width}.${format}`
+  }
+  });
 
-Note that `fetchpriority` differs from `loading` in that it doesn't fundamentally change browser behavior. It doesn't instruct the browser
-to load certain assets before others, instead giving it vital context for the decisions it makes around requesting assets.
+  let imageAttributes = {
+  alt,
+  sizes,
+  loading: "lazy"
+  };
 
-## Measuring the impact of images
-
-When optimizing image assets, *perceived* performance is often more important, and more difficult to measure, than total transfer
-size alone.
-
-Web Vitals provide measurable, actionable metrics and guidance for improving users' experience of the web, highlighting problems such
-as slow response time from a web server, rendering issues, and interactivity delays. Core Web Vitals are a subset of these goals, laser-focused
-on the user's direct experience of an individual page---a set of technical measurements that, together, determine how fast an experience *feels* to a user.
-
-### Cumulative Layout Shift
-
-[Cumulative Layout Shift](https://web.dev/articles/cls.md.txt) (CLS) is a measure of visual stability. It is a metric for capturing how much
-the layout of the content on a page shifts as assets are loaded and the page is rendered. Anyone that has spent a significant amount
-of time using the web has lost their place in a long run of text due to a page "jumping" as a delayed webfont or image source is suddenly
-rendered---or had an interactive element suddenly moved away from your pointer. A high CLS is a nuisance at best, and cause of
-user error at worst---a "cancel" button shifting to a space previously occupied by a "confirm" button just as the user clicks, for example.
-
-With high load times and the amount of space they can occupy in a layout, it stands to reason that images are a common cause
-of high CLS scores.
-<iframe allow="camera; clipboard-read; clipboard-write; encrypted-media; geolocation; microphone; midi;" loading="lazy" src="https://codepen.io/web-dot-dev/embed/NWBbxqo?height=500&amp;theme-id=light&amp;default-tab=css%2Cresult&amp;editable=true" style="height: 100%; width: 100%; border: 0;" title="Pen NWBbxqo by web-dot-dev on Codepen"></iframe>
-
-Thanks to relatively recent changes in modern browsers, it's easier than you might think to avoid high CLS scores due to images.
-
-If you've been working on the frontend for a few years now, you'll be familiar with the `width` and `height` attributes on `<img>`:
-prior to the widespread adoption of CSS, these were the only way to control the size of an image.
-
-```html
-<img src="image.jpg" height="200" width="400" alt="...">
-```
-
-These attributes fell out of use in an effort to keep our styling concerns separate from our markup, especially as responsive
-web design made it necessary to specify percentage-based sizing via CSS. In the early days of responsive web design, "remove
-the unused `width` and `height` attributes" was common advice, as the values we specified in our CSS---`max-width: 100%` and
-`height: auto`---would override them.
-
-```html
-<img src="image.jpg" alt="...">
-```
-
-```css
-img {
-  max-width: 100%;
-  height: auto;
+  return Image.generateHTML(metadata, imageAttributes);
 }
+
+eleventyConfig.addAsyncShortcode("respimg", imageShortcode);
+};
 ```
 
-Having removed the `height` and `width` attributes as in the previous example, the only method the browser has for determining
-the height of the image in this situation is to request the source, parse it, and render it at its intrinsic aspect ratio, based on the
-width of the space it occupies in the layout once stylesheets have been applied. Much of this process takes place after the page has been
-rendered, with the newly calculated height causing additional layout shifts.
+This shortcode could then be used in place of the default image syntax:
 
-[Starting in 2019](https://caniuse.com/mdn-html_elements_img_aspect_ratio_computed_from_attributes), browser behavior was updated to handle the `width` and `height` attributes differently. Rather than using the values of these
-attributes to determine the fixed, pixel-based size of an `img` element in the layout, these attributes can be thought to represent
-the *aspect ratio* of the image, though the syntax is the same. Modern browsers will divide these values against each other in order to
-determine an `img` element's intrinsic *aspect ratio* prior to the page being rendered, allowing it to reserve the space the image will occupy as the layout is rendered.
+```markdown
+{‌% respimg "img/butterfly.jpg", "Alt attribute.", "(min-width: 30em) 800px, 80vw" %}
+```
 
-As a rule, you should always use `height` and `width` attributes on `<img>`, with values matching the intrinsic size of your image source---so
-long as you make sure that you've specified `height: auto` alongside `max-width: 100%` to override the height from the HTML attribute.
+If configured to output multiple encodings, as above, the generated markup will be a `<picture>` element containing
+corresponding `<source>` elements, `type` attributes, and `srcset` attributes already fully populated with a list of
+generated candidate sizes.
 
 ```html
-<img src="image.jpg" height="200" width="400" alt="...">
+<picture><source type="image/avif" srcset="/img/butterfly-400.avif 400w, /img/butterfly-800.avif 800w, /img/butterfly-1000.avif 1000w" sizes="(min-width: 30em) 800px, 80vw"><source type="image/webp" srcset="/img/butterfly-400.webp 400w, /img/butterfly-800.webp 800w, /img/butterfly-1000.webp 1000w" sizes="(min-width: 30em) 800px, 80vw"><source type="image/jpeg" srcset="/img/butterfly-400.jpeg 400w, /img/butterfly-800.jpeg 800w, /img/butterfly-1000.jpeg 1000w" sizes="(min-width: 30em) 800px, 80vw"><img alt="Alt attribute." loading="lazy" src="/img/butterfly-400.jpeg" width="1000" height="846"></picture>
 ```
 
-```css
-img {
-  max-width: 100%;
-  height: auto;
-}
+Of course, this plugin won't be able to *generate* a viable `sizes` attribute, as it can't know the ultimate size and position
+of the image in the rendered layout, but it does accept one as input when generating your markup---another job for RespImageLint.
+
+## Frameworks
+
+Client-side rendering frameworks will require a task-runner or bundler like Webpack to edit, encode, and compress image assets
+themselves. [Responsive-loader](https://www.npmjs.com/package/responsive-loader), for example, also uses the Sharp library to re-save image assets. It then allows you to
+then `import` your images as objects:
+
+```javascript
+  import imageAVIF from 'img/butterfly.jpg?sizes[]=400,sizes[]=800,sizes[]=1000&format=avif';
+  import imageWebP from 'img/butterfly.jpg?sizes[]=400,sizes[]=800,sizes[]=1000&format=webp';
+  import imageDefault from 'img/butterfly.jpg?sizes[]=400,sizes[]=800,sizes[]=1000';
 ```
 
-By using the `width` and `height` attributes on your `<img>` elements, you'll avoid a high CLS score due to images.
-<iframe allow="camera; clipboard-read; clipboard-write; encrypted-media; geolocation; microphone; midi;" loading="lazy" src="https://codepen.io/web-dot-dev/embed/YzjpwyE?height=300&amp;theme-id=light&amp;default-tab=html%2Cresult&amp;editable=true" style="height: 100%; width: 100%; border: 0;" title="Pen YzjpwyE by web-dot-dev on Codepen"></iframe>
+These imported images can then be used through abstractions like [React's Image component](https://reactnative.dev/docs/image), or to populate your responsive
+image markup directly:
 
-It's important to note that there's no downside to this approach, as it leans on long-established browser behavior---any browser
-with support for basic CSS will work the way it always has, with the `height` and `width` attributes in your markup overridden by your styles.
+```html
+<picture>
+  <source type='image/avif' srcSet={imageAVIF.srcSet} sizes='...' />
+  <source type='image/webp' srcSet={imageWebp.srcSet} sizes='...' />
+  <img
+    src={imageDefault.src}
+    srcSet={imageDefault.srcSet}
+    width={imageDefault.width}
+    height={imageDefault.height}
+    sizes='...'
+    loading="lazy"
+  />
+```
 
-While `width` and `height` attributes deftly avoid CLS issues by reserving the necessary layout space for your images, presenting
-users with an empty gap or [low-quality placeholder](https://www.guypo.com/introducing-lqip-low-quality-image-placeholders) while
-they wait for an image to transfer and render isn't ideal either. While there are things you can do to mitigate the measurable and perceptible
-impact of slow-to-load images, the only way to present a fully-rendered image to a user more quickly is by reducing its transfer size.
+A framework that does client side rendering is a strong candidate for [Lazysizes](https://www.npmjs.com/package/lazysizes) and `sizes="auto"`---giving you almost fully
+automated responsive images.
 
-### Largest Contentful Paint
+## Content Management Systems
 
-Largest Contentful Paint (LCP) measures the time it takes to render the largest "contentful" element visible in the user's viewport---the
-content element that occupies the largest percentage of the visible page. It may seem like an overly specific metric on the surface, but that
-element serves as a practical proxy for the point where the majority of the page has been rendered, from the user's perspective. LCP is a vital
-measure of (perceived) performance.
+WordPress was one of the earliest adopters of native responsive images markup, and the API has been gradually improved since
+being [introduced in WordPress 4.4](https://make.wordpress.org/core/2015/11/10/responsive-images-in-wordpress-4-4/) with support for WebP and control over the output mime type. WordPress core is designed to make use of the [ImageMagick PHP extension](https://www.php.net/manual/en/book.imagick.php)
+(or, absent that, the [GD](https://www.php.net/manual/en/book.image.php) library).
 
-Metrics like `DOMContentLoaded` or the `window.onload` event can be useful for determining when the process of loading the current page
-has technically completed, but they don't necessarily correspond to a user's experience of the page. A slight delay in rendering an element
-outside the user's viewport would be factored into either of these metrics, but would likely go completely undetected by a real-world user.
-A long LCP means the user's first impression of a page---the most important content inside the current viewport---is that the page is slow,
-or broken outright.
+When an image is uploaded through the WordPress admin interface, that source image is used to generate user-facing files on
+the server, in much the same way as you would on your local machine. By default, any image output by WordPress will come
+with a generated `srcset` attribute based on [the image sizes configured in your theme](https://developer.wordpress.org/apis/responsive-images/).
 
-The user perception captured by LCP has a direct impact on user experience. [An experiment done by Vodafone](https://web.dev/case-studies/vodafone.md.txt) just last year
-found that a 31% improvement in LCP not only led to 8% more sales---a strong result on its own---but of their total number of users, found a 15%
-improvement in the number of visitors who became prospective customers ("visitor-to-lead rate") and a 11% improvement in the number of users
-who visited their cart ("cart to visit rate").
+Two key settings that can be configured for generated images are the [compression quality](https://developer.wordpress.org/reference/hooks/wp_editor_set_quality/) and the [output mime type](https://developer.wordpress.org/reference/hooks/image_editor_output_format/).
 
-On more than [70%](https://almanac.httparchive.org/en/2021/media#images) of webpages, the largest element in the initial
-viewport involves an image, either as a stand-alone `<img>` element or an element with a background image. In other words,
-70% of pages' LCP scores are based on image performance. It doesn't take much imagination to see why: big, attention-grabbing
-images and logos are very likely to be found "above the fold."
+For example, to set the default compression quality to `70` for all generated images, use the following:
 
-![LCP highlighted in the console of a web.dev page](https://web.dev/static/learn/images/performance-issues/image/lcp-highlighted-the-cons-ee76865e1f4bb.png)
+```php
+add_filter( 'wp_editor_set_quality', function() { return 70; } );
+```
 
-There are a few steps you can take to avoid LCP delays: first, never specify `loading="lazy"` on an "above the fold" image,
-as delaying the request until after the page has been rendered will likely have a massive negative impact on your LCP score.
-Second, using `fetchpriority="high"` can inform the browser that the transfer of this image should be prioritized above images elsewhere on the page.
+For even better compression, switch the output format for uploaded JPEG images to WebP with the following:
 
-With those rules squarely in mind, the most important thing you can do to improve a page's LCP score is reduce the amount of time
-it takes to transfer and render those images. In order to do that, you'll need to keep your image sources as small and efficient as
-possible (without sacrificing their quality, of course) and ensure that users are only getting the image assets that make the most
-sense for their browsing contexts.
+```php
+add_filter( 'image_editor_output_format', function( $mappings ) {
+  $mappings[ 'image/jpeg' ] = 'image/webp';
+    return $mappings;
+} );
+```
 
-### Conclusion
+Given that WordPress has full understanding of all [alternate cuts](https://developer.wordpress.org/reference/functions/add_image_size/)
+and encodings it generates from an uploaded image, it can provide helper functions like
+[`wp_get_attachment_image_srcset()`](https://developer.wordpress.org/reference/functions/wp_get_attachment_image_srcset/) to
+retrieve the full, generated `srcset` value of an image attachment.
 
-Image assets are the biggest drain on your users' bandwidth---bandwidth taken away from transferring every other asset necessary
-to render a page. Images introduce significant issues in terms of perceived performance, both during and after the surrounding page
-layout has been rendered. In short: image assets do *damage*.
+As you'll likely have guessed by this point, working with the `sizes` attribute is a little more fraught. Absent any information
+about how images will be used in a layout, WordPress currently defaults to a `sizes` value that effectively says "this image
+should occupy 100% of the available viewport, up to the largest source's intrinsic size"---a predictable default, but not a correct
+one for any real-world application. Be sure to make use of [`wp_calculate_image_sizes()`](https://developer.wordpress.org/reference/hooks/wp_calculate_image_sizes/)
+to set contextually-appropriate `sizes` attributes in your templates.
 
-Daunting as that may be, while "the web would be better off with fewer images" would certainly be true in terms of performance alone,
-it would also do its users a tremendous disservice. Images are a vital part of the web, and you shouldn't compromise on the quality of
-meaningful content for the sake of performance alone.
+Of course, there are countless WordPress plugins dedicated to making modern image workflows faster for development teams and users alike.
+Perhaps most excitingly, plugins like [Jetpack's Site Accelerator](https://jetpack.com/support/site-accelerator/) (formerly "Photon")
+can provide *server-side* negotiation for encodings, ensuring that users will receive the smallest, most efficient encoding that their
+browser is able to support without the need for `<picture>` and `type` markup pattern. It does this through use of an image content
+delivery network---a technology you can make use of yourself, independent of your CMS.
 
-In the rest of this course, you'll learn about the technologies that power our image assets and techniques for mitigating their
-performance impacts, without compromising on quality.
+All of this is also true of hosted CMS solutions like Shopify, though the mechanisms themselves will differ somewhat: offering similar
+hooks for [generating alternate image sources and corresponding `srcset` attributes](https://performance.shopify.com/blogs/blog/responsive-images-on-shopify-with-liquid#provide-multiple-image-size-options-with-srcset)
+and [art direction through the `<picture>` element](https://performance.shopify.com/blogs/blog/responsive-images-on-shopify-with-liquid#art-direction).
