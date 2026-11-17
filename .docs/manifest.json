@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-17T02:22:01-04:00",
+  "lastUpdated": "2026-11-17T06:22:10-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,17 +497,17 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "afa12590d70a884d59f2c22852fbd8dc2adb7553",
+    "/github/docs": "63b6c72cd1ec626d5d9278df5678236ba4a893ec",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
-    "/lucide-icons/lucide": "f8feea7a02ea461c9f2a4b4d851512aae6ec933f",
+    "/lucide-icons/lucide": "6f674729c39d1f2bfaf0c7caab641895fb2fe7b1",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
-    "/react-hook-form/resolvers": "e02dcd623ca915f35e5c418f5384f4732bafa925",
+    "/react-hook-form/resolvers": "f14fc25bbf205e92266c8abf8512b3b517bcae4a",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
-    "/cloudflare/cloudflare-docs/turnstile": "39a00b0ffb01edc3860c4ca5a52fa5db9d6eac34",
-    "/cloudflare/cloudflare-docs/pages": "39a00b0ffb01edc3860c4ca5a52fa5db9d6eac34",
+    "/cloudflare/cloudflare-docs/turnstile": "edccfd769289cee63259587e6c9e9c54e2a6f65c",
+    "/cloudflare/cloudflare-docs/pages": "edccfd769289cee63259587e6c9e9c54e2a6f65c",
     "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "354e6fa33a899f8e0ee1ef5428eaf9a934378615",
@@ -516,7 +516,7 @@
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "1f837447b20bb6f0e72d87b80ece1c221c362c7d",
-    "/opennextjs/opennextjs-cloudflare": "e751dd8884537ff115b494bbb00f01f8538dd6b1",
+    "/opennextjs/opennextjs-cloudflare": "f0efe83dd3b5683d15cf96eacd0061b0629a21c0",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
     "/cloudflare/workers-sdk": "56459a561b7b133a9152b993336e1e5470b1d290",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
