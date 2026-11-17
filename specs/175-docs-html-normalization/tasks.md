@@ -52,7 +52,7 @@
 - [X] T017 Prepare the complete PR handoff using `PR_SUBMISSION.md`, including changed files, source-audit limitations, checker self-review and every unexecuted verification status in the PR description.
 - [ ] T018 After the implementation PR is merged, have the owner manually trigger the existing `Refresh Documentation` workflow and review its report and generated snapshots. This is intentionally not run in this implementation task.
 
-- [X] T019 Distinguish full HTML documents and standalone HTML fragments from valid Markdown documents that begin with supported HTML blocks in `scripts/refresh-docs.js`; cover preservation and rejection in `scripts/test-refresh-docs.js`.
+- [X] T019 Distinguish full HTML documents and unsupported standalone HTML fragments from valid Markdown documents that begin with supported HTML blocks in `scripts/refresh-docs.js`; cover preservation and rejection in `scripts/test-refresh-docs.js`.
 - [X] T020 Preserve nested headings, code blocks and definition lists inside arbitrary HTML wrappers; reduce alternate-fetch redirect allowance; escape Markdown table cell backslashes before pipes; and report failed conversion explicitly.
 - [X] T021 Repair URL-normalization mock keys, guard missing source metadata, and accept safe rejection of legacy JavaScript-shell snapshots that contain no statically extractable documentation.
 
