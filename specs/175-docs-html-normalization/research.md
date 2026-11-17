@@ -7,6 +7,8 @@
 - The existing validator in `scripts/refresh-docs.js` checks structural readability but accepts raw HTML. The previous unit test explicitly treated a complete HTML page as valid documentation.
 - `.docs/manifest.json` currently routes 64 source entries. A URL-shape review identifies 41 likely Markdown/plain-text sources (for example raw GitHub Markdown, `.txt` and `llms.txt` endpoints) and 23 HTML-oriented or ambiguous sources. This classification is based on URL shape, not a live Content-Type audit of all 64 endpoints.
 - The configured Next.js source `https://nextjs.org/docs/app` was verified to return rendered HTML advertising `https://nextjs.org/docs/app.md` as `text/markdown`. The Markdown endpoint returns Markdown.
+- A direct inspection of six existing snapshots found raw HTML in the Next.js, MDN Web Audio, NumPy, Chrome for Developers, TypeScript and OpenNext documentation files. Their existing main/article structures are compatible with the semantic extraction path.
+- Additional live source probes confirmed `text/html` responses from the configured TypeScript and Motion documentation URLs. React.dev and Tailwind probes were rate-limited with HTTP 429, so their response formats were not verified in that sample.
 - The repository already includes `jsdom` 30.0.1 as a development dependency, installed by the documentation refresh workflow. No new package is required.
 - The current refresh workflow has a manual `workflow_dispatch` trigger. Its schedules, retry interval, timezone and permissions are not required to change.
 
