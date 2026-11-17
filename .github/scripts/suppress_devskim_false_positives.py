@@ -280,6 +280,36 @@ KNOWN_LOCALHOST_ORIGINS = {
     "functions/api/oracle.js": {"http://local" + "host:3000", "http://local" + "host:8788"},
 }
 LOOPBACK_TEST_ADDRESS = "127.0." + "0.1"
+# CI security tooling contains reviewed loopback comparison tokens: the
+# changed-line reviewer's host exclusion set and its test fixture. These are
+# not outbound endpoints or shipped debug code. Keep this allowlist separate
+# so adding these files for DS162092 does not widen other rules.
+SAFE_SECURITY_TOOLING_LOOPBACK_FILES = frozenset({
+    ".github/scripts/review_pr_changes.py",
+    ".github/scripts/test_review_pr_changes.py",
+})
+SECURITY_TOOLING_LOOPBACK_JUSTIFICATION = (
+    "False positive: this loopback token is a reviewed exclusion-set member or "
+    "test fixture in CI security tooling, not a shipped debug endpoint."
+)
+SECURITY_TOOLING_LOOPBACK_PATTERNS = {
+    ".github/scripts/review_pr_changes.py": (
+        re.compile(
+            r'^ {16}"(?P<token>'
+            + re.escape("local" + "host")
+            + "|"
+            + re.escape(LOOPBACK_TEST_ADDRESS)
+            + r')",$'
+        ),
+    ),
+    ".github/scripts/test_review_pr_changes.py": (
+        re.compile(
+            r'^ {8}url = "http" \+ "://(?P<token>'
+            + re.escape("local" + "host")
+            + r'):3000/api/health"$'
+        ),
+    ),
+}
 # The Playwright config starts and points at a local Next.js server. Both
 # reviewed lines are local-only test-runner configuration, never shipped code.
 PLAYWRIGHT_LOCAL_SERVER_FILE = "playwright.config.ts"
@@ -337,6 +367,7 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized in SAFE_SHARE_TIMER_CALLBACK_FILES
         or normalized in SAFE_PLAYWRIGHT_TIMEOUT_FILES
         or normalized in SAFE_TEST_SUPPORT_TIMER_FILES
+        or normalized in SAFE_SECURITY_TOOLING_LOOPBACK_FILES
         or normalized in SAFE_SUSPICIOUS_COMMENT_FILES
         or normalized in PUBLIC_IDENTIFIER_ALLOWLIST
         or normalized == PLAYWRIGHT_LOCAL_SERVER_FILE
@@ -950,6 +981,46 @@ def _json_value_string_spans(line: str) -> list[tuple[int, int]]:
     return spans
 
 
+def should_suppress_security_tooling_loopback_token(
+    relative_path: str,
+    source_text: str,
+    region: dict,
+    context: "SourceContext | None" = None,
+) -> bool:
+    """Suppress only the reviewed loopback tokens in CI security tooling."""
+    context = context or SourceContext.from_text(source_text)
+    line_number = region.get("startLine")
+    if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
+        return False
+    lines = context.lines
+    if line_number > len(lines):
+        return False
+    line = lines[line_number - 1]
+    region_span = _source_region_span_on_line(
+        region, line_number, line, source_text, context=context
+    )
+    if region_span is None:
+        return False
+    reported_text = line[region_span[0]:region_span[1]]
+    if reported_text not in {"local" + "host", LOOPBACK_TEST_ADDRESS}:
+        return False
+
+    matched = False
+    for pattern in SECURITY_TOOLING_LOOPBACK_PATTERNS.get(relative_path, ()):
+        match = pattern.match(line)
+        if match is not None and match.group("token") == reported_text:
+            matched = True
+            break
+    if not matched:
+        return False
+
+    if relative_path == ".github/scripts/review_pr_changes.py":
+        # The token must still be one member of the reviewed exclusion set.
+        surrounding = "\n".join(lines[max(0, line_number - 3):line_number])
+        return "if host.casefold() not in {" in surrounding
+    return True
+
+
 def should_suppress_local_probe_origin(
     relative_path: str,
     source_text: str,
@@ -1216,6 +1287,11 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 # other rules and all other paths retain the original allowlist.
                 if rule_id in {"DS162092", "DS137138"}:
                     allowed_contextual_files = allowed_contextual_files | DEVSKIM_SELF_TEST_FILES
+                if rule_id == "DS162092":
+                    allowed_contextual_files = (
+                        allowed_contextual_files
+                        | SAFE_SECURITY_TOOLING_LOOPBACK_FILES
+                    )
                 # Local server/probe origins get their own validated check below.
                 is_reviewable_local_probe = (
                     rule_id == "DS162092"
@@ -1271,6 +1347,10 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
                 )
+            elif rule_id == "DS162092" and should_suppress_security_tooling_loopback_token(
+                relative_path, source_text, region, context=context
+            ):
+                justification = SECURITY_TOOLING_LOOPBACK_JUSTIFICATION
             elif rule_id == "DS162092" and should_suppress_local_probe_origin(
                 relative_path, source_text, region, context=context
             ):
@@ -1371,6 +1451,7 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
         "server configuration or a committed browser-probe/performance report, "
         "not in shipped production code."
     ),
+    SECURITY_TOOLING_LOOPBACK_JUSTIFICATION,
 })
 
 

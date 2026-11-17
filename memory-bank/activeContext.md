@@ -1,3 +1,51 @@
+# Active Context — Exact-span DevSkim suppression for CI loopback tokens
+
+- **Updated:** 2026-11-17
+- **Branch:** freebuff/c3e3aea4b5256eb42e63e937-devskim-loopback
+- **Base:** main at 44b2b3b7
+- **Spec Kit feature:** specs/183-devskim-tooling-loopback-suppression
+
+## Current Task
+
+Suppress only the three verified DS162092 false positives in the changed-line
+reviewer and its test, with exact-span predicates, positive/negative tests and
+real-SARIF replay coverage. The owner narrowed the original five-finding
+proposal to this rule and these two files. This follows the separate report
+cleanup in PR #1948 but does not depend on that unmerged branch.
+
+## Implemented State
+
+- `SAFE_SECURITY_TOOLING_LOOPBACK_FILES` admits exactly
+  `.github/scripts/review_pr_changes.py` and
+  `.github/scripts/test_review_pr_changes.py`, and `process_sarif` unions it
+  only for DS162092.
+- The reviewer predicate requires the exact 16-space exclusion-set member line,
+  the exact reported token, and `if host.casefold() not in {` in the preceding
+  three lines. The fixture predicate requires the exact 8-space local
+  health-check statement.
+- `SECURITY_TOOLING_LOOPBACK_JUSTIFICATION` is in
+  `VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS`, so the results are removed from the
+  uploaded SARIF rather than merely marked suppressed.
+- Two `AuditedFinding` replay families cover both files. DS176209 was not
+  touched: its two placeholder fixtures remain visible by design.
+
+## Verification
+
+- `py_compile` clean, including warnings-as-errors for syntax warnings.
+- Focused suite: 110 tests passed.
+- Real-SARIF replay: 5 results, 3 suppressed, 3 removed, 2 out-of-scope
+  placeholder results remaining; second pass found zero suppressions.
+- Repository gate and build measurement are recorded in `evidence.md`.
+
+## Limitations
+
+- The two DS176209 placeholder fixtures remain unsuppressed and will still be
+  reported by scheduled scans until a separate decision.
+- The real replay used the existing DevSkim 1.0.103 SARIF for the three files;
+  the scanner binary itself is not installed on this runner.
+
+---
+
 # Active Context — Shared adaptive performance and rendering system
 
 - **Updated:** 2026-11-17

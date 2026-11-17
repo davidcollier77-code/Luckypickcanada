@@ -1505,6 +1505,91 @@ class DevSkimSarifReplayVerificationTests(unittest.TestCase):
                 replay_check.replay(sarif_path, root)
             self.assertIn("survived", str(raised.exception))
 
+    def test_replay_removes_the_security_tooling_loopback_fixtures(self):
+        loopback = "local" + "host"
+        address = "127.0." + "0.1"
+        reviewer = (
+            "def changed_lines(host):\n"
+            "    if host.casefold() not in {\n"
+            f'                "{loopback}",\n'
+            f'                "{address}",\n'
+            "        }:\n"
+            "        return True\n"
+        )
+        fixture = (
+            "import unittest\n"
+            "\n"
+            "\n"
+            "class HealthTests(unittest.TestCase):\n"
+            "    def test_health(self):\n"
+            f'        url = "http" + "://{loopback}:3000/api/health"\n'
+        )
+
+        def region_for(source_text, line_number, token):
+            lines = source_text.splitlines()
+            line = lines[line_number - 1]
+            index = line.index(token)
+            absolute = (
+                sum(len(item) + 1 for item in lines[: line_number - 1]) + index
+            )
+            return {
+                "startLine": line_number,
+                "endLine": line_number,
+                "startColumn": index + 1,
+                "endColumn": index + len(token) + 1,
+                "charOffset": absolute,
+                "charLength": len(token),
+                "snippet": {"text": token},
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reviewer_path = root / ".github/scripts/review_pr_changes.py"
+            reviewer_path.parent.mkdir(parents=True, exist_ok=True)
+            reviewer_path.write_text(reviewer, encoding="utf-8")
+            fixture_path = root / ".github/scripts/test_review_pr_changes.py"
+            fixture_path.write_text(fixture, encoding="utf-8")
+            sarif_path = self._write_sarif(
+                root,
+                [
+                    self._result(
+                        ".github/scripts/review_pr_changes.py",
+                        region_for(reviewer, 3, loopback),
+                        "DS162092",
+                    ),
+                    self._result(
+                        ".github/scripts/review_pr_changes.py",
+                        region_for(reviewer, 4, address),
+                        "DS162092",
+                    ),
+                    self._result(
+                        ".github/scripts/test_review_pr_changes.py",
+                        region_for(fixture, 6, loopback),
+                        "DS162092",
+                    ),
+                    self._result(
+                        "app/api/checkout/route.js",
+                        {"startLine": 1, "startColumn": 1, "endColumn": 12},
+                    ),
+                ],
+            )
+            raw_before = sarif_path.read_bytes()
+
+            report = replay_check.replay(sarif_path, root)
+
+            self.assertEqual(report.raw_results, 4)
+            self.assertEqual(report.suppressed, 3)
+            self.assertEqual(report.removed_results, 3)
+            self.assertEqual(report.filtered_results, 1)
+            self.assertEqual(
+                report.audited_removed,
+                [
+                    "Security reviewer loopback exclusion tokens (2)",
+                    "Security reviewer loopback fixture (1)",
+                ],
+            )
+            self.assertEqual(sarif_path.read_bytes(), raw_before)
+
     def test_replay_fails_when_a_finding_outside_the_allowlist_is_filtered(self):
         approved_justification = next(
             item
@@ -2448,3 +2533,158 @@ class ReviewedAlertBatchSuppressionTests(unittest.TestCase):
             ),
             0,
         )
+
+
+class SecurityToolingLoopbackSuppressionTests(unittest.TestCase):
+    """Guard the reviewed loopback tokens in the CI security reviewer."""
+
+    REVIEWER = ".github/scripts/review_pr_changes.py"
+    REVIEWER_TEST = ".github/scripts/test_review_pr_changes.py"
+    LOOPBACK = "local" + "host"
+    ADDRESS = "127.0." + "0.1"
+
+    @staticmethod
+    def _write(root, relative_path, text):
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    @staticmethod
+    def _region(source_text, line_number, token):
+        lines = source_text.splitlines()
+        line = lines[line_number - 1]
+        token_index = line.index(token)
+        absolute = sum(len(item) + 1 for item in lines[: line_number - 1]) + token_index
+        return {
+            "startLine": line_number,
+            "endLine": line_number,
+            "startColumn": token_index + 1,
+            "endColumn": token_index + len(token) + 1,
+            "charOffset": absolute,
+            "charLength": len(token),
+            "snippet": {"text": token},
+        }
+
+    @staticmethod
+    def _result(relative_path, region, rule_id="DS162092"):
+        return {
+            "ruleId": rule_id,
+            "message": {"text": "Do not leave debug code in production"},
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": relative_path},
+                    "region": region,
+                }
+            }],
+        }
+
+    @classmethod
+    def _reviewer_source(cls, *members):
+        lines = [
+            "def changed_lines(host):",
+            "    if host.casefold() not in {",
+        ]
+        lines.extend(f'                "{member}",' for member in members)
+        lines.append("        }:")
+        lines.append("        return True")
+        return "\n".join(lines) + "\n"
+
+    @classmethod
+    def _fixture_source(cls):
+        return (
+            "import unittest\n"
+            "\n"
+            "\n"
+            "class HealthTests(unittest.TestCase):\n"
+            "    def test_health(self):\n"
+            f'        url = "http" + "://{cls.LOOPBACK}:3000/api/health"\n'
+        )
+
+    def _process(self, relative_path, source_text, line_number, token):
+        region = self._region(source_text, line_number, token)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, relative_path, source_text)
+            sarif = {"runs": [{"results": [self._result(relative_path, region)]}]}
+            return suppressions.process_sarif(sarif, root)
+
+    def test_reviewer_exclusion_set_loopback_tokens_are_suppressed(self):
+        source = self._reviewer_source(self.LOOPBACK, self.ADDRESS)
+        for line_number, token in ((3, self.LOOPBACK), (4, self.ADDRESS)):
+            with self.subTest(token=token):
+                self.assertEqual(
+                    self._process(self.REVIEWER, source, line_number, token), 1
+                )
+
+    def test_reviewer_test_loopback_fixture_is_suppressed(self):
+        source = self._fixture_source()
+        self.assertEqual(self._process(self.REVIEWER_TEST, source, 6, self.LOOPBACK), 1)
+
+    def test_other_loopback_member_is_not_suppressed(self):
+        source = self._reviewer_source("0.0.0.0")
+        self.assertEqual(self._process(self.REVIEWER, source, 3, "0.0.0.0"), 0)
+
+    def test_reviewer_loopback_without_the_exclusion_set_is_not_suppressed(self):
+        source = f'                "{self.LOOPBACK}",\n'
+        self.assertEqual(self._process(self.REVIEWER, source, 1, self.LOOPBACK), 0)
+
+    def test_reviewer_loopback_in_an_unreviewed_file_is_not_suppressed(self):
+        source = self._reviewer_source(self.LOOPBACK)
+        self.assertEqual(self._process("scripts/other.py", source, 3, self.LOOPBACK), 0)
+
+    def test_reviewer_test_external_host_is_not_suppressed(self):
+        source = (
+            "import unittest\n"
+            "\n"
+            "\n"
+            "class HealthTests(unittest.TestCase):\n"
+            "    def test_health(self):\n"
+            '        url = "http" + "://example.com:3000/api/health"\n'
+        )
+        self.assertEqual(
+            self._process(self.REVIEWER_TEST, source, 6, "example.com"), 0
+        )
+
+    def test_loopback_subtoken_is_not_suppressed(self):
+        source = self._reviewer_source(self.LOOPBACK)
+        self.assertEqual(self._process(self.REVIEWER, source, 3, "host"), 0)
+
+    def test_security_tooling_loopback_justification_is_verified(self):
+        self.assertIn(
+            suppressions.SECURITY_TOOLING_LOOPBACK_JUSTIFICATION,
+            suppressions.VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS,
+        )
+
+    def test_only_the_three_reviewed_tooling_results_are_removed(self):
+        reviewer = self._reviewer_source(self.LOOPBACK, self.ADDRESS)
+        fixture = self._fixture_source()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._write(root, self.REVIEWER, reviewer)
+            self._write(root, self.REVIEWER_TEST, fixture)
+            results = [
+                self._result(self.REVIEWER, self._region(reviewer, 3, self.LOOPBACK)),
+                self._result(self.REVIEWER, self._region(reviewer, 4, self.ADDRESS)),
+                self._result(
+                    self.REVIEWER_TEST, self._region(fixture, 6, self.LOOPBACK)
+                ),
+                self._result(
+                    "app/api/checkout/route.js",
+                    {"startLine": 1, "startColumn": 1, "endColumn": 2},
+                ),
+            ]
+            sarif = {"runs": [{"results": results}]}
+
+            self.assertEqual(suppressions.process_sarif(sarif, root), 3)
+            self.assertEqual(
+                suppressions.remove_verified_false_positive_results(sarif), 3
+            )
+            remaining = sarif["runs"][0]["results"]
+            self.assertEqual(len(remaining), 1)
+            self.assertIn(
+                "app/api/checkout/route.js",
+                remaining[0]["locations"][0]["physicalLocation"][
+                    "artifactLocation"
+                ]["uri"],
+            )
