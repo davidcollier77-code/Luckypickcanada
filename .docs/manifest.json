@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-17T15:13:58-04:00",
+  "lastUpdated": "2026-11-17T18:26:44-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,7 +497,7 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "7257848b585e3197683fa3d4a3deb57356671e3d",
+    "/github/docs": "c8d18813b261f243c2a4d47607d527fdcfe4ef8b",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
@@ -506,11 +506,11 @@
     "/react-hook-form/resolvers": "f14fc25bbf205e92266c8abf8512b3b517bcae4a",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
-    "/cloudflare/cloudflare-docs/turnstile": "edccfd769289cee63259587e6c9e9c54e2a6f65c",
-    "/cloudflare/cloudflare-docs/pages": "edccfd769289cee63259587e6c9e9c54e2a6f65c",
+    "/cloudflare/cloudflare-docs/turnstile": "70104effd4fc45829b2dbabf929eae4f9d44ea9b",
+    "/cloudflare/cloudflare-docs/pages": "70104effd4fc45829b2dbabf929eae4f9d44ea9b",
     "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "354e6fa33a899f8e0ee1ef5428eaf9a934378615",
+    "/microsoft/playwright": "cb59312a92105f477a18ba3d28b2a89bab9b3823",
     "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
     "/colinhacks/zod": "19c40d2072288b4cafec851e9d056a72a88e5973",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
@@ -524,7 +524,7 @@
     "/getsentry/sentry-docs": "c363ae896db4672454ba646266e7611458385d21",
     "/marsidev/react-turnstile": "fafc7b564386a9b1ab0e58d564e0960adba9d230",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
-    "/resend/resend-node": "08b335025c7c0a31fd073e0b16c429288b726a66",
+    "/resend/resend-node": "ebbf51acba963b06a7028f0f636d427d790fea82",
     "/numpy/numpy": "c60f172b3330f76d6592362137f34c4a3030a001",
     "/lovell/sharp": "249971a743ebf1044a1a7b0d709e610e8b74fa02",
     "/google-gemini/gemini-skills/gemini-api-dev": "87fb0173d36fea4f87de4c3fbd0678cf929c0588",
