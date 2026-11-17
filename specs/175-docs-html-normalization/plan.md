@@ -6,7 +6,7 @@
 
 ## Summary
 
-Normalize HTML documentation responses before they reach the existing snapshot validation/write path. Prefer an advertised same-origin Markdown representation; otherwise extract the semantic content into Markdown using the already-installed JSDOM dependency. Reject any raw HTML that remains. Re-fetch legacy HTML snapshots despite unchanged upstream SHA pins.
+Normalize HTML documentation responses before they reach the existing snapshot validation/write path. Prefer an advertised same-origin Markdown representation; otherwise extract the semantic content into Markdown using the already-installed JSDOM dependency. Reject full HTML documents and standalone unconverted fragments, but preserve valid Markdown that begins with a supported HTML block. Re-fetch legacy HTML snapshots despite unchanged upstream SHA pins.
 
 ## Technical Context
 
@@ -44,12 +44,13 @@ Completed. The existing validator's HTML acceptance was confirmed, the Next.js p
 ## Phase 1: Design and Implementation
 
 1. Capture response Content-Type and final URL while preserving size, timeout and redirect limits.
-2. Detect HTML using MIME and body inspection.
+2. Detect full HTML documents using MIME and document-level body markers without misclassifying valid Markdown HTML blocks.
 3. Parse the page for a same-origin HTTPS Markdown alternate and use it when available.
 4. Otherwise use JSDOM to remove common page chrome and serialize meaningful documentation blocks to Markdown.
 5. Reject raw HTML at final validation, preserving the existing snapshot on failure.
 6. Treat legacy HTML snapshots as needing normalization even when their upstream SHA is unchanged.
-7. Add focused unit tests and an isolated full-workflow regression fixture; do not run the live documentation refresh.
+7. Preserve semantic blocks nested inside unknown page wrappers, cap alternate-fetch redirects, escape Markdown table cell backslashes before pipes, and report failed conversion clearly.
+8. Add focused unit tests and an isolated full-workflow regression fixture; do not run the live documentation refresh.
 
 ## Project Structure
 
