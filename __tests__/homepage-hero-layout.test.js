@@ -108,14 +108,28 @@ describe('Reference hero composition', () => {
     expect(heroCss).toContain('.hero-art-slice--explore button:focus-visible { outline-offset: -4px; }');
   });
 
-  it('keeps one artwork source, one preload and no new image asset', () => {
+  it('keeps one artwork source, one preload and only that artwork\u2019s own derivatives', () => {
     const preloads = heroSource.match(/preload\(/g) ?? [];
 
     expect(preloads).toHaveLength(1);
     // Only the existing artwork may be referenced: the reference is a layout
-    // guide, never a site image.
+    // guide, never a site image. The allowed files are the painting itself and
+    // its 669/768/1024-pixel-wide AVIF and WebP derivatives; any other artwork
+    // reference is a new image asset and must fail here.
     expect(heroSource).not.toMatch(/reference[-_ ]?image\.(png|jpe?g|webp|avif)/i);
-    expect(heroSource.match(/homepage-hero-lucky-pick-canada/g) ?? []).toHaveLength(10);
+    const referenced = [
+      ...new Set(
+        [...heroSource.matchAll(/homepage-hero-lucky-pick-canada[-\w]*\.(?:avif|webp)/g)].map((match) => match[0])
+      ),
+    ].sort();
+    expect(referenced).toEqual([
+      'homepage-hero-lucky-pick-canada-669w.avif',
+      'homepage-hero-lucky-pick-canada-669w.webp',
+      'homepage-hero-lucky-pick-canada-768w.avif',
+      'homepage-hero-lucky-pick-canada-768w.webp',
+      'homepage-hero-lucky-pick-canada.avif',
+      'homepage-hero-lucky-pick-canada.webp',
+    ]);
     expect(heroCss).not.toMatch(/url\(/);
   });
 

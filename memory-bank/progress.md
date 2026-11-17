@@ -1,3 +1,15 @@
+## 2026-11-17 — Homepage mobile LCP delivery after PR #1933
+- Filled the hero artwork's candidate-ladder gap with 768 w AVIF/WebP derivatives, so Lighthouse's
+  mobile profile (412 px at DPR 1.75 = 721 device pixels) no longer downloads the 1024 w file while
+  high-density phones keep it unchanged.
+- Local PSI-profile mobile: median 68 → 77, LCP 4.1 → 3.1 s, hero transfer 199 → 143 KiB; desktop
+  unchanged at 98. PSI live baselines recorded first: mobile 76, desktop 98, no field data.
+- Measured and rejected an early `Link` preload header and `experimental.cssChunking: 'strict'`, and
+  kept the Milky Way and star canvas untouched after profiling showed the canvas is under 0.3 % of
+  first-load script samples.
+- PSI 90+ mobile is not reachable without a fidelity trade or feature removal; recorded in the
+  feature evidence rather than pursued.
+
 ## 2026-11-16 — Independent checker suite (P1–P5)
 - Split the checking system by responsibility in a new PR: test quality, performance
   (resource leaks), security alerts and a Visual QA summary each publish their own
