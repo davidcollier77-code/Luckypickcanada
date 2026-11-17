@@ -1,5 +1,5 @@
-import { preload } from 'react-dom';
 import HomePage from './homepage/HomePage';
+import { AboutTeaserSection, CommunityStoriesSection } from './homepage/HomeStaticSections';
 import Hero from './homepage/Hero';
 import JsonLd from './components/JsonLd';
 import { faqItems } from './homepage/faq-content';
@@ -19,33 +19,35 @@ const faqSchema = {
 
 export const dynamic = 'force-static';
 
-// The pinned @marsidev/react-turnstile 1.6.1 loader appends this exact URL from a
-// mount effect, so the Suggestion Box security check cannot begin fetching the
-// API until React has hydrated the homepage. Emitting the hint from the initial
-// document lets that two-hop fetch overlap hydration instead of following it.
-// `fetchPriority: 'low'` keeps the 86.7 KB third-party script behind the LCP
-// image and the route's own CSS/JS, which is what the mobile PageSpeed work
-// protects; the script is not executed here, so the wrapper still registers
-// onloadTurnstileCallback before it injects the executing tag.
-const TURNSTILE_SCRIPT_URL =
-  'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit';
-
 /**
  * Composes the static homepage with its sky backdrop, hero, interactive content,
  * FAQ, and introductory sections.
  *
+ * The Turnstile script is deliberately not hinted here. The Suggestion Box that
+ * needs it sits far below the fold, so `TurnstileField` requests the widget (and
+ * with it the challenge runtime) only once the field approaches the viewport.
+ * Hinting the script up front spent the visitor's first bandwidth on a
+ * third-party payload the LCP image needs instead.
+ *
  * @returns {import('react').ReactElement} The complete homepage.
  */
 export default function Page() {
-  // React's resource API emits the hint in <head> during server rendering.
-  preload(TURNSTILE_SCRIPT_URL, { as: 'script', fetchPriority: 'low' });
-
   return (
     <>
       <JsonLd data={faqSchema} />
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
-      <HomePage />
+      {/* The homepage shell is a client component, but the sections that need no
+          state are rendered here, on the server, and handed in as slots. Their
+          markup is streamed as server output and stays out of the hydration
+          tree, which is the cheapest way to keep below-the-fold content
+          identical while reducing what the browser has to hydrate. */}
+      <HomePage
+        slots={{
+          communityStories: <CommunityStoriesSection />,
+          aboutTeaser: <AboutTeaserSection />,
+        }}
+      />
 
       {/* Low-Profile SEO Text Section */}
       <section

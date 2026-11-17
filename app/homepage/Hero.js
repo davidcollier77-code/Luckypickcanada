@@ -1,7 +1,7 @@
 import "../../themes/default/hero.css";
-import Link from 'next/link';
 import { preload } from 'react-dom';
 import ExploreLuckButton from './ExploreLuckButton';
+import IntentPrefetchLink from '../../components/IntentPrefetchLink';
 
 /**
  * The hero artwork is one flattened painting (1024 x 1536) that carries the gold
@@ -62,39 +62,41 @@ export default function Hero() {
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome">
       {/* Main Content Stack */}
       <div className="relative z-10 w-full flex flex-col items-center">
-        {/* Navigation */}
+        {/* Navigation. These four destinations are in the first viewport, so the
+            default Link prefetch pre-warmed all four routes during the initial
+            load; IntentPrefetchLink prefetches on hover/focus/touch instead. */}
         <nav
           className="homepage-main-nav w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
           aria-label="Primary navigation"
         >
           <div className="homepage-main-nav-surface flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 md:gap-4 py-1.5 sm:py-2 px-3 sm:px-4 rounded-[2rem] sm:rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium leading-tight">
-            <Link
+            <IntentPrefetchLink
               href="/lucky-meter"
               className="text-amber-400 hover:text-amber-300 transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Luck Generator
-            </Link>
+            </IntentPrefetchLink>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
-            <Link
+            <IntentPrefetchLink
               href="#community-stories"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Lucky Community Stories
-            </Link>
+            </IntentPrefetchLink>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
-            <Link
+            <IntentPrefetchLink
               href="/crystal-ball"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Crystal Ball
-            </Link>
+            </IntentPrefetchLink>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
-            <Link
+            <IntentPrefetchLink
               href="/reveal"
               className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Daily Card Reveal
-            </Link>
+            </IntentPrefetchLink>
           </div>
         </nav>
 
