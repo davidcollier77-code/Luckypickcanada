@@ -48,8 +48,8 @@
 
 - [X] T014 Keep the manifest, generated `.docs/` snapshots, package manifests, workflow schedule, timezone, Cloudflare scheduler and application code unchanged; review the changed paths against the approved scope.
 - [ ] T015 Run `node scripts/test-refresh-docs.js` and `node scripts/test-refresh-docs-e2e.js` under the repository's Node.js 26 environment. **BLOCKED in ChatGPT**: only Node.js 22.16.0 is available, and ChatGPT is prohibited from executing repository scripts.
-- [ ] T016 Run the applicable Vitest suite, TypeScript check, repository gate and production build-size measurement in an authorized Node.js 26/pnpm 10.30.3 environment. **NOT RUN in ChatGPT**: project runtime mismatch and repository-script execution restriction.
-- [X] T017 Prepare the complete PR handoff with changed files, source audit limitations, checker self-review and every unexecuted verification status in the PR description.
+- [ ] T016 Run the applicable Vitest suite, TypeScript check, repository gate and production build-size measurement using `package.json`, `pnpm-lock.yaml`, `freebuff-verify.sh` and the `.next/` plus `public/` build output in an authorized Node.js 26/pnpm 10.30.3 environment. **NOT RUN in ChatGPT**: project runtime mismatch and repository-script execution restriction.
+- [X] T017 Prepare the complete PR handoff using `PR_SUBMISSION.md`, including changed files, source-audit limitations, checker self-review and every unexecuted verification status in the PR description.
 - [ ] T018 After the implementation PR is merged, have the owner manually trigger the existing `Refresh Documentation` workflow and review its report and generated snapshots. This is intentionally not run in this implementation task.
 
 ## Dependencies & Execution Order
