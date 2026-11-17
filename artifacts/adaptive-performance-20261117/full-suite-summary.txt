@@ -1,0 +1,4 @@
+543:[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+545:[41m[1m FAIL [22m[49m __tests__/agent-governance-single-source.test.js[2m > [22msingle-source agent governance[2m > [22mdocuments Freebuff Playwright modes and excludes ChatGPT from the CLI system
+1020:[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m89 passed[39m[22m[90m (90)[39m
+1021:[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m910 passed[39m[22m[90m (911)[39m

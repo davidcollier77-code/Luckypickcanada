@@ -54,7 +54,7 @@ git worktree add --detach .base-check ec4b5258
 cd .base-check && pnpm exec vitest run __tests__/agent-governance-single-source.test.js
 ```
 
-Captured output (`artifacts/adaptive-performance-20261117/base-commit-governance.log`, in this PR):
+Captured output (`artifacts/adaptive-performance-20261117/base-commit-governance.txt`, in this PR):
 
 ```
 FAIL __tests__/agent-governance-single-source.test.js > single-source agent governance
@@ -90,7 +90,7 @@ Coverage added by this task:
 
 | Check | Result |
 | --- | --- |
-| `rm -rf .next && pnpm run build` | PASS — compiled successfully, 21/21 static pages, exit 0 (`artifacts/adaptive-performance-20261117/build.log`) |
+| `rm -rf .next && pnpm run build` | PASS — compiled successfully, 21/21 static pages, exit 0 (`artifacts/adaptive-performance-20261117/build.txt`) |
 | Production build size (`.next` + `public`) | **344,157,126 bytes = 328.21 MiB**, below the 495 MiB cap |
 | Earlier build of the same commit | 344,342,416 bytes = 328.39 MiB (the figure in the PR description). Both builds are valid; the fresh rebuild supersedes it. |
 | `./freebuff-verify.sh` | Spec Kit gate PASS, type check PASS, build PASS, refresh-docs 47/48 |
@@ -114,7 +114,7 @@ identified and stopped before these runs, and the earlier invalid run was discar
 | high desktop (8 GB, 16 cores, 30 Mbps) | 1440×900@1x | 1× | 24.4 | 25.2 / 24.4 / 20.8 | 0 | 9.5 MB | 186 ms |
 | high desktop, reduced motion | 1440×900@1x | 1× | 0 | 0 / 0 / 0 | 0 | 9.5 MB | 225 ms |
 
-Raw per-run data: `benchmark-run-{1,2,3}.json`; thresholded summary: `benchmark-results.json`.
+Raw per-run data: `benchmark-run-{1,2,3}.json`; thresholded summary: `benchmark-results.json`; full-suite summary: `full-suite-summary.txt`.
 
 Measured improvement:
 
