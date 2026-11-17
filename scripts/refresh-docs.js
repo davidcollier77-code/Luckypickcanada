@@ -55,9 +55,17 @@ function isRawHtmlFragment(content) {
   const opening = prefix.match(/^<([a-z][a-z0-9-]*)\b[^<>]*>/i);
   if (!opening) return false;
   const voidElements = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
-  const closing = voidElements.has(opening[1].toLowerCase())
-    ? null
-    : new RegExp('</' + opening[1] + '\\s*>', 'i').exec(prefix);
+  let closing = null;
+  if (!voidElements.has(opening[1].toLowerCase())) {
+    const closingPattern = /<\\/([a-z][a-z0-9-]*)\\s*>/ig;
+    let candidate;
+    while ((candidate = closingPattern.exec(prefix))) {
+      if (candidate[1].toLowerCase() === opening[1].toLowerCase()) {
+        closing = candidate;
+        break;
+      }
+    }
+  }
   if (!closing && !voidElements.has(opening[1].toLowerCase())) return true;
   const closingEnd = closing ? closing.index + closing[0].length : opening[0].length;
   const remainder = prefix.slice(closingEnd).trimStart();
