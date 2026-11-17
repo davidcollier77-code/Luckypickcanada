@@ -144,26 +144,30 @@ identified and stopped before these runs, and the earlier invalid run was discar
 
 | Profile | Viewport | CPU | Median paints/s | Runs | Long tasks | Heap | Median load |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| low mobile (1 GB, 2 cores, Save-Data, 0.4 Mbps) | 360×740@2x | 4× | 30.0 | 30 / 30 / 30 | 0 | 9.5 MB | 150 ms |
-| medium mobile (4 GB, 4 cores, 2 Mbps) | 390×844@3x | 2× | 59.6 | 60 / 59.6 / 56.8 | 0 | 9.5 MB | 363 ms |
-| **same-viewport capable** (8 GB, 16 cores, 30 Mbps) | 390×844@2x | 1× | **59.2** | 59.2 / 60 / 56 | 0 | 9.5 MB | 203 ms |
-| **same-viewport constrained** (1 GB, 2 cores, Save-Data) | 390×844@2x | 1× | **30.0** | 30 / 30 / 28.8 | 0 | 9.5 MB | 225 ms |
-| high desktop (8 GB, 16 cores, 30 Mbps) | 1440×900@1x | 1× | 24.4 | 25.2 / 24.4 / 20.8 | 0 | 9.5 MB | 186 ms |
-| high desktop, reduced motion | 1440×900@1x | 1× | 0 | 0 / 0 / 0 | 0 | 9.5 MB | 225 ms |
+| low mobile (1 GB, 2 cores, Save-Data, 0.4 Mbps) | 360×740@2x | 4× | 28.4 | 30 / 24.8 / 28.4 | 0 / 10 / 0 | 9.5 MB | 764 ms |
+| medium mobile (4 GB, 4 cores, 2 Mbps) | 390×844@3x | 2× | 47.2 | 59.6 / 34.8 / 47.2 | 0 / 0 / 0 | 9.5 MB | 399 ms |
+| **same-viewport capable** (8 GB, 16 cores, 30 Mbps) | 390×844@2x | 1× | **51.6** | 51.6 / 45.6 / 54 | 0 / 0 / 0 | 9.5 MB | 334 ms |
+| **same-viewport constrained** (1 GB, 2 cores, Save-Data) | 390×844@2x | 1× | **29.6** | 30 / 27.2 / 29.6 | 0 / 0 / 0 | 9.5 MB | 235 ms |
+| high desktop (8 GB, 16 cores, 30 Mbps) | 1440×900@1x | 1× | 18.4 | 21.6 / 18.4 / 18 | 0 / 0 / 0 | 9.5 MB | 393 ms |
+| high desktop, reduced motion | 1440×900@1x | 1× | 0 | 0 / 0 / 0 | 0 / 0 / 0 | 9.5 MB | 317 ms |
 
 Raw per-run data: `benchmark-run-{1,2,3}.json`; thresholded summary: `benchmark-results.json`; full-suite summary: `full-suite-summary.txt`.
 
 Measured improvement:
 
-- At an identical viewport and CPU rate, the constrained profile painted **49.3% fewer animation frames**
-  than the capable profile (30.0 vs 59.2 per second), matching the 30 fps governor target, with every
+- At an identical viewport and CPU rate, the constrained profile painted **42.6% fewer animation frames**
+  than the capable profile (29.6 vs 51.6 per second), close to the 30 fps governor target, with every
   renderer still mounted.
-- The capable profile sustained ~60 fps; the low-mobile profile held its 30 fps target even at 4× CPU
-  throttling.
-- Reduced motion produced **zero** continuous paints after the initial static frame.
-- Zero long tasks and zero console errors in every run; heap was 9.5 MB in every profile.
+- The capable profile stayed above 45 fps in every run (median 51.6); the low-mobile profile reached its
+  30 fps target in two of three runs, but one run under runner load recorded 24.8 fps and 10 long tasks, so
+  it is not reported as uniformly stable.
+- Reduced motion produced **zero** continuous paints after the initial static frame in all three runs.
+- Console errors were zero in every run and heap was 9.5 MB in every profile; long tasks were zero except
+  for that one low-mobile run.
 - The 1440×900 desktop result is **raster-bound in this GPU-less environment** (software SwiftShader,
   1.3 MP canvas), not governor-bound; it is reported as an environment limitation, not a product result.
+- These three runs were taken after the review repairs; the earlier 59.2 vs 30.0 figures came from a prior
+  build and a less loaded runner, so they are superseded by the medians above.
 
 ## Limitations
 
