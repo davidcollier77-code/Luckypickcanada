@@ -17,7 +17,11 @@ import { join } from 'node:path';
 const read = (relativePath) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 const heroSource = read('app/homepage/Hero.js');
 const heroCss = read('themes/default/hero.css');
-const homePageSource = read('app/homepage/HomePage.js');
+// The homepage's static sections are server components rendered from
+// HomeStaticSections.js and handed to the client shell as slots, so the
+// homepage source under test is both files together.
+const homePageSource =
+  read('app/homepage/HomePage.js') + read('app/homepage/HomeStaticSections.js');
 const exploreSource = read('app/homepage/ExploreLuckButton.js');
 
 describe('Homepage hero navigation', () => {

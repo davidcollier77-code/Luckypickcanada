@@ -14,7 +14,11 @@ import { faqItems } from '../app/homepage/faq-content';
 
 const read = (relativePath) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
-const homePageSource = read('app/homepage/HomePage.js');
+// The homepage's static sections are server components rendered from
+// HomeStaticSections.js and handed to the client shell as slots, so the
+// homepage source under test is both files together.
+const homePageSource =
+  read('app/homepage/HomePage.js') + read('app/homepage/HomeStaticSections.js');
 const faqSectionSource = read('app/homepage/FAQSection.js');
 const pageSource = read('app/page.js');
 const mapSource = read('app/lucky-map-of-canada/lucky-map-of-canada.js');

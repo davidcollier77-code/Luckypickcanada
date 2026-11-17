@@ -1,4 +1,5 @@
 import HomePage from './homepage/HomePage';
+import { AboutTeaserSection, CommunityStoriesSection } from './homepage/HomeStaticSections';
 import Hero from './homepage/Hero';
 import JsonLd from './components/JsonLd';
 import { faqItems } from './homepage/faq-content';
@@ -36,7 +37,17 @@ export default function Page() {
       <JsonLd data={faqSchema} />
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
-      <HomePage />
+      {/* The homepage shell is a client component, but the sections that need no
+          state are rendered here, on the server, and handed in as slots. Their
+          markup is streamed as server output and stays out of the hydration
+          tree, which is the cheapest way to keep below-the-fold content
+          identical while reducing what the browser has to hydrate. */}
+      <HomePage
+        slots={{
+          communityStories: <CommunityStoriesSection />,
+          aboutTeaser: <AboutTeaserSection />,
+        }}
+      />
 
       {/* Low-Profile SEO Text Section */}
       <section

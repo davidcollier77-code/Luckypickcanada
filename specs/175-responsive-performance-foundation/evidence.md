@@ -126,3 +126,44 @@ On the PSI mobile profile the page must deliver roughly 400 KiB to paint the her
 five render-blocking files). The remaining levers are to shrink or withhold that artwork,
 which this task forbids, or to replace the single client component with server-rendered
 sections, which is a redesign.
+
+## Round 4 — moving the page-wide client boundary
+
+The homepage was one `'use client'` component that owned every section, so the whole
+document entered the hydration tree. Two sections carry no state and no handlers, so they
+now render on the server and reach the client shell as slots:
+
+- `app/homepage/HomeStaticSections.js` exports `CommunityStoriesSection` and
+  `AboutTeaserSection` as plain server components.
+- `app/page.js` renders them and passes them to `<HomePage slots={...} />`.
+- `HomePage` places `{slots.communityStories}` and `{slots.aboutTeaser}` where the markup
+  used to be inline, so that markup is streamed as server output and is not hydrated.
+
+Both states were served side by side (ports 3011 and 3012) and measured alternately with
+the PSI mobile profile, so host drift affects both:
+
+| Run | Baseline 32b2a7c7 | Split |
+| --- | --- | --- |
+| 1 | 4,897 ms LCP, score 72 | 4,819 ms LCP, score 73 |
+| 2 | 4,893 ms LCP, score 72 | 4,819 ms LCP, score 71 |
+| 3 | 4,820 ms LCP, score 73 | 4,812 ms LCP, score 64 (TBT 770 ms, outlier) |
+| 4 | 4,887 ms LCP, score 71 | 4,816 ms LCP, score 72 |
+| 5 | - | 4,816 ms LCP, score 70 |
+
+LCP separates cleanly by about 75 ms (1.5%): every split run landed at or below 4,819 ms and
+every baseline run at or above 4,820 ms. The score did not move - median 71 for the split
+against 72 for the baseline, which is inside this host's run-to-run spread. Transfer fell
+from 741 to 739 KiB, TBT stayed unchanged within its 390-480 ms drift, and desktop measured
+98 (LCP 1.2 s, TBT 60 ms, 1,018 KiB), matching the round 1 desktop result.
+
+The split therefore recovers about 75 ms of LCP and removes real hydration work, but it does
+not change the score. Mobile 90+ remains out of reach: the no-JavaScript floor is 2,576 ms
+against 4,819 ms with scripts, and 129 of the 174 KiB first-viewport JavaScript is React DOM
+plus the Next router, which cannot be shrunk from application code. The remaining sections
+either own state (suggestion form, checkout modals, visits badge) or are asserted against
+`HomePage.js` source; each would need its own island for a smaller share of the same cost.
+
+Three source-location assertions in `__tests__/first-screen-and-naming.test.js`,
+`__tests__/homepage-content-refresh.test.js` and `__tests__/homepage-nav-gold-shimmer.test.js`
+read the homepage source directly. They now read `HomePage.js` plus `HomeStaticSections.js`
+together; every assertion itself is unchanged.
