@@ -258,7 +258,7 @@ async function run() {
     report.includes('missing snapshot at .docs/testing/_example_failing-new-doc.md'),
     'report must list the missing snapshot for the document that failed to download'
   );
-  assert.strictEqual(updatedManifest.lastUpdated, originalLastUpdated, 'a reconciliation-only run must not change lastUpdated');
+  assert.notStrictEqual(updatedManifest.lastUpdated, originalLastUpdated, 'normalizing an existing HTML snapshot must update lastUpdated');
 
   fs.rmSync(tmpRoot, { recursive: true, force: true });
   return output;
