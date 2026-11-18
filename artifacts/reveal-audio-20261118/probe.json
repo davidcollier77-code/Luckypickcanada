@@ -1,0 +1,111 @@
+{
+  "activation": "clicked",
+  "requestCount": 16,
+  "duplicateRequests": 0,
+  "perPath": {
+    "/sounds/standard_beam_shot.mp3": 1,
+    "/sounds/standard_final_beam.mp3": 1,
+    "/sounds/mixkit-cinematic-whoosh.mp3": 1,
+    "/sounds/beam_energy.mp3": 1,
+    "/sounds/beam_impact.mp3": 1,
+    "/sounds/standard_beam_impact.mp3": 1,
+    "/sounds/standard_final_lock.mp3": 1,
+    "/sounds/final_lock_on.mp3": 1,
+    "/sounds/standard_final_discharge.mp3": 1,
+    "/sounds/standard_reveal_snap.mp3": 1,
+    "/sounds/final_discharge.mp3": 1,
+    "/sounds/standard_electrical_arc.mp3": 1,
+    "/sounds/standard_card_shake.mp3": 1,
+    "/sounds/reveal_snap.mp3": 1,
+    "/sounds/electrical_arc.mp3": 1,
+    "/sounds/button-click.wav": 1
+  },
+  "requestsBeforeActivation": 15,
+  "requestsAfterActivation": 1,
+  "totalBodyBytes": 1413141,
+  "standardCueRequestCount": 8,
+  "standardCueDuplicates": 0,
+  "errors": [],
+  "responses": [
+    {
+      "path": "/sounds/standard_beam_shot.mp3",
+      "status": 200,
+      "bodyBytes": 39721
+    },
+    {
+      "path": "/sounds/standard_final_beam.mp3",
+      "status": 200,
+      "bodyBytes": 72010
+    },
+    {
+      "path": "/sounds/mixkit-cinematic-whoosh.mp3",
+      "status": 200,
+      "bodyBytes": 145112
+    },
+    {
+      "path": "/sounds/beam_energy.mp3",
+      "status": 200,
+      "bodyBytes": 8455
+    },
+    {
+      "path": "/sounds/beam_impact.mp3",
+      "status": 200,
+      "bodyBytes": 51255
+    },
+    {
+      "path": "/sounds/standard_beam_impact.mp3",
+      "status": 200,
+      "bodyBytes": 175999
+    },
+    {
+      "path": "/sounds/standard_final_lock.mp3",
+      "status": 200,
+      "bodyBytes": 35603
+    },
+    {
+      "path": "/sounds/final_lock_on.mp3",
+      "status": 200,
+      "bodyBytes": 35811
+    },
+    {
+      "path": "/sounds/standard_final_discharge.mp3",
+      "status": 200,
+      "bodyBytes": 215034
+    },
+    {
+      "path": "/sounds/standard_reveal_snap.mp3",
+      "status": 200,
+      "bodyBytes": 51257
+    },
+    {
+      "path": "/sounds/final_discharge.mp3",
+      "status": 200,
+      "bodyBytes": 232803
+    },
+    {
+      "path": "/sounds/standard_electrical_arc.mp3",
+      "status": 200,
+      "bodyBytes": 86329
+    },
+    {
+      "path": "/sounds/standard_card_shake.mp3",
+      "status": 200,
+      "bodyBytes": 31682
+    },
+    {
+      "path": "/sounds/reveal_snap.mp3",
+      "status": 200,
+      "bodyBytes": 126313
+    },
+    {
+      "path": "/sounds/electrical_arc.mp3",
+      "status": 200,
+      "bodyBytes": 69839
+    },
+    {
+      "path": "/sounds/button-click.wav",
+      "status": 200,
+      "bodyBytes": 35918
+    }
+  ]
+}

@@ -207,6 +207,55 @@ export default function LuckyCardReveal() {
   const webAudioOriginRef = useRef(0);
   const standardAudioPreloadRef = useRef(null);
 
+  // Creates the standard-tier Howl instances. They receive the already fetched
+  // bytes through object URLs, so Howler's own preload never asks the network for
+  // a cue this effect just downloaded. The authored volumes are unchanged.
+  const createStandardHowls = useCallback((sources) => {
+    standardAudioRefs.current.beamShot = new Howl({
+      src: [sources.beamShot],
+      volume: 0.46,
+      preload: true
+    });
+    standardAudioRefs.current.finalBeam = new Howl({
+      src: [sources.finalBeam],
+      volume: 0.62,
+      preload: true
+    });
+    standardAudioRefs.current.beamImpact = new Howl({
+      src: [sources.beamImpact],
+      volume: 0.7,
+      preload: true
+    });
+    standardAudioRefs.current.finalLock = new Howl({
+      src: [sources.finalLock],
+      volume: 0.74,
+      preload: true
+    });
+    standardAudioRefs.current.finalDischarge = new Howl({
+      src: [sources.finalDischarge],
+      volume: 0.78,
+      preload: true
+    });
+    standardAudioRefs.current.revealSnap = new Howl({
+      src: [sources.revealSnap],
+      volume: 0.28,
+      preload: true
+    });
+    standardAudioRefs.current.electricalArc = new Howl({
+      src: [sources.electricalArc],
+      volume: 0.18,
+      preload: true
+    });
+    standardAudioRefs.current.cardShake = new Howl({
+      src: [sources.cardShake],
+      volume: 0.15,
+      preload: true
+    });
+  }, []);
+
+  // Fetch each standard-tier cue exactly once. The Web Audio path decodes these
+  // buffers and Howler receives the same bytes as blob URLs, so one scripted
+  // reveal used to download all eight files twice (audit: 8 duplicates).
   useEffect(() => {
     const audioSources = {
       beamShot: '/sounds/standard_beam_shot.mp3',
@@ -218,6 +267,8 @@ export default function LuckyCardReveal() {
       electricalArc: '/sounds/standard_electrical_arc.mp3',
       cardShake: '/sounds/standard_card_shake.mp3'
     };
+    const objectUrls = [];
+    let disposed = false;
 
     standardAudioPreloadRef.current = Promise.all(
       Object.entries(audioSources).map(async ([key, url]) => {
@@ -227,18 +278,35 @@ export default function LuckyCardReveal() {
         }
         const arrayBuffer = await response.arrayBuffer();
         rawAudioDataRef.current[key] = arrayBuffer;
+        return [key, arrayBuffer];
       })
     )
-      .then(() => true)
+      .then(entries => {
+        if (disposed) return false;
+        const blobSources = {};
+        entries.forEach(([key, arrayBuffer]) => {
+          const objectUrl = URL.createObjectURL(new Blob([arrayBuffer], { type: 'audio/mpeg' }));
+          objectUrls.push(objectUrl);
+          blobSources[key] = objectUrl;
+        });
+        createStandardHowls(blobSources);
+        return true;
+      })
       .catch(err => {
         console.error('Standard reveal audio preload failed:', err);
+        // A blocked fetch must not silence the tier: Howler still has the
+        // authored URLs and the premium set remains the final fallback.
+        if (!disposed) createStandardHowls(audioSources);
         return false;
       });
 
     return () => {
+      disposed = true;
       standardAudioPreloadRef.current = null;
+      objectUrls.forEach(objectUrl => URL.revokeObjectURL(objectUrl));
+      objectUrls.length = 0;
     };
-  }, []);
+  }, [createStandardHowls]);
 
 
   // Pre-load only the authored reveal cues that fit the measured timing windows.
@@ -282,47 +350,8 @@ export default function LuckyCardReveal() {
       preload: true
     });
 
-    standardAudioRefs.current.beamShot = new Howl({
-      src: ['/sounds/standard_beam_shot.mp3'],
-      volume: 0.46,
-      preload: true
-    });
-    standardAudioRefs.current.finalBeam = new Howl({
-      src: ['/sounds/standard_final_beam.mp3'],
-      volume: 0.62,
-      preload: true
-    });
-    standardAudioRefs.current.beamImpact = new Howl({
-      src: ['/sounds/standard_beam_impact.mp3'],
-      volume: 0.7,
-      preload: true
-    });
-    standardAudioRefs.current.finalLock = new Howl({
-      src: ['/sounds/standard_final_lock.mp3'],
-      volume: 0.74,
-      preload: true
-    });
-    standardAudioRefs.current.finalDischarge = new Howl({
-      src: ['/sounds/standard_final_discharge.mp3'],
-      volume: 0.78,
-      preload: true
-    });
-    standardAudioRefs.current.revealSnap = new Howl({
-      src: ['/sounds/standard_reveal_snap.mp3'],
-      volume: 0.28,
-      preload: true
-    });
-    standardAudioRefs.current.electricalArc = new Howl({
-      src: ['/sounds/standard_electrical_arc.mp3'],
-      volume: 0.18,
-      preload: true
-    });
-    standardAudioRefs.current.cardShake = new Howl({
-      src: ['/sounds/standard_card_shake.mp3'],
-      volume: 0.15,
-      preload: true
-    });
-
+    // The standard-tier Howls are created by the preload effect above, from the
+    // bytes it already fetched, so no second network request is issued here.
     return () => {
       Object.values(audioRefs.current).forEach(sound => {
         if (sound) {
