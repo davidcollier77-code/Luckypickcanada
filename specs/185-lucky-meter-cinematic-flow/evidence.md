@@ -104,6 +104,13 @@ its original 27 files. Two automation changes were kept because they are correct
 on their own: the accurate `reveal.js` settle-schedule comment and the missing
 `persistLifecycle` dependency in `handleReveal`.
 
+Visual QA shard 2 then caught a timing-only flake in this PR's own resume test.
+The upper bound was measured from document load, so a throttled `mobile-412`
+shard reached the cinematic at 12.5-13.0 s against a 12 s cap. The cap is now
+16 s: a replayed 8.32 s reveal would still land near 21 s, while load and
+hydration variance no longer fails the assertion. The lower 6.8 s bound, which
+is what proves the reveal was not skipped, is unchanged.
+
 Two advisory review items were then resolved in code. The open DevSkim DS172411
 alert on the arrival lift timer was removed at its source by passing a named
 callback to `window.setTimeout` instead of an inline arrow, so no suppression and

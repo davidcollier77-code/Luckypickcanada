@@ -788,7 +788,10 @@ test.describe('Daily Resonance reveal invariants', () => {
     // The cinematic waited for the whole coordinated reveal instead of starting
     // at once: 500 ms of anticipation plus the 7.4 s three-motion sequence.
     expect(stageDelay).toBeGreaterThan(6800);
-    expect(stageDelay).toBeLessThan(12_000);
+    // The nominal wait is 8.32 s, but the measurement starts at document load,
+    // so hydration and a throttled mobile shard add several seconds. A replayed
+    // reveal would add another 8.32 s and land near 21 s.
+    expect(stageDelay).toBeLessThan(16_000);
 
     // Those motions settled on the stored values, then the cinematic began.
     await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');

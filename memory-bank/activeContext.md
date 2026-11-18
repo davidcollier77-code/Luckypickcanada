@@ -66,6 +66,11 @@ point of light. Selection, tiers, storage and the Milky Way stay frozen.
 - Re-verified after the correction: 47 focused tests passed and `tsc --noEmit`
   exited 0. The corrective commit carries no CI-skip directive, so every required
   workflow runs on the new head.
+- Visual QA shard 2 exposed a timing-only flake in the PR's own resume test:
+  the upper bound included document load and hydration, so a throttled
+  `mobile-412` shard reached the cinematic at 12.5-13.0 s against a 12 s cap.
+  The cap is now 16 s; a replayed 8.32 s reveal would still land near 21 s, and
+  the 6.8 s lower bound is unchanged.
 - Two review items were then resolved in code: the DevSkim DS172411 alert was
   removed at its source by passing a named callback to the lift timer (no
   suppression and no CI tooling change), and stale "quill" wording left by the
