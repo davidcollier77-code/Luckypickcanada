@@ -33,6 +33,13 @@ point of light. Selection, tiers, storage and the Milky Way stay frozen.
   glowing sky text and a tiny golden cursor; it owns the character clock so the
   page does not re-render per character. `handleStageComplete` holds for 1,000 ms
   before writing. Reduced motion shows the complete message at once.
+- Review 5955182977 (DevSkim DS172411 on the arrival-leaves `setTimeout`) is a
+  verified false positive: the callbacks are callable arrow functions at fixed
+  delays (`1500` ms, frozen `ARRIVAL_TIMING.restMs`), and no untrusted data
+  reaches the call. A fail-closed, exact-line audited suppression covers the two
+  reviewed statements (`goneTimer` 237, sibling `liftTimer` 253); the
+  identifier-argument `setTimeout(resize, 120)` stays visible. No shipped
+  behaviour changed.
 
 ## Verification
 
@@ -43,6 +50,13 @@ point of light. Selection, tiers, storage and the Milky Way stay frozen.
   12 passed; the reveal trace also passed on mobile-390.
 - Production build: 470,665,215 bytes (448.86 MiB), below 495 MiB; production
   build, `./freebuff-verify.sh` and the docs suite passed.
+- Review 5955182977 repair: `python3 -m unittest discover -s .github/scripts`
+  — 350 tests OK (112 in the suppression suite, including 2 new arrival-leaves
+  guards); `verify_devskim_sarif_replay.py` on a synthetic SARIF built at the
+  alert coordinates (237-240 multi-line, single-line token, sibling lift
+  callback) suppresses the finding with the raw SARIF byte-identical; the
+  real-scanner replay runs in the DevSkim CI job. The PR scope checker was
+  re-run against the live body and 30/30 changed paths are declared.
 - Evidence and before/after captures:
   `artifacts/lucky-meter-cinematic-flow-20261118/` and
   `specs/185-lucky-meter-cinematic-flow/evidence.md`.
