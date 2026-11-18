@@ -107,15 +107,36 @@ prefetch is skipped.
 No speedup is claimed. The hub adds bounded, post-settle preparation. Its measurable value is one request per
 shared asset, truthful readiness, and zero speculative work on constrained/Save-Data profiles.
 
+## Review follow-up (Graphite, Amazon Q, Pullfrog)
+
+Graphite's AI review did not run: its check on `704fe90` reports "AI code review did not run because
+this PR is too large", so it produced no findings to verify. Amazon Q's five advisory findings and
+Pullfrog's six findings were each checked against the code at `704fe90`; false positives were not
+re-raised as defects.
+
+| Finding | Independent verification | Resolution |
+| --- | --- | --- |
+| Amazon Q: `job.controller.signal.aborted` can throw | Real only where `AbortController` is absent, because the fallback stores `{ signal: undefined }`; below the app's browser floor but inconsistent with the fallback. | Guarded with `signal?.aborted`. |
+| Amazon Q: `skipped` makes an experience permanently partial | Half true: a policy skip should not be a terminal cache entry, but merely dropping it from `partial` would cache the skip forever. | Policy skips are no longer terminal; the next preparation re-evaluates them. Readiness still reports `partial` because a skipped resource was not prepared. |
+| Amazon Q: `getAdaptivePlan()` null dereference | Disproven: the getter returns `SERVER_PLAN` on the server and `refreshAdaptivePlan()` in the browser; it never returns null. | No change. |
+| Amazon Q: stale router closure | Disproven: the prefetch callback reads `routerRef.current`, which the same effect refreshes on `[router]`. | No change. |
+| Amazon Q: Lucky Number Generator dependency ambiguity | Not a defect: the dependency is awaited and the shared `/lucky-meter` code resource is deduplicated. | Manifest comment clarifies that the generator reuses the meter page's bundle. |
+| Pullfrog HIGH: stranded staggered retry | Confirmed: a second failure re-queued behind an already-armed timer could be skipped when that timer fired before its `notBefore`, with no timer left. | `scheduleRetry` is deadline-driven: it keeps an earlier timer, replaces a later one, and `pump` re-arms for the earliest pending deadline. Regression test uses two failures 100 ms apart on an idle page. |
+| Pullfrog MEDIUM: policy `SKIPPED` cached forever | Confirmed: `current-route` and `speculative-audio-deferred` skips were terminal under a static key. | `SKIPPED` is not a terminal cache entry; a navigated-away current-route skip is tested to prefetch on the next intent. |
+| Pullfrog MEDIUM: priority-blind in-flight branch | Confirmed: a critical caller received the background run's partial snapshot. | A higher-priority caller chains one follow-up run after the in-flight background run settles; test covers deferred heavy assets. |
+| Pullfrog MEDIUM: mount untested | Confirmed: no suite covered `components/ResourceReadiness.jsx`. | Added `__tests__/resource-readiness-mount.test.jsx`: settle suppression/resume, plan gating, listener cleanup, delegated intent and router prefetch injection (5 tests). |
+| Pullfrog LOW: wrong `bytes` | Confirmed: `NGC4216_crawford-1280w.avif` is 47,665 bytes, not 38,666 (the map story image's size). | Corrected, and a manifest test now asserts every declared image `bytes` against `statSync`. |
+| Pullfrog LOW: FAILED re-attempt storm | Confirmed: every pointerover/focusin/pointerdown re-entered a failed experience. | Failed resources and snapshots carry a 5 s cooldown; `retryExperience` bypasses it. Test covers repeated intent and post-cooldown retry. |
+
 ## Checks
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Focused hub suites | `pnpm exec vitest run __tests__/resource-readiness.test.js __tests__/resource-readiness-manifest.test.js` | PASS — 31 tests (2 page-settle tests added) |
-| Full unit suite | `pnpm exec vitest run` | PASS — 94 files, 978 tests |
+| Focused hub suites | `pnpm exec vitest run __tests__/resource-readiness.test.js __tests__/resource-readiness-manifest.test.js __tests__/resource-readiness-mount.test.jsx` | PASS — 41 tests across 3 files |
+| Full unit suite | `pnpm exec vitest run` | PASS — 95 files, 988 tests |
 | Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
 | Repository gate | `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d bash ./freebuff-verify.sh` | PASS — exit 0 (Spec Kit gate, governance suites, type check, production build, docs tests) |
-| Production build | `rm -rf .next && pnpm run build` | PASS — 312,477,483 bytes = 298.00 MiB, below 495 MiB |
+| Production build | `rm -rf .next && pnpm run build` | PASS — 312,552,759 bytes = 298.07 MiB, below 495 MiB |
 | Homepage comparison | Playwright production-server probe | PASS — 15 paired runs, see table |
 | Capable/mobile and Save-Data profiles | Playwright production-server probe | PASS — see table |
 | `/reveal` duplicate check | Playwright production-server probe | PASS — same counts as base |

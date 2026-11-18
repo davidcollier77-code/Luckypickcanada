@@ -428,6 +428,81 @@ describe('readiness, failure and retry', () => {
     expect(ready.resources[0].state).toBe('ready');
   });
 
+  it('retries a staggered second failure without waiting for another plan change', async () => {
+    vi.useFakeTimers();
+    useCapableProfile();
+    const attempts = { a: 0, b: 0 };
+    hub.registerResourceAdapter('test', async (resource) => {
+      if (resource.url === '/a') {
+        attempts.a += 1;
+        if (attempts.a === 1) throw new Error('a down');
+        return {};
+      }
+      attempts.b += 1;
+      if (attempts.b === 1) {
+        await new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error('b down')), 100);
+        });
+      }
+      return {};
+    });
+    for (const id of ['a', 'b']) {
+      hub.registerExperienceResources({
+        id,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `${id}-resource`, kind: 'test', url: `/${id}` }],
+      });
+    }
+
+    const first = hub.prepareExperience('a');
+    const second = hub.prepareExperience('b');
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    const [aSnapshot, bSnapshot] = await Promise.all([first, second]);
+    expect(aSnapshot.state).toBe('ready');
+    expect(bSnapshot.state).toBe('ready');
+    expect(attempts).toEqual({ a: 2, b: 2 });
+  });
+
+  it('backs off a failed experience instead of re-requesting it on every intent event', async () => {
+    vi.useFakeTimers();
+    useCapableProfile();
+    const adapter = vi.fn(async () => {
+      throw new Error('down');
+    });
+    hub.registerResourceAdapter('test', adapter);
+    hub.registerExperienceResources({
+      id: 'dead',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'dead-resource', kind: 'test', url: '/dead' }],
+    });
+
+    const first = hub.prepareExperience('dead');
+    await flushMicrotasks();
+    await vi.advanceTimersByTimeAsync(400);
+    const failed = await first;
+    expect(failed.state).toBe('failed');
+    expect(adapter).toHaveBeenCalledTimes(2);
+
+    const repeated = await Promise.all([
+      hub.prepareExperience('dead', { priority: 'intent' }),
+      hub.prepareExperience('dead', { priority: 'intent' }),
+      hub.prepareExperience('dead', { priority: 'critical' }),
+    ]);
+    expect(adapter).toHaveBeenCalledTimes(2);
+    expect(repeated.every((snapshot) => snapshot.state === 'failed')).toBe(true);
+
+    await vi.advanceTimersByTimeAsync(6000);
+    const retried = hub.prepareExperience('dead');
+    await flushMicrotasks();
+    await vi.advanceTimersByTimeAsync(400);
+    expect((await retried).state).toBe('failed');
+    expect(adapter).toHaveBeenCalledTimes(4);
+  });
+
   it('retries a failed resource once and reports a real failure when it still fails', async () => {
     vi.useFakeTimers();
     useCapableProfile();
@@ -505,6 +580,45 @@ describe('release and server safety', () => {
     expect(adapter).toHaveBeenCalledTimes(2);
   });
 
+  it('re-prepares after a background run when a committed caller arrives in flight', async () => {
+    useCapableProfile();
+    const calls = [];
+    let releaseLight;
+    hub.registerResourceAdapter('image', async (resource) => {
+      calls.push(resource.url);
+      if (resource.url === '/light.avif') {
+        await new Promise((resolve) => {
+          releaseLight = resolve;
+        });
+      }
+    });
+    hub.registerExperienceResources({
+      id: 'upgrade',
+      version: 1,
+      dependsOn: [],
+      resources: [
+        { id: 'light', kind: 'image', url: '/light.avif', background: true },
+        { id: 'heavy', kind: 'image', url: '/heavy.avif', background: false },
+      ],
+    });
+
+    const background = hub.prepareExperience('upgrade', { priority: 'background' });
+    await flushMicrotasks();
+    expect(calls).toEqual(['/light.avif']);
+
+    const critical = hub.prepareExperience('upgrade', { priority: 'critical', trigger: 'hover' });
+    await flushMicrotasks();
+
+    releaseLight();
+    await background;
+    const snapshot = await critical;
+
+    expect(calls).toEqual(['/light.avif', '/heavy.avif']);
+    expect(snapshot.state).toBe('ready');
+    expect(snapshot.partial).toBe(false);
+    expect(snapshot.resources.every((resource) => resource.state === 'ready')).toBe(true);
+  });
+
   it('does not prepare background-disabled audio during idle and does prepare it on intent', async () => {
     useCapableProfile();
     const imageAdapter = vi.fn().mockResolvedValue({});
@@ -549,6 +663,32 @@ describe('release and server safety', () => {
     expect(prefetch).not.toHaveBeenCalled();
     expect(snapshot.resources[0].state).toBe('skipped');
     expect(snapshot.resources[0].reason).toBe('current-route');
+  });
+
+  it('re-evaluates a policy skip after the visitor leaves the route', async () => {
+    useCapableProfile();
+    const prefetch = vi.fn();
+    hub.configureRoutePrefetch(prefetch);
+    window.history.pushState({}, '', '/current-route');
+
+    hub.registerExperienceResources({
+      id: 'route-refresh',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'route-refresh-code', kind: 'code', route: '/current-route' }],
+    });
+
+    const first = await hub.prepareExperience('route-refresh');
+    expect(first.resources[0].state).toBe('skipped');
+    expect(first.resources[0].reason).toBe('current-route');
+    expect(prefetch).not.toHaveBeenCalled();
+
+    window.history.pushState({}, '', '/');
+    const second = await hub.prepareExperience('route-refresh', { priority: 'intent' });
+
+    expect(prefetch).toHaveBeenCalledTimes(1);
+    expect(prefetch).toHaveBeenCalledWith('/current-route');
+    expect(second.resources[0].state).toBe('ready');
   });
 
   it('is server-safe: importing and preparing without a window does no work', async () => {

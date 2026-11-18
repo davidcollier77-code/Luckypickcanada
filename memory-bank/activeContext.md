@@ -26,15 +26,19 @@ reuse and active-experience protection, compatible with current and future optio
   set replaces per-link subscriptions.
 - `components/DailyResonance.tsx` and `app/lucky-card-reveal.js` hold the hub's active-experience marker
   while their animations run, so queued background work pauses and resumes without touching timing or sound.
-- Focused suites: `__tests__/resource-readiness.test.js` (23 tests) and
-  `__tests__/resource-readiness-manifest.test.js` (8 tests) pass, 31 focused tests total; `tsc --noEmit`
-  exits 0.
+- Review hardening: retry wake-ups are deadline-driven so staggered failures cannot be stranded; policy
+  skips (`current-route`, `speculative-audio-deferred`) are re-evaluated instead of cached forever; a
+  higher-priority caller upgrades an in-flight background run; failed resources back off for 5 s; and the
+  reveal backdrop's declared byte size now matches the 47,665-byte file.
+- Focused suites: `__tests__/resource-readiness.test.js` (27 tests),
+  `__tests__/resource-readiness-manifest.test.js` (9 tests) and
+  `__tests__/resource-readiness-mount.test.jsx` (5 tests) pass, 41 focused tests total; `tsc --noEmit` exits 0.
 
 ## Verification
 
-- Focused suites 31 tests, full Vitest 94 files / 978 tests, `tsc --noEmit` exit 0 and
+- Focused suites 41 tests across 3 files, full Vitest 95 files / 988 tests, `tsc --noEmit` exit 0 and
   `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d ./freebuff-verify.sh` exit 0.
-- Production build: 312,477,483 bytes = 298.00 MiB, below 495 MiB.
+- Production build: 312,552,759 bytes = 298.07 MiB, below 495 MiB.
 - Homepage: 15 paired production-server runs; `loadEventEnd` median 302 ms base and 302 ms branch, LCP 348 ms
   base and 340 ms branch. Bootstrap 95% CI of the median load difference is −43…+28 ms, so no regression beyond
   variance. All 15 branch runs started hub requests at 1.22–1.35 s with zero before load or LCP.

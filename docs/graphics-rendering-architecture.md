@@ -217,7 +217,11 @@ policy, audio policy and release registry.
 - **Truthful readiness.** Resources report `fetched`, `initialized`, `ready`,
   `failed` or `skipped`, and an experience is ready only when its required
   resources are. A missing dependency, a cycle or a failed resource fails safely
-  and can be retried without repeating ready work.
+  and can be retried without repeating ready work. A `skipped` resource is a
+  policy decision, not a permanent cache entry: visitor-state skips such as the
+  current route and plan-dependent audio skips are re-evaluated on the next
+  preparation. A reported failure backs off briefly so intent events cannot
+  issue a request per event; an explicit retry clears the backoff.
 - **Bounded and deduplicated.** One URL shared by several experiences makes one
   request. Concurrency is `min(plan.maxParallelRequests, 3)`; queued background
   work pauses during an active reveal/cinematic, a hidden page or Save-Data and
@@ -225,7 +229,10 @@ policy, audio policy and release registry.
   preparation start only after `load` plus a quiet window measured from the last
   largest-contentful-paint and resource entries, so no hub request or main-thread
   work lands inside the load/LCP window; heavy assets (`background: false`) wait
-  for the route or for intent.
+  for the route or for intent. A committed caller that arrives while a background
+  run is still in flight triggers one follow-up run at the higher priority, so
+  the deferred heavy assets are prepared for that caller rather than inherited as
+  a partial background result.
 - **Caching.** The hub warms the exact URLs used in markup, so the existing
   immutable `Cache-Control` responses are reused. No service worker, storage
   layer or cache-busting query string is added, and nothing promises permanent

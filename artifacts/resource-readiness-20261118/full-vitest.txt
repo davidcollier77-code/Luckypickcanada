@@ -1,7 +1,7 @@
 
 [1m[30m[46m RUN [49m[39m[22m [36mv5.0.0 [39m[90m/workspace/chats/df6965c97260bd2bd71121ef[39m
 
-(node:48829) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:13358) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 classify-visual-changes: 1 changed path(s) reviewed; 'app/page.js' is not positively classified as non-rendering, so visual QA is required.
 classify-visual-changes: 1 changed path(s) reviewed; 'components/Hero.jsx' is not positively classified as non-rendering, so visual QA is required.
@@ -89,14 +89,6 @@ package-json-scripts-only: changed script(s) are not recognised as test/tooling 
 package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: deploy; visual QA is required.
 package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: prepare; visual QA is required.
 package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: postinstall; visual QA is required.
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: prebuild; visual QA is required.
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -106,11 +98,6 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/freebuff-startup-command.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1040[2mms[22m[39m
-   [32m✓[39m documented startup command behaviour (executed) [2m(4)[22m
-     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under bash[33m 334[2mms[22m[39m
-     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under sh[33m 331[2mms[22m[39m
-     [33m[2m✓[22m[39m proves the rejected `bash scripts/...` form loses the bootstrap PATH[33m 360[2mms[22m[39m
 package-json-scripts-only: changed script(s) are not recognised as test/tooling commands: generate-assets; visual QA is required.
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -121,29 +108,21 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 package-json-scripts-only: package.json differs outside "scripts"; visual QA is required.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 package-json-scripts-only: package.json differs outside "scripts"; visual QA is required.
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/freebuff-startup-command.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1050[2mms[22m[39m
+   [32m✓[39m documented startup command behaviour (executed) [2m(4)[22m
+     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under bash[33m 321[2mms[22m[39m
+     [33m[2m✓[22m[39m reports context first and installs with pnpm absent from PATH under sh[33m 375[2mms[22m[39m
+     [33m[2m✓[22m[39m proves the rejected `bash scripts/...` form loses the bootstrap PATH[33m 340[2mms[22m[39m
 package-json-scripts-only: the base manifest is not valid JSON: Expected property name or '}' in JSON at position 2 (line 1 column 3)
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/playwright-config-fontconfig.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 1226[2mms[22m[39m
-   [32m✓[39m Playwright config Chromium runtime [2m(2)[22m
-     [33m[2m✓[22m[39m replaces an inherited fontconfig path that no longer exists[33m 1220[2mms[22m[39m
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -167,7 +146,21 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 package-json-scripts-only: the head manifest's scripts field is not a JSON object
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/playwright-config-fontconfig.test.js [2m([22m[2m2 tests[22m[2m)[22m[33m 1179[2mms[22m[39m
+   [32m✓[39m Playwright config Chromium runtime [2m(2)[22m
+     [33m[2m✓[22m[39m replaces an inherited fontconfig path that no longer exists[33m 1173[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -184,27 +177,32 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/daily-resonance-daily-experience.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 1067[2mms[22m[39m
-   [32m✓[39m Daily Resonance daily experience [2m(9)[22m
-     [33m[2m✓[22m[39m persists one result, settles the three motions, runs the cinematic, then writes the Spark[33m 584[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 classify-visual-changes: 1 changed path(s) reviewed; 'components/lucky-meter-medallion-engine.js' is not positively classified as non-rendering, so visual QA is required.
 classify-visual-changes: 1 changed path(s) reviewed; 'components/cosmic-event-engine.js' is not positively classified as non-rendering, so visual QA is required.
+ [32m✓[39m __tests__/daily-resonance-daily-experience.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 967[2mms[22m[39m
+   [32m✓[39m Daily Resonance daily experience [2m(9)[22m
+     [33m[2m✓[22m[39m persists one result, settles the three motions, runs the cinematic, then writes the Spark[33m 533[2mms[22m[39m
 classify-visual-changes: 1 changed path(s) reviewed; 'app/lib/credit-format.js' is not positively classified as non-rendering, so visual QA is required.
 classify-visual-changes: 1 known non-rendering path(s) reviewed; visual QA is not required.
 classify-visual-changes: 2 known non-rendering path(s) reviewed; visual QA is not required.
 classify-visual-changes: 1 changed path(s) reviewed; 'data/unknown-blob.bin' is not positively classified as non-rendering, so visual QA is required.
- [32m✓[39m __tests__/visual-qa-chromium-cache.test.js [2m([22m[2m39 tests[22m[2m)[22m[33m 1521[2mms[22m[39m
-   [32m✓[39m package.json scripts-only classification [2m(8)[22m
-     [33m[2m✓[22m[39m rejects renderer and lifecycle script changes[33m 325[2mms[22m[39m
- [32m✓[39m __tests__/setup-chromium-runtime-detect.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1959[2mms[22m[39m
+ [32m✓[39m __tests__/visual-qa-chromium-cache.test.js [2m([22m[2m39 tests[22m[2m)[22m[33m 1402[2mms[22m[39m
+ [32m✓[39m __tests__/setup-chromium-runtime-detect.test.js [2m([22m[2m9 tests[22m[2m)[22m[33m 1771[2mms[22m[39m
    [32m✓[39m Chromium runtime detection [2m(9)[22m
-     [33m[2m✓[22m[39m uses a read-only prebaked root that holds the pinned revision[33m 428[2mms[22m[39m
-     [33m[2m✓[22m[39m rejects a read-only prebaked root with a different revision[33m 352[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-selection.test.js [2m([22m[2m29 tests[22m[2m)[22m[33m 2078[2mms[22m[39m
+     [33m[2m✓[22m[39m uses a read-only prebaked root that holds the pinned revision[33m 385[2mms[22m[39m
+     [33m[2m✓[22m[39m rejects a read-only prebaked root with a different revision[33m 316[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-selection.test.js [2m([22m[2m29 tests[22m[2m)[22m[33m 2083[2mms[22m[39m
    [32m✓[39m daily percentage selection [2m(6)[22m
-     [33m[2m✓[22m[39m keeps the original uniform distribution over the 95 remaining values[33m 312[2mms[22m[39m
+     [33m[2m✓[22m[39m keeps the original uniform distribution over the 95 remaining values[33m 334[2mms[22m[39m
    [32m✓[39m Lucky Number selection [2m(3)[22m
-     [33m[2m✓[22m[39m draws one integer from 1 to 50 with equal probability[33m 1365[2mms[22m[39m
+     [33m[2m✓[22m[39m draws one integer from 1 to 50 with equal probability[33m 1367[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -213,6 +211,7 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/setup-chromium-env-shell-safety.test.js [2m([22m[2m22 tests[22m[2m)[22m[33m 2367[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -245,7 +244,6 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/setup-chromium-env-shell-safety.test.js [2m([22m[2m22 tests[22m[2m)[22m[33m 2686[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -332,9 +330,7 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/lucky-meter-dimensional-renderers.test.js [2m([22m[2m12 tests[22m[2m)[22m[33m 596[2mms[22m[39m
-   [32m✓[39m medallion construction [2m(2)[22m
-     [33m[2m✓[22m[39m builds a well-formed lit mesh at every quality level[33m 560[2mms[22m[39m
+ [32m✓[39m __tests__/components/CheckoutModal.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[33m 613[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -360,10 +356,6 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/daily-resonance-lifecycle.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[33m 881[2mms[22m[39m
-   [32m✓[39m DailyResonance Lifecycle & Audio [2m(3)[22m
-     [33m[2m✓[22m[39m continues the reveal when the audio library cannot load[33m 676[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-cinematic-lifecycle.test.jsx [2m([22m[2m11 tests[22m[2m)[22m[33m 1007[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
@@ -378,12 +370,18 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/lucky-meter-cinematic-lifecycle.test.jsx [2m([22m[2m11 tests[22m[2m)[22m[33m 1004[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/lucky-meter-event-audio-playback.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 759[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-event-audio-playback.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 748[2mms[22m[39m
    [32m✓[39m Lucky Meter event cue playback [2m(6)[22m
-     [33m[2m✓[22m[39m plays no event cue before the cinematic starts[33m 448[2mms[22m[39m
- [32m✓[39m __tests__/components/CheckoutModal.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[33m 670[2mms[22m[39m
+     [33m[2m✓[22m[39m plays no event cue before the cinematic starts[33m 406[2mms[22m[39m
+ [32m✓[39m __tests__/daily-resonance-lifecycle.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[33m 883[2mms[22m[39m
+   [32m✓[39m DailyResonance Lifecycle & Audio [2m(3)[22m
+     [33m[2m✓[22m[39m continues the reveal when the audio library cannot load[33m 685[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-dimensional-renderers.test.js [2m([22m[2m12 tests[22m[2m)[22m[33m 613[2mms[22m[39m
+   [32m✓[39m medallion construction [2m(2)[22m
+     [33m[2m✓[22m[39m builds a well-formed lit mesh at every quality level[33m 577[2mms[22m[39m
 [90mstderr[2m | app/turnstile-field.test.jsx[2m > [22m[2mTurnstileField[2m > [22m[2mshows error if fetching site key fails and keeps button disabled
 [22m[39mFailed to load Turnstile configuration: Error: Failed to fetch
     at [90m/workspace/chats/df6965c97260bd2bd71121ef/[39mapp/turnstile-field.test.jsx:288:49
@@ -397,44 +395,41 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
     at runWithTimeout [90m(file:///workspace/chats/df6965c97260bd2bd71121ef/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
     at [90mfile:///workspace/chats/df6965c97260bd2bd71121ef/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
 
- [32m✓[39m app/turnstile-field.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 498[2mms[22m[39m
+ [32m✓[39m app/turnstile-field.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 487[2mms[22m[39m
 Not implemented: HTMLMediaElement's play() method
 Not implemented: HTMLMediaElement's load() method
- [32m✓[39m __tests__/crystal-ball-preview-client.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 557[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-preview-client.test.jsx [2m([22m[2m1 test[22m[2m)[22m[33m 567[2mms[22m[39m
    [32m✓[39m Crystal Ball preview client [2m(1)[22m
-     [33m[2m✓[22m[39m renders the selected local moment without touching the real daily allowance[33m 556[2mms[22m[39m
+     [33m[2m✓[22m[39m renders the selected local moment without touching the real daily allowance[33m 565[2mms[22m[39m
+ [32m✓[39m __tests__/qa-review-comment.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 340[2mms[22m[39m
+ [32m✓[39m __tests__/bootstrap-pnpm.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 287[2mms[22m[39m
 Not implemented: HTMLMediaElement's play() method
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLMediaElement's load() method
- [32m✓[39m __tests__/qa-review-comment.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 377[2mms[22m[39m
- [32m✓[39m __tests__/bootstrap-pnpm.test.js [2m([22m[2m4 tests[22m[2m)[22m[33m 302[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-client-follow-up.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 461[2mms[22m[39m
+ [32m✓[39m __tests__/devskim-dedup.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 273[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/components/LuckyRevealCelebration.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 368[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-client-follow-up.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[33m 445[2mms[22m[39m
    [32m✓[39m Crystal Ball follow-up outage [2m(2)[22m
-     [33m[2m✓[22m[39m shows the exact outage message and stores no question or answer text[33m 381[2mms[22m[39m
+     [33m[2m✓[22m[39m shows the exact outage message and stores no question or answer text[33m 385[2mms[22m[39m
+ [32m✓[39m __tests__/components/AboutSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 250[2mms[22m[39m
+ [32m✓[39m __tests__/intent-prefetch-link.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 318[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness.test.js [2m([22m[2m27 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+(node:15883) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/chats/df6965c97260bd2bd71121ef/app/lib/daily-reset.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260bd2bd71121ef/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m __tests__/crystal-ball-local-time.test.js [2m([22m[2m29 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m __tests__/reveal-applause-retry.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 174[2mms[22m[39m
+ [32m✓[39m __tests__/cosmic-event-stage-fallback.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+ [32m✓[39m __tests__/agent-governance-single-source.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 145[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-persistence.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 125[2mms[22m[39m
+ [32m✓[39m __tests__/spam-protection.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 87[2mms[22m[39m
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
 Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/components/LuckyRevealCelebration.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 356[2mms[22m[39m
- [32m✓[39m __tests__/devskim-dedup.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 300[2mms[22m[39m
- [32m✓[39m __tests__/intent-prefetch-link.test.jsx [2m([22m[2m9 tests[22m[2m)[22m[33m 333[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-persistence.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 120[2mms[22m[39m
- [32m✓[39m __tests__/spam-protection.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 93[2mms[22m[39m
- [32m✓[39m __tests__/components/AboutSection.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 263[2mms[22m[39m
- [32m✓[39m __tests__/agent-governance-single-source.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 139[2mms[22m[39m
- [32m✓[39m __tests__/reveal-applause-retry.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 171[2mms[22m[39m
- [32m✓[39m __tests__/playwright-cli-wrapper.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 145[2mms[22m[39m
-[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare returns a different status
-[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare did not confirm the resolved status (reported: active).
-
-[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare rejects the update
-[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare rejected the status update (HTTP 403): Authentication error
-
-[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a network failure without leaking the API token
-[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare request failed: connect ECONNREFUSED with token [redacted]
-
-[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a partial batch as unresolved instead of a success
-[22m[39mCloudflare issue resolution failed: f8607191-3b38-4c40-84e3-6ff40a036b1f: Cloudflare did not confirm the resolved status (reported: active).
-
- [32m✓[39m __tests__/cloudflare-observability-issues.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 87[2mms[22m[39m
- [32m✓[39m __tests__/cosmic-event-stage-fallback.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+ [32m✓[39m __tests__/adaptive-performance.test.js [2m([22m[2m41 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-cli-wrapper.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 142[2mms[22m[39m
 [90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2massigns a stable fallback ID and skips the supplied previous-day ID
 [22m[39mOracle Error: Missing content in Groq API response {"mode":"fortune","finishReason":null,"completionTokens":null,"reasoningTokens":null}
 
@@ -458,23 +453,24 @@ Not implemented: HTMLCanvasElement's getContext() method: without installing the
 [90mstderr[2m | __tests__/oracle-route-validation.test.js[2m > [22m[2mOracle route validates before calling the AI provider[2m > [22m[2mreturns only the outage notice for a Remembrance Day follow-up failure
 [22m[39mOracle Error: Missing content in Groq API response {"mode":"follow-up","finishReason":null,"completionTokens":null,"reasoningTokens":null}
 
- [32m✓[39m __tests__/oracle-route-validation.test.js [2m([22m[2m36 tests[22m[2m)[22m[32m 67[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-reveal.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 99[2mms[22m[39m
- [32m✓[39m __tests__/resource-readiness.test.js [2m([22m[2m23 tests[22m[2m)[22m[32m 73[2mms[22m[39m
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
-Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
- [32m✓[39m __tests__/lucky-meter-sky-writing.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 80[2mms[22m[39m
- [32m✓[39m __tests__/adaptive-performance.test.js [2m([22m[2m41 tests[22m[2m)[22m[32m 67[2mms[22m[39m
- [32m✓[39m __tests__/lucky-map-refresh.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 61[2mms[22m[39m
-(node:51487) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/chats/df6965c97260bd2bd71121ef/app/lib/daily-reset.js is not specified and it doesn't parse as CommonJS.
-Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260bd2bd71121ef/package.json.
-(Use `node --trace-warnings ...` to show where the warning was created)
- [32m✓[39m __tests__/crystal-ball-local-time.test.js [2m([22m[2m29 tests[22m[2m)[22m[32m 65[2mms[22m[39m
- [32m✓[39m __tests__/resource-readiness-manifest.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 38[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-leaf-wind.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 37[2mms[22m[39m
- [32m✓[39m __tests__/graphics-capabilities.test.js [2m([22m[2m21 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m __tests__/oracle-route-validation.test.js [2m([22m[2m36 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness-manifest.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare returns a different status
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare did not confirm the resolved status (reported: active).
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mleaves the issue unresolved when Cloudflare rejects the update
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare rejected the status update (HTTP 403): Authentication error
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a network failure without leaking the API token
+[22m[39mCloudflare issue resolution failed: a94d47c2-d9e8-468d-ae61-c966c9ab7199: Cloudflare request failed: connect ECONNREFUSED with token [redacted]
+
+[90mstderr[2m | __tests__/cloudflare-observability-issues.test.ts[2m > [22m[2mPOST /api/cloudflare-issues/resolve[2m > [22m[2mreports a partial batch as unresolved instead of a success
+[22m[39mCloudflare issue resolution failed: f8607191-3b38-4c40-84e3-6ff40a036b1f: Cloudflare did not confirm the resolved status (reported: active).
+
+ [32m✓[39m __tests__/cloudflare-observability-issues.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-reveal.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-sky-writing.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 96[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-map-refresh.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 63[2mms[22m[39m
 [90mstderr[2m | __tests__/gift-email-error-handling.test.js[2m > [22m[2mGift delivery error handling[2m > [22m[2mkeeps a thrown network attempt pending without falsely marking it delivered
 [22m[39mUnexpected error during gift email delivery: Error: Network error
     at [90m/workspace/chats/df6965c97260bd2bd71121ef/[39m__tests__/gift-email-error-handling.test.js:112:36
@@ -517,39 +513,40 @@ To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260
     at runWithTimeout [90m(file:///workspace/chats/df6965c97260bd2bd71121ef/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3257:10[90m)[39m
     at [90mfile:///workspace/chats/df6965c97260bd2bd71121ef/[39mnode_modules/[4m.pnpm[24m/vitest@5.0.0_@opentelemetry+api@1.10.0_@types+node@26.2.0_jsdom@30.0.1_@noble+hashes@1._0ac97b91fd69df9480fc0030d445ac42/node_modules/[4mvitest[24m/dist/chunks/run.CQOUYP-x.js:3876:64
 
- [32m✓[39m __tests__/gift-email-error-handling.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 44[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-fortunes.test.js [2m([22m[2m14 tests[22m[2m)[22m[32m 43[2mms[22m[39m
- [32m✓[39m __tests__/mobile-accessibility.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 32[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-preview.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 31[2mms[22m[39m
- [32m✓[39m __tests__/audio-adaptive-release.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-finish-phase2.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m app/admin/suggestions/route.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 26[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-phase3.test.js [2m([22m[2m32 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m __tests__/gift-email-error-handling.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-fortunes.test.js [2m([22m[2m14 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-leaf-wind.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness-mount.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m __tests__/graphics-capabilities.test.js [2m([22m[2m21 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m __tests__/audio-adaptive-release.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-phase3.test.js [2m([22m[2m32 tests[22m[2m)[22m[32m 25[2mms[22m[39m
  [32m✓[39m __tests__/lucky-stories-pagination.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m __tests__/feature-image-social-sharing.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 35[2mms[22m[39m
- [32m✓[39m __tests__/security-payment.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-preview.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m __tests__/mobile-accessibility.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m __tests__/feature-image-social-sharing.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m app/admin/suggestions/route.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 28[2mms[22m[39m
  [32m✓[39m __tests__/crystal-ball-greetings.test.js [2m([22m[2m19 tests[22m[2m)[22m[32m 21[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-context-restore.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-shared.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m __tests__/workflow-pnpm-setup-order.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-calendar.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 20[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-counter.test.js [2m([22m[2m18 tests[22m[2m)[22m[32m 18[2mms[22m[39m
  [32m✓[39m __tests__/lucky-reveal-polish.test.js [2m([22m[2m22 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m __tests__/lucky-stories.test.js [2m([22m[2m30 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-share.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-storage.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m __tests__/lucky-card-tier-presentation.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-daily-usage.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 27[2mms[22m[39m
- [32m✓[39m __tests__/lucky-stories-refresh.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-event-audio.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 16[2mms[22m[39m
- [32m✓[39m __tests__/dependency-management.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m __tests__/homepage-content-refresh.test.js [2m([22m[2m19 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-calendar.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-context-restore.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m __tests__/security-payment.test.js [2m([22m[2m16 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-shared.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-counter.test.js [2m([22m[2m18 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-stories-refresh.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-hero-layout.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-stories.test.js [2m([22m[2m30 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-daily-usage.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m __tests__/security-headers.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-storage.test.js [2m([22m[2m15 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-event-audio.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m __tests__/dependency-management.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-confetti-phase1.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
 [90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile token is missing
 [22m[39mPublic form spam protection triggered {
   formName: [32m'test-form'[39m,
   ip: [32m'127.0.0.1'[39m,
   reason: [32m'missing_turnstile_token'[39m,
-  at: [32m'2026-11-18T13:15:26.459Z'[39m
+  at: [32m'2026-11-18T19:21:24.829Z'[39m
 }
 
 [90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns unsuccessful verification
@@ -557,7 +554,7 @@ To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260
   formName: [32m'test-form'[39m,
   ip: [32m'127.0.0.2'[39m,
   reason: [32m'turnstile_invalid_hostname'[39m,
-  at: [32m'2026-11-18T13:15:26.463Z'[39m
+  at: [32m'2026-11-18T19:21:24.832Z'[39m
 }
 
 [90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns invalid hostname
@@ -565,7 +562,7 @@ To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260
   formName: [32m'test-form'[39m,
   ip: [32m'127.0.0.3'[39m,
   reason: [32m'turnstile_invalid_hostname'[39m,
-  at: [32m'2026-11-18T13:15:26.464Z'[39m
+  at: [32m'2026-11-18T19:21:24.834Z'[39m
 }
 
 [90mstderr[2m | app/spam-protection.test.js[2m > [22m[2mspam-protection[2m > [22m[2mfails if turnstile returns invalid action
@@ -573,45 +570,47 @@ To eliminate this warning, add "type": "module" to /workspace/chats/df6965c97260
   formName: [32m'test-form'[39m,
   ip: [32m'127.0.0.4'[39m,
   reason: [32m'turnstile_invalid_action'[39m,
-  at: [32m'2026-11-18T13:15:26.465Z'[39m
+  at: [32m'2026-11-18T19:21:24.835Z'[39m
 }
 
  [32m✓[39m app/spam-protection.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 13[2mms[22m[39m
- [32m✓[39m __tests__/lucky-meter-arrival-leaves.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
- [32m✓[39m __tests__/docs-library-retirement.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-content-refresh.test.js [2m([22m[2m19 tests[22m[2m)[22m[32m 13[2mms[22m[39m
  [32m✓[39m __tests__/lucky-card-reveal-presentation.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-confetti-phase1.test.js [2m([22m[2m11 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/homepage-nav-gold-shimmer.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-celebration.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m __tests__/first-screen-and-naming.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/lucky-reveal-followup.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
- [32m✓[39m __tests__/security-headers.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-audio-assets.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
- [32m✓[39m __tests__/playwright-config-modes.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
- [32m✓[39m __tests__/daily-reset-countdown.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
- [32m✓[39m __tests__/homepage-hero-layout.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 10[2mms[22m[39m
- [32m✓[39m __tests__/homepage-hero-preload.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-finish-phase2.test.js [2m([22m[2m13 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-audio-assets.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/first-screen-and-naming.test.js [2m([22m[2m10 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-arrival-leaves.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-meter-share.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-followup.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-reveal-celebration.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-card-tier-presentation.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-nav-gold-shimmer.test.js [2m([22m[2m12 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/docs-library-retirement.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
  [32m✓[39m __tests__/stripe-product-alignment.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m __tests__/playwright-version-alignment.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
  [32m✓[39m __tests__/lucky-reveal-background.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m __tests__/lucky-card-collection.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
- [32m✓[39m __tests__/map-url-redirects.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m __tests__/crystal-ball-fallback-history.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m __tests__/playwright-agent-toolkit.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m __tests__/checker-suite-workflows.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 7[2mms[22m[39m
- [32m✓[39m __tests__/audio-exports.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 4[2mms[22m[39m
- [32m✓[39m __tests__/reviewer-retirement.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
- [32m✓[39m __tests__/freebuff-verify.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
- [32m✓[39m __tests__/hsts-policy.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
- [32m✓[39m __tests__/lucky-map-image-loading.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m __tests__/workflow-pnpm-setup-order.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/homepage-hero-preload.test.js [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
  [32m✓[39m __tests__/undici-security-override.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-version-alignment.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-config-modes.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/map-url-redirects.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m __tests__/crystal-ball-fallback-history.test.js [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/checker-suite-workflows.test.js [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-card-collection.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m __tests__/playwright-agent-toolkit.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m __tests__/daily-reset-countdown.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m __tests__/hsts-policy.test.js [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/reviewer-retirement.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m __tests__/audio-exports.test.js [2m([22m[2m2 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m __tests__/lucky-map-image-loading.test.js [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m __tests__/freebuff-verify.test.js [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
 
-[2m Test Files [22m [1m[32m94 passed[39m[22m[90m (94)[39m
-[2m      Tests [22m [1m[32m978 passed[39m[22m[90m (978)[39m
-[2m   Start at [22m 13:15:13
-[2m   Duration [22m 17.60s[2m (environment 61%, tests 20%, setup 12%, import 3%, transform 3%, worker 1%)[22m
+[2m Test Files [22m [1m[32m95 passed[39m[22m[90m (95)[39m
+[2m      Tests [22m [1m[32m988 passed[39m[22m[90m (988)[39m
+[2m   Start at [22m 19:21:12
+[2m   Duration [22m 16.99s[2m (environment 61%, tests 20%, setup 12%, import 3%, transform 3%, worker 1%)[22m
 
-[2mEnvironment [22m [33mjsdom was created 94 times[39m[2m · 63.76s total, 61% of tracked time[22m
+[2mEnvironment [22m [33mjsdom was created 95 times[39m[2m · 61.98s total, 61% of tracked time[22m
 [2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
 [2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
 

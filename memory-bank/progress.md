@@ -13,8 +13,12 @@
 - Current-route and homepage preparation are gated by `whenPageSettled`: `load`, a 600 ms quiet window after
   the last LCP entry and completed resource, a 250 ms floor and a 20 s bound. Homepage order follows the
   manifest, capped at three on capable, two on moderate and one on constrained, with none on Save-Data/slow.
-- Focused suites 31 tests, full suite 978 tests and `tsc --noEmit` pass. Fifteen paired production runs show
-  median load 302 vs 302 ms and LCP 348 vs 340 ms; zero hub requests before load or LCP. Build 298.00 MiB.
+- Review hardening (Amazon Q / Pullfrog): deadline-driven retry wake-ups, re-evaluated policy skips,
+  priority upgrade for an in-flight background run, a 5 s failure cooldown, a mount test suite, and
+  manifest byte sizes asserted against the real files.
+- Focused suites 41 tests across 3 files, full suite 95 files / 988 tests and `tsc --noEmit` pass. Fifteen
+  paired production runs show median load 302 vs 302 ms and LCP 348 vs 340 ms; zero hub requests before
+  load or LCP. Build 298.07 MiB.
 
 ## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
 - Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage

@@ -71,6 +71,10 @@ const PRIORITY_RANK = Object.freeze({
 const MAX_HUB_CONCURRENCY = 3;
 const MAX_RESOURCE_ATTEMPTS = 2;
 const RETRY_DELAY_MS = 250;
+const RETRY_TIMER_SLACK_MS = 10;
+// A reported failure is not retried again on every pointerover/focusin. An
+// explicit retryExperience bypasses this cooldown.
+const FAILED_RETRY_COOLDOWN_MS = 5000;
 const IDLE_TIMEOUT_MS = 2000;
 
 const definitions = new Map();
@@ -85,6 +89,7 @@ let runningJobs = 0;
 let jobSequence = 0;
 let activeExperiences = 0;
 let retryTimer = 0;
+let retryDeadline = 0;
 let planUnsubscribe = null;
 let releaseRegistration = null;
 let routePrefetch = null;
@@ -434,25 +439,53 @@ function pump() {
       if (retryTimer && typeof window !== 'undefined') {
         window.clearTimeout(retryTimer);
         retryTimer = 0;
+        retryDeadline = 0;
       }
     } else if (queue.length > 0) {
       // A paused background queue waits for a plan, visibility or activity
       // change. The existing shared subscription delivers that change, so the
       // hub adds no second polling loop of its own.
       ensurePlanSubscription();
+      // A retry waits for a deadline, not a plan change. Re-arm for the earliest
+      // pending deadline so a job that failed while another retry timer was
+      // already armed is never left in the queue with no wake-up.
+      scheduleRetry();
     }
   } finally {
     pumping = false;
   }
 }
 
+function nextRetryDeadline(timestamp = now()) {
+  let earliest = 0;
+  for (const job of queue) {
+    if (!job.notBefore || job.notBefore <= timestamp) continue;
+    if (!earliest || job.notBefore < earliest) earliest = job.notBefore;
+  }
+  return earliest;
+}
+
+/**
+ * Arms one timer for the earliest queued retry deadline. A timer that is already
+ * armed for the same or an earlier deadline is kept; one armed for a later
+ * deadline is replaced, so two staggered failures cannot strand the later job.
+ */
 function scheduleRetry() {
   const windowObject = getWindow();
-  if (!windowObject || retryTimer) return;
+  if (!windowObject) return;
+  const deadline = nextRetryDeadline();
+  if (!deadline) return;
+  if (retryTimer && retryDeadline <= deadline) return;
+  if (retryTimer) {
+    windowObject.clearTimeout(retryTimer);
+    retryTimer = 0;
+  }
+  retryDeadline = deadline;
   retryTimer = /* DevSkim: ignore DS172411 */ windowObject.setTimeout(() => {
     retryTimer = 0;
+    retryDeadline = 0;
     pump();
-  }, RETRY_DELAY_MS + 25);
+  }, Math.max(0, deadline - now()) + RETRY_TIMER_SLACK_MS);
 }
 
 async function executeJob(job) {
@@ -463,6 +496,7 @@ async function executeJob(job) {
   if (typeof adapter !== 'function') {
     entry.state = READINESS.FAILED;
     entry.error = `No adapter registered for resource kind "${job.resource.kind}"`;
+    entry.retryAfter = now() + FAILED_RETRY_COOLDOWN_MS;
     settleJob(job);
     return;
   }
@@ -486,8 +520,9 @@ async function executeJob(job) {
     }
     delete entry.error;
   } catch (error) {
-    if (entry.attempts < MAX_RESOURCE_ATTEMPTS && !job.controller.signal.aborted) {
+    if (entry.attempts < MAX_RESOURCE_ATTEMPTS && !job.controller.signal?.aborted) {
       entry.state = READINESS.QUEUED;
+      delete entry.retryAfter;
       job.notBefore = now() + RETRY_DELAY_MS;
       runningJobs = Math.max(0, runningJobs - 1);
       queue.push(job);
@@ -498,6 +533,7 @@ async function executeJob(job) {
     }
     entry.state = READINESS.FAILED;
     entry.error = error instanceof Error ? error.message : String(error);
+    entry.retryAfter = now() + FAILED_RETRY_COOLDOWN_MS;
   }
 
   settleJob(job);
@@ -514,9 +550,15 @@ function settleJob(job) {
 function requestResource(definition, resource, priority) {
   const key = resourceKey(definition, resource);
   const cached = resourceEntries.get(key);
-  if (cached && (cached.state === READINESS.READY || cached.state === READINESS.SKIPPED)) {
+  if (cached && cached.state === READINESS.READY) {
     return Promise.resolve(cached);
   }
+  if (cached && cached.state === READINESS.FAILED && cached.retryAfter && cached.retryAfter > now()) {
+    return Promise.resolve(cached);
+  }
+  // A skip is not cached as terminal. Skips such as `current-route` and
+  // `speculative-audio-deferred` depend on where the visitor is and on the
+  // current plan, so the same resource must be re-evaluated when either changes.
 
   const inflight = resourceInflight.get(key);
   if (inflight) return inflight.promise;
@@ -526,7 +568,7 @@ function requestResource(definition, resource, priority) {
     kind: resource.kind,
     label: resourceLabel(resource),
     state: READINESS.QUEUED,
-    attempts: cached?.attempts ?? 0,
+    attempts: cached?.state === READINESS.QUEUED ? cached.attempts : 0,
     updatedAt: now(),
   };
   resourceEntries.set(key, entry);
@@ -660,6 +702,7 @@ async function runExperience(definition, priority, trigger) {
     partial,
     startedAt: now(),
     readyAt: failed.length > 0 ? null : now(),
+    retryAfter: failed.length > 0 ? now() + FAILED_RETRY_COOLDOWN_MS : null,
   });
 }
 
@@ -693,6 +736,17 @@ export function prepareExperience(id, { priority = PREPARE_PRIORITY.CRITICAL, tr
   const cached = experienceSnapshots.get(id);
   if (
     cached &&
+    cached.state === READINESS.FAILED &&
+    cached.retryAfter &&
+    cached.retryAfter > now()
+  ) {
+    // The failure was already reported. Returning the failed snapshot keeps a
+    // pointerover/focusin/pointerdown burst from issuing an adapter request per
+    // event against an asset that just failed. retryExperience bypasses this.
+    return Promise.resolve(cached);
+  }
+  if (
+    cached &&
     cached.state === READINESS.READY &&
     (cached.partial !== true || priority === PREPARE_PRIORITY.BACKGROUND)
   ) {
@@ -702,7 +756,16 @@ export function prepareExperience(id, { priority = PREPARE_PRIORITY.CRITICAL, tr
     return Promise.resolve(cached);
   }
 
-  if (experienceRuns.has(id)) return experienceRuns.get(id);
+  const inFlight = experienceRuns.get(id);
+  if (inFlight) {
+    if (PRIORITY_RANK[priority] < PRIORITY_RANK[inFlight.priority]) {
+      // A background run defers `background: false` resources and publishes a
+      // partial snapshot. A committed caller must not inherit that result, so
+      // run once more at the higher priority after the current run settles.
+      return inFlight.promise.then(() => prepareExperience(id, { priority, trigger }));
+    }
+    return inFlight.promise;
+  }
   if (preparingExperiences.has(id)) {
     return Promise.resolve(failedDefinitionSnapshot(id, 'dependency-cycle', definition.version));
   }
@@ -718,7 +781,7 @@ export function prepareExperience(id, { priority = PREPARE_PRIORITY.CRITICAL, tr
     preparingExperiences.delete(id);
     experienceRuns.delete(id);
   });
-  experienceRuns.set(id, run);
+  experienceRuns.set(id, { promise: run, priority });
   return run;
 }
 
@@ -1062,6 +1125,7 @@ export function resetResourceReadiness() {
     const windowObject = getWindow();
     if (windowObject) windowObject.clearTimeout(retryTimer);
     retryTimer = 0;
+    retryDeadline = 0;
   }
   routePrefetch = null;
 }

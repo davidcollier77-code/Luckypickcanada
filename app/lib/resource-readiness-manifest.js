@@ -38,7 +38,7 @@ const REVEAL_BACKDROP = {
   id: 'reveal-backdrop',
   kind: 'image',
   url: '/NGC4216_crawford-1280w.avif',
-  bytes: 38_666,
+  bytes: 47_665,
   background: true,
 };
 
@@ -102,6 +102,9 @@ export const EXPERIENCE_DEFINITIONS = Object.freeze([
     ],
   },
   {
+    // The generator is part of the Lucky Meter page: it reuses that page's
+    // route bundle and waits for the meter registration, so the shared code
+    // resource is prepared once and the dependency is honestly declared.
     id: 'lucky-number-generator',
     version: 1,
     label: 'Lucky Number Generator',

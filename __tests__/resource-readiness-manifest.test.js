@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -87,6 +87,16 @@ describe('experience coverage', () => {
       for (const resource of definition.resources) {
         if (resource.kind !== 'image') continue;
         expect(existsSync(join(process.cwd(), 'public', resource.url)), resource.url).toBe(true);
+      }
+    }
+  });
+
+  it('declares the real byte size for every registered image', () => {
+    for (const definition of hub.getRegisteredExperiences()) {
+      for (const resource of definition.resources) {
+        if (resource.kind !== 'image') continue;
+        const { size } = statSync(join(process.cwd(), 'public', resource.url));
+        expect(resource.bytes, resource.url).toBe(size);
       }
     }
   });
