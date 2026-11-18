@@ -1,10 +1,32 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const ROUTES = ['/', '/reveal', '/crystal-ball', '/map', '/about', '/lucky-meter'];
 
+/**
+ * Loads a route, tolerating the one navigation race the Next dev server owns.
+ *
+ * When a page compiles a server action for the first time, `next dev` sends a
+ * full Fast Refresh reload to every connected page. If that reload lands while
+ * Playwright is waiting for the document navigation, Chromium aborts the
+ * navigation Playwright started and rejects `page.goto` with
+ * `net::ERR_ABORTED`. The route itself is unaffected, so wait for the
+ * superseding reload to settle and repeat the same document load once. Every
+ * route assertion below still runs against every route.
+ */
+async function visit(page: Page, route: string) {
+  try {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes('net::ERR_ABORTED')) throw error;
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+  }
+}
+
 test('all audited routes render one main landmark and uniquely named navigation regions', async ({ page }) => {
   for (const route of ROUTES) {
-    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    await visit(page, route);
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('main#main-content')).toHaveCount(1);
     const labels = await page.locator('nav').evaluateAll((navs) =>
@@ -17,7 +39,7 @@ test('all audited routes render one main landmark and uniquely named navigation 
 });
 
 test('Lucky Meter begins with an H1 in the rendered heading sequence', async ({ page }) => {
-  await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+  await visit(page, '/lucky-meter');
   const firstLevel = await page.locator('h1,h2,h3,h4,h5,h6').first().evaluate((heading) =>
     Number(heading.tagName.slice(1)),
   );
@@ -25,7 +47,7 @@ test('Lucky Meter begins with an H1 in the rendered heading sequence', async ({ 
 });
 
 test('skip link is keyboard-visible and moves focus to the shared main landmark', async ({ page }) => {
-  await page.goto('/map', { waitUntil: 'domcontentloaded' });
+  await visit(page, '/map');
   await page.keyboard.press('Tab');
   const skipLink = page.locator('a.skip-link');
   await expect(skipLink).toBeFocused();
@@ -48,7 +70,7 @@ test('skip link is keyboard-visible and moves focus to the shared main landmark'
 });
 
 test('footer and homepage navigation targets stay at least 24px and do not overlap', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await visit(page, '/');
   const footer = await page.locator('footer nav a').evaluateAll((anchors) =>
     anchors.map((anchor) => {
       const rect = anchor.getBoundingClientRect();
@@ -96,7 +118,7 @@ test('footer and homepage navigation targets stay at least 24px and do not overl
 test('mobile audited routes expose no visible reading text below 12px', async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 0) > 620, 'Mobile caption floor only.');
   for (const route of ROUTES) {
-    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    await visit(page, route);
     const undersized = await page.evaluate(() => {
       const results = [];
       for (const element of document.querySelectorAll('body *')) {
@@ -121,7 +143,7 @@ test('mobile audited routes expose no visible reading text below 12px', async ({
 
 test('keyboard focus walk visits each map control once and every visited control has a visible ring', async ({ page }) => {
   test.setTimeout(45_000);
-  await page.goto('/map', { waitUntil: 'domcontentloaded' });
+  await visit(page, '/map');
   await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
   const seen = new Set();
   let visited = 0;
