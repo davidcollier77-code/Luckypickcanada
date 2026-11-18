@@ -576,7 +576,15 @@ test.describe('Daily Resonance reveal invariants', () => {
       const inspect = (element: Element) => {
         const phase = read(element, 'data-phase');
         const now = performance.now();
-        if (phase === 'scrambling') {
+        // The anticipation also reports `scrambling`, but the three angles are
+        // deliberately absent until the motions begin. Start the trace on the
+        // first frame where all three are present, so the hold is excluded.
+        if (
+          phase === 'scrambling' &&
+          num(element, attributes.dial) !== null &&
+          num(element, attributes.number) !== null &&
+          num(element, attributes.colour) !== null
+        ) {
           if (trace.start === null) {
             trace.start = now;
             trace.startValues = {
@@ -630,7 +638,7 @@ test.describe('Daily Resonance reveal invariants', () => {
 
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
 
     const trace = await page.evaluate(
       () => (window as unknown as { __revealTrace: Record<string, any> }).__revealTrace,
@@ -650,20 +658,23 @@ test.describe('Daily Resonance reveal invariants', () => {
     expect(trace.percentageSettled).toBeLessThan(trace.numberSettled);
     expect(trace.numberSettled).toBeLessThan(trace.colourSettled);
     expect(trace.colourSettled).toBeLessThan(trace.stage);
-    expect(trace.percentageSettled - trace.start).toBeGreaterThan(400);
-    expect(trace.percentageSettled - trace.start).toBeLessThan(1150);
-    // Each settle is visibly apart from the one before it. The first reveal
-    // frame absorbs the medallion's first paint, so the gaps are asserted as
-    // "clearly staggered" while the exact schedule lives in the unit suites.
-    expect(trace.numberSettled - trace.percentageSettled).toBeGreaterThan(60);
-    expect(trace.numberSettled - trace.percentageSettled).toBeLessThan(600);
-    expect(trace.colourSettled - trace.numberSettled).toBeGreaterThan(60);
-    expect(trace.colourSettled - trace.numberSettled).toBeLessThan(600);
-    // All three motions are settled inside roughly one and a half seconds.
-    expect(trace.colourSettled - trace.start).toBeGreaterThan(900);
-    expect(trace.colourSettled - trace.start).toBeLessThan(1750);
-    // The cinematic follows the last settle rather than overlapping it.
-    expect(trace.stage - trace.colourSettled).toBeGreaterThan(40);
+    // The percentage owns roughly the first 3.2 s of the motion window.
+    expect(trace.percentageSettled - trace.start).toBeGreaterThan(2500);
+    expect(trace.percentageSettled - trace.start).toBeLessThan(4200);
+    // Each settle is visibly apart from the one before it, roughly two seconds
+    // at a time, while the exact schedule lives in the unit suites.
+    expect(trace.numberSettled - trace.percentageSettled).toBeGreaterThan(1400);
+    expect(trace.numberSettled - trace.percentageSettled).toBeLessThan(3000);
+    expect(trace.colourSettled - trace.numberSettled).toBeGreaterThan(1400);
+    expect(trace.colourSettled - trace.numberSettled).toBeLessThan(3000);
+    // The coordinated motions finish inside roughly 7–8 seconds.
+    expect(trace.colourSettled - trace.start).toBeGreaterThan(6500);
+    expect(trace.colourSettled - trace.start).toBeLessThan(8800);
+    // The cinematic follows the last settle rather than overlapping it. The
+    // observer can see the stage mutation before React paints the colour flag,
+    // so this only proves a real separation; the exact 420 ms hand-off is
+    // asserted in the unit suite.
+    expect(trace.stage - trace.colourSettled).toBeGreaterThan(120);
     expect(trace.stage - trace.colourSettled).toBeLessThan(900);
 
     // At rest, each motion sits on the value that was already stored for it. The
@@ -768,14 +779,19 @@ test.describe('Daily Resonance reveal invariants', () => {
       colour: { id: 'maple-red' },
     });
 
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
     const stageDelay = await page.evaluate(() => {
       const stage = document.querySelector('[data-testid="cosmic-event-stage"]');
       const loadAt = (window as unknown as { __loadAt: number }).__loadAt;
       return stage ? performance.now() - loadAt : -1;
     });
-    // The cinematic waited for the three motions instead of starting at once.
-    expect(stageDelay).toBeGreaterThan(1200);
+    // The cinematic waited for the whole coordinated reveal instead of starting
+    // at once: 500 ms of anticipation plus the 7.4 s three-motion sequence.
+    expect(stageDelay).toBeGreaterThan(6800);
+    // The nominal wait is 8.32 s, but the measurement starts at document load,
+    // so hydration and a throttled mobile shard add several seconds. A replayed
+    // reveal would add another 8.32 s and land near 21 s.
+    expect(stageDelay).toBeLessThan(16_000);
 
     // Those motions settled on the stored values, then the cinematic began.
     await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');
@@ -796,6 +812,26 @@ test.describe('Daily Resonance reveal invariants', () => {
   });
 });
 
+test.describe('Daily Resonance arrival leaves', () => {
+  test('shows leaves on entry, lifts them on the breeze and clears before Start', async ({
+    page,
+  }) => {
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+
+    const leaves = page.getByTestId('lucky-meter-arrival-leaves');
+    await expect(leaves).toBeVisible({ timeout: 20_000 });
+    await expect(leaves).toHaveAttribute('data-phase', /resting|lifting/);
+    // The introduction never blocks Start.
+    await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible();
+
+    // The breeze arrives about a second in and the canvas leaves the DOM once
+    // every leaf has crossed the sky.
+    await expect(leaves).toHaveAttribute('data-phase', 'lifting', { timeout: 5_000 });
+    await expect(leaves).toHaveCount(0, { timeout: 10_000 });
+    await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible();
+  });
+});
+
 test.describe('Daily Resonance Little Spark finale', () => {
   test('writes the Spark after the cinematic, then shows the countdown beneath Home', async ({
     page,
@@ -808,13 +844,30 @@ test.describe('Daily Resonance Little Spark finale', () => {
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
     await expect(page.getByTestId('lucky-spark-message')).toHaveCount(0);
 
-    // Home returns with the finished cinematic; the quill and countdown follow.
+    // Home returns with the finished cinematic; a one-second hold, then the
+    // tiny golden cursor writes the Spark in the sky.
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
 
     const spark = page.getByTestId('lucky-spark-finale');
+    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 15_000 });
+
+    // The Spark is written into the sky: no panel background, border or inset.
+    const skyText = await spark.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        backgroundColor: style.backgroundColor,
+        borderTopWidth: style.borderTopWidth,
+        paddingTop: style.paddingTop,
+      };
+    });
+    expect(skyText.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect(skyText.borderTopWidth).toBe('0px');
+    expect(skyText.paddingTop).toBe('0px');
+
     await expect(spark).toHaveAttribute('data-state', 'written', { timeout: 15_000 });
+    await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
     await expect(page.getByTestId('lucky-spark-message')).toHaveText(
       /Even a small step forward/,
     );
@@ -872,6 +925,18 @@ test.describe('Daily Resonance Little Spark finale', () => {
 test.describe('Daily Resonance reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
+  test('keeps the arrival leaves at rest instead of animating them', async ({ page }) => {
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+
+    const leaves = page.getByTestId('lucky-meter-arrival-leaves');
+    await expect(leaves).toBeVisible({ timeout: 20_000 });
+    await expect(leaves).toHaveAttribute('data-phase', 'resting');
+    await page.waitForTimeout(1800);
+    // No breeze, no lift and no removal: the resting scene is the whole effect.
+    await expect(leaves).toHaveAttribute('data-phase', 'resting');
+    await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible();
+  });
+
   test('presents the whole reading calmly with the dial already at its value', async ({
     page,
   }) => {
@@ -882,10 +947,13 @@ test.describe('Daily Resonance reduced motion', () => {
     await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-message')).not.toBeEmpty();
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
+    // The arrival is static under reduced motion; Start is never blocked.
+    await expect(page.getByTestId('lucky-meter-arrival-leaves')).toHaveCount(0);
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
-    // No quill under reduced motion; the countdown is available immediately.
-    await expect(page.getByTestId('lucky-spark-quill')).toHaveCount(0);
+    // No writing cursor under reduced motion; the countdown is available
+    // immediately and the completed message is already in the sky.
+    await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
 
     const percentage = Number(
@@ -937,26 +1005,29 @@ test.describe('Daily Resonance visual evidence', () => {
   );
 
   test('captures the welcome reading and the landed result', async ({ page }, testInfo) => {
-    const directory = 'artifacts/lucky-meter-premium-resonance-20261118/after';
+    const directory = 'artifacts/lucky-meter-cinematic-flow-20261118/after';
     const prefix = `${testInfo.project.name}`;
 
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible({
       timeout: 20_000,
     });
-    await page.screenshot({ path: `${directory}/${prefix}-welcome.png` });
+    await expect(page.getByTestId('lucky-meter-arrival-leaves')).toBeVisible();
+    await page.screenshot({ path: `${directory}/${prefix}-welcome-arrival.png` });
 
     await startReveal(page);
     await page.waitForTimeout(700);
     await page.screenshot({ path: `${directory}/${prefix}-dial-spin.png` });
     await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed', {
-      timeout: 12_000,
+      timeout: 15_000,
     });
     await page.screenshot({ path: `${directory}/${prefix}-landed.png` });
 
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible({
       timeout: 20_000,
     });
+    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 30_000 });
+    await page.screenshot({ path: `${directory}/${prefix}-sky-writing.png` });
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: `${directory}/${prefix}-result.png` });
   });

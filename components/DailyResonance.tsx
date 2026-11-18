@@ -2,13 +2,14 @@
 
 import Aurora, { AuroraHandle } from './Aurora';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
-import GoldenLeaf from '../app/components/CrystalBall/GoldenLeaf';
 import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
+import LuckyMeterArrivalLeaves from './LuckyMeterArrivalLeaves';
 import LuckyMeterOrnaments from './LuckyMeterOrnaments';
+import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
 import { useDailyResetCountdown } from './daily-reset-countdown';
@@ -123,9 +124,9 @@ const EMPTY_SOUNDS = () => ({
  * Storage only. The percentage is independent of the Lucky Number and the Lucky
  * Colour; all three motions start together and settle in a staggered order
  * before the percentage-selected cinematic begins. Only after that cinematic
- * finishes does the reusable Crystal Ball GoldenLeaf move to the prominent Spark
- * area and write the message like a quill. The countdown appears beneath Home
- * once the writing is complete.
+ * finishes does a tiny point of light write the Spark across the sky, and the
+ * completed message stays there. The countdown appears beneath Home once the
+ * writing is complete.
  *
  * The circular medallion is mounted in every state. The Home control is only
  * available before the reveal and once the day's cinematic has finished; the
@@ -146,10 +147,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [stageActive, setStageActive] = useState(false);
   const [stageDuration, setStageDuration] = useState(0);
   const [eventCompleted, setEventCompleted] = useState(false);
-  // The Spark's quill writing. It begins only after the cinematic has finished
-  // and its completion is persisted so a refresh resumes the writing in place.
+  // The brief held breath after Start, before the three motions begin.
+  const [isAnticipating, setIsAnticipating] = useState(false);
+  // Sky-writing begins only after the cinematic has finished and a short pause.
+  // Its completion is persisted so a refresh resumes the writing in place.
   const [sparkWriting, setSparkWriting] = useState(false);
-  const [sparkCharCount, setSparkCharCount] = useState(0);
   const [sparkComplete, setSparkComplete] = useState(false);
   // Home stays unmounted until the persisted lifecycle has been read, so a
   // refresh never paints it for a frame before an unfinished event resumes.
@@ -171,6 +173,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const numberSpinRef = useRef<ReturnType<typeof buildNumberSpin> | null>(null);
   const colourSpinRef = useRef<ReturnType<typeof buildColourSpin> | null>(null);
   const revealStartRef = useRef(0);
+  const revealStartedAtRef = useRef(0);
   const isMountedRef = useRef(true);
   const visitsAbortRef = useRef<AbortController | null>(null);
   const resultRef = useRef<DailyResult | null>(null);
@@ -187,20 +190,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // Fade-out timers for cues that can outlive their action (thunder, crackle).
   const audioStopTimersRef = useRef<number[]>([]);
 
-  const ringPhase: RingPhase = isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
+  const ringPhase: RingPhase =
+    isAnticipating || isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
 
   // The Home control is available only before Start and after today's complete
   // cinematic. `result && !eventCompleted` keeps it hidden across a refresh.
   const showHome =
-    hasLoaded && !isCompact && !isRevealing && !stageActive && (!result || eventCompleted);
-  // The countdown waits for the quill, so the finished Spark is never covered by
-  // a reset clock that still says the day is over.
+    hasLoaded &&
+    !isCompact &&
+    !isAnticipating &&
+    !isRevealing &&
+    !stageActive &&
+    (!result || eventCompleted);
+  // The countdown waits for the sky-writing, so the finished Spark is never
+  // covered by a reset clock that still says the day is over.
   const showCountdown = showHome && sparkComplete;
-
-  const sparkChars = useMemo(
-    () => (result?.spark?.message ? Array.from(result.spark.message) : []),
-    [result],
-  );
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -295,7 +299,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   // Reduced motion is respected for the three spins, the landing flash, the
-  // cinematic stage and the quill; the result is presented calmly instead.
+  // cinematic stage and the sky writing; the result is presented calmly instead.
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -353,7 +357,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       );
 
       if (loaded.sparkCompleted === true) {
-        setSparkCharCount(Array.from(saved.spark.message).length);
         setSparkComplete(true);
       }
 
@@ -363,7 +366,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           eventCompletedRef.current = true;
           sparkCompletedRef.current = true;
           setEventCompleted(true);
-          setSparkCharCount(Array.from(saved.spark.message).length);
           setSparkComplete(true);
           auroraRef.current?.setPhase('settled', saved.event.name);
           saveMeterState({
@@ -386,12 +388,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           setStageActive(true);
         }
       } else if (loaded.sparkCompleted !== true && !prefersReducedMotion()) {
-        // The cinematic finished but the quill did not: finish the writing
+        // The cinematic finished but the Spark writing did not: finish it
         // rather than skipping the finale or replaying the event.
         setSparkWriting(true);
       } else if (loaded.sparkCompleted !== true && prefersReducedMotion()) {
         sparkCompletedRef.current = true;
-        setSparkCharCount(Array.from(saved.spark.message).length);
         setSparkComplete(true);
         saveMeterState({
           result: saved,
@@ -427,8 +428,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setColourSettled(false);
       setStageActive(false);
       setEventCompleted(false);
+      setIsAnticipating(false);
       setSparkWriting(false);
-      setSparkCharCount(0);
       setSparkComplete(false);
       setShareStatus('idle');
       setAnnouncement('');
@@ -527,7 +528,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     getCueLayers(cue).forEach((layer) => play(layer.sound, layer.rate, layer.volume));
   }, []);
 
-  /** Persists "the quill finished" so a refresh keeps the completed message. */
+  /** Persists "the sky-writing finished" so a refresh keeps the message. */
   const markSparkComplete = useCallback(() => {
     sparkCompletedRef.current = true;
     setSparkComplete(true);
@@ -540,47 +541,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       true,
     );
   }, [persistLifecycle]);
-
-  // The GoldenLeaf types the Spark one character at a time, carrying its cursor
-  // at the writing edge. Reduced motion shows the complete message at once.
-  useEffect(() => {
-    if (!sparkWriting || !result) return undefined;
-    const chars = Array.from(result.spark.message);
-
-    if (reducedMotion) {
-      setSparkCharCount(chars.length);
-      markSparkComplete();
-      return undefined;
-    }
-
-    let index = 0;
-    let cancelled = false;
-    let timer = 0;
-    setSparkCharCount(0);
-
-    const tick = () => {
-      if (cancelled) return;
-      index += 1;
-      setSparkCharCount(index);
-      if (index < chars.length) {
-        const character = chars[index - 1];
-        timer = window.setTimeout(
-          tick,
-          /[.,!?:;]/.test(character)
-            ? REVEAL_TIMING.sparkPunctuationPauseMs
-            : REVEAL_TIMING.sparkMsPerCharacter,
-        );
-      } else {
-        markSparkComplete();
-      }
-    };
-
-    timer = window.setTimeout(tick, REVEAL_TIMING.sparkStartDelayMs);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [sparkWriting, result, reducedMotion, markSparkComplete]);
 
   /**
    * Runs the three reveal motions for an already-chosen result and hands over to
@@ -602,6 +562,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       ? colourSpin.startRotation + colourSpin.totalSweep
       : settledMotion(next).colourRotation;
 
+    setIsAnticipating(false);
     setMotion({
       dialAngle: dialSpin ? dialSpin.startAngle : 0,
       // Read the starting frames from the motions themselves so the result is
@@ -731,7 +692,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   animateRevealRef.current = animateReveal;
 
   const handleReveal = useCallback(() => {
-    if (isRevealing || isRevealed || typeof window === 'undefined') return;
+    if (isAnticipating || isRevealing || isRevealed || typeof window === 'undefined') return;
 
     const localKey = ready && dateKey ? dateKey : getLocalDateKey();
     let next: DailyResult;
@@ -767,8 +728,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setResult(next);
     setShareStatus('idle');
     setEventCompleted(false);
+    // The held breath is part of the reveal: the result exists, but nothing has
+    // moved yet and the sky is simply listening.
+    setIsAnticipating(!reducedMotion);
     setSparkWriting(false);
-    setSparkCharCount(0);
     setSparkComplete(false);
     setAnnouncement('Preparing today’s resonance.');
     finalPercentageRef.current = next.percentage;
@@ -779,14 +742,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     clearSequence();
 
     void playButtonClick().catch(() => {});
-    void ensureRevealAudio().then(() => {
-      if (!isMountedRef.current) return;
-      try {
-        soundsRef.current.buildup?.play();
-      } catch {
-        // Optional audio only.
-      }
-    });
+    revealStartedAtRef.current = performance.now();
+    // Reduced motion has no reveal and no cinematic, so it also has no
+    // charge-up that would need fading. When audio arrives late, it is skipped
+    // rather than starting after the dial has already landed.
+    if (!reducedMotion) {
+      void ensureRevealAudio().then(() => {
+        if (!isMountedRef.current) return;
+        const buildupWindowMs =
+          REVEAL_TIMING.anticipationMs + REVEAL_TIMING.percentageSettleMs - 250;
+        if (performance.now() - revealStartedAtRef.current > buildupWindowMs) return;
+        try {
+          soundsRef.current.buildup?.play();
+        } catch {
+          // Optional audio only.
+        }
+      });
+    }
 
     // Preserve the existing total-ritual counter. A newer reveal or unmount
     // aborts an older request so a late response cannot overwrite the count.
@@ -811,19 +783,19 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       });
 
     if (reducedMotion) {
+      setIsAnticipating(false);
       setMotion(settledMotion(next));
       setIsRevealing(false);
       setIsRevealed(true);
       setNumberSettled(true);
       setColourSettled(true);
-      setSparkCharCount(Array.from(next.spark.message).length);
       setSparkComplete(true);
       sparkCompletedRef.current = true;
       setAnnouncement(
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
       );
       auroraRef.current?.setPhase('settled', next.event.name);
-      // No cinematic and no quill run under reduced motion, so the reading is
+      // No cinematic and no Spark writing run under reduced motion, so the reading is
       // complete immediately and Home plus the countdown may show.
       eventCompletedRef.current = true;
       setEventCompleted(true);
@@ -831,8 +803,22 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       return;
     }
 
-    animateReveal(next, nextHistory, duration);
-  }, [animateReveal, clearSequence, dateKey, ensureRevealAudio, history, ready, reducedMotion]);
+    // Hold for a moment, then let the three motions begin together.
+    schedule(() => {
+      if (!isMountedRef.current) return;
+      animateReveal(next, nextHistory, duration);
+    }, REVEAL_TIMING.anticipationMs);
+  }, [
+    animateReveal,
+    clearSequence,
+    dateKey,
+    ensureRevealAudio,
+    history,
+    persistLifecycle,
+    ready,
+    reducedMotion,
+    schedule,
+  ]);
 
   const handleStageComplete = useCallback(() => {
     setStageActive(false);
@@ -850,10 +836,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       false,
       true,
     );
-    // The cinematic is finished, so the GoldenLeaf may now write the Spark —
+    // The sky holds for a moment after the cinematic, then the Spark begins —
     // unless it was already written and persisted before a resume.
-    if (!sparkCompletedRef.current) setSparkWriting(true);
-  }, [persistLifecycle, stopEventAudio]);
+    if (!sparkCompletedRef.current) {
+      schedule(() => {
+        if (isMountedRef.current) setSparkWriting(true);
+      }, REVEAL_TIMING.sparkStartDelayMs);
+    }
+  }, [persistLifecycle, schedule, stopEventAudio]);
 
   const handleShare = useCallback(async () => {
     if (!result) return;
@@ -893,7 +883,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   /**
    * The countdown lives beneath Home, not inside the result panels, and only
-   * after the quill has finished writing.
+   * after the Spark has finished writing.
    */
   const countdownBlock = (
     <div className="lucky-countdown lucky-countdown--dock" data-testid="lucky-meter-countdown">
@@ -946,6 +936,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         />
       </picture>
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
+
+      {/* The arrival: a few leaves rest at the edges of the sky, then the
+          breeze lifts them away before Start. Once a reading exists they are
+          not mounted again for the day. */}
+      {!result && !isAnticipating && <LuckyMeterArrivalLeaves />}
 
       {/* Golden maple leaves: a far layer behind the scene and, on capable
           profiles, a near layer in front of the meter and its panels. */}
@@ -1036,53 +1031,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             </div>
           )}
 
-          {/* The Little Spark finale is the first result on the page: after the
-              cinematic, the GoldenLeaf writes it here and it stays visible. */}
+          {/* The Little Spark is written in the sky after the cinematic: a tiny
+              golden point of light reveals the message, which then stays. */}
           {hasDetails && result && (
-            <section
-              data-testid="lucky-spark-finale"
-              data-state={sparkComplete ? 'written' : sparkWriting ? 'writing' : 'waiting'}
-              className={`lucky-spark-finale relative w-full ${
-                isCompact ? 'mb-2 mt-1' : 'mb-3 mt-1 max-w-2xl sm:mb-4'
-              }`}
-              aria-live="polite"
-            >
-              <div className="lucky-spark-finale__header">
-                <span aria-hidden="true" className="lucky-spark-finale__rule" />
-                <h2 className="lucky-spark-finale__label">Little Spark</h2>
-                <span aria-hidden="true" className="lucky-spark-finale__rule" />
-              </div>
-              {/* Announced once, when the quill has finished, so assistive tech
-                  hears the Spark at the same moment sighted visitors read it. */}
-              {sparkComplete && <span className="sr-only">{result.spark.message}</span>}
-              {sparkWriting || sparkComplete ? (
-                <p
-                  aria-hidden="true"
-                  data-testid="lucky-spark-message"
-                  className={`lucky-spark-finale__text ${
-                    isCompact ? 'text-[13px]' : 'text-[15px] sm:text-lg'
-                  }`}
-                >
-                  <span aria-hidden="true" className="lucky-spark-finale__mark">
-                    “
-                  </span>
-                  {sparkChars.slice(0, sparkCharCount).join('')}
-                  {sparkWriting && (
-                    <span className="lucky-spark-quill" data-testid="lucky-spark-quill">
-                      <GoldenLeaf className="lucky-spark-quill__leaf" />
-                    </span>
-                  )}
-                  <span aria-hidden="true" className="lucky-spark-finale__mark">
-                    ”
-                  </span>
-                </p>
-              ) : (
-                <p className="lucky-spark-finale__waiting" aria-hidden="true">
-                  <span className="lucky-spark-finale__ink" />
-                  The Spark is gathering
-                </p>
-              )}
-            </section>
+            <LuckyMeterSkyWriting
+              message={result.spark.message}
+              state={sparkComplete ? 'written' : sparkWriting ? 'writing' : 'waiting'}
+              reducedMotion={reducedMotion}
+              isCompact={isCompact}
+              onComplete={markSparkComplete}
+            />
           )}
 
           <LuckyMeterRing
@@ -1097,7 +1055,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             colourSettled={colourSettled}
             className={ringSizeClasses}
           >
-            {isRevealing ? (
+            {isAnticipating ? (
+              <div
+                className="flex flex-col items-center justify-center"
+                data-testid="lucky-meter-anticipating"
+              >
+                <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
+                <p className="mb-2 text-[clamp(11px,1.4vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
+                  Daily Resonance
+                </p>
+                <span aria-hidden="true" className="lucky-anticipation" />
+                <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-slate-300/80 sm:text-[12px]">
+                  The sky is listening
+                </p>
+              </div>
+            ) : isRevealing ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
                 <p className="mb-2 text-[clamp(11px,1.4vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">

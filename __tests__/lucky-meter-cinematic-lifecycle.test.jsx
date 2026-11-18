@@ -139,7 +139,10 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(readStoredResult().revealCompleted).toBe(false);
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
+      // The anticipation holds, then the dial spins to its first settle.
+      vi.advanceTimersByTime(
+        REVEAL_TIMING.anticipationMs + REVEAL_TIMING.percentageSettleMs,
+      );
     });
     expect(screen.getByText('53')).toBeInTheDocument();
     expect(screen.getByText('Medium Resonance')).toBeInTheDocument();
@@ -174,7 +177,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
-    // The countdown still waits for the GoldenLeaf to finish writing.
+    // The countdown still waits for the sky-writing to finish.
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
     expect(readStoredResult().eventCompleted).toBe(true);
     expect(readStoredResult().sparkCompleted).toBe(false);

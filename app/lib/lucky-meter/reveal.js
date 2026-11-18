@@ -2,10 +2,11 @@
  * Reveal timing and the three motions that settle the daily reading.
  *
  * The percentage dial, the Lucky Number pointer and the segmented colour ring
- * all start at the same instant and settle in a staggered order inside roughly
- * one and a quarter seconds. Only then does the percentage-selected cinematic
- * begin, and only after the cinematic has finished does the GoldenLeaf write
- * the Spark.
+ * all start at the same instant and settle in a staggered order over about
+ * 7.4 seconds: the dial at 3.2 s, the number pointer at 5.4 s and the colour
+ * ring at 7.4 s. Only then does the percentage-selected cinematic
+ * begin, and only after a one-second pause once the cinematic has finished does
+ * a tiny point of light write the Spark across the sky.
  *
  * Each motion lands on a value that was already chosen. The dial stops on the
  * exact angle that represents the percentage, the number pointer stops on the
@@ -23,29 +24,39 @@ import {
 } from './config';
 
 export const REVEAL_TIMING = Object.freeze({
+  /**
+   * A short held breath after Start. Nothing moves, so the three motions can
+   * arrive as one deliberate gesture instead of a reaction to the click.
+   */
+  anticipationMs: 500,
   /** When the percentage dial, its flash and the tier text settle. */
-  percentageSettleMs: 620,
+  percentageSettleMs: 3200,
   /** When the Lucky Number pointer comes to rest on its number. */
-  numberSettleMs: 940,
+  numberSettleMs: 5400,
   /** When the segmented colour ring comes to rest on its colour. */
-  colourSettleMs: 1240,
+  colourSettleMs: 7400,
   /** Every motion has settled by this point. */
-  spinMs: 1240,
+  spinMs: 7400,
   /** Two or three flashes of the real number on landing. */
-  flashMs: 520,
+  flashMs: 700,
   flashCount: 3,
   /** Short anticipation after the last settle before the cinematic starts. */
-  eventDelayMs: 300,
-  /** The GoldenLeaf settles into the message area before it starts writing. */
-  sparkStartDelayMs: 320,
-  /** Quill cadence: one character at a time, with punctuation pauses. */
-  sparkMsPerCharacter: 24,
-  sparkPunctuationPauseMs: 120,
+  eventDelayMs: 420,
+  /**
+   * The sky is still after the cinematic. The Spark gathers for this long
+   * before the first character of light appears.
+   */
+  sparkStartDelayMs: 1000,
+  /** Sky-writing cadence: one character at a time, with punctuation pauses. */
+  sparkMsPerCharacter: 26,
+  sparkPunctuationPauseMs: 150,
 });
 
 /** Milliseconds from the Start press until the cinematic event begins. */
 export const EVENT_START_MS =
-  REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs;
+  REVEAL_TIMING.anticipationMs +
+  REVEAL_TIMING.colourSettleMs +
+  REVEAL_TIMING.eventDelayMs;
 
 /** A full circle is 100%, so one percentage point is 3.6 degrees. */
 export const DEGREES_PER_PERCENT = 360 / 100;
