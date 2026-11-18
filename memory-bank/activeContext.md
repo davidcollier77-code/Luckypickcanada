@@ -1,3 +1,61 @@
+# Active Context — Site-Wide Resource-Readiness Hub
+
+- **Updated:** 2026-11-18
+- **Branch:** freebuff/df6965c97260bd2bd71121ef
+- **Base:** main at fad3adff
+- **Spec Kit feature:** specs/186-resource-readiness-hub
+
+## Current Task
+
+Extend Feature 180 with one lightweight, site-wide resource-readiness hub for intelligent preloading, cache
+reuse and active-experience protection, compatible with current and future optional renderers.
+
+## Implemented State
+
+- `app/lib/resource-readiness.js` owns the registration contract (`id`, `version`, routes, dependencies,
+  ordered resources), idempotent registration with version invalidation, image/code/audio adapters, a future
+  adapter kind registry, plan-bounded scheduling, deduplication, truthful readiness, retry, release and
+  server-safe guards. It adds no capability probe or subscription of its own.
+- `app/lib/resource-readiness-manifest.js` registers Lucky Card Reveal (shared by personal and gift routes),
+  Lucky Meter/Daily Resonance, Lucky Number Generator, Crystal Ball, Lucky Map and Lucky Stories. The map sky
+  and Crystal Ball audio are deferred to route/intent; no API is ever warmed.
+- `components/ResourceReadiness.jsx` is mounted once in `app/layout.js`, renders nothing, supplies the Next
+  router prefetcher, prepares the current route in an idle period, and schedules the homepage's plan-bounded
+  likely-next order. Both paths wait for `whenPageSettled`: `load`, a 600 ms quiet window after the last LCP
+  entry and completed resource, and a 250 ms floor, bounded at 20 s. One delegated hover/focus/press listener
+  set replaces per-link subscriptions.
+- `components/DailyResonance.tsx` and `app/lucky-card-reveal.js` hold the hub's active-experience marker
+  while their animations run, so queued background work pauses and resumes without touching timing or sound.
+- Review hardening: retry wake-ups are deadline-driven so staggered failures cannot be stranded; policy
+  skips (`current-route`, `speculative-audio-deferred`) are re-evaluated instead of cached forever; a
+  higher-priority caller upgrades an in-flight background run; failed resources back off for 5 s; and the
+  reveal backdrop's declared byte size now matches the 47,665-byte file.
+- Focused suites: `__tests__/resource-readiness.test.js` (27 tests),
+  `__tests__/resource-readiness-manifest.test.js` (9 tests) and
+  `__tests__/resource-readiness-mount.test.jsx` (5 tests) pass, 41 focused tests total; `tsc --noEmit` exits 0.
+
+## Verification
+
+- Focused suites 41 tests across 3 files, full Vitest 95 files / 988 tests, `tsc --noEmit` exit 0 and
+  `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d ./freebuff-verify.sh` exit 0.
+- Production build: 312,552,759 bytes = 298.07 MiB, below 495 MiB.
+- Homepage: 15 paired production-server runs; `loadEventEnd` median 302 ms base and 302 ms branch, LCP 348 ms
+  base and 340 ms branch. Bootstrap 95% CI of the median load difference is −43…+28 ms, so no regression beyond
+  variance. All 15 branch runs started hub requests at 1.22–1.35 s with zero before load or LCP.
+- Capable mobile (390×844, 2× CPU): LCP 416 ms, hub first request 1.38 s, every registered image once. Save-Data
+  profile: 26 requests, no hub work, no console errors, no overflow. `/reveal`: one card back, one backdrop, same
+  15 audio cue files as base. Details and limitations are in `specs/186-resource-readiness-hub/evidence.md`.
+
+## Limitations
+
+- The owner brief named $1.99/$2.99 paid reveals; the repository prices are CAD $1.00 and CAD $1.99 and were
+  preserved unchanged.
+- The browser may evict cached bytes; the hub never promises permanent retention and adds no service worker or
+  storage layer.
+- This workspace has no hardware GPU, so any browser capture is software-rendered.
+
+---
+
 # Active Context — Lucky Meter Cinematic Flow
 
 - **Updated:** 2026-11-18

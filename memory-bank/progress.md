@@ -1,3 +1,25 @@
+## 2026-11-18 — Site-wide resource-readiness hub
+- Added one preparation hub over the existing adaptive plan: experience registrations with version, routes,
+  dependencies and ordered resources; image (load + decode), code (Next router prefetch) and audio (existing
+  Howler/Web Audio prepare, never playback) adapters; and a registered adapter kind for future Canvas/WebGL/
+  WebGPU resources. It adds no capability detector, subscription, frame governor or competing preloader.
+- Preparation is deduplicated by kind + target + version, bounded to `min(plan.maxParallelRequests, 3)`,
+  paused for background work during an active reveal/cinematic, a hidden page or Save-Data, and resumed through
+  the existing shared plan subscription. Readiness reports fetched, initialized, ready, failed and skipped;
+  failures retry once automatically and can be retried explicitly without repeating ready work.
+- Registered all seven requested experiences: reveal (personal and gift share one registration), Lucky Meter,
+  Lucky Number Generator, Crystal Ball, Lucky Map and Lucky Stories. The map sky and Crystal Ball audio are
+  deferred to route/intent, and no API or data endpoint is prewarmed.
+- Current-route and homepage preparation are gated by `whenPageSettled`: `load`, a 600 ms quiet window after
+  the last LCP entry and completed resource, a 250 ms floor and a 20 s bound. Homepage order follows the
+  manifest, capped at three on capable, two on moderate and one on constrained, with none on Save-Data/slow.
+- Review hardening (Amazon Q / Pullfrog): deadline-driven retry wake-ups, re-evaluated policy skips,
+  priority upgrade for an in-flight background run, a 5 s failure cooldown, a mount test suite, and
+  manifest byte sizes asserted against the real files.
+- Focused suites 41 tests across 3 files, full suite 95 files / 988 tests and `tsc --noEmit` pass. Fifteen
+  paired production runs show median load 302 vs 302 ms and LCP 348 vs 340 ms; zero hub requests before
+  load or LCP. Build 298.07 MiB.
+
 ## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
 - Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage
   range/weighting and only-newest exclusion, uniform 1–50 number and 12-colour palette with older values

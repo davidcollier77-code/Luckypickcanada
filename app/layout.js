@@ -2,6 +2,7 @@ import Script from 'next/script';
 import Link from 'next/link';
 import { inter, manrope, playfair, cinzel } from './fonts';
 import JsonLd from './components/JsonLd';
+import ResourceReadiness from '../components/ResourceReadiness';
 
 import '../themes/default/index.css';
 import './globals.css';
@@ -76,6 +77,9 @@ export default function RootLayout({ children }) {
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
         <a href="#main-content" className="skip-link">Skip to main content</a>
+        {/* Coordinates resource preparation only; renders nothing and owns no
+            artwork, copy, layout, audio playback or animation. */}
+        <ResourceReadiness />
         <main
           id="main-content"
           tabIndex={-1}

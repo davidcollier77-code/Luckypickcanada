@@ -1,0 +1,19 @@
+{
+  "capturedAt": "2026-11-18T13:12:42.935Z",
+  "profile": "constrained-save-data",
+  "homepage": {
+    "loadEventEnd": 476,
+    "lcp": 480,
+    "lcpElement": "IMG",
+    "requestCount": 26,
+    "hubFirstStart": null,
+    "hubBeforeLoad": 0,
+    "hubBeforeLcp": 0,
+    "watched": [],
+    "domNodes": 378,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  "errors": [],
+  "failures": []
+}

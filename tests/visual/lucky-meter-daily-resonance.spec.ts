@@ -833,6 +833,13 @@ test.describe('Daily Resonance arrival leaves', () => {
 });
 
 test.describe('Daily Resonance Little Spark finale', () => {
+  // This flow deliberately spans the 8.32 s coordinated reveal, the 8.32 s
+  // three-motion cinematic, the one-second hold and the Spark writing. That is
+  // already close to Playwright's 30 s default on a developer machine, so a
+  // slower CI runner can exhaust the budget mid-assertion even though every
+  // step completes. Keep the assertions unchanged and give the flow headroom.
+  test.describe.configure({ timeout: 60_000 });
+
   test('writes the Spark after the cinematic, then shows the countdown beneath Home', async ({
     page,
   }) => {

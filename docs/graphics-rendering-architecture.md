@@ -197,3 +197,46 @@ tiers stay there, and the adaptive layer composes with them.
 `docs/graphics-rendering-architecture.md` remains the rendering contract;
 `specs/180-adaptive-performance-rendering/` holds this layer's specification,
 plan, tasks and evidence.
+
+## Resource-readiness hub
+
+`app/lib/resource-readiness.js` coordinates preparation for the experiences that
+sit on top of these renderers. It is not a renderer and not a second adaptive
+layer: it reads the existing plan and uses its parallel-request limit, prefetch
+policy, audio policy and release registry.
+
+- **Registration contract.** An experience declares its `id`, `version`, routes,
+  dependencies and ordered resources. A resource is `{ kind, url | route,
+  prepare? }`; the built-in adapters are `image` (load + decode), `code` (the Next
+  router's prefetch) and `audio` (the existing Howler/Web Audio prepare function).
+  A future Canvas, WebGL or WebGPU renderer registers its own adapter kind through
+  `registerResourceAdapter`; no renderer migration is required today.
+- **Preparation only.** The hub never plays a sound, draws a frame or runs
+  business logic. Preparing audio does not unlock or start it; the activation
+  path still owns autoplay rules.
+- **Truthful readiness.** Resources report `fetched`, `initialized`, `ready`,
+  `failed` or `skipped`, and an experience is ready only when its required
+  resources are. A missing dependency, a cycle or a failed resource fails safely
+  and can be retried without repeating ready work. A `skipped` resource is a
+  policy decision, not a permanent cache entry: visitor-state skips such as the
+  current route and plan-dependent audio skips are re-evaluated on the next
+  preparation. A reported failure backs off briefly so intent events cannot
+  issue a request per event; an explicit retry clears the backoff.
+- **Bounded and deduplicated.** One URL shared by several experiences makes one
+  request. Concurrency is `min(plan.maxParallelRequests, 3)`; queued background
+  work pauses during an active reveal/cinematic, a hidden page or Save-Data and
+  resumes through the shared plan subscription. Current-route and homepage
+  preparation start only after `load` plus a quiet window measured from the last
+  largest-contentful-paint and resource entries, so no hub request or main-thread
+  work lands inside the load/LCP window; heavy assets (`background: false`) wait
+  for the route or for intent. A committed caller that arrives while a background
+  run is still in flight triggers one follow-up run at the higher priority, so
+  the deferred heavy assets are prepared for that caller rather than inherited as
+  a partial background result.
+- **Caching.** The hub warms the exact URLs used in markup, so the existing
+  immutable `Cache-Control` responses are reused. No service worker, storage
+  layer or cache-busting query string is added, and nothing promises permanent
+  retention: the browser may evict any entry.
+
+`specs/186-resource-readiness-hub/` holds this hub's specification, plan, tasks
+and evidence.

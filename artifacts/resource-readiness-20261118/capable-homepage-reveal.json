@@ -1,0 +1,37 @@
+{
+  "capturedAt": "2026-11-18T13:12:42.935Z",
+  "profile": "capable",
+  "homepage": {
+    "loadEventEnd": 407,
+    "lcp": 416,
+    "lcpElement": "IMG",
+    "requestCount": 43,
+    "hubFirstStart": 1384,
+    "hubBeforeLoad": 0,
+    "hubBeforeLcp": 0,
+    "watched": [
+      "/images/lucky-meter-night-sky-640w.avif",
+      "/IMG_20260728_220305_112042.avif",
+      "/NGC4216_crawford-1280w.avif",
+      "/assets/crystal-ball-pedestal-420w.avif"
+    ],
+    "domNodes": 378,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  "reveal": {
+    "cardBack": 1,
+    "backdrop": 1,
+    "revealAudioFetches": 15,
+    "buttons": 2,
+    "heading": "Today’s Lucky Card"
+  },
+  "baseReveal": {
+    "cardBack": 1,
+    "backdrop": 1,
+    "revealAudioFetches": 15,
+    "heading": "Today’s Lucky Card"
+  },
+  "errors": [],
+  "failures": []
+}
