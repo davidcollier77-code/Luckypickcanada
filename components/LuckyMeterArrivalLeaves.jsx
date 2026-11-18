@@ -204,16 +204,17 @@ export default function LuckyMeterArrivalLeaves() {
       drawScene(context, leaves, elapsed, width, height);
     };
 
+
     const frame = (now) => {
       if (stopped) return;
       elapsed = now - startedAt;
       drawScene(context, leaves, elapsed, size.width, size.height);
+      if (elapsed >= duration) {
         frameId = null;
         stopped = true;
         window.clearTimeout(resizeTimer);
         window.removeEventListener('resize', onResize);
         stopVisibility();
-        setPhase('gone');
         setPhase('gone');
         return;
       }
