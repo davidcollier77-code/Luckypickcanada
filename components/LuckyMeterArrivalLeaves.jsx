@@ -237,9 +237,10 @@ export default function LuckyMeterArrivalLeaves() {
     }
 
     setPhase('resting');
-    const liftTimer = window.setTimeout(() => {
+    const liftArrival = () => {
       if (!stopped) setPhase('lifting');
-    }, ARRIVAL_TIMING.restMs);
+    };
+    const liftTimer = window.setTimeout(liftArrival, ARRIVAL_TIMING.restMs);
 
     const stopVisibility = onVisibilityChange((visible) => {
       if (stopped) return;

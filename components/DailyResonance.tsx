@@ -299,7 +299,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   // Reduced motion is respected for the three spins, the landing flash, the
-  // cinematic stage and the quill; the result is presented calmly instead.
+  // cinematic stage and the sky writing; the result is presented calmly instead.
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -388,7 +388,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           setStageActive(true);
         }
       } else if (loaded.sparkCompleted !== true && !prefersReducedMotion()) {
-        // The cinematic finished but the quill did not: finish the writing
+        // The cinematic finished but the Spark writing did not: finish it
         // rather than skipping the finale or replaying the event.
         setSparkWriting(true);
       } else if (loaded.sparkCompleted !== true && prefersReducedMotion()) {
@@ -795,7 +795,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
       );
       auroraRef.current?.setPhase('settled', next.event.name);
-      // No cinematic and no quill run under reduced motion, so the reading is
+      // No cinematic and no Spark writing run under reduced motion, so the reading is
       // complete immediately and Home plus the countdown may show.
       eventCompletedRef.current = true;
       setEventCompleted(true);
@@ -883,7 +883,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   /**
    * The countdown lives beneath Home, not inside the result panels, and only
-   * after the quill has finished writing.
+   * after the Spark has finished writing.
    */
   const countdownBlock = (
     <div className="lucky-countdown lucky-countdown--dock" data-testid="lucky-meter-countdown">

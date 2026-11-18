@@ -38,7 +38,7 @@ export function emptyMeterState() {
     // resumes them instead of jumping straight to the cinematic.
     revealCompleted: false,
     // The sky has not finished writing the Spark. A refresh after the
-    // cinematic but before the quill finished resumes the writing instead of
+    // cinematic but before the sky finished writing resumes the writing instead of
     // skipping it or replaying the completed cinematic.
     sparkCompleted: false,
     stageDurationMs: 0,
@@ -153,7 +153,7 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
         (parsed.revealCompleted === undefined && eventCompleted));
     // Payloads from before the Spark-writing stage stored no field. A completed
     // legacy result keeps its finished message on screen; a new result always
-    // writes the field at Start, so an unfinished quill resumes correctly.
+    // writes the field at Start, so unfinished writing resumes correctly.
     const sparkCompleted =
       Boolean(result) &&
       (parsed.sparkCompleted === true ||

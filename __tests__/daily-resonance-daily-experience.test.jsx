@@ -107,12 +107,6 @@ function seedToday(overrides = {}, extra = {}) {
   return result;
 }
 
-async function finishQuill() {
-  act(() => {
-    vi.advanceTimersByTime(8000);
-  });
-}
-
 describe('Daily Resonance daily experience', () => {
   let originalRaf;
   let originalCancelRaf;
@@ -211,7 +205,7 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.getByText('Cosmic Lightning')).toBeInTheDocument();
     expect(screen.getByText(/not lottery predictions or promises of winning/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Share My Resonance/i })).toBeInTheDocument();
-    // The Spark area is reserved but the quill has not started.
+    // The Spark area is reserved but the Spark writing has not started.
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
     expect(screen.queryByTestId('lucky-spark-message')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
@@ -326,7 +320,7 @@ describe('Daily Resonance daily experience', () => {
     expect(readStored().sparkCompleted).toBe(true);
   });
 
-  it('resumes the quill after a refresh between the cinematic and the Spark writing', () => {
+  it('resumes the Spark writing after a refresh between the cinematic and the finale', () => {
     seedToday({}, { eventCompleted: true, sparkCompleted: false });
     render(<DailyResonance />);
 

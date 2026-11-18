@@ -104,6 +104,13 @@ its original 27 files. Two automation changes were kept because they are correct
 on their own: the accurate `reveal.js` settle-schedule comment and the missing
 `persistLifecycle` dependency in `handleReveal`.
 
+Two advisory review items were then resolved in code. The open DevSkim DS172411
+alert on the arrival lift timer was removed at its source by passing a named
+callback to `window.setTimeout` instead of an inline arrow, so no suppression and
+no CI tooling change is involved. Stale "quill" wording left behind by the
+removed component was updated in the files this PR already touches, and an unused
+test helper was deleted.
+
 ## Limitations
 
 - Audio was not listened to. The cue map is unchanged and the audio suites pass; the buildup's timing and late-arrival guard are covered by code review and DOM tests.

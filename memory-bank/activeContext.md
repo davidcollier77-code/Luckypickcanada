@@ -66,6 +66,10 @@ point of light. Selection, tiers, storage and the Milky Way stay frozen.
 - Re-verified after the correction: 47 focused tests passed and `tsc --noEmit`
   exited 0. The corrective commit carries no CI-skip directive, so every required
   workflow runs on the new head.
+- Two review items were then resolved in code: the DevSkim DS172411 alert was
+  removed at its source by passing a named callback to the lift timer (no
+  suppression and no CI tooling change), and stale "quill" wording left by the
+  removed component was updated in files this PR already touches.
 
 ## Limitations
 
