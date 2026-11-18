@@ -39,16 +39,20 @@ import {
   translationMat4,
 } from '../app/lib/gpu-math';
 
-const CAMERA_DISTANCE = 3.1;
+const CAMERA_DISTANCE = 3.0;
 const FIELD_OF_VIEW = (33 * Math.PI) / 180;
 /** Scale that makes the unit-radius coin fill the ring box without clipping. */
-const MEDALLION_SCALE = 0.855;
-const BASE_TILT_X = -0.135;
+const MEDALLION_SCALE = 0.86;
+// A slightly steeper resting tilt than a coin lying flat: the face is legible
+// while the raised bezel and the coin's edge still catch the key light.
+const BASE_TILT_X = -0.155;
 
+// Exposure is held back so the polished bevel highlights roll off instead of
+// clipping to white; the landing lifts the key light rather than the gain.
 const PHASE_PROFILES = {
-  idle: { exposure: 0.9, key: 0.95, sweep: 0.55 },
-  scrambling: { exposure: 1.0, key: 1.2, sweep: 1.0 },
-  landed: { exposure: 1.06, key: 1.32, sweep: 0.75 },
+  idle: { exposure: 0.86, key: 0.94, sweep: 0.5 },
+  scrambling: { exposure: 0.98, key: 1.18, sweep: 1.0 },
+  landed: { exposure: 1.03, key: 1.3, sweep: 0.75 },
 };
 
 /**
@@ -176,10 +180,12 @@ export function createLuckyMeterMedallionEngine({
   const normalMatrix = new Float32Array(9);
   const composed = new Float32Array(16);
   const camera = new Float32Array([0, 0, CAMERA_DISTANCE]);
-  const keyDir = new Float32Array([-0.36, 0.86, 0.54]);
+  // A high, raking key from the upper left carves the bevels, while the sky and
+  // ground bounce keep the enamel well from going pure black.
+  const keyDir = new Float32Array([-0.42, 0.78, 0.46]);
   const keyColor = new Float32Array([1.0, 0.95, 0.86]);
-  const skyColor = new Float32Array([0.2, 0.27, 0.4]);
-  const groundColor = new Float32Array([0.3, 0.18, 0.07]);
+  const skyColor = new Float32Array([0.22, 0.29, 0.44]);
+  const groundColor = new Float32Array([0.28, 0.17, 0.06]);
   const fogColor = new Float32Array([0.02, 0.03, 0.05]);
 
   function resize() {

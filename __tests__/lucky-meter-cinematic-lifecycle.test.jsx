@@ -7,7 +7,7 @@ import React from 'react';
 const countdown = vi.hoisted(() => ({
   state: {
     ready: true,
-    dateKey: '2026-11-14',
+    dateKey: '2026-11-18',
     formatted: '07:30:00',
     now: 0,
     deadlineMs: 0,
@@ -50,23 +50,24 @@ import DailyResonance from '../components/DailyResonance';
 import { EVENTS_BY_ID, METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import { appendResultToHistory, emptyMeterHistory, saveMeterState } from '../app/lib/lucky-meter/storage';
-import { REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
+import { EVENT_START_MS, REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
 
-const TODAY = '2026-11-14';
-const EVENT_START_MS =
-  REVEAL_TIMING.scrambleMs +
-  REVEAL_TIMING.numbersDelayMs +
-  REVEAL_TIMING.detailsDelayMs +
-  REVEAL_TIMING.eventDelayMs;
+const TODAY = '2026-11-18';
 
 function readStoredResult() {
   return JSON.parse(window.localStorage.getItem(METER_STORAGE_KEY) || '{}');
 }
 
-function seedToday({ completed = true } = {}) {
+function seedToday({ completed = true, sparkCompleted = true } = {}) {
   const result = createDailyResult({ dateKey: TODAY, random: () => 0.5 });
   const history = appendResultToHistory(emptyMeterHistory(), result);
-  saveMeterState({ result, history, eventCompleted: completed, stageDurationMs: 10_000 });
+  saveMeterState({
+    result,
+    history,
+    eventCompleted: completed,
+    sparkCompleted,
+    stageDurationMs: 10_000,
+  });
   return result;
 }
 
@@ -77,7 +78,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-11-14T12:00:00'));
+    vi.setSystemTime(new Date('2026-11-18T12:00:00'));
     window.localStorage.clear();
     countdown.state = {
       ready: true,
@@ -123,21 +124,22 @@ describe('Lucky Meter cinematic lifecycle', () => {
     // Nothing that could reveal or suggest today's reading.
     expect(screen.queryByText('53')).not.toBeInTheDocument();
     expect(screen.queryByText('Medium Resonance')).not.toBeInTheDocument();
-    expect(screen.queryByText(/Your Lucky Numbers/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Lucky Number/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
   });
 
-  it('hides Home from Start until the event and its sparks finish, then persists completion', () => {
+  it('hides Home from Start until the cinematic finishes, then persists completion', () => {
     render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
 
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
     expect(readStoredResult().eventCompleted).toBe(false);
+    expect(readStoredResult().revealCompleted).toBe(false);
 
-    // Landing: the ring carries the real percentage and tier, Home stays hidden.
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.scrambleMs);
+      vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
     });
     expect(screen.getByText('53')).toBeInTheDocument();
     expect(screen.getByText('Medium Resonance')).toBeInTheDocument();
@@ -145,23 +147,26 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.numbersDelayMs);
+      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs - REVEAL_TIMING.percentageSettleMs);
     });
-    expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed');
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.detailsDelayMs);
+      vi.advanceTimersByTime(REVEAL_TIMING.colourSettleMs - REVEAL_TIMING.numberSettleMs);
     });
     expect(screen.getByText('Cream')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.eventDelayMs);
+      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.colourSettleMs);
     });
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    // The motions are finished, so a refresh now resumes the cinematic.
+    expect(readStoredResult().revealCompleted).toBe(true);
+    expect(readStoredResult().eventCompleted).toBe(false);
 
     act(() => {
       stageControl.onComplete?.();
@@ -169,7 +174,10 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+    // The countdown still waits for the GoldenLeaf to finish writing.
+    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
     expect(readStoredResult().eventCompleted).toBe(true);
+    expect(readStoredResult().sparkCompleted).toBe(false);
   });
 
   it('keeps Home hidden and resumes the stored event after a refresh mid-cinematic', () => {
@@ -188,7 +196,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
     expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.getByTestId('cosmic-event-stage')).toHaveAttribute(
       'data-duration',
@@ -202,20 +210,64 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(readStoredResult().eventCompleted).toBe(true);
   });
 
-  it('shows Home immediately for a completed result restored after refresh', () => {
-    seedToday({ completed: true });
+  it('resumes the reveal motions after a refresh mid-reveal instead of skipping them', () => {
+    const first = render(<DailyResonance />);
+    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs);
+    });
+    const before = readStoredResult();
+    expect(before.revealCompleted).toBe(false);
+    expect(before.eventCompleted).toBe(false);
+    first.unmount();
+
+    render(<DailyResonance />);
+
+    // The motions replay on the stored values; the cinematic has not been
+    // reached and the reading cannot have been redrawn.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs);
+    });
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.numberSettleMs);
+    });
+    expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+
+    const after = readStoredResult();
+    expect(after.revealCompleted).toBe(true);
+    expect(after.result).toEqual(before.result);
+    expect(after.history).toEqual(before.history);
+  });
+
+  it('shows Home and the countdown immediately for a fully completed restored result', () => {
+    seedToday({ completed: true, sparkCompleted: true });
     render(<DailyResonance />);
 
     expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'written');
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
   });
 
   it('replaces an out-of-window stored duration so the finale is never truncated', () => {
     const result = createDailyResult({ dateKey: TODAY, random: () => 0.5 });
     const history = appendResultToHistory(emptyMeterHistory(), result);
-    saveMeterState({ result, history, eventCompleted: false, stageDurationMs: 2000 });
+    saveMeterState({
+      result,
+      history,
+      eventCompleted: false,
+      revealCompleted: true,
+      sparkCompleted: false,
+      stageDurationMs: 2000,
+    });
 
     render(<DailyResonance />);
 
@@ -229,17 +281,31 @@ describe('Lucky Meter cinematic lifecycle', () => {
   });
 
   it('treats an old payload without lifecycle fields as unfinished and resumes safely', () => {
-    const result = seedToday({ completed: true });
+    const result = seedToday({ completed: true, sparkCompleted: true });
     const payload = JSON.parse(window.localStorage.getItem(METER_STORAGE_KEY));
     delete payload.eventCompleted;
+    delete payload.sparkCompleted;
     delete payload.stageDurationMs;
     window.localStorage.setItem(METER_STORAGE_KEY, JSON.stringify(payload));
 
     render(<DailyResonance />);
 
-    expect(screen.getByText(String(result.percentage))).toBeInTheDocument();
+    // Without the newer fields the reveal is treated as unfinished, so the
+    // motions play on the stored values before the stored cinematic resumes.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
+    });
+    expect(screen.getByText(String(result.percentage))).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.percentageSettleMs);
+    });
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+    expect(readStoredResult().revealCompleted).toBe(true);
   });
 
   it('completes calmly under reduced motion without mounting the stage', () => {
@@ -255,10 +321,13 @@ describe('Lucky Meter cinematic lifecycle', () => {
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
 
     expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByText('Your Lucky Numbers')).toBeInTheDocument();
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(readStoredResult().eventCompleted).toBe(true);
+    expect(readStoredResult().sparkCompleted).toBe(true);
   });
 
   it('returns to the welcome state with Home available after local midnight', () => {
@@ -274,7 +343,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     countdown.state = {
       ...countdown.state,
-      dateKey: '2026-11-15',
+      dateKey: '2026-11-19',
       formatted: '23:59:59',
     };
     act(() => {
@@ -284,7 +353,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'idle');
-    expect(screen.queryByText('Your Lucky Numbers')).not.toBeInTheDocument();
+    expect(screen.queryByText('Lucky Number')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
   });
 
   it('never renders Home in the compact widget', () => {
@@ -309,5 +380,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     // No filter, blend or transform is applied to the artwork wrapper.
     const pictureBlock = source.slice(source.indexOf('<picture'), source.indexOf('</picture>'));
     expect(pictureBlock).not.toMatch(/filter:|mix-blend|opacity-|brightness|saturate|contrast/);
+    // No new artwork or engine was introduced for the medallion.
+    expect(source).not.toMatch(/webgpu|WebGPU/);
   });
 });

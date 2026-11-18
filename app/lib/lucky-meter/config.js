@@ -14,27 +14,33 @@ export const METER_STORAGE_VERSION = 1;
 export const PERCENTAGE_MIN = 5;
 export const PERCENTAGE_MAX = 100;
 
-/** How many previous values are remembered and avoided. */
+/**
+ * Each independent choice remembers exactly one previous value: the value in
+ * the most recent saved result. Anything older is eligible again the next day.
+ */
 export const HISTORY_LIMITS = {
-  percentages: 3,
-  events: 6,
-  sparks: 8,
+  percentages: 1,
+  numbers: 1,
+  colours: 1,
+  sparks: 1,
 };
+
+/** The Lucky Number is drawn uniformly from this inclusive range. */
+export const LUCKY_NUMBER_MIN = 1;
+export const LUCKY_NUMBER_MAX = 50;
 
 /**
  * Tier definitions. The percentage alone decides the tier, and the tier alone
- * decides the reveal event and its number set. Nothing else chooses a tier or
- * an event, so the dial's stopping position, the displayed percentage, the
- * event and the numbers can never disagree.
+ * decides the reveal event. Nothing else chooses a tier or an event, so the
+ * dial's stopping position, the displayed percentage and the event can never
+ * disagree.
  *
  * The boundaries are exact: 5–30 Low (Meteor Shower), 31–65 Medium (Cosmic
- * Lightning) and 66–100 High (Fireworks).
+ * Lightning) and 66–100 High (Fireworks). Different percentages inside the same
+ * tier are valid, so the same event may run on consecutive days.
  *
- * Lucky Numbers belong to the tier, never to the visual event. The three
- * approved triplets are preserved exactly as first specified (3/9/21,
- * 11/22/33, 7/8/77). They are keyed to Low, Medium and High in the order the
- * specification recorded them, and are never randomised, never 13 and never
- * duplicated.
+ * Tiers carry no numbers: the Lucky Number is an independent 1–50 draw and is
+ * never derived from the percentage or the tier.
  */
 export const TIERS = [
   {
@@ -44,7 +50,6 @@ export const TIERS = [
     max: 30,
     message: "You're riding a little low today, but you're still okay!",
     eventId: 'meteor',
-    numbers: [3, 9, 21],
   },
   {
     id: 'medium',
@@ -53,7 +58,6 @@ export const TIERS = [
     max: 65,
     message: 'Your luck is in the mid-range today.',
     eventId: 'lightning',
-    numbers: [11, 22, 33],
   },
   {
     id: 'high',
@@ -62,7 +66,6 @@ export const TIERS = [
     max: PERCENTAGE_MAX,
     message: "Your luck is running high today!",
     eventId: 'fireworks',
-    numbers: [7, 8, 77],
   },
 ];
 
@@ -70,7 +73,7 @@ export const TIERS_BY_ID = new Map(TIERS.map((tier) => [tier.id, tier]));
 
 /**
  * Event presentation and timing. Events carry no selection weight and no
- * numbers: the percentage-derived tier owns both the event and the numbers.
+ * numbers: the percentage-derived tier owns the event.
  */
 export const EVENTS = [
   {
@@ -116,14 +119,10 @@ export const COLOURS = [
 
 export const COLOURS_BY_ID = new Map(COLOURS.map((colour) => [colour.id, colour]));
 
-/** The tier's fixed numbers, copied so a consumer can never mutate the definition. */
-export function getTierNumbers(tierId) {
-  const tier = TIERS_BY_ID.get(tierId);
-  return tier ? [...tier.numbers] : [];
-}
-
-/** Shown wherever Lucky Numbers appear. */
-export const LUCKY_NUMBERS_LABEL = 'Your Lucky Numbers';
+/** Shown wherever the single daily Lucky Number appears. */
+export const LUCKY_NUMBER_LABEL = 'Lucky Number';
+/** Shown wherever the independently selected Lucky Colour appears. */
+export const LUCKY_COLOUR_LABEL = 'Lucky Colour';
 export const ENTERTAINMENT_DISCLAIMER =
   'For entertainment only — not lottery predictions or promises of winning.';
 

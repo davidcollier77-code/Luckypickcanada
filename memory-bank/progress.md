@@ -1,3 +1,38 @@
+## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
+- Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage
+  range/weighting and only-newest exclusion, uniform 1–50 number and 12-colour palette with older values
+  eligible, unchanged thirty Sparks, start-together/staggered settles, Spark after the cinematic, countdown
+  only after the writing, one-shot Lucky Number migration, reduced motion, WebGL fallback, and the untouched
+  Milky Way, midnight, audio and sharing paths.
+- Found one real violation: a refresh during the ~1.5 s reveal skipped the three motions and jumped to the
+  cinematic, because the payload recorded no reveal stage. Added `revealCompleted` to the same version 1
+  payload, inferred it for legacy payloads from the cinematic, and extracted `animateReveal` so Start and the
+  load path share one motion runner that draws nothing.
+- Strengthened the browser coverage with a `MutationObserver` reveal timeline (all three motions moving in the
+  same window, strict settle order, total inside ~1.5 s, cinematic after the colour ring), a deterministic
+  pointer/ring value check read modulo a whole turn, and a stored mid-reveal resume test that compares the
+  stored result and history before and after.
+- Final state: 90 vitest files / 935 tests, 69 Playwright passes across desktop plus 390/412 px, 345 MiB build,
+  and `./freebuff-verify.sh` green.
+
+## 2026-11-18 — Premium Daily Resonance: medallion, independent reveals, Spark finale
+- Split the reading into four independent draws: percentage (range, weighting and tiers frozen), a uniform 1–50
+  Lucky Number, a uniform colour from the twelve approved HEX values, and a Spark from the unchanged thirty.
+  Each remembers exactly one previous value, so older choices return the next day and only the newest saved
+  result is excluded. Number triplets and their tier coupling are gone, including from sharing.
+- One requestAnimationFrame clock now runs all three spins from the same start and settles percentage at
+  620 ms, number at 940 ms and colour at 1240 ms before the percentage-selected cinematic at 1540 ms. After
+  the cinematic the Crystal Ball GoldenLeaf rises into a reserved panel above the medallion and types the Spark
+  like a quill; the message stays visible and the Home countdown appears only once it finishes.
+- Migration is one-shot and non-destructive: a stored result keeps its percentage, colour and Spark, gains a
+  single persisted Lucky Number, and reloads unchanged. A completed cinematic never replays, and an interrupted
+  Spark resumes its writing without it. `sparkCompleted` lives in the same version 1 localStorage payload.
+- Rebuilt the responsive layout around the finale: Spark panel first, medallion below it, then three result
+  cards, disclaimer and sharing, with the mobile view top-aligned so Home and its countdown never overlap.
+- Deepened the medallion profile and lighting (17 rings, 0.26 z range, shadow groove, raised bezel, enamel dome,
+  finer milling, raking key light, grounded contact shadow) and gave the number its own outer bezel dial and the
+  colour a thin segmented ring. Both are display-only and never feed selection.
+
 ## 2026-11-17 — Exact-span DevSkim suppression for CI loopback tokens
 - Added a DS162092-only suppression family for the changed-line reviewer and its test: a two-file allowlist,
   exact 16-space/8-space line patterns, the preceding `if host.casefold() not in {` requirement, and a

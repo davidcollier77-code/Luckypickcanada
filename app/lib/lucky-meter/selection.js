@@ -1,15 +1,18 @@
 /**
  * Daily selections for the Lucky Meter.
  *
- * The percentage is generated first and is the single source of truth for the
- * reveal: it decides the tier, the tier decides the event and the number set,
- * and the dial is animated to that same percentage. Colour and Little Spark
- * remain independent choices.
+ * Four independent, uniformly weighted choices are made for each local day:
+ * the percentage, the Lucky Number, the Lucky Colour and the Little Spark.
  *
- * Repeat protection is preserved without breaking that mapping. Three days in a
- * row must not repeat an event, and because the event follows from the tier,
- * the third draw avoids the whole tier band that would repeat it. Percentages
- * from the last three days are still avoided too.
+ * The percentage is the single source of truth for the reveal: it decides the
+ * tier and the tier decides the event. Every other choice is independent, so a
+ * colour, number or Spark never influences the percentage and the dial /
+ * colour ring never select anything.
+ *
+ * Repeat protection is deliberately minimal. Each choice excludes only the
+ * value in the most recent saved result; anything older is eligible again the
+ * next day. Because the event follows from the percentage, the same event may
+ * run on consecutive days (different percentages in the same tier are valid).
  *
  * Every selector accepts an injectable random function so the distributions and
  * guards can be tested deterministically.
@@ -18,7 +21,8 @@ import {
   COLOURS,
   COLOURS_BY_ID,
   EVENTS_BY_ID,
-  HISTORY_LIMITS,
+  LUCKY_NUMBER_MAX,
+  LUCKY_NUMBER_MIN,
   PERCENTAGE_MAX,
   PERCENTAGE_MIN,
   TIERS,
@@ -61,61 +65,90 @@ export function getEventIdForTier(tierId) {
 }
 
 /**
- * Draws an integer percentage in [5, 100], never 0, avoiding the last three
- * persisted values and — when supplied — any value whose tier would repeat a
- * blocked event.
+ * Reads the single most recent entry of a history list.
+ *
+ * History is always newest-first, and "most recent" means the newest stored
+ * result only — skipped days change nothing about which value that is.
+ */
+function mostRecentEntry(history) {
+  if (!Array.isArray(history) || history.length === 0) return null;
+  return history[0];
+}
+
+/**
+ * Draws an integer percentage in [5, 100], never 0, avoiding only the single
+ * most recent saved percentage. The draw is uniform across the remaining 95
+ * values, so the original range, distribution and weighting are preserved.
  *
  * @param {number[]} [recentPercentages] Last known results, newest first.
  * @param {() => number} [random] Injectable random source.
- * @param {string | null} [blockedEventId] Event the next draw must not produce.
  * @returns {number} Percentage inside the generated range.
  */
-export function pickPercentage(
-  recentPercentages = [],
-  random = Math.random,
-  blockedEventId = null,
-) {
-  const avoid = new Set(
-    (Array.isArray(recentPercentages) ? recentPercentages : [])
-      .map((value) => Number(value))
-      .filter((value) => Number.isInteger(value))
-      .slice(0, HISTORY_LIMITS.percentages),
-  );
+export function pickPercentage(recentPercentages = [], random = Math.random) {
+  const newest = mostRecentEntry(recentPercentages);
+  const avoid = Number.isInteger(Number(newest)) ? Number(newest) : null;
 
   const candidates = [];
   for (let value = PERCENTAGE_MIN; value <= PERCENTAGE_MAX; value += 1) {
-    if (avoid.has(value)) continue;
-    if (blockedEventId && getEventForPercentage(value)?.id === blockedEventId) continue;
+    if (value === avoid) continue;
     candidates.push(value);
   }
 
-  if (candidates.length > 0) {
-    return candidates[randomIndex(candidates.length, random)];
-  }
-
-  // Defensive only: 96 values exist and at most three percentages plus one
-  // event band are excluded, so an empty pool cannot occur in practice.
-  const span = PERCENTAGE_MAX - PERCENTAGE_MIN + 1;
-  const offset = randomIndex(span, random);
-  for (let step = 0; step < span; step += 1) {
-    const value = PERCENTAGE_MIN + ((offset + step) % span);
-    if (!avoid.has(value)) return value;
-  }
-  return PERCENTAGE_MIN;
+  // 95 values remain when one is excluded, so this cannot fall through in
+  // practice; the guard keeps a malformed history from returning undefined.
+  return candidates.length > 0
+    ? candidates[randomIndex(candidates.length, random)]
+    : PERCENTAGE_MIN;
 }
 
-/** Equal-probability colour selection from the twelve approved colours. */
-export function pickColour(random = Math.random) {
-  return COLOURS[randomIndex(COLOURS.length, random)];
+/**
+ * Draws the single Lucky Number uniformly from 1–50, excluding only the number
+ * in the most recent saved result.
+ *
+ * @param {number[]} [recentNumbers] Last known numbers, newest first.
+ * @param {() => number} [random] Injectable random source.
+ * @returns {number} Integer inside the Lucky Number range.
+ */
+export function pickLuckyNumber(recentNumbers = [], random = Math.random) {
+  const newest = mostRecentEntry(recentNumbers);
+  const candidate = Number(newest);
+  const avoid =
+    Number.isInteger(candidate) && candidate >= LUCKY_NUMBER_MIN && candidate <= LUCKY_NUMBER_MAX
+      ? candidate
+      : null;
+
+  const pool = [];
+  for (let value = LUCKY_NUMBER_MIN; value <= LUCKY_NUMBER_MAX; value += 1) {
+    if (value === avoid) continue;
+    pool.push(value);
+  }
+  return pool.length > 0 ? pool[randomIndex(pool.length, random)] : LUCKY_NUMBER_MIN;
 }
 
-/** Selects a Spark while avoiding the recently used ids. */
+/**
+ * Equal-probability colour selection from the twelve approved colours,
+ * excluding only the colour id in the most recent saved result.
+ *
+ * @param {string[]} [recentColours] Last known colour ids, newest first.
+ * @param {() => number} [random] Injectable random source.
+ * @returns {{ id: string, name: string, hex: string, light?: boolean }}
+ */
+export function pickColour(recentColours = [], random = Math.random) {
+  const newest = mostRecentEntry(recentColours);
+  const avoid = typeof newest === 'string' && COLOURS_BY_ID.has(newest) ? newest : null;
+  const pool = avoid ? COLOURS.filter((colour) => colour.id !== avoid) : COLOURS;
+  return pool[randomIndex(pool.length, random)];
+}
+
+/**
+ * Selects a Spark uniformly from the thirty messages, excluding only the Spark
+ * in the most recent saved result. The full list is kept as a defensive
+ * fallback so a corrupt history can never leave nothing to show.
+ */
 export function pickSpark(sparkHistory = [], random = Math.random) {
-  const recent = new Set(
-    (Array.isArray(sparkHistory) ? sparkHistory : []).filter((id) => SPARKS_BY_ID.has(id)),
-  );
-  const fresh = LITTLE_SPARKS.filter((spark) => !recent.has(spark.id));
-  const pool = fresh.length > 0 ? fresh : LITTLE_SPARKS;
+  const newest = mostRecentEntry(sparkHistory);
+  const avoid = typeof newest === 'string' && SPARKS_BY_ID.has(newest) ? newest : null;
+  const pool = avoid ? LITTLE_SPARKS.filter((spark) => spark.id !== avoid) : LITTLE_SPARKS;
   return pool[randomIndex(pool.length, random)];
 }
 
@@ -123,9 +156,9 @@ export function pickSpark(sparkHistory = [], random = Math.random) {
  * Builds the complete, self-contained daily result that is persisted and later
  * re-rendered without any further random choices.
  *
- * The percentage is drawn first; the tier, event and numbers are all read from
- * it. The only repeat guard that influences the draw is the three-day event
- * guard, which is expressed as "do not draw this event's tier band".
+ * The percentage is drawn first; the tier and event are read from it. The Lucky
+ * Number, colour and Spark are drawn independently from the same random source,
+ * each excluding only its own most recent previous value.
  *
  * @param {{ dateKey: string, history?: object, random?: () => number }} options
  * @returns {object} Complete daily result.
@@ -135,17 +168,11 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
     throw new TypeError('createDailyResult requires a local date key');
   }
 
-  const recentEvents = (Array.isArray(history.events) ? history.events : []).filter((id) =>
-    EVENTS_BY_ID.has(id),
-  );
-  // Two identical events in a row would make a third a three-peat.
-  const blockedEventId =
-    recentEvents.length >= 2 && recentEvents[0] === recentEvents[1] ? recentEvents[0] : null;
-
-  const percentage = pickPercentage(history.percentages, random, blockedEventId);
+  const percentage = pickPercentage(history.percentages, random);
   const tier = getTierForPercentage(percentage);
   const event = getEventForPercentage(percentage);
-  const colour = pickColour(random);
+  const luckyNumber = pickLuckyNumber(history.numbers, random);
+  const colour = pickColour(history.colours, random);
   const spark = pickSpark(history.sparks, random);
 
   return {
@@ -155,9 +182,9 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
       id: tier.id,
       label: tier.label,
       message: tier.message,
-      numbers: [...tier.numbers],
     },
     event: { id: event.id, name: event.name },
+    luckyNumber,
     colour: {
       id: colour.id,
       name: colour.name,
@@ -173,16 +200,34 @@ function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** True when a stored result already carries a usable Lucky Number. */
+export function hasValidLuckyNumber(value) {
+  if (!isPlainObject(value)) return false;
+  const number = value.luckyNumber;
+  return (
+    Number.isInteger(number) && number >= LUCKY_NUMBER_MIN && number <= LUCKY_NUMBER_MAX
+  );
+}
+
 /**
  * Validates a persisted result against the current definitions.
  *
- * The percentage is the authority: the tier, event and numbers are recomputed
- * from it, so a result saved under the old independent event weighting (or an
- * old tier band) keeps its percentage, colour, Spark and date while its reveal
- * is normalised to the event that percentage now means. Only genuinely invalid
- * data returns null.
+ * The percentage is the authority for the reveal: the tier and event are
+ * recomputed from it, so a result saved under an older tier band keeps its
+ * percentage, colour, Spark, Lucky Number and date while its reveal is
+ * normalised to the event that percentage now means.
+ *
+ * Migration never rerolls a saved percentage, colour or Spark. A result saved
+ * before the Lucky Number existed is given exactly one independent draw; the
+ * caller persists it so a refresh cannot roll a different number. Only
+ * genuinely invalid data returns null.
+ *
+ * @param {object} value Stored result payload.
+ * @param {string} [expectedDateKey] Local date key the result must belong to.
+ * @param {() => number} [random] Injectable random source for the one migration draw.
+ * @returns {object | null}
  */
-export function validateDailyResult(value, expectedDateKey) {
+export function validateDailyResult(value, expectedDateKey, random = Math.random) {
   if (!isPlainObject(value)) return null;
 
   const { dateKey, percentage } = value;
@@ -202,6 +247,10 @@ export function validateDailyResult(value, expectedDateKey) {
   const spark = SPARKS_BY_ID.get(value.spark?.id);
   if (!spark) return null;
 
+  const luckyNumber = hasValidLuckyNumber(value)
+    ? value.luckyNumber
+    : pickLuckyNumber([], random);
+
   return {
     dateKey,
     percentage,
@@ -209,9 +258,9 @@ export function validateDailyResult(value, expectedDateKey) {
       id: tier.id,
       label: tier.label,
       message: tier.message,
-      numbers: [...tier.numbers],
     },
     event: { id: event.id, name: event.name },
+    luckyNumber,
     colour: {
       id: colour.id,
       name: colour.name,
@@ -219,8 +268,8 @@ export function validateDailyResult(value, expectedDateKey) {
       light: colour.light === true,
     },
     spark: { id: spark.id, message: spark.message },
-    // A saved date, colour and Spark are preserved; only the derived reveal is
-    // normalised, so storage is never cleared or rolled again.
+    // A saved date, colour, Spark and number are preserved; only the derived
+    // reveal is normalised, so storage is never cleared or rolled again.
     createdAt: Number.isFinite(value.createdAt) ? value.createdAt : 0,
   };
 }

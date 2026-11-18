@@ -2,33 +2,68 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createLuckyMeterMedallionEngine } from './lucky-meter-medallion-engine';
+import { COLOURS, LUCKY_NUMBER_MAX, LUCKY_NUMBER_MIN } from '../app/lib/lucky-meter/config';
+import {
+  DEGREES_PER_COLOUR,
+  NUMBER_STEPS,
+  getColourIndex,
+} from '../app/lib/lucky-meter/reveal';
+
+const COLOUR_GAP_DEGREES = 3;
+
+/** Point on a circle where 0° is 12 o'clock and angles run clockwise. */
+function polar(radius, degrees) {
+  const radians = (degrees * Math.PI) / 180;
+  return {
+    x: 50 + radius * Math.sin(radians),
+    y: 50 - radius * Math.cos(radians),
+  };
+}
+
+function arcPath(radius, startDegrees, endDegrees) {
+  const start = polar(radius, startDegrees);
+  const end = polar(radius, endDegrees);
+  const largeArc = endDegrees - startDegrees > 180 ? 1 : 0;
+  return `M ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x.toFixed(3)} ${end.y.toFixed(3)}`;
+}
 
 /**
  * The Lucky Meter's circular centrepiece.
  *
  * The meter is always mounted, in every state, so it never appears only after
  * Start. Its centre is supplied by DailyResonance: a neutral void before the
- * reveal, the scrambling preview during the 4.5 seconds, and the landed
- * percentage plus tier afterwards.
+ * reveal, the scrambling preview during the spin, and the landed percentage
+ * plus tier afterwards.
  *
  * The disc itself is drawn as lit three-dimensional geometry by a small WebGL
  * renderer. Until that renderer has produced a frame — and permanently on a
  * browser without WebGL — the static metallic fallback below it is shown
- * instead, so the meter is never a blank hole. The leaf ornaments that used to
- * crown the ring are now part of the scene as dimensional gold ornaments; the
- * static pair is kept only inside the fallback so that path looks unchanged.
+ * instead, so the meter is never a blank hole.
+ *
+ * Two other dials read the independent choices that were already made:
+ *
+ * - The outer bezel carries one tick per Lucky Number (1–50) and its own small
+ *   pointer. The pointer spins and lands on the number's sector; it never
+ *   represents the percentage.
+ * - A thin segmented inner ring inside the gold bezel carries the twelve
+ *   approved Lucky Colours. The ring spins as one piece and settles with the
+ *   already-selected colour under its marker, so it displays the choice without
+ *   ever making one, and it sits outside the copy well so the percentage stays
+ *   fully legible.
  *
  * All decorative layers are hidden from assistive technology; the centre
  * content is regular DOM text, not canvas pixels.
- *
- * The `dialAngle` is the pointer's absolute rotation in degrees. DailyResonance
- * animates it from the generated spin to the exact angle for the result, so the
- * pointer's resting position is the displayed percentage.
  *
  * @param {{
  *   phase?: 'idle' | 'scrambling' | 'landed',
  *   compact?: boolean,
  *   dialAngle?: number | null,
+ *   numberAngle?: number | null,
+ *   number?: number | null,
+ *   numberSettled?: boolean,
+ *   colourRotation?: number | null,
+ *   colourId?: string | null,
+ *   colourSettled?: boolean,
  *   children?: React.ReactNode,
  *   className?: string,
  * }} props
@@ -37,6 +72,12 @@ export default function LuckyMeterRing({
   phase = 'idle',
   compact = false,
   dialAngle = null,
+  numberAngle = null,
+  number = null,
+  numberSettled = false,
+  colourRotation = null,
+  colourId = null,
+  colourSettled = false,
   children,
   className = '',
 }) {
@@ -70,16 +111,31 @@ export default function LuckyMeterRing({
 
   const showFallback = renderMode !== 'gpu';
 
+  const hasDialAngle = typeof dialAngle === 'number' && Number.isFinite(dialAngle);
+  const hasNumberAngle = typeof numberAngle === 'number' && Number.isFinite(numberAngle);
+  const hasColourRotation =
+    typeof colourRotation === 'number' && Number.isFinite(colourRotation);
+  const shownNumber =
+    Number.isInteger(number) && number >= LUCKY_NUMBER_MIN && number <= LUCKY_NUMBER_MAX
+      ? number
+      : null;
+  const selectedColourIndex = colourId ? getColourIndex(colourId) : -1;
+
+  // Badge position follows the pointer so the value it reads is at the pointer.
+  const badge = hasNumberAngle ? polar(39.4, numberAngle) : null;
+
   return (
     <div
       data-testid="lucky-meter-ring"
       data-phase={phase}
       data-medallion={renderMode}
-      data-dial-angle={
-        typeof dialAngle === 'number' && Number.isFinite(dialAngle)
-          ? dialAngle.toFixed(2)
-          : undefined
-      }
+      data-dial-angle={hasDialAngle ? dialAngle.toFixed(2) : undefined}
+      data-number-angle={hasNumberAngle ? numberAngle.toFixed(2) : undefined}
+      data-number={shownNumber ?? undefined}
+      data-number-settled={numberSettled ? 'true' : 'false'}
+      data-colour-angle={hasColourRotation ? colourRotation.toFixed(2) : undefined}
+      data-colour-id={colourId ?? undefined}
+      data-colour-settled={colourSettled ? 'true' : 'false'}
       className={`resonance-ring relative isolate aspect-square shrink-0 ${
         compact ? 'w-[min(52vw,150px)]' : ''
       } ${className}`}
@@ -90,14 +146,22 @@ export default function LuckyMeterRing({
               // The lower bound keeps the percentage, tier and its message fully
               // inside the inner disc on short landscape viewports instead of
               // clipping them; the upper bound stops the meter dominating the sky.
-              width: 'clamp(18rem, min(76vw, 36vh), 23rem)',
-              height: 'clamp(18rem, min(76vw, 36vh), 23rem)',
+              width: 'clamp(17rem, min(70vw, 34vh), 23rem)',
+              height: 'clamp(17rem, min(70vw, 34vh), 23rem)',
             }
       }
     >
       {/* Warm bloom around the object. It sits behind the medallion so the gold
           reads as though it is casting light into the sky. */}
       <div aria-hidden="true" className="resonance-ring-halo absolute -inset-8 rounded-full" />
+
+      {/* Contact shadow. The disc is a raised object above the scene, so it
+          needs a grounded shadow beneath it rather than a halo alone. */}
+      <div
+        aria-hidden="true"
+        data-testid="lucky-meter-contact-shadow"
+        className="resonance-medallion-contact absolute -bottom-[5%] left-1/2 h-[10%] w-[72%] -translate-x-1/2 rounded-[50%]"
+      />
 
       {showFallback && (
         <div aria-hidden="true" className="resonance-medallion-fallback absolute inset-0">
@@ -143,9 +207,129 @@ export default function LuckyMeterRing({
         }`}
       />
 
-      {/* Pointer. It rides the milled rim and stops on the result's exact angle;
-          it is decorative because the percentage is real DOM text. */}
-      {typeof dialAngle === 'number' && Number.isFinite(dialAngle) && (
+      {/* Segmented Lucky Colour ring: a thin band of the twelve approved colours
+          on the raised inner bezel. It is display only — the colour was chosen
+          before any animation began. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 100 100"
+        data-testid="lucky-meter-colour-ring"
+        className="pointer-events-none absolute inset-0 z-[14] h-full w-full"
+      >
+        <g
+          style={{
+            transform: hasColourRotation ? `rotate(${colourRotation}deg)` : 'rotate(0deg)',
+            transformOrigin: '50px 50px',
+            willChange: phase === 'scrambling' ? 'transform' : 'auto',
+          }}
+        >
+          {COLOURS.map((colour, index) => {
+            const centre = index * DEGREES_PER_COLOUR;
+            const isSelected = colourSettled && index === selectedColourIndex;
+            return (
+              <path
+                key={colour.id}
+                data-testid={`lucky-meter-colour-segment-${colour.id}`}
+                d={arcPath(
+                  38.7,
+                  centre - DEGREES_PER_COLOUR / 2 + COLOUR_GAP_DEGREES / 2,
+                  centre + DEGREES_PER_COLOUR / 2 - COLOUR_GAP_DEGREES / 2,
+                )}
+                fill="none"
+                stroke={colour.hex}
+                strokeWidth={isSelected ? 2.6 : 1.9}
+                strokeLinecap="round"
+                opacity={isSelected ? 1 : 0.52}
+                style={
+                  isSelected
+                    ? { filter: `drop-shadow(0 0 2.4px ${colour.hex})` }
+                    : undefined
+                }
+              />
+            );
+          })}
+        </g>
+        {/* Fixed marker for the settled colour. */}
+        <polygon
+          points="50,34.4 48.4,36.8 51.6,36.8"
+          fill="rgba(255, 228, 166, 0.85)"
+          opacity={colourSettled ? 0.95 : 0.4}
+        />
+      </svg>
+
+      {/* Lucky Number bezel: one tick per number, a labelled scale every fifth
+          number, and a pointer that lands on the sector it already selected. */}
+      <div
+        aria-hidden="true"
+        data-testid="lucky-meter-number-dial"
+        className="pointer-events-none absolute -inset-[9%] z-[17]"
+      >
+        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
+          <g>
+            {Array.from({ length: NUMBER_STEPS }, (_, index) => {
+              const angle = (index * 360) / NUMBER_STEPS + 360 / NUMBER_STEPS / 2;
+              const major = (LUCKY_NUMBER_MIN + index) % 5 === 0;
+              return (
+                <line
+                  key={`tick-${index}`}
+                  x1="50"
+                  y1={major ? 4.4 : 4.9}
+                  x2="50"
+                  y2={major ? 7.2 : 6.4}
+                  transform={`rotate(${angle} 50 50)`}
+                  stroke="rgba(255, 219, 150, 0.3)"
+                  strokeWidth={major ? 0.5 : 0.28}
+                  strokeLinecap="round"
+                />
+              );
+            })}
+          </g>
+          {hasNumberAngle && (
+            <g style={{ transform: `rotate(${numberAngle}deg)`, transformOrigin: '50px 50px' }}>
+              <polygon
+                points="50,2.6 47.4,8.4 52.6,8.4"
+                fill="url(#lucky-number-pointer)"
+                stroke="rgba(58, 39, 12, 0.55)"
+                strokeWidth="0.35"
+              />
+              <defs>
+                <linearGradient id="lucky-number-pointer" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fff6da" />
+                  <stop offset="55%" stopColor="#f0c56a" />
+                  <stop offset="100%" stopColor="#a4721c" />
+                </linearGradient>
+              </defs>
+            </g>
+          )}
+          {badge && shownNumber !== null && (
+            <g data-testid="lucky-meter-number-badge">
+              <circle
+                cx={badge.x}
+                cy={badge.y}
+                r="4.5"
+                fill="rgba(6, 10, 14, 0.88)"
+                stroke={numberSettled ? 'rgba(255, 226, 160, 0.95)' : 'rgba(255, 219, 150, 0.5)'}
+                strokeWidth="0.55"
+              />
+              <text
+                x={badge.x}
+                y={badge.y + 1.5}
+                textAnchor="middle"
+                fontSize="4.3"
+                fontWeight="700"
+                fill="#ffe7b0"
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {shownNumber}
+              </text>
+            </g>
+          )}
+        </svg>
+      </div>
+
+      {/* Percentage pointer. It rides the milled rim and stops on the result's
+          exact angle; it is decorative because the percentage is real DOM text. */}
+      {hasDialAngle && (
         <div
           aria-hidden="true"
           data-testid="lucky-meter-dial"

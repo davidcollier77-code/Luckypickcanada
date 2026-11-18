@@ -5,19 +5,29 @@
  * user action, so it never falls through to the clipboard. The clipboard is
  * used only when native sharing is unavailable or actually fails.
  */
-import { ENTERTAINMENT_DISCLAIMER, SHARE_TITLE, SHARE_URL } from './config';
+import {
+  ENTERTAINMENT_DISCLAIMER,
+  LUCKY_COLOUR_LABEL,
+  LUCKY_NUMBER_LABEL,
+  SHARE_TITLE,
+  SHARE_URL,
+} from './config';
 
 export function buildShareText(result) {
   if (!result) return '';
-  // The numbers belong to the tier, so they read the same whichever event ran.
-  const numbers = result.tier?.numbers?.join(', ') || '';
+  // The Lucky Number is independent of the percentage, so it always reads as
+  // one number rather than a set.
+  const number = Number.isInteger(result.luckyNumber) ? `${result.luckyNumber}` : '';
   const spark = result.spark?.message ? `“${result.spark.message}”` : '';
+  const colour = result.colour?.name
+    ? `${result.colour.name} (${result.colour.hex || ''})`
+    : '';
 
   return [
     `My Daily Resonance is ${result.percentage}% — ${result.tier?.label || ''}.`,
     `Today's event: ${result.event?.name || ''}`,
-    `Your Lucky Numbers: ${numbers}`,
-    `Colour: ${result.colour?.name || ''} (${result.colour?.hex || ''})`,
+    number ? `${LUCKY_NUMBER_LABEL}: ${number}` : '',
+    colour ? `${LUCKY_COLOUR_LABEL}: ${colour}` : '',
     spark ? `Little Spark: ${spark}` : '',
     `Discover yours at ${SHARE_URL}`,
     ENTERTAINMENT_DISCLAIMER,
@@ -54,7 +64,7 @@ export async function shareDailyResult(result, options = {}) {
         // The visitor closed the share sheet. Copying here would be surprising.
         return { method: 'native', status: 'cancelled' };
       }
-      // A real failure (for example a missing share target) may fall back.
+      // A real failure (for example a missing share target) falls back.
     }
   }
 

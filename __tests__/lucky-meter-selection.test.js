@@ -3,7 +3,10 @@ import {
   COLOURS,
   ENTERTAINMENT_DISCLAIMER,
   EVENTS,
-  LUCKY_NUMBERS_LABEL,
+  LUCKY_COLOUR_LABEL,
+  LUCKY_NUMBER_LABEL,
+  LUCKY_NUMBER_MAX,
+  LUCKY_NUMBER_MIN,
   PERCENTAGE_MAX,
   PERCENTAGE_MIN,
   TIERS,
@@ -14,7 +17,9 @@ import {
   getEventForPercentage,
   getEventIdForTier,
   getTierForPercentage,
+  hasValidLuckyNumber,
   pickColour,
+  pickLuckyNumber,
   pickPercentage,
   pickSpark,
   validateDailyResult,
@@ -91,31 +96,23 @@ describe('tier and event boundaries', () => {
     expect(getEventIdForTier('unknown')).toBeNull();
   });
 
-  it('keeps the three approved triplets fixed on Low, Medium and High', () => {
-    expect(TIERS.map((tier) => ({ id: tier.id, numbers: tier.numbers }))).toEqual([
-      { id: 'low', numbers: [3, 9, 21] },
-      { id: 'medium', numbers: [11, 22, 33] },
-      { id: 'high', numbers: [7, 8, 77] },
-    ]);
+  it('keeps tiers and events free of fixed number triplets and weights', () => {
     for (const tier of TIERS) {
-      expect(new Set(tier.numbers).size).toBe(3);
-      expect(tier.numbers).not.toContain(13);
+      expect(tier.numbers).toBeUndefined();
     }
-    // The numbers belong to the tier: events carry no numbers or weights.
     for (const event of EVENTS) {
       expect(event.numbers).toBeUndefined();
       expect(event.weight).toBeUndefined();
     }
   });
 
-  it('never disagrees between the number, the tier and the event', () => {
-    const random = mulberry32(20261116);
+  it('never disagrees between the percentage, the tier and the event', () => {
+    const random = mulberry32(20261118);
     for (let index = 0; index < 4000; index += 1) {
-      const result = createDailyResult({ dateKey: '2026-11-16', random });
+      const result = createDailyResult({ dateKey: '2026-11-18', random });
       const tier = getTierForPercentage(result.percentage);
       expect(result.tier.id).toBe(tier.id);
       expect(result.tier.label).toBe(tier.label);
-      expect(result.tier.numbers).toEqual(tier.numbers);
       expect(result.event.id).toBe(tier.eventId);
       expect(result.event).toEqual({
         id: tier.eventId,
@@ -137,87 +134,136 @@ describe('daily percentage selection', () => {
     }
   });
 
-  it('avoids the last three persisted percentages', () => {
+  it('excludes only the immediately preceding saved percentage', () => {
     const random = mulberry32(99);
-    const recent = [12, 55, 97];
-    for (let index = 0; index < 2000; index += 1) {
-      expect(recent).not.toContain(pickPercentage(recent, random));
-    }
-  });
-
-  it('can still produce values that were used more than three days ago', () => {
-    const random = mulberry32(4);
-    const recent = [8, 9, 10, 80];
-    const seen = new Set();
-    for (let index = 0; index < 400; index += 1) {
-      seen.add(pickPercentage(recent, random));
-    }
-    // 80 is the fourth-newest value, so it is allowed again.
-    expect(seen.has(80)).toBe(true);
-    expect([8, 9, 10].some((value) => seen.has(value))).toBe(false);
-  });
-
-  it('reaches the low and high ends of the range', () => {
-    const random = mulberry32(2026);
-    const values = Array.from({ length: 6000 }, () => pickPercentage([], random));
-    expect(Math.min(...values)).toBeLessThanOrEqual(8);
-    expect(Math.max(...values)).toBeGreaterThanOrEqual(97);
-  });
-
-  it('excludes exactly one event band when that event is blocked', () => {
-    const random = mulberry32(808);
-    const draws = Array.from({ length: 1200 }, () => pickPercentage([], random, 'lightning'));
-    expect(draws.every((value) => getEventForPercentage(value).id !== 'lightning')).toBe(true);
-    expect(new Set(draws.map((value) => getTierForPercentage(value).id))).toEqual(
-      new Set(['low', 'high']),
-    );
-
-    const meteorDraws = Array.from({ length: 1200 }, () => pickPercentage([], random, 'meteor'));
-    expect(meteorDraws.every((value) => value >= 31)).toBe(true);
-    const fireworkDraws = Array.from({ length: 1200 }, () =>
-      pickPercentage([], random, 'fireworks'),
-    );
-    expect(fireworkDraws.every((value) => value <= 65)).toBe(true);
-  });
-});
-
-describe('three-day event repeat protection', () => {
-  it('never lets the same event run three days in a row', () => {
-    const random = mulberry32(31);
-    let previous = null;
-    let beforePrevious = null;
-    let percentages = [];
+    const history = [12, 55, 97];
     for (let index = 0; index < 3000; index += 1) {
-      const result = createDailyResult({
-        dateKey: '2026-11-16',
-        history: {
-          percentages,
-          events: [previous, beforePrevious].filter(Boolean),
-        },
-        random,
-      });
-      expect(result.event.id).toBe(getEventForPercentage(result.percentage).id);
-      if (previous && beforePrevious) {
-        expect(result.event.id === previous && previous === beforePrevious).toBe(false);
-      }
-      percentages = [result.percentage, ...percentages].slice(0, 3);
-      beforePrevious = previous;
-      previous = result.event.id;
+      expect(pickPercentage(history, random)).not.toBe(12);
     }
   });
 
-  it('ignores unknown event ids in the history instead of blocking wrongly', () => {
-    const result = createDailyResult({
-      dateKey: '2026-11-16',
-      history: { events: ['unknown', 'unknown'] },
+  it('lets older percentages — including the previous tier — become eligible again', () => {
+    const random = mulberry32(4);
+    // 8 is the immediately preceding value. 9, 10 and 80 are older and must be
+    // eligible again, even though 9 and 10 share the previous tier.
+    const history = [8, 9, 10, 80];
+    const seen = new Set();
+    for (let index = 0; index < 6000; index += 1) {
+      seen.add(pickPercentage(history, random));
+    }
+    expect(seen.has(8)).toBe(false);
+    expect(seen.has(9)).toBe(true);
+    expect(seen.has(10)).toBe(true);
+    expect(seen.has(80)).toBe(true);
+  });
+
+  it('keeps the original uniform distribution over the 95 remaining values', () => {
+    const random = mulberry32(2026);
+    const draws = 190_000;
+    const counts = new Map();
+    for (let index = 0; index < draws; index += 1) {
+      const value = pickPercentage([77], random);
+      counts.set(value, (counts.get(value) || 0) + 1);
+    }
+    expect(counts.size).toBe(95);
+    expect(counts.has(77)).toBe(false);
+    for (const [value, count] of counts) {
+      expect(value).toBeGreaterThanOrEqual(PERCENTAGE_MIN);
+      expect(value).toBeLessThanOrEqual(PERCENTAGE_MAX);
+      expect(count / draws).toBeCloseTo(1 / 95, 2);
+    }
+    // Both ends of the range are still reachable.
+    expect(counts.has(5)).toBe(true);
+    expect(counts.has(100)).toBe(true);
+  });
+
+  it('does not exclude a tier band or an event, so the same event can repeat', () => {
+    const random = mulberry32(808);
+    // The previous saved result was Low, but Low percentages remain eligible.
+    const draws = Array.from({ length: 6000 }, () => pickPercentage([28], random));
+    expect(draws.some((value) => value < 28 && value <= 30)).toBe(true);
+    expect(draws.every((value) => value !== 28)).toBe(true);
+    expect(new Set(draws.map((value) => getTierForPercentage(value).id))).toEqual(
+      new Set(['low', 'medium', 'high']),
+    );
+
+    // Consecutive days may show the same event with a different percentage.
+    const first = createDailyResult({ dateKey: '2026-11-17', random: () => 0 });
+    const second = createDailyResult({
+      dateKey: '2026-11-18',
       random: () => 0,
+      history: {
+        percentages: [first.percentage],
+        numbers: [first.luckyNumber],
+        colours: [first.colour.id],
+        sparks: [first.spark.id],
+      },
+    });
+    expect(first.percentage).toBe(5);
+    expect(second.percentage).toBe(6);
+    expect(second.event.id).toBe(first.event.id);
+  });
+
+  it('ignores legacy event history instead of blocking an event', () => {
+    const result = createDailyResult({
+      dateKey: '2026-11-18',
+      random: () => 0,
+      history: { events: ['meteor', 'meteor', 'meteor'], percentages: [] },
     });
     expect(result.percentage).toBe(PERCENTAGE_MIN);
     expect(result.event.id).toBe('meteor');
   });
 });
 
-describe('colour selection', () => {
+describe('Lucky Number selection', () => {
+  it('draws one integer from 1 to 50 with equal probability', () => {
+    const random = mulberry32(4242);
+    const draws = 95_000;
+    const counts = new Map();
+    for (let index = 0; index < draws; index += 1) {
+      const value = pickLuckyNumber([], random);
+      expect(Number.isInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(LUCKY_NUMBER_MIN);
+      expect(value).toBeLessThanOrEqual(LUCKY_NUMBER_MAX);
+      counts.set(value, (counts.get(value) || 0) + 1);
+    }
+    expect(counts.size).toBe(50);
+    for (const value of counts.keys()) {
+      expect(counts.get(value) / draws).toBeCloseTo(1 / 50, 2);
+    }
+  });
+
+  it('excludes only the number in the most recent saved result', () => {
+    const random = mulberry32(15);
+    const history = [17, 23];
+    const seen = new Set();
+    for (let index = 0; index < 6000; index += 1) {
+      seen.add(pickLuckyNumber(history, random));
+    }
+    expect(seen.has(17)).toBe(false);
+    // The previous-previous number is eligible again.
+    expect(seen.has(23)).toBe(true);
+    expect(seen.size).toBe(49);
+  });
+
+  it('is independent of the percentage and never a fixed triplet', () => {
+    const random = mulberry32(606);
+    const pairs = new Set();
+    for (let index = 0; index < 4000; index += 1) {
+      const result = createDailyResult({ dateKey: '2026-11-18', random });
+      expect(Array.isArray(result.luckyNumber)).toBe(false);
+      pairs.add(`${result.percentage}|${result.luckyNumber}`);
+      // No tier owns numbers any more.
+      expect(result.tier.numbers).toBeUndefined();
+    }
+    // Many different numbers appear across every tier.
+    const numbers = new Set([...pairs].map((pair) => pair.split('|')[1]));
+    expect(numbers.size).toBeGreaterThan(40);
+    expect(pairs.size).toBeGreaterThan(600);
+  });
+});
+
+describe('Lucky Colour selection', () => {
   it('offers the twelve approved colours exactly', () => {
     expect(COLOURS).toHaveLength(12);
     expect(COLOURS.map((colour) => colour.hex)).toEqual([
@@ -250,39 +296,59 @@ describe('colour selection', () => {
     ]);
   });
 
-  it('selects each colour with equal probability', () => {
+  it('selects each remaining colour with equal probability', () => {
     const counts = new Map();
-    const draws = 24000;
+    const draws = 33_000;
     const random = mulberry32(88);
     for (let index = 0; index < draws; index += 1) {
-      const colour = pickColour(random);
+      const colour = pickColour(['maple-red'], random);
       counts.set(colour.id, (counts.get(colour.id) || 0) + 1);
     }
-    expect(counts.size).toBe(12);
-    for (const colour of COLOURS) {
-      expect(counts.get(colour.id) / draws).toBeCloseTo(1 / 12, 2);
+    expect(counts.has('maple-red')).toBe(false);
+    expect(counts.size).toBe(11);
+    for (const colour of COLOURS.filter((entry) => entry.id !== 'maple-red')) {
+      expect(counts.get(colour.id) / draws).toBeCloseTo(1 / 11, 2);
     }
+  });
+
+  it('excludes only the most recent colour, so older colours return', () => {
+    const random = mulberry32(21);
+    const seen = new Set();
+    for (let index = 0; index < 3000; index += 1) {
+      seen.add(pickColour(['navy-blue', 'cream'], random).id);
+    }
+    expect(seen.has('navy-blue')).toBe(false);
+    expect(seen.has('cream')).toBe(true);
+    expect(seen.size).toBe(11);
   });
 });
 
 describe('Little Spark selection', () => {
-  it('avoids recently used ids', () => {
+  it('excludes only the most recent Spark and keeps the rest available', () => {
     const random = mulberry32(5);
-    const recent = LITTLE_SPARKS.slice(0, 8).map((spark) => spark.id);
-    for (let index = 0; index < 800; index += 1) {
-      expect(recent).not.toContain(pickSpark(recent, random).id);
+    const history = ['spark-01', 'spark-02'];
+    const seen = new Set();
+    for (let index = 0; index < 6000; index += 1) {
+      seen.add(pickSpark(history, random).id);
     }
+    expect(seen.has('spark-01')).toBe(false);
+    // Older Sparks become eligible again.
+    expect(seen.has('spark-02')).toBe(true);
+    expect(seen.size).toBe(29);
   });
 
-  it('falls back to the full list when every Spark is recent', () => {
-    const allIds = LITTLE_SPARKS.map((spark) => spark.id);
-    const spark = pickSpark(allIds, mulberry32(2));
-    expect(allIds).toContain(spark.id);
+  it('falls back to the full list when the stored id is unknown', () => {
+    const random = mulberry32(2);
+    const seen = new Set();
+    for (let index = 0; index < 3000; index += 1) {
+      seen.add(pickSpark(['not-a-spark'], random).id);
+    }
+    expect(seen.size).toBe(30);
   });
 });
 
 describe('complete daily result', () => {
-  const dateKey = '2026-11-14';
+  const dateKey = '2026-11-18';
 
   it('builds a complete, internally consistent result', () => {
     const result = createDailyResult({ dateKey, random: mulberry32(4242) });
@@ -291,31 +357,40 @@ describe('complete daily result', () => {
     expect(result.percentage).toBeGreaterThanOrEqual(PERCENTAGE_MIN);
     expect(result.percentage).toBeLessThanOrEqual(PERCENTAGE_MAX);
     expect(result.tier.id).toBe(getTierForPercentage(result.percentage).id);
-    expect(result.tier.numbers).toEqual(
-      TIERS.find((tier) => tier.id === result.tier.id).numbers,
-    );
     expect(result.event.id).toBe(getEventForPercentage(result.percentage).id);
+    expect(Number.isInteger(result.luckyNumber)).toBe(true);
+    expect(result.luckyNumber).toBeGreaterThanOrEqual(LUCKY_NUMBER_MIN);
+    expect(result.luckyNumber).toBeLessThanOrEqual(LUCKY_NUMBER_MAX);
     expect(COLOURS.map((colour) => colour.id)).toContain(result.colour.id);
     expect(LITTLE_SPARKS.map((spark) => spark.id)).toContain(result.spark.id);
-    expect(result.tier.numbers).not.toContain(13);
-    expect(new Set(result.tier.numbers).size).toBe(3);
   });
 
-  it('keeps colour and Spark independent of the percentage', () => {
-    const seenPairs = new Set();
-    const runs = new Set();
+  it('keeps number, colour and Spark independent of the percentage', () => {
     const random = mulberry32(606);
-    for (let index = 0; index < 2500; index += 1) {
+    const tierCounts = new Map();
+    const colourIds = new Set();
+    const sparkIds = new Set();
+    const numbers = new Set();
+    for (let index = 0; index < 3000; index += 1) {
       const result = createDailyResult({ dateKey, random });
-      seenPairs.add(`${result.percentage}|${result.colour.id}|${result.spark.id}`);
-      runs.add(`${result.event.id}|${result.colour.id}`);
+      const tier = result.tier.id;
+      const entry = tierCounts.get(tier) || { colours: new Set(), numbers: new Set() };
+      entry.colours.add(result.colour.id);
+      entry.numbers.add(result.luckyNumber);
+      tierCounts.set(tier, entry);
+      colourIds.add(result.colour.id);
+      sparkIds.add(result.spark.id);
+      numbers.add(result.luckyNumber);
     }
-    const colours = new Set([...seenPairs].map((pair) => pair.split('|')[1]));
-    const events = new Set([...runs].map((pair) => pair.split('|')[0]));
-    // Every event can appear with any colour, but each event only appears with
-    // percentages in its own tier band.
-    expect(colours.size).toBe(12);
-    expect(events).toEqual(new Set(['meteor', 'lightning', 'fireworks']));
+    expect(colourIds.size).toBe(12);
+    expect(sparkIds.size).toBe(30);
+    expect(numbers.size).toBe(50);
+    // Every tier can appear with every colour and a wide spread of numbers.
+    expect(tierCounts.size).toBe(3);
+    for (const entry of tierCounts.values()) {
+      expect(entry.colours.size).toBe(12);
+      expect(entry.numbers.size).toBeGreaterThan(30);
+    }
   });
 
   it('marks light colours from the shared palette rather than hard-coded ids', () => {
@@ -328,54 +403,84 @@ describe('complete daily result', () => {
     expect(mapleRed.colour.light).toBe(false);
   });
 
-  it('is accepted by validation and re-rendered from its stored ids', () => {
-    const result = createDailyResult({ dateKey, random: mulberry32(9) });
-    expect(validateDailyResult(result, dateKey)).toEqual(
-      expect.objectContaining({
-        dateKey,
-        percentage: result.percentage,
-        tier: expect.objectContaining({
-          id: result.tier.id,
-          numbers: result.tier.numbers,
-        }),
-        event: expect.objectContaining({ id: result.event.id }),
-        colour: expect.objectContaining({ id: result.colour.id, hex: result.colour.hex }),
-        spark: expect.objectContaining({ id: result.spark.id }),
-      }),
-    );
+  it('honours the one-value exclusions from the saved history', () => {
+    const result = createDailyResult({
+      dateKey,
+      random: () => 0.5,
+      history: {
+        percentages: [53],
+        numbers: [26],
+        colours: ['cream'],
+        sparks: ['spark-16'],
+      },
+    });
+    expect(result.percentage).toBe(52);
+    expect(result.luckyNumber).not.toBe(26);
+    expect(result.colour.id).not.toBe('cream');
+    expect(result.spark.id).not.toBe('spark-16');
   });
 
-  it('normalises a stale saved tier and event from its preserved percentage', () => {
-    const saved = {
+  it('carries the entertainment-only single Lucky Number wording', () => {
+    expect(LUCKY_NUMBER_LABEL).toBe('Lucky Number');
+    expect(LUCKY_COLOUR_LABEL).toBe('Lucky Colour');
+    expect(ENTERTAINMENT_DISCLAIMER).toMatch(/not lottery predictions or promises of winning/i);
+  });
+});
+
+describe('saved result validation and lucky-number migration', () => {
+  const dateKey = '2026-11-18';
+
+  function legacyResult(overrides = {}) {
+    return {
       dateKey,
-      // 91 is High and must show Fireworks, but the payload says Low/Meteor
-      // because it was written before the percentage decided the reveal.
       percentage: 91,
-      tier: { id: 'low', label: 'Low Resonance', message: 'stale', numbers: [3, 9, 21] },
+      tier: { id: 'low', label: 'Low Resonance', message: 'stale' },
       event: { id: 'meteor', name: 'Meteor Shower' },
       colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32', light: false },
       spark: { id: 'spark-04', message: 'Stored spark' },
       createdAt: 1234567890,
+      ...overrides,
     };
+  }
 
-    const normalized = validateDailyResult(saved, dateKey);
+  it('normalises the derived reveal from the preserved percentage', () => {
+    const normalized = validateDailyResult(legacyResult(), dateKey, () => 0.5);
     expect(normalized.percentage).toBe(91);
     expect(normalized.tier).toEqual({
       id: 'high',
       label: 'High Resonance',
       message: "Your luck is running high today!",
-      numbers: [7, 8, 77],
     });
     expect(normalized.event).toEqual({ id: 'fireworks', name: 'Fireworks' });
-    // The saved reading is preserved, not rerolled. The Spark text is always
-    // the canonical copy for its saved id, as it was before this change.
-    expect(normalized.colour).toEqual(saved.colour);
-    expect(normalized.spark).toEqual({
-      id: 'spark-04',
-      message: LITTLE_SPARKS.find((spark) => spark.id === 'spark-04').message,
-    });
+    // The saved colour and Spark are preserved, not rerolled.
+    expect(normalized.colour.id).toBe('maple-red');
+    expect(normalized.spark.id).toBe('spark-04');
     expect(normalized.dateKey).toBe(dateKey);
     expect(normalized.createdAt).toBe(1234567890);
+  });
+
+  it('generates exactly one Lucky Number for a legacy result and keeps it afterwards', () => {
+    const random = () => 0.5;
+    const migrated = validateDailyResult(legacyResult(), dateKey, random);
+    expect(hasValidLuckyNumber(legacyResult())).toBe(false);
+    expect(migrated.luckyNumber).toBe(26);
+    expect(hasValidLuckyNumber(migrated)).toBe(true);
+
+    // Re-validating the migrated record is idempotent: the number is reused and
+    // the random source is never consulted again.
+    let calls = 0;
+    const neverCalled = () => {
+      calls += 1;
+      return 0;
+    };
+    const again = validateDailyResult(migrated, dateKey, neverCalled);
+    expect(again.luckyNumber).toBe(26);
+    expect(calls).toBe(0);
+  });
+
+  it('preserves an existing lucky number even when the definition changed', () => {
+    const saved = legacyResult({ luckyNumber: 7 });
+    expect(validateDailyResult(saved, dateKey, () => 0.9).luckyNumber).toBe(7);
   });
 
   it('rejects invalid persisted results instead of rendering partial data', () => {
@@ -389,14 +494,12 @@ describe('complete daily result', () => {
     expect(validateDailyResult({ ...result, dateKey: 'other-day' }, dateKey)).toBeNull();
     expect(validateDailyResult({ ...result, colour: { id: 'unknown' } }, dateKey)).toBeNull();
     expect(validateDailyResult({ ...result, spark: { id: 'unknown' } }, dateKey)).toBeNull();
-    // An event id is derived data now, so an old or missing one is normalised
-    // rather than invalidating the visitor's saved reading.
-    expect(validateDailyResult({ ...result, event: { id: 'unknown' } }, dateKey)).not.toBeNull();
-    expect(validateDailyResult({ ...result, event: undefined }, dateKey)).not.toBeNull();
-  });
-
-  it('carries the entertainment-only Lucky Numbers wording', () => {
-    expect(LUCKY_NUMBERS_LABEL).toBe('Your Lucky Numbers');
-    expect(ENTERTAINMENT_DISCLAIMER).toMatch(/not lottery predictions or promises of winning/i);
+    // An invalid stored number is replaced once rather than rejecting the day.
+    expect(
+      validateDailyResult({ ...result, luckyNumber: 0 }, dateKey, () => 0.5).luckyNumber,
+    ).toBe(26);
+    expect(
+      validateDailyResult({ ...result, luckyNumber: 51 }, dateKey, () => 0.5).luckyNumber,
+    ).toBe(26);
   });
 });

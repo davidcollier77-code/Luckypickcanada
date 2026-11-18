@@ -6,11 +6,13 @@ import { expect, test, type Page } from '@playwright/test';
  * The daily result is seeded into Local Storage before the page loads, so each
  * stored-reading scenario is deterministic without touching production data or a
  * server. The dial scenario performs a real reveal, then compares the pointer's
- * resting angle with the displayed percentage and the reveal it produced.
+ * resting angle with the displayed percentage.
  *
- * These tests protect the contract that one percentage decides the tier, the
- * event, the number set and the dial position, and that colour, Spark, sharing,
- * reduced motion, the WebGL fallback and the cinematic lifecycle still work.
+ * These tests protect the contract that the percentage alone decides the tier,
+ * the event and the dial position, that the Lucky Number and Lucky Colour are
+ * independent reveals that never feed the percentage, that the Spark is written
+ * only after the cinematic, and that sharing, reduced motion, the WebGL fallback
+ * and the cinematic lifecycle still work.
  */
 
 const STORAGE_KEY = 'lucky-pick-canada-lucky-meter-v1';
@@ -21,21 +23,21 @@ const TIERS = {
     label: 'Low Resonance',
     message: "You're riding a little low today, but you're still okay!",
     event: { id: 'meteor', name: 'Meteor Shower', duration: 9000 },
-    numbers: ['3', '9', '21'],
+    luckyNumber: 12,
   },
   medium: {
     percentage: 57,
     label: 'Medium Resonance',
     message: 'Your luck is in the mid-range today.',
     event: { id: 'lightning', name: 'Cosmic Lightning', duration: 10000 },
-    numbers: ['11', '22', '33'],
+    luckyNumber: 27,
   },
   high: {
     percentage: 91,
     label: 'High Resonance',
     message: "Your luck is running high today!",
     event: { id: 'fireworks', name: 'Fireworks', duration: 11500 },
-    numbers: ['7', '8', '77'],
+    luckyNumber: 44,
   },
 } as const;
 
@@ -56,15 +58,17 @@ type RevealMilestone = {
   phase: string | null;
   value: string | null;
   tier: string | null;
-  hasNumbers: boolean;
+  hasNumber: boolean;
+  hasColour: boolean;
   hasShare: boolean;
 };
 
 type RevealTimeline = {
-  numbers: RevealMilestone | null;
+  number: RevealMilestone | null;
+  colour: RevealMilestone | null;
   share: RevealMilestone | null;
   event: RevealMilestone | null;
-  numbersBeforeLanding: boolean;
+  numberBeforeLanding: boolean;
 };
 
 declare global {
@@ -90,12 +94,18 @@ function buildState({
   tierId,
   percentage = TIERS[tierId].percentage,
   completed,
+  sparkCompleted = completed,
+  revealCompleted = completed,
   staleEvent,
+  luckyNumber = TIERS[tierId].luckyNumber,
 }: {
   tierId: TierId;
   percentage?: number;
   completed: boolean;
+  sparkCompleted?: boolean;
+  revealCompleted?: boolean;
   staleEvent?: { id: string; name: string };
+  luckyNumber?: number;
 }) {
   const tier = TIERS[tierId];
   const dateKey = localDateKey();
@@ -107,6 +117,7 @@ function buildState({
       percentage,
       tier: { id: tierId, label: tier.label, message: tier.message },
       event: staleEvent ?? { id: tier.event.id, name: tier.event.name },
+      luckyNumber,
       colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32', light: false },
       spark: {
         id: 'spark-01',
@@ -114,8 +125,15 @@ function buildState({
       },
       createdAt: Date.now(),
     },
-    history: { percentages: [percentage], events: [tier.event.id], sparks: ['spark-01'] },
+    history: {
+      percentages: [percentage],
+      numbers: [luckyNumber],
+      colours: ['maple-red'],
+      sparks: ['spark-01'],
+    },
     eventCompleted: completed,
+    revealCompleted,
+    sparkCompleted,
     stageDurationMs: tier.event.duration,
   };
 }
@@ -128,10 +146,6 @@ async function seed(page: Page, state: ReturnType<typeof buildState>) {
     [STORAGE_KEY, JSON.stringify(state)],
   );
   await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
-}
-
-async function readNumbers(page: Page) {
-  return page.locator('[data-testid="lucky-numbers-values"] span').allTextContents();
 }
 
 /**
@@ -160,9 +174,34 @@ async function readDialAngle(page: Page) {
   return Number(value);
 }
 
+/** The approved palette, in ring order, for the settled colour angle. */
+const COLOUR_IDS = [
+  'maple-red',
+  'forest-green',
+  'navy-blue',
+  'burgundy',
+  'royal-blue',
+  'charcoal',
+  'cream',
+  'mustard-gold',
+  'winter-white',
+  'deep-teal',
+  'pumpkin-orange',
+  'warm-camel',
+] as const;
+
+const shortestAngle = (degrees: number) => ((degrees % 360) + 360) % 360;
+
+async function readStoredResult(page: Page) {
+  return page.evaluate((key) => {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  }, STORAGE_KEY);
+}
+
 test.describe('Daily Resonance percentage mapping', () => {
   for (const { percentage, tier } of BOUNDARIES) {
-    test(`${percentage}% is ${tier} with its tier's event and numbers`, async ({ page }) => {
+    test(`${percentage}% is ${tier} with its tier's event`, async ({ page }) => {
       await seed(page, buildState({ tierId: tier, percentage, completed: true }));
 
       // A cold dev server can take a while to compile and hydrate the route;
@@ -174,20 +213,29 @@ test.describe('Daily Resonance percentage mapping', () => {
         { timeout: 20_000 },
       );
       await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tier].label);
-      await expect(page.getByTestId('lucky-numbers-values')).toBeVisible();
-      expect(await readNumbers(page)).toEqual([...TIERS[tier].numbers]);
+      await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
       await expect(page.getByText(TIERS[tier].event.name).first()).toBeVisible();
     });
   }
 
   for (const tierId of Object.keys(TIERS) as TierId[]) {
-    test(`${tierId} keeps its numbers and its derived event`, async ({ page }) => {
+    test(`${tierId} shows the saved independent Lucky Number and colour`, async ({ page }) => {
       await seed(page, buildState({ tierId, completed: true }));
 
-      await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 20_000 });
-      expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
+      const numberPanel = page.getByTestId('lucky-number-panel');
+      await expect(numberPanel).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
+        'data-value',
+        String(TIERS[tierId].luckyNumber),
+      );
+      await expect(numberPanel.locator('h2')).toHaveText('Lucky Number');
       await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tierId].label);
       await expect(page.getByText(TIERS[tierId].event.name).first()).toBeVisible();
+      const colourPanel = page.getByTestId('lucky-colour-panel');
+      await expect(colourPanel).toBeVisible();
+      await expect(colourPanel.locator('h2')).toHaveText('Lucky Colour');
+      await expect(colourPanel.getByText('Maple Red')).toBeVisible();
+      await expect(colourPanel.getByText('#B52B32')).toBeVisible();
     });
   }
 
@@ -208,10 +256,59 @@ test.describe('Daily Resonance percentage mapping', () => {
     });
     await expect(page.locator('.lucky-tier-plate__label')).toHaveText('High Resonance');
     await expect(page.getByText('Fireworks').first()).toBeVisible();
-    expect(await readNumbers(page)).toEqual(['7', '8', '77']);
     // The rest of the saved reading is preserved rather than rerolled.
-    await expect(page.getByText('Maple Red')).toBeVisible();
-    await expect(page.getByText('Even a small step forward', { exact: false })).toBeVisible();
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '12');
+    await expect(page.getByTestId('lucky-colour-panel').getByText('Maple Red')).toBeVisible();
+    await expect(page.getByTestId('lucky-spark-message')).toHaveText(
+      /Even a small step forward/,
+    );
+  });
+
+  test('migrates a saved result without a Lucky Number exactly once', async ({ page }) => {
+    const state = buildState({ tierId: 'high', completed: true });
+    const legacy = {
+      ...state,
+      result: { ...state.result } as Record<string, unknown>,
+      history: { ...state.history } as Record<string, unknown>,
+    };
+    delete legacy.result.luckyNumber;
+    delete legacy.history.numbers;
+    // seed()'s init script re-runs on every navigation, which would restore the
+    // pre-migration payload on reload. Write the legacy payload once instead, so
+    // the reload proves the migrated number was actually persisted.
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(
+      ([key, value]) => window.localStorage.setItem(key, value),
+      [STORAGE_KEY, JSON.stringify(legacy)],
+    );
+    await page.reload({ waitUntil: 'domcontentloaded' });
+
+    // The migration runs in the client effect, so wait for the reading first.
+    await expect(page.getByTestId('lucky-number-value')).toBeVisible({ timeout: 20_000 });
+    const displayed = Number(
+      await page.getByTestId('lucky-number-value').getAttribute('data-value'),
+    );
+    expect(displayed).toBeGreaterThanOrEqual(1);
+    expect(displayed).toBeLessThanOrEqual(50);
+
+    const stored = await page.evaluate((key) => {
+      const raw = window.localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    }, STORAGE_KEY);
+    expect(stored.result.luckyNumber).toBe(displayed);
+    const migrated = displayed;
+
+    // A reload keeps the same number and every other saved value.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(migrated),
+      { timeout: 20_000 },
+    );
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '91');
+    await expect(
+      page.getByTestId('lucky-colour-panel').getByText('Maple Red'),
+    ).toBeVisible();
   });
 });
 
@@ -222,7 +319,6 @@ test.describe('Daily Resonance dial landing', () => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
-    // The dial is genuinely spinning: its angle is finite during the scramble.
     const spinning = await readDialAngle(page);
     expect(Number.isFinite(spinning)).toBe(true);
 
@@ -244,12 +340,38 @@ test.describe('Daily Resonance dial landing', () => {
     const actual = ((angle % 360) + 360) % 360;
     expect(Math.abs(actual - expected)).toBeLessThan(0.02);
 
-    // The tier, event and numbers all come from that same number.
     const tierId = tierForPercentage(percentage);
     await expect(page.locator('.lucky-tier-plate__label')).toHaveText(TIERS[tierId].label);
     await expect(page.getByText(TIERS[tierId].event.name).first()).toBeVisible();
-    await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 4000 });
-    expect(await readNumbers(page)).toEqual([...TIERS[tierId].numbers]);
+
+    // The Lucky Number and colour are their own independent reveals.
+    await expect(page.getByTestId('lucky-number-panel')).toBeVisible({ timeout: 4000 });
+    const luckyNumber = Number(
+      await page.getByTestId('lucky-number-value').getAttribute('data-value'),
+    );
+    expect(luckyNumber).toBeGreaterThanOrEqual(1);
+    expect(luckyNumber).toBeLessThanOrEqual(50);
+    await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
+
+    // The number pointer is a separate dial with its own resting angle.
+    const numberAngle = Number(
+      await page.getByTestId('lucky-meter-ring').getAttribute('data-number-angle'),
+    );
+    const expectedNumberAngle = ((luckyNumber - 1) * 7.2 + 3.6) % 360;
+    expect(Math.abs(((numberAngle % 360) + 360) % 360 - expectedNumberAngle)).toBeLessThan(0.02);
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-number-settled',
+      'true',
+    );
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-colour-settled',
+      'true',
+    );
+    // The selected colour is settled under the colour ring's marker.
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-colour-id',
+      /maple-red|forest-green|navy-blue|burgundy|royal-blue|charcoal|cream|mustard-gold|winter-white|deep-teal|pumpkin-orange|warm-camel/,
+    );
   });
 
   test('paints the dial index from its own elements even with no dial CSS', async ({ page }) => {
@@ -314,31 +436,28 @@ test.describe('Daily Resonance dial landing', () => {
     expect(headStyle.height).toBe('9px');
     expect(headStyle.backgroundImage).toContain('radial-gradient');
 
-    // The index still bears exactly the displayed percentage's angle.
     const angle = await readDialAngle(page);
     expect(((angle % 360) + 360) % 360).toBeCloseTo((57 * 3.6) % 360, 1);
   });
 
-  test('reveals percentage and tier, then numbers, then details, then the event', async ({
+  test('settles percentage, then number, then colour, then starts the cinematic', async ({
     page,
   }) => {
-    // The beats are 800/600/600 ms apart. A loaded runner can miss the window
-    // between two of them, so a zero-count snapshot after landing is a race, not
-    // a fact about the experience. Record each panel the first time it appears
-    // instead; the ordering assertions then hold however slowly the test polls.
     await page.addInitScript(() => {
       const timeline: RevealTimeline = {
-        numbers: null,
+        number: null,
+        colour: null,
         share: null,
         event: null,
-        numbersBeforeLanding: false,
+        numberBeforeLanding: false,
       };
       window.__revealTimeline = timeline;
 
       const ring = () =>
         document.querySelector('[data-testid="lucky-meter-ring"]')?.getAttribute('data-phase') ??
         null;
-      const hasNumbers = () => Boolean(document.querySelector('[data-testid="lucky-numbers-panel"]'));
+      const hasNumber = () => Boolean(document.querySelector('[data-testid="lucky-number-panel"]'));
+      const hasColour = () => Boolean(document.querySelector('[data-testid="lucky-colour-panel"]'));
       const hasShare = () =>
         Array.from(document.querySelectorAll('button')).some((button) =>
           /Share My Resonance/i.test(button.textContent ?? ''),
@@ -351,14 +470,16 @@ test.describe('Daily Resonance dial landing', () => {
             .querySelector('[data-testid="lucky-meter-value"]')
             ?.getAttribute('data-value') ?? null,
         tier: document.querySelector('.lucky-tier-plate__label')?.textContent?.trim() ?? null,
-        hasNumbers: hasNumbers(),
+        hasNumber: hasNumber(),
+        hasColour: hasColour(),
         hasShare: hasShare(),
       });
 
       new MutationObserver(() => {
         const at = performance.now();
-        if (hasNumbers() && ring() !== 'landed') timeline.numbersBeforeLanding = true;
-        if (!timeline.numbers && hasNumbers()) timeline.numbers = milestone(at);
+        if (hasNumber() && ring() !== 'landed') timeline.numberBeforeLanding = true;
+        if (!timeline.number && hasNumber()) timeline.number = milestone(at);
+        if (!timeline.colour && hasColour()) timeline.colour = milestone(at);
         if (!timeline.share && hasShare()) timeline.share = milestone(at);
         if (!timeline.event && document.querySelector('[data-testid="cosmic-event-stage"]')) {
           timeline.event = milestone(at);
@@ -375,36 +496,376 @@ test.describe('Daily Resonance dial landing', () => {
       { timeout: 12_000 },
     );
 
-    await expect(page.getByTestId('lucky-numbers-panel')).toBeVisible({ timeout: 4000 });
-    expect((await readNumbers(page)).length).toBe(3);
-
-    await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
-    await expect(page.getByText('Little Spark')).toBeVisible({ timeout: 4000 });
+    await expect(page.getByTestId('lucky-number-panel')).toBeVisible({ timeout: 4000 });
+    await expect(
+      page.getByTestId('lucky-number-panel').locator('h2'),
+    ).toHaveText('Lucky Number');
+    await expect(
+      page.getByTestId('lucky-colour-panel').locator('h2'),
+    ).toHaveText('Lucky Colour', { timeout: 4000 });
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
-
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 4000 });
 
     const timeline = await page.evaluate(() => window.__revealTimeline);
-    expect(timeline?.numbersBeforeLanding).toBe(false);
-    expect(timeline?.numbers).not.toBeNull();
+    expect(timeline?.numberBeforeLanding).toBe(false);
+    expect(timeline?.number).not.toBeNull();
+    expect(timeline?.colour).not.toBeNull();
     expect(timeline?.share).not.toBeNull();
     expect(timeline?.event).not.toBeNull();
 
-    // Numbers arrive only after the dial has landed, on a reading that already
-    // shows its percentage and the tier derived from it.
-    expect(timeline?.numbers?.phase).toBe('landed');
-    const landedValue = Number(timeline?.numbers?.value);
+    expect(timeline?.number?.phase).toBe('landed');
+    const landedValue = Number(timeline?.number?.value);
     expect(landedValue).toBeGreaterThanOrEqual(5);
     expect(landedValue).toBeLessThanOrEqual(100);
-    expect(timeline?.numbers?.tier).toBe(TIERS[tierForPercentage(landedValue)].label);
+    expect(timeline?.number?.tier).toBe(TIERS[tierForPercentage(landedValue)].label);
 
-    // Details arrive after the numbers, and the event after the details.
-    expect(timeline?.share?.hasNumbers).toBe(true);
-    expect(timeline?.event?.hasNumbers).toBe(true);
+    // Number, then colour and details, then the cinematic.
+    expect(timeline?.colour?.hasNumber).toBe(true);
+    expect(timeline?.share?.hasColour).toBe(true);
     expect(timeline?.event?.hasShare).toBe(true);
-    expect(timeline?.numbers?.at ?? -1).toBeGreaterThan(0);
-    expect(timeline?.numbers?.at ?? -1).toBeLessThanOrEqual(timeline?.share?.at ?? -1);
-    expect(timeline?.share?.at ?? -1).toBeLessThanOrEqual(timeline?.event?.at ?? -1);
+    expect(timeline?.number?.at ?? -1).toBeLessThanOrEqual(timeline?.colour?.at ?? -1);
+    expect(timeline?.colour?.at ?? -1).toBeLessThanOrEqual(timeline?.event?.at ?? -1);
+
+    // The Spark is not written and the countdown is not shown while the
+    // cinematic is running.
+    await expect(page.getByTestId('lucky-spark-message')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+  });
+});
+
+test.describe('Daily Resonance reveal invariants', () => {
+  test('starts all three motions together and lands each on its own stored value', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const trace = {
+        start: null as number | null,
+        startValues: { dial: null, number: null, colour: null } as Record<string, number | null>,
+        firstMove: { dial: null, number: null, colour: null } as Record<string, number | null>,
+        percentageSettled: null as number | null,
+        numberSettled: null as number | null,
+        colourSettled: null as number | null,
+        stage: null as number | null,
+        landings: {
+          numberAngle: null,
+          number: null,
+          colourAngle: null,
+          colourId: null,
+        } as Record<string, number | string | null>,
+      };
+      (window as unknown as { __revealTrace: typeof trace }).__revealTrace = trace;
+
+      const read = (element: Element | null, name: string) => element?.getAttribute(name) ?? null;
+      const num = (element: Element | null, name: string) => {
+        const raw = read(element, name);
+        return raw === null ? null : Number(raw);
+      };
+      const moved = (current: number | null, previous: number | null) =>
+        current === null || previous === null
+          ? false
+          : Math.abs((((current - previous) % 360) + 540) % 360 - 180) > 0.5;
+      const attributes = {
+        dial: 'data-dial-angle',
+        number: 'data-number-angle',
+        colour: 'data-colour-angle',
+      } as const;
+
+      // A MutationObserver records the real DOM transition instead of sampling
+      // once per animation frame, which on a throttled mobile viewport can be
+      // more than 100 ms late.
+      const inspect = (element: Element) => {
+        const phase = read(element, 'data-phase');
+        const now = performance.now();
+        if (phase === 'scrambling') {
+          if (trace.start === null) {
+            trace.start = now;
+            trace.startValues = {
+              dial: num(element, attributes.dial),
+              number: num(element, attributes.number),
+              colour: num(element, attributes.colour),
+            };
+          }
+          (Object.keys(attributes) as Array<keyof typeof attributes>).forEach((key) => {
+            if (
+              trace.firstMove[key] === null &&
+              moved(num(element, attributes[key]), trace.startValues[key])
+            ) {
+              trace.firstMove[key] = now;
+            }
+          });
+        }
+        if (trace.percentageSettled === null && phase === 'landed') trace.percentageSettled = now;
+        if (trace.numberSettled === null && read(element, 'data-number-settled') === 'true') {
+          trace.numberSettled = now;
+        }
+        if (trace.colourSettled === null && read(element, 'data-colour-settled') === 'true') {
+          trace.colourSettled = now;
+        }
+        if (
+          trace.stage === null &&
+          document.querySelector('[data-testid="cosmic-event-stage"]')
+        ) {
+          trace.stage = now;
+        }
+      };
+
+      const attach = () => {
+        const element = document.querySelector('[data-testid="lucky-meter-ring"]');
+        if (!element) return false;
+        new MutationObserver(() => inspect(element)).observe(element, { attributes: true });
+        new MutationObserver(() => inspect(element)).observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+        inspect(element);
+        return true;
+      };
+
+      if (!attach()) {
+        const timer = window.setInterval(() => {
+          if (attach()) window.clearInterval(timer);
+        }, 25);
+      }
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await startReveal(page);
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+
+    const trace = await page.evaluate(
+      () => (window as unknown as { __revealTrace: Record<string, any> }).__revealTrace,
+    );
+    const stored = await readStoredResult(page);
+    const result = stored.result;
+
+    // All three motions were already running inside the first sampled window.
+    const moves = [trace.firstMove.dial, trace.firstMove.number, trace.firstMove.colour];
+    expect(moves.every((value) => typeof value === 'number')).toBe(true);
+    expect(Math.max(...moves) - Math.min(...moves)).toBeLessThan(120);
+
+    // Staggered settles in the documented order, each roughly a third of a turn
+    // apart, and the cinematic only after the last one. The gaps are asserted
+    // rather than the absolute offsets because the first reveal frame can be
+    // delayed by the medallion's first paint.
+    expect(trace.percentageSettled).toBeLessThan(trace.numberSettled);
+    expect(trace.numberSettled).toBeLessThan(trace.colourSettled);
+    expect(trace.colourSettled).toBeLessThan(trace.stage);
+    expect(trace.percentageSettled - trace.start).toBeGreaterThan(400);
+    expect(trace.percentageSettled - trace.start).toBeLessThan(1150);
+    // Each settle is visibly apart from the one before it. The first reveal
+    // frame absorbs the medallion's first paint, so the gaps are asserted as
+    // "clearly staggered" while the exact schedule lives in the unit suites.
+    expect(trace.numberSettled - trace.percentageSettled).toBeGreaterThan(60);
+    expect(trace.numberSettled - trace.percentageSettled).toBeLessThan(600);
+    expect(trace.colourSettled - trace.numberSettled).toBeGreaterThan(60);
+    expect(trace.colourSettled - trace.numberSettled).toBeLessThan(600);
+    // All three motions are settled inside roughly one and a half seconds.
+    expect(trace.colourSettled - trace.start).toBeGreaterThan(900);
+    expect(trace.colourSettled - trace.start).toBeLessThan(1750);
+    // The cinematic follows the last settle rather than overlapping it.
+    expect(trace.stage - trace.colourSettled).toBeGreaterThan(40);
+    expect(trace.stage - trace.colourSettled).toBeLessThan(900);
+
+    // At rest, each motion sits on the value that was already stored for it. The
+    // pointers keep their whole-turn sweep, so angles are compared modulo 360.
+    const rest = await page.evaluate(() => {
+      const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
+      const attr = (name: string) => ring?.getAttribute(name) ?? null;
+      return {
+        number: attr('data-number'),
+        numberAngle: attr('data-number-angle'),
+        colourId: attr('data-colour-id'),
+        colourAngle: attr('data-colour-angle'),
+        dialAngle: attr('data-dial-angle'),
+      };
+    });
+    expect(rest.number).toBe(String(result.luckyNumber));
+    expect(shortestAngle(Number(rest.numberAngle))).toBeCloseTo(
+      (result.luckyNumber - 1) * 7.2 + 3.6,
+      1,
+    );
+    expect(rest.colourId).toBe(result.colour.id);
+    expect(shortestAngle(Number(rest.colourAngle))).toBeCloseTo(
+      shortestAngle(-COLOUR_IDS.indexOf(result.colour.id) * 30),
+      1,
+    );
+    expect(shortestAngle(Number(rest.dialAngle))).toBeCloseTo(
+      shortestAngle(result.percentage * 3.6),
+      1,
+    );
+
+    // The reveal rewrote nothing: the same reading is still stored.
+    const after = await readStoredResult(page);
+    expect(after.result).toEqual(stored.result);
+    expect(after.revealCompleted).toBe(true);
+    expect(after.eventCompleted).toBe(false);
+  });
+
+  test('the number pointer and colour ring represent their own stored values', async ({
+    page,
+  }) => {
+    await seed(page, buildState({ tierId: 'medium', completed: true, sparkCompleted: true }));
+    const ring = page.getByTestId('lucky-meter-ring');
+
+    await expect(ring).toHaveAttribute('data-number-settled', 'true');
+    await expect(ring).toHaveAttribute('data-colour-settled', 'true');
+
+    // 57% is 205.2°, Lucky Number 27 is 190.8°, Maple Red is the ring's 0°.
+    expect(Number(await ring.getAttribute('data-dial-angle'))).toBeCloseTo(205.2, 1);
+    expect(Number(await ring.getAttribute('data-number-angle'))).toBeCloseTo(190.8, 1);
+    expect(await ring.getAttribute('data-number')).toBe('27');
+    expect(await ring.getAttribute('data-colour-id')).toBe('maple-red');
+    expect(shortestAngle(Number(await ring.getAttribute('data-colour-angle')))).toBeCloseTo(0, 1);
+
+    // The pointer does not encode the percentage.
+    expect(await ring.getAttribute('data-number')).not.toBe('57');
+    expect(Number(await ring.getAttribute('data-number-angle'))).not.toBeCloseTo(205.2, 1);
+
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('Maple Red');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('#B52B32');
+
+    // The colour ring sits at 77% of the coin's radius, so the percentage text
+    // must stay well inside it and can never be covered.
+    const coin = await page.getByTestId('lucky-meter-medallion').boundingBox();
+    const value = await page.getByTestId('lucky-meter-value').boundingBox();
+    expect(coin).not.toBeNull();
+    expect(value).not.toBeNull();
+    if (coin && value) {
+      const centre = { x: coin.x + coin.width / 2, y: coin.y + coin.height / 2 };
+      const radius = coin.width / 2;
+      const corners = [
+        { x: value.x, y: value.y },
+        { x: value.x + value.width, y: value.y },
+        { x: value.x, y: value.y + value.height },
+        { x: value.x + value.width, y: value.y + value.height },
+      ];
+      const furthest = Math.max(
+        ...corners.map((corner) => Math.hypot(corner.x - centre.x, corner.y - centre.y)),
+      );
+      expect(furthest).toBeLessThan(radius * 0.6);
+    }
+  });
+
+  test('resumes a stored mid-reveal reading without redrawing or skipping it', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __loadAt: number }).__loadAt = performance.now();
+    });
+    // Exactly the payload a refresh during the reveal leaves behind.
+    await seed(
+      page,
+      buildState({ tierId: 'medium', completed: false, revealCompleted: false, sparkCompleted: false }),
+    );
+
+    const stored = await readStoredResult(page);
+    expect(stored.revealCompleted).toBe(false);
+    expect(stored.eventCompleted).toBe(false);
+    expect(stored.result).toMatchObject({
+      percentage: 57,
+      luckyNumber: 27,
+      colour: { id: 'maple-red' },
+    });
+
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+    const stageDelay = await page.evaluate(() => {
+      const stage = document.querySelector('[data-testid="cosmic-event-stage"]');
+      const loadAt = (window as unknown as { __loadAt: number }).__loadAt;
+      return stage ? performance.now() - loadAt : -1;
+    });
+    // The cinematic waited for the three motions instead of starting at once.
+    expect(stageDelay).toBeGreaterThan(1200);
+
+    // Those motions settled on the stored values, then the cinematic began.
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('#B52B32');
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-number-settled',
+      'true',
+    );
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-colour-settled',
+      'true',
+    );
+
+    const after = await readStoredResult(page);
+    expect(after.result).toEqual(stored.result);
+    expect(after.history).toEqual(stored.history);
+    expect(after.revealCompleted).toBe(true);
+  });
+});
+
+test.describe('Daily Resonance Little Spark finale', () => {
+  test('writes the Spark after the cinematic, then shows the countdown beneath Home', async ({
+    page,
+  }) => {
+    await seed(page, buildState({ tierId: 'medium', completed: false, sparkCompleted: false }));
+
+    // The stored result resumes its cinematic immediately.
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-spark-message')).toHaveCount(0);
+
+    // Home returns with the finished cinematic; the quill and countdown follow.
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+
+    const spark = page.getByTestId('lucky-spark-finale');
+    await expect(spark).toHaveAttribute('data-state', 'written', { timeout: 15_000 });
+    await expect(page.getByTestId('lucky-spark-message')).toHaveText(
+      /Even a small step forward/,
+    );
+    // The countdown is rendered beneath Home, not inside the result panels.
+    const dock = page.getByTestId('lucky-meter-home').locator('..');
+    await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
+
+    // The completed message stays visible.
+    await page.waitForTimeout(1200);
+    await expect(page.getByTestId('lucky-spark-message')).toHaveText(
+      /Even a small step forward/,
+    );
+  });
+
+  test('does not replay a finished cinematic when resuming the unfinished Spark', async ({
+    page,
+  }) => {
+    await seed(page, buildState({ tierId: 'high', completed: true, sparkCompleted: false }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-spark-finale')).toHaveAttribute(
+      'data-state',
+      'writing',
+    );
+    await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-spark-finale')).toHaveAttribute(
+      'data-state',
+      'written',
+      { timeout: 15_000 },
+    );
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
+  });
+
+  test('keeps a fully completed reading, Spark and countdown after a reload', async ({
+    page,
+  }) => {
+    await seed(page, buildState({ tierId: 'high', completed: true, sparkCompleted: true }));
+
+    await expect(page.getByTestId('lucky-spark-message')).toHaveText(
+      /Even a small step forward/,
+      { timeout: 20_000 },
+    );
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
+    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('lucky-spark-message')).toHaveText(
+      /Even a small step forward/,
+      { timeout: 20_000 },
+    );
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
   });
 });
 
@@ -417,11 +878,15 @@ test.describe('Daily Resonance reduced motion', () => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
-    await expect(page.getByText('Your Lucky Numbers')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Little Spark')).toBeVisible();
+    await expect(page.getByTestId('lucky-number-panel')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
+    await expect(page.getByTestId('lucky-spark-message')).not.toBeEmpty();
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible();
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
+    // No quill under reduced motion; the countdown is available immediately.
+    await expect(page.getByTestId('lucky-spark-quill')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
 
     const percentage = Number(
       await page.getByTestId('lucky-meter-value').getAttribute('data-value'),
@@ -449,9 +914,11 @@ test.describe('Daily Resonance WebGL fallback', () => {
       } as typeof HTMLCanvasElement.prototype.getContext;
     });
 
-    await seed(page, buildState({ tierId: 'medium', completed: false }));
+    await seed(page, buildState({ tierId: 'medium', completed: false, sparkCompleted: true }));
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText('Your Lucky Numbers')).toBeVisible();
+    await expect(
+      page.getByTestId('lucky-number-panel').locator('h2'),
+    ).toHaveText('Lucky Number');
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     // The safety timer completes the stage within its documented duration.
@@ -469,8 +936,8 @@ test.describe('Daily Resonance visual evidence', () => {
     'Set LUCKY_METER_CAPTURE=1 to write visual evidence screenshots.',
   );
 
-  test('captures the welcome reading and the fireworks finale', async ({ page }, testInfo) => {
-    const directory = 'artifacts/lucky-meter-visual-realism-20261116/after';
+  test('captures the welcome reading and the landed result', async ({ page }, testInfo) => {
+    const directory = 'artifacts/lucky-meter-premium-resonance-20261118/after';
     const prefix = `${testInfo.project.name}`;
 
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
@@ -479,9 +946,8 @@ test.describe('Daily Resonance visual evidence', () => {
     });
     await page.screenshot({ path: `${directory}/${prefix}-welcome.png` });
 
-    // A real reveal: the dial mid-spin and then the landed reading.
     await startReveal(page);
-    await page.waitForTimeout(1600);
+    await page.waitForTimeout(700);
     await page.screenshot({ path: `${directory}/${prefix}-dial-spin.png` });
     await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed', {
       timeout: 12_000,
@@ -491,26 +957,8 @@ test.describe('Daily Resonance visual evidence', () => {
     await expect(page.getByRole('button', { name: /Share My Resonance/i })).toBeVisible({
       timeout: 20_000,
     });
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: `${directory}/${prefix}-result.png` });
-  });
-
-  test('captures the golden fireworks finale', async ({ page }, testInfo) => {
-    await page.addInitScript(() => {
-      (window as unknown as { __LUCKY_METER_DEBUG__?: boolean }).__LUCKY_METER_DEBUG__ = true;
-    });
-    await seed(page, buildState({ tierId: 'high', percentage: 91, completed: false }));
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
-    // The engine exposes its own scene clock under the debug flag, so the shot
-    // lands on the golden finale instead of guessing at wall-clock time.
-    await page.waitForFunction(
-      () => (window as unknown as { __luckyCosmic?: { finaleSpawned?: boolean } }).__luckyCosmic?.finaleSpawned === true,
-      undefined,
-      { timeout: 40_000 },
-    );
-    await page.waitForTimeout(2400);
-    await page.screenshot({
-      path: `artifacts/lucky-meter-visual-realism-20261116/after/${testInfo.project.name}-fireworks-finale.png`,
-    });
   });
 });
 
@@ -519,7 +967,7 @@ test.describe('Daily Resonance cleanup', () => {
     const failures: string[] = [];
     page.on('pageerror', (error) => failures.push(String(error)));
 
-    await seed(page, buildState({ tierId: 'high', completed: false }));
+    await seed(page, buildState({ tierId: 'high', completed: false, sparkCompleted: true }));
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 14_000 });
