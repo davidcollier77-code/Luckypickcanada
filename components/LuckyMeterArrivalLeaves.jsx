@@ -235,7 +235,11 @@ export default function LuckyMeterArrivalLeaves() {
     if (reducedMotion) {
       setPhase('resting');
       const goneTimer = window.setTimeout(() => {
-        if (!stopped) setPhase('gone');
+        if (stopped) return;
+        stopped = true;
+        window.clearTimeout(resizeTimer);
+        window.removeEventListener('resize', onResize);
+        setPhase('gone');
       }, 1500);
       return () => {
         stopped = true;

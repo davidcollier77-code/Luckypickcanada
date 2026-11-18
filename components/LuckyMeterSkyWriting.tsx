@@ -35,7 +35,9 @@ export default function LuckyMeterSkyWriting({
   onComplete,
 }: LuckyMeterSkyWritingProps) {
   const chars = useMemo(() => (message ? Array.from(message) : []), [message]);
-  const [visibleCount, setVisibleCount] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(() =>
+    state === 'written' ? chars.length : 0,
+  );
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
