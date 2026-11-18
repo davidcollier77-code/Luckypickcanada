@@ -1,0 +1,154 @@
+[
+  {
+    "profile": "mobile",
+    "route": "/",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "currentSrc": "/assets/crystal-ball-bg-mobile.avif",
+    "naturalWidth": 1200,
+    "naturalHeight": 800,
+    "objectFit": "cover",
+    "objectPosition": "50% 42%",
+    "renderedWidth": 396,
+    "renderedHeight": 857,
+    "horizontalOverflow": 0,
+    "errors": [],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-mobile.avif",
+        "status": 200,
+        "bodyBytes": 115765
+      }
+    ]
+  },
+  {
+    "profile": "mobile",
+    "route": "/crystal-ball",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "currentSrc": "/assets/crystal-ball-bg-mobile.avif",
+    "naturalWidth": 1200,
+    "naturalHeight": 800,
+    "objectFit": "cover",
+    "objectPosition": "50% 42%",
+    "renderedWidth": 396,
+    "renderedHeight": 857,
+    "horizontalOverflow": 0,
+    "errors": [],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-mobile.avif",
+        "status": 200,
+        "bodyBytes": 115765
+      }
+    ]
+  },
+  {
+    "profile": "mobile",
+    "route": "/map",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "currentSrc": "/assets/crystal-ball-bg-mobile.avif",
+    "naturalWidth": 1200,
+    "naturalHeight": 800,
+    "objectFit": "cover",
+    "objectPosition": "50% 42%",
+    "renderedWidth": 396,
+    "renderedHeight": 857,
+    "horizontalOverflow": 0,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load a Lucky Stories page Error: Lucky Stories request failed with 500\n    at http://127.0.0.1:3101/_next/static/chunks/3829-820129ee70909432.js:1:6111",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-mobile.avif",
+        "status": 200,
+        "bodyBytes": 115765
+      }
+    ]
+  },
+  {
+    "profile": "desktop",
+    "route": "/",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "currentSrc": "/assets/crystal-ball-bg-desktop.avif",
+    "naturalWidth": 1920,
+    "naturalHeight": 1280,
+    "objectFit": "cover",
+    "objectPosition": "50% 45%",
+    "renderedWidth": 1462,
+    "renderedHeight": 914,
+    "horizontalOverflow": 0,
+    "errors": [],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-desktop.avif",
+        "status": 200,
+        "bodyBytes": 315369
+      }
+    ]
+  },
+  {
+    "profile": "desktop",
+    "route": "/crystal-ball",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "currentSrc": "/assets/crystal-ball-bg-desktop.avif",
+    "naturalWidth": 1920,
+    "naturalHeight": 1280,
+    "objectFit": "cover",
+    "objectPosition": "50% 45%",
+    "renderedWidth": 1462,
+    "renderedHeight": 914,
+    "horizontalOverflow": 0,
+    "errors": [],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-desktop.avif",
+        "status": 200,
+        "bodyBytes": 315369
+      }
+    ]
+  },
+  {
+    "profile": "desktop",
+    "route": "/map",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "currentSrc": "/assets/crystal-ball-bg-desktop.avif",
+    "naturalWidth": 1920,
+    "naturalHeight": 1280,
+    "objectFit": "cover",
+    "objectPosition": "50% 45%",
+    "renderedWidth": 1462,
+    "renderedHeight": 914,
+    "horizontalOverflow": 0,
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "Failed to load a Lucky Stories page Error: Lucky Stories request failed with 500\n    at http://127.0.0.1:3101/_next/static/chunks/3829-820129ee70909432.js:1:6111",
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "skyResponses": [
+      {
+        "url": "/assets/crystal-ball-bg-desktop.avif",
+        "status": 200,
+        "bodyBytes": 315369
+      }
+    ]
+  }
+]

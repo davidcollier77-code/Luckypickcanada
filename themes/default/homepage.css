@@ -475,29 +475,57 @@
    remain dynamic atmosphere. Existing content and interactions are preserved.
    ========================================================================== */
 
+/* The Milky Way is responsive markup (app/components/SkyBackdrop.js), not a CSS
+   `image-set()`: the browser picks the mobile or desktop artwork from the
+   element's `<source media>` list and fetches it at low priority. The layer
+   itself keeps the original base colour, filter and transform, and the gradient
+   and glow stay as overlay layers so the painted composition is unchanged. */
 .homepage-sky-backdrop {
   position: fixed;
   inset: 0;
   z-index: -30;
   pointer-events: none;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(2, 6, 13, 0.1) 0%,
-      rgba(2, 5, 11, 0.05) 34%,
-      rgba(2, 5, 10, 0.1) 64%,
-      rgba(1, 4, 8, 0.4) 100%
-    ),
-    image-set(url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg')) center 45% / cover no-repeat;
   background-color: #02050a;
   filter: saturate(0.92) contrast(1.05) brightness(1.0);
   transform: translateZ(0) scale(1.015);
+}
+
+.homepage-sky-backdrop__picture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+}
+
+.homepage-sky-backdrop__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+}
+
+/* The gradient was the top background layer before the photograph became an
+   element; it remains above the artwork, exactly as it painted then. */
+.homepage-sky-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 13, 0.1) 0%,
+    rgba(2, 5, 11, 0.05) 34%,
+    rgba(2, 5, 10, 0.1) 64%,
+    rgba(1, 4, 8, 0.4) 100%
+  );
 }
 
 .homepage-sky-backdrop::after {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 2;
   background:
     radial-gradient(ellipse at 50% 24%, rgba(102, 216, 203, 0.05), transparent 42%),
     radial-gradient(ellipse at 50% 86%, rgba(218, 170, 71, 0.08), transparent 42%),
@@ -680,8 +708,11 @@ body:has(.homepage-sky-backdrop)::after {
 
 @media (max-width: 820px) {
   .homepage-sky-backdrop {
-    background-position: center 42%;
     filter: saturate(0.9) contrast(1.04) brightness(1.0);
+  }
+
+  .homepage-sky-backdrop__art {
+    object-position: center 42%;
   }
 
   .homepage-star-canvas {
@@ -759,24 +790,6 @@ body:has(.homepage-sky-backdrop)::after {
 }
 
 
-@media (max-width: 820px) {
-  .homepage-sky-backdrop {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(2, 6, 13, 0.1) 0%,
-        rgba(2, 5, 11, 0.05) 34%,
-        rgba(2, 5, 10, 0.1) 64%,
-        rgba(1, 4, 8, 0.4) 100%
-      ),
-      /* AVIF first: on this photograph the re-encoded AVIF is 139 KiB against
-         175 KiB for the WebP, measured at slightly better fidelity (PSNR 38.1 dB
-         against the JPEG master, versus 36.9 dB for the WebP), so a browser that
-         supports it should not fall through to the larger WebP. Both remain in
-         the list, so the WebP and JPEG are still real fallbacks. */
-      image-set(url('/assets/crystal-ball-bg-mobile.avif') type('image/avif'), url('/assets/crystal-ball-bg-mobile.webp') type('image/webp'), url('/assets/crystal-ball-bg-mobile.jpeg') type('image/jpeg')) center 42% / cover no-repeat;
-  }
-}
 .checkout-modal-tip { background: linear-gradient(145deg, #2a2010, #141005); box-shadow: 0 26px 80px rgba(250, 204, 21, 0.15); border-color: rgba(250, 204, 21, 0.6); }
 .checkout-modal-tip h2 { color: #ffe2a0; text-shadow: 0 2px 10px rgba(250, 204, 21, 0.3); }
 
