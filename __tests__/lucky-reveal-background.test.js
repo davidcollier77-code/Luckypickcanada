@@ -14,6 +14,9 @@ import { join } from 'node:path';
 
 const popupSource = readFileSync(join(process.cwd(), 'app/lucky-reveal-popup.js'), 'utf8');
 const homepageCss = readFileSync(join(process.cwd(), 'themes/default/homepage.css'), 'utf8');
+// The homepage backdrop is responsive markup now; the shared artwork reference
+// and its focal treatment live there, while the CSS keeps the overlay layers.
+const homepageSky = readFileSync(join(process.cwd(), 'app/components/SkyBackdrop.js'), 'utf8');
 
 describe('Lucky Reveal background', () => {
   it('uses the homepage Milky Way artwork on the reveal overlay', () => {
@@ -39,7 +42,8 @@ describe('Lucky Reveal background', () => {
   });
 
   it("reuses the homepage backdrop's focal treatment", () => {
-    expect(homepageCss).toContain('/assets/crystal-ball-bg-desktop.webp');
+    expect(homepageSky).toContain('/assets/crystal-ball-bg-desktop.webp');
+    expect(homepageCss).toContain('object-position: center 45%');
     expect(popupSource).toContain("backgroundPosition: 'center, center 45%'");
     expect(popupSource).toContain("backgroundSize: 'auto, cover'");
     expect(popupSource).toContain("backgroundRepeat: 'no-repeat, no-repeat'");

@@ -1,5 +1,6 @@
 import '../../themes/default/homepage.css';
 import CrystalBallClient from '../crystal-ball-client/CrystalBallClient';
+import SkyBackdrop from '../components/SkyBackdrop';
 
 export const metadata = {
   title: 'Crystal Ball | Lucky Pick Canada',
@@ -21,7 +22,7 @@ export const metadata = {
 export default function CrystalBallPage() {
   return (
     <>
-      <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <SkyBackdrop />
       <CrystalBallClient />
     </>
   );

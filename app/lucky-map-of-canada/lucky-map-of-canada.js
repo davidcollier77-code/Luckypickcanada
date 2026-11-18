@@ -2,6 +2,7 @@
 import "../../themes/default/map.css";
 
 import { playButtonClick } from '../lib/audio';
+import SkyBackdrop from '../components/SkyBackdrop';
 import { storyProvinces } from '../lucky-story-provinces';
 
 
@@ -536,7 +537,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
   return (
     <div className="lucky-map-shell" style={pageStyle}>
-      <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <SkyBackdrop />
 
 
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>

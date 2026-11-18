@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import '../../../themes/default/homepage.css';
 import CrystalBallPreviewClient from '../../crystal-ball-client/CrystalBallPreviewClient';
+import SkyBackdrop from '../../components/SkyBackdrop';
 
 export const metadata = {
   title: 'Crystal Ball date preview | Lucky Pick Canada',
@@ -13,7 +14,7 @@ export default function CrystalBallPreviewPage() {
 
   return (
     <>
-      <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <SkyBackdrop />
       <CrystalBallPreviewClient />
     </>
   );

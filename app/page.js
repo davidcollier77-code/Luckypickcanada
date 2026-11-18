@@ -1,4 +1,5 @@
 import HomePage from './homepage/HomePage';
+import SkyBackdrop from './components/SkyBackdrop';
 import { AboutTeaserSection, CommunityStoriesSection } from './homepage/HomeStaticSections';
 import Hero from './homepage/Hero';
 import JsonLd from './components/JsonLd';
@@ -35,7 +36,7 @@ export default function Page() {
   return (
     <>
       <JsonLd data={faqSchema} />
-      <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <SkyBackdrop />
       <Hero />
       {/* The homepage shell is a client component, but the sections that need no
           state are rendered here, on the server, and handed in as slots. Their

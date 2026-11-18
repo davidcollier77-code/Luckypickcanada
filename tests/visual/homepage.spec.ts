@@ -96,14 +96,18 @@ test.describe("Homepage Visual", () => {
       await expect(backdrop).toHaveCSS('position', 'fixed');
       await expect(backdrop).toHaveCSS('z-index', '-30');
 
-      const backgroundImage = await backdrop.evaluate((element) => (
-        window.getComputedStyle(element).backgroundImage
-      ));
+      // The artwork is responsive markup now, so assert the image the browser
+      // actually selected rather than a CSS background layer.
+      const artwork = backdrop.locator('.homepage-sky-backdrop__art').first();
+      await expect(artwork).toBeAttached({ timeout: 10_000 });
+      await expect(artwork).toHaveCSS('object-fit', 'cover');
       const viewport = page.viewportSize();
       const expectedAsset = viewport && viewport.width <= 820
         ? 'crystal-ball-bg-mobile'
         : 'crystal-ball-bg-desktop';
-      expect(backgroundImage).toContain(expectedAsset);
+      await expect
+        .poll(async () => artwork.evaluate((element) => (element as HTMLImageElement).currentSrc))
+        .toContain(expectedAsset);
 
       await expect(page.locator('body')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
       await expect(page.locator('.homepage-background-foundation')).toHaveCSS('display', 'none');
