@@ -4,6 +4,9 @@
 
 Every result below was produced by the command named beside it in this workspace. Nothing here is inferred from a plan or from a previous run of the file.
 
+Committed alongside this record: the captures in `after/` and `build-size.txt`. The `.log` files named
+below are this workspace's own runs; the repository's `*.log` ignore rule keeps them local.
+
 ## 1. Unit and DOM suites
 
 Command:
