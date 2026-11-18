@@ -171,6 +171,14 @@ describe('Daily Resonance daily experience', () => {
     expect(stored.history.colours).toEqual(['cream']);
     expect(stored.history.sparks).toEqual(['spark-16']);
 
+    // The held breath: the ring is awake and the sky is listening, but no
+    // motion has started and no value has been exposed.
+    expect(screen.getByTestId('lucky-meter-anticipating')).toBeInTheDocument();
+    expect(screen.queryByText(/Reading today/i)).not.toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.anticipationMs);
+    });
+
     expect(screen.getByText(/Reading today/i)).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     // Nothing beyond the first settle has appeared yet.
@@ -220,29 +228,37 @@ describe('Daily Resonance daily experience', () => {
     expect(duration).toBeGreaterThanOrEqual(9500);
     expect(duration).toBeLessThanOrEqual(10500);
 
-    // The cinematic is still running: no quill, no countdown.
-    expect(screen.queryByTestId('lucky-spark-quill')).not.toBeInTheDocument();
+    // The cinematic is still running: no cursor, no countdown.
+    expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
 
     act(() => {
       stageControl.onComplete?.();
     });
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    // Home returns with the cinematic, but the countdown waits for the quill.
+    // Home returns with the cinematic, but the sky holds for a moment before
+    // the Spark begins, and the countdown waits for the writing.
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
+    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
+    expect(screen.queryByTestId('lucky-spark-message')).not.toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkStartDelayMs + REVEAL_TIMING.sparkMsPerCharacter * 6);
+      vi.advanceTimersByTime(REVEAL_TIMING.sparkStartDelayMs);
     });
-    expect(screen.getByTestId('lucky-spark-quill')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
+    expect(screen.getByTestId('lucky-spark-cursor')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.sparkMsPerCharacter * 6);
+    });
+    expect(screen.getByTestId('lucky-spark-cursor')).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(9000);
     });
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'written');
     expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
-    expect(screen.queryByTestId('lucky-spark-quill')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
     // Now — and only now — the countdown appears beneath Home.
     const dock = screen.getByTestId('lucky-meter-home').parentElement;
     expect(dock).toContainElement(screen.getByTestId('lucky-meter-countdown'));
@@ -294,6 +310,11 @@ describe('Daily Resonance daily experience', () => {
     });
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+    // The resumed cinematic keeps the same one-second pause before the Spark.
+    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.sparkStartDelayMs);
+    });
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
     expect(readStored().sparkCompleted).toBe(false);
 
@@ -334,7 +355,7 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-spark-quill')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
   });
 
   it('migrates a saved result without a Lucky Number exactly once', () => {

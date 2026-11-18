@@ -33,21 +33,35 @@ const angularGap = (left, right) => {
 };
 
 describe('reveal timing', () => {
-  it('starts all three motions together and settles them inside 1–1.5 seconds', () => {
+  it('holds for half a second, then settles three motions across 7–8 seconds', () => {
+    // A deliberate held breath before anything moves.
+    expect(REVEAL_TIMING.anticipationMs).toBe(500);
+    // Strict order, one continuous reveal.
     expect(REVEAL_TIMING.percentageSettleMs).toBeLessThan(REVEAL_TIMING.numberSettleMs);
     expect(REVEAL_TIMING.numberSettleMs).toBeLessThan(REVEAL_TIMING.colourSettleMs);
-    expect(REVEAL_TIMING.colourSettleMs).toBeGreaterThanOrEqual(1000);
-    expect(REVEAL_TIMING.colourSettleMs).toBeLessThanOrEqual(1500);
-    expect(REVEAL_TIMING.percentageSettleMs).toBeGreaterThanOrEqual(400);
+    expect(REVEAL_TIMING.colourSettleMs).toBeGreaterThanOrEqual(7000);
+    expect(REVEAL_TIMING.colourSettleMs).toBeLessThanOrEqual(8000);
+    expect(REVEAL_TIMING.percentageSettleMs).toBeGreaterThanOrEqual(2500);
     // The shared motion window is the last settle, so nothing runs on after it.
     expect(REVEAL_TIMING.spinMs).toBe(REVEAL_TIMING.colourSettleMs);
+    // Including the anticipation, the whole coordinated reveal fits in 8 s.
+    expect(REVEAL_TIMING.anticipationMs + REVEAL_TIMING.colourSettleMs).toBeLessThanOrEqual(
+      8000,
+    );
   });
 
   it('begins the percentage-selected cinematic only after every settle', () => {
-    expect(EVENT_START_MS).toBe(REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs);
-    expect(EVENT_START_MS).toBeGreaterThan(REVEAL_TIMING.colourSettleMs);
-    // The quill starts after the cinematic, never before it.
-    expect(REVEAL_TIMING.sparkStartDelayMs).toBeGreaterThan(0);
+    expect(EVENT_START_MS).toBe(
+      REVEAL_TIMING.anticipationMs +
+        REVEAL_TIMING.colourSettleMs +
+        REVEAL_TIMING.eventDelayMs,
+    );
+    expect(EVENT_START_MS).toBeGreaterThan(
+      REVEAL_TIMING.anticipationMs + REVEAL_TIMING.colourSettleMs,
+    );
+    // The sky-writing starts after the cinematic, after a one-second hold.
+    expect(REVEAL_TIMING.sparkStartDelayMs).toBeGreaterThanOrEqual(900);
+    expect(REVEAL_TIMING.sparkStartDelayMs).toBeLessThanOrEqual(1100);
     expect(REVEAL_TIMING.flashCount).toBeGreaterThanOrEqual(2);
     expect(REVEAL_TIMING.flashCount).toBeLessThanOrEqual(3);
   });

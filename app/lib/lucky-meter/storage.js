@@ -37,7 +37,7 @@ export function emptyMeterState() {
     // The three reveal motions have not settled. A refresh during the reveal
     // resumes them instead of jumping straight to the cinematic.
     revealCompleted: false,
-    // The GoldenLeaf has not finished writing the Spark. A refresh after the
+    // The sky has not finished writing the Spark. A refresh after the
     // cinematic but before the quill finished resumes the writing instead of
     // skipping it or replaying the completed cinematic.
     sparkCompleted: false,

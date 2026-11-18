@@ -1,3 +1,62 @@
+# Active Context — Lucky Meter Cinematic Flow
+
+- **Updated:** 2026-11-18
+- **Branch:** freebuff/48421c42b397224a7be733cc
+- **Base:** main at affe7857
+- **Spec Kit feature:** specs/185-lucky-meter-cinematic-flow
+
+## Current Task
+
+Refine the Lucky Meter into one cinematic flow: a brief arrival of realistic
+resting leaves, a 500 ms anticipation followed by a coordinated 7.4 s reveal, an
+audibly synchronized buildup and a Spark written in the sky by a tiny golden
+point of light. Selection, tiers, storage and the Milky Way stay frozen.
+
+## Implemented State
+
+- `app/lib/lucky-meter/arrival-leaves.js` owns five edge-bound leaves, phone
+  bands below the headline, a 1,000 ms rest, a staggered lift on the shared wind
+  field, a 2,350 ms crossing and a fade to zero. `getArrivalDurationMs` bounds
+  the whole introduction.
+- `components/LuckyMeterArrivalLeaves.jsx` is one DPR-capped Canvas 2D layer
+  with a procedural maple path, pigment gradient, veins, stem and grounded
+  shadow. It pauses on a hidden tab, resumes from the same moment, removes
+  itself when done and draws once without animation under reduced motion.
+- `REVEAL_TIMING` now holds for 500 ms and settles at 3,200 / 5,400 / 7,400 ms;
+  `EVENT_START_MS` includes the anticipation and is 8,320 ms. `DailyResonance`
+  shows a gathering point during the hold and shares `animateReveal` with the
+  refresh path.
+- The buildup starts with the held breath, is skipped if it loads after the
+  dial's window, fades at the percentage settle and never plays under reduced
+  motion. The event cue map is unchanged.
+- `components/LuckyMeterSkyWriting.tsx` replaces the panel and GoldenLeaf with
+  glowing sky text and a tiny golden cursor; it owns the character clock so the
+  page does not re-render per character. `handleStageComplete` holds for 1,000 ms
+  before writing. Reduced motion shows the complete message at once.
+
+## Verification
+
+- `pnpm exec vitest run`: 92 files / 947 tests passed.
+- `pnpm exec tsc --noEmit`: exit 0.
+- Playwright full Daily Resonance spec on desktop: 25 passed, 1 skipped.
+- Focused arrival, Spark and reduced-motion checks on mobile-390 and mobile-412:
+  12 passed; the reveal trace also passed on mobile-390.
+- Production build: 470,665,215 bytes (448.86 MiB), below 495 MiB; production
+  build, `./freebuff-verify.sh` and the docs suite passed.
+- Evidence and before/after captures:
+  `artifacts/lucky-meter-cinematic-flow-20261118/` and
+  `specs/185-lucky-meter-cinematic-flow/evidence.md`.
+
+## Limitations
+
+- Audio was not listened to; the cue map is unchanged and the audio suites pass.
+- This workspace has no hardware GPU, so browser captures and frame behaviour
+  are software-rendered.
+- The full mobile spec file was not run end-to-end; focused mobile suites cover
+  the changed flow.
+
+---
+
 # Active Context — Premium Daily Resonance
 
 - **Updated:** 2026-11-18
