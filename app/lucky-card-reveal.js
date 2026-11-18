@@ -10,6 +10,7 @@ import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky
 import { getLuckyCardTierPresentation } from './lucky-card-presentation';
 import LuckyCardShare from './lucky-card-share';
 import { playButtonClick } from './lib/audio';
+import { beginActiveExperience } from './lib/resource-readiness';
 import { getCanvas2DContext, watchContextLoss } from './lib/graphics-capabilities';
 import MidnightCountdown from '../components/midnight-countdown';
 
@@ -399,6 +400,14 @@ export default function LuckyCardReveal() {
       stopAll();
     };
   }, [stopAll]);
+
+  // The reveal owns the frames and the Web Audio cues while it runs. The shared
+  // readiness hub pauses only its queued background work for that window and
+  // resumes afterwards; the reveal itself is untouched.
+  useEffect(() => {
+    if (!isGenerating) return undefined;
+    return beginActiveExperience('lucky-card-reveal');
+  }, [isGenerating]);
 
   // A lost 2D context must not leave the loop running against an invalid canvas.
   // The CSS/Framer reveal and its fallback timer continue independently.

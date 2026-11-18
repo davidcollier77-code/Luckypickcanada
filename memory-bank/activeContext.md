@@ -1,3 +1,54 @@
+# Active Context — Site-Wide Resource-Readiness Hub
+
+- **Updated:** 2026-11-18
+- **Branch:** freebuff/df6965c97260bd2bd71121ef
+- **Base:** main at fad3adff
+- **Spec Kit feature:** specs/186-resource-readiness-hub
+
+## Current Task
+
+Extend Feature 180 with one lightweight, site-wide resource-readiness hub for intelligent preloading, cache
+reuse and active-experience protection, compatible with current and future optional renderers.
+
+## Implemented State
+
+- `app/lib/resource-readiness.js` owns the registration contract (`id`, `version`, routes, dependencies,
+  ordered resources), idempotent registration with version invalidation, image/code/audio adapters, a future
+  adapter kind registry, plan-bounded scheduling, deduplication, truthful readiness, retry, release and
+  server-safe guards. It adds no capability probe or subscription of its own.
+- `app/lib/resource-readiness-manifest.js` registers Lucky Card Reveal (shared by personal and gift routes),
+  Lucky Meter/Daily Resonance, Lucky Number Generator, Crystal Ball, Lucky Map and Lucky Stories. The map sky
+  and Crystal Ball audio are deferred to route/intent; no API is ever warmed.
+- `components/ResourceReadiness.jsx` is mounted once in `app/layout.js`, renders nothing, supplies the Next
+  router prefetcher, prepares the current route in an idle period, and schedules the homepage's plan-bounded
+  likely-next order after load plus two frames. One delegated hover/focus/press listener set replaces
+  per-link subscriptions.
+- `components/DailyResonance.tsx` and `app/lucky-card-reveal.js` hold the hub's active-experience marker
+  while their animations run, so queued background work pauses and resumes without touching timing or sound.
+- Focused suites: `__tests__/resource-readiness.test.js` (20 tests) and
+  `__tests__/resource-readiness-manifest.test.js` (8 tests) pass, 29 focused tests total; `tsc --noEmit`
+  exits 0.
+
+## Verification
+
+- Focused suites 29 tests, full Vitest 94 files / 976 tests, `tsc --noEmit` exit 0 and
+  `./freebuff-verify.sh` exit 0.
+- Production build: 331.61 MiB clean, 348.72 MiB after the repository gate; both below 495 MiB.
+- Playwright production-server evidence: moderate homepage prepared two likely-next experiences with each asset
+  requested once; Save-Data/mobile prepared none with zero console errors; `/reveal` shared its card back and
+  backdrop with the page markup at one request each. Before/after homepage numbers and limitations are in
+  `specs/186-resource-readiness-hub/evidence.md`.
+
+## Limitations
+
+- The owner brief named $1.99/$2.99 paid reveals; the repository prices are CAD $1.00 and CAD $1.99 and were
+  preserved unchanged.
+- The browser may evict cached bytes; the hub never promises permanent retention and adds no service worker or
+  storage layer.
+- This workspace has no hardware GPU, so any browser capture is software-rendered.
+
+---
+
 # Active Context — Lucky Meter Cinematic Flow
 
 - **Updated:** 2026-11-18

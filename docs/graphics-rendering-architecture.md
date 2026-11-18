@@ -197,3 +197,37 @@ tiers stay there, and the adaptive layer composes with them.
 `docs/graphics-rendering-architecture.md` remains the rendering contract;
 `specs/180-adaptive-performance-rendering/` holds this layer's specification,
 plan, tasks and evidence.
+
+## Resource-readiness hub
+
+`app/lib/resource-readiness.js` coordinates preparation for the experiences that
+sit on top of these renderers. It is not a renderer and not a second adaptive
+layer: it reads the existing plan and uses its parallel-request limit, prefetch
+policy, audio policy and release registry.
+
+- **Registration contract.** An experience declares its `id`, `version`, routes,
+  dependencies and ordered resources. A resource is `{ kind, url | route,
+  prepare? }`; the built-in adapters are `image` (load + decode), `code` (the Next
+  router's prefetch) and `audio` (the existing Howler/Web Audio prepare function).
+  A future Canvas, WebGL or WebGPU renderer registers its own adapter kind through
+  `registerResourceAdapter`; no renderer migration is required today.
+- **Preparation only.** The hub never plays a sound, draws a frame or runs
+  business logic. Preparing audio does not unlock or start it; the activation
+  path still owns autoplay rules.
+- **Truthful readiness.** Resources report `fetched`, `initialized`, `ready`,
+  `failed` or `skipped`, and an experience is ready only when its required
+  resources are. A missing dependency, a cycle or a failed resource fails safely
+  and can be retried without repeating ready work.
+- **Bounded and deduplicated.** One URL shared by several experiences makes one
+  request. Concurrency is `min(plan.maxParallelRequests, 3)`; queued background
+  work pauses during an active reveal/cinematic, a hidden page or Save-Data and
+  resumes through the shared plan subscription. Background runs start only from
+  an idle period after load; heavy assets (`background: false`) wait for the
+  route or for intent.
+- **Caching.** The hub warms the exact URLs used in markup, so the existing
+  immutable `Cache-Control` responses are reused. No service worker, storage
+  layer or cache-busting query string is added, and nothing promises permanent
+  retention: the browser may evict any entry.
+
+`specs/186-resource-readiness-hub/` holds this hub's specification, plan, tasks
+and evidence.

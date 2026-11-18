@@ -12,6 +12,7 @@ import LuckyMeterOrnaments from './LuckyMeterOrnaments';
 import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
+import { beginActiveExperience } from '../app/lib/resource-readiness';
 import { useDailyResetCountdown } from './daily-reset-countdown';
 import { getLocalDateKey } from '../app/lib/daily-reset';
 import { prefersReducedMotion } from '../app/lib/graphics-capabilities';
@@ -205,6 +206,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // The countdown waits for the sky-writing, so the finished Spark is never
   // covered by a reset clock that still says the day is over.
   const showCountdown = showHome && sparkComplete;
+
+  // Hold background resource preparation while the cinematic owns the frame and
+  // audio timeline. The hub resumes its queued, non-essential work when this
+  // releases; nothing about the animation or its sound changes.
+  useEffect(() => {
+    if (!stageActive) return undefined;
+    return beginActiveExperience('lucky-meter-reveal');
+  }, [stageActive]);
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));

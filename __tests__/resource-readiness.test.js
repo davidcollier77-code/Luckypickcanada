@@ -1,0 +1,572 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const originalConnection = Object.getOwnPropertyDescriptor(navigator, 'connection');
+const originalDeviceMemory = Object.getOwnPropertyDescriptor(navigator, 'deviceMemory');
+const originalHardwareConcurrency = Object.getOwnPropertyDescriptor(navigator, 'hardwareConcurrency');
+
+let hub;
+let adaptive;
+
+async function loadModules() {
+  vi.resetModules();
+  adaptive = await import('../app/lib/adaptive-performance.js');
+  hub = await import('../app/lib/resource-readiness.js');
+  hub.resetResourceReadiness();
+  return { hub, adaptive };
+}
+
+function stubDevice({ memory, cores }) {
+  Object.defineProperty(navigator, 'deviceMemory', { value: memory, configurable: true });
+  Object.defineProperty(navigator, 'hardwareConcurrency', { value: cores, configurable: true });
+}
+
+function stubConnection(value) {
+  Object.defineProperty(navigator, 'connection', { value, configurable: true });
+}
+
+function useCapableProfile() {
+  stubDevice({ memory: 8, cores: 8 });
+  stubConnection({ downlink: 30, rtt: 30, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+  adaptive.refreshAdaptivePlan();
+}
+
+function useConstrainedProfile() {
+  stubDevice({ memory: 1, cores: 2 });
+  stubConnection({ downlink: 30, rtt: 30, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+  adaptive.refreshAdaptivePlan();
+}
+
+async function flushMicrotasks() {
+  for (let index = 0; index < 6; index += 1) {
+    await Promise.resolve();
+  }
+}
+
+function registerTestExperience(overrides = {}) {
+  return hub.registerExperienceResources({
+    id: 'test-experience',
+    version: 1,
+    label: 'Test experience',
+    routes: ['/test'],
+    dependsOn: [],
+    resources: [{ id: 'test-resource', kind: 'test', url: '/test-resource.avif' }],
+    ...overrides,
+  });
+}
+
+beforeEach(async () => {
+  await loadModules();
+});
+
+afterEach(() => {
+  if (typeof window !== 'undefined') window.history.replaceState({}, '', '/');
+  hub.resetResourceReadiness();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+
+  if (originalConnection) {
+    Object.defineProperty(navigator, 'connection', originalConnection);
+  } else {
+    delete navigator.connection;
+  }
+  if (originalDeviceMemory) {
+    Object.defineProperty(navigator, 'deviceMemory', originalDeviceMemory);
+  } else {
+    delete navigator.deviceMemory;
+  }
+  if (originalHardwareConcurrency) {
+    Object.defineProperty(navigator, 'hardwareConcurrency', originalHardwareConcurrency);
+  } else {
+    delete navigator.hardwareConcurrency;
+  }
+});
+
+describe('registration contract', () => {
+  it('registers one experience and unregisters it idempotently', () => {
+    const unregister = registerTestExperience();
+
+    expect(hub.getRegisteredExperiences()).toHaveLength(1);
+    expect(hub.getExperienceDefinition('test-experience')).toMatchObject({
+      id: 'test-experience',
+      version: 1,
+      routes: ['/test'],
+    });
+
+    unregister();
+    unregister();
+    expect(hub.getRegisteredExperiences()).toHaveLength(0);
+  });
+
+  it('rejects definitions without an id, a version or resources', () => {
+    expect(() => hub.registerExperienceResources({ version: 1, resources: [] })).toThrow(TypeError);
+    expect(() => hub.registerExperienceResources({ id: 'missing-version', resources: [] })).toThrow(TypeError);
+    expect(() => hub.registerExperienceResources({ id: 'missing-resources', version: 1 })).toThrow(TypeError);
+    expect(() =>
+      hub.registerExperienceResources({
+        id: 'missing-target',
+        version: 1,
+        resources: [{ kind: 'image' }],
+      }),
+    ).toThrow(TypeError);
+  });
+
+  it('treats a repeated id and version as one registration instead of duplicating it', async () => {
+    registerTestExperience();
+    registerTestExperience();
+    expect(hub.getRegisteredExperiences()).toHaveLength(1);
+
+    const prepare = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', prepare);
+    await hub.prepareExperience('test-experience');
+    expect(prepare).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops prepared state and re-prepares when the version changes', async () => {
+    let calls = 0;
+    hub.registerResourceAdapter('test', async () => {
+      calls += 1;
+    });
+    registerTestExperience();
+    const first = await hub.prepareExperience('test-experience');
+    expect(first.state).toBe('ready');
+    expect(calls).toBe(1);
+
+    registerTestExperience({ version: 2 });
+    const second = await hub.prepareExperience('test-experience');
+    expect(second.version).toBe(2);
+    expect(calls).toBe(2);
+  });
+});
+
+describe('deduplication and cache reuse', () => {
+  it('serves one request for one URL shared by three experiences', async () => {
+    useCapableProfile();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('shared', adapter);
+
+    for (const id of ['one', 'two', 'three']) {
+      hub.registerExperienceResources({
+        id,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: 'shared-image', kind: 'shared', url: '/shared.avif' }],
+      });
+    }
+
+    const snapshots = await Promise.all([
+      hub.prepareExperience('one'),
+      hub.prepareExperience('two'),
+      hub.prepareExperience('three'),
+    ]);
+
+    expect(adapter).toHaveBeenCalledTimes(1);
+    expect(snapshots.map((snapshot) => snapshot.state)).toEqual(['ready', 'ready', 'ready']);
+  });
+
+  it('reuses prepared resources across a navigation and a revisit', async () => {
+    useCapableProfile();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    await hub.prepareExperience('test-experience');
+    await hub.prepareExperience('test-experience');
+    hub.releaseExperienceResources('test-experience');
+
+    // Releasing the hub's decoded references does not evict the browser cache,
+    // so a revisit prepares again and the adapter is the only thing that runs.
+    await hub.prepareExperience('test-experience');
+    expect(adapter).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares one in-flight request rather than starting a second', async () => {
+    useCapableProfile();
+    let release;
+    const adapter = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          release = resolve;
+        }),
+    );
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    const first = hub.prepareExperience('test-experience');
+    const second = hub.prepareExperience('test-experience');
+    await flushMicrotasks();
+    expect(adapter).toHaveBeenCalledTimes(1);
+
+    release({});
+    await Promise.all([first, second]);
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('dependencies', () => {
+  it('prepares a dependency before the experience that needs it', async () => {
+    useCapableProfile();
+    const order = [];
+    hub.registerResourceAdapter('test', async (resource) => {
+      order.push(resource.id);
+    });
+
+    hub.registerExperienceResources({
+      id: 'dependency',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'dependency-resource', kind: 'test', url: '/dependency' }],
+    });
+    hub.registerExperienceResources({
+      id: 'dependent',
+      version: 1,
+      dependsOn: ['dependency'],
+      resources: [{ id: 'dependent-resource', kind: 'test', url: '/dependent' }],
+    });
+
+    const snapshot = await hub.prepareExperience('dependent');
+    expect(snapshot.state).toBe('ready');
+    expect(order).toEqual(['dependency-resource', 'dependent-resource']);
+  });
+
+  it('fails safely for a missing dependency and for a dependency cycle', async () => {
+    useCapableProfile();
+    hub.registerResourceAdapter('test', async () => {});
+    hub.registerExperienceResources({
+      id: 'orphan',
+      version: 1,
+      dependsOn: ['missing'],
+      resources: [{ id: 'orphan-resource', kind: 'test', url: '/orphan' }],
+    });
+    expect((await hub.prepareExperience('orphan')).state).toBe('failed');
+
+    hub.registerExperienceResources({
+      id: 'cycle-a',
+      version: 1,
+      dependsOn: ['cycle-b'],
+      resources: [{ id: 'cycle-a-resource', kind: 'test', url: '/cycle-a' }],
+    });
+    hub.registerExperienceResources({
+      id: 'cycle-b',
+      version: 1,
+      dependsOn: ['cycle-a'],
+      resources: [{ id: 'cycle-b-resource', kind: 'test', url: '/cycle-b' }],
+    });
+
+    const cycle = await hub.prepareExperience('cycle-a');
+    expect(cycle.state).toBe('failed');
+  });
+});
+
+describe('priority, yielding and resume', () => {
+  it('holds background preparation during an active experience and resumes it after', async () => {
+    useCapableProfile();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    const end = hub.beginActiveExperience('test-reveal');
+    expect(hub.isExperienceActive()).toBe(true);
+
+    const preparation = hub.prepareExperience('test-experience', { priority: 'background' });
+    await flushMicrotasks();
+    expect(adapter).not.toHaveBeenCalled();
+
+    end();
+    end();
+    expect(hub.isExperienceActive()).toBe(false);
+
+    const snapshot = await preparation;
+    expect(snapshot.state).toBe('ready');
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+
+  it('never stalls critical or intent preparation for an active experience', async () => {
+    useCapableProfile();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    const end = hub.beginActiveExperience('test-reveal');
+    const snapshot = await hub.prepareExperience('test-experience', { priority: 'critical' });
+    end();
+
+    expect(snapshot.state).toBe('ready');
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+
+  it('bounds concurrent preparation to the adaptive plan without exceeding three', async () => {
+    useCapableProfile();
+    const releases = [];
+    let active = 0;
+    let peak = 0;
+    hub.registerResourceAdapter('test', () => {
+      active += 1;
+      peak = Math.max(peak, active);
+      return new Promise((resolve) => {
+        releases.push(() => {
+          active -= 1;
+          resolve({});
+        });
+      });
+    });
+
+    hub.registerExperienceResources({
+      id: 'wide',
+      version: 1,
+      dependsOn: [],
+      resources: [1, 2, 3, 4, 5].map((index) => ({
+        id: `wide-${index}`,
+        kind: 'test',
+        url: `/wide-${index}`,
+      })),
+    });
+
+    const preparation = hub.prepareExperience('wide');
+    await flushMicrotasks();
+    expect(peak).toBe(3);
+
+    while (releases.length > 0) {
+      releases.shift()();
+      await flushMicrotasks();
+    }
+
+    expect((await preparation).state).toBe('ready');
+    expect(peak).toBe(3);
+  });
+
+  it('prepares nothing on a Save-Data connection', async () => {
+    stubDevice({ memory: 8, cores: 8 });
+    stubConnection({
+      saveData: true,
+      downlink: 30,
+      rtt: 30,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    });
+    adaptive.refreshAdaptivePlan();
+
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    const cancel = hub.prepareExperiencesWhenIdle(['test-experience']);
+    cancel();
+    await flushMicrotasks();
+    expect(adapter).not.toHaveBeenCalled();
+  });
+
+  it('prepares one likely experience on a constrained device and three on a capable one', async () => {
+    vi.useFakeTimers();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    for (const id of ['a', 'b', 'c', 'd']) {
+      hub.registerExperienceResources({
+        id,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `${id}-resource`, kind: 'test', url: `/${id}` }],
+      });
+    }
+
+    useConstrainedProfile();
+    hub.prepareExperiencesWhenIdle(['a', 'b', 'c', 'd']);
+    vi.advanceTimersByTime(400);
+    await flushMicrotasks();
+    expect(adapter).toHaveBeenCalledTimes(1);
+
+    adapter.mockClear();
+    useCapableProfile();
+    hub.prepareExperiencesWhenIdle(['b', 'c', 'd']);
+    vi.advanceTimersByTime(400);
+    await flushMicrotasks();
+    expect(adapter).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('readiness, failure and retry', () => {
+  it('reports fetched and initialized before ready for a decoded image', async () => {
+    useCapableProfile();
+    let resolveDecode;
+    const images = [];
+
+    class FakeImage {
+      constructor() {
+        this.complete = false;
+        this.naturalWidth = 0;
+        images.push(this);
+      }
+
+      decode() {
+        return new Promise((resolve) => {
+          resolveDecode = resolve;
+        });
+      }
+    }
+    vi.stubGlobal('Image', FakeImage);
+
+    hub.registerExperienceResources({
+      id: 'image-experience',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'hero', kind: 'image', url: '/hero.avif' }],
+    });
+
+    const preparation = hub.prepareExperience('image-experience');
+    await flushMicrotasks();
+    expect(hub.getExperienceReadiness('image-experience').resources[0].state).toBe('preparing');
+
+    images[0].onload();
+    await flushMicrotasks();
+    const fetched = hub.getExperienceReadiness('image-experience');
+    expect(fetched.resources[0].state).toBe('fetched');
+    expect(fetched.state).toBe('preparing');
+
+    resolveDecode();
+    const ready = await preparation;
+    expect(ready.state).toBe('ready');
+    expect(ready.resources[0].state).toBe('ready');
+  });
+
+  it('retries a failed resource once and reports a real failure when it still fails', async () => {
+    vi.useFakeTimers();
+    useCapableProfile();
+    let attempts = 0;
+    hub.registerResourceAdapter('flaky', async () => {
+      attempts += 1;
+      throw new Error('network down');
+    });
+    hub.registerExperienceResources({
+      id: 'flaky',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'flaky-resource', kind: 'flaky', url: '/flaky' }],
+    });
+
+    const preparation = hub.prepareExperience('flaky');
+    await flushMicrotasks();
+    expect(attempts).toBe(1);
+
+    vi.advanceTimersByTime(400);
+    const failed = await preparation;
+    expect(attempts).toBe(2);
+    expect(failed.state).toBe('failed');
+    expect(failed.resources[0].state).toBe('failed');
+    expect(failed.resources[0].error).toContain('network down');
+  });
+
+  it('recovers through an explicit retry without repeating ready resources', async () => {
+    useCapableProfile();
+    let fail = true;
+    const adapter = vi.fn(async (resource) => {
+      if (fail && resource.url === '/flaky') throw new Error('temporary');
+      return {};
+    });
+    hub.registerResourceAdapter('test', adapter);
+    vi.useFakeTimers();
+
+    hub.registerExperienceResources({
+      id: 'retryable',
+      version: 1,
+      dependsOn: [],
+      resources: [
+        { id: 'always-ready', kind: 'test', url: '/ready' },
+        { id: 'flaky', kind: 'test', url: '/flaky' },
+      ],
+    });
+
+    const first = hub.prepareExperience('retryable');
+    await flushMicrotasks();
+    vi.advanceTimersByTime(400);
+    const failed = await first;
+    expect(failed.state).toBe('failed');
+
+    fail = false;
+    adapter.mockClear();
+    const retried = await hub.retryExperience('retryable');
+    expect(retried.state).toBe('ready');
+    // Only the failed resource is requested again.
+    expect(adapter).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('release and server safety', () => {
+  it('releases prepared entries through the existing adaptive release registry', async () => {
+    useCapableProfile();
+    const adapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('test', adapter);
+    registerTestExperience();
+
+    await hub.prepareExperience('test-experience');
+    expect(adaptive.releaseRegisteredResources('memory-pressure')).toBeGreaterThan(0);
+    expect(hub.getExperienceReadiness('test-experience')).toBeNull();
+
+    await hub.prepareExperience('test-experience');
+    expect(adapter).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not prepare background-disabled audio during idle and does prepare it on intent', async () => {
+    useCapableProfile();
+    const imageAdapter = vi.fn().mockResolvedValue({});
+    const audioAdapter = vi.fn().mockResolvedValue({});
+    hub.registerResourceAdapter('image', imageAdapter);
+    hub.registerResourceAdapter('audio', audioAdapter);
+
+    hub.registerExperienceResources({
+      id: 'audio-experience',
+      version: 1,
+      dependsOn: [],
+      resources: [
+        { id: 'art', kind: 'image', url: '/art.avif', background: true },
+        { id: 'sound', kind: 'audio', prepare: async () => {}, background: false },
+      ],
+    });
+
+    const background = await hub.prepareExperience('audio-experience', { priority: 'background' });
+    expect(background.state).toBe('ready');
+    expect(background.partial).toBe(true);
+    expect(audioAdapter).not.toHaveBeenCalled();
+
+    await hub.prepareExperience('audio-experience', { priority: 'intent' });
+    expect(audioAdapter).toHaveBeenCalledTimes(1);
+    expect(imageAdapter).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips a route prefetch for the page already on screen', async () => {
+    useCapableProfile();
+    const prefetch = vi.fn();
+    hub.configureRoutePrefetch(prefetch);
+    window.history.pushState({}, '', '/current-route');
+
+    hub.registerExperienceResources({
+      id: 'current-route-experience',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'current-route-code', kind: 'code', route: '/current-route' }],
+    });
+
+    const snapshot = await hub.prepareExperience('current-route-experience');
+    expect(prefetch).not.toHaveBeenCalled();
+    expect(snapshot.resources[0].state).toBe('skipped');
+    expect(snapshot.resources[0].reason).toBe('current-route');
+  });
+
+  it('is server-safe: importing and preparing without a window does no work', async () => {
+    vi.stubGlobal('window', undefined);
+    vi.stubGlobal('document', undefined);
+    vi.resetModules();
+    const serverHub = await import('../app/lib/resource-readiness.js');
+
+    expect(() => serverHub.registerExperienceResources({
+      id: 'server',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'server-resource', kind: 'test', url: '/server' }],
+    })).not.toThrow();
+
+    const snapshot = await serverHub.prepareExperience('server');
+    expect(snapshot.state).toBe('idle');
+    expect(serverHub.whenIdle(() => {})).toBeTypeOf('function');
+    expect(serverHub.beginActiveExperience('server')).toBeTypeOf('function');
+  });
+});

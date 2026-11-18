@@ -1,0 +1,13 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.0 [39m[90m/workspace/chats/df6965c97260bd2bd71121ef[39m
+
+(node:28861) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ [32m✓[39m __tests__/resource-readiness.test.js [2m([22m[2m21 tests[22m[2m)[22m[32m 126[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness-manifest.test.js [2m([22m[2m8 tests[22m[2m)[22m[32m 178[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m29 passed[39m[22m[90m (29)[39m
+[2m   Start at [22m 12:51:51
+[2m   Duration [22m 1.24s[2m (environment 67%, tests 14%, setup 11%, transform 6%, import 1%, worker 1%)[22m
+

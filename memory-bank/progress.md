@@ -1,3 +1,19 @@
+## 2026-11-18 — Site-wide resource-readiness hub
+- Added one preparation hub over the existing adaptive plan: experience registrations with version, routes,
+  dependencies and ordered resources; image (load + decode), code (Next router prefetch) and audio (existing
+  Howler/Web Audio prepare, never playback) adapters; and a registered adapter kind for future Canvas/WebGL/
+  WebGPU resources. It adds no capability detector, subscription, frame governor or competing preloader.
+- Preparation is deduplicated by kind + target + version, bounded to `min(plan.maxParallelRequests, 3)`,
+  paused for background work during an active reveal/cinematic, a hidden page or Save-Data, and resumed through
+  the existing shared plan subscription. Readiness reports fetched, initialized, ready, failed and skipped;
+  failures retry once automatically and can be retried explicitly without repeating ready work.
+- Registered all seven requested experiences: reveal (personal and gift share one registration), Lucky Meter,
+  Lucky Number Generator, Crystal Ball, Lucky Map and Lucky Stories. The map sky and Crystal Ball audio are
+  deferred to route/intent, and no API or data endpoint is prewarmed.
+- Homepage preparation starts only after load plus two frames and an idle period, in manifest order, capped at
+  three on capable, two on moderate and one on constrained, with none on Save-Data/slow.
+- Focused suites 29 tests, affected regression suites 110 tests, full suite 976 tests and `tsc --noEmit` pass.
+
 ## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
 - Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage
   range/weighting and only-newest exclusion, uniform 1–50 number and 12-colour palette with older values

@@ -1,0 +1,413 @@
+Starting verification...
+
+--- Bootstrapping the pinned package manager ---
+✅ Using pnpm 10.30.3 (/workspace/homes/df6965c97260bd2bd71121ef/.local/bin/pnpm)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 4.6s using pnpm v10.30.3
+
+--- Testing Spec Kit Governance Gate ---
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: missing task artifacts
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: untracked task artifacts without shared pointer
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: current artifacts win over a stale ignored pointer
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'task-branch'
+PASS: committed task artifacts on feature branch
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: unchanged artifacts from prior task
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: missing tasks.md
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: empty required artifact
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'task-branch'
+PASS: committed artifacts without a comparison base fail closed with a clear message
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: multiple active feature directories
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+PASS: partial second feature directory
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/opennextjs-cloudflare-1.20.15'
+PASS: Dependabot npm maintenance change is exempt from task artifacts
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/github_actions/astral-sh/setup-uv-10.3.3'
+PASS: Dependabot GitHub Actions maintenance change is exempt from task artifacts
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/fixture-1.0.1'
+PASS: dependency-only change without the trusted author signal
+PASS: dependency-only change authored by a human pull request
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/mixed-app-1.0.1'
+PASS: Dependabot author with an application source change
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/mixed-scripts-1.0.1'
+PASS: Dependabot author with a verification-script change
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/mixed-docs-1.0.1'
+PASS: Dependabot author with a documentation change
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/github_actions/nested-1.0.1'
+PASS: Dependabot author with a nested workflow path
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/with-artifacts-1.0.1'
+PASS: Dependabot author with an incomplete task artifact set
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/human-followup-1.0.1'
+PASS: dependency scope with a hand-authored commit
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/empty-author-1.0.1'
+PASS: dependency scope with a commit that has no author email
+PASS: an empty author email is reported as the exemption blocker
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'dependabot/npm_and_yarn/no-base-1.0.1'
+PASS: Dependabot scope without a comparison base
+PASS: deploy-updater-scheduler.yml forwards the GitHub-reported pull request author
+PASS: visual-qa.yml does not depend on freebuff-verify.sh
+All Spec Kit task-artifact verifier tests passed.
+✅ Verified changed artifact: /workspace/chats/df6965c97260bd2bd71121ef/specs/186-resource-readiness-hub/spec.md
+✅ Verified changed artifact: /workspace/chats/df6965c97260bd2bd71121ef/specs/186-resource-readiness-hub/plan.md
+✅ Verified changed artifact: /workspace/chats/df6965c97260bd2bd71121ef/specs/186-resource-readiness-hub/tasks.md
+✅ Spec Kit task artifacts verified and current: /workspace/chats/df6965c97260bd2bd71121ef/specs/186-resource-readiness-hub
+
+--- Testing Verification Status Integrity Checker ---
+.............................
+----------------------------------------------------------------------
+Ran 29 tests in 0.234s
+
+OK
+
+--- Testing AGENTS.md Protection Classifier ---
+...........................
+----------------------------------------------------------------------
+Ran 27 tests in 0.254s
+
+OK
+
+--- Running Type Check ---
+
+--- Running Build Check ---
+
+> luckypickcanada@1.0.0 build /workspace/chats/df6965c97260bd2bd71121ef
+> next build --webpack
+
+▲ Next.js 16.4.5 (webpack)
+- Environments: .env.local
+✓ Running next.config.mjs took 18ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.4s
+  Running TypeScript ...
+  Finished TypeScript in 3.7s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/21) ...
+  Generating static pages using 7 workers (5/21) 
+  Generating static pages using 7 workers (10/21) 
+  Generating static pages using 7 workers (15/21) 
+✓ Generating static pages using 7 workers (21/21) in 812ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)                               Revalidate  Expire
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ƒ /admin/suggestions
+├ ƒ /api/admin/test-gift-email
+├ ƒ /api/checkout
+├ ƒ /api/cloudflare-issues/resolve
+├ ƒ /api/gift-delivery
+├ ƒ /api/luck-map
+├ ƒ /api/lucky-reveals-count
+├ ƒ /api/lucky-stories
+├ ƒ /api/lucky-stories/react
+├ ƒ /api/oracle
+├ ƒ /api/send-gift
+├ ƒ /api/stripe-webhook
+├ ƒ /api/suggestions
+├ ƒ /api/verify-session
+├ ƒ /api/visits
+├ ○ /crystal-ball
+├ ○ /crystal-ball/preview
+├ ○ /lucky-map-of-canada                          1h      1y
+├ ○ /lucky-meter
+├ ƒ /map
+├ ○ /privacy
+├ ƒ /reveal
+├ ƒ /reveal/[revealId]
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ○ /terms
+├ ƒ /where-luck-has-been-found-in-canada
+└ ○ /widget/daily-meter
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> luckypickcanada@1.0.0 postbuild /workspace/chats/df6965c97260bd2bd71121ef
+> echo 'Build completed successfully'
+
+Build completed successfully
+
+--- Running Refresh Docs Tests ---
+Running test suite for refresh-docs.js...
+✅ validateDocumentContent accepts Markdown and plain text but rejects raw HTML
+✅ convertHtmlToMarkdown extracts semantic content and preserves documentation structures
+✅ normalizeDocumentationResponse prefers a same-origin Markdown alternate
+✅ normalizeDocumentationResponse detects HTML with missing or misleading Content-Type
+✅ normalizeDocumentationResponse leaves HTML error and challenge pages for rejection
+✅ normalizeDocumentationResponse ignores unsafe and cross-origin Markdown alternates
+✅ unconvertible HTML remains HTML and is rejected before writing
+HTML response for https://example.com/docs/empty could not be converted to Markdown; rejecting it without replacing any existing snapshot.
+✅ failed HTML normalization retains an explicit raw-HTML rejection marker
+✅ HTML detection preserves Markdown documents that begin with an HTML block
+✅ HTML conversion preserves semantic blocks inside wrapper elements
+✅ HTML table conversion escapes backslashes before pipe characters
+✅ validateDocumentContent rejects empty and whitespace-only downloads
+✅ validateDocumentContent rejects binary and garbled downloads
+✅ validateDocumentContent rejects HTTP error and challenge pages served as 200
+✅ validateDocumentContent rejects downloads that are too short to be documentation
+✅ every snapshot is valid Markdown or safely identified as legacy HTML
+✅ every routed documentation link resolves to its canonical snapshot inside .docs
+✅ collectRoutedLibraries deduplicates libraries and preserves group order
+✅ reconcileManifestIndexes prunes every index for a removed document
+✅ removeStaleSnapshots deletes only removed documents and unassigned symlinks
+✅ repairDocumentationLinks fixes broken links, collapses duplicates and reports unsafe cases
+✅ repairDocumentationLinks never overwrites a differing duplicate copy
+✅ auditLibraryConsistency reports missing sources and unassigned snapshots without changing them
+✅ renderRefreshReport includes affected documents, URLs, errors and preservation status
+✅ getUpstreamSha: unchanged source on main
+✅ getUpstreamSha: source on master
+✅ getUpstreamSha: source on canary
+✅ getUpstreamSha: Cloudflare turnstile production
+✅ getUpstreamSha: non-GitHub source returns null
+Starting Batch 1...
+Current .docs size: 0.00 MB
+Fetching docs for /lib/doc using configured source to determine exact size BEFORE downloading into .docs...
+UPDATED: /lib/doc
+✅ runRefresh re-fetches a legacy HTML snapshot even when its upstream SHA is unchanged
+✅ fetchDocumentation: Relative redirect
+✅ fetchDocumentation: Cross-origin redirect is rejected
+✅ fetchDocumentation: HTTPS downgrade redirect is rejected
+✅ fetchDocumentation: Redirect to 404
+✅ fetchDocumentation: Ordinary non-200
+✅ fetchDocumentation: invalid source config
+✅ fetchDocumentation: redirect loop
+✅ fetchDocumentation: sanitize sealed_token values
+✅ fetchDocumentation: 15-second timeout
+✅ fetchDocumentation: 10MB response-size limit
+✅ retry timing and Atlantic timezone settings are unchanged
+✅ refresh workflow schedule and Cloudflare scheduler slots are unchanged
+✅ critical consistency and link problems fail without download failures
+Starting Batch 1...
+Current .docs size: 0.00 MB
+Fetching docs for /lib/doc using configured source to determine exact size BEFORE downloading into .docs...
+CURRENT: /lib/doc (no changes)
+✅ unresolved link problem without download failures fails and preserves the primary snapshot
+Reconciled deliberately removed documents: 2 manifest entries pruned, 0 snapshot(s) deleted.
+✅ removed and routed library filename collisions preserve the routed snapshot
+Removed stale temp file: /tmp/docs-refresh-unit-jOHgh0/creation/_doc.md.tmp.copy.1
+Removed stale temp file: /tmp/docs-refresh-unit-jOHgh0/creation/_doc.md.tmp.symlink.1
+✅ cleanupStaleTempFiles removes dangling temporary symlinks
+✅ consistency-only failures make the updater exit non-zero without download failures
+✅ Isolated end-to-end documentation updater workflow passed
+✅ isolated end-to-end updater workflow
+
+Tests complete: 48 passed, 0 failed.
+
+✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!
+VERIFY2_EXIT=0
