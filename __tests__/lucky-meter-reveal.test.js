@@ -202,10 +202,11 @@ describe('segmented Lucky Colour ring', () => {
   });
 
   it('cannot select: the percentage conversion ignores the ring angle', () => {
-    const ringRotation = 137;
-    expect(getColourIdAt(rotationToColourIndex(ringRotation))).toBe(
-      getColourIdAt(rotationToColourIndex(ringRotation)),
-    );
+    // The ring pipeline shares no state with the percentage dial: evaluating
+    // the ring's landing index leaves the percentage angle unchanged.
+    const beforeRing = percentageToAngle(53);
+    getColourIdAt(rotationToColourIndex(137));
+    expect(percentageToAngle(53)).toBe(beforeRing);
     // A colour rotation is never a percentage input; the dial geometry is
     // unchanged by any ring position.
     for (const colour of COLOURS) {

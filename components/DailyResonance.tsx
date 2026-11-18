@@ -850,8 +850,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       false,
       true,
     );
-    // The cinematic is finished, so the GoldenLeaf may now write the Spark.
-    setSparkWriting(true);
+    // The cinematic is finished, so the GoldenLeaf may now write the Spark —
+    // unless it was already written and persisted before a resume.
+    if (!sparkCompletedRef.current) setSparkWriting(true);
   }, [persistLifecycle, stopEventAudio]);
 
   const handleShare = useCallback(async () => {
