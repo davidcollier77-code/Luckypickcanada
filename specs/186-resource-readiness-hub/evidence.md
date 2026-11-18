@@ -130,13 +130,17 @@ re-raised as defects.
 
 ## Checks
 
+All four source checks below were re-run against `6d3326cc` after the test-only retry rewrite. The final
+follow-up commit changes only the recorded evidence and this document; it does not change application,
+test or configuration code.
+
 | Check | Command | Result |
 | --- | --- | --- |
 | Focused hub suites | `pnpm exec vitest run __tests__/resource-readiness.test.js __tests__/resource-readiness-manifest.test.js __tests__/resource-readiness-mount.test.jsx` | PASS — 41 tests across 3 files |
-| Full unit suite | `pnpm exec vitest run` | PASS — 95 files, 988 tests |
-| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
-| Repository gate | `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d bash ./freebuff-verify.sh` | PASS — exit 0 (Spec Kit gate, governance suites, type check, production build, docs tests) |
-| Production build | `rm -rf .next && pnpm run build` | PASS — 312,552,759 bytes = 298.07 MiB, below 495 MiB |
+| Full unit suite | `pnpm exec vitest run` | PASS — 95 files, 988 tests on `6d3326cc` |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 on `6d3326cc` |
+| Repository gate | `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d bash ./freebuff-verify.sh` | PASS — exit 0 on `6d3326cc` (Spec Kit gate, governance suites, type check, production build, 48 docs tests) |
+| Production build | `rm -rf .next && pnpm run build` | PASS — 312,549,144 bytes = 298.07 MiB on the final evidence tree, below 495 MiB |
 | Homepage comparison | Playwright production-server probe | PASS — 15 paired runs, see table |
 | Capable/mobile and Save-Data profiles | Playwright production-server probe | PASS — see table |
 | `/reveal` duplicate check | Playwright production-server probe | PASS — same counts as base |
