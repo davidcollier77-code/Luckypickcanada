@@ -1,3 +1,20 @@
+## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
+- Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage
+  range/weighting and only-newest exclusion, uniform 1–50 number and 12-colour palette with older values
+  eligible, unchanged thirty Sparks, start-together/staggered settles, Spark after the cinematic, countdown
+  only after the writing, one-shot Lucky Number migration, reduced motion, WebGL fallback, and the untouched
+  Milky Way, midnight, audio and sharing paths.
+- Found one real violation: a refresh during the ~1.5 s reveal skipped the three motions and jumped to the
+  cinematic, because the payload recorded no reveal stage. Added `revealCompleted` to the same version 1
+  payload, inferred it for legacy payloads from the cinematic, and extracted `animateReveal` so Start and the
+  load path share one motion runner that draws nothing.
+- Strengthened the browser coverage with a `MutationObserver` reveal timeline (all three motions moving in the
+  same window, strict settle order, total inside ~1.5 s, cinematic after the colour ring), a deterministic
+  pointer/ring value check read modulo a whole turn, and a stored mid-reveal resume test that compares the
+  stored result and history before and after.
+- Final state: 90 vitest files / 935 tests, 69 Playwright passes across desktop plus 390/412 px, 345 MiB build,
+  and `./freebuff-verify.sh` green.
+
 ## 2026-11-18 — Premium Daily Resonance: medallion, independent reveals, Spark finale
 - Split the reading into four independent draws: percentage (range, weighting and tiers frozen), a uniform 1–50
   Lucky Number, a uniform colour from the twelve approved HEX values, and a Spark from the unchanged thirty.

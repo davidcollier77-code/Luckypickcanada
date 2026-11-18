@@ -236,6 +236,83 @@ describe('Lucky Meter Local Storage', () => {
     expect(loadMeterState(storage).sparkCompleted).toBe(true);
   });
 
+  it('remembers the reveal stage so a refresh resumes it instead of skipping it', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+    const history = appendResultToHistory(emptyMeterHistory(), result);
+
+    // A reading is written before its three motions run.
+    saveMeterState(
+      {
+        result,
+        history,
+        eventCompleted: false,
+        revealCompleted: false,
+        sparkCompleted: false,
+        stageDurationMs: 10_000,
+      },
+      storage,
+    );
+    expect(loadMeterState(storage).revealCompleted).toBe(false);
+
+    // The motions settle and the cinematic begins; that is the state remembered.
+    saveMeterState(
+      {
+        result,
+        history,
+        eventCompleted: false,
+        revealCompleted: true,
+        sparkCompleted: false,
+        stageDurationMs: 10_000,
+      },
+      storage,
+    );
+    const loaded = loadMeterState(storage);
+    expect(loaded.revealCompleted).toBe(true);
+    expect(loaded.eventCompleted).toBe(false);
+    // Remembering the stage never touches the chosen values.
+    expect(loaded.result).toMatchObject({
+      percentage: result.percentage,
+      luckyNumber: result.luckyNumber,
+      colour: result.colour,
+      spark: result.spark,
+    });
+  });
+
+  it('infers the reveal stage for legacy payloads from the finished cinematic', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+
+    storage.setItem(
+      METER_STORAGE_KEY,
+      JSON.stringify({
+        version: METER_STORAGE_VERSION,
+        dateKey: result.dateKey,
+        result,
+        history: emptyMeterHistory(),
+        eventCompleted: true,
+        sparkCompleted: true,
+        stageDurationMs: 10_000,
+      }),
+    );
+    expect(loadMeterState(storage).revealCompleted).toBe(true);
+
+    const unfinished = createMemoryStorage();
+    unfinished.setItem(
+      METER_STORAGE_KEY,
+      JSON.stringify({
+        version: METER_STORAGE_VERSION,
+        dateKey: result.dateKey,
+        result,
+        history: emptyMeterHistory(),
+        eventCompleted: false,
+        stageDurationMs: 10_000,
+      }),
+    );
+    // An unfinished cinematic resumes from the motions rather than skipping them.
+    expect(loadMeterState(unfinished).revealCompleted).toBe(false);
+  });
+
   it('rejects impossible stage durations and completion without a valid result', () => {
     const storage = createMemoryStorage();
     const result = makeResult();

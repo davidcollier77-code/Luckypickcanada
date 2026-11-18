@@ -270,7 +270,9 @@ describe('Daily Resonance daily experience', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.colourSettleMs);
+      // The three motions have settled and the cinematic has started, so the
+      // refresh lands in the middle of the cinematic rather than the reveal.
+      vi.advanceTimersByTime(EVENT_START_MS);
     });
     expect(screen.getByText('53')).toBeInTheDocument();
     first.unmount();

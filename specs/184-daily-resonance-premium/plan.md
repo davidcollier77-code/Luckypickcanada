@@ -103,6 +103,17 @@ tests/visual/crystal-ball-daily-limit.spec.ts
 4. `tsc --noEmit`, production build with size measurement, `./freebuff-verify.sh`.
 5. Visual captures at 1440×900, 390×844 and 412×915, inspected for overlap and clipping.
 
+## Phase 5 — Invariant audit and repair
+
+1. Re-read every mission invariant against the delivered code instead of trusting the earlier report.
+2. Confirm the frozen selection contracts by reading `selection.js` and the pre-change file from `main`.
+3. Find that a reload during the reveal skipped the motions: the payload had no reveal stage.
+4. Persist `revealCompleted` in the same version 1 payload, infer it for legacy payloads from the cinematic,
+   and extract the motion block into `animateReveal` shared by Start and the resume path.
+5. Strengthen the browser coverage with a measured `MutationObserver` timeline (start-together, strict
+   settle order, total under ~1.5 s, cinematic after the ring), a deterministic pointer/ring value test, and a
+   stored mid-reveal resume test; read the resting angles modulo a whole turn.
+
 ## Complexity Tracking
 
 | Decision | Why | Cost |

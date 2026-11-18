@@ -95,6 +95,7 @@ function buildState({
   percentage = TIERS[tierId].percentage,
   completed,
   sparkCompleted = completed,
+  revealCompleted = completed,
   staleEvent,
   luckyNumber = TIERS[tierId].luckyNumber,
 }: {
@@ -102,6 +103,7 @@ function buildState({
   percentage?: number;
   completed: boolean;
   sparkCompleted?: boolean;
+  revealCompleted?: boolean;
   staleEvent?: { id: string; name: string };
   luckyNumber?: number;
 }) {
@@ -130,6 +132,7 @@ function buildState({
       sparks: ['spark-01'],
     },
     eventCompleted: completed,
+    revealCompleted,
     sparkCompleted,
     stageDurationMs: tier.event.duration,
   };
@@ -169,6 +172,31 @@ async function startReveal(page: Page) {
 async function readDialAngle(page: Page) {
   const value = await page.getByTestId('lucky-meter-ring').getAttribute('data-dial-angle');
   return Number(value);
+}
+
+/** The approved palette, in ring order, for the settled colour angle. */
+const COLOUR_IDS = [
+  'maple-red',
+  'forest-green',
+  'navy-blue',
+  'burgundy',
+  'royal-blue',
+  'charcoal',
+  'cream',
+  'mustard-gold',
+  'winter-white',
+  'deep-teal',
+  'pumpkin-orange',
+  'warm-camel',
+] as const;
+
+const shortestAngle = (degrees: number) => ((degrees % 360) + 360) % 360;
+
+async function readStoredResult(page: Page) {
+  return page.evaluate((key) => {
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  }, STORAGE_KEY);
 }
 
 test.describe('Daily Resonance percentage mapping', () => {
@@ -502,6 +530,269 @@ test.describe('Daily Resonance dial landing', () => {
     // cinematic is running.
     await expect(page.getByTestId('lucky-spark-message')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+  });
+});
+
+test.describe('Daily Resonance reveal invariants', () => {
+  test('starts all three motions together and lands each on its own stored value', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const trace = {
+        start: null as number | null,
+        startValues: { dial: null, number: null, colour: null } as Record<string, number | null>,
+        firstMove: { dial: null, number: null, colour: null } as Record<string, number | null>,
+        percentageSettled: null as number | null,
+        numberSettled: null as number | null,
+        colourSettled: null as number | null,
+        stage: null as number | null,
+        landings: {
+          numberAngle: null,
+          number: null,
+          colourAngle: null,
+          colourId: null,
+        } as Record<string, number | string | null>,
+      };
+      (window as unknown as { __revealTrace: typeof trace }).__revealTrace = trace;
+
+      const read = (element: Element | null, name: string) => element?.getAttribute(name) ?? null;
+      const num = (element: Element | null, name: string) => {
+        const raw = read(element, name);
+        return raw === null ? null : Number(raw);
+      };
+      const moved = (current: number | null, previous: number | null) =>
+        current === null || previous === null
+          ? false
+          : Math.abs((((current - previous) % 360) + 540) % 360 - 180) > 0.5;
+      const attributes = {
+        dial: 'data-dial-angle',
+        number: 'data-number-angle',
+        colour: 'data-colour-angle',
+      } as const;
+
+      // A MutationObserver records the real DOM transition instead of sampling
+      // once per animation frame, which on a throttled mobile viewport can be
+      // more than 100 ms late.
+      const inspect = (element: Element) => {
+        const phase = read(element, 'data-phase');
+        const now = performance.now();
+        if (phase === 'scrambling') {
+          if (trace.start === null) {
+            trace.start = now;
+            trace.startValues = {
+              dial: num(element, attributes.dial),
+              number: num(element, attributes.number),
+              colour: num(element, attributes.colour),
+            };
+          }
+          (Object.keys(attributes) as Array<keyof typeof attributes>).forEach((key) => {
+            if (
+              trace.firstMove[key] === null &&
+              moved(num(element, attributes[key]), trace.startValues[key])
+            ) {
+              trace.firstMove[key] = now;
+            }
+          });
+        }
+        if (trace.percentageSettled === null && phase === 'landed') trace.percentageSettled = now;
+        if (trace.numberSettled === null && read(element, 'data-number-settled') === 'true') {
+          trace.numberSettled = now;
+        }
+        if (trace.colourSettled === null && read(element, 'data-colour-settled') === 'true') {
+          trace.colourSettled = now;
+        }
+        if (
+          trace.stage === null &&
+          document.querySelector('[data-testid="cosmic-event-stage"]')
+        ) {
+          trace.stage = now;
+        }
+      };
+
+      const attach = () => {
+        const element = document.querySelector('[data-testid="lucky-meter-ring"]');
+        if (!element) return false;
+        new MutationObserver(() => inspect(element)).observe(element, { attributes: true });
+        new MutationObserver(() => inspect(element)).observe(document.documentElement, {
+          childList: true,
+          subtree: true,
+        });
+        inspect(element);
+        return true;
+      };
+
+      if (!attach()) {
+        const timer = window.setInterval(() => {
+          if (attach()) window.clearInterval(timer);
+        }, 25);
+      }
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await startReveal(page);
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+
+    const trace = await page.evaluate(
+      () => (window as unknown as { __revealTrace: Record<string, any> }).__revealTrace,
+    );
+    const stored = await readStoredResult(page);
+    const result = stored.result;
+
+    // All three motions were already running inside the first sampled window.
+    const moves = [trace.firstMove.dial, trace.firstMove.number, trace.firstMove.colour];
+    expect(moves.every((value) => typeof value === 'number')).toBe(true);
+    expect(Math.max(...moves) - Math.min(...moves)).toBeLessThan(120);
+
+    // Staggered settles in the documented order, each roughly a third of a turn
+    // apart, and the cinematic only after the last one. The gaps are asserted
+    // rather than the absolute offsets because the first reveal frame can be
+    // delayed by the medallion's first paint.
+    expect(trace.percentageSettled).toBeLessThan(trace.numberSettled);
+    expect(trace.numberSettled).toBeLessThan(trace.colourSettled);
+    expect(trace.colourSettled).toBeLessThan(trace.stage);
+    expect(trace.percentageSettled - trace.start).toBeGreaterThan(400);
+    expect(trace.percentageSettled - trace.start).toBeLessThan(1150);
+    // Each settle is visibly apart from the one before it. The first reveal
+    // frame absorbs the medallion's first paint, so the gaps are asserted as
+    // "clearly staggered" while the exact schedule lives in the unit suites.
+    expect(trace.numberSettled - trace.percentageSettled).toBeGreaterThan(60);
+    expect(trace.numberSettled - trace.percentageSettled).toBeLessThan(600);
+    expect(trace.colourSettled - trace.numberSettled).toBeGreaterThan(60);
+    expect(trace.colourSettled - trace.numberSettled).toBeLessThan(600);
+    // All three motions are settled inside roughly one and a half seconds.
+    expect(trace.colourSettled - trace.start).toBeGreaterThan(900);
+    expect(trace.colourSettled - trace.start).toBeLessThan(1750);
+    // The cinematic follows the last settle rather than overlapping it.
+    expect(trace.stage - trace.colourSettled).toBeGreaterThan(40);
+    expect(trace.stage - trace.colourSettled).toBeLessThan(900);
+
+    // At rest, each motion sits on the value that was already stored for it. The
+    // pointers keep their whole-turn sweep, so angles are compared modulo 360.
+    const rest = await page.evaluate(() => {
+      const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
+      const attr = (name: string) => ring?.getAttribute(name) ?? null;
+      return {
+        number: attr('data-number'),
+        numberAngle: attr('data-number-angle'),
+        colourId: attr('data-colour-id'),
+        colourAngle: attr('data-colour-angle'),
+        dialAngle: attr('data-dial-angle'),
+      };
+    });
+    expect(rest.number).toBe(String(result.luckyNumber));
+    expect(shortestAngle(Number(rest.numberAngle))).toBeCloseTo(
+      (result.luckyNumber - 1) * 7.2 + 3.6,
+      1,
+    );
+    expect(rest.colourId).toBe(result.colour.id);
+    expect(shortestAngle(Number(rest.colourAngle))).toBeCloseTo(
+      shortestAngle(-COLOUR_IDS.indexOf(result.colour.id) * 30),
+      1,
+    );
+    expect(shortestAngle(Number(rest.dialAngle))).toBeCloseTo(
+      shortestAngle(result.percentage * 3.6),
+      1,
+    );
+
+    // The reveal rewrote nothing: the same reading is still stored.
+    const after = await readStoredResult(page);
+    expect(after.result).toEqual(stored.result);
+    expect(after.revealCompleted).toBe(true);
+    expect(after.eventCompleted).toBe(false);
+  });
+
+  test('the number pointer and colour ring represent their own stored values', async ({
+    page,
+  }) => {
+    await seed(page, buildState({ tierId: 'medium', completed: true, sparkCompleted: true }));
+    const ring = page.getByTestId('lucky-meter-ring');
+
+    await expect(ring).toHaveAttribute('data-number-settled', 'true');
+    await expect(ring).toHaveAttribute('data-colour-settled', 'true');
+
+    // 57% is 205.2°, Lucky Number 27 is 190.8°, Maple Red is the ring's 0°.
+    expect(Number(await ring.getAttribute('data-dial-angle'))).toBeCloseTo(205.2, 1);
+    expect(Number(await ring.getAttribute('data-number-angle'))).toBeCloseTo(190.8, 1);
+    expect(await ring.getAttribute('data-number')).toBe('27');
+    expect(await ring.getAttribute('data-colour-id')).toBe('maple-red');
+    expect(shortestAngle(Number(await ring.getAttribute('data-colour-angle')))).toBeCloseTo(0, 1);
+
+    // The pointer does not encode the percentage.
+    expect(await ring.getAttribute('data-number')).not.toBe('57');
+    expect(Number(await ring.getAttribute('data-number-angle'))).not.toBeCloseTo(205.2, 1);
+
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('Maple Red');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('#B52B32');
+
+    // The colour ring sits at 77% of the coin's radius, so the percentage text
+    // must stay well inside it and can never be covered.
+    const coin = await page.getByTestId('lucky-meter-medallion').boundingBox();
+    const value = await page.getByTestId('lucky-meter-value').boundingBox();
+    expect(coin).not.toBeNull();
+    expect(value).not.toBeNull();
+    if (coin && value) {
+      const centre = { x: coin.x + coin.width / 2, y: coin.y + coin.height / 2 };
+      const radius = coin.width / 2;
+      const corners = [
+        { x: value.x, y: value.y },
+        { x: value.x + value.width, y: value.y },
+        { x: value.x, y: value.y + value.height },
+        { x: value.x + value.width, y: value.y + value.height },
+      ];
+      const furthest = Math.max(
+        ...corners.map((corner) => Math.hypot(corner.x - centre.x, corner.y - centre.y)),
+      );
+      expect(furthest).toBeLessThan(radius * 0.6);
+    }
+  });
+
+  test('resumes a stored mid-reveal reading without redrawing or skipping it', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { __loadAt: number }).__loadAt = performance.now();
+    });
+    // Exactly the payload a refresh during the reveal leaves behind.
+    await seed(
+      page,
+      buildState({ tierId: 'medium', completed: false, revealCompleted: false, sparkCompleted: false }),
+    );
+
+    const stored = await readStoredResult(page);
+    expect(stored.revealCompleted).toBe(false);
+    expect(stored.eventCompleted).toBe(false);
+    expect(stored.result).toMatchObject({
+      percentage: 57,
+      luckyNumber: 27,
+      colour: { id: 'maple-red' },
+    });
+
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 10_000 });
+    const stageDelay = await page.evaluate(() => {
+      const stage = document.querySelector('[data-testid="cosmic-event-stage"]');
+      const loadAt = (window as unknown as { __loadAt: number }).__loadAt;
+      return stage ? performance.now() - loadAt : -1;
+    });
+    // The cinematic waited for the three motions instead of starting at once.
+    expect(stageDelay).toBeGreaterThan(1200);
+
+    // Those motions settled on the stored values, then the cinematic began.
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '27');
+    await expect(page.getByTestId('lucky-colour-panel')).toContainText('#B52B32');
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-number-settled',
+      'true',
+    );
+    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-colour-settled',
+      'true',
+    );
+
+    const after = await readStoredResult(page);
+    expect(after.result).toEqual(stored.result);
+    expect(after.history).toEqual(stored.history);
+    expect(after.revealCompleted).toBe(true);
   });
 });
 

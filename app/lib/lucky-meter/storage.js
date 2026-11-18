@@ -34,6 +34,9 @@ export function emptyMeterState() {
     // fields load as incomplete, which safely resumes the cinematic instead of
     // showing the Home control before it has actually completed.
     eventCompleted: false,
+    // The three reveal motions have not settled. A refresh during the reveal
+    // resumes them instead of jumping straight to the cinematic.
+    revealCompleted: false,
     // The GoldenLeaf has not finished writing the Spark. A refresh after the
     // cinematic but before the quill finished resumes the writing instead of
     // skipping it or replaying the completed cinematic.
@@ -141,6 +144,13 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
       };
     }
     const eventCompleted = Boolean(result) && parsed.eventCompleted === true;
+    // A payload written before this flag existed can only be inferred from the
+    // cinematic: a finished cinematic necessarily finished the reveal, while an
+    // unfinished one is resumed from the motions rather than skipped.
+    const revealCompleted =
+      Boolean(result) &&
+      (parsed.revealCompleted === true ||
+        (parsed.revealCompleted === undefined && eventCompleted));
     // Payloads from before the Spark-writing stage stored no field. A completed
     // legacy result keeps its finished message on screen; a new result always
     // writes the field at Start, so an unfinished quill resumes correctly.
@@ -162,6 +172,7 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
             result,
             history,
             eventCompleted,
+            revealCompleted,
             sparkCompleted,
             stageDurationMs,
           }),
@@ -176,6 +187,7 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
       result,
       history,
       eventCompleted,
+      revealCompleted,
       sparkCompleted,
       stageDurationMs,
     };
@@ -198,6 +210,7 @@ export function saveMeterState(state, storage = getBrowserStorage()) {
     result: state.result || null,
     history: normalizeHistory(state.history),
     eventCompleted: state.eventCompleted === true,
+    revealCompleted: state.revealCompleted === true,
     sparkCompleted: state.sparkCompleted === true,
     stageDurationMs: normalizeStageDuration(state.stageDurationMs),
   };

@@ -136,6 +136,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
     expect(readStoredResult().eventCompleted).toBe(false);
+    expect(readStoredResult().revealCompleted).toBe(false);
 
     act(() => {
       vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
@@ -163,6 +164,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
     });
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    // The motions are finished, so a refresh now resumes the cinematic.
+    expect(readStoredResult().revealCompleted).toBe(true);
+    expect(readStoredResult().eventCompleted).toBe(false);
 
     act(() => {
       stageControl.onComplete?.();
@@ -206,6 +210,41 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(readStoredResult().eventCompleted).toBe(true);
   });
 
+  it('resumes the reveal motions after a refresh mid-reveal instead of skipping them', () => {
+    const first = render(<DailyResonance />);
+    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs);
+    });
+    const before = readStoredResult();
+    expect(before.revealCompleted).toBe(false);
+    expect(before.eventCompleted).toBe(false);
+    first.unmount();
+
+    render(<DailyResonance />);
+
+    // The motions replay on the stored values; the cinematic has not been
+    // reached and the reading cannot have been redrawn.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs);
+    });
+    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.numberSettleMs);
+    });
+    expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+
+    const after = readStoredResult();
+    expect(after.revealCompleted).toBe(true);
+    expect(after.result).toEqual(before.result);
+    expect(after.history).toEqual(before.history);
+  });
+
   it('shows Home and the countdown immediately for a fully completed restored result', () => {
     seedToday({ completed: true, sparkCompleted: true });
     render(<DailyResonance />);
@@ -225,6 +264,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
       result,
       history,
       eventCompleted: false,
+      revealCompleted: true,
       sparkCompleted: false,
       stageDurationMs: 2000,
     });
@@ -250,9 +290,22 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     render(<DailyResonance />);
 
-    expect(screen.getByText(String(result.percentage))).toBeInTheDocument();
+    // Without the newer fields the reveal is treated as unfinished, so the
+    // motions play on the stored values before the stored cinematic resumes.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'scrambling');
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
+    });
+    expect(screen.getByText(String(result.percentage))).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.percentageSettleMs);
+    });
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+    expect(readStoredResult().revealCompleted).toBe(true);
   });
 
   it('completes calmly under reduced motion without mounting the stage', () => {

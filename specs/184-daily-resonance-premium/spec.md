@@ -118,7 +118,7 @@ As a visitor on a 390 px phone, I want the Spark, medallion, results, Home and c
 - **FR-016**: Preserve context-loss handling and reduced-motion behaviour.
 - **FR-017**: Preserve audio, sharing, Home, the disclaimer and local-midnight behaviour, and keep all Daily Resonance data in the existing localStorage key.
 - **FR-018**: Migrate a saved result without a Lucky Number once, and never reroll an existing percentage, colour or Spark.
-- **FR-019**: Ensure refresh/resume neither rerolls selections, replays completed stages nor skips unfinished animations.
+- **FR-019**: Ensure refresh/resume neither rerolls selections, replays completed stages nor skips unfinished animations. The reveal motions are a stage in their own right, so a reload during them resumes them rather than jumping to the cinematic.
 - **FR-020**: Bound rendering work and release frames, timers, listeners and GPU resources on unmount.
 - **FR-021**: Do not touch Lucky Stories, the database, `DATABASE_URL` or any API/server write.
 
@@ -128,6 +128,13 @@ As a visitor on a 390 px phone, I want the Spark, medallion, results, Home and c
 - **History**: four single-value lists (`percentages`, `numbers`, `colours`, `sparks`) holding the most recent saved result's values.
 - **Stored payload**: `{ version: 1, result, history, visits }` under `lucky-pick-canada-lucky-meter-v1`.
 
+## Delivered Invariant Audit *(follow-up pass)*
+
+Every requirement above was re-checked against the delivered code as a claim to falsify, and each is now
+demonstrated by a named passing test rather than by commentary. The audit found one violation — a refresh
+during the reveal skipped the three motions — which is repaired by FR-019's persisted reveal stage and
+re-proven in unit, DOM and browser tests. `evidence.md` maps every invariant to its test.
+
 ## Success Criteria *(mandatory)*
 
 - **SC-001**: Unit tests prove each choice is uniform within its range and excludes only its own newest value, including the older-value-eligible case.
@@ -136,3 +143,4 @@ As a visitor on a 390 px phone, I want the Spark, medallion, results, Home and c
 - **SC-004**: The completed reading overlaps nothing and needs no scrolling at 1440×900, 390×844 and 412×915.
 - **SC-005**: The production build stays below the repository's 495 MiB limit.
 - **SC-006**: `./freebuff-verify.sh` passes.
+- **SC-007**: A stored reading that was interrupted mid-reveal resumes its motions, keeps its exact values and reaches the cinematic only after them.

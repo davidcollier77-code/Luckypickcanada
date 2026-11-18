@@ -178,6 +178,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const stageDurationRef = useRef(0);
   const eventCompletedRef = useRef(false);
   const sparkCompletedRef = useRef(false);
+  const animateRevealRef = useRef<
+    ((next: DailyResult, nextHistory: ReturnType<typeof emptyMeterHistory>, duration: number) => void) | null
+  >(null);
   const finalPercentageRef = useRef(0);
   const thunderRef = useRef({ count: 0, lastAt: 0, finalePlayed: false });
   const eventSoundInstancesRef = useRef<Record<string, Array<{ id: number; volume: number }>>>({});
@@ -267,12 +270,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       completed: boolean,
       duration: number,
       sparkDone: boolean,
+      revealed = true,
     ) => {
       if (!nextResult) return;
       saveMeterState({
         result: nextResult,
         history: nextHistory,
         eventCompleted: completed,
+        // Written when the last motion settles, so a refresh during the
+        // cinematic resumes it instead of replaying the three motions.
+        revealCompleted: revealed,
         sparkCompleted: sparkDone,
         stageDurationMs: duration,
       });
@@ -363,9 +370,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             result: saved,
             history: loaded.history,
             eventCompleted: true,
+            revealCompleted: true,
             sparkCompleted: true,
             stageDurationMs: duration,
           });
+        } else if (loaded.revealCompleted !== true) {
+          // Refresh during the reveal: replay the three motions on the stored
+          // values, then the cinematic. No value is redrawn and the stage is
+          // never skipped just because the tab was reloaded.
+          setAnnouncement('Preparing today’s resonance.');
+          animateRevealRef.current?.(saved, loaded.history, duration);
         } else {
           // Resume the unfinished cinematic from the start of its event. The
           // result stays visible and Home remains hidden until it completes.
@@ -568,106 +582,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
   }, [sparkWriting, result, reducedMotion, markSparkComplete]);
 
-  const handleReveal = useCallback(() => {
-    if (isRevealing || isRevealed || typeof window === 'undefined') return;
-
-    const localKey = ready && dateKey ? dateKey : getLocalDateKey();
-    let next: DailyResult;
-    try {
-      next = createDailyResult({ dateKey: localKey, history }) as DailyResult;
-    } catch (error) {
-      // A bad local date or a corrupt history must not crash the page.
-      console.error('Unable to prepare today’s resonance:', error);
-      setAnnouncement('Today’s resonance could not be prepared. Please try again.');
-      return;
-    }
-    const nextHistory = appendResultToHistory(history, next);
-    const duration = getEventDurationMs(next.event.id);
-
-    // Persist before animating so a refresh mid-reveal still keeps today's result.
-    resultRef.current = next;
-    historyRef.current = nextHistory;
-    stageDurationRef.current = duration;
-    eventCompletedRef.current = false;
-    sparkCompletedRef.current = false;
-    thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
-
-    setHistory(nextHistory);
-    saveMeterState({
-      result: next,
-      history: nextHistory,
-      eventCompleted: false,
-      sparkCompleted: false,
-      stageDurationMs: duration,
-    });
-
-    setResult(next);
-    setShareStatus('idle');
-    setEventCompleted(false);
-    setSparkWriting(false);
-    setSparkCharCount(0);
-    setSparkComplete(false);
-    setAnnouncement('Preparing today’s resonance.');
-    finalPercentageRef.current = next.percentage;
-    dialSpinRef.current = buildDialSpin(next.percentage);
-    numberSpinRef.current = buildNumberSpin(next.luckyNumber);
-    colourSpinRef.current = buildColourSpin(next.colour.id);
-    setStageDuration(duration);
-    clearSequence();
-
-    void playButtonClick().catch(() => {});
-    void ensureRevealAudio().then(() => {
-      if (!isMountedRef.current) return;
-      try {
-        soundsRef.current.buildup?.play();
-      } catch {
-        // Optional audio only.
-      }
-    });
-
-    // Preserve the existing total-ritual counter. A newer reveal or unmount
-    // aborts an older request so a late response cannot overwrite the count.
-    visitsAbortRef.current?.abort();
-    const visitsController = new AbortController();
-    visitsAbortRef.current = visitsController;
-    fetch('/api/visits', { method: 'POST', signal: visitsController.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`Visit counter responded with ${response.status}`);
-        return response.json();
-      })
-      .then((data) => {
-        if (isMountedRef.current && data && typeof data.visits === 'number') {
-          setTotalVisits(data.visits);
-        }
-      })
-      .catch((error) => {
-        if (error?.name !== 'AbortError') console.error('Failed to update visits:', error);
-      })
-      .finally(() => {
-        if (visitsAbortRef.current === visitsController) visitsAbortRef.current = null;
-      });
-
-    if (reducedMotion) {
-      setMotion(settledMotion(next));
-      setIsRevealing(false);
-      setIsRevealed(true);
-      setNumberSettled(true);
-      setColourSettled(true);
-      setSparkCharCount(Array.from(next.spark.message).length);
-      setSparkComplete(true);
-      sparkCompletedRef.current = true;
-      setAnnouncement(
-        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
-      );
-      auroraRef.current?.setPhase('settled', next.event.name);
-      // No cinematic and no quill run under reduced motion, so the reading is
-      // complete immediately and Home plus the countdown may show.
-      eventCompletedRef.current = true;
-      setEventCompleted(true);
-      persistLifecycle(next, nextHistory, true, duration, true);
-      return;
-    }
-
+  /**
+   * Runs the three reveal motions for an already-chosen result and hands over to
+   * the cinematic. It is shared by a fresh Start and by a refresh that lands in
+   * the middle of the reveal, and it never draws a value.
+   */
+  const animateReveal = useCallback(
+    (
+      next: DailyResult,
+      nextHistory: ReturnType<typeof emptyMeterHistory>,
+      duration: number,
+    ) => {
     const dialSpin = dialSpinRef.current;
     const numberSpin = numberSpinRef.current;
     const colourSpin = colourSpinRef.current;
@@ -789,23 +714,125 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }, REVEAL_TIMING.colourSettleMs);
 
     // Only after all three have settled does the percentage-selected cinematic
-    // begin, exactly as before.
+    // begin, exactly as before. Marking the reveal complete here means a refresh
+    // during the cinematic resumes it rather than replaying the motions.
     schedule(
-      () => setStageActive(true),
+      () => {
+        setStageActive(true);
+        persistLifecycle(next, nextHistory, false, duration, false, true);
+      },
       REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs,
     );
-  }, [
-    clearSequence,
-    dateKey,
-    ensureRevealAudio,
-    history,
-    isRevealed,
-    isRevealing,
-    persistLifecycle,
-    ready,
-    reducedMotion,
-    schedule,
-  ]);
+    },
+    [persistLifecycle, schedule],
+  );
+  // The load effect runs before this callback exists in source order, so it
+  // reaches it through a ref that is kept current on every render.
+  animateRevealRef.current = animateReveal;
+
+  const handleReveal = useCallback(() => {
+    if (isRevealing || isRevealed || typeof window === 'undefined') return;
+
+    const localKey = ready && dateKey ? dateKey : getLocalDateKey();
+    let next: DailyResult;
+    try {
+      next = createDailyResult({ dateKey: localKey, history }) as DailyResult;
+    } catch (error) {
+      // A bad local date or a corrupt history must not crash the page.
+      console.error('Unable to prepare today’s resonance:', error);
+      setAnnouncement('Today’s resonance could not be prepared. Please try again.');
+      return;
+    }
+    const nextHistory = appendResultToHistory(history, next);
+    const duration = getEventDurationMs(next.event.id);
+
+    // Persist before animating so a refresh mid-reveal still keeps today's result.
+    resultRef.current = next;
+    historyRef.current = nextHistory;
+    stageDurationRef.current = duration;
+    eventCompletedRef.current = false;
+    sparkCompletedRef.current = false;
+    thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
+
+    setHistory(nextHistory);
+    saveMeterState({
+      result: next,
+      history: nextHistory,
+      eventCompleted: false,
+      revealCompleted: false,
+      sparkCompleted: false,
+      stageDurationMs: duration,
+    });
+
+    setResult(next);
+    setShareStatus('idle');
+    setEventCompleted(false);
+    setSparkWriting(false);
+    setSparkCharCount(0);
+    setSparkComplete(false);
+    setAnnouncement('Preparing today’s resonance.');
+    finalPercentageRef.current = next.percentage;
+    dialSpinRef.current = buildDialSpin(next.percentage);
+    numberSpinRef.current = buildNumberSpin(next.luckyNumber);
+    colourSpinRef.current = buildColourSpin(next.colour.id);
+    setStageDuration(duration);
+    clearSequence();
+
+    void playButtonClick().catch(() => {});
+    void ensureRevealAudio().then(() => {
+      if (!isMountedRef.current) return;
+      try {
+        soundsRef.current.buildup?.play();
+      } catch {
+        // Optional audio only.
+      }
+    });
+
+    // Preserve the existing total-ritual counter. A newer reveal or unmount
+    // aborts an older request so a late response cannot overwrite the count.
+    visitsAbortRef.current?.abort();
+    const visitsController = new AbortController();
+    visitsAbortRef.current = visitsController;
+    fetch('/api/visits', { method: 'POST', signal: visitsController.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Visit counter responded with ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        if (isMountedRef.current && data && typeof data.visits === 'number') {
+          setTotalVisits(data.visits);
+        }
+      })
+      .catch((error) => {
+        if (error?.name !== 'AbortError') console.error('Failed to update visits:', error);
+      })
+      .finally(() => {
+        if (visitsAbortRef.current === visitsController) visitsAbortRef.current = null;
+      });
+
+    if (reducedMotion) {
+      setMotion(settledMotion(next));
+      setIsRevealing(false);
+      setIsRevealed(true);
+      setNumberSettled(true);
+      setColourSettled(true);
+      setSparkCharCount(Array.from(next.spark.message).length);
+      setSparkComplete(true);
+      sparkCompletedRef.current = true;
+      setAnnouncement(
+        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
+      );
+      auroraRef.current?.setPhase('settled', next.event.name);
+      // No cinematic and no quill run under reduced motion, so the reading is
+      // complete immediately and Home plus the countdown may show.
+      eventCompletedRef.current = true;
+      setEventCompleted(true);
+      persistLifecycle(next, nextHistory, true, duration, true, true);
+      return;
+    }
+
+    animateReveal(next, nextHistory, duration);
+  }, [animateReveal, clearSequence, dateKey, ensureRevealAudio, history, ready, reducedMotion]);
 
   const handleStageComplete = useCallback(() => {
     setStageActive(false);
@@ -821,6 +848,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       true,
       stageDurationRef.current,
       false,
+      true,
     );
     // The cinematic is finished, so the GoldenLeaf may now write the Spark.
     setSparkWriting(true);

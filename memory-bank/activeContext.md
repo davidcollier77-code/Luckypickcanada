@@ -32,6 +32,10 @@ system is frozen; the layout is owned by this task.
   moves GoldenLeaf into a reserved panel above the medallion and types the
   Spark at 24 ms/character. The countdown dock appears only after that. A
   completed cinematic never replays; an interrupted Spark resumes without it.
+- A third persisted stage, `revealCompleted`, was added in the follow-up audit:
+  a refresh during the three motions resumes them (`animateReveal` is shared by
+  Start and the load path) instead of jumping to the cinematic. Legacy payloads
+  infer the flag from the cinematic.
 - `components/LuckyMeterRing.jsx` keeps the inline percentage pointer and adds
   an outer number bezel band (50 ticks, pointer, upright numeral badge), a thin
   segmented colour ring at r 38.7 with a fixed marker, and a DOM contact shadow.
@@ -44,9 +48,14 @@ system is frozen; the layout is owned by this task.
 
 ## Verification
 
-- `pnpm exec vitest run`: full suite result recorded in `evidence.md`.
+- `pnpm exec vitest run`: 90 files / 935 tests passed.
 - `pnpm exec tsc --noEmit`: exit 0.
-- Playwright `tests/visual/lucky-meter-daily-resonance.spec.ts`: desktop, mobile-390 and mobile-412 results in `evidence.md`.
+- Playwright `tests/visual/lucky-meter-daily-resonance.spec.ts` on desktop,
+  mobile-390 and mobile-412: 69 passed, 3 skipped (opt-in capture block);
+  `crystal-ball-daily-limit.spec.ts`: 4 passed.
+- Delivered-invariant audit: every mission invariant is mapped to a named
+  passing test in `specs/184-daily-resonance-premium/evidence.md`, including a
+  measured `MutationObserver` reveal timeline and a mid-reveal resume test.
 - Production build: `.next` 311 MiB + `public` 34 MiB = 345 MiB, below 495 MiB.
 - Captures: `artifacts/lucky-meter-premium-resonance-20261118/after/`.
 
@@ -64,6 +73,10 @@ system is frozen; the layout is owned by this task.
 
 - Confirm the medallion reads as intended on a physical GPU; the captures come
   from Chromium's renderer in this workspace.
+- The first reveal frame absorbs roughly 250–400 ms of medallion first paint in
+  this workspace, so the browser timeline bounds the stagger and the ≤ ~1.5 s
+  total rather than the nominal 620/940/1240 ms schedule, which the fake-timer
+  DOM suite proves exactly.
 
 ---
 

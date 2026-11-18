@@ -51,3 +51,12 @@
 - [x] T028 Update the Crystal Ball daily-limit seed to the new payload shape.
 - [x] T029 Run `pnpm exec tsc --noEmit`, the full Vitest suite, the production build with size measurement and `./freebuff-verify.sh`.
 - [x] T030 Capture and inspect desktop, 390 px and 412 px readings for overlap and clipping.
+
+## Phase 7: Delivered-invariant audit
+
+- [x] T031 Re-verify selection, exclusion, palette and Spark contracts against the delivered code and `main`.
+- [x] T032 Measure the real reveal timeline in the browser instead of trusting eventual-state assertions.
+- [x] T033 Prove the number pointer and colour ring land on their stored values and do not encode the percentage.
+- [x] T034 Find the mid-reveal refresh defect: the motions were skipped on reload.
+- [x] T035 Persist `revealCompleted`, infer it for legacy payloads and share `animateReveal` with the resume path.
+- [x] T036 Add unit, DOM and browser tests for the resumed reveal and re-run every suite and the gate.
