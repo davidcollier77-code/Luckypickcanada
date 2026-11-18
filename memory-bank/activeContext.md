@@ -1,4 +1,73 @@
-# Active Context — Exact-span DevSkim suppression for CI loopback tokens
+# Active Context — Premium Daily Resonance
+
+- **Updated:** 2026-11-18
+- **Branch:** freebuff/ec0b9abbbe0e2dabc982edca
+- **Base:** main
+- **Spec Kit feature:** specs/184-daily-resonance-premium
+
+## Current Task
+
+Make Daily Resonance a premium daily experience: a realistic 3D medallion, an
+independent Lucky Number and Lucky Colour reveal, and a Little Spark finale
+written by the Crystal Ball GoldenLeaf after the cinematic. The percentage
+system is frozen; the layout is owned by this task.
+
+## Implemented State
+
+- `app/lib/lucky-meter/config.js` keeps the 5–100 range, the 5–30 / 31–65 /
+  66–100 tiers and their events, drops the number triplets, and adds
+  `LUCKY_NUMBER_MIN/MAX`, singular labels and `HISTORY_LIMITS` of one previous
+  value per choice.
+- `selection.js` draws four independent values — percentage, uniform 1–50
+  number, uniform colour over the twelve approved HEX values, Spark from the
+  unchanged thirty — each excluding only the newest saved value.
+  `validateDailyResult` migrates a missing number exactly once.
+- `storage.js` normalises per choice, appends to four single-value lists, owns
+  the `sparkCompleted` lifecycle and writes a migrated number back immediately.
+- `reveal.js` runs percentage at 620 ms, number at 940 ms and colour at 1240 ms
+  from one start time, then `EVENT_START_MS = 1540`; its samplers return the
+  exact final value at landing.
+- `components/DailyResonance.tsx` drives the three spins from one
+  requestAnimationFrame clock, plays the percentage-selected cinematic, then
+  moves GoldenLeaf into a reserved panel above the medallion and types the
+  Spark at 24 ms/character. The countdown dock appears only after that. A
+  completed cinematic never replays; an interrupted Spark resumes without it.
+- `components/LuckyMeterRing.jsx` keeps the inline percentage pointer and adds
+  an outer number bezel band (50 ticks, pointer, upright numeral badge), a thin
+  segmented colour ring at r 38.7 with a fixed marker, and a DOM contact shadow.
+- `app/lib/gpu-geometry.js` and `components/lucky-meter-medallion-engine.js`
+  deepen the profile (17 rings, 0.26 z, shadow groove, raised bezel, enamel
+  dome, finer milling) and retune key light, exposure and tilt.
+- Layout: Spark panel near the top, medallion, three result cards, disclaimer,
+  share. Mobile is top-aligned with reserved dock space so Home and its
+  countdown never overlap the ritual counter.
+
+## Verification
+
+- `pnpm exec vitest run`: full suite result recorded in `evidence.md`.
+- `pnpm exec tsc --noEmit`: exit 0.
+- Playwright `tests/visual/lucky-meter-daily-resonance.spec.ts`: desktop, mobile-390 and mobile-412 results in `evidence.md`.
+- Production build: `.next` 311 MiB + `public` 34 MiB = 345 MiB, below 495 MiB.
+- Captures: `artifacts/lucky-meter-premium-resonance-20261118/after/`.
+
+## Limitations
+
+- Audio cues were not listened to; their scheduling is unchanged and the audio
+  suites pass.
+- The dev server's Tailwind bundle can go stale in `.next`; new utility classes
+  only appeared after removing `.next` and restarting. Clear `.next` before
+  judging a visual change in dev.
+- `page.addInitScript` re-runs on reload, so a migration test must write the
+  legacy payload directly instead of re-seeding on every navigation.
+
+## Follow-up
+
+- Confirm the medallion reads as intended on a physical GPU; the captures come
+  from Chromium's renderer in this workspace.
+
+---
+
+## 2026-11-17 — Exact-span DevSkim suppression for CI loopback tokens
 
 - **Updated:** 2026-11-17
 - **Branch:** freebuff/c3e3aea4b5256eb42e63e937-devskim-loopback

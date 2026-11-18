@@ -1,3 +1,21 @@
+## 2026-11-18 — Premium Daily Resonance: medallion, independent reveals, Spark finale
+- Split the reading into four independent draws: percentage (range, weighting and tiers frozen), a uniform 1–50
+  Lucky Number, a uniform colour from the twelve approved HEX values, and a Spark from the unchanged thirty.
+  Each remembers exactly one previous value, so older choices return the next day and only the newest saved
+  result is excluded. Number triplets and their tier coupling are gone, including from sharing.
+- One requestAnimationFrame clock now runs all three spins from the same start and settles percentage at
+  620 ms, number at 940 ms and colour at 1240 ms before the percentage-selected cinematic at 1540 ms. After
+  the cinematic the Crystal Ball GoldenLeaf rises into a reserved panel above the medallion and types the Spark
+  like a quill; the message stays visible and the Home countdown appears only once it finishes.
+- Migration is one-shot and non-destructive: a stored result keeps its percentage, colour and Spark, gains a
+  single persisted Lucky Number, and reloads unchanged. A completed cinematic never replays, and an interrupted
+  Spark resumes its writing without it. `sparkCompleted` lives in the same version 1 localStorage payload.
+- Rebuilt the responsive layout around the finale: Spark panel first, medallion below it, then three result
+  cards, disclaimer and sharing, with the mobile view top-aligned so Home and its countdown never overlap.
+- Deepened the medallion profile and lighting (17 rings, 0.26 z range, shadow groove, raised bezel, enamel dome,
+  finer milling, raking key light, grounded contact shadow) and gave the number its own outer bezel dial and the
+  colour a thin segmented ring. Both are display-only and never feed selection.
+
 ## 2026-11-17 — Exact-span DevSkim suppression for CI loopback tokens
 - Added a DS162092-only suppression family for the changed-line reviewer and its test: a two-file allowlist,
   exact 16-space/8-space line patterns, the preceding `if host.casefold() not in {` requirement, and a

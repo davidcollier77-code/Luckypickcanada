@@ -883,3 +883,234 @@ body {
   font-style: normal;
   color: rgba(255, 214, 130, 0.55);
 }
+
+/* ==========================================================================
+   Daily Resonance premium presentation: the grounded medallion, the single
+   Lucky Number, the segmented Lucky Colour ring and the Little Spark finale
+   written by the Crystal Ball GoldenLeaf.
+
+   Everything here is presentation only. The values are already selected before
+   any of these elements animate, so no transition can change a result.
+   ========================================================================== */
+
+/* The medallion is a raised object, so it casts a grounded contact shadow onto
+   the sky instead of floating on a glow. */
+.resonance-medallion-contact {
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    closest-side,
+    rgba(0, 0, 0, 0.74) 0%,
+    rgba(0, 0, 0, 0.44) 54%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  filter: blur(7px);
+}
+
+/* Struck-gold numeral for the independent Lucky Number. */
+.lucky-number-value {
+  background: linear-gradient(180deg, #fffbe4 0%, #f8e3a4 40%, #e2b761 74%, #b6822f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+/* ── Little Spark finale ───────────────────────────────────────────────────
+   A warm, raised letter-panel near the top of the reading. It reserves the
+   writing area up front so the medallion does not jump when the quill starts,
+   and the completed message stays exactly where it was written. */
+.lucky-spark-finale {
+  position: relative;
+  isolation: isolate;
+  padding: 0.7rem 0.9rem 0.9rem;
+  border: 1px solid rgba(255, 214, 130, 0.34);
+  border-radius: 1rem;
+  background:
+    radial-gradient(120% 130% at 50% -20%, rgba(255, 226, 160, 0.15), rgba(255, 226, 160, 0) 62%),
+    linear-gradient(160deg, rgba(26, 21, 11, 0.88), rgba(6, 9, 14, 0.84));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 190, 0.17),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 18px 40px -22px rgba(0, 0, 0, 0.92);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
+  backdrop-filter: blur(8px) saturate(112%);
+  transition: box-shadow 700ms ease, border-color 700ms ease;
+}
+
+@media (min-width: 640px) {
+  .lucky-spark-finale {
+    padding: 0.85rem 1.1rem 1.05rem;
+  }
+}
+
+.lucky-spark-finale::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+  background: radial-gradient(90% 60% at 50% 120%, rgba(255, 198, 92, 0.16), rgba(255, 198, 92, 0) 70%);
+}
+
+.lucky-spark-finale[data-state='writing'] {
+  border-color: rgba(255, 224, 154, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 204, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 0 34px -8px rgba(255, 196, 80, 0.42),
+    0 18px 40px -22px rgba(0, 0, 0, 0.92);
+}
+
+.lucky-spark-finale[data-state='written'] {
+  border-color: rgba(255, 220, 150, 0.48);
+}
+
+.lucky-spark-finale__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.lucky-spark-finale__rule {
+  display: block;
+  height: 1px;
+  flex: 0 1 2.4rem;
+  min-width: 0.5rem;
+  background: linear-gradient(90deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.55));
+}
+
+.lucky-spark-finale__rule:last-child {
+  background: linear-gradient(270deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.55));
+}
+
+.lucky-spark-finale__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fffbe4 0%, #f8e3a4 44%, #dfb257 78%, #b6822f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+}
+
+.lucky-spark-finale__text {
+  margin: 0;
+  font-style: italic;
+  line-height: 1.55;
+  color: rgba(255, 248, 232, 0.95);
+  text-wrap: pretty;
+  min-height: 3.6em;
+}
+
+@media (min-width: 640px) {
+  .lucky-spark-finale__text {
+    min-height: 3.1em;
+  }
+}
+
+.lucky-spark-finale__mark {
+  font-style: normal;
+  color: rgba(255, 214, 130, 0.6);
+}
+
+.lucky-spark-finale__waiting {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.6em;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 226, 168, 0.55);
+}
+
+@media (min-width: 640px) {
+  .lucky-spark-finale__waiting {
+    min-height: 3.1em;
+  }
+}
+
+@keyframes luckySparkInk {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.lucky-spark-finale__ink {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: #ffe0a0;
+  box-shadow: 0 0 10px rgba(255, 208, 122, 0.9);
+  animation: luckySparkInk 1.6s ease-in-out infinite;
+}
+
+/* ── GoldenLeaf quill ─────────────────────────────────────────────────────
+   Reuses the Crystal Ball GoldenLeaf artwork and its typing cadence: a
+   zero-width inline wrapper carries the leaf at the writing edge, so the text
+   flows naturally while the leaf travels with it. */
+@keyframes luckySparkQuillSettle {
+  0% { opacity: 0; transform: translateY(-16px) rotate(-22deg) scale(0.86); }
+  70% { opacity: 1; transform: translateY(1px) rotate(4deg) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) rotate(-6deg) scale(1); }
+}
+
+@keyframes luckySparkQuillFloat {
+  0% { transform: translateY(0) rotate(-6deg); }
+  100% { transform: translateY(-2px) rotate(4deg); }
+}
+
+.lucky-spark-quill {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+  vertical-align: baseline;
+}
+
+.lucky-spark-quill__leaf {
+  position: absolute;
+  bottom: -0.24em;
+  left: 0.02em;
+  width: 1.15em;
+  height: 1.2em;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px rgba(255, 210, 110, 0.85));
+  animation:
+    luckySparkQuillSettle 460ms cubic-bezier(0.22, 1, 0.34, 1) both,
+    luckySparkQuillFloat 1.7s ease-in-out 460ms infinite alternate;
+}
+
+/* ── Countdown dock beneath Home ───────────────────────────────────────────
+   It appears only after the Spark has finished writing, tucked under the Home
+   control rather than inside the result panels. */
+.lucky-countdown--dock {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  padding: 0.35rem 0.7rem;
+  text-align: right;
+  background: rgba(2, 7, 12, 0.66);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 190, 0.08), 0 10px 24px -14px rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucky-spark-finale__ink,
+  .lucky-spark-quill__leaf {
+    animation: none !important;
+  }
+  .lucky-spark-finale {
+    transition: none;
+  }
+}

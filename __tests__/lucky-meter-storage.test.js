@@ -13,6 +13,7 @@ import {
   saveMeterState,
 } from '../app/lib/lucky-meter/storage';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
+import { LITTLE_SPARKS } from '../app/lib/lucky-meter/little-sparks';
 
 function createMemoryStorage() {
   const map = new Map();
@@ -24,8 +25,8 @@ function createMemoryStorage() {
   };
 }
 
-function makeResult(dateKey = '2026-11-14') {
-  return createDailyResult({ dateKey });
+function makeResult(dateKey = '2026-11-18') {
+  return createDailyResult({ dateKey, random: () => 0.5 });
 }
 
 describe('Lucky Meter Local Storage', () => {
@@ -39,7 +40,8 @@ describe('Lucky Meter Local Storage', () => {
 
     expect(loaded.result).toEqual(expect.objectContaining({ ...result, createdAt: expect.any(Number) }));
     expect(loaded.history.percentages).toEqual([result.percentage]);
-    expect(loaded.history.events).toEqual([result.event.id]);
+    expect(loaded.history.numbers).toEqual([result.luckyNumber]);
+    expect(loaded.history.colours).toEqual([result.colour.id]);
     expect(loaded.history.sparks).toEqual([result.spark.id]);
   });
 
@@ -53,13 +55,17 @@ describe('Lucky Meter Local Storage', () => {
     expect(payload.version).toBe(METER_STORAGE_VERSION);
     expect(payload.dateKey).toBe(result.dateKey);
     expect(payload.result.percentage).toBe(result.percentage);
+    expect(payload.result.luckyNumber).toBe(result.luckyNumber);
   });
 
-  it('keeps the last three percentages only', () => {
+  it('keeps exactly one previous value for every independent choice', () => {
     const storage = createMemoryStorage();
     const results = [11, 22, 33, 44].map((percentage, index) => ({
       ...makeResult(`2026-11-${10 + index}`),
       percentage,
+      luckyNumber: [4, 5, 6, 7][index],
+      colour: { id: ['cream', 'charcoal', 'burgundy', 'navy-blue'][index] },
+      spark: { id: LITTLE_SPARKS[index].id },
     }));
 
     let history = emptyMeterHistory();
@@ -68,31 +74,19 @@ describe('Lucky Meter Local Storage', () => {
     }
     saveMeterState({ result: results[3], history }, storage);
 
-    expect(history.percentages).toEqual([44, 33, 22]);
-    expect(history.percentages).toHaveLength(HISTORY_LIMITS.percentages);
-    expect(loadMeterState(storage).history.percentages).toEqual([44, 33, 22]);
+    expect(history.percentages).toEqual([44]);
+    expect(history.numbers).toEqual([7]);
+    expect(history.colours).toEqual(['navy-blue']);
+    expect(history.sparks).toEqual([LITTLE_SPARKS[3].id]);
+    for (const key of ['percentages', 'numbers', 'colours', 'sparks']) {
+      expect(history[key]).toHaveLength(HISTORY_LIMITS[key]);
+    }
+    expect(loadMeterState(storage).history).toEqual(history);
   });
 
-  it('caps event and Spark history separately', () => {
-    let history = emptyMeterHistory();
-    const events = [
-      'meteor', 'lightning', 'fireworks', 'meteor', 'lightning',
-      'fireworks', 'meteor', 'lightning', 'fireworks', 'meteor', 'lightning', 'fireworks',
-    ];
-    const sparks = Array.from({ length: 12 }, (_, index) => `spark-${String(index + 1).padStart(2, '0')}`);
-
-    for (let index = 0; index < sparks.length; index += 1) {
-      history = appendResultToHistory(history, {
-        percentage: 40 + index,
-        event: { id: events[index] },
-        spark: { id: sparks[index] },
-      });
-    }
-
-    expect(history.events).toHaveLength(HISTORY_LIMITS.events);
-    expect(history.events[0]).toBe(events[events.length - 1]);
-    expect(history.sparks).toHaveLength(HISTORY_LIMITS.sparks);
-    expect(history.sparks[0]).toBe(sparks[sparks.length - 1]);
+  it('does not carry an event history that could block an event', () => {
+    const history = appendResultToHistory(emptyMeterHistory(), makeResult());
+    expect(history.events).toBeUndefined();
   });
 
   it('treats corrupt JSON, wrong versions and invalid results as no result', () => {
@@ -111,27 +105,29 @@ describe('Lucky Meter Local Storage', () => {
         version: METER_STORAGE_VERSION,
         dateKey: result.dateKey,
         result: { ...result, percentage: 0 },
-        history: { percentages: [0, 42], events: ['meteor'], sparks: ['spark-01'] },
+        history: { percentages: [0, 42], numbers: [0, 19], colours: ['nope', 'cream'], sparks: ['nope', 'spark-01'] },
       }),
     );
     const loaded = loadMeterState(storage);
     expect(loaded.result).toBeNull();
-    // History is still usable so the next draw can avoid recent picks;
-    // 0 is not a possible meter result and is discarded.
+    // History is still usable so the next draw can avoid recent picks; only
+    // real values survive, so a corrupt newest entry never becomes an exclusion.
     expect(loaded.history.percentages).toEqual([42]);
-    expect(loaded.history.events).toEqual(['meteor']);
+    expect(loaded.history.numbers).toEqual([19]);
+    expect(loaded.history.colours).toEqual(['cream']);
+    expect(loaded.history.sparks).toEqual(['spark-01']);
   });
 
   it('returns a stale result for history but never reports it as today', () => {
     const storage = createMemoryStorage();
-    const yesterday = makeResult('2026-11-13');
+    const yesterday = makeResult('2026-11-17');
     saveMeterState({ result: yesterday, history: emptyMeterHistory() }, storage);
 
     const loaded = loadMeterState(storage);
     expect(loaded.result).not.toBeNull();
-    expect(isResultForDate(loaded.result, '2026-11-14')).toBe(false);
-    expect(isResultForDate(loaded.result, '2026-11-13')).toBe(true);
-    expect(isResultForDate(null, '2026-11-14')).toBe(false);
+    expect(isResultForDate(loaded.result, '2026-11-18')).toBe(false);
+    expect(isResultForDate(loaded.result, '2026-11-17')).toBe(true);
+    expect(isResultForDate(null, '2026-11-18')).toBe(false);
   });
 
   it('never throws when storage is unavailable, disabled or full', () => {
@@ -146,22 +142,59 @@ describe('Lucky Meter Local Storage', () => {
     expect(saveMeterState({ result: makeResult(), history: emptyMeterHistory() }, throwingStorage)).toBe(false);
   });
 
-  it('persists event completion and stage duration at the existing version', () => {
+  it('migrates a missing Lucky Number exactly once and persists it', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+    // Drop the number and its history as a pre-Lucky-Number payload would.
+    const legacy = { ...result };
+    delete legacy.luckyNumber;
+    storage.setItem(
+      METER_STORAGE_KEY,
+      JSON.stringify({
+        version: METER_STORAGE_VERSION,
+        dateKey: result.dateKey,
+        result: legacy,
+        history: { percentages: [result.percentage], sparks: [result.spark.id] },
+        eventCompleted: true,
+        stageDurationMs: 10_000,
+      }),
+    );
+
+    const first = loadMeterState(storage, { random: () => 0.5 });
+    const migratedNumber = first.result.luckyNumber;
+    expect(migratedNumber).toBe(26);
+    // The migration is written back, including the number in history.
+    const persisted = JSON.parse(storage.map.get(METER_STORAGE_KEY));
+    expect(persisted.result.luckyNumber).toBe(migratedNumber);
+    expect(persisted.history.numbers).toEqual([migratedNumber]);
+    // Nothing else was rerolled.
+    expect(persisted.result.percentage).toBe(result.percentage);
+    expect(persisted.result.colour.id).toBe(result.colour.id);
+    expect(persisted.result.spark.id).toBe(result.spark.id);
+
+    // A reload with a different random source keeps the same number.
+    const second = loadMeterState(storage, { random: () => 0.9 });
+    expect(second.result.luckyNumber).toBe(migratedNumber);
+  });
+
+  it('persists event and Spark completion at the existing version', () => {
     const storage = createMemoryStorage();
     const result = makeResult();
     const history = appendResultToHistory(emptyMeterHistory(), result);
 
     saveMeterState(
-      { result, history, eventCompleted: true, stageDurationMs: 10_000 },
+      { result, history, eventCompleted: true, sparkCompleted: true, stageDurationMs: 10_000 },
       storage,
     );
     const payload = JSON.parse(storage.map.get(METER_STORAGE_KEY));
     expect(payload.version).toBe(METER_STORAGE_VERSION);
     expect(payload.eventCompleted).toBe(true);
+    expect(payload.sparkCompleted).toBe(true);
     expect(payload.stageDurationMs).toBe(10_000);
 
     const loaded = loadMeterState(storage);
     expect(loaded.eventCompleted).toBe(true);
+    expect(loaded.sparkCompleted).toBe(true);
     expect(loaded.stageDurationMs).toBe(10_000);
   });
 
@@ -181,7 +214,26 @@ describe('Lucky Meter Local Storage', () => {
     const loaded = loadMeterState(storage);
     expect(loaded.result).not.toBeNull();
     expect(loaded.eventCompleted).toBe(false);
+    expect(loaded.sparkCompleted).toBe(false);
     expect(loaded.stageDurationMs).toBe(0);
+  });
+
+  it('keeps a legacy completed result’s Spark visible instead of replaying it', () => {
+    const storage = createMemoryStorage();
+    const result = makeResult();
+    storage.setItem(
+      METER_STORAGE_KEY,
+      JSON.stringify({
+        version: METER_STORAGE_VERSION,
+        dateKey: result.dateKey,
+        result,
+        history: emptyMeterHistory(),
+        eventCompleted: true,
+        stageDurationMs: 10_000,
+      }),
+    );
+
+    expect(loadMeterState(storage).sparkCompleted).toBe(true);
   });
 
   it('rejects impossible stage durations and completion without a valid result', () => {
@@ -189,18 +241,19 @@ describe('Lucky Meter Local Storage', () => {
     const result = makeResult();
 
     saveMeterState(
-      { result, history: emptyMeterHistory(), eventCompleted: true, stageDurationMs: 999_999 },
+      { result, history: emptyMeterHistory(), eventCompleted: true, sparkCompleted: true, stageDurationMs: 999_999 },
       storage,
     );
     expect(loadMeterState(storage).stageDurationMs).toBe(0);
 
     saveMeterState(
-      { result: null, history: emptyMeterHistory(), eventCompleted: true, stageDurationMs: 10_000 },
+      { result: null, history: emptyMeterHistory(), eventCompleted: true, sparkCompleted: true, stageDurationMs: 10_000 },
       storage,
     );
     const loaded = loadMeterState(storage);
     expect(loaded.result).toBeNull();
     expect(loaded.eventCompleted).toBe(false);
+    expect(loaded.sparkCompleted).toBe(false);
     expect(loaded.stageDurationMs).toBe(0);
   });
 
@@ -215,15 +268,17 @@ describe('Lucky Meter Local Storage', () => {
         result,
         history: {
           percentages: ['12', null, 42.5, 77, 88, 99, 100],
-          events: ['meteor', 42, null, 'lightning'],
-          sparks: ['spark-02', {}, 'spark-03'],
+          numbers: ['23', null, 7.5, 51, 0, 44, 9],
+          colours: ['cream', 42, null, 'nope', 'navy-blue'],
+          sparks: ['spark-02', {}, 'spark-03', 'nope'],
         },
       }),
     );
 
     const loaded = loadMeterState(storage);
-    expect(loaded.history.percentages).toEqual([12, 77, 88]);
-    expect(loaded.history.events).toEqual(['meteor', 'lightning']);
-    expect(loaded.history.sparks).toEqual(['spark-02', 'spark-03']);
+    expect(loaded.history.percentages).toEqual([12]);
+    expect(loaded.history.numbers).toEqual([23]);
+    expect(loaded.history.colours).toEqual(['cream']);
+    expect(loaded.history.sparks).toEqual(['spark-02']);
   });
 });

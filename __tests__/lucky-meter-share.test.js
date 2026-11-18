@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ENTERTAINMENT_DISCLAIMER, SHARE_URL } from '../app/lib/lucky-meter/config';
+import {
+  ENTERTAINMENT_DISCLAIMER,
+  LUCKY_COLOUR_LABEL,
+  LUCKY_NUMBER_LABEL,
+  SHARE_URL,
+} from '../app/lib/lucky-meter/config';
 import {
   buildShareText,
   isShareCancellation,
@@ -7,32 +12,39 @@ import {
 } from '../app/lib/lucky-meter/share';
 
 const result = {
-  dateKey: '2026-11-14',
+  dateKey: '2026-11-18',
   percentage: 78,
   tier: {
-    id: 'medium',
-    label: 'Medium Resonance',
-    message: 'Your luck is in the mid-range today.',
-    numbers: [11, 22, 33],
+    id: 'high',
+    label: 'High Resonance',
+    message: 'Your luck is running high today!',
   },
-  event: { id: 'meteor', name: 'Meteor Shower' },
+  event: { id: 'fireworks', name: 'Fireworks' },
+  luckyNumber: 27,
   colour: { id: 'maple-red', name: 'Maple Red', hex: '#B52B32' },
   spark: { id: 'spark-01', message: 'Even a small step forward can change the direction of your day.' },
 };
 
 describe('share text', () => {
-  it('includes the result, fixed numbers, colour, Spark, URL and disclaimer', () => {
+  it('includes one Lucky Number, the colour with its HEX, Spark, URL and disclaimer', () => {
     const text = buildShareText(result);
     expect(text).toContain('78%');
-    expect(text).toContain('Medium Resonance');
-    expect(text).toContain("Today's event: Meteor Shower");
-    // Medium's numbers travel with the tier, not with the Meteor Shower event.
-    expect(text).toContain('Your Lucky Numbers: 11, 22, 33');
-    expect(text).toContain('Maple Red (#B52B32)');
+    expect(text).toContain('High Resonance');
+    expect(text).toContain("Today's event: Fireworks");
+    // The Lucky Number is independent of the tier and reads as a single number.
+    expect(text).toContain(`${LUCKY_NUMBER_LABEL}: 27`);
+    expect(text).not.toMatch(/Lucky Numbers/i);
+    expect(text).toContain(`${LUCKY_COLOUR_LABEL}: Maple Red (#B52B32)`);
     expect(text).toContain(result.spark.message);
     expect(text).toContain(SHARE_URL);
     expect(text).toContain(ENTERTAINMENT_DISCLAIMER);
     expect(buildShareText(null)).toBe('');
+  });
+
+  it('never prints a fixed triplet', () => {
+    const text = buildShareText(result);
+    expect(text).not.toContain('11, 22, 33');
+    expect(text).not.toContain('3, 9, 21');
   });
 });
 

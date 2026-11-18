@@ -394,29 +394,34 @@ export function buildMapleLeafGeometry({
  * radius 1, so the consumer scales the whole object to the meter's box.
  */
 export const MEDALLION_PROFILE = Object.freeze([
-  // Outer wall of the coin, seen at grazing angles.
-  { r: 1.0, z: -0.02, albedo: [0.66, 0.45, 0.15] },
-  { r: 1.0, z: 0.085, albedo: [0.8, 0.58, 0.22] },
+  // Outer wall of a struck medal. The coin has a real body: the back sits well
+  // behind the face so a grazing view shows an edge rather than a decal.
+  { r: 1.0, z: -0.055, albedo: [0.5, 0.34, 0.11] },
+  { r: 1.0, z: 0.02, albedo: [0.72, 0.51, 0.18] },
+  { r: 1.0, z: 0.115, albedo: [0.86, 0.64, 0.26] },
   // Milled rim: the coin edge, rippled radially. The frequency has to stay far
   // enough below the lathe's segment count that the ripple reads as milling and
   // not as a jagged sawtooth after rasterising.
-  { r: 1.0, z: 0.145, albedo: [0.92, 0.72, 0.34], modulate: { amplitude: 0.014, frequency: 24 } },
-  // Flat top annulus of the rim.
-  { r: 0.955, z: 0.16, albedo: [1.0, 0.84, 0.45] },
-  // Chamfer down toward the bezel.
-  { r: 0.925, z: 0.118, albedo: [0.9, 0.68, 0.28] },
-  // Thin recess wall.
-  { r: 0.918, z: 0.06, albedo: [0.5, 0.33, 0.1] },
-  // Raised inner bezel.
-  { r: 0.9, z: 0.088, albedo: [1.0, 0.86, 0.5] },
-  { r: 0.878, z: 0.094, albedo: [1.0, 0.88, 0.54] },
-  // Step into the enamel well.
-  { r: 0.872, z: 0.048, albedo: [0.36, 0.24, 0.08] },
-  // Enamel well wall and floor.
-  { r: 0.862, z: 0.03, albedo: [0.09, 0.07, 0.05] },
-  { r: 0.856, z: 0.006, albedo: [0.075, 0.06, 0.045] },
-  { r: 0.5, z: 0.012, albedo: [0.055, 0.045, 0.035] },
-  { r: 0.0, z: 0.016, albedo: [0.05, 0.041, 0.032] },
+  { r: 0.998, z: 0.19, albedo: [0.96, 0.79, 0.4], modulate: { amplitude: 0.008, frequency: 36 } },
+  // Flat top annulus of the rim, the catch-light band.
+  { r: 0.958, z: 0.205, albedo: [0.97, 0.83, 0.46] },
+  // Outer chamfer: a wide, polished bevel down from the rim.
+  { r: 0.93, z: 0.158, albedo: [0.94, 0.72, 0.31] },
+  // Narrow shadow groove, the dark line that reads as struck relief.
+  { r: 0.918, z: 0.124, albedo: [0.32, 0.21, 0.07] },
+  // Raised inner bezel with its own bevel and flat crown.
+  { r: 0.912, z: 0.152, albedo: [1.0, 0.89, 0.53] },
+  { r: 0.888, z: 0.16, albedo: [1.0, 0.91, 0.57] },
+  // Inner chamfer stepping down into the enamel well.
+  { r: 0.878, z: 0.118, albedo: [0.88, 0.63, 0.24] },
+  { r: 0.872, z: 0.088, albedo: [0.4, 0.27, 0.09] },
+  // Enamel well wall and recessed floor.
+  { r: 0.866, z: 0.058, albedo: [0.1, 0.08, 0.055] },
+  { r: 0.858, z: 0.038, albedo: [0.08, 0.065, 0.048] },
+  // A shallow enamel dome, so the well holds light instead of reading flat.
+  { r: 0.62, z: 0.045, albedo: [0.062, 0.05, 0.038] },
+  { r: 0.3, z: 0.055, albedo: [0.058, 0.047, 0.036] },
+  { r: 0.0, z: 0.06, albedo: [0.052, 0.043, 0.033] },
 ]);
 
 /**

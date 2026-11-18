@@ -270,11 +270,21 @@ test('Card Reveal, Crystal Ball and Lucky Meter read the same local-midnight cou
           dateKey,
           percentage: 50,
           event: { id: 'meteor' },
+          luckyNumber: 23,
           colour: { id: 'maple-red' },
           spark: { id: 'spark-01' },
           createdAt: Date.now(),
         },
-        history: { percentages: [50], events: ['meteor'], sparks: ['spark-01'] },
+        history: {
+          percentages: [50],
+          numbers: [23],
+          colours: ['maple-red'],
+          sparks: ['spark-01'],
+        },
+        // A finished reading and Spark, so the countdown is available without
+        // running the cinematic or the quill.
+        eventCompleted: true,
+        sparkCompleted: true,
       }),
     );
   });
