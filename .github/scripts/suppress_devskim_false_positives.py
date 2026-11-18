@@ -215,6 +215,22 @@ SAFE_SHARE_TIMER_CALLBACK_PATTERNS = {
         ),
     ),
 }
+# The arrival leaves' one-shot clocks defer callable callbacks at fixed
+# delays; no string or request data is evaluated. Keep this allowlist separate
+# so adding it for DS172411 does not widen other rules.
+SAFE_ARRIVAL_TIMER_CALLBACK_FILES = frozenset({
+    "components/LuckyMeterArrivalLeaves.jsx",
+})
+SAFE_ARRIVAL_TIMER_CALLBACK_PATTERNS = {
+    "components/LuckyMeterArrivalLeaves.jsx": (
+        re.compile(
+            r"^ *const goneTimer = window\.(?P<call>setTimeout)\(\(\) => \{ *$"
+        ),
+        re.compile(
+            r"^ *const liftTimer = window\.(?P<call>setTimeout)\(\(\) => \{ *$"
+        ),
+    ),
+}
 # Playwright specs whose only DS172411 findings are test-runner timeout
 # configuration (`test.setTimeout(<milliseconds>)`). Reviewed 2026-11-10.
 SAFE_PLAYWRIGHT_TIMEOUT_FILES = frozenset({
@@ -365,6 +381,7 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized in SAFE_REVEAL_TIMER_CALLBACK_FILES
         or normalized in SAFE_REVEAL_TIMER_ASSERTION_FILES
         or normalized in SAFE_SHARE_TIMER_CALLBACK_FILES
+        or normalized in SAFE_ARRIVAL_TIMER_CALLBACK_FILES
         or normalized in SAFE_PLAYWRIGHT_TIMEOUT_FILES
         or normalized in SAFE_TEST_SUPPORT_TIMER_FILES
         or normalized in SAFE_SECURITY_TOOLING_LOOPBACK_FILES
@@ -1108,6 +1125,7 @@ def should_suppress_safe_contextual_finding(
         reviewed_callback_patterns = (
             SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
             or SAFE_SHARE_TIMER_CALLBACK_PATTERNS.get(relative_path)
+            or SAFE_ARRIVAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
         )
         if reviewed_callback_patterns is not None:
             return any(
@@ -1277,6 +1295,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                         | SAFE_REVEAL_TIMER_CALLBACK_FILES
                         | SAFE_REVEAL_TIMER_ASSERTION_FILES
                         | SAFE_SHARE_TIMER_CALLBACK_FILES
+                        | SAFE_ARRIVAL_TIMER_CALLBACK_FILES
                         | SAFE_PLAYWRIGHT_TIMEOUT_FILES
                         | SAFE_TEST_SUPPORT_TIMER_FILES
                     )

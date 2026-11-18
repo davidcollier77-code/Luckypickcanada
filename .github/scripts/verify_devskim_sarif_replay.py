@@ -169,6 +169,22 @@ AUDITED_FALSE_POSITIVES = (
         ),
     ),
     AuditedFinding(
+        name="Lucky Meter arrival reduced-motion settle callback",
+        rule_id="DS172411",
+        paths=("components/LuckyMeterArrivalLeaves.jsx",),
+        source_line_pattern=re.compile(
+            r"^ *const goneTimer = window\.setTimeout\(\(\) => \{ *$"
+        ),
+    ),
+    AuditedFinding(
+        name="Lucky Meter arrival lift callback",
+        rule_id="DS172411",
+        paths=("components/LuckyMeterArrivalLeaves.jsx",),
+        source_line_pattern=re.compile(
+            r"^ *const liftTimer = window\.setTimeout\(\(\) => \{ *$"
+        ),
+    ),
+    AuditedFinding(
         name="Playwright local dev-server origin",
         rule_id="DS162092",
         paths=("playwright.config.ts",),
