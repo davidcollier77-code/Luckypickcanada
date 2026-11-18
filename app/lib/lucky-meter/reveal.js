@@ -3,7 +3,8 @@
  *
  * The percentage dial, the Lucky Number pointer and the segmented colour ring
  * all start at the same instant and settle in a staggered order inside roughly
- * one and a quarter seconds. Only then does the percentage-selected cinematic
+ * 7.4 seconds: the dial at 3.2 s, the number pointer at 5.4 s and the colour
+ * ring at 7.4 s. Only then does the percentage-selected cinematic
  * begin, and only after a one-second pause once the cinematic has finished does
  * a tiny point of light write the Spark across the sky.
  *
