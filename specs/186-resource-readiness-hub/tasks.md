@@ -27,7 +27,7 @@
 ## Phase 4: Integration (US1, US4)
 
 - [X] T014 Add the invisible `components/ResourceReadiness.jsx` mount and insert it once in `app/layout.js`.
-- [X] T015 Schedule current-route preparation in an idle period and homepage preparation after load plus two frames, bounded by the plan.
+- [X] T015 Gate current-route and homepage preparation behind `whenPageSettled` (load plus a quiet LCP/resource window) before the plan-bounded idle scheduler runs.
 - [X] T016 Add one delegated hover/focus/press listener set that uses the existing prefetch policy.
 - [X] T017 Hold the active-experience marker during the Daily Resonance cinematic and the Lucky Card Reveal without changing their timing or sound.
 - [X] T018 Wire the Next.js router prefetch into the hub's code adapter from the mount.

@@ -567,6 +567,80 @@ describe('release and server safety', () => {
     const snapshot = await serverHub.prepareExperience('server');
     expect(snapshot.state).toBe('idle');
     expect(serverHub.whenIdle(() => {})).toBeTypeOf('function');
+    expect(serverHub.whenPageSettled(() => {})).toBeTypeOf('function');
     expect(serverHub.beginActiveExperience('server')).toBeTypeOf('function');
+  });
+});
+
+describe('page settle gate', () => {
+  function stubObservers() {
+    const observers = [];
+    class FakePerformanceObserver {
+      constructor(callback) {
+        this.callback = callback;
+        this.disconnected = false;
+        observers.push(this);
+      }
+
+      observe(options) {
+        this.type = options.type;
+      }
+
+      disconnect() {
+        this.disconnected = true;
+      }
+    }
+    vi.stubGlobal('PerformanceObserver', FakePerformanceObserver);
+    return observers;
+  }
+
+  it('waits for load and a quiet LCP window before preparing', () => {
+    vi.useFakeTimers();
+    const observers = stubObservers();
+    let clock = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+
+    const run = vi.fn();
+    hub.whenPageSettled(run, { quietMs: 600, maxWaitMs: 20_000 });
+    expect(observers.map((observer) => observer.type)).toEqual([
+      'largest-contentful-paint',
+      'resource',
+    ]);
+
+    clock = 2000;
+    vi.advanceTimersByTime(1000);
+    expect(run).not.toHaveBeenCalled();
+
+    // The largest paint lands at 2200 ms; load is complete, but 500 ms of quiet
+    // is not enough. Without the LCP timestamp this would already have run.
+    clock = 2200;
+    observers[0].callback({ getEntries: () => [{ startTime: 2200 }] });
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('complete');
+    clock = 2700;
+    vi.advanceTimersByTime(500);
+    expect(run).not.toHaveBeenCalled();
+
+    clock = 2800;
+    vi.advanceTimersByTime(100);
+    expect(run).toHaveBeenCalledTimes(1);
+    expect(observers.every((observer) => observer.disconnected)).toBe(true);
+  });
+
+  it('cancels every timer and observer before the page settles', () => {
+    vi.useFakeTimers();
+    const observers = stubObservers();
+    let clock = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+
+    const run = vi.fn();
+    const cancel = hub.whenPageSettled(run);
+    cancel();
+
+    clock = 30_000;
+    vi.advanceTimersByTime(30_000);
+    expect(run).not.toHaveBeenCalled();
+    expect(observers.every((observer) => observer.disconnected)).toBe(true);
   });
 });

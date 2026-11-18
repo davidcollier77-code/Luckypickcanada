@@ -105,8 +105,9 @@ Howler/Web Audio prepare resolves and never calls play.
   `prefetch: none`; the existing shared plan subscription wakes the queue.
 - Background resources marked `background: false` (map sky, Crystal Ball audio) are deferred to route/intent
   preparation and the snapshot reports `partial`.
-- Background runs only from `whenIdle` (requestIdleCallback with a 2 s timeout); the homepage waits for load
-  plus two frames before scheduling.
+- Background runs only from `whenIdle` (requestIdleCallback with a 2 s timeout). Current-route and homepage
+  scheduling first pass `whenPageSettled`: `load`, 600 ms of quiet after the last LCP/resource entry, a 250 ms
+  floor and a 20 s bound. This keeps preparation out of the load/LCP window on slow connections.
 - One automatic retry per resource after 250 ms; `retryExperience` resets only failed entries.
 
 ### Release

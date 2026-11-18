@@ -793,6 +793,105 @@ export function whenIdle(callback, { timeout = IDLE_TIMEOUT_MS } = {}) {
   };
 }
 
+/**
+ * Runs a callback once the page has finished loading and its most important
+ * paint has stopped moving. `load` alone is not enough: on a slow connection the
+ * largest-contentful-paint image can still be decoding after `load`, and an idle
+ * callback can fire in that window. This waits for `load` plus a quiet period
+ * after the last LCP candidate and the last completed resource, so scheduled
+ * preparation cannot add requests or main-thread work while the page is still
+ * settling.
+ *
+ * The wait is bounded so preparation still starts on a page that never reports
+ * an LCP entry, and the returned cancel function removes every observer and
+ * timer.
+ *
+ * @param {() => void} callback
+ * @param {{ quietMs?: number, maxWaitMs?: number }} [options]
+ * @returns {() => void} Cancels the callback if it has not run yet.
+ */
+export function whenPageSettled(callback, { quietMs = 600, maxWaitMs = 20_000 } = {}) {
+  const windowObject = getWindow();
+  if (!windowObject || typeof callback !== 'function') return () => {};
+  const perf = windowObject.performance;
+  if (!perf || typeof perf.now !== 'function') {
+    return whenIdle(callback, { timeout: IDLE_TIMEOUT_MS });
+  }
+
+  let cancelled = false;
+  let finished = false;
+  let lastActivity = perf.now();
+  let lastLcp = 0;
+  const observers = [];
+  const startedAt = lastActivity;
+
+  const touch = () => {
+    if (!finished && !cancelled) lastActivity = perf.now();
+  };
+
+  const observe = (type, onEntry) => {
+    if (typeof windowObject.PerformanceObserver !== 'function') return;
+    try {
+      const observer = new windowObject.PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        if (!entries || entries.length === 0) return;
+        for (const entry of entries) onEntry(entry);
+        touch();
+      });
+      observer.observe({ type, buffered: true });
+      observers.push(observer);
+    } catch {
+      // An unsupported entry type must not block scheduling; the readyState and
+      // bounded wait below still provide a safe lower bound.
+    }
+  };
+
+  observe('largest-contentful-paint', (entry) => {
+    lastLcp = Math.max(lastLcp, Number(entry.startTime) || 0);
+  });
+  observe('resource', () => {});
+
+  let poll = 0;
+  let cap = 0;
+  const cleanup = () => {
+    for (const observer of observers) {
+      try {
+        observer.disconnect();
+      } catch {
+        // Ignore a disconnect from a browser that already tore it down.
+      }
+    }
+    observers.length = 0;
+    windowObject.clearInterval(poll);
+    windowObject.clearTimeout(cap);
+  };
+
+  const finish = () => {
+    if (finished || cancelled) return;
+    finished = true;
+    cleanup();
+    callback();
+  };
+
+  const evaluate = () => {
+    if (finished || cancelled) return;
+    if (windowObject.document?.readyState !== 'complete') return;
+    const current = perf.now();
+    // The small floor keeps a cached revisit from preparing in the same task as
+    // hydration; the LCP and resource timestamps keep slow connections honest.
+    const quietSince = Math.max(startedAt + 250, lastLcp, lastActivity);
+    if (current - quietSince >= quietMs) finish();
+  };
+
+  poll = windowObject.setInterval(evaluate, 100);
+  cap = windowObject.setTimeout(finish, maxWaitMs);
+
+  return () => {
+    cancelled = true;
+    cleanup();
+  };
+}
+
 /* ------------------------------------------------------------------------- *
  * Readiness
  * ------------------------------------------------------------------------- */

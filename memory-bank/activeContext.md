@@ -21,23 +21,26 @@ reuse and active-experience protection, compatible with current and future optio
   and Crystal Ball audio are deferred to route/intent; no API is ever warmed.
 - `components/ResourceReadiness.jsx` is mounted once in `app/layout.js`, renders nothing, supplies the Next
   router prefetcher, prepares the current route in an idle period, and schedules the homepage's plan-bounded
-  likely-next order after load plus two frames. One delegated hover/focus/press listener set replaces
-  per-link subscriptions.
+  likely-next order. Both paths wait for `whenPageSettled`: `load`, a 600 ms quiet window after the last LCP
+  entry and completed resource, and a 250 ms floor, bounded at 20 s. One delegated hover/focus/press listener
+  set replaces per-link subscriptions.
 - `components/DailyResonance.tsx` and `app/lucky-card-reveal.js` hold the hub's active-experience marker
   while their animations run, so queued background work pauses and resumes without touching timing or sound.
-- Focused suites: `__tests__/resource-readiness.test.js` (20 tests) and
-  `__tests__/resource-readiness-manifest.test.js` (8 tests) pass, 29 focused tests total; `tsc --noEmit`
+- Focused suites: `__tests__/resource-readiness.test.js` (23 tests) and
+  `__tests__/resource-readiness-manifest.test.js` (8 tests) pass, 31 focused tests total; `tsc --noEmit`
   exits 0.
 
 ## Verification
 
-- Focused suites 29 tests, full Vitest 94 files / 976 tests, `tsc --noEmit` exit 0 and
-  `./freebuff-verify.sh` exit 0.
-- Production build: 331.61 MiB clean, 348.72 MiB after the repository gate; both below 495 MiB.
-- Playwright production-server evidence: moderate homepage prepared two likely-next experiences with each asset
-  requested once; Save-Data/mobile prepared none with zero console errors; `/reveal` shared its card back and
-  backdrop with the page markup at one request each. Before/after homepage numbers and limitations are in
-  `specs/186-resource-readiness-hub/evidence.md`.
+- Focused suites 31 tests, full Vitest 94 files / 978 tests, `tsc --noEmit` exit 0 and
+  `SPEC_KIT_BASE_REF=fad3adfff0bfa115c99eb19120973591ab30036d ./freebuff-verify.sh` exit 0.
+- Production build: 312,477,483 bytes = 298.00 MiB, below 495 MiB.
+- Homepage: 15 paired production-server runs; `loadEventEnd` median 302 ms base and 302 ms branch, LCP 348 ms
+  base and 340 ms branch. Bootstrap 95% CI of the median load difference is −43…+28 ms, so no regression beyond
+  variance. All 15 branch runs started hub requests at 1.22–1.35 s with zero before load or LCP.
+- Capable mobile (390×844, 2× CPU): LCP 416 ms, hub first request 1.38 s, every registered image once. Save-Data
+  profile: 26 requests, no hub work, no console errors, no overflow. `/reveal`: one card back, one backdrop, same
+  15 audio cue files as base. Details and limitations are in `specs/186-resource-readiness-hub/evidence.md`.
 
 ## Limitations
 

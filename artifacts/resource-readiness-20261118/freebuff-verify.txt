@@ -5,7 +5,7 @@ Starting verification...
 Lockfile is up to date, resolution step is skipped
 Already up to date
 
-Done in 4.6s using pnpm v10.30.3
+Done in 4.1s using pnpm v10.30.3
 
 --- Testing Spec Kit Governance Gate ---
 hint: Using 'master' as the name for the initial branch. This default branch name
@@ -265,14 +265,14 @@ All Spec Kit task-artifact verifier tests passed.
 --- Testing Verification Status Integrity Checker ---
 .............................
 ----------------------------------------------------------------------
-Ran 29 tests in 0.234s
+Ran 29 tests in 0.231s
 
 OK
 
 --- Testing AGENTS.md Protection Classifier ---
 ...........................
 ----------------------------------------------------------------------
-Ran 27 tests in 0.254s
+Ran 27 tests in 0.196s
 
 OK
 
@@ -285,18 +285,18 @@ OK
 
 ▲ Next.js 16.4.5 (webpack)
 - Environments: .env.local
-✓ Running next.config.mjs took 18ms
+✓ Running next.config.mjs took 17ms
 
   Creating an optimized production build ...
 ✓ Compiled successfully in 3.4s
   Running TypeScript ...
-  Finished TypeScript in 3.7s ...
+  Finished TypeScript in 3.8s ...
   Collecting page data using 7 workers ...
   Generating static pages using 7 workers (0/21) ...
   Generating static pages using 7 workers (5/21) 
   Generating static pages using 7 workers (10/21) 
   Generating static pages using 7 workers (15/21) 
-✓ Generating static pages using 7 workers (21/21) in 812ms
+✓ Generating static pages using 7 workers (21/21) in 814ms
   Finalizing page optimization ...
   Collecting build traces ...
 
@@ -400,8 +400,8 @@ CURRENT: /lib/doc (no changes)
 ✅ unresolved link problem without download failures fails and preserves the primary snapshot
 Reconciled deliberately removed documents: 2 manifest entries pruned, 0 snapshot(s) deleted.
 ✅ removed and routed library filename collisions preserve the routed snapshot
-Removed stale temp file: /tmp/docs-refresh-unit-jOHgh0/creation/_doc.md.tmp.copy.1
-Removed stale temp file: /tmp/docs-refresh-unit-jOHgh0/creation/_doc.md.tmp.symlink.1
+Removed stale temp file: /tmp/docs-refresh-unit-K9bJDd/creation/_doc.md.tmp.copy.1
+Removed stale temp file: /tmp/docs-refresh-unit-K9bJDd/creation/_doc.md.tmp.symlink.1
 ✅ cleanupStaleTempFiles removes dangling temporary symlinks
 ✅ consistency-only failures make the updater exit non-zero without download failures
 ✅ Isolated end-to-end documentation updater workflow passed
@@ -410,4 +410,3 @@ Removed stale temp file: /tmp/docs-refresh-unit-jOHgh0/creation/_doc.md.tmp.syml
 Tests complete: 48 passed, 0 failed.
 
 ✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!
-VERIFY2_EXIT=0

@@ -10,9 +10,11 @@
 - Registered all seven requested experiences: reveal (personal and gift share one registration), Lucky Meter,
   Lucky Number Generator, Crystal Ball, Lucky Map and Lucky Stories. The map sky and Crystal Ball audio are
   deferred to route/intent, and no API or data endpoint is prewarmed.
-- Homepage preparation starts only after load plus two frames and an idle period, in manifest order, capped at
-  three on capable, two on moderate and one on constrained, with none on Save-Data/slow.
-- Focused suites 29 tests, affected regression suites 110 tests, full suite 976 tests and `tsc --noEmit` pass.
+- Current-route and homepage preparation are gated by `whenPageSettled`: `load`, a 600 ms quiet window after
+  the last LCP entry and completed resource, a 250 ms floor and a 20 s bound. Homepage order follows the
+  manifest, capped at three on capable, two on moderate and one on constrained, with none on Save-Data/slow.
+- Focused suites 31 tests, full suite 978 tests and `tsc --noEmit` pass. Fifteen paired production runs show
+  median load 302 vs 302 ms and LCP 348 vs 340 ms; zero hub requests before load or LCP. Build 298.00 MiB.
 
 ## 2026-11-18 — Daily Resonance invariant audit and reveal-resume repair
 - Treated the merged mission as a set of claims to falsify and mapped each one to a named test: percentage

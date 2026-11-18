@@ -1,0 +1,1511 @@
+{
+  "capturedAt": "2026-11-18T13:11:55.327Z",
+  "runs": 15,
+  "order": [
+    "1:base",
+    "1:branch",
+    "2:branch",
+    "2:base",
+    "3:base",
+    "3:branch",
+    "4:branch",
+    "4:base",
+    "5:base",
+    "5:branch",
+    "6:branch",
+    "6:base",
+    "7:base",
+    "7:branch",
+    "8:branch",
+    "8:base",
+    "9:base",
+    "9:branch",
+    "10:branch",
+    "10:base",
+    "11:base",
+    "11:branch",
+    "12:branch",
+    "12:base",
+    "13:base",
+    "13:branch",
+    "14:branch",
+    "14:base",
+    "15:base",
+    "15:branch"
+  ],
+  "sides": {
+    "base": {
+      "n": 15,
+      "loadEventEnd": {
+        "median": 302,
+        "values": [
+          276,
+          237,
+          300,
+          310,
+          277,
+          337,
+          289,
+          305,
+          302,
+          282,
+          347,
+          301,
+          360,
+          352,
+          345
+        ]
+      },
+      "lcp": {
+        "median": 348,
+        "values": [
+          276,
+          292,
+          352,
+          348,
+          328,
+          336,
+          344,
+          348,
+          348,
+          316,
+          388,
+          348,
+          408,
+          400,
+          368
+        ]
+      },
+      "requests": {
+        "median": 26,
+        "values": [
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26,
+          26
+        ]
+      },
+      "imageRequests": {
+        "median": 2,
+        "values": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "domNodes": {
+        "median": 376,
+        "values": [
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376,
+          376
+        ]
+      },
+      "hubFirstStart": {
+        "median": null,
+        "values": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      },
+      "hubBeforeLoad": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hubBeforeLcp": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "totalTransfer": {
+        "median": 996689,
+        "values": [
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689,
+          996689
+        ]
+      },
+      "consoleErrorRuns": 0,
+      "lcpElements": [
+        "IMG"
+      ]
+    },
+    "branch": {
+      "n": 15,
+      "loadEventEnd": {
+        "median": 302,
+        "values": [
+          294,
+          261,
+          341,
+          272,
+          353,
+          317,
+          314,
+          235,
+          326,
+          270,
+          317,
+          302,
+          274,
+          352,
+          301
+        ]
+      },
+      "lcp": {
+        "median": 340,
+        "values": [
+          324,
+          264,
+          328,
+          324,
+          364,
+          356,
+          356,
+          292,
+          368,
+          324,
+          364,
+          348,
+          336,
+          388,
+          340
+        ]
+      },
+      "requests": {
+        "median": 43,
+        "values": [
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43,
+          43
+        ]
+      },
+      "imageRequests": {
+        "median": 6,
+        "values": [
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6,
+          6
+        ]
+      },
+      "domNodes": {
+        "median": 378,
+        "values": [
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378,
+          378
+        ]
+      },
+      "hubFirstStart": {
+        "median": 1283,
+        "values": [
+          1266,
+          1242,
+          1305,
+          1220,
+          1345,
+          1321,
+          1297,
+          1217,
+          1283,
+          1264,
+          1312,
+          1277,
+          1317,
+          1283,
+          1247
+        ]
+      },
+      "hubBeforeLoad": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hubBeforeLcp": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "totalTransfer": {
+        "median": 1275591,
+        "values": [
+          1275591,
+          1275590,
+          1275591,
+          1275590,
+          1275590,
+          1275592,
+          1275591,
+          1275591,
+          1275591,
+          1275589,
+          1275590,
+          1275591,
+          1275590,
+          1275592,
+          1275592
+        ]
+      },
+      "consoleErrorRuns": 0,
+      "lcpElements": [
+        "IMG"
+      ]
+    }
+  },
+  "samples": {
+    "base": [
+      {
+        "run": 1,
+        "loadEventEnd": 276,
+        "domContentLoaded": 122,
+        "responseStart": 6,
+        "lcp": 276,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 2,
+        "loadEventEnd": 237,
+        "domContentLoaded": 237,
+        "responseStart": 5,
+        "lcp": 292,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 3,
+        "loadEventEnd": 300,
+        "domContentLoaded": 177,
+        "responseStart": 6,
+        "lcp": 352,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 4,
+        "loadEventEnd": 310,
+        "domContentLoaded": 310,
+        "responseStart": 6,
+        "lcp": 348,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 5,
+        "loadEventEnd": 277,
+        "domContentLoaded": 171,
+        "responseStart": 5,
+        "lcp": 328,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 6,
+        "loadEventEnd": 337,
+        "domContentLoaded": 273,
+        "responseStart": 6,
+        "lcp": 336,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 7,
+        "loadEventEnd": 289,
+        "domContentLoaded": 177,
+        "responseStart": 5,
+        "lcp": 344,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 8,
+        "loadEventEnd": 305,
+        "domContentLoaded": 305,
+        "responseStart": 5,
+        "lcp": 348,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 9,
+        "loadEventEnd": 302,
+        "domContentLoaded": 301,
+        "responseStart": 5,
+        "lcp": 348,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 10,
+        "loadEventEnd": 282,
+        "domContentLoaded": 282,
+        "responseStart": 9,
+        "lcp": 316,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 11,
+        "loadEventEnd": 347,
+        "domContentLoaded": 347,
+        "responseStart": 8,
+        "lcp": 388,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 12,
+        "loadEventEnd": 301,
+        "domContentLoaded": 301,
+        "responseStart": 11,
+        "lcp": 348,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 13,
+        "loadEventEnd": 360,
+        "domContentLoaded": 360,
+        "responseStart": 10,
+        "lcp": 408,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 14,
+        "loadEventEnd": 352,
+        "domContentLoaded": 352,
+        "responseStart": 8,
+        "lcp": 400,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      },
+      {
+        "run": 15,
+        "loadEventEnd": 345,
+        "domContentLoaded": 344,
+        "responseStart": 6,
+        "lcp": 368,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 26,
+        "imageRequestCount": 2,
+        "hubRequests": [],
+        "hubFirstStart": null,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 996689,
+        "domNodes": 376,
+        "consoleErrors": []
+      }
+    ],
+    "branch": [
+      {
+        "run": 1,
+        "loadEventEnd": 294,
+        "domContentLoaded": 294,
+        "responseStart": 6,
+        "lcp": 324,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1266,
+            "end": 1270,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1268,
+            "end": 1271,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1269,
+            "end": 1273,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1300,
+            "end": 1306,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1266,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 2,
+        "loadEventEnd": 261,
+        "domContentLoaded": 60,
+        "responseStart": 6,
+        "lcp": 264,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1242,
+            "end": 1246,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1244,
+            "end": 1248,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1244,
+            "end": 1249,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1280,
+            "end": 1285,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1242,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275590,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 3,
+        "loadEventEnd": 341,
+        "domContentLoaded": 131,
+        "responseStart": 6,
+        "lcp": 328,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1305,
+            "end": 1309,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1308,
+            "end": 1315,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1309,
+            "end": 1315,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1351,
+            "end": 1355,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1305,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 4,
+        "loadEventEnd": 272,
+        "domContentLoaded": 172,
+        "responseStart": 5,
+        "lcp": 324,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1220,
+            "end": 1224,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1221,
+            "end": 1225,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1222,
+            "end": 1228,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1261,
+            "end": 1268,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1220,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275590,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 5,
+        "loadEventEnd": 353,
+        "domContentLoaded": 139,
+        "responseStart": 8,
+        "lcp": 364,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1345,
+            "end": 1349,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1347,
+            "end": 1352,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1347,
+            "end": 1352,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1396,
+            "end": 1401,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1345,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275590,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 6,
+        "loadEventEnd": 317,
+        "domContentLoaded": 316,
+        "responseStart": 6,
+        "lcp": 356,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1321,
+            "end": 1325,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1324,
+            "end": 1330,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1324,
+            "end": 1332,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1366,
+            "end": 1371,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1321,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275592,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 7,
+        "loadEventEnd": 314,
+        "domContentLoaded": 313,
+        "responseStart": 7,
+        "lcp": 356,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1297,
+            "end": 1300,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1299,
+            "end": 1303,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1299,
+            "end": 1305,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1334,
+            "end": 1341,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1297,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 8,
+        "loadEventEnd": 235,
+        "domContentLoaded": 187,
+        "responseStart": 5,
+        "lcp": 292,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1217,
+            "end": 1221,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1218,
+            "end": 1225,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1218,
+            "end": 1226,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1250,
+            "end": 1257,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1217,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 9,
+        "loadEventEnd": 326,
+        "domContentLoaded": 326,
+        "responseStart": 5,
+        "lcp": 368,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1283,
+            "end": 1289,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1286,
+            "end": 1293,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1286,
+            "end": 1294,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1343,
+            "end": 1350,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1283,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 10,
+        "loadEventEnd": 270,
+        "domContentLoaded": 171,
+        "responseStart": 6,
+        "lcp": 324,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1264,
+            "end": 1267,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1266,
+            "end": 1268,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1266,
+            "end": 1269,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1301,
+            "end": 1306,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1264,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275589,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 11,
+        "loadEventEnd": 317,
+        "domContentLoaded": 317,
+        "responseStart": 13,
+        "lcp": 364,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1312,
+            "end": 1316,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1314,
+            "end": 1320,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1315,
+            "end": 1325,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1349,
+            "end": 1354,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1312,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275590,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 12,
+        "loadEventEnd": 302,
+        "domContentLoaded": 302,
+        "responseStart": 8,
+        "lcp": 348,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1277,
+            "end": 1282,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1280,
+            "end": 1283,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1281,
+            "end": 1284,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1324,
+            "end": 1329,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1277,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275591,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 13,
+        "loadEventEnd": 274,
+        "domContentLoaded": 210,
+        "responseStart": 12,
+        "lcp": 336,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1317,
+            "end": 1321,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1319,
+            "end": 1322,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1319,
+            "end": 1322,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1348,
+            "end": 1353,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1317,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275590,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 14,
+        "loadEventEnd": 352,
+        "domContentLoaded": 351,
+        "responseStart": 8,
+        "lcp": 388,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1283,
+            "end": 1286,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1285,
+            "end": 1290,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1285,
+            "end": 1291,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1313,
+            "end": 1320,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1283,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275592,
+        "domNodes": 378,
+        "consoleErrors": []
+      },
+      {
+        "run": 15,
+        "loadEventEnd": 301,
+        "domContentLoaded": 301,
+        "responseStart": 5,
+        "lcp": 340,
+        "lcpSize": 515638,
+        "lcpElement": "IMG",
+        "requestCount": 43,
+        "imageRequestCount": 6,
+        "hubRequests": [
+          {
+            "path": "/images/lucky-meter-night-sky-640w.avif",
+            "start": 1247,
+            "end": 1252,
+            "transfer": 61626,
+            "initiator": "img"
+          },
+          {
+            "path": "/IMG_20260728_220305_112042.avif",
+            "start": 1249,
+            "end": 1254,
+            "transfer": 31014,
+            "initiator": "img"
+          },
+          {
+            "path": "/NGC4216_crawford-1280w.avif",
+            "start": 1249,
+            "end": 1256,
+            "transfer": 47965,
+            "initiator": "img"
+          },
+          {
+            "path": "/assets/crystal-ball-pedestal-420w.avif",
+            "start": 1301,
+            "end": 1307,
+            "transfer": 67006,
+            "initiator": "img"
+          }
+        ],
+        "hubFirstStart": 1247,
+        "hubBeforeLoad": 0,
+        "hubBeforeLcp": 0,
+        "totalTransfer": 1275592,
+        "domNodes": 378,
+        "consoleErrors": []
+      }
+    ]
+  },
+  "comparison": {
+    "loadEventEnd": {
+      "base": {
+        "median": 302,
+        "mean": 308,
+        "min": 237,
+        "max": 360,
+        "p10": 276.4,
+        "p90": 350
+      },
+      "branch": {
+        "median": 302,
+        "mean": 301.93333333333334,
+        "min": 235,
+        "max": 353,
+        "p10": 264.6,
+        "p90": 347.6
+      },
+      "medianDifferenceVsBase": 0,
+      "paired": {
+        "medianDifference": 0,
+        "meanDifference": -6.066666666666666,
+        "values": [
+          18,
+          24,
+          41,
+          -38,
+          76,
+          -20,
+          25,
+          -70,
+          24,
+          -12,
+          -30,
+          1,
+          -86,
+          0,
+          -44
+        ]
+      },
+      "bootstrap95CI": {
+        "low": -43,
+        "high": 28,
+        "probSlower": 0.4997
+      }
+    },
+    "lcp": {
+      "base": {
+        "median": 348,
+        "mean": 346.6666666666667,
+        "min": 276,
+        "max": 408,
+        "p10": 301.6,
+        "p90": 395.2
+      },
+      "branch": {
+        "median": 340,
+        "mean": 338.4,
+        "min": 264,
+        "max": 388,
+        "p10": 304.8,
+        "p90": 366.4
+      },
+      "medianDifferenceVsBase": -8,
+      "paired": {
+        "medianDifference": -12,
+        "meanDifference": -8.266666666666667,
+        "values": [
+          48,
+          -28,
+          -24,
+          -24,
+          36,
+          20,
+          12,
+          -56,
+          20,
+          8,
+          -24,
+          0,
+          -72,
+          -12,
+          -28
+        ]
+      },
+      "bootstrap95CI": {
+        "low": -24,
+        "high": 20,
+        "probSlower": 0.27195
+      }
+    },
+    "hub": {
+      "firstStartValues": [
+        1266,
+        1242,
+        1305,
+        1220,
+        1345,
+        1321,
+        1297,
+        1217,
+        1283,
+        1264,
+        1312,
+        1277,
+        1317,
+        1283,
+        1247
+      ],
+      "requestsBeforeLoad": 0,
+      "requestsBeforeLcp": 0,
+      "baselineLcpValues": [
+        276,
+        292,
+        352,
+        348,
+        328,
+        336,
+        344,
+        348,
+        348,
+        316,
+        388,
+        348,
+        408,
+        400,
+        368
+      ]
+    }
+  }
+}

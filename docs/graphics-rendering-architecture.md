@@ -221,9 +221,11 @@ policy, audio policy and release registry.
 - **Bounded and deduplicated.** One URL shared by several experiences makes one
   request. Concurrency is `min(plan.maxParallelRequests, 3)`; queued background
   work pauses during an active reveal/cinematic, a hidden page or Save-Data and
-  resumes through the shared plan subscription. Background runs start only from
-  an idle period after load; heavy assets (`background: false`) wait for the
-  route or for intent.
+  resumes through the shared plan subscription. Current-route and homepage
+  preparation start only after `load` plus a quiet window measured from the last
+  largest-contentful-paint and resource entries, so no hub request or main-thread
+  work lands inside the load/LCP window; heavy assets (`background: false`) wait
+  for the route or for intent.
 - **Caching.** The hub warms the exact URLs used in markup, so the existing
   immutable `Cache-Control` responses are reused. No service worker, storage
   layer or cache-busting query string is added, and nothing promises permanent

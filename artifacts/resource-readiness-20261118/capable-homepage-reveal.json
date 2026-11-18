@@ -1,1 +1,37 @@
-{"loadedAt":92,"homepage":{"watchedCounts":{"/IMG_20260728_220305_112042.avif":1,"/NGC4216_crawford-1280w.avif":1,"/images/lucky-meter-night-sky-640w.avif":1,"/assets/crystal-ball-pedestal-420w.avif":0,"/IMG_20260731_055452_187611.avif":0,"/assets/lucky-map-sky.avif":0},"watchedEntries":[{"path":"/images/lucky-meter-night-sky-640w.avif","start":295,"transfer":0},{"path":"/IMG_20260728_220305_112042.avif","start":295,"transfer":0},{"path":"/NGC4216_crawford-1280w.avif","start":296,"transfer":0}],"rscRequests":1,"loadEventEnd":83,"lcp":344,"totalTransfer":7546,"domNodes":378,"title":"Lucky Pick Canada | Daily Lucky Picks, Cards & Stories"},"reveal":{"cardBack":1,"backdrop":1,"revealAudioFetches":8,"buttons":2,"heading":"Today’s Lucky Card"},"errors":[],"failures":[{"url":"http://127.0.0.1:3000/reveal?_rsc=tXyZJ52UQVBCVsD3","error":"net::ERR_ABORTED"},{"url":"http://127.0.0.1:3000/reveal?_rsc=5CB68i4pnAekjehf","error":"net::ERR_ABORTED"},{"url":"http://127.0.0.1:3000/lucky-meter?_rsc=h3TX98CDoMV3pIWC","error":"net::ERR_ABORTED"},{"url":"http://127.0.0.1:3000/lucky-meter?_rsc=yIp22O3xgPPxC28X","error":"net::ERR_ABORTED"},{"url":"http://127.0.0.1:3000/lucky-meter?_rsc=5CB68i4pnAekjehf","error":"net::ERR_ABORTED"}]}
+{
+  "capturedAt": "2026-11-18T13:12:42.935Z",
+  "profile": "capable",
+  "homepage": {
+    "loadEventEnd": 407,
+    "lcp": 416,
+    "lcpElement": "IMG",
+    "requestCount": 43,
+    "hubFirstStart": 1384,
+    "hubBeforeLoad": 0,
+    "hubBeforeLcp": 0,
+    "watched": [
+      "/images/lucky-meter-night-sky-640w.avif",
+      "/IMG_20260728_220305_112042.avif",
+      "/NGC4216_crawford-1280w.avif",
+      "/assets/crystal-ball-pedestal-420w.avif"
+    ],
+    "domNodes": 378,
+    "scrollWidth": 390,
+    "innerWidth": 390
+  },
+  "reveal": {
+    "cardBack": 1,
+    "backdrop": 1,
+    "revealAudioFetches": 15,
+    "buttons": 2,
+    "heading": "Today’s Lucky Card"
+  },
+  "baseReveal": {
+    "cardBack": 1,
+    "backdrop": 1,
+    "revealAudioFetches": 15,
+    "heading": "Today’s Lucky Card"
+  },
+  "errors": [],
+  "failures": []
+}

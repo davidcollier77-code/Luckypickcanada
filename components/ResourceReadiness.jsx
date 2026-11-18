@@ -9,6 +9,7 @@ import {
   prepareExperience,
   prepareExperiencesWhenIdle,
   whenIdle,
+  whenPageSettled,
 } from '../app/lib/resource-readiness';
 import { HOMEPAGE_LIKELY_NEXT, experiencesForPath } from '../app/lib/resource-readiness-manifest';
 
@@ -65,57 +66,49 @@ export default function ResourceReadiness() {
     return () => configureRoutePrefetch(null);
   }, [router]);
 
-  // Current route: idle, because the page's own markup and hero always win.
+  // Current route: idle, and only after the page has settled. The page's own
+  // markup, hero image and LCP always win; a slow connection must not have hub
+  // preparation competing with its largest paint.
   useEffect(() => {
     const ids = experiencesForPath(pathname);
     if (ids.length === 0) return undefined;
-    return whenIdle(
-      () => {
-        for (const id of ids) {
-          void prepareExperience(id, { priority: 'critical', trigger: 'route' });
-        }
-      },
-      { timeout: 1200 },
-    );
+    let cancelIdle = () => {};
+    const cancelSettled = whenPageSettled(() => {
+      cancelIdle = whenIdle(
+        () => {
+          for (const id of ids) {
+            void prepareExperience(id, { priority: 'critical', trigger: 'route' });
+          }
+        },
+        { timeout: 1200 },
+      );
+    });
+    return () => {
+      cancelSettled();
+      cancelIdle();
+    };
   }, [pathname]);
 
-  // Homepage: wait for the load event plus two frames, then use idle capacity.
+  // Homepage: wait for load plus a quiet LCP/resource window, then use idle
+  // capacity. This is what keeps background preparation out of the load and LCP
+  // window on slow connections, where `load` can precede the largest paint.
   useEffect(() => {
     if (pathname !== '/') return undefined;
 
     let cancelled = false;
     let cancelIdle = () => {};
-    let frameA = 0;
-    let frameB = 0;
-
-    const start = () => {
+    const cancelSettled = whenPageSettled(() => {
       if (cancelled) return;
       if (planRef.current?.prefetch === 'none') return;
-      const requestFrame =
-        typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function'
-          ? window.requestAnimationFrame.bind(window)
-          : (callback) => window.setTimeout(callback, 16);
-      frameA = requestFrame(() => {
-        frameB = requestFrame(() => {
-          if (cancelled) return;
-          cancelIdle = prepareExperiencesWhenIdle(HOMEPAGE_LIKELY_NEXT, {
-            trigger: 'homepage-idle',
-          });
-        });
+      cancelIdle = prepareExperiencesWhenIdle(HOMEPAGE_LIKELY_NEXT, {
+        trigger: 'homepage-idle',
       });
-    };
-
-    if (document.readyState === 'complete') start();
-    else window.addEventListener('load', start, { once: true });
+    });
 
     return () => {
       cancelled = true;
+      cancelSettled();
       cancelIdle();
-      window.removeEventListener('load', start);
-      if (typeof window.cancelAnimationFrame === 'function') {
-        if (frameA) window.cancelAnimationFrame(frameA);
-        if (frameB) window.cancelAnimationFrame(frameB);
-      }
     };
   }, [pathname]);
 
