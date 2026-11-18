@@ -928,9 +928,9 @@ test.describe('Daily Resonance reduced motion', () => {
     const leaves = page.getByTestId('lucky-meter-arrival-leaves');
     await expect(leaves).toBeVisible({ timeout: 20_000 });
     await expect(leaves).toHaveAttribute('data-phase', 'resting');
-    // The canvas removes itself after a brief hold (~1500 ms) even under reduced
-    // motion, so the DOM element should be gone before 3 seconds have elapsed.
-    await expect(leaves).toHaveCount(0, { timeout: 3_000 });
+    await page.waitForTimeout(1800);
+    // No breeze, no lift and no removal: the resting scene is the whole effect.
+    await expect(leaves).toHaveAttribute('data-phase', 'resting');
     await expect(page.getByRole('button', { name: /Reveal My Resonance/i })).toBeVisible();
   });
 

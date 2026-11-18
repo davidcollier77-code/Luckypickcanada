@@ -35,9 +35,7 @@ export default function LuckyMeterSkyWriting({
   onComplete,
 }: LuckyMeterSkyWritingProps) {
   const chars = useMemo(() => (message ? Array.from(message) : []), [message]);
-  const [visibleCount, setVisibleCount] = useState(() =>
-    state === 'written' ? chars.length : 0,
-  );
+  const [visibleCount, setVisibleCount] = useState(state === 'written' ? chars.length : 0);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
@@ -66,10 +64,10 @@ export default function LuckyMeterSkyWriting({
       index += 1;
       setVisibleCount(index);
       if (index >= chars.length) {
-        window.setTimeout(() => onCompleteRef.current(), 0);
+        onCompleteRef.current();
         return;
       }
-      const character = chars[index];
+      const character = chars[index - 1];
       timer = window.setTimeout(
         tick,
         /[.,!?:;]/.test(character)

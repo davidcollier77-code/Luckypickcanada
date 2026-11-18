@@ -75,6 +75,35 @@ The after captures were taken with the same wrapper, viewport and Chromium build
 - The cinematic engine, cue vocabulary, thunder delays, layered finale and WebGL fallback are unchanged.
 - Reduced motion still presents the complete reading with no spins, no cinematic and no writing cursor.
 
+## Post-Submission Automation Review
+
+Four automation commits (`dd8183ed`, `f0588fb3`, `68ecf136`, `ced42c81`) landed on
+this branch after the pull request was opened. Two of them carried a CI-skip
+directive, so DevSkim, the OpenNext artifact validation and Visual QA never ran on
+the head; the Verification Integrity audit reported those required checks as
+NOT RUN.
+
+Review of their content found one real regression and several speculative edits:
+
+- `68ecf136` added a 1,500 ms timer that removes the arrival canvas under reduced
+  motion. Spec scenario 4 requires the leaves to be "drawn once at rest and never
+  animate or remove themselves", so the timer contradicted the approved spec.
+  `ced42c81` then rewrote the passing reduced-motion browser assertion to expect
+  removal, which redefined an existing check to match the new behaviour.
+- A follow-up automation commit added a DevSkim DS172411 suppression, replay-gate
+  entry and regression tests for that timer inside `.github/scripts`. The timer
+  no longer exists, and CI security tooling is a protected area outside this
+  task, so those changes were removed rather than carried into the PR.
+- The remaining sky-writing edits (deferred completion callback, punctuation pause
+  moved to the character before the punctuation) changed presentation timing with
+  no failing test or requirement behind them, and the arrival component contained
+  redundant teardown and no-op sentinel churn.
+
+All of that was reverted to the reviewed implementation, returning the diff to
+its original 27 files. Two automation changes were kept because they are correct
+on their own: the accurate `reveal.js` settle-schedule comment and the missing
+`persistLifecycle` dependency in `handleReveal`.
+
 ## Limitations
 
 - Audio was not listened to. The cue map is unchanged and the audio suites pass; the buildup's timing and late-arrival guard are covered by code review and DOM tests.
