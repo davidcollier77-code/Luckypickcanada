@@ -432,6 +432,7 @@ describe('readiness, failure and retry', () => {
     vi.useFakeTimers();
     useCapableProfile();
     const attempts = { a: 0, b: 0 };
+    let failB;
     hub.registerResourceAdapter('test', async (resource) => {
       if (resource.url === '/a') {
         attempts.a += 1;
@@ -440,9 +441,10 @@ describe('readiness, failure and retry', () => {
       }
       attempts.b += 1;
       if (attempts.b === 1) {
-        await new Promise((resolve, reject) => {
-          setTimeout(() => reject(new Error('b down')), 100);
+        const failure = await new Promise((resolve) => {
+          failB = resolve;
         });
+        throw failure;
       }
       return {};
     });
@@ -457,7 +459,12 @@ describe('readiness, failure and retry', () => {
 
     const first = hub.prepareExperience('a');
     const second = hub.prepareExperience('b');
+    await flushMicrotasks();
 
+    // Stage B's failure 100 ms after A's, inside A's 275 ms retry window.
+    await vi.advanceTimersByTimeAsync(100);
+    failB(new Error('b down'));
+    await flushMicrotasks();
     await vi.advanceTimersByTimeAsync(1000);
 
     const [aSnapshot, bSnapshot] = await Promise.all([first, second]);

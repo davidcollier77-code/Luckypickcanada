@@ -1,14 +1,14 @@
 
 [1m[30m[46m RUN [49m[39m[22m [36mv5.0.0 [39m[90m/workspace/chats/df6965c97260bd2bd71121ef[39m
 
-(node:13254) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:20092) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
- [32m✓[39m __tests__/resource-readiness-manifest.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 119[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness-manifest.test.js [2m([22m[2m9 tests[22m[2m)[22m[32m 109[2mms[22m[39m
  [32m✓[39m __tests__/resource-readiness-mount.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 40[2mms[22m[39m
- [32m✓[39m __tests__/resource-readiness.test.js [2m([22m[2m27 tests[22m[2m)[22m[32m 161[2mms[22m[39m
+ [32m✓[39m __tests__/resource-readiness.test.js [2m([22m[2m27 tests[22m[2m)[22m[32m 149[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
 [2m      Tests [22m [1m[32m41 passed[39m[22m[90m (41)[39m
-[2m   Start at [22m 19:21:07
-[2m   Duration [22m 1.18s[2m (environment 65%, setup 12%, tests 10%, transform 10%, import 2%, worker 1%)[22m
+[2m   Start at [22m 19:29:28
+[2m   Duration [22m 1.14s[2m (environment 68%, setup 12%, tests 10%, transform 7%, import 2%, worker 1%)[22m
 
