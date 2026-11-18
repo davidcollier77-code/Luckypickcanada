@@ -814,6 +814,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     dateKey,
     ensureRevealAudio,
     history,
+    persistLifecycle,
     ready,
     reducedMotion,
     schedule,

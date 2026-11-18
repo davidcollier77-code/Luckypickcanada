@@ -40,10 +40,10 @@ const LEAF_PATH = 'M50 3 C52.5 10 55 14 59 16.5 C57.3 19.2 57.8 22.1 60.6 24.6 '
   + 'C33.9 18.4 37.4 20.8 39.4 24.6 C42.2 22.1 42.7 19.2 41 16.5 '
   + 'C45 14 47.5 10 50 3 Z';
 
-let cachedPath = null;
+let cachedPath = undefined;
 
 function getLeafPath() {
-  if (cachedPath) return cachedPath;
+  if (cachedPath !== undefined) return cachedPath;
   if (typeof Path2D === 'undefined') return null;
   cachedPath = new Path2D(LEAF_PATH);
   return cachedPath;
@@ -208,8 +208,12 @@ export default function LuckyMeterArrivalLeaves() {
       if (stopped) return;
       elapsed = now - startedAt;
       drawScene(context, leaves, elapsed, size.width, size.height);
-      if (elapsed >= duration) {
         frameId = null;
+        stopped = true;
+        window.clearTimeout(resizeTimer);
+        window.removeEventListener('resize', onResize);
+        stopVisibility();
+        setPhase('gone');
         setPhase('gone');
         return;
       }
@@ -229,8 +233,12 @@ export default function LuckyMeterArrivalLeaves() {
 
     if (reducedMotion) {
       setPhase('resting');
+      const goneTimer = window.setTimeout(() => {
+        if (!stopped) setPhase('gone');
+      }, 1500);
       return () => {
         stopped = true;
+        window.clearTimeout(goneTimer);
         window.clearTimeout(resizeTimer);
         window.removeEventListener('resize', onResize);
       };
