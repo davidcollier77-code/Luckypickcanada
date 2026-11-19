@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const manifest = JSON.parse(readFileSync(".docs/manifest.json", "utf8"));
@@ -25,6 +25,46 @@ describe("documentation library retirement", () => {
         expect(readFileSync(routingFile, "utf8"), `${reference.id} must not appear in ${routingFile}`).not.toContain(reference.id);
       }
       expect(existsSync(reference.snapshot), `${reference.snapshot} must be deleted`).toBe(false);
+    }
+  });
+
+  it("keeps the retired Gemini API library sources absent everywhere", () => {
+    const retiredGemini = [
+      "/websites/ai_google_dev_gemini-api",
+      "/google-gemini/gemini-skills/gemini-api-dev"
+    ];
+
+    for (const id of retiredGemini) {
+      for (const [group, ids] of Object.entries(manifest.groups)) {
+        expect(ids, `${id} must not be routed from ${group}`).not.toContain(id);
+      }
+      expect(manifest.sources).not.toHaveProperty(id);
+      expect(manifest.inventory).not.toContain(id);
+      expect(manifest.githubShas ?? {}).not.toHaveProperty(id);
+    }
+
+    // Check every agent routing file, including `.freebuff/sentinel.md`, which is
+    // not a manifest group and used to mandate the retired Gemini source.
+    const routingFiles = readdirSync(".freebuff")
+      .filter((name) => name.endsWith(".md"))
+      .map((name) => `.freebuff/${name}`);
+    expect(routingFiles).toContain(".freebuff/sentinel.md");
+    for (const id of retiredGemini) {
+      for (const routingFile of routingFiles) {
+        expect(readFileSync(routingFile, "utf8"), `${id} must not appear in ${routingFile}`).not.toContain(id);
+      }
+    }
+
+    // Both Gemini API documents were intentionally retired; no canonical copy or
+    // group link may be restored, recreated or regenerated in any group.
+    const retiredSnapshots = [
+      ".docs/creation/_websites_ai_google_dev_gemini-api.md",
+      ".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md",
+      ".docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md",
+      ".docs/troubleshooting/_google-gemini_gemini-skills_gemini-api-dev.md"
+    ];
+    for (const path of retiredSnapshots) {
+      expect(existsSync(path), `${path} must stay deleted`).toBe(false);
     }
   });
 

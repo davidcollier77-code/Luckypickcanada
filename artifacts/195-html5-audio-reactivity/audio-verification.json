@@ -1,0 +1,26 @@
+{
+  "captureSupported": {
+    "webStart": { "ok": true, "cue": "dockChime" },
+    "webAudio": { "level": 0.064, "available": true, "reason": null, "html5Sources": 0 },
+    "silence": { "level": 0, "html5Sources": 0 },
+    "html5Start": { "ok": true, "cue": "dockChime", "html5": true },
+    "html5Peak": 0.065,
+    "html5Captured": true,
+    "html5Playing": true,
+    "html5Available": true,
+    "html5Last": { "level": 0.001, "bass": 0.004, "available": true, "html5Sources": 1, "html5Playing": false },
+    "errors": []
+  },
+  "captureUnavailable": {
+    "webStart": { "ok": true, "cue": "dockChime" },
+    "webAudio": { "level": 0.064, "available": true },
+    "silence": { "level": 0, "html5Sources": 0 },
+    "html5Start": { "ok": true, "cue": "dockChime", "html5": true },
+    "html5Peak": 0,
+    "html5Captured": false,
+    "html5Playing": true,
+    "html5Available": true,
+    "html5Last": { "level": 0, "html5Sources": 0, "html5Playing": false, "available": true },
+    "errors": []
+  }
+}

@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  attachHtml5Analyser,
+  collectHtml5MediaElements,
   createAudioReactive,
+  ensureCapturedCuePlayback,
+  getHtml5AnalyserCount,
+  isSameOriginMediaElement,
+  resetHtml5AnalyserCapture,
   supportsAudioAnalysis,
+  supportsHtml5AudioAnalysis,
 } from '../app/lib/graphics/audio-reactivity.js';
 import { selectGraphicsTechnologies } from '../app/lib/graphics/technologies.js';
 
@@ -245,6 +252,172 @@ describe('reactive bindings', () => {
     reactive.update(1 / 60);
 
     expect(rig.pulse).not.toHaveBeenCalled();
+  });
+});
+
+describe('HTML5 cue capture', () => {
+  // Captures are module-level for the page's lifetime, so each test starts from
+  // a clean registry instead of depending on the order the tests run in.
+  beforeEach(() => {
+    resetHtml5AnalyserCapture();
+  });
+
+  function fakeMediaContext({ state = 'running', canCapture = true } = {}) {
+    const destination = { name: 'destination' };
+    const sources = [];
+    const context = {
+      state,
+      destination,
+      createMediaElementSource: canCapture
+        ? vi.fn((element) => {
+            const source = {
+              element,
+              connect: vi.fn(),
+              disconnect: vi.fn(),
+            };
+            sources.push(source);
+            return source;
+          })
+        : undefined,
+    };
+    return { context, destination, sources };
+  }
+
+  function mediaElement(src = '/sounds/chime-sound.mp3') {
+    return { src, currentSrc: src, paused: false };
+  }
+
+  it('captures a playing same-origin cue into the shared analyser and keeps it audible', () => {
+    const { context, destination, sources } = fakeMediaContext();
+    const analyser = loudAnalyser();
+    const before = getHtml5AnalyserCount();
+
+    expect(attachHtml5Analyser({ context, analyser, element: mediaElement() })).toBe(true);
+
+    expect(sources).toHaveLength(1);
+    // The audible unity path is connected before analysis, so a failed analyser
+    // edge can never silence a cue that is already playing.
+    expect(sources[0].connect.mock.calls[0][0]).toBe(destination);
+    expect(sources[0].connect.mock.calls[1][0]).toBe(analyser);
+    expect(getHtml5AnalyserCount()).toBe(before + 1);
+  });
+
+  it('refuses capture without support, on a suspended context, or cross-origin', () => {
+    const paused = fakeMediaContext({ state: 'suspended' });
+    expect(
+      attachHtml5Analyser({ context: paused.context, analyser: loudAnalyser(), element: mediaElement() }),
+    ).toBe(false);
+    expect(paused.context.createMediaElementSource).not.toHaveBeenCalled();
+
+    const unsupported = fakeMediaContext({ canCapture: false });
+    expect(
+      attachHtml5Analyser({ context: unsupported.context, analyser: loudAnalyser(), element: mediaElement() }),
+    ).toBe(false);
+
+    const running = fakeMediaContext();
+    const crossOrigin = mediaElement('https://cdn.example.com/cue.mp3');
+    expect(isSameOriginMediaElement(crossOrigin)).toBe(false);
+    expect(
+      attachHtml5Analyser({ context: running.context, analyser: loudAnalyser(), element: crossOrigin }),
+    ).toBe(false);
+    expect(running.context.createMediaElementSource).not.toHaveBeenCalled();
+  });
+
+  it('does not capture the same media element twice', () => {
+    const { context, sources } = fakeMediaContext();
+    const analyser = loudAnalyser();
+    const element = mediaElement();
+    const before = getHtml5AnalyserCount();
+
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(true);
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(true);
+
+    expect(sources).toHaveLength(1);
+    expect(getHtml5AnalyserCount()).toBe(before + 1);
+  });
+
+  it('retries a failed analysis edge instead of reporting a captured cue as analysed', () => {
+    const destination = { name: 'destination' };
+    const analyser = loudAnalyser();
+    const element = mediaElement();
+    let analyserEdgeAllowed = false;
+    const source = {
+      connect: vi.fn((target) => {
+        if (target !== destination && !analyserEdgeAllowed) throw new Error('analysis blocked');
+      }),
+      disconnect: vi.fn(),
+    };
+    const context = {
+      state: 'running',
+      destination,
+      createMediaElementSource: vi.fn(() => source),
+    };
+
+    // The audible path succeeds and the analysis edge fails: the cue is still
+    // tracked, so the next attempt attaches measurement without recapturing.
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(false);
+    expect(source.connect).toHaveBeenCalledWith(destination);
+
+    analyserEdgeAllowed = true;
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(true);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+    expect(source.connect).toHaveBeenLastCalledWith(analyser);
+    expect(getHtml5AnalyserCount()).toBe(1);
+  });
+
+  it('keeps a captured cue audible when Howler suspends its context', async () => {
+    const { context } = fakeMediaContext();
+    const element = mediaElement();
+    expect(attachHtml5Analyser({ context, analyser: loudAnalyser(), element })).toBe(true);
+
+    // Capture switches automatic suspension off, so the context stays running.
+    const howler = {
+      state: 'running',
+      autoSuspend: true,
+      ctx: context,
+      _autoResume: vi.fn(),
+    };
+    context.state = 'suspended';
+    context.resume = vi.fn(() => Promise.resolve());
+
+    expect(ensureCapturedCuePlayback(howler)).toBe(true);
+    expect(howler.autoSuspend).toBe(false);
+    expect(howler._autoResume).toHaveBeenCalledTimes(1);
+    expect(context.resume).toHaveBeenCalledTimes(1);
+
+    // A paused cue does not force a resume.
+    element.paused = true;
+    context.resume.mockClear();
+    expect(ensureCapturedCuePlayback(howler)).toBe(false);
+    expect(context.resume).not.toHaveBeenCalled();
+  });
+
+  it('finds only playing html5 sounds and tolerates an unknown Howler shape', () => {
+    const playing = { _playing: true, _node: { paused: false } };
+    const stopped = { _playing: false, _node: { paused: true } };
+    const howler = {
+      _howls: [
+        {
+          _html5: true,
+          _sounds: [playing, stopped],
+        },
+        {
+          _html5: false,
+          // A Web Audio sound is already in masterGain; it must not be captured.
+          _sounds: [{ _playing: true, _node: { paused: false } }],
+        },
+      ],
+    };
+
+    expect(collectHtml5MediaElements(howler)).toEqual([playing._node]);
+    expect(collectHtml5MediaElements({})).toEqual([]);
+    expect(collectHtml5MediaElements(null)).toEqual([]);
+  });
+
+  it('reports media-capture support without creating a node', () => {
+    expect(supportsHtml5AudioAnalysis(fakeMediaContext().context)).toBe(true);
+    expect(supportsHtml5AudioAnalysis(fakeMediaContext({ canCapture: false }).context)).toBe(false);
+    expect(supportsHtml5AudioAnalysis(null)).toBe(false);
   });
 });
 

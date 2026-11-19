@@ -1,9 +1,5 @@
 # Sentinel Specialist
 
-## Mandatory Standing Resources
-For all tasks, you MUST actually consult the following resources:
-- Gemini API "/websites/ai_google_dev_gemini-api"
-
 ## Controlled Context7 Libraries
 When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
 - Next.js "/vercel/next.js"

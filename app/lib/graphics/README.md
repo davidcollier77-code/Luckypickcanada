@@ -208,10 +208,22 @@ visual keeps its authored resting state. `selectGraphicsTechnologies` reports
 `audioReactive` plus the reason (`sound-reactivity-enabled`,
 `sound-reactivity-reduced-motion`, `sound-reactivity-unavailable`).
 
-Known limitation: Howler cues declared `html5: true` play through a media
-element and bypass Web Audio, so they cannot be analysed without re-routing
-audio the site already ships. Web Audio cues — the Lucky Meter set and the
-Crystal Ball sounds — are measured normally.
+Howler cues declared `html5: true` play through a media element rather than
+`masterGain`. When the browser supports `createMediaElementSource`, a playing
+cue's element is routed through the same Howler `AudioContext`: it feeds the
+shared analyser for measurement and the context destination at unity for
+unchanged playback. The analyser's own output stays on its silent branch, so
+the audible mix does not change. Capture is only attempted on a running
+context and for same-origin (or `blob:`/`data:`) media. Because capture moves
+an element's output into the context, the module also keeps that context
+running once a cue is captured: Howler's automatic suspension is switched off,
+and a suspended context is resumed while a captured cue is playing, so a
+rerouted cue is never silenced by inactivity. A browser without media capture, a
+cross-origin element, or an element another owner already captured keeps playing
+unanalysed: the envelope stays neutral. A failed analysis edge is retried on the
+next scan instead of marking the cue as analysed.
+Web Audio cues — the Lucky Meter set and the Crystal Ball sounds — are measured
+exactly as before.
 
 ## Creative Workbench
 
@@ -222,6 +234,9 @@ feature uses, at a forced tier and seed, with deterministic controls:
 - choose a scene, tier (`high`/`balanced`/`constrained`), seed and reduced motion;
 - scrub the scene clock to freeze one composed frame;
 - play an existing Lucky Meter recording and watch the envelope drive lights,
+- play that recording through Howler's `html5: true` path (`playHtml5Cue`) to
+  verify media-element capture, and read `audio.html5Sources` /
+  `audio.html5Playing` from the inspection state;
   particles and exposure;
 - capture a PNG and download it.
 

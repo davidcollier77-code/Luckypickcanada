@@ -16,6 +16,9 @@
  *     so two captures at the same time are comparable;
  *   - `playCue(name)` — play an existing same-origin Lucky Meter recording and
  *     watch the envelope drive lights, particles and exposure;
+ *   - `playHtml5Cue(name)` — play the same recording through Howler's
+ *     `html5: true` path, to verify media-element capture by the shared
+ *     analyser;
  *   - `capture()` and `readCapture()` — PNG download plus its data URL.
  *
  * Playwright remains the browser tool for this repository; the page only gives
@@ -24,6 +27,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getHtml5AnalyserCount } from '../../app/lib/graphics/audio-reactivity.js';
 import { createCreativeSurface } from '../../app/lib/graphics/runtime.js';
 import { buildWorkbenchScene } from '../../app/lib/graphics/workbench-runtime.js';
 import {
@@ -34,6 +38,7 @@ import {
   normalizeWorkbenchState,
   resolveWorkbenchPlan,
   workbenchCaptureName,
+  workbenchHtml5CueSource,
 } from '../../app/lib/graphics/workbench.js';
 
 function round(value) {
@@ -48,6 +53,7 @@ export default function CreativeWorkbench() {
   const readyRef = useRef(false);
   const playingRef = useRef(true);
   const captureRef = useRef(null);
+  const html5CueRef = useRef(null);
   const statsRef = useRef({ frames: 0, fps: 0, windowStart: 0 });
 
   const [state, setState] = useState({
@@ -307,6 +313,54 @@ export default function CreativeWorkbench() {
     }
   }, [applyState]);
 
+  /**
+   * Plays the same catalogue recording through Howler's `html5: true` path, so
+   * the sandbox can prove that a media-element cue is captured by the shared
+   * analyser. It is the existing Howler system, not a second player, and it is
+   * reachable only from the development-only page and its inspection API.
+   */
+  const playHtml5Cue = useCallback(
+    async (name) => {
+      const activeScene = getWorkbenchScene(stateRef.current.sceneId) ?? WORKBENCH_SCENES[0];
+      const cue = isWorkbenchCue(name) ? name : activeScene.cue;
+      const src = workbenchHtml5CueSource(cue);
+      if (!src) return { ok: false, cue, reason: 'html5-cue-unavailable' };
+
+      try {
+        const { Howl } = await import('howler');
+        let entry = html5CueRef.current;
+        if (!entry || entry.src !== src) {
+          entry?.howl?.unload?.();
+          entry = {
+            src,
+            howl: new Howl({ src: [src], html5: true, volume: 0.7, preload: true }),
+          };
+          html5CueRef.current = entry;
+        }
+        entry.howl.stop();
+        entry.howl.play();
+        setStatus((previous) => ({ ...previous, cue }));
+
+        const surface = surfaceRef.current;
+        surface?.reactive?.refresh?.();
+        applyState(normalizeWorkbenchState({ playing: true }, stateRef.current));
+        if (!stateRef.current.reducedMotion) surface?.start?.();
+        return { ok: true, cue, html5: true };
+      } catch (error) {
+        return { ok: false, cue, reason: error instanceof Error ? error.message : String(error) };
+      }
+    },
+    [applyState],
+  );
+
+  useEffect(
+    () => () => {
+      html5CueRef.current?.howl?.unload?.();
+      html5CueRef.current = null;
+    },
+    [],
+  );
+
   /* ------------------------------------------------------------------ *
    * Capture.
    * ------------------------------------------------------------------ */
@@ -374,6 +428,12 @@ export default function CreativeWorkbench() {
     const surface = surfaceRef.current;
     const envelope = surface?.reactive?.getEnvelope?.() ?? null;
     const activeScene = getWorkbenchScene(current.sceneId);
+    let html5Playing = false;
+    try {
+      html5Playing = Boolean(html5CueRef.current?.howl?.playing?.());
+    } catch {
+      html5Playing = false;
+    }
 
     return {
       version: 1,
@@ -401,7 +461,12 @@ export default function CreativeWorkbench() {
             peak: round(envelope.peak),
           }
         : null,
-      audio: { cue: currentStatus.cue, analysing: envelope?.available === true },
+      audio: {
+        cue: currentStatus.cue,
+        analysing: envelope?.available === true,
+        html5Sources: getHtml5AnalyserCount(),
+        html5Playing,
+      },
       fps: statsRef.current.fps,
       canvas: {
         width: canvasRef.current?.width ?? 0,
@@ -437,6 +502,7 @@ export default function CreativeWorkbench() {
       play,
       pause,
       playCue,
+      playHtml5Cue,
       capture,
       readCapture,
     };
@@ -450,6 +516,7 @@ export default function CreativeWorkbench() {
     pause,
     play,
     playCue,
+    playHtml5Cue,
     readCapture,
     selectScene,
     setReducedMotion,

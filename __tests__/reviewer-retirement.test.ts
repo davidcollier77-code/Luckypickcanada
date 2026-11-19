@@ -39,18 +39,23 @@ describe("custom Gemini reviewer retirement", () => {
     expect(readFileSync(path, "utf8")).toContain("env.GEMINI_API_KEY");
   });
 
-  it("preserves historical reviewer records and shared Gemini API references", () => {
+  it("preserves historical reviewer records and the shared Gemini API integration", () => {
     const historicalPaths = [
       "specs/050-gemini-pr-review-retirement/spec.md",
       "specs/051-gemini-reviewer-replacement/spec.md",
       "specs/071-gemini-reviewer-reliability/spec.md",
       ".specify/features/gemini-review-context/spec.md",
-      ".docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md",
       ".docs/manifest.json"
     ];
 
     for (const path of historicalPaths) {
       expect(existsSync(path), `${path} must remain available`).toBe(true);
     }
+
+    // The Gemini API documentation snapshots were intentionally retired after
+    // the library cleanup (#1973/#1974). This suite must not require them; their
+    // permanent absence is asserted by docs-library-retirement.test.ts, while
+    // the runtime integration above stays covered.
+    expect(existsSync(".docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md")).toBe(false);
   });
 });
