@@ -101,23 +101,15 @@ export const EVENTS = [
 
 export const EVENTS_BY_ID = new Map(EVENTS.map((event) => [event.id, event]));
 
-/** Colours are chosen with equal probability; each has an exact display name and swatch. */
-export const COLOURS = [
-  { id: 'maple-red', name: 'Maple Red', hex: '#B52B32' },
-  { id: 'forest-green', name: 'Forest Green', hex: '#28543C' },
-  { id: 'navy-blue', name: 'Navy Blue', hex: '#23395B' },
-  { id: 'burgundy', name: 'Burgundy', hex: '#722F3E' },
-  { id: 'royal-blue', name: 'Royal Blue', hex: '#2855A6' },
-  { id: 'charcoal', name: 'Charcoal', hex: '#45484D' },
-  { id: 'cream', name: 'Cream', hex: '#F1E8D5', light: true },
-  { id: 'mustard-gold', name: 'Mustard Gold', hex: '#C49A35' },
-  { id: 'winter-white', name: 'Winter White', hex: '#F7F5EF', light: true },
-  { id: 'deep-teal', name: 'Deep Teal', hex: '#28666B' },
-  { id: 'pumpkin-orange', name: 'Pumpkin Orange', hex: '#C96A25' },
-  { id: 'warm-camel', name: 'Warm Camel', hex: '#B68A5A' },
-];
+/**
+ * Colour data lives beside the Little Sparks and the season dates in the one
+ * "Sparks & Seasonal Colours" configuration. Selection, the wheel, the colour
+ * pour and the result card all read the same stored record.
+ */
+export { ALL_COLOURS, COLOURS_BY_ID, isKnownColourId } from './sparks-and-seasonal-colours';
 
-export const COLOURS_BY_ID = new Map(COLOURS.map((colour) => [colour.id, colour]));
+/** The fixed pointer position at the bottom of the wheel. */
+export const COLOUR_WHEEL_SEGMENTS = 12;
 
 /** Shown wherever the single daily Lucky Number appears. */
 export const LUCKY_NUMBER_LABEL = 'Lucky Number';

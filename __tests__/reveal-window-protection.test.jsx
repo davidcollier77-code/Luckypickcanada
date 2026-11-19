@@ -60,7 +60,10 @@ import {
   registerResourceAdapter,
   resetResourceReadiness,
 } from '../app/lib/resource-readiness';
-import { EVENT_START_MS } from '../app/lib/lucky-meter/reveal';
+import { getEventStartMs } from '../app/lib/lucky-meter/storyboard';
+
+// Math.random() === 0.5 selects the medium tier, whose line is written first.
+const EVENT_START_MS = getEventStartMs('Your luck is in the mid-range today.') + 200;
 
 function registerBackgroundProbe(id) {
   const adapter = vi.fn(async () => ({ ok: true }));

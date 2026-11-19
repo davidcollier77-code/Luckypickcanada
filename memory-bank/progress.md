@@ -1,3 +1,16 @@
+## 2026-11-19 — Lucky Meter PR #1964 review repairs
+- Fixed the confirmed review/Visual QA findings on the seasonal cinematic branch: the welcome pointer's
+  gradient now lives in the always-mounted pointer SVG; the arrival fallback derives 3,750 ms from the
+  storyboard; the duplicated wheel-angle helper and unused `handleReveal` dependency are gone; and the
+  tier message has its own punctuation constant.
+- Raised every Lucky Meter reading label and the homepage visits pill to the 12 px mobile floor, verified
+  with the full 12-test mobile accessibility suite. The transient `landed` assertion now records phase
+  transitions instead of polling a 450 ms state.
+- Verified 101 files / 1,046 unit tests, type check, 13 Playwright passes on each of desktop, 390 and 412,
+  two evidence captures, the Crystal Ball desktop control, both advisory checkers with no findings,
+  `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0, and a clean 334.28 MiB build (350 MiB by
+  `du -sm`), below the 495 MiB cap.
+
 ## 2026-11-18 — Site-wide resource-readiness hub
 - Added one preparation hub over the existing adaptive plan: experience registrations with version, routes,
   dependencies and ordered resources; image (load + decode), code (Next router prefetch) and audio (existing
@@ -556,3 +569,18 @@ This file is a concise record of meaningful completed work, not a chronological 
 - 2026-11-16 proof pass: the publish step was executed against a stub `gh`, which caught a mangled POST URL that would have blocked the first comment; the URL is fixed and the whole chain (fixture diff → renderer → step shell) is now a test. Comment truncation moved into the renderer and cuts only between findings, so a suggested fix is never split.
 - 2026-11-16 correction from AI review: deduplicating by location and rule hid the second unused binding on one import line, so the key now includes the finding detail, and every import statement is excluded from the unused-reference search. The reviewer workflow runs under `pull_request_target` with a base-branch checkout, so the comment step takes effect only once these changes reach `main`.
 - 2026-11-16 milestone: the Lucky Meter's dial percentage now owns the reveal — inclusive tiers 5–30 / 31–65 / 66–100, tier-derived events and numbers, a dial that lands exactly on the displayed value, and saved readings normalized from their percentage. Leaves became thin, curled and wind-driven, the meter gained a brass index, and the golden fireworks finale was made the dominant moment without changing the red/silver opening or any audio asset.
+
+## 2026-11-19 — Lucky Meter seasonal cinematic
+- Rebuilt the Lucky Meter as a nine-stage experience: resting gold maple-leaf pointer, breeze-cleared
+  arrival, 0% anticipation, one wheel/percentage clock, opening segment and colour pour, progressive Lucky
+  Number, written tier message, tier celebration, maple-leaf-written Spark, and Home + countdown docked
+  together only after the writing.
+- Added the single `sparks-and-seasonal-colours.js` config: 30 Sparks, four 12-colour Canadian palettes with
+  exact HEX values and painted finishes, inclusive local date ranges (Winter wraps the year and owns Feb 29)
+  and pure helpers. The wheel, pour and result share the stored reading's palette; legacy colours keep their
+  stored ids and HEX values.
+- Added `storyboard.js` as the one source of stage timing and moved persistence to additive
+  `revealCompleted`/`messageCompleted`/`eventCompleted`/`sparkCompleted` resume points. The existing Resource
+  Readiness Hub prepares the new audio resource; the existing recordings supply every new cue.
+- Preserved the approved Milky Way artwork, distributions, history, daily limit, local-midnight reset,
+  sharing, reduced motion, static WebGL fallback and compact mode. Build remains below the 495 MiB limit.

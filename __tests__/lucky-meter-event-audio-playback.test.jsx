@@ -50,12 +50,24 @@ vi.mock('../components/CosmicEventStage', () => ({
 }));
 
 import DailyResonance from '../components/DailyResonance';
-import { EVENT_START_MS } from '../app/lib/lucky-meter/reveal';
+import { getEventStartMs } from '../app/lib/lucky-meter/storyboard';
+
+// 200 ms of slack covers the completion latch's frame-granularity margin.
+const EVENT_START_MS =
+  getEventStartMs('Your luck is in the mid-range today.') + 200;
 
 const soundFor = (file) => howls.find((sound) => sound.src.endsWith(file));
-// The buildup charge is a reveal cue fired on Start, not an event action.
+// These recordings belong to the arrival, wheel, pour, message and dock stages;
+// they are not part of the celebration's cue vocabulary.
+const REVEAL_SOUNDS = [
+  'mixkit-cinematic-whoosh.mp3',
+  'starship-rail-gun-charge-35904.mp3',
+  'crystal-ball-leaf.mp3',
+  'mixkit-magic-sparkles.mp3',
+  'chime-sound.mp3',
+];
 const eventSounds = () =>
-  howls.filter((sound) => !sound.src.endsWith('starship-rail-gun-charge-35904.mp3'));
+  howls.filter((sound) => !REVEAL_SOUNDS.some((file) => sound.src.endsWith(file)));
 
 describe('Lucky Meter event cue playback', () => {
   let originalRaf;

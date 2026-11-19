@@ -804,7 +804,7 @@ body {
 }
 .lucky-tier-plate__label {
   margin: 0;
-  font-size: clamp(9px, 1.1vh, 12px);
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
   line-height: 1.3;
@@ -967,7 +967,7 @@ body {
 }
 
 .lucky-sky-writing__label {
-  font-size: 0.6rem;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -1007,7 +1007,7 @@ body {
   justify-content: center;
   gap: 0.5rem;
   min-height: 3.2em;
-  font-size: 0.7rem;
+  font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(255, 226, 168, 0.5);
@@ -1062,6 +1062,75 @@ body {
   .lucky-anticipation,
   .lucky-sky-writing__ember,
   .lucky-sky-writing__cursor {
+    animation: none !important;
+  }
+}
+
+/* ── Tier message above the meter ─────────────────────────────────────────
+   Frame 6 of the storyboard: the exact tier sentence is written in the sky
+   above the meter, held long enough to read and faded before the celebration.
+   It has no panel, so the celebration keeps the space it occupies. */
+.lucky-tier-message {
+  position: relative;
+  isolation: isolate;
+}
+
+.lucky-tier-message__rule {
+  display: block;
+  width: min(9rem, 44%);
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.55));
+}
+
+.lucky-tier-message__rule--bottom {
+  margin-top: 0.55rem;
+  background: linear-gradient(90deg, rgba(255, 222, 150, 0.55), rgba(255, 222, 150, 0));
+}
+
+.lucky-tier-message__text {
+  margin: 0.45rem 0 0;
+  max-width: 38rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #fdf3d2;
+  text-wrap: balance;
+  text-shadow:
+    0 0 14px rgba(255, 198, 92, 0.5),
+    0 0 34px rgba(255, 168, 46, 0.28),
+    0 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+.lucky-tier-message__cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  border-radius: 9999px;
+  vertical-align: -0.08em;
+  background: linear-gradient(180deg, #fffbe4, #f2c66d);
+  box-shadow: 0 0 8px rgba(255, 208, 116, 0.9);
+  animation: luckyTierCursor 900ms steps(1) infinite;
+}
+
+@keyframes luckyTierCursor {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.15; }
+}
+
+/* ── Lucky Colour vessel ──────────────────────────────────────────────────
+   The colour that pours out of the opened segment lands here. The vessel takes
+   the stored HEX value and its painted finish, so the card is the same colour
+   as the wheel, never an approximation. */
+.lucky-colour-vessel {
+  border-color: rgba(234, 190, 82, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 190, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 16px 32px -18px rgba(0, 0, 0, 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucky-tier-message__cursor {
     animation: none !important;
   }
 }

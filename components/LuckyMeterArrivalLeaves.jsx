@@ -163,9 +163,11 @@ function drawScene(ctx, leaves, elapsedMs, width, height) {
   }
 }
 
-export default function LuckyMeterArrivalLeaves() {
+export default function LuckyMeterArrivalLeaves({ onCleared }) {
   const canvasRef = useRef(null);
   const [phase, setPhase] = useState('resting');
+  const onClearedRef = useRef(onCleared);
+  onClearedRef.current = onCleared;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -192,7 +194,17 @@ export default function LuckyMeterArrivalLeaves() {
     let elapsed = 0;
     let frameId = null;
     let stopped = false;
+    let cleared = false;
     let size = { width: 1, height: 1 };
+
+    const finish = () => {
+      if (stopped || cleared) return;
+      cleared = true;
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      frameId = null;
+      onClearedRef.current?.();
+      setPhase('gone');
+    };
 
     const resize = () => {
       const width = Math.max(1, canvas.clientWidth || window.innerWidth);
@@ -209,8 +221,9 @@ export default function LuckyMeterArrivalLeaves() {
       elapsed = now - startedAt;
       drawScene(context, leaves, elapsed, size.width, size.height);
       if (elapsed >= duration) {
-        frameId = null;
-        setPhase('gone');
+        // The resting scene and the breeze are over: the caller may now show
+        // Start after its own short pause.
+        finish();
         return;
       }
       frameId = window.requestAnimationFrame(frame);
@@ -229,14 +242,20 @@ export default function LuckyMeterArrivalLeaves() {
 
     if (reducedMotion) {
       setPhase('resting');
+      // No animation means no animation frame will ever report completion.
+      const calmTimer = window.setTimeout(finish, ARRIVAL_TIMING.restMs);
       return () => {
         stopped = true;
+        window.clearTimeout(calmTimer);
         window.clearTimeout(resizeTimer);
         window.removeEventListener('resize', onResize);
       };
     }
 
     setPhase('resting');
+    // A completion latch: a paused or throttled frame clock must never leave
+    // Start hidden behind a canvas loop that will not run.
+    const finishTimer = window.setTimeout(finish, duration + 120);
     const liftArrival = () => {
       if (!stopped) setPhase('lifting');
     };
@@ -262,6 +281,7 @@ export default function LuckyMeterArrivalLeaves() {
       if (frameId !== null) window.cancelAnimationFrame(frameId);
       frameId = null;
       window.clearTimeout(liftTimer);
+      window.clearTimeout(finishTimer);
       window.clearTimeout(resizeTimer);
       window.removeEventListener('resize', onResize);
       stopVisibility();

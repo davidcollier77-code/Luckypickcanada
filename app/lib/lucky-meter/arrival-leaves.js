@@ -15,12 +15,12 @@ import { pickLeafColour, sampleWindField } from './leaf-wind';
 
 /** When the breeze arrives, and how the crossing is shaped. */
 export const ARRIVAL_TIMING = Object.freeze({
-  /** Leaves sit still for this long after the page appears. */
-  restMs: 1000,
+  /** Frames 1–2: the resting scene holds long enough to register. */
+  restMs: 1750,
   /** The breeze reaches each leaf inside this window. */
-  liftSpreadMs: 240,
+  liftSpreadMs: 180,
   /** A short, accelerating lift before the crossing carries the leaf away. */
-  flightMs: 2350,
+  flightMs: 1300,
   /** The fraction of the crossing that is fully opaque. */
   holdFraction: 0.62,
 });

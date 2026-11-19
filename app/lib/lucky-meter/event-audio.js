@@ -20,6 +20,25 @@
 
 /** Sound keys must exist in `DailyResonance`'s Howler set. */
 export const EVENT_CUE_LAYERS = Object.freeze({
+  // The spaces between the editable stages. Every cue reuses a recording the
+  // site already ships, so no new licence or download is introduced:
+  //   wheel-start  the existing charge-up
+  //   wheel-stop   the existing crystal reveal, pitched up into a soft stop
+  //   segment-open the existing leaf recording, as a short metallic slide
+  //   colour-pour  the existing sparkle recording, slowed into a pour
+  //   message-write / spark-write  the leaf recording at two soft rates
+  //
+  // The arrival breeze is visual only: browsers block audio before the visitor
+  // interacts, so a whoosh at page load could never play reliably.
+  //   dock-arrive  the existing chime
+  'wheel-start': [{ sound: 'buildup', rate: 0.94, volume: 0.62 }],
+  'wheel-stop': [{ sound: 'segmentOpen', rate: 0.78, volume: 0.34 }],
+  'segment-open': [{ sound: 'segmentOpen', rate: 1.04, volume: 0.42 }],
+  'colour-pour': [{ sound: 'colourPour', rate: 0.86, volume: 0.4 }],
+  'message-write': [{ sound: 'segmentOpen', rate: 1.3, volume: 0.2, jitter: 0.03 }],
+  'spark-write': [{ sound: 'segmentOpen', rate: 0.9, volume: 0.26, jitter: 0.03 }],
+  'dock-arrive': [{ sound: 'dockChime', rate: 1, volume: 0.24 }],
+
   // Meteors: the whoosh belongs to the moment the head enters the frame, and a
   // short thud belongs to the burnout at the end of its pass.
   'meteor-enter': [{ sound: 'impactMeteor', rate: 1.22, volume: 0.5, jitter: 0.03 }],

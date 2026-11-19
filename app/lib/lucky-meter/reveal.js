@@ -1,76 +1,37 @@
 /**
- * Reveal timing and the three motions that settle the daily reading.
+ * Reveal mathematics for the Lucky Meter's colour wheel.
  *
- * The percentage dial, the Lucky Number pointer and the segmented colour ring
- * all start at the same instant and settle in a staggered order over about
- * 7.4 seconds: the dial at 3.2 s, the number pointer at 5.4 s and the colour
- * ring at 7.4 s. Only then does the percentage-selected cinematic
- * begin, and only after a one-second pause once the cinematic has finished does
- * a tiny point of light write the Spark across the sky.
+ * The wheel is the twelve-segment palette ring. It spins beneath a fixed
+ * maple-leaf pointer at 6 o'clock and stops with the already-selected colour
+ * under that pointer. The percentage readout counts up on the same clock and
+ * stops on the same frame, so the two can never disagree.
  *
- * Each motion lands on a value that was already chosen. The dial stops on the
- * exact angle that represents the percentage, the number pointer stops on the
- * number's own sector and the colour ring stops with the selected colour at its
- * marker, so none of them can select or change a result.
+ * Everything here is a pure function of elapsed time and a spin built from the
+ * stored result. Nothing samples a random value during the animation, and no
+ * angle can select or change a percentage, a number or a colour.
  */
-import {
-  COLOURS,
-  COLOURS_BY_ID,
-  EVENTS_BY_ID,
-  LUCKY_NUMBER_MAX,
-  LUCKY_NUMBER_MIN,
-  PERCENTAGE_MAX,
-  PERCENTAGE_MIN,
-} from './config';
+import { COLOURS_BY_ID, getPaletteForDate } from './sparks-and-seasonal-colours';
+import { EVENTS_BY_ID, PERCENTAGE_MAX, PERCENTAGE_MIN } from './config';
+import { STORYBOARD_TIMING } from './storyboard';
 
-export const REVEAL_TIMING = Object.freeze({
-  /**
-   * A short held breath after Start. Nothing moves, so the three motions can
-   * arrive as one deliberate gesture instead of a reaction to the click.
-   */
-  anticipationMs: 500,
-  /** When the percentage dial, its flash and the tier text settle. */
-  percentageSettleMs: 3200,
-  /** When the Lucky Number pointer comes to rest on its number. */
-  numberSettleMs: 5400,
-  /** When the segmented colour ring comes to rest on its colour. */
-  colourSettleMs: 7400,
-  /** Every motion has settled by this point. */
-  spinMs: 7400,
-  /** Two or three flashes of the real number on landing. */
-  flashMs: 700,
-  flashCount: 3,
-  /** Short anticipation after the last settle before the cinematic starts. */
-  eventDelayMs: 420,
-  /**
-   * The sky is still after the cinematic. The Spark gathers for this long
-   * before the first character of light appears.
-   */
-  sparkStartDelayMs: 1000,
-  /** Sky-writing cadence: one character at a time, with punctuation pauses. */
-  sparkMsPerCharacter: 26,
-  sparkPunctuationPauseMs: 150,
-});
-
-/** Milliseconds from the Start press until the cinematic event begins. */
-export const EVENT_START_MS =
-  REVEAL_TIMING.anticipationMs +
-  REVEAL_TIMING.colourSettleMs +
-  REVEAL_TIMING.eventDelayMs;
+/**
+ * The stage lengths are owned by the storyboard. This alias keeps the existing
+ * `REVEAL_TIMING` import path meaningful for the reveal, Spark writer and tests.
+ */
+export const REVEAL_TIMING = STORYBOARD_TIMING;
 
 /** A full circle is 100%, so one percentage point is 3.6 degrees. */
 export const DEGREES_PER_PERCENT = 360 / 100;
 
-/** Bounds for the dial's spin distance, in full turns. */
-export const DIAL_TURNS = Object.freeze({ min: 2, max: 3 });
+/** The fixed maple-leaf pointer: 6 o'clock in screen coordinates. */
+export const POINTER_ANGLE_DEGREES = 180;
 
-/** One sector per Lucky Number, arranged clockwise from 12 o'clock. */
-export const NUMBER_STEPS = LUCKY_NUMBER_MAX - LUCKY_NUMBER_MIN + 1;
-export const DEGREES_PER_NUMBER = 360 / NUMBER_STEPS;
-
-/** One segment per approved Lucky Colour. */
-export const COLOUR_STEPS = COLOURS.length;
+/** One segment per seasonal Lucky Colour. */
+export const COLOUR_STEPS = 12;
 export const DEGREES_PER_COLOUR = 360 / COLOUR_STEPS;
+
+/** Bounds for the wheel's spin distance, in full turns. */
+export const WHEEL_TURNS = Object.freeze({ min: 3, max: 4 });
 
 function clampPercentage(value) {
   return Math.max(PERCENTAGE_MIN, Math.min(PERCENTAGE_MAX, Math.round(value)));
@@ -88,7 +49,7 @@ export function normalizeAngle(angle) {
   return ((value % 360) + 360) % 360;
 }
 
-/** The dial position, in degrees clockwise from 12 o'clock, for a percentage. */
+/** The percentage represented by a dial position. */
 export function percentageToAngle(percentage) {
   return clampPercentage(percentage) * DEGREES_PER_PERCENT;
 }
@@ -97,8 +58,7 @@ export function percentageToAngle(percentage) {
  * The percentage represented by a dial position.
  *
  * 100% is a full turn, which wraps to 0°: the top of the dial means the whole
- * range rather than the impossible 0% result. Every other position is its
- * fraction of the circle.
+ * range rather than the impossible 0% result.
  */
 export function angleToPercentage(angle) {
   const normalised = normalizeAngle(angle);
@@ -106,48 +66,9 @@ export function angleToPercentage(angle) {
   return clampPercentage((normalised / 360) * 100);
 }
 
-function nudgeAwayFromFinal(value, finalPercentage) {
-  const clamped = clampPercentage(value);
-  if (clamped !== finalPercentage) return clamped;
-  if (clamped < PERCENTAGE_MAX) return clamped + 1;
-  if (clamped > PERCENTAGE_MIN) return clamped - 1;
-  return clamped;
-}
-
 /**
- * Builds this reveal's percentage spin: a random starting angle, two to three
- * full turns, and the exact end angle for the result.
- *
- * `totalSweep` is chosen so the final angle lands on `endAngle` after a whole
- * number of turns plus the remaining arc. Nothing overshoots or settles, so the
- * pointer's physical resting position is the percentage.
- *
- * @param {number} finalPercentage The generated result.
- * @param {() => number} random Injectable random source.
- * @returns {{ startAngle: number, endAngle: number, turns: number, totalSweep: number }}
- */
-export function buildDialSpin(finalPercentage, random = Math.random) {
-  const endAngle = percentageToAngle(finalPercentage);
-  const turns =
-    DIAL_TURNS.min +
-    Math.floor(clampRandom(random()) * (DIAL_TURNS.max - DIAL_TURNS.min + 1));
-  // A small random lead-in keeps the pointer from always starting at 12 o'clock.
-  const startAngle = clampRandom(random()) * 360;
-  const residual = normalizeAngle(endAngle - startAngle);
-  return {
-    startAngle,
-    endAngle,
-    turns,
-    totalSweep: turns * 360 + residual,
-  };
-}
-
-/**
- * Heavy, weighted deceleration: the pointer leaves quickly and creeps into its
+ * Heavy, weighted deceleration: the wheel leaves quickly and creeps into its
  * last few degrees, which is what makes the stop read as a real mechanism.
- *
- * @param {number} progress 0..1
- * @returns {number} 0..1
  */
 export function dialEase(progress) {
   const t = Math.max(0, Math.min(1, Number(progress) || 0));
@@ -155,183 +76,119 @@ export function dialEase(progress) {
 }
 
 /**
- * Samples the dial and the number it points at.
+ * The displayed percentage during generation.
  *
- * @param {number} elapsedMs Milliseconds since the spin started.
- * @param {{ startAngle: number, endAngle: number, totalSweep: number }} spin
- * @param {number} finalPercentage The generated result.
- * @param {number} [durationMs] The percentage settle window.
- * @returns {{ angle: number, percentage: number }}
+ * Generation deliberately begins at 0%, which is outside the 5–100 result range
+ * and can therefore never be mistaken for a result. The readout accelerates and
+ * decelerates with the wheel, but is nudged one point away from the true value
+ * on every intermediate frame and reaches that value only on the final frame.
+ *
+ * @param {number} elapsedMs Milliseconds since the wheel started turning.
+ * @param {number} durationMs The generation window.
+ * @param {number} finalPercentage The already-selected result.
+ * @returns {number} 0–99 while generating, the exact result at the end.
  */
-export function sampleDialSpin(
-  elapsedMs,
-  spin,
-  finalPercentage,
-  durationMs = REVEAL_TIMING.percentageSettleMs,
-) {
+export function sampleGenerationPercentage(elapsedMs, durationMs, finalPercentage) {
   const final = clampPercentage(finalPercentage);
-  const safeSpin =
-    spin && Number.isFinite(spin.startAngle) && Number.isFinite(spin.totalSweep)
-      ? spin
-      : { startAngle: 0, totalSweep: 0 };
   const duration = Number.isFinite(durationMs) && durationMs > 0 ? durationMs : 1;
   const elapsed = Math.max(0, Math.min(duration, Number(elapsedMs) || 0));
+  if (elapsed >= duration) return final;
+
   const eased = dialEase(elapsed / duration);
-  const angle = safeSpin.startAngle + eased * safeSpin.totalSweep;
-  return {
-    angle,
-    // The landing frame is the result itself; every earlier frame is nudged off
-    // it so the stop is the reveal.
-    percentage:
-      elapsed >= duration
-        ? final
-        : nudgeAwayFromFinal(angleToPercentage(angle), final),
-  };
+  const value = Math.min(99, Math.max(0, Math.floor(eased * 100)));
+  if (value !== final) return value;
+  return value >= 99 ? 98 : value + 1;
 }
 
-/* ── Lucky Number pointer ────────────────────────────────────────────────── */
-
-function clampLuckyNumber(value) {
-  if (!Number.isFinite(value)) return LUCKY_NUMBER_MIN;
-  return Math.max(LUCKY_NUMBER_MIN, Math.min(LUCKY_NUMBER_MAX, Math.round(value)));
-}
-
-/** The pointer angle, in degrees clockwise from 12 o'clock, for a number. */
-export function luckyNumberToAngle(number) {
-  const value = clampLuckyNumber(number);
-  return (value - LUCKY_NUMBER_MIN) * DEGREES_PER_NUMBER + DEGREES_PER_NUMBER / 2;
-}
-
-/** The Lucky Number whose sector contains a pointer angle. */
-export function angleToLuckyNumber(angle) {
-  const normalised = normalizeAngle(angle);
-  const index = Math.min(
-    NUMBER_STEPS - 1,
-    Math.max(0, Math.floor(normalised / DEGREES_PER_NUMBER)),
-  );
-  return LUCKY_NUMBER_MIN + index;
-}
-
-function nudgeNumberAwayFromFinal(value, finalNumber) {
-  const clamped = clampLuckyNumber(value);
-  if (clamped !== finalNumber) return clamped;
-  return clamped < LUCKY_NUMBER_MAX ? clamped + 1 : clamped - 1;
-}
+/* ── Colour wheel ────────────────────────────────────────────────────────── */
 
 /**
- * Builds the number pointer's spin, ending on the exact sector of the number
- * that was already selected.
+ * The segment index of a colour id inside a palette, or -1.
  *
- * @param {number} finalNumber The independent Lucky Number.
- * @param {() => number} random Injectable random source.
+ * @param {string} colourId
+ * @param {ReadonlyArray<object>} [palette] The active twelve-colour palette.
  */
-export function buildNumberSpin(finalNumber, random = Math.random) {
-  const endAngle = luckyNumberToAngle(finalNumber);
-  const turns =
-    DIAL_TURNS.min +
-    Math.floor(clampRandom(random()) * (DIAL_TURNS.max - DIAL_TURNS.min + 1));
-  const startAngle = clampRandom(random()) * 360;
-  const residual = normalizeAngle(endAngle - startAngle);
-  return {
-    startAngle,
-    endAngle,
-    turns,
-    totalSweep: turns * 360 + residual,
-  };
-}
-
-/**
- * Samples the Lucky Number pointer. The number is read from the pointer's own
- * angle, never from the percentage, and is nudged one step off the result on
- * any intermediate pass so the landing is the reveal.
- *
- * @param {number} elapsedMs
- * @param {{ startAngle: number, totalSweep: number }} spin
- * @param {number} finalNumber
- * @param {number} [durationMs]
- * @returns {{ angle: number, number: number }}
- */
-export function sampleNumberSpin(
-  elapsedMs,
-  spin,
-  finalNumber,
-  durationMs = REVEAL_TIMING.numberSettleMs,
-) {
-  const final = clampLuckyNumber(finalNumber);
-  const safeSpin =
-    spin && Number.isFinite(spin.startAngle) && Number.isFinite(spin.totalSweep)
-      ? spin
-      : { startAngle: 0, totalSweep: 0 };
-  const duration = Number.isFinite(durationMs) && durationMs > 0 ? durationMs : 1;
-  const elapsed = Math.max(0, Math.min(duration, Number(elapsedMs) || 0));
-  const eased = dialEase(elapsed / duration);
-  const angle = safeSpin.startAngle + eased * safeSpin.totalSweep;
-  return {
-    angle,
-    number:
-      elapsed >= duration
-        ? final
-        : nudgeNumberAwayFromFinal(angleToLuckyNumber(angle), final),
-  };
-}
-
-/* ── Lucky Colour ring ───────────────────────────────────────────────────── */
-
-/** The segment index of a colour id, or -1. */
-export function getColourIndex(colourId) {
-  return COLOURS.findIndex((colour) => colour.id === colourId);
+export function getColourIndex(colourId, palette = []) {
+  if (!Array.isArray(palette) || palette.length === 0) return -1;
+  return palette.findIndex((colour) => colour.id === colourId);
 }
 
 /** The colour id at a segment index, wrapping the ring. */
-export function getColourIdAt(index) {
-  const step = ((Math.round(index) % COLOUR_STEPS) + COLOUR_STEPS) % COLOUR_STEPS;
-  return COLOURS[step].id;
+export function getColourIdAt(index, palette = []) {
+  if (!Array.isArray(palette) || palette.length === 0) return null;
+  const step = ((Math.round(index) % palette.length) + palette.length) % palette.length;
+  return palette[step].id;
 }
 
 /**
- * Builds the colour ring's spin. The ring's rotation settles so the selected
- * segment sits under the fixed marker at 12 o'clock.
+ * The wheel rotation that brings a segment under the fixed 6 o'clock pointer.
+ *
+ * A segment's centre sits at `index × 30°` clockwise from 12 o'clock, so the
+ * ring must turn by `180° − index × 30°` for the pointer to read it.
+ *
+ * @param {string} colourId
+ * @param {ReadonlyArray<object>} [palette]
+ * @returns {number} Normalised degrees.
+ */
+export function colourPointerRotation(colourId, palette = []) {
+  const index = Math.max(0, getColourIndex(colourId, palette));
+  return normalizeAngle(POINTER_ANGLE_DEGREES - index * DEGREES_PER_COLOUR);
+}
+
+/**
+ * Builds the wheel spin: a random starting angle, three to four whole turns and
+ * a final rotation that places the selected colour under the pointer.
  *
  * @param {string} colourId The already-selected Lucky Colour.
- * @param {() => number} random Injectable random source.
+ * @param {() => number} [random] Injectable random source.
+ * @param {ReadonlyArray<object>} [palette]
  */
-export function buildColourSpin(colourId, random = Math.random) {
-  const index = Math.max(0, getColourIndex(colourId));
-  const settleRotation = normalizeAngle(-index * DEGREES_PER_COLOUR);
-  const turns = 2 + Math.floor(clampRandom(random()) * 2);
+export function buildColourSpin(colourId, random = Math.random, palette = getPaletteForDate()) {
+  const endRotation = colourPointerRotation(colourId, palette);
+  const turns =
+    WHEEL_TURNS.min +
+    Math.floor(clampRandom(random()) * (WHEEL_TURNS.max - WHEEL_TURNS.min + 1));
   const startRotation = clampRandom(random()) * 360;
-  const residual = normalizeAngle(settleRotation - startRotation);
+  const residual = normalizeAngle(endRotation - startRotation);
   return {
     startRotation,
-    endRotation: settleRotation,
+    endRotation,
     turns,
     totalSweep: turns * 360 + residual,
   };
 }
 
-/** The colour segment currently under the fixed marker for a ring rotation. */
-export function rotationToColourIndex(rotation) {
-  return Math.round(normalizeAngle(-rotation) / DEGREES_PER_COLOUR) % COLOUR_STEPS;
+/**
+ * The colour segment currently under the fixed 6 o'clock pointer.
+ *
+ * @param {number} rotation Wheel rotation in degrees.
+ * @param {number} [paletteLength]
+ */
+export function rotationToColourIndex(rotation, paletteLength = COLOUR_STEPS) {
+  const length = Number.isFinite(paletteLength) && paletteLength > 0 ? paletteLength : COLOUR_STEPS;
+  const step = 360 / length;
+  return Math.round(normalizeAngle(POINTER_ANGLE_DEGREES - rotation) / step) % length;
 }
 
 /**
- * Samples the colour ring. The settled segment is always the colour that was
- * already chosen; while spinning it reads its own rotation and is nudged off
- * the result so the stop is the reveal.
+ * Samples the wheel. The settled segment is always the colour that was already
+ * chosen; while spinning it reads its own rotation and is nudged off the result
+ * so the stop is the reveal.
  *
  * @param {number} elapsedMs
  * @param {{ startRotation: number, totalSweep: number }} spin
  * @param {string} finalColourId
  * @param {number} [durationMs]
- * @returns {{ rotation: number, colourIndex: number, colourId: string }}
+ * @param {ReadonlyArray<object>} [palette]
  */
 export function sampleColourSpin(
   elapsedMs,
   spin,
   finalColourId,
-  durationMs = REVEAL_TIMING.colourSettleMs,
+  durationMs = STORYBOARD_TIMING.generationMs,
+  palette = getPaletteForDate(),
 ) {
-  const finalIndex = Math.max(0, getColourIndex(finalColourId));
+  const finalIndex = Math.max(0, getColourIndex(finalColourId, palette));
   const safeSpin =
     spin && Number.isFinite(spin.startRotation) && Number.isFinite(spin.totalSweep)
       ? spin
@@ -340,12 +197,12 @@ export function sampleColourSpin(
   const elapsed = Math.max(0, Math.min(duration, Number(elapsedMs) || 0));
   const eased = dialEase(elapsed / duration);
   const rotation = safeSpin.startRotation + eased * safeSpin.totalSweep;
-  let index = rotationToColourIndex(rotation);
-  if (elapsed < duration && index === finalIndex) index = (index + 1) % COLOUR_STEPS;
-  return { rotation, colourIndex: index, colourId: getColourIdAt(index) };
+  let index = rotationToColourIndex(rotation, palette.length);
+  if (elapsed < duration && index === finalIndex) index = (index + 1) % palette.length;
+  return { rotation, colourIndex: index, colourId: getColourIdAt(index, palette) };
 }
 
-/** Resolves a colour record from the approved palette. */
+/** Resolves a seasonal colour record by id. */
 export function getColourById(colourId) {
   return COLOURS_BY_ID.get(colourId) || null;
 }
@@ -354,7 +211,7 @@ export function getColourById(colourId) {
  * Picks this run's event length inside the event's documented range.
  *
  * @param {string} eventId One of `meteor`, `lightning`, `fireworks`.
- * @param {() => number} random Injectable random source.
+ * @param {() => number} [random] Injectable random source.
  * @returns {number} Duration in milliseconds.
  */
 export function getEventDurationMs(eventId, random = Math.random) {

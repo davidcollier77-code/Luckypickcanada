@@ -2,12 +2,13 @@
 
 import Aurora, { AuroraHandle } from './Aurora';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import IntentPrefetchLink from './IntentPrefetchLink';
 
 import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
 import LuckyMeterArrivalLeaves from './LuckyMeterArrivalLeaves';
+import LuckyMeterMessage, { TierMessageState } from './LuckyMeterMessage';
 import LuckyMeterOrnaments from './LuckyMeterOrnaments';
 import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
@@ -25,20 +26,23 @@ import {
 } from '../app/lib/lucky-meter/storage';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
-  DEGREES_PER_COLOUR,
+  ARRIVAL_TOTAL_MS,
+  STORYBOARD_TIMING,
+  getDockMs,
+  getMessageTypingMs,
+  getSparkWritingMs,
+} from '../app/lib/lucky-meter/storyboard';
+import {
   buildColourSpin,
-  buildDialSpin,
-  buildNumberSpin,
-  getColourIndex,
+  colourPointerRotation,
   getEventDurationMs,
-  luckyNumberToAngle,
-  normalizeAngle,
-  percentageToAngle,
-  REVEAL_TIMING,
   sampleColourSpin,
-  sampleDialSpin,
-  sampleNumberSpin,
+  sampleGenerationPercentage,
 } from '../app/lib/lucky-meter/reveal';
+import {
+  getPaletteForSeasonKey,
+  getSeasonForDateKey,
+} from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
 import { shareDailyResult } from '../app/lib/lucky-meter/share';
 import {
   ENTERTAINMENT_DISCLAIMER,
@@ -53,6 +57,19 @@ import {
   isEventCue,
   SUSTAINED_EVENT_SOUNDS,
 } from '../app/lib/lucky-meter/event-audio';
+import {
+  getLuckyMeterAudio,
+  prepareLuckyMeterAudio,
+  releaseLuckyMeterAudio,
+} from '../app/lib/lucky-meter/audio';
+
+interface ColourRecord {
+  id: string;
+  name: string;
+  hex: string;
+  light: boolean;
+  texture?: { finish?: string; grain?: number; sheen?: number; highlight?: number };
+}
 
 interface DailyResult {
   dateKey: string;
@@ -60,7 +77,8 @@ interface DailyResult {
   tier: { id: string; label: string; message: string };
   event: { id: string; name: string };
   luckyNumber: number;
-  colour: { id: string; name: string; hex: string; light: boolean };
+  season?: string;
+  colour: ColourRecord;
   spark: { id: string; message: string };
 }
 
@@ -69,110 +87,66 @@ interface DailyResonanceProps {
 }
 
 type ShareStatus = 'idle' | 'copied' | 'failed';
-type RingPhase = 'idle' | 'scrambling' | 'landed';
+type Stage = 'idle' | 'anticipating' | 'generating' | 'landed' | 'pouring' | 'revealed';
 
-/**
- * The three motions that start together and settle in order. The percentage
- * dial settles first, the Lucky Number pointer second and the segmented colour
- * ring last, all within roughly 1.25 seconds.
- */
 interface RevealMotion {
-  dialAngle: number;
+  wheelAngle: number;
   percentage: number;
-  numberAngle: number;
-  number: number;
-  colourRotation: number;
+  numberReveal: number;
+  pourProgress: number;
 }
 
 function initialMotion(): RevealMotion {
-  return {
-    dialAngle: 0,
-    percentage: 0,
-    numberAngle: 0,
-    number: LUCKY_NUMBER_MIN,
-    colourRotation: 0,
-  };
-}
-
-function settledMotion(result: DailyResult): RevealMotion {
-  return {
-    dialAngle: percentageToAngle(result.percentage),
-    percentage: result.percentage,
-    numberAngle: luckyNumberToAngle(result.luckyNumber),
-    number: result.luckyNumber,
-    // The selected segment rests under the fixed marker at 12 o'clock.
-    colourRotation: normalizeAngle(-getColourIndex(result.colour.id) * DEGREES_PER_COLOUR),
-  };
+  return { wheelAngle: 0, percentage: 0, numberReveal: 0, pourProgress: 0 };
 }
 
 /**
- * Milliseconds from the Start press until the cinematic event begins: the held
- * breath, the three settles and the short delay after the last one. The reveal's
- * protection window covers this pre-roll even though `stageActive` is only set
- * at the end of it.
+ * Milliseconds allowed for the complete nine-stage flow plus a generous margin.
+ * The hold is released when the celebration actually completes; this only keeps
+ * queued background work from starving if a stage never reports completion.
  */
-const REVEAL_STAGE_PREROLL_MS =
-  REVEAL_TIMING.anticipationMs + REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs;
+const REVEAL_PROTECTION_SLACK_MS = 20_000;
 
-/**
- * Fallback margin after the cinematic. If a stage never reports completion (an
- * interrupted render, a thrown child), the foreground hold is released here so
- * queued background work can never starve.
- */
-const REVEAL_PROTECTION_SLACK_MS = 15_000;
-
-const EMPTY_SOUNDS = () => ({
-  buildup: null as any,
-  impactMeteor: null as any,
-  impactLightning: null as any,
-  fireworkBurst: null as any,
-  fireworkBurstAlt: null as any,
-  willowCrackle: null as any,
-  fireworkLaunch: null as any,
-  // Recorded additions. The existing cues above keep their original files.
-  finaleBoom: null as any,
-  thunderRumble: null as any,
-});
+/** Smooth acceleration and deceleration for the pour. */
+function pourEase(progress: number) {
+  const t = Math.max(0, Math.min(1, progress));
+  return t * t * (3 - 2 * t);
+}
 
 /**
  * The Daily Resonance Lucky Meter.
  *
- * One complete result is generated per local day and persisted to Local
- * Storage only. The percentage is independent of the Lucky Number and the Lucky
- * Colour; all three motions start together and settle in a staggered order
- * before the percentage-selected cinematic begins. Only after that cinematic
- * finishes does a tiny point of light write the Spark across the sky, and the
- * completed message stays there. The countdown appears beneath Home once the
- * writing is complete.
+ * One complete reading is generated per local day and persisted to Local
+ * Storage only. The colour wheel and the percentage count stop on the same
+ * frame; the selected segment then opens, pours its colour into the Lucky
+ * Colour result area and reveals the independent Lucky Number behind it. The
+ * tier message is written above the meter, held and faded before the matching
+ * existing celebration. Only after the Little Spark has been written does the
+ * upper-right dock show Home and the countdown together.
  *
- * The circular medallion is mounted in every state. The Home control is only
- * available before the reveal and once the day's cinematic has finished; the
- * completion flags are persisted so refreshing resumes an unfinished stage
- * instead of replaying a finished one or exposing Home early.
+ * The percentage, Lucky Number, Lucky Colour and Little Spark are independent
+ * draws. The wheel only displays the colour that was already chosen; it never
+ * selects or changes a value.
  *
  * @param props - Component display options.
- * @param props.isCompact - Reduces layout spacing and hides the home link; defaults to false.
+ * @param props.isCompact - Reduces layout spacing and hides the Home dock; defaults to false.
  */
 export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
   const [result, setResult] = useState<DailyResult | null>(null);
+  const [stage, setStage] = useState<Stage>('idle');
   const [motion, setMotion] = useState<RevealMotion>(initialMotion);
-  const [isRevealing, setIsRevealing] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
   const [numberSettled, setNumberSettled] = useState(false);
   const [colourSettled, setColourSettled] = useState(false);
   const [stageActive, setStageActive] = useState(false);
   const [stageDuration, setStageDuration] = useState(0);
   const [eventCompleted, setEventCompleted] = useState(false);
-  // The brief held breath after Start, before the three motions begin.
-  const [isAnticipating, setIsAnticipating] = useState(false);
-  // Sky-writing begins only after the cinematic has finished and a short pause.
-  // Its completion is persisted so a refresh resumes the writing in place.
+  const [messageState, setMessageState] = useState<TierMessageState>('hidden');
   const [sparkWriting, setSparkWriting] = useState(false);
   const [sparkComplete, setSparkComplete] = useState(false);
-  // Home stays unmounted until the persisted lifecycle has been read, so a
-  // refresh never paints it for a frame before an unfinished event resumes.
+  const [dockReady, setDockReady] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [leavesCleared, setLeavesCleared] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>('idle');
   const [announcement, setAnnouncement] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -181,35 +155,63 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const { ready, dateKey, formatted: resetCountdown } = useDailyResetCountdown();
 
+  /** The quiet beat between the last leaf leaving and Start arriving. */
+  const handleArrivalCleared = useCallback(() => {
+    if (startRevealTimerRef.current !== null) return;
+    startRevealTimerRef.current = window.setTimeout(() => {
+      startRevealTimerRef.current = null;
+      if (isMountedRef.current) setLeavesCleared(true);
+    }, STORYBOARD_TIMING.startDelayMs);
+  }, []);
+
+  // A static fallback: if the arrival canvas cannot run at all, Start still
+  // appears after the same total beat instead of being hidden forever.
+  useEffect(() => {
+    if (result || leavesCleared) return undefined;
+    const timer = window.setTimeout(() => {
+      if (isMountedRef.current) setLeavesCleared(true);
+    }, ARRIVAL_TOTAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [result, leavesCleared]);
+
+  useEffect(
+    () => () => {
+      if (startRevealTimerRef.current !== null) {
+        window.clearTimeout(startRevealTimerRef.current);
+        startRevealTimerRef.current = null;
+      }
+    },
+    [],
+  );
+
   const auroraRef = useRef<AuroraHandle>(null);
-  const soundsRef = useRef<Record<string, any>>(EMPTY_SOUNDS());
   const timersRef = useRef<number[]>([]);
   const rafRef = useRef<number | null>(null);
   const shareTimerRef = useRef<number | null>(null);
-  const dialSpinRef = useRef<ReturnType<typeof buildDialSpin> | null>(null);
-  const numberSpinRef = useRef<ReturnType<typeof buildNumberSpin> | null>(null);
-  const colourSpinRef = useRef<ReturnType<typeof buildColourSpin> | null>(null);
+  const wheelSpinRef = useRef<ReturnType<typeof buildColourSpin> | null>(null);
   const revealStartRef = useRef(0);
-  const revealStartedAtRef = useRef(0);
   const isMountedRef = useRef(true);
   const visitsAbortRef = useRef<AbortController | null>(null);
   const resultRef = useRef<DailyResult | null>(null);
   const historyRef = useRef(emptyMeterHistory());
   const stageDurationRef = useRef(0);
   const eventCompletedRef = useRef(false);
+  const messageCompletedRef = useRef(false);
   const sparkCompletedRef = useRef(false);
-  const animateRevealRef = useRef<
-    ((next: DailyResult, nextHistory: ReturnType<typeof emptyMeterHistory>, duration: number) => void) | null
+  const beginSequenceRef = useRef<
+    | ((
+        next: DailyResult,
+        nextHistory: ReturnType<typeof emptyMeterHistory>,
+        duration: number,
+        options: { fresh: boolean },
+      ) => void)
+    | null
   >(null);
-  const finalPercentageRef = useRef(0);
   const thunderRef = useRef({ count: 0, lastAt: 0, finalePlayed: false });
   const eventSoundInstancesRef = useRef<Record<string, Array<{ id: number; volume: number }>>>({});
-  // Fade-out timers for cues that can outlive their action (thunder, crackle).
   const audioStopTimersRef = useRef<number[]>([]);
-  // The hub's foreground hold, taken at the activation press rather than when
-  // the cinematic mounts. `stageActive` only flips after the ~8 s pre-roll, so
-  // relying on it left the spins open to competing background work.
   const revealProtectionRef = useRef<(() => void) | null>(null);
+  const startRevealTimerRef = useRef<number | null>(null);
   const revealSafetyTimerRef = useRef<number | null>(null);
 
   const releaseRevealWindow = useCallback(() => {
@@ -223,34 +225,42 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   const protectRevealWindow = useCallback(
-    (durationMs: number) => {
+    (safetyMs: number) => {
       if (typeof window === 'undefined' || revealProtectionRef.current) return;
       revealProtectionRef.current = beginActiveExperience('lucky-meter-reveal');
-      // A bounded fallback: if the stage never reports completion, the hold is
-      // released after the cinematic plus a margin, so queued background work
-      // can never starve.
-      const safetyMs =
-        REVEAL_STAGE_PREROLL_MS + Math.max(0, durationMs) + REVEAL_PROTECTION_SLACK_MS;
-      revealSafetyTimerRef.current = window.setTimeout(releaseRevealWindow, safetyMs);
+      revealSafetyTimerRef.current = window.setTimeout(
+        releaseRevealWindow,
+        Math.max(1000, safetyMs) + REVEAL_PROTECTION_SLACK_MS,
+      );
     },
     [releaseRevealWindow],
   );
 
-  const ringPhase: RingPhase =
-    isAnticipating || isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
+  const palette = useMemo(() => {
+    if (result?.season) {
+      const stored = getPaletteForSeasonKey(result.season);
+      if (stored.length > 0) return stored as ColourRecord[];
+    }
+    const season = result ? getSeasonForDateKey(result.dateKey) : null;
+    return (season?.colours ?? []) as ColourRecord[];
+  }, [result]);
 
-  // The Home control is available only before Start and after today's complete
-  // cinematic. `result && !eventCompleted` keeps it hidden across a refresh.
-  const showHome =
-    hasLoaded &&
-    !isCompact &&
-    !isAnticipating &&
-    !isRevealing &&
-    !stageActive &&
-    (!result || eventCompleted);
-  // The countdown waits for the sky-writing, so the finished Spark is never
-  // covered by a reset clock that still says the day is over.
-  const showCountdown = showHome && sparkComplete;
+  const ringPhase =
+    stage === 'generating' || stage === 'anticipating'
+      ? 'spin'
+      : stage === 'landed'
+        ? 'landed'
+        : stage === 'pouring'
+          ? 'pouring'
+          : stage === 'revealed'
+            ? 'revealed'
+            : 'idle';
+
+  const isRevealed = stage === 'revealed';
+  const hasDetails = stage === 'pouring' || stage === 'revealed';
+  // Both controls arrive together, and only once the Spark has finished.
+  const showHome = hasLoaded && !isCompact && dockReady && !stageActive;
+  const showCountdown = showHome;
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -262,18 +272,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   const schedule = useCallback((callback: () => void, delayMs: number) => {
-    const timer = window.setTimeout(callback, delayMs);
+    const timer = window.setTimeout(callback, Math.max(0, delayMs));
     timersRef.current.push(timer);
     return timer;
   }, []);
 
   /**
    * Fades out any cue that could outlive its action and then stops it. Called
-   * when the cinematic finishes, when the day rolls over and on unmount, so no
-   * thunder, crackle or boom continues after the animation has gone.
+   * when the cinematic finishes, when the day rolls over and on unmount.
    */
   const stopEventAudio = useCallback((fadeMs = 320) => {
-    const sounds = soundsRef.current;
+    const sounds = getLuckyMeterAudio();
+    if (!sounds) return;
     const activeInstances = eventSoundInstancesRef.current;
     SUSTAINED_EVENT_SOUNDS.forEach((key) => {
       const sound = sounds[key];
@@ -284,7 +294,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         let shouldScheduleStop = false;
         try {
           if (typeof sound.fade === 'function') {
-            // Howler's id argument targets this cue instance and its authored gain.
             sound.fade(volume, 0, fadeMs, id);
             shouldScheduleStop = true;
           } else {
@@ -313,234 +322,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     eventSoundInstancesRef.current = {};
   }, []);
 
-  const persistLifecycle = useCallback(
-    (
-      nextResult: DailyResult | null,
-      nextHistory: ReturnType<typeof emptyMeterHistory>,
-      completed: boolean,
-      duration: number,
-      sparkDone: boolean,
-      revealed = true,
-    ) => {
-      if (!nextResult) return;
-      saveMeterState({
-        result: nextResult,
-        history: nextHistory,
-        eventCompleted: completed,
-        // Written when the last motion settles, so a refresh during the
-        // cinematic resumes it instead of replaying the three motions.
-        revealCompleted: revealed,
-        sparkCompleted: sparkDone,
-        stageDurationMs: duration,
-      });
-    },
-    [],
-  );
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      releaseRevealWindow();
-    };
-  }, [releaseRevealWindow]);
-
-  // Reduced motion is respected for the three spins, the landing flash, the
-  // cinematic stage and the sky writing; the result is presented calmly instead.
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(query.matches);
-    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
-    if (typeof query.addEventListener === 'function') {
-      query.addEventListener('change', onChange);
-      return () => query.removeEventListener('change', onChange);
-    }
-    return undefined;
-  }, []);
-
-  // Load today's persisted result. Refresh keeps the revealed result all day
-  // and resumes only the stage that never finished: an unfinished cinematic
-  // replays its event, a finished cinematic resumes the Spark writing, and a
-  // finished Spark shows its completed message with the countdown.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const localKey = getLocalDateKey();
-    const loaded = loadMeterState();
-    setHistory(loaded.history);
-    historyRef.current = loaded.history;
-    setHasLoaded(true);
-
-    if (isResultForDate(loaded.result, localKey)) {
-      const saved = loaded.result as DailyResult;
-      // Only a stored duration inside this event's documented window is reused;
-      // anything else gets a fresh in-window duration so the finale can always
-      // finish naturally rather than being truncated.
-      const eventWindow = EVENTS_BY_ID.get(saved.event.id);
-      const storedDuration = loaded.stageDurationMs;
-      const duration =
-        eventWindow &&
-        storedDuration >= eventWindow.minDurationMs &&
-        storedDuration <= eventWindow.maxDurationMs
-          ? storedDuration
-          : getEventDurationMs(saved.event.id);
-      const completed = loaded.eventCompleted === true;
-
-      resultRef.current = saved;
-      stageDurationRef.current = duration;
-      eventCompletedRef.current = completed;
-      sparkCompletedRef.current = loaded.sparkCompleted === true;
-      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
-
-      setResult(saved);
-      setMotion(settledMotion(saved));
-      setIsRevealed(true);
-      setNumberSettled(true);
-      setColourSettled(true);
-      setStageDuration(duration);
-      setEventCompleted(completed);
-      setAnnouncement(
-        `Today's resonance is ${saved.percentage} percent. ${saved.tier.label}. ${saved.tier.message} Lucky Number ${saved.luckyNumber}. Lucky Colour ${saved.colour.name}.`,
-      );
-
-      if (loaded.sparkCompleted === true) {
-        setSparkComplete(true);
-      }
-
-      if (!completed) {
-        if (prefersReducedMotion()) {
-          // Nothing is animated, so the reading and its Spark are complete.
-          eventCompletedRef.current = true;
-          sparkCompletedRef.current = true;
-          setEventCompleted(true);
-          setSparkComplete(true);
-          auroraRef.current?.setPhase('settled', saved.event.name);
-          saveMeterState({
-            result: saved,
-            history: loaded.history,
-            eventCompleted: true,
-            revealCompleted: true,
-            sparkCompleted: true,
-            stageDurationMs: duration,
-          });
-        } else if (loaded.revealCompleted !== true) {
-          // Refresh during the reveal: replay the three motions on the stored
-          // values, then the cinematic. No value is redrawn and the stage is
-          // never skipped just because the tab was reloaded.
-          protectRevealWindow(duration);
-          setAnnouncement('Preparing today’s resonance.');
-          animateRevealRef.current?.(saved, loaded.history, duration);
-        } else {
-          // Resume the unfinished cinematic from the start of its event. The
-          // result stays visible and Home remains hidden until it completes.
-          protectRevealWindow(duration);
-          setStageActive(true);
-        }
-      } else if (loaded.sparkCompleted !== true && !prefersReducedMotion()) {
-        // The cinematic finished but the Spark writing did not: finish it
-        // rather than skipping the finale or replaying the event.
-        setSparkWriting(true);
-      } else if (loaded.sparkCompleted !== true && prefersReducedMotion()) {
-        sparkCompletedRef.current = true;
-        setSparkComplete(true);
-        saveMeterState({
-          result: saved,
-          history: loaded.history,
-          eventCompleted: true,
-          sparkCompleted: true,
-          stageDurationMs: duration,
-        });
-      }
-    }
-  }, []);
-
-  // Roll over after local midnight, including in an already-open tab. The shared
-  // countdown store owns the one-second clock; this effect only reacts to its
-  // local date key, so it also follows DST changes.
-  useEffect(() => {
-    if (!ready || !dateKey) return;
-    if (result && result.dateKey !== dateKey) {
-      clearSequence();
-      stopEventAudio();
-      releaseRevealWindow();
-      resultRef.current = null;
-      historyRef.current = emptyMeterHistory();
-      stageDurationRef.current = 0;
-      eventCompletedRef.current = false;
-      sparkCompletedRef.current = false;
-      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
-      setResult(null);
-      setMotion(initialMotion());
-      setIsRevealing(false);
-      setIsRevealed(false);
-      setIsFlashing(false);
-      setNumberSettled(false);
-      setColourSettled(false);
-      setStageActive(false);
-      setEventCompleted(false);
-      setIsAnticipating(false);
-      setSparkWriting(false);
-      setSparkComplete(false);
-      setShareStatus('idle');
-      setAnnouncement('');
-      auroraRef.current?.setPhase('idle');
-    }
-  }, [ready, dateKey, result, clearSequence, stopEventAudio, releaseRevealWindow]);
-
-  // Unload only the Howl instances this component created.
-  useEffect(() => {
-    return () => {
-      clearSequence();
-      visitsAbortRef.current?.abort();
-      visitsAbortRef.current = null;
-      if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
-
-      audioStopTimersRef.current.forEach((timer) => window.clearTimeout(timer));
-      audioStopTimersRef.current = [];
-
-      const sounds = soundsRef.current;
-      Object.values(sounds).forEach((sound) => {
-        if (sound && typeof sound.unload === 'function') sound.unload();
-      });
-      soundsRef.current = EMPTY_SOUNDS();
-    };
-  }, [clearSequence]);
-
-  /**
-   * Loads the Lucky Meter sound set on first reveal. The established buildup,
-   * meteor, lightning, whistle and firework cues are unchanged; two new
-   * recorded cues are added for the finale boom and thunder.
-   */
-  const ensureRevealAudio = useCallback(async () => {
-    if (soundsRef.current.buildup) return;
-    try {
-      const howlerModule = await import('howler');
-      const Howl = howlerModule.Howl;
-      // A cue that fails to load must never stop the reveal, but it should be
-      // diagnosable in the field instead of failing silently.
-      const onLoadError = (id: number, error: unknown) => {
-        console.warn('Lucky Meter audio load failed:', id, error);
-      };
-      soundsRef.current = {
-        buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8, onloaderror: onLoadError }),
-        impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0, onloaderror: onLoadError }),
-        impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0, onloaderror: onLoadError }),
-        fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], onloaderror: onLoadError }),
-        fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'], onloaderror: onLoadError }),
-        willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0, onloaderror: onLoadError }),
-        fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5, onloaderror: onLoadError }),
-        finaleBoom: new Howl({ src: ['/sounds/lucky-meter-finale-boom.wav'], volume: 1.0, onloaderror: onLoadError }),
-        thunderRumble: new Howl({ src: ['/sounds/lucky-meter-thunder-rumble.wav'], volume: 0.24, onloaderror: onLoadError }),
-      };
-    } catch (error) {
-      // Audio is optional; a blocked or missing sound must never stop the reveal.
-      console.warn('Lucky Meter audio unavailable; continuing without sound.', error);
-    }
-  }, []);
-
   const playEventCue = useCallback((cue: string) => {
     if (!isMountedRef.current || !isEventCue(cue)) return;
-    const sounds = soundsRef.current;
+    const sounds = getLuckyMeterAudio();
+    if (!sounds) return;
     const play = (key: string, rate: number, volume: number) => {
       const sound = sounds[key];
       if (!sound) return;
@@ -559,7 +344,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
 
     // Normal strikes are capped at two. The finale has one reserved rumble slot,
-    // while the same spacing guard prevents any two thunder cues from stacking.
+    // while the spacing guard prevents any two thunder cues from stacking.
     if (cue.startsWith('thunder-')) {
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const isFinaleThunder = cue === 'thunder-finale';
@@ -573,183 +358,548 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       };
     }
 
-    // One action, one sound. The cue map owns the rate and the mix, including
-    // the layered, deeper finale boom.
     getCueLayers(cue).forEach((layer) => play(layer.sound, layer.rate, layer.volume));
   }, []);
 
-  /** Persists "the sky-writing finished" so a refresh keeps the message. */
+  const persistLifecycle = useCallback(
+    (
+      nextResult: DailyResult | null,
+      nextHistory: ReturnType<typeof emptyMeterHistory>,
+      flags: {
+        eventCompleted?: boolean;
+        messageCompleted?: boolean;
+        sparkCompleted?: boolean;
+        revealCompleted?: boolean;
+      },
+      duration: number,
+    ) => {
+      if (!nextResult) return;
+      saveMeterState({
+        result: nextResult,
+        history: nextHistory,
+        eventCompleted: flags.eventCompleted === true,
+        messageCompleted: flags.messageCompleted === true,
+        sparkCompleted: flags.sparkCompleted === true,
+        revealCompleted: flags.revealCompleted === true,
+        stageDurationMs: duration,
+      });
+    },
+    [],
+  );
+
   const markSparkComplete = useCallback(() => {
     sparkCompletedRef.current = true;
     setSparkComplete(true);
     setSparkWriting(false);
+    const next = resultRef.current;
     persistLifecycle(
-      resultRef.current,
+      next,
       historyRef.current,
-      eventCompletedRef.current,
+      {
+        revealCompleted: true,
+        messageCompleted: true,
+        eventCompleted: true,
+        sparkCompleted: true,
+      },
       stageDurationRef.current,
-      true,
     );
-  }, [persistLifecycle]);
+    schedule(() => {
+      if (isMountedRef.current) {
+        setDockReady(true);
+        playEventCue('dock-arrive');
+      }
+    }, STORYBOARD_TIMING.dockDelayMs);
+  }, [persistLifecycle, playEventCue, schedule]);
+
+  /** Starts the tier celebration after the message has fully faded. */
+  const startCelebration = useCallback(
+    (next: DailyResult, duration: number) => {
+      if (!isMountedRef.current) return;
+      messageCompletedRef.current = true;
+      setMessageState('hidden');
+      setStageActive(true);
+      eventCompletedRef.current = false;
+      setEventCompleted(false);
+      persistLifecycle(
+        next,
+        historyRef.current,
+        {
+          revealCompleted: true,
+          messageCompleted: true,
+          eventCompleted: false,
+          sparkCompleted: false,
+        },
+        duration,
+      );
+      setAnnouncement(
+        `Today's resonance is ${next.percentage} percent. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
+      );
+      auroraRef.current?.setPhase('gather');
+    },
+    [persistLifecycle],
+  );
 
   /**
-   * Runs the three reveal motions for an already-chosen result and hands over to
-   * the cinematic. It is shared by a fresh Start and by a refresh that lands in
-   * the middle of the reveal, and it never draws a value.
+   * Writes the exact tier message above the meter, holds it long enough to read
+   * and fades it before the celebration. Used both by a fresh run and by a
+   * refresh that landed after the pour but before the message finished.
    */
-  const animateReveal = useCallback(
+  const beginMessagePhase = useCallback(
+    (next: DailyResult, duration: number) => {
+      const typingMs = getMessageTypingMs(next.tier.message);
+      const writingStart = STORYBOARD_TIMING.messageDelayMs;
+      const holdStart = writingStart + typingMs;
+      const fadeStart = holdStart + STORYBOARD_TIMING.messageHoldMs;
+      const doneAt = fadeStart + STORYBOARD_TIMING.messageFadeMs;
+
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        setMessageState('writing');
+        playEventCue('message-write');
+      }, writingStart);
+      schedule(() => {
+        if (isMountedRef.current) setMessageState('holding');
+      }, holdStart);
+      schedule(() => {
+        if (isMountedRef.current) setMessageState('fading');
+      }, fadeStart);
+      schedule(
+        () => startCelebration(next, duration),
+        doneAt + STORYBOARD_TIMING.eventDelayMs,
+      );
+    },
+    [playEventCue, schedule, startCelebration],
+  );
+
+  /** Opens the selected segment and drains its colour into the result area. */
+  const startPour = useCallback(
     (
       next: DailyResult,
-      nextHistory: ReturnType<typeof emptyMeterHistory>,
       duration: number,
+      activePalette: ReadonlyArray<ColourRecord>,
     ) => {
-    const dialSpin = dialSpinRef.current;
-    const numberSpin = numberSpinRef.current;
-    const colourSpin = colourSpinRef.current;
-    // The settled colour ring lands one whole number of turns later; setting
-    // that exact angle avoids any visible snap at the landing frame.
-    const settledColourRotation = colourSpin
-      ? colourSpin.startRotation + colourSpin.totalSweep
-      : settledMotion(next).colourRotation;
-
-    setIsAnticipating(false);
-    setMotion({
-      dialAngle: dialSpin ? dialSpin.startAngle : 0,
-      // Read the starting frames from the motions themselves so the result is
-      // never leaked a frame early.
-      percentage: dialSpin
-        ? sampleDialSpin(0, dialSpin, next.percentage).percentage
-        : next.percentage,
-      numberAngle: numberSpin ? numberSpin.startAngle : 0,
-      number: numberSpin
-        ? sampleNumberSpin(0, numberSpin, next.luckyNumber).number
-        : next.luckyNumber,
-      colourRotation: colourSpin ? colourSpin.startRotation : 0,
-    });
-    setIsRevealing(true);
-    setIsRevealed(false);
-    setNumberSettled(false);
-    setColourSettled(false);
-    setStageActive(false);
-    auroraRef.current?.setPhase('awaken');
-    schedule(() => auroraRef.current?.setPhase('gather'), 320);
-
-    // One frame loop drives all three motions, and it stops itself as soon as
-    // the last one settles. Nothing keeps rendering after the reveal.
-    revealStartRef.current = performance.now();
-    const step = () => {
       if (!isMountedRef.current) return;
-      const elapsed = performance.now() - revealStartRef.current;
-      const dialSample = dialSpinRef.current
-        ? sampleDialSpin(elapsed, dialSpinRef.current, finalPercentageRef.current)
-        : null;
-      const numberSample = numberSpinRef.current
-        ? sampleNumberSpin(elapsed, numberSpinRef.current, next.luckyNumber)
-        : null;
-      const colourSample = colourSpinRef.current
-        ? sampleColourSpin(elapsed, colourSpinRef.current, next.colour.id)
-        : null;
-
-      setMotion((current) => ({
-        dialAngle: dialSample ? dialSample.angle : current.dialAngle,
-        percentage: dialSample ? dialSample.percentage : current.percentage,
-        numberAngle: numberSample ? numberSample.angle : current.numberAngle,
-        number: numberSample ? numberSample.number : current.number,
-        colourRotation: colourSample ? colourSample.rotation : current.colourRotation,
-      }));
-
-      if (elapsed >= REVEAL_TIMING.spinMs) {
-        rafRef.current = null;
-        return;
-      }
-      rafRef.current = window.requestAnimationFrame(step);
-    };
-    rafRef.current = window.requestAnimationFrame(step);
-
-    // Settle one: the percentage dial and the tier that it alone decides.
-    schedule(() => {
-      if (!isMountedRef.current) return;
-      setIsRevealing(false);
-      setIsRevealed(true);
-      setMotion((current) => ({
-        ...current,
-        dialAngle: percentageToAngle(next.percentage),
-        percentage: next.percentage,
-      }));
-      setIsFlashing(true);
+      setStage('pouring');
       setAnnouncement(
-        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message}`,
+        `Today's resonance is ${next.percentage} percent. ${next.tier.label}.`,
       );
       auroraRef.current?.setPhase('impact', next.event.name);
+      playEventCue('segment-open');
+      schedule(() => playEventCue('colour-pour'), 220);
 
-      const buildup = soundsRef.current.buildup;
-      try {
-        if (buildup && typeof buildup.fade === 'function') buildup.fade(0.8, 0, 500);
-        schedule(() => {
-          try {
-            if (buildup) buildup.stop();
-          } catch {
-            // Optional audio only.
-          }
-        }, 540);
-      } catch {
-        // Optional audio only.
-      }
-    }, REVEAL_TIMING.percentageSettleMs);
+      const total = STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs;
+      const startedAt = performance.now();
+      let finished = false;
+      const finishPour = () => {
+        if (finished || !isMountedRef.current) return;
+        finished = true;
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        setMotion({
+          wheelAngle: colourPointerRotation(next.colour.id, activePalette),
+          percentage: next.percentage,
+          numberReveal: 1,
+          pourProgress: 1,
+        });
+        setStage('revealed');
+        setNumberSettled(true);
+        setColourSettled(true);
+        persistLifecycle(
+          next,
+          historyRef.current,
+          {
+            revealCompleted: true,
+            messageCompleted: false,
+            eventCompleted: false,
+            sparkCompleted: false,
+          },
+          duration,
+        );
+        setAnnouncement(
+          `Today's resonance is ${next.percentage} percent. ${next.tier.label}. Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
+        );
+        // The number and colour hold in their result areas for the storyboard's
+        // settle beat before the tier message begins above the meter.
+        schedule(
+          () => beginMessagePhase(next, duration),
+          STORYBOARD_TIMING.resultSettleMs,
+        );
+      };
 
-    schedule(
-      () => setIsFlashing(false),
-      REVEAL_TIMING.percentageSettleMs + REVEAL_TIMING.flashMs + 40,
-    );
+      const step = () => {
+        if (!isMountedRef.current) return;
+        const elapsed = performance.now() - startedAt;
+        const linear = Math.min(1, elapsed / total);
+        const progress = pourEase(linear);
+        setMotion((current) => ({
+          ...current,
+          pourProgress: progress,
+          numberReveal: Math.max(0, Math.min(1, (progress - 0.18) / 0.62)),
+        }));
 
-    // Settle two: the Lucky Number pointer stops on its own number.
-    schedule(() => {
-      if (!isMountedRef.current) return;
-      setNumberSettled(true);
-      setMotion((current) => ({
-        ...current,
-        numberAngle: luckyNumberToAngle(next.luckyNumber),
-        number: next.luckyNumber,
-      }));
-    }, REVEAL_TIMING.numberSettleMs);
-
-    // Settle three: the segmented colour ring stops on its colour and the
-    // remaining result panels rise in.
-    schedule(() => {
-      if (!isMountedRef.current) return;
-      setColourSettled(true);
-      setMotion((current) => ({ ...current, colourRotation: settledColourRotation }));
-      setAnnouncement(
-        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
-      );
-    }, REVEAL_TIMING.colourSettleMs);
-
-    // Only after all three have settled does the percentage-selected cinematic
-    // begin, exactly as before. Marking the reveal complete here means a refresh
-    // during the cinematic resumes it rather than replaying the motions.
-    schedule(
-      () => {
-        setStageActive(true);
-        persistLifecycle(next, nextHistory, false, duration, false, true);
-      },
-      REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs,
-    );
+        if (linear >= 1) {
+          finishPour();
+          return;
+        }
+        rafRef.current = window.requestAnimationFrame(step);
+      };
+      rafRef.current = window.requestAnimationFrame(step);
+      schedule(finishPour, total + 20);
     },
-    [persistLifecycle, schedule],
+    [beginMessagePhase, persistLifecycle, playEventCue, schedule],
   );
-  // The load effect runs before this callback exists in source order, so it
-  // reaches it through a ref that is kept current on every render.
-  animateRevealRef.current = animateReveal;
+
+  /** Runs the three part reveal: generation, stop, then open and pour. */
+  const beginSequence = useCallback(
+    (
+      next: DailyResult,
+      _nextHistory: ReturnType<typeof emptyMeterHistory>,
+      duration: number,
+      options: { fresh: boolean },
+    ) => {
+      const activePalette =
+        getPaletteForSeasonKey(next.season || '').length > 0
+          ? getPaletteForSeasonKey(next.season || '')
+          : getSeasonForDateKey(next.dateKey)?.colours || [];
+      const spin = buildColourSpin(next.colour.id, Math.random, activePalette);
+      wheelSpinRef.current = spin;
+
+      setStage('anticipating');
+      setMotion({
+        wheelAngle: spin.startRotation,
+        percentage: 0,
+        numberReveal: 0,
+        pourProgress: 0,
+      });
+      setNumberSettled(false);
+      setColourSettled(false);
+      setStageActive(false);
+      setMessageState('hidden');
+      setEventCompleted(false);
+      eventCompletedRef.current = false;
+      messageCompletedRef.current = false;
+      sparkCompletedRef.current = false;
+      setSparkComplete(false);
+      setDockReady(false);
+      auroraRef.current?.setPhase('awaken');
+      schedule(() => auroraRef.current?.setPhase('gather'), 320);
+
+      if (!options.fresh) {
+        setAnnouncement('Preparing today’s resonance.');
+      }
+
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        setStage('generating');
+        playEventCue('wheel-start');
+        revealStartRef.current = performance.now();
+
+        let finished = false;
+        const finishGeneration = () => {
+          if (finished || !isMountedRef.current) return;
+          finished = true;
+          if (rafRef.current !== null) {
+            window.cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
+          // Both readings stop on this same frame: the wheel lands on the
+          // selected colour and the percentage lands on its result.
+          setMotion({
+            wheelAngle: spin.endRotation,
+            percentage: next.percentage,
+            numberReveal: 0,
+            pourProgress: 0,
+          });
+          setStage('landed');
+          setIsFlashing(true);
+          playEventCue('wheel-stop');
+          schedule(() => setIsFlashing(false), STORYBOARD_TIMING.flashMs + 40);
+          schedule(() => startPour(next, duration, activePalette), STORYBOARD_TIMING.settlePauseMs);
+        };
+
+        const step = () => {
+          if (!isMountedRef.current) return;
+          const elapsed = performance.now() - revealStartRef.current;
+          const wheel = sampleColourSpin(
+            elapsed,
+            spin,
+            next.colour.id,
+            STORYBOARD_TIMING.generationMs,
+            activePalette,
+          );
+          setMotion({
+            wheelAngle: wheel.rotation,
+            percentage: sampleGenerationPercentage(
+              elapsed,
+              STORYBOARD_TIMING.generationMs,
+              next.percentage,
+            ),
+            numberReveal: 0,
+            pourProgress: 0,
+          });
+
+          if (elapsed >= STORYBOARD_TIMING.generationMs) {
+            finishGeneration();
+            return;
+          }
+          rafRef.current = window.requestAnimationFrame(step);
+        };
+        rafRef.current = window.requestAnimationFrame(step);
+        // A completion latch: a throttled or paused animation frame clock can
+        // never strand the sequence half-finished.
+        schedule(finishGeneration, STORYBOARD_TIMING.generationMs + 20);
+      }, STORYBOARD_TIMING.anticipationMs);
+    },
+    [playEventCue, schedule, startPour],
+  );
+
+  beginSequenceRef.current = beginSequence;
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      releaseRevealWindow();
+    };
+  }, [releaseRevealWindow]);
+
+  // Reduced motion is respected for the wheel, the pour, the message typing,
+  // the cinematic and the sky writing; the reading is presented calmly instead.
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+    if (typeof query.addEventListener === 'function') {
+      query.addEventListener('change', onChange);
+      return () => query.removeEventListener('change', onChange);
+    }
+    return undefined;
+  }, []);
+
+  // Under reduced motion the leaves are a still composition, so Start is not
+  // blocked by a breeze that will never arrive.
+  useEffect(() => {
+    if (reducedMotion) setLeavesCleared(true);
+  }, [reducedMotion]);
+
+  // Load today's persisted result. Refresh resumes exactly the stage that never
+  // finished: the wheel and pour, the message, the celebration or the Spark.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const localKey = getLocalDateKey();
+    const loaded = loadMeterState();
+    setHistory(loaded.history);
+    historyRef.current = loaded.history;
+    setHasLoaded(true);
+
+    if (isResultForDate(loaded.result, localKey)) {
+      const saved = loaded.result as DailyResult;
+      const eventWindow = EVENTS_BY_ID.get(saved.event.id);
+      const storedDuration = loaded.stageDurationMs;
+      const duration =
+        eventWindow &&
+        storedDuration >= eventWindow.minDurationMs &&
+        storedDuration <= eventWindow.maxDurationMs
+          ? storedDuration
+          : getEventDurationMs(saved.event.id);
+      const eventDone = loaded.eventCompleted === true;
+      const messageDone = loaded.messageCompleted === true;
+
+      resultRef.current = saved;
+      stageDurationRef.current = duration;
+      eventCompletedRef.current = eventDone;
+      messageCompletedRef.current = messageDone;
+      sparkCompletedRef.current = loaded.sparkCompleted === true;
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
+
+      setResult(saved);
+      setMotion({
+        wheelAngle: colourPointerRotation(
+          saved.colour.id,
+          getPaletteForSeasonKey(saved.season || '').length > 0
+            ? getPaletteForSeasonKey(saved.season || '')
+            : getSeasonForDateKey(saved.dateKey)?.colours || [],
+        ),
+        percentage: saved.percentage,
+        numberReveal: 1,
+        pourProgress: 1,
+      });
+      setNumberSettled(true);
+      setColourSettled(true);
+      setStageDuration(duration);
+      setEventCompleted(eventDone);
+      setShareStatus('idle');
+      setAnnouncement(
+        `Today's resonance is ${saved.percentage} percent. ${saved.tier.label}. ${saved.tier.message} Lucky Number ${saved.luckyNumber}. Lucky Colour ${saved.colour.name}.`,
+      );
+
+      if (loaded.sparkCompleted === true) {
+        setSparkComplete(true);
+        setDockReady(true);
+      }
+
+      if (prefersReducedMotion()) {
+        // Nothing is animated, so the reading and its Spark are complete.
+        eventCompletedRef.current = true;
+        messageCompletedRef.current = true;
+        sparkCompletedRef.current = true;
+        setStage('revealed');
+        setEventCompleted(true);
+        setSparkComplete(true);
+        setDockReady(true);
+        auroraRef.current?.setPhase('settled', saved.event.name);
+        saveMeterState({
+          result: saved,
+          history: loaded.history,
+          eventCompleted: true,
+          messageCompleted: true,
+          revealCompleted: true,
+          sparkCompleted: true,
+          stageDurationMs: duration,
+        });
+        return;
+      }
+
+      if (!eventDone) {
+        if (loaded.revealCompleted !== true) {
+          // Refresh during the wheel or the pour: replay both motions on the
+          // stored values, then the message and the cinematic. Nothing is drawn.
+          protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
+          beginSequenceRef.current?.(saved, loaded.history, duration, { fresh: false });
+        } else if (!messageDone) {
+          // The pour completed but the message did not: write it now, then play
+          // the celebration instead of skipping either.
+          protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
+          setStage('revealed');
+          beginMessagePhase(saved, duration);
+        } else {
+          // Resume the unfinished cinematic from its first frame.
+          protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
+          setStage('revealed');
+          setStageActive(true);
+        }
+      } else if (loaded.sparkCompleted !== true) {
+        setStage('revealed');
+        setSparkWriting(true);
+      } else {
+        setStage('revealed');
+        setDockReady(true);
+      }
+    }
+  }, []);
+
+  // Roll over after local midnight, including in an already-open tab.
+  useEffect(() => {
+    if (!ready || !dateKey) return;
+    if (result && result.dateKey !== dateKey) {
+      clearSequence();
+      stopEventAudio();
+      releaseRevealWindow();
+      resultRef.current = null;
+      historyRef.current = emptyMeterHistory();
+      stageDurationRef.current = 0;
+      eventCompletedRef.current = false;
+      messageCompletedRef.current = false;
+      sparkCompletedRef.current = false;
+      thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
+      setResult(null);
+      setStage('idle');
+      setMotion(initialMotion());
+      setIsFlashing(false);
+      setNumberSettled(false);
+      setColourSettled(false);
+      setStageActive(false);
+      setEventCompleted(false);
+      setMessageState('hidden');
+      setSparkWriting(false);
+      setSparkComplete(false);
+      setDockReady(false);
+      setLeavesCleared(true);
+      setShareStatus('idle');
+      setAnnouncement('');
+      auroraRef.current?.setPhase('idle');
+    }
+  }, [ready, dateKey, result, clearSequence, stopEventAudio, releaseRevealWindow]);
+
+  // Unload only the Howl instances this experience prepared.
+  useEffect(() => {
+    return () => {
+      clearSequence();
+      visitsAbortRef.current?.abort();
+      visitsAbortRef.current = null;
+      if (shareTimerRef.current !== null) window.clearTimeout(shareTimerRef.current);
+
+      audioStopTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+      audioStopTimersRef.current = [];
+      releaseLuckyMeterAudio();
+    };
+  }, [clearSequence]);
+
+  /** Loads the shared Lucky Meter sound set on first activation. */
+  const ensureRevealAudio = useCallback(async () => {
+    if (getLuckyMeterAudio()) return;
+    try {
+      await prepareLuckyMeterAudio();
+    } catch (error) {
+      // Audio is optional; a blocked or missing sound must never stop the reveal.
+      console.warn('Lucky Meter audio unavailable; continuing without sound.', error);
+    }
+  }, []);
+
+  /** Reduced motion presents the completed reading and the dock at once. */
+  const completeCalmly = useCallback(
+    (next: DailyResult, nextHistory: ReturnType<typeof emptyMeterHistory>, duration: number) => {
+      const activePalette =
+        getPaletteForSeasonKey(next.season || '').length > 0
+          ? getPaletteForSeasonKey(next.season || '')
+          : getSeasonForDateKey(next.dateKey)?.colours || [];
+      setStage('revealed');
+      setMotion({
+        wheelAngle: colourPointerRotation(next.colour.id, activePalette),
+        percentage: next.percentage,
+        numberReveal: 1,
+        pourProgress: 1,
+      });
+      setNumberSettled(true);
+      setColourSettled(true);
+      setMessageState('hidden');
+      setEventCompleted(true);
+      setSparkComplete(true);
+      setDockReady(true);
+      setLeavesCleared(true);
+      eventCompletedRef.current = true;
+      messageCompletedRef.current = true;
+      sparkCompletedRef.current = true;
+      setAnnouncement(
+        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
+      );
+      auroraRef.current?.setPhase('settled', next.event.name);
+      persistLifecycle(
+        next,
+        nextHistory,
+        {
+          revealCompleted: true,
+          messageCompleted: true,
+          eventCompleted: true,
+          sparkCompleted: true,
+        },
+        duration,
+      );
+    },
+    [persistLifecycle],
+  );
 
   const handleReveal = useCallback(() => {
-    if (isAnticipating || isRevealing || isRevealed || typeof window === 'undefined') return;
+    if (stage !== 'idle' || result || typeof window === 'undefined') return;
 
     const localKey = ready && dateKey ? dateKey : getLocalDateKey();
     let next: DailyResult;
     try {
       next = createDailyResult({ dateKey: localKey, history }) as DailyResult;
     } catch (error) {
-      // A bad local date or a corrupt history must not crash the page.
       console.error('Unable to prepare today’s resonance:', error);
       setAnnouncement('Today’s resonance could not be prepared. Please try again.');
       return;
@@ -757,11 +907,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const nextHistory = appendResultToHistory(history, next);
     const duration = getEventDurationMs(next.event.id);
 
-    // Persist before animating so a refresh mid-reveal still keeps today's result.
     resultRef.current = next;
     historyRef.current = nextHistory;
     stageDurationRef.current = duration;
     eventCompletedRef.current = false;
+    messageCompletedRef.current = false;
     sparkCompletedRef.current = false;
     thunderRef.current = { count: 0, lastAt: 0, finalePlayed: false };
 
@@ -770,6 +920,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       result: next,
       history: nextHistory,
       eventCompleted: false,
+      messageCompleted: false,
       revealCompleted: false,
       sparkCompleted: false,
       stageDurationMs: duration,
@@ -778,43 +929,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setResult(next);
     setShareStatus('idle');
     setEventCompleted(false);
-    // The held breath is part of the reveal: the result exists, but nothing has
-    // moved yet and the sky is simply listening.
-    setIsAnticipating(!reducedMotion);
     setSparkWriting(false);
     setSparkComplete(false);
-    setAnnouncement('Preparing today’s resonance.');
-    finalPercentageRef.current = next.percentage;
-    dialSpinRef.current = buildDialSpin(next.percentage);
-    numberSpinRef.current = buildNumberSpin(next.luckyNumber);
-    colourSpinRef.current = buildColourSpin(next.colour.id);
+    setDockReady(false);
     setStageDuration(duration);
     clearSequence();
-    // Hold the hub's foreground from the press itself, through the spins and the
-    // cinematic, until the stage completes. Critical and intent work still run.
-    if (!reducedMotion) protectRevealWindow(duration);
+    setAnnouncement('Preparing today’s resonance.');
 
     void playButtonClick().catch(() => {});
-    revealStartedAtRef.current = performance.now();
-    // Reduced motion has no reveal and no cinematic, so it also has no
-    // charge-up that would need fading. When audio arrives late, it is skipped
-    // rather than starting after the dial has already landed.
-    if (!reducedMotion) {
-      void ensureRevealAudio().then(() => {
-        if (!isMountedRef.current) return;
-        const buildupWindowMs =
-          REVEAL_TIMING.anticipationMs + REVEAL_TIMING.percentageSettleMs - 250;
-        if (performance.now() - revealStartedAtRef.current > buildupWindowMs) return;
-        try {
-          soundsRef.current.buildup?.play();
-        } catch {
-          // Optional audio only.
-        }
-      });
-    }
+    // Warm the shared set; the storyboard's own cue fires at generation start.
+    void ensureRevealAudio();
 
-    // Preserve the existing total-ritual counter. A newer reveal or unmount
-    // aborts an older request so a late response cannot overwrite the count.
+    // Preserve the existing total-ritual counter.
     visitsAbortRef.current?.abort();
     const visitsController = new AbortController();
     visitsAbortRef.current = visitsController;
@@ -836,42 +962,24 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       });
 
     if (reducedMotion) {
-      setIsAnticipating(false);
-      setMotion(settledMotion(next));
-      setIsRevealing(false);
-      setIsRevealed(true);
-      setNumberSettled(true);
-      setColourSettled(true);
-      setSparkComplete(true);
-      sparkCompletedRef.current = true;
-      setAnnouncement(
-        `Today's resonance is ${next.percentage} percent. ${next.tier.label}. ${next.tier.message} Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}.`,
-      );
-      auroraRef.current?.setPhase('settled', next.event.name);
-      // No cinematic and no Spark writing run under reduced motion, so the reading is
-      // complete immediately and Home plus the countdown may show.
-      eventCompletedRef.current = true;
-      setEventCompleted(true);
-      persistLifecycle(next, nextHistory, true, duration, true, true);
+      completeCalmly(next, nextHistory, duration);
       return;
     }
 
-    // Hold for a moment, then let the three motions begin together.
-    schedule(() => {
-      if (!isMountedRef.current) return;
-      animateReveal(next, nextHistory, duration);
-    }, REVEAL_TIMING.anticipationMs);
+    protectRevealWindow(getDockMs(next.tier.message, duration, next.spark.message));
+    beginSequence(next, nextHistory, duration, { fresh: true });
   }, [
-    animateReveal,
+    beginSequence,
     clearSequence,
+    completeCalmly,
     dateKey,
     ensureRevealAudio,
     history,
-    persistLifecycle,
     protectRevealWindow,
     ready,
     reducedMotion,
-    schedule,
+    result,
+    stage,
   ]);
 
   const handleStageComplete = useCallback(() => {
@@ -879,26 +987,27 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setStageActive(false);
     setEventCompleted(true);
     eventCompletedRef.current = true;
-    // The animation is over; nothing it started may keep sounding.
+    messageCompletedRef.current = true;
     stopEventAudio();
-    // Persist only after the event has actually completed, including the last
-    // visible golden sparks. A refresh before this point resumes the event.
     persistLifecycle(
       resultRef.current,
       historyRef.current,
-      true,
+      {
+        revealCompleted: true,
+        messageCompleted: true,
+        eventCompleted: true,
+        sparkCompleted: false,
+      },
       stageDurationRef.current,
-      false,
-      true,
     );
-    // The sky holds for a moment after the cinematic, then the Spark begins —
-    // unless it was already written and persisted before a resume.
     if (!sparkCompletedRef.current) {
       schedule(() => {
-        if (isMountedRef.current) setSparkWriting(true);
-      }, REVEAL_TIMING.sparkStartDelayMs);
+        if (!isMountedRef.current) return;
+        setSparkWriting(true);
+        playEventCue('spark-write');
+      }, STORYBOARD_TIMING.sparkStartDelayMs);
     }
-  }, [persistLifecycle, releaseRevealWindow, schedule, stopEventAudio]);
+  }, [persistLifecycle, playEventCue, releaseRevealWindow, schedule, stopEventAudio]);
 
   const handleShare = useCallback(async () => {
     if (!result) return;
@@ -912,7 +1021,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } else if (outcome.status === 'failed') {
       setShareStatus('failed');
     } else {
-      // Shared, or the visitor cancelled the native sheet: no clipboard copy.
       setShareStatus('idle');
       return;
     }
@@ -931,18 +1039,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         : 'Share My Resonance';
 
   const isLightColour = result?.colour?.light === true;
-  const hasDetails = isRevealed && Boolean(result);
-
-  const ringSizeClasses = isCompact ? 'mt-2' : 'mt-3 sm:mt-4';
   const panelClass = 'lucky-panel rounded-2xl';
+  const colourTexture = result?.colour?.texture;
+  const colourGrain = Math.max(0, Math.min(1, colourTexture?.grain ?? 0.1));
+  const colourSheen = Math.max(0, Math.min(1, colourTexture?.sheen ?? 0.3));
+  const pourFill = hasDetails ? motion.pourProgress : 0;
+  const showSparkWriting = (sparkWriting || sparkComplete) && Boolean(result);
 
-  /**
-   * The countdown lives beneath Home, not inside the result panels, and only
-   * after the Spark has finished writing.
-   */
   const countdownBlock = (
     <div className="lucky-countdown lucky-countdown--dock" data-testid="lucky-meter-countdown">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300/80">
+      <p className="text-[12px] uppercase tracking-[0.18em] text-slate-300/80">
         Next Resonance In
       </p>
       <div
@@ -992,10 +1098,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       </picture>
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
 
-      {/* The arrival: a few leaves rest at the edges of the sky, then the
-          breeze lifts them away before Start. Once a reading exists they are
-          not mounted again for the day. */}
-      {!result && !isAnticipating && <LuckyMeterArrivalLeaves />}
+      {/* The resting scene: a few leaves sit at the edges, then the breeze
+          carries them away and Start appears after a quiet beat. */}
+      {!result && (
+        <LuckyMeterArrivalLeaves onCleared={handleArrivalCleared} />
+      )}
 
       {/* Golden maple leaves: a far layer behind the scene and, on capable
           profiles, a near layer in front of the meter and its panels. */}
@@ -1011,6 +1118,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         />
       )}
 
+      {/* Home and the countdown appear together, only after the Spark is fully
+          written. The dock never carries one without the other. */}
       {showHome && (
         <div className="lucky-home-dock fixed right-3 top-3 z-50 flex flex-col items-end gap-2 sm:right-5 sm:top-5">
           <IntentPrefetchLink
@@ -1042,12 +1151,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         className={`relative z-20 flex w-full flex-1 flex-col items-center ${
           isCompact
             ? 'justify-center px-2 pb-3 pt-6'
-            : 'justify-start px-4 pb-5 pt-32 sm:justify-center sm:px-6 sm:pb-8 sm:pt-28'
+            : `justify-start px-4 pb-5 ${
+                result ? 'pt-32' : 'pt-24'
+              } sm:justify-center sm:px-6 sm:pb-8 sm:pt-24`
         }`}
       >
         <div className={`flex w-full flex-col items-center ${isCompact ? '' : 'max-w-4xl'}`}>
           {totalVisits !== null && !isCompact && (
-            <div className="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[11px] sm:text-xs tracking-widest uppercase">
+            <div className="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[12px] tracking-widest uppercase">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
@@ -1061,10 +1172,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             </div>
           )}
 
-          {!isRevealed && !isRevealing && !result && (
+          {!result && stage === 'idle' && (
             <div className="flex w-full flex-col items-center text-center">
-              {/* Visually identical eyebrow line. It is a paragraph, not a heading, so
-                  the page's first heading is its single H1 (audit D5). */}
               <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
               <h1
                 className={`font-light text-white text-balance ${
@@ -1080,114 +1189,184 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               >
                 One reading a day, revealed in a few unforgettable seconds.
               </p>
-              <div className={isCompact ? 'mt-1' : 'mt-1'}>
-                <ResonanceButton onClick={handleReveal} />
+              {/* Start is present from the first frame but stays invisible and
+                  untabbable until the breeze has cleared and the beat passed. */}
+              <div
+                data-testid="lucky-meter-start"
+                data-ready={leavesCleared ? 'true' : 'false'}
+                className={`mt-1 transition-opacity duration-700 ${
+                  leavesCleared ? 'opacity-100' : 'pointer-events-none opacity-0'
+                }`}
+              >
+                {/* The button stays in the accessibility tree so it is never a
+                    mystery control, but it cannot be clicked or tabbed to until
+                    the breeze has cleared and the pause has passed. */}
+                <ResonanceButton onClick={handleReveal} tabIndex={leavesCleared ? 0 : -1} />
               </div>
             </div>
           )}
 
-          {/* The Little Spark is written in the sky after the cinematic: a tiny
-              golden point of light reveals the message, which then stays. */}
-          {hasDetails && result && (
-            <LuckyMeterSkyWriting
-              message={result.spark.message}
-              state={sparkComplete ? 'written' : sparkWriting ? 'writing' : 'waiting'}
-              reducedMotion={reducedMotion}
-              isCompact={isCompact}
-              onComplete={markSparkComplete}
-            />
-          )}
+          {/* Frame 6: the exact tier message, written above the meter, held and
+              faded before the celebration. */}
+          <div
+            className={`flex w-full flex-col items-center justify-end ${
+              isCompact ? 'min-h-[3.2rem]' : 'min-h-[5.5rem] sm:min-h-[6.5rem]'
+            }`}
+          >
+            {result && (
+              <LuckyMeterMessage
+                message={result.tier.message}
+                state={messageState}
+                reducedMotion={reducedMotion}
+                isCompact={isCompact}
+              />
+            )}
+
+            {/* Frame 8: after the celebration, the maple-leaf cursor writes the
+                Little Spark in the same reserved space. */}
+            {showSparkWriting && result && (
+              <LuckyMeterSkyWriting
+                message={result.spark.message}
+                state={sparkComplete ? 'written' : sparkWriting ? 'writing' : 'waiting'}
+                reducedMotion={reducedMotion}
+                isCompact={isCompact}
+                onComplete={markSparkComplete}
+              />
+            )}
+          </div>
 
           <LuckyMeterRing
             phase={ringPhase}
             compact={isCompact}
-            dialAngle={isRevealing || isRevealed ? motion.dialAngle : null}
-            numberAngle={isRevealing || isRevealed ? motion.numberAngle : null}
-            number={isRevealing || isRevealed ? motion.number : null}
-            numberSettled={numberSettled}
-            colourRotation={isRevealing || isRevealed ? motion.colourRotation : null}
-            colourId={result?.colour.id ?? null}
+            wheelAngle={motion.wheelAngle}
+            colours={palette}
+            colourId={result?.colour?.id ?? null}
             colourSettled={colourSettled}
-            className={ringSizeClasses}
+            number={hasDetails ? result?.luckyNumber ?? null : null}
+            numberSettled={numberSettled}
+            numberReveal={motion.numberReveal}
+            pourProgress={motion.pourProgress}
+            className={isCompact ? 'mt-2' : 'mt-3 sm:mt-4'}
           >
-            {isAnticipating ? (
-              <div
-                className="flex flex-col items-center justify-center"
-                data-testid="lucky-meter-anticipating"
-              >
-                <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-2 text-[clamp(11px,1.4vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
-                  Daily Resonance
-                </p>
-                <span aria-hidden="true" className="lucky-anticipation" />
-                <p className="mt-3 text-[11px] uppercase tracking-[0.14em] text-slate-300/80 sm:text-[12px]">
-                  The sky is listening
-                </p>
-              </div>
-            ) : isRevealing ? (
+            {stage === 'anticipating' || stage === 'generating' ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-2 text-[clamp(11px,1.4vh,13px)] uppercase tracking-[0.16em] text-amber-200/70">
-                  Reading today&apos;s resonance
+                <p className="mb-1.5 text-[12px] uppercase tracking-[0.16em] text-amber-200/70">
+                  Daily Resonance
                 </p>
                 <div
                   data-testid="lucky-meter-value"
                   data-value={motion.percentage}
-                  className="text-gold-gradient text-[clamp(1.9rem,7vh,4.25rem)] font-bold leading-none tabular-nums"
+                  className="text-gold-gradient flex items-center font-bold leading-none tabular-nums"
+                  style={{ fontSize: isCompact ? '2.1rem' : 'clamp(2rem, 6.4vh, 3.9rem)' }}
                 >
                   {motion.percentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-2 text-[11px] uppercase tracking-[0.14em] text-slate-400 sm:text-[12px]">
-                  The sky is listening
+                <p className="mt-1.5 text-[12px] uppercase tracking-[0.14em] text-slate-400">
+                  {stage === 'anticipating' ? 'The sky is listening' : 'The wheel is turning'}
                 </p>
               </div>
-            ) : isRevealed && result ? (
+            ) : stage === 'landed' || hasDetails ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1 text-[clamp(11px,1.4vh,13px)] uppercase tracking-[0.16em] text-amber-200/65">
+                <p className="mb-1 text-[12px] uppercase tracking-[0.16em] text-amber-200/65">
                   Daily Resonance
                 </p>
                 <div
                   data-testid="lucky-meter-value"
                   data-value={motion.percentage}
                   className={`text-gold-gradient font-bold leading-none tabular-nums ${
-                    isCompact ? 'text-4xl' : 'text-[clamp(2rem,7vh,4.25rem)]'
-                  } ${isFlashing ? 'animate-lucky-flash' : ''}`}
+                    isFlashing ? 'animate-lucky-flash' : ''
+                  }`}
+                  style={{ fontSize: isCompact ? '2.1rem' : 'clamp(2rem, 6.4vh, 3.9rem)' }}
                 >
                   {motion.percentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <div className="lucky-tier-plate mt-1.5">
+                <div className="lucky-tier-plate mt-1">
                   <span aria-hidden="true" className="lucky-tier-plate__rule" />
-                  <p className="lucky-tier-plate__label whitespace-nowrap">{result.tier.label}</p>
+                  <p className="lucky-tier-plate__label whitespace-nowrap">{result?.tier.label}</p>
                   <span aria-hidden="true" className="lucky-tier-plate__rule" />
                 </div>
-                <p className="mt-1 w-full max-w-full text-[clamp(10px,1.15vh,12px)] leading-snug text-slate-200/85">
-                  {result.tier.message}
-                </p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Daily Resonance Ritual</h1>
-                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60 sm:text-[13px]">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60">
                   Daily Resonance
                 </p>
                 <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
                   —
                 </span>
-                <p className="mt-2 text-[12px] uppercase tracking-[0.16em] text-slate-400 sm:text-[13px]">
+                <p className="mt-1.5 text-[12px] uppercase tracking-[0.16em] text-slate-400">
                   Awaiting the reading
                 </p>
               </div>
             )}
           </LuckyMeterRing>
 
+          {/* Frame 5: the Lucky Colour result area, filled from the opened
+              segment by the pour above it. */}
           {hasDetails && result && (
-            <div className={`w-full ${isCompact ? 'mt-2' : 'mt-2 sm:mt-4'}`}>
+            <section
+              data-testid="lucky-colour-panel"
+              className={`${panelClass} lucky-colour-vessel relative mx-auto mt-2 w-full overflow-hidden ${
+                isCompact ? 'max-w-[280px] p-2' : 'max-w-md p-2.5 sm:p-3'
+              }`}
+            >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background: `linear-gradient(180deg, ${result.colour.hex}55 0%, ${result.colour.hex}22 100%)`,
+                  clipPath: `inset(0 0 ${Math.max(0, (1 - pourFill) * 100)}% 0)`,
+                }}
+              />
+              <div className="relative flex items-center gap-2.5">
+                <span
+                  aria-hidden="true"
+                  className={`relative h-9 w-9 shrink-0 overflow-hidden rounded-full border shadow-inner sm:h-10 sm:w-10 ${
+                    isLightColour ? 'border-slate-500/70' : 'border-white/25'
+                  }`}
+                  style={{
+                    backgroundColor: result.colour.hex,
+                    backgroundImage: `radial-gradient(circle at 32% 26%, rgba(255,255,255,${
+                      0.16 + colourSheen * 0.4
+                    }) 0%, rgba(255,255,255,0) 58%), repeating-linear-gradient(118deg, rgba(255,255,255,${
+                      colourGrain * 0.22
+                    }) 0 1px, rgba(0,0,0,${colourGrain * 0.28}) 1px 2.4px)`,
+                  }}
+                />
+                <div className="min-w-0 text-left">
+                  <h2 className="lucky-panel-label text-[12px] uppercase">
+                    {LUCKY_COLOUR_LABEL}
+                  </h2>
+                  <p
+                    className="truncate text-sm font-semibold leading-tight text-white sm:text-base"
+                    style={{ opacity: 0.35 + pourFill * 0.65 }}
+                  >
+                    {result.colour.name}
+                  </p>
+                  <p
+                    className="text-[12px] uppercase tracking-wider text-slate-300/85 tabular-nums"
+                    style={{ opacity: 0.35 + pourFill * 0.65 }}
+                  >
+                    {result.colour.hex}
+                  </p>
+                </div>
+                <span className="ml-auto hidden text-[12px] uppercase tracking-[0.16em] text-amber-200/60 sm:block">
+                  {getSeasonForDateKey(result.dateKey)?.name ?? ''}
+                </span>
+              </div>
+            </section>
+          )}
+
+          {hasDetails && result && (
+            <div className={`w-full ${isCompact ? 'mt-2' : 'mt-2 sm:mt-3'}`}>
               <div
                 className={`mx-auto grid w-full grid-cols-2 gap-2 sm:gap-3 ${
-                  isCompact ? 'max-w-[280px]' : 'max-w-2xl lg:grid-cols-3'
+                  isCompact ? 'max-w-[320px]' : 'max-w-2xl'
                 } animate-resonance-rise`}
               >
                 {numberSettled && (
@@ -1195,7 +1374,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     className={`${panelClass} col-span-1 p-2.5 sm:p-3`}
                     data-testid="lucky-number-panel"
                   >
-                    <h2 className="lucky-panel-label text-[11px] uppercase sm:text-[12px]">
+                    <h2 className="lucky-panel-label text-[12px] uppercase">
                       {LUCKY_NUMBER_LABEL}
                     </h2>
                     <p
@@ -1205,7 +1384,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     >
                       {result.luckyNumber}
                     </p>
-                    <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-slate-400 sm:text-[11px]">
+                    <p className="mt-1 text-[12px] uppercase tracking-[0.14em] text-slate-400">
                       1 – 50
                     </p>
                   </section>
@@ -1214,37 +1393,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                 {colourSettled && (
                   <section
                     className={`${panelClass} col-span-1 p-2.5 sm:p-3`}
-                    data-testid="lucky-colour-panel"
-                  >
-                    <h2 className="lucky-panel-label text-[11px] uppercase sm:text-[12px]">
-                      {LUCKY_COLOUR_LABEL}
-                    </h2>
-                    <div className="mt-1.5 flex items-center gap-2.5">
-                      <span
-                        aria-hidden="true"
-                        className={`h-7 w-7 shrink-0 rounded-full border shadow-inner sm:h-8 sm:w-8 ${
-                          isLightColour ? 'border-slate-500/70' : 'border-white/25'
-                        }`}
-                        style={{ backgroundColor: result.colour.hex }}
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold leading-tight text-white sm:text-base">
-                          {result.colour.name}
-                        </p>
-                        <p className="text-[11px] uppercase tracking-wider text-slate-400 sm:text-[12px]">
-                          {result.colour.hex}
-                        </p>
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {colourSettled && (
-                  <section
-                    className={`${panelClass} col-span-2 p-2.5 sm:p-3 lg:col-span-1`}
                     data-testid="lucky-event-panel"
                   >
-                    <h2 className="lucky-panel-label text-[11px] uppercase sm:text-[12px]">
+                    <h2 className="lucky-panel-label text-[12px] uppercase">
                       Today&apos;s Event
                     </h2>
                     <p className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base">
@@ -1260,13 +1411,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                 )}
               </div>
 
-              {colourSettled && !isCompact && (
+              {isRevealed && !isCompact && (
                 <p className="mt-2 text-center text-[12px] leading-relaxed text-slate-400">
                   {ENTERTAINMENT_DISCLAIMER}
                 </p>
               )}
 
-              {colourSettled && (
+              {isRevealed && (
                 <div className="mt-2.5 flex w-full flex-col items-center">
                   <button
                     type="button"
@@ -1279,13 +1430,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     {shareLabel}
                   </button>
 
-                  {/* The widget has no Home dock, so its countdown stays inline
-                      and appears on the same completed-Spark condition. */}
                   {isCompact && sparkComplete && (
                     <div className="mt-2">{countdownBlock}</div>
                   )}
-                  {!isCompact && showCountdown && (
-                    <p className="mt-2 hidden text-center text-[11px] text-slate-500 sm:block">
+                  {!isCompact && sparkComplete && (
+                    <p className="mt-2 hidden text-center text-[12px] text-slate-500 sm:block">
                       A new reading appears after local midnight.
                     </p>
                   )}
@@ -1302,4 +1451,3 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     </div>
   );
 }
-

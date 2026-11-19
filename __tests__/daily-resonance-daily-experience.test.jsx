@@ -55,7 +55,15 @@ vi.mock('../components/CosmicEventStage', () => ({
 import DailyResonance from '../components/DailyResonance';
 import { METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
-import { REVEAL_TIMING, EVENT_START_MS } from '../app/lib/lucky-meter/reveal';
+import {
+  getEventStartMs,
+  getMessageTypingMs,
+  STORYBOARD_TIMING,
+} from '../app/lib/lucky-meter/storyboard';
+import {
+  getPaletteForSeasonKey,
+  getSeasonForDateKey,
+} from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
 
 const TODAY = '2026-11-18';
 
@@ -64,28 +72,12 @@ function readStored() {
 }
 
 /** The deterministic result for Math.random() === 0.5 with an empty history. */
-function expectedResult(overrides = {}) {
-  return {
-    dateKey: TODAY,
-    percentage: 53,
-    tier: {
-      id: 'medium',
-      label: 'Medium Resonance',
-      message: 'Your luck is in the mid-range today.',
-    },
-    event: { id: 'lightning', name: 'Cosmic Lightning' },
-    luckyNumber: 26,
-    colour: { id: 'cream', name: 'Cream', hex: '#F1E8D5', light: true },
-    spark: {
-      id: 'spark-16',
-      message: 'Your attention is a gift; spend a little of it on something you love.',
-    },
-    ...overrides,
-  };
+function expectedResult() {
+  return createDailyResult({ dateKey: TODAY, random: () => 0.5 });
 }
 
-function seedToday(overrides = {}, extra = {}) {
-  const result = { ...expectedResult(overrides), createdAt: Date.now() };
+function seedToday(extra = {}) {
+  const result = { ...expectedResult(), createdAt: Date.now() };
   window.localStorage.setItem(
     METER_STORAGE_KEY,
     JSON.stringify({
@@ -98,6 +90,8 @@ function seedToday(overrides = {}, extra = {}) {
         colours: [result.colour.id],
         sparks: [result.spark.id],
       },
+      revealCompleted: true,
+      messageCompleted: true,
       eventCompleted: true,
       sparkCompleted: true,
       stageDurationMs: 10_000,
@@ -105,6 +99,30 @@ function seedToday(overrides = {}, extra = {}) {
     }),
   );
   return result;
+}
+
+function advance(ms) {
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+}
+
+/** Advances from the first frame to the moment the celebration mounts. */
+function advanceToCelebration(message) {
+  advance(STORYBOARD_TIMING.anticipationMs);
+  advance(STORYBOARD_TIMING.generationMs + 30);
+  advance(STORYBOARD_TIMING.settlePauseMs);
+  advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs + 30);
+  advance(
+    STORYBOARD_TIMING.resultSettleMs +
+      STORYBOARD_TIMING.messageDelayMs +
+      getMessageTypingMs(message) +
+      STORYBOARD_TIMING.messageHoldMs +
+      STORYBOARD_TIMING.messageFadeMs +
+      STORYBOARD_TIMING.eventDelayMs +
+      80,
+  );
+  expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
 }
 
 describe('Daily Resonance daily experience', () => {
@@ -142,121 +160,114 @@ describe('Daily Resonance daily experience', () => {
     vi.restoreAllMocks();
   });
 
-  it('persists one result, settles the three motions, runs the cinematic, then writes the Spark', () => {
+  it('persists one seasonal result, then reveals it through every storyboard stage', () => {
     render(<DailyResonance />);
     expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
 
-    // The result is complete and saved before any animation runs.
+    // The complete reading is saved before any pixel moves.
     const stored = readStored();
+    const result = stored.result;
     expect(stored.version).toBe(1);
     expect(stored.dateKey).toBe(TODAY);
-    expect(stored.result.percentage).toBe(53);
-    expect(stored.result.tier).toEqual(expectedResult().tier);
-    expect(stored.result.event).toEqual({ id: 'lightning', name: 'Cosmic Lightning' });
-    expect(stored.result.luckyNumber).toBe(26);
-    expect(stored.result.colour).toEqual(expectedResult().colour);
-    expect(stored.result.spark.id).toBe('spark-16');
+    expect(result.season).toBe('autumn');
+    expect(result.colour.hex).toBe(
+      getPaletteForSeasonKey('autumn').find((colour) => colour.id === result.colour.id).hex,
+    );
+    expect(stored.history.percentages).toEqual([result.percentage]);
+    expect(stored.history.numbers).toEqual([result.luckyNumber]);
+    expect(stored.history.colours).toEqual([result.colour.id]);
+    expect(stored.history.sparks).toEqual([result.spark.id]);
+    expect(stored.revealCompleted).toBe(false);
+    expect(stored.messageCompleted).toBe(false);
     expect(stored.eventCompleted).toBe(false);
     expect(stored.sparkCompleted).toBe(false);
-    expect(stored.history.percentages).toEqual([53]);
-    expect(stored.history.numbers).toEqual([26]);
-    expect(stored.history.colours).toEqual(['cream']);
-    expect(stored.history.sparks).toEqual(['spark-16']);
 
-    // The held breath: the ring is awake and the sky is listening, but no
-    // motion has started and no value has been exposed.
-    expect(screen.getByTestId('lucky-meter-anticipating')).toBeInTheDocument();
-    expect(screen.queryByText(/Reading today/i)).not.toBeInTheDocument();
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.anticipationMs);
-    });
-
-    expect(screen.getByText(/Reading today/i)).toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
-    // Nothing beyond the first settle has appeared yet.
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.percentageSettleMs);
-    });
-    expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByText('Medium Resonance')).toBeInTheDocument();
+    // Frame 1: the held breath. Nothing has been exposed.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
 
-    // The independent Lucky Number settles next.
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.numberSettleMs - REVEAL_TIMING.percentageSettleMs);
-    });
-    expect(screen.getByTestId('lucky-number-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
-    expect(screen.getByText('Lucky Number')).toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
+    advance(STORYBOARD_TIMING.anticipationMs);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.queryByText(String(result.percentage))).not.toBeInTheDocument();
+
+    // The wheel and the percentage stop on the same frame.
+    advance(STORYBOARD_TIMING.generationMs + 30);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed');
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(result.percentage),
+    );
+    expect(screen.getByText(result.tier.label)).toBeInTheDocument();
+
+    // The segment opens and pours; the colour vessel fills first.
+    advance(STORYBOARD_TIMING.settlePauseMs);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'pouring');
+    expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
+    expect(screen.getByText(result.colour.name)).toBeInTheDocument();
+    expect(screen.getByText(result.colour.hex)).toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+
+    // Once the pour ends, the Lucky Number has been progressively exposed.
+    advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs + 30);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
+    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(result.luckyNumber),
+    );
+    expect(screen.getByText(result.event.name)).toBeInTheDocument();
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+
+    // Frame 6: the exact tier message, written above the meter.
+    advance(
+      STORYBOARD_TIMING.resultSettleMs +
+        STORYBOARD_TIMING.messageDelayMs +
+        STORYBOARD_TIMING.messageCharMs,
+    );
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'writing');
+
+    advance(
+      getMessageTypingMs(result.tier.message) -
+        STORYBOARD_TIMING.messageCharMs +
+        STORYBOARD_TIMING.messageHoldMs +
+        STORYBOARD_TIMING.messageFadeMs +
+        STORYBOARD_TIMING.eventDelayMs +
+        80,
+    );
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
+    const stage = screen.getByTestId('cosmic-event-stage');
+    expect(stage).toHaveAttribute('data-event', result.event.id);
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
 
-    // The colour ring settles last and the remaining panels follow.
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.colourSettleMs - REVEAL_TIMING.numberSettleMs);
-    });
-    expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
-    expect(screen.getByText('Cream')).toBeInTheDocument();
-    expect(screen.getByText('#F1E8D5')).toBeInTheDocument();
-    expect(screen.getByText('Lucky Colour')).toBeInTheDocument();
-    expect(screen.getByText('Cosmic Lightning')).toBeInTheDocument();
-    expect(screen.getByText(/not lottery predictions or promises of winning/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Share My Resonance/i })).toBeInTheDocument();
-    // The Spark area is reserved but the Spark writing has not started.
-    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
-    expect(screen.queryByTestId('lucky-spark-message')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    // The countdown never appears before the Spark is finished.
-    expect(screen.queryByText('Next Resonance In')).not.toBeInTheDocument();
-
-    // Only after every settle does the percentage-selected cinematic start.
-    act(() => {
-      vi.advanceTimersByTime(EVENT_START_MS - REVEAL_TIMING.colourSettleMs);
-    });
-    const stage = screen.getByTestId('cosmic-event-stage');
-    expect(stage).toHaveAttribute('data-event', 'lightning');
-    const duration = Number(stage.getAttribute('data-duration'));
-    expect(duration).toBeGreaterThanOrEqual(9500);
-    expect(duration).toBeLessThanOrEqual(10500);
-
-    // The cinematic is still running: no cursor, no countdown.
-    expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
-
+    // The celebration ends, then the maple-leaf cursor writes the Spark.
     act(() => {
       stageControl.onComplete?.();
     });
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    // Home returns with the cinematic, but the sky holds for a moment before
-    // the Spark begins, and the countdown waits for the writing.
-    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
-    expect(screen.queryByTestId('lucky-spark-message')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    // Nothing is written during the quiet beat.
+    expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
 
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkStartDelayMs);
-    });
+    advance(STORYBOARD_TIMING.sparkStartDelayMs + 40);
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
     expect(screen.getByTestId('lucky-spark-cursor')).toBeInTheDocument();
 
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkMsPerCharacter * 6);
-    });
-    expect(screen.getByTestId('lucky-spark-cursor')).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(9000);
-    });
+    advance(9000);
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'written');
-    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
-    expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
-    // Now — and only now — the countdown appears beneath Home.
+    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(
+      result.spark.message.slice(0, 24),
+    );
+
+    // Frame 9: Home and the countdown arrive together, after the writing.
     const dock = screen.getByTestId('lucky-meter-home').parentElement;
     expect(dock).toContainElement(screen.getByTestId('lucky-meter-countdown'));
     expect(screen.getByText('07:30:00')).toBeInTheDocument();
+    expect(readStored().revealCompleted).toBe(true);
+    expect(readStored().messageCompleted).toBe(true);
     expect(readStored().eventCompleted).toBe(true);
     expect(readStored().sparkCompleted).toBe(true);
   });
@@ -279,73 +290,92 @@ describe('Daily Resonance daily experience', () => {
   it('resumes an unfinished cinematic after refresh without rerolling the selections', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
-    act(() => {
-      // The three motions have settled and the cinematic has started, so the
-      // refresh lands in the middle of the cinematic rather than the reveal.
-      vi.advanceTimersByTime(EVENT_START_MS);
-    });
-    expect(screen.getByText('53')).toBeInTheDocument();
+    const result = readStored().result;
+    advanceToCelebration(result.tier.message);
     first.unmount();
 
-    // The cinematic never finished: the same result returns and the event
-    // resumes. Home stays hidden and the countdown is still absent.
     render(<DailyResonance />);
     expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
-    expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
-    expect(screen.getByText('Cream')).toBeInTheDocument();
-    expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(result.percentage),
+    );
+    expect(screen.getByText(result.colour.name)).toBeInTheDocument();
+    expect(screen.getByTestId('cosmic-event-stage')).toHaveAttribute('data-event', result.event.id);
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    expect(readStored().result.luckyNumber).toBe(26);
+    expect(readStored().result).toEqual(result);
 
     act(() => {
       stageControl.onComplete?.();
     });
-    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    // The resumed cinematic keeps the same one-second pause before the Spark.
-    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'waiting');
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkStartDelayMs);
-    });
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    advance(STORYBOARD_TIMING.sparkStartDelayMs + 40);
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
-    expect(readStored().sparkCompleted).toBe(false);
+    advance(9000);
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
+    expect(readStored().result).toEqual(result);
+  });
+
+  it('resumes the reveal after a refresh mid-pour instead of skipping to the reading', () => {
+    const first = render(<DailyResonance />);
+    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    const before = readStored();
+    advance(STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs + 600);
+    expect(before.revealCompleted).toBe(false);
+    first.unmount();
+
+    render(<DailyResonance />);
+    // The motions replay; the reading cannot have been redrawn.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+    advanceToCelebration(before.result.tier.message);
+    expect(readStored().result).toEqual(before.result);
 
     act(() => {
-      vi.advanceTimersByTime(9000);
+      stageControl.onComplete?.();
     });
+    advance(STORYBOARD_TIMING.sparkStartDelayMs + 40);
+    advance(9000);
+    expect(readStored().result).toEqual(before.result);
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
+  });
+
+  it('resumes the Spark writing after a refresh between the cinematic and the finale', () => {
+    const result = seedToday({ eventCompleted: true, sparkCompleted: false });
+    render(<DailyResonance />);
+
+    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(result.percentage),
+    );
+    // The writing resumes at once: the sky is already still after the event.
+    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
+    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+
+    advance(9000);
     expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'written');
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(readStored().sparkCompleted).toBe(true);
   });
 
-  it('resumes the Spark writing after a refresh between the cinematic and the finale', () => {
-    seedToday({}, { eventCompleted: true, sparkCompleted: false });
-    render(<DailyResonance />);
-
-    // No cinematic replay: the event already finished.
-    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-spark-finale')).toHaveAttribute('data-state', 'writing');
-    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(9000);
-    });
-    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
-    expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
-    expect(readStored().sparkCompleted).toBe(true);
-  });
-
   it('shows a completed result with its Spark and countdown without replaying anything', () => {
-    seedToday();
+    const result = seedToday();
     render(<DailyResonance />);
 
-    expect(screen.getByText('53')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
-    expect(screen.getByText('Cream')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(result.percentage),
+    );
+    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(result.luckyNumber),
+    );
+    expect(screen.getByText(result.colour.name)).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(
+      result.spark.message.slice(0, 24),
+    );
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
@@ -360,29 +390,31 @@ describe('Daily Resonance daily experience', () => {
     window.localStorage.setItem(METER_STORAGE_KEY, JSON.stringify(payload));
 
     const view = render(<DailyResonance />);
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
+    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(result.luckyNumber),
+    );
     const migrated = readStored();
-    expect(migrated.result.luckyNumber).toBe(26);
-    expect(migrated.result.percentage).toBe(result.percentage);
+    expect(migrated.result.luckyNumber).toBe(result.luckyNumber);
     expect(migrated.result.colour.id).toBe(result.colour.id);
-    expect(migrated.result.spark.id).toBe(result.spark.id);
-    expect(migrated.history.numbers).toEqual([26]);
+    expect(migrated.history.numbers).toEqual([result.luckyNumber]);
 
     // A refresh with a different random source keeps the migrated number.
     vi.spyOn(Math, 'random').mockReturnValue(0.91);
     view.unmount();
     render(<DailyResonance />);
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
-    expect(readStored().result.luckyNumber).toBe(26);
+    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(result.luckyNumber),
+    );
+    expect(readStored().result.luckyNumber).toBe(result.luckyNumber);
   });
 
-  it('rolls over when the local date changes in an open tab', () => {
+  it('rolls over to the welcome state when the local date changes in an open tab', () => {
     const view = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
-    act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.colourSettleMs);
-    });
-    expect(screen.getByText('53')).toBeInTheDocument();
+    advance(STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs + 6000);
+    expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
 
     countdown.state = { ...countdown.state, dateKey: '2026-11-19', formatted: '23:59:59' };
     act(() => {
@@ -393,9 +425,10 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
   });
 
-  it('presents the result calmly under reduced motion and shows the countdown at once', () => {
+  it('presents the whole reading calmly under reduced motion', () => {
     const originalMatchMedia = window.matchMedia;
     window.matchMedia = vi.fn(() => ({
       matches: true,
@@ -411,21 +444,27 @@ describe('Daily Resonance daily experience', () => {
       fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
 
       // No spins and no cinematic: every value is final immediately.
-      expect(screen.getByText('53')).toBeInTheDocument();
-      expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-value', '26');
-      expect(screen.getByText('Cream')).toBeInTheDocument();
-      expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
-      expect(screen.queryByText(/Reading today/i)).not.toBeInTheDocument();
+      const result = readStored().result;
+      expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
+        'data-value',
+        String(result.percentage),
+      );
+      expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
+        'data-value',
+        String(result.luckyNumber),
+      );
+      expect(screen.getByText(result.colour.name)).toBeInTheDocument();
+      expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(
+        result.spark.message.slice(0, 24),
+      );
       expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+      expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
       expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
       expect(readStored().eventCompleted).toBe(true);
       expect(readStored().sparkCompleted).toBe(true);
 
-      act(() => {
-        vi.advanceTimersByTime(60_000);
-      });
+      advance(60_000);
       expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-      expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(/Your attention is a gift/i);
     } finally {
       window.matchMedia = originalMatchMedia;
     }
@@ -442,6 +481,13 @@ describe('Daily Resonance daily experience', () => {
     });
 
     expect(screen.getByText('06:59:59')).toBeInTheDocument();
-    expect(screen.getByText('53')).toBeInTheDocument();
+    expect(getSeasonForDateKey(TODAY)?.key).toBe('autumn');
+  });
+
+  it('sets the celebration start from the written tier message', () => {
+    const result = expectedResult();
+    expect(getEventStartMs(result.tier.message)).toBeGreaterThan(
+      STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs,
+    );
   });
 });
