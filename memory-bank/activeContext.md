@@ -90,3 +90,8 @@ resources, and a stall timeout for `loadGLTF`. Clock reset, context-loss orderin
 bloom handle remain fixed from round 1; the context-restore and camera-aspect claims were re-checked
 and are not defects. Focused tests 41, full suite 103 files / 1087 tests, `tsc` exit 0,
 `freebuff-verify.sh` exit 0, clean build 394.53 MiB by `du -sb .next public`.
+
+
+## Documentation Library Addition — Three.js concise LLM reference (2026-11-19)
+
+A separate `/websites/threejs_llms_txt` source now points to `https://threejs.org/docs/llms.txt` and is routed to Creation and Polishing. The existing `/websites/threejs` source remains the full `llms-full.txt` reference. The concise snapshot is canonical in Creation; Polishing uses the established relative symlink pattern. No application code or updater workflow was changed.
