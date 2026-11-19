@@ -353,7 +353,7 @@ In place operations will perform the calculation using the precision decided by 
 
 Matrix Multiplication:
 
-| [`ndarray.__matmul__`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.__matmul__.html#numpy.ndarray.__matmul__)(value, /) | Return [self@value](https://numpy.org/cdn-cgi/l/email-protection#5023353c36767363676b767365626b767364686b26313c2535). |
+| [`ndarray.__matmul__`](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.__matmul__.html#numpy.ndarray.__matmul__)(value, /) | Return [self@value](https://numpy.org/cdn-cgi/l/email-protection#0172646d67272232363a272234333a272235393a77606d7464). |
 | --- | --- |
 
 Note
