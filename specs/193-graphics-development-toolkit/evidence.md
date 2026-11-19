@@ -151,6 +151,37 @@ Environment: Node.js 26.13.0, pnpm 10.30.3, frozen lockfile install
 | Graphite: Three.js does not restore its own context | `node_modules/three/src/renderers/WebGLRenderer.js` lines 1127+ contain `onContextRestore`, which resets `_isContextLost` and re-initialises GL state | **Not a defect** — the existing restore path is correct; a comment now names the mechanism |
 | Visual QA shard cancelled | The run was `cancelled`, not a test failure; shard 1 evidence was not available locally | **Unverified locally** — CI re-runs after the push |
 
+### PR #1972 review repair round
+
+Two review services reported findings on the first commit. Each was checked against the code; the
+genuine ones were repaired and the rest were confirmed already correct.
+
+| Finding | Verdict | Repair |
+| --- | --- | --- |
+| Analyser retry budget never re-armed, so a first cue played after ~30 s was never measured | Genuine | `refresh()` resets the attempt budget before attaching, and a late cue is covered by a regression test |
+| A beat frame decayed its own transient before publishing it | Genuine | The decay now applies only when the frame did not fire a beat |
+| A closed audio context left the shared tap permanently dead | Genuine | Analysis failure drops the stale tap, releases the caller's hold and re-arms attachment |
+| Shared tap was never released on dispose | Genuine (multi-consumer risk) | Reference-counted holders: released only when the last consumer disposes |
+| `capture()` stopped the runtime behind the state's back and could serve a stale data URL | Genuine | Capture pauses through the shared state path, resumes only if it was playing, and clears the capture on rebuild |
+| Paused/reduced-motion frames advanced the scene clock, breaking deterministic capture | Genuine | Only a playing, motion-enabled loop advances the clock; explicit renders repaint frozen time |
+| `playCue()` could start the loop under reduced motion | Genuine | The surface is not started when reduced motion is on |
+| `workbenchCaptureName` embedded an unvalidated tier | Genuine | Unknown tiers are replaced with `balanced` |
+| `playCue` forwarded any caller string into the audio module | Hardened | Cue names are restricted to those the catalogue declares |
+| Inspector interval depended on the whole state object | Genuine | The interval now depends only on the stable `getState` callback |
+
+Executed after the repairs:
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused suites | `pnpm exec vitest run __tests__/graphics-sound-reactivity.test.js __tests__/graphics-creative-workbench.test.js` | PASS — 29 tests |
+| Full unit suite | `pnpm exec vitest run` | PASS — 105 files / 1116 tests |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=b92959fa ./freebuff-verify.sh` | PASS — exit 0 |
+| Clean production build | `rm -rf .next && pnpm run build`, `du -sb .next public` | PASS — 416,323,017 bytes (397.04 MiB), below 495 MiB |
+| Existing-route chunk guard | `grep -rl WebGLRenderer .next/static/chunks/app` | PASS — only the workbench route chunk |
+| Chromium re-run | `node artifacts/creative-workbench/check.mjs` | PASS — `colourPour` produced level 0.438 / bass 0.686, aurora captured 738×461 at 278,973 bytes with a full-strength transient, reduced motion `motion: none` / `audioReactive: false` / `envelope: null`, zero page errors |
+| Production route | `next start`: `/workbench/creative`, `/` | PASS — 404 and 200 |
+
 ### Limitations
 
 - No hardware GPU: any graphics rendered here is software-rendered.

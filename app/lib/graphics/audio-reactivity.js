@@ -83,6 +83,19 @@ export function supportsAudioAnalysis() {
 // add a second zero-gain branch and duplicate the analysis work for nothing.
 let sharedGraph = null;
 let sharedGraphPromise = null;
+// How many live reactive objects hold the shared tap. The branch is released
+// only when the last one disposes, so one consumer unmounting cannot silence
+// another consumer's analysis.
+let sharedTapHolders = 0;
+
+function retainSharedTap() {
+  sharedTapHolders += 1;
+}
+
+function releaseSharedTap() {
+  sharedTapHolders = Math.max(0, sharedTapHolders - 1);
+  if (sharedTapHolders === 0) releaseHowlerAnalyser();
+}
 
 /**
  * Taps the audio graph Howler already built and returns a shared `AnalyserNode`.
@@ -261,11 +274,16 @@ export function createAudioReactive({
   const calm = typeof reducedMotion === 'boolean' ? reducedMotion : prefersReducedMotion();
   const envelope = createEnvelope(false, calm ? 'reduced-motion' : 'pending');
 
+  // Only the module's own helper shares a page-level graph that has to be
+  // reference counted; an injected analyser is owned by the caller.
+  const usesSharedTap = attach === attachHowlerAnalyser;
+
   let node = providedAnalyser ?? null;
   let disposed = false;
   let attachInFlight = false;
   let attachAttempts = 0;
   let lastAttemptAt = 0;
+  let holdsSharedTap = false;
   let data = null;
 
   const smoothed = { level: 0, bass: 0, mids: 0, highs: 0 };
@@ -300,6 +318,10 @@ export function createAudioReactive({
         if (disposed) return;
         node = result?.analyser ?? result ?? null;
         if (node) {
+          if (usesSharedTap) {
+            retainSharedTap();
+            holdsSharedTap = true;
+          }
           envelope.available = true;
           envelope.reason = null;
         } else if (attachAttempts >= MAX_ATTACH_ATTEMPTS) {
@@ -327,6 +349,15 @@ export function createAudioReactive({
       node = null;
       envelope.available = false;
       envelope.reason = 'analysis-failed';
+      // The page's audio graph can be closed and rebuilt (a Howler context is
+      // torn down on unload). Drop the dead tap and give attachment a fresh
+      // budget so the next frame can reconnect instead of staying silent.
+      if (holdsSharedTap) {
+        holdsSharedTap = false;
+        releaseSharedTap();
+      }
+      attachAttempts = 0;
+      lastAttemptAt = 0;
       return null;
     }
 
@@ -413,7 +444,9 @@ export function createAudioReactive({
       beat = true;
     }
     previousLevel = raw.level;
-    transient = Math.max(0, transient - step / TRANSIENT_DECAY_SECONDS);
+    // Decay carries the previous frames' value forward; the frame that sets a
+    // fresh transient publishes it at full strength.
+    if (!beat) transient = Math.max(0, transient - step / TRANSIENT_DECAY_SECONDS);
 
     envelope.level = clamp01(smoothed.level);
     envelope.bass = clamp01(smoothed.bass);
@@ -510,7 +543,13 @@ export function createAudioReactive({
      */
     refresh() {
       if (disposed || calm) return false;
-      if (!node) ensureAnalyser();
+      if (!node) {
+        // A cue can start long after mount. Re-arm the retry budget so a first
+        // cue played after the earlier attempts ran out is still measured.
+        attachAttempts = 0;
+        lastAttemptAt = 0;
+        ensureAnalyser();
+      }
       return Boolean(node);
     },
     reset() {
@@ -537,6 +576,10 @@ export function createAudioReactive({
       data = null;
       node = null;
       envelope.beat = false;
+      if (holdsSharedTap) {
+        holdsSharedTap = false;
+        releaseSharedTap();
+      }
     },
   };
 }

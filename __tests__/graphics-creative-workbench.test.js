@@ -26,6 +26,7 @@ import {
   WORKBENCH_SCENES,
   WORKBENCH_TIERS,
   getWorkbenchScene,
+  isWorkbenchCue,
   isWorkbenchEnabled,
   normalizeWorkbenchState,
   resolveWorkbenchPlan,
@@ -137,6 +138,12 @@ describe('capture naming', () => {
     expect(workbenchCaptureName('../../etc/passwd', {})).toContain('unknown-scene');
     expect(workbenchCaptureName('../../etc/passwd', {})).not.toContain('..');
   });
+
+  it('replaces an unknown tier instead of embedding it in the filename', () => {
+    const name = workbenchCaptureName('golden-motes', { tier: '../evil', time: 1, seed: 2 });
+    expect(name).toBe('creative-workbench-golden-motes-balanced-t1.00-seed2.png');
+    expect(name).not.toContain('..');
+  });
 });
 
 describe('route gate', () => {
@@ -149,6 +156,18 @@ describe('route gate', () => {
   it('allows a deliberate review environment to opt in', () => {
     expect(isWorkbenchEnabled({ NODE_ENV: 'production', CREATIVE_WORKBENCH: '1' })).toBe(true);
     expect(isWorkbenchEnabled({ NODE_ENV: 'production', CREATIVE_WORKBENCH: '0' })).toBe(false);
+  });
+});
+
+describe('cue allowlist', () => {
+  it('accepts only the cue names the catalogue declares', () => {
+    for (const scene of WORKBENCH_SCENES) {
+      expect(isWorkbenchCue(scene.cue)).toBe(true);
+    }
+    expect(isWorkbenchCue('constructor')).toBe(false);
+    expect(isWorkbenchCue('__proto__')).toBe(false);
+    expect(isWorkbenchCue('')).toBe(false);
+    expect(isWorkbenchCue(undefined)).toBe(false);
   });
 });
 

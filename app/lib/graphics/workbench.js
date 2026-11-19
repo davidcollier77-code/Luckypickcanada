@@ -169,9 +169,25 @@ export function resolveWorkbenchPlan(sceneId, state = {}) {
  */
 export function workbenchCaptureName(sceneId, { tier = 'balanced', time = 0, seed = 0 } = {}) {
   const scene = getWorkbenchScene(sceneId) ? sceneId : 'unknown-scene';
+  // The tier is normally normalized already, but this helper is also called
+  // directly by agents, so an unknown value must never reach a filename.
+  const safeTier = WORKBENCH_TIERS.some((entry) => entry.id === tier) ? tier : 'balanced';
   const seconds = Number.isFinite(time) ? Math.max(0, time).toFixed(2) : '0.00';
   const safeSeed = Number.isFinite(seed) ? Math.round(Math.max(0, seed)) : 0;
-  return `creative-workbench-${scene}-${tier}-t${seconds}-seed${safeSeed}.png`;
+  return `creative-workbench-${scene}-${safeTier}-t${seconds}-seed${safeSeed}.png`;
+}
+
+/**
+ * Whether a cue name belongs to the workbench catalogue. The sandbox can play
+ * existing Lucky Meter recordings, but it only exposes the cue names it
+ * declares instead of forwarding any caller-supplied string to the audio
+ * module.
+ *
+ * @param {unknown} name
+ * @returns {boolean}
+ */
+export function isWorkbenchCue(name) {
+  return WORKBENCH_SCENES.some((scene) => scene.cue === name);
 }
 
 /**

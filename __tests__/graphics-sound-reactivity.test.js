@@ -102,7 +102,9 @@ describe('audio envelope', () => {
     reactive.update(1 / 60);
 
     expect(reactive.getEnvelope().beat).toBe(true);
-    expect(reactive.getEnvelope().transient).toBeGreaterThan(0);
+    // The frame that fires the beat publishes the peak, not a decayed value.
+    expect(reactive.getEnvelope().transient).toBeGreaterThan(0.99);
+    expect(beats[0]).toBeGreaterThan(0.99);
     expect(beats).toHaveLength(1);
 
     // The same level on the next frame is not a new beat.
@@ -147,6 +149,38 @@ describe('audio envelope', () => {
     await Promise.resolve();
     expect(reactive.getEnvelope().available).toBe(false);
     expect(() => reactive.dispose()).not.toThrow();
+  });
+
+  it('re-arms attachment so a cue played after the retry budget is still measured', async () => {
+    vi.useFakeTimers();
+    try {
+      let graph = null;
+      const attach = vi.fn(() => Promise.resolve(graph));
+      const reactive = createAudioReactive({ attach, reducedMotion: false });
+
+      // A surface can mount long before the visitor's first gesture creates the
+      // audio graph; spend the whole retry budget first.
+      for (let guard = 0; guard < 200 && attach.mock.calls.length < 40; guard += 1) {
+        reactive.update(1 / 60);
+        for (let tick = 0; tick < 6; tick += 1) await Promise.resolve();
+        vi.setSystemTime(Date.now() + 800);
+      }
+      for (let tick = 0; tick < 6; tick += 1) await Promise.resolve();
+      expect(attach.mock.calls.length).toBeGreaterThanOrEqual(40);
+      expect(reactive.getEnvelope().available).toBe(false);
+      expect(reactive.getEnvelope().reason).toBe('audio-unavailable');
+
+      graph = loudAnalyser();
+      expect(reactive.refresh()).toBe(false);
+      for (let tick = 0; tick < 6; tick += 1) await Promise.resolve();
+      expect(reactive.refresh()).toBe(true);
+
+      const envelope = reactive.update(1 / 60);
+      expect(envelope.available).toBe(true);
+      expect(envelope.level).toBeGreaterThan(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

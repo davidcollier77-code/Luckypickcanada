@@ -1,3 +1,16 @@
+## 2026-11-19 — PR #1972 review repairs
+
+- Repaired the genuine findings from two review services: analyser attachment is re-armed instead of
+  permanently locked out after its retry budget, a beat frame publishes its full transient, a dead
+  audio context releases the shared tap and reconnects, the tap is reference-counted across
+  consumers, capture pauses through the shared state path and clears stale data URLs, only a playing
+  loop advances the scene clock, reduced motion never starts a loop, capture names validate their
+  tier and cue names are restricted to the catalogue.
+- Verified 29 focused tests, 105 files / 1,116 tests, `tsc` exit 0,
+  `SPEC_KIT_BASE_REF=b92959fa ./freebuff-verify.sh` exit 0, a clean 416,323,017-byte build
+  (397.04 MiB) and a Chromium re-run with a live envelope of 0.438 and a reduced-motion frame that
+  reports no reactivity.
+
 ## 2026-11-19 — Creative Workbench and sound-reactive cinematics (spec 193 continuation)
 - Added an opt-in sound-reactivity bridge on the existing audio system: one shared `AnalyserNode`
   taps Howler's Web Audio mix through a silent zero-gain branch, and a smoothed envelope (fast

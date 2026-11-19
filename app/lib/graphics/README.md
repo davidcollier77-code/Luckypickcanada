@@ -225,6 +225,13 @@ feature uses, at a forced tier and seed, with deterministic controls:
   particles and exposure;
 - capture a PNG and download it.
 
+Two behaviours keep the sandbox trustworthy. `capture()` pauses through the same
+state path the UI uses, reads the frozen frame back and resumes only if the scene
+was playing, so the transport, the reported state and the timestamp in the
+filename always agree. And a cue that starts long after mount re-arms analyser
+attachment: the retry budget is not a permanent lockout, so the first late cue is
+still measured instead of leaving the visual silently neutral.
+
 Agents drive the same controls through `window.__creativeWorkbench`:
 
 ```js

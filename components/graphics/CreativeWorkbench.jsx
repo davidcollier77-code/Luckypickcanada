@@ -30,6 +30,7 @@ import {
   WORKBENCH_SCENES,
   WORKBENCH_TIERS,
   getWorkbenchScene,
+  isWorkbenchCue,
   normalizeWorkbenchState,
   resolveWorkbenchPlan,
   workbenchCaptureName,
@@ -121,9 +122,11 @@ export default function CreativeWorkbench() {
         quality: { tier: tier.id, maxPixelRatio: tier.maxPixelRatio },
         reducedMotion,
         onFrame: (frame) => {
-          if (playingRef.current || reducedMotion) {
-            builder?.update?.({ delta: frame.delta, envelope: frame.envelope });
-          }
+          // Only a running, motion-enabled loop advances the scene clock. An
+          // explicit render or a paused frame repaints the frozen time, so a
+          // capture always matches the timestamp in its filename.
+          const advancing = playingRef.current && !reducedMotion;
+          builder?.update?.({ delta: advancing ? frame.delta : 0, envelope: frame.envelope });
           const stats = statsRef.current;
           const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
           stats.frames += 1;
@@ -183,6 +186,7 @@ export default function CreativeWorkbench() {
       disposed = true;
       readyRef.current = false;
       builderRef.current = null;
+      captureRef.current = null;
       try {
         builder?.dispose?.();
       } catch {
@@ -277,7 +281,7 @@ export default function CreativeWorkbench() {
    * ------------------------------------------------------------------ */
   const playCue = useCallback(async (name) => {
     const activeScene = getWorkbenchScene(stateRef.current.sceneId) ?? WORKBENCH_SCENES[0];
-    const cue = typeof name === 'string' && name ? name : activeScene.cue;
+    const cue = isWorkbenchCue(name) ? name : activeScene.cue;
     try {
       const audio = await import('../../app/lib/lucky-meter/audio.js');
       const sounds = await audio.prepareLuckyMeterAudio();
@@ -294,7 +298,9 @@ export default function CreativeWorkbench() {
       const surface = surfaceRef.current;
       surface?.reactive?.refresh?.();
       applyState(normalizeWorkbenchState({ playing: true }, stateRef.current));
-      surface?.start?.();
+      // Reduced motion keeps the scene still; the cue still plays and is
+      // measured, but the loop is never started behind the visitor's back.
+      if (!stateRef.current.reducedMotion) surface?.start?.();
       return { ok: true, cue };
     } catch (error) {
       return { ok: false, cue, reason: error instanceof Error ? error.message : String(error) };
@@ -311,6 +317,10 @@ export default function CreativeWorkbench() {
       return { ok: false, reason: 'surface-unavailable' };
     }
 
+    const wasPlaying = stateRef.current.playing && !stateRef.current.reducedMotion;
+    // Pause through the shared state path so the transport, the loop and the
+    // reported state agree while the frame is read back.
+    applyState(normalizeWorkbenchState({ playing: false }, stateRef.current));
     surface.stop?.();
     builderRef.current?.setTime?.(stateRef.current.time);
     surface.render?.();
@@ -346,8 +356,12 @@ export default function CreativeWorkbench() {
     }
 
     setStatus((previous) => ({ ...previous, capture: result }));
+    if (wasPlaying) {
+      applyState(normalizeWorkbenchState({ playing: true }, stateRef.current));
+      surface.start?.();
+    }
     return result;
-  }, []);
+  }, [applyState]);
 
   const readCapture = useCallback(() => captureRef.current?.dataUrl ?? null, []);
 
@@ -449,7 +463,7 @@ export default function CreativeWorkbench() {
     update();
     const interval = setInterval(update, 600);
     return () => clearInterval(interval);
-  }, [getState, status, state]);
+  }, [getState]);
 
   const handleCapture = useCallback(async () => {
     await capture();
