@@ -9,18 +9,39 @@
  */
 
 /**
+ * Records an object as released, so a texture, material or geometry shared by
+ * several meshes is disposed once per teardown instead of once per reference.
+ *
+ * @param {unknown} value
+ * @param {Set<unknown>} disposed
+ * @returns {boolean}
+ */
+function markDisposed(value, disposed) {
+  if (!value || disposed.has(value)) return false;
+  disposed.add(value);
+  return true;
+}
+
+/**
  * Disposes the texture-like values a material holds (maps, environment maps,
- * uniforms and similar). Shared textures are disposed once; repeating a
- * disposal on an already disposed texture is harmless in Three.js.
+ * uniforms and similar). A texture shared by several materials is released
+ * once; repeating a disposal on an already disposed texture is harmless in
+ * Three.js, but reporting it once is the contract.
  *
  * @param {Record<string, unknown>} material
+ * @param {Set<unknown>} disposed
  */
-function disposeMaterialTextures(material) {
+function disposeMaterialTextures(material, disposed) {
   for (const value of Object.values(material)) {
     if (!value) continue;
     const candidates = Array.isArray(value) ? value : [value];
     for (const candidate of candidates) {
-      if (candidate && candidate.isTexture && typeof candidate.dispose === 'function') {
+      if (
+        candidate &&
+        candidate.isTexture &&
+        typeof candidate.dispose === 'function' &&
+        markDisposed(candidate, disposed)
+      ) {
         candidate.dispose();
       }
     }
@@ -31,11 +52,13 @@ function disposeMaterialTextures(material) {
  * Disposes one material and the textures it owns.
  *
  * @param {unknown} material
+ * @param {Set<unknown>} disposed
  */
-function disposeMaterial(material) {
+function disposeMaterial(material, disposed) {
   if (!material || typeof material !== 'object') return;
+  if (!markDisposed(material, disposed)) return;
   try {
-    disposeMaterialTextures(material);
+    disposeMaterialTextures(material, disposed);
   } catch {
     // A material with an exotic property is still safe to dispose below.
   }
@@ -57,12 +80,18 @@ function disposeMaterial(material) {
 export function disposeSceneResources(root) {
   if (!root || typeof root.traverse !== 'function') return;
 
+  const disposed = new Set();
+
   try {
     root.traverse((object) => {
       if (!object) return;
 
       const geometry = object.geometry;
-      if (geometry && typeof geometry.dispose === 'function') {
+      if (
+        geometry &&
+        typeof geometry.dispose === 'function' &&
+        markDisposed(geometry, disposed)
+      ) {
         try {
           geometry.dispose();
         } catch {
@@ -72,9 +101,9 @@ export function disposeSceneResources(root) {
 
       const material = object.material;
       if (Array.isArray(material)) {
-        for (const entry of material) disposeMaterial(entry);
+        for (const entry of material) disposeMaterial(entry, disposed);
       } else {
-        disposeMaterial(material);
+        disposeMaterial(material, disposed);
       }
     });
   } catch {

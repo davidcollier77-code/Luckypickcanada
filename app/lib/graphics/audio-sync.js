@@ -21,6 +21,7 @@
  * @returns {{
  *   cue: (name: string, options?: { repeat?: boolean, volume?: number }) => boolean,
  *   attach: (timeline: any, schedule?: Array<{ at: number|string, cue: string }>) => void,
+ *   // `timeline` is a `createMotionTimeline` wrapper or a raw GSAP timeline.
  *   reset: () => void,
  *   dispose: () => void,
  * }}
@@ -63,14 +64,20 @@ export function createAudioSync({ resolve, shouldPlay, onError } = {}) {
   return {
     cue,
     /**
-     * Places every scheduled cue on an already-built GSAP timeline. Positions
-     * are passed through unchanged, so labels and seconds both work.
+     * Places every scheduled cue on a motion timeline. Positions are passed
+     * through unchanged, so labels and seconds both work.
+     *
+     * A `createMotionTimeline` wrapper takes `(callback, position)`; a raw GSAP
+     * timeline takes `(callback, params, position)`, so it needs the empty
+     * params array or the position would be spread as the argument list.
      */
     attach(timeline, schedule = []) {
       if (!timeline || typeof timeline.call !== 'function') return;
+      const isWrapper = timeline.isMotionTimeline === true;
       for (const entry of schedule) {
         if (!entry || typeof entry.cue !== 'string') continue;
-        timeline.call(() => cue(entry.cue), entry.at);
+        if (isWrapper) timeline.call(() => cue(entry.cue), entry.at);
+        else timeline.call(() => cue(entry.cue), [], entry.at);
       }
     },
     reset() {

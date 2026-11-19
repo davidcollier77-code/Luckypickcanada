@@ -170,6 +170,9 @@ surface.dispose();
 `examples/golden-motes.js` is this scene as a runnable module. It is deliberately
 not mounted by any page, so it adds no chunk and no visual change.
 
+`createAudioSync().attach(timeline, schedule)` accepts the `createMotionTimeline`
+wrapper or a raw GSAP timeline; `at` is forwarded as the position in both cases.
+
 ## Rules the toolkit enforces
 
 - **Bounded work.** Quality comes from `resolveRenderQuality`; DPR, shadows,
@@ -180,7 +183,9 @@ not mounted by any page, so it adds no chunk and no visual change.
   through literal dynamic imports in `engine-chunks.js`, only when a registered
   experience asks for them.
 - **Fails soft.** Every entry point returns `null` or a no-op instead of throwing;
-  callers keep their static or Canvas 2D fallback.
+  callers keep their static or Canvas 2D fallback. A model request that stops
+  making progress resolves to `null` after a stall window instead of leaving the
+  caller waiting.
 - **No WebGPU requirement.** WebGPU remains probe-only; the toolkit renders
   through WebGL.
 - **One preparation system.** The Resource-Readiness Hub is the only preloader.

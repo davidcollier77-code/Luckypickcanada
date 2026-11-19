@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 
+import { cleanup, render, waitFor } from '@testing-library/react';
+import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -51,6 +53,7 @@ import {
   resolveVisualPlan,
 } from '../app/lib/graphics/experiences.js';
 import { GRAPHICS_RESOURCE_KIND } from '../app/lib/graphics/adapters.js';
+import CreativeSurface from '../components/graphics/CreativeSurface.jsx';
 import {
   getExperienceDefinition,
   getRegisteredExperiences,
@@ -119,6 +122,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
 });
 
@@ -316,7 +320,7 @@ describe('synchronised audio cues', () => {
   it('honours a muted plan and attaches cues to timeline positions', () => {
     const play = vi.fn();
     const calls = [];
-    const timeline = { call: (fn, at) => calls.push([fn, at]) };
+    const timeline = { isMotionTimeline: true, call: (fn, at) => calls.push([fn, at]) };
     const sync = createAudioSync({
       resolve: () => ({ play }),
       shouldPlay: () => false,
@@ -328,6 +332,21 @@ describe('synchronised audio cues', () => {
     expect(play).not.toHaveBeenCalled();
   });
 
+  it('gives a raw GSAP timeline the empty params array before the position', () => {
+    const play = vi.fn();
+    const calls = [];
+    const rawTimeline = { call: (...args) => calls.push(args) };
+    const sync = createAudioSync({ resolve: () => ({ play }) });
+
+    sync.attach(rawTimeline, [{ at: 'drop', cue: 'boom' }]);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0][1]).toEqual([]);
+    expect(calls[0][2]).toBe('drop');
+    calls[0][0]();
+    expect(play).toHaveBeenCalledTimes(1);
+  });
+
   it('treats a missing sound or a throwing resolver as a skipped cue', () => {
     const sync = createAudioSync({
       resolve: (name) => {
@@ -337,5 +356,40 @@ describe('synchronised audio cues', () => {
     });
     expect(sync.cue('missing')).toBe(false);
     expect(sync.cue('broken')).toBe(false);
+  });
+});
+
+describe('CreativeSurface React wrapper', () => {
+  it('stays decorative by default and lets a caller override aria-hidden', () => {
+    const { container, rerender } = render(
+      React.createElement(CreativeSurface, { requirements: { renderer: 'webgl' } }),
+    );
+    expect(container.querySelector('canvas').getAttribute('aria-hidden')).toBe('true');
+
+    rerender(
+      React.createElement(CreativeSurface, {
+        requirements: { renderer: 'webgl' },
+        'aria-hidden': false,
+        'aria-label': 'Lucky chart',
+      }),
+    );
+    expect(container.querySelector('canvas').getAttribute('aria-hidden')).toBe('false');
+  });
+
+  it('does not rebuild the surface for an equal inline descriptor', async () => {
+    const onSurface = vi.fn();
+
+    const { rerender } = render(
+      React.createElement(CreativeSurface, { requirements: { renderer: 'webgl' }, onSurface }),
+    );
+    await waitFor(() => expect(onSurface).toHaveBeenCalledTimes(1));
+
+    // Each render creates a new object with the same values, which is the
+    // documented usage; the surface must not be rebuilt for it.
+    rerender(React.createElement(CreativeSurface, { requirements: { renderer: 'webgl' }, onSurface }));
+    rerender(React.createElement(CreativeSurface, { requirements: { renderer: 'webgl' }, onSurface }));
+    await Promise.resolve();
+
+    expect(onSurface).toHaveBeenCalledTimes(1);
   });
 });

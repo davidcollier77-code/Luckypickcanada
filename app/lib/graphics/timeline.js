@@ -20,6 +20,7 @@ import { prefersReducedMotion } from '../graphics-capabilities.js';
  * }} [options]
  * @returns {Promise<null | {
  *   timeline: any,
+ *   isMotionTimeline: true,
  *   reducedMotion: boolean,
  *   to: (...args: any[]) => any,
  *   fromTo: (...args: any[]) => any,
@@ -54,6 +55,9 @@ export async function createMotionTimeline({ reducedMotion, paused = true, defau
 
   return {
     timeline,
+    // Lets helpers such as `audio-sync.attach` tell this wrapper (whose `call`
+    // takes a single position) from a raw GSAP timeline.
+    isMotionTimeline: true,
     reducedMotion: calm,
     to: (...args) => timeline.to(...args),
     fromTo: (...args) => timeline.fromTo(...args),

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createCreativeSurface } from '../../app/lib/graphics/runtime';
 
 /**
@@ -14,7 +14,10 @@ import { createCreativeSurface } from '../../app/lib/graphics/runtime';
  * unmount.
  *
  * The element is decorative by default. Pass `aria-hidden={false}` plus a label
- * when the visual carries information.
+ * when the visual carries information; an explicit value always wins.
+ *
+ * `requirements` is compared by value, so the documented inline descriptor does
+ * not rebuild the surface on every parent render.
  *
  * @param {{
  *   requirements?: object,
@@ -37,6 +40,21 @@ export default function CreativeSurface({
   const canvasRef = useRef(null);
   const callbacksRef = useRef({ onSurface, onFrame, onError });
   callbacksRef.current = { onSurface, onFrame, onError };
+  const requirementsRef = useRef(requirements);
+  requirementsRef.current = requirements;
+
+  // An inline descriptor is a new object on every parent render, so rebuilding
+  // on identity would tear down and recreate the whole surface — including a
+  // fresh WebGL context — for an unchanged plan. Compare the plain-data
+  // descriptor by value; a descriptor that cannot be serialized keeps identity
+  // comparison rather than never rebuilding at all.
+  const requirementsSignature = useMemo(() => {
+    try {
+      return JSON.stringify(requirements ?? null);
+    } catch {
+      return requirements;
+    }
+  }, [requirements]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,7 +65,7 @@ export default function CreativeSurface({
 
     createCreativeSurface({
       canvas,
-      requirements,
+      requirements: requirementsRef.current,
       onFrame: (frame) => callbacksRef.current.onFrame?.(frame),
       onError: (error) => callbacksRef.current.onError?.(error),
     })
@@ -69,13 +87,13 @@ export default function CreativeSurface({
       surface?.dispose?.();
       surface = null;
     };
-  }, [requirements]);
+  }, [requirementsSignature]);
 
   return (
     <canvas
       {...canvasProps}
       ref={canvasRef}
-      aria-hidden="true"
+      aria-hidden={canvasProps['aria-hidden'] ?? 'true'}
       className={className}
       style={style}
     />

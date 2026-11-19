@@ -162,3 +162,30 @@ Environment: Node.js 26.13.0, pnpm 10.30.3, frozen lockfile install
   run; the TypeScript check and the full unit suite are the executed gates.
 - The Three.js and GSAP experience descriptors are exercised by tests, but no
   live page mounts a 3D effect, so no Three.js chunk is requested at runtime.
+
+## Round 2 review repairs (2026-11-19)
+
+Pullfrog's review of `17d3e125` and Graphite's re-anchored comments were checked against the code
+before any change. Five were real and are fixed; three were not defects.
+
+| Finding | Verification against code | Disposition |
+| --- | --- | --- |
+| `CreativeSurface` rebuilt the surface for an inline `requirements` literal | The effect depended on object identity, so the documented inline descriptor re-ran it on every parent render | **Fixed** — the descriptor is compared by value and the current object is read from a ref; covered by a re-render test |
+| `aria-hidden="true"` overrode a caller's `aria-hidden={false}` | The attribute sat after `{...canvasProps}` | **Fixed** — an explicit value wins; covered by a render test |
+| `audio-sync.attach` passed `entry.at` as GSAP's `params` | A raw GSAP timeline takes `(callback, params, position)`, so the documented timeline shape passed a position where an array is expected | **Fixed** — the wrapper is tagged `isMotionTimeline` and a raw timeline receives `([], position)`; covered for both shapes |
+| `disposeSceneResources` released a shared texture once per referencing material while its comment claimed once | The test asserted two calls for one shared texture | **Fixed** — a per-teardown `Set` releases each geometry, material and texture once; the test now asserts exactly that across two meshes |
+| `loadGLTF` never settled for a request that stalled after starting | The fail-soft contract only covered `onError` | **Fixed** — a 30 s stall window restarted on progress resolves `null`; covered with fake timers |
+| Graphite: Three.js does not restore its own context | Checked in round 1 against `WebGLRenderer.onContextRestore` | **Not a defect** |
+| Graphite: camera aspect is `1` until `applySize()` and a zero-size canvas yields 1×1 | `applySize()` runs before the stage is returned and before any frame; 1×1 is the intended pre-layout fallback and the `ResizeObserver` corrects it | **Not a defect** |
+| Bot review threads still show as unresolved | Fixes verified directly in the code and tests; bots do not resolve threads automatically | **Fixed in code** |
+
+### Round 2 executed checks
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused creative layer | `pnpm exec vitest run __tests__/graphics-creative-capabilities.test.js __tests__/graphics-three-toolkit.test.js` | PASS — 41 tests (22 + 19) |
+| Full unit suite | `pnpm exec vitest run` | PASS — 103 files / 1087 tests |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` | PASS — exit 0, 48 docs-updater tests |
+| Production build (repository gate metric) | `rm -rf .next && pnpm run build`, then `du -sb .next public` | PASS — 413,698,875 bytes (394.53 MiB), below 495 MiB |
+| Initial page JavaScript | `grep -rl WebGLRenderer .next/static/chunks/app \| wc -l` | PASS — 0 files |

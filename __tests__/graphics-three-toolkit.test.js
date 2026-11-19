@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createCinematicEffects,
@@ -10,6 +10,14 @@ import {
 import { loadGLTF } from '../app/lib/graphics/assets.js';
 import { disposeSceneResources } from '../app/lib/graphics/resources.js';
 import { createThreeStage, resolveStageBudget } from '../app/lib/graphics/stage.js';
+
+// A loader that accepts the request and never calls back, so the stall handling
+// can be exercised without a network.
+vi.mock('three/addons/loaders/GLTFLoader.js', () => ({
+  GLTFLoader: class {
+    load() {}
+  },
+}));
 
 function readToolkitSource(name) {
   return readFileSync(join(process.cwd(), 'app', 'lib', 'graphics', name), 'utf8');
@@ -85,23 +93,53 @@ describe('safe fallbacks', () => {
   });
 });
 
+describe('stalled model requests', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('resolves null instead of leaving the caller waiting on a stalled request', async () => {
+    vi.useFakeTimers();
+    const pending = loadGLTF('/models/stalled.glb');
+    let settled = false;
+    pending.then(() => {
+      settled = true;
+    });
+
+    // Let the lazy loader import settle and arm the stall window.
+    await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(1);
+
+    // Nothing resolves before the stall window expires, and the request gives
+    // up exactly when it does.
+    await vi.advanceTimersByTimeAsync(29_999);
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(pending).resolves.toBeNull();
+  });
+});
+
 describe('disposeSceneResources', () => {
-  it('disposes geometry, shared materials and their textures', () => {
+  it('disposes geometry, shared materials and their textures exactly once', () => {
     const texture = { isTexture: true, dispose: vi.fn() };
     const material = { map: texture, dispose: vi.fn() };
     const secondMaterial = { normalMap: [texture], dispose: vi.fn() };
     const geometry = { dispose: vi.fn() };
     const mesh = { geometry, material: [material, secondMaterial] };
+    // A second mesh reuses the same geometry and one of the same materials.
+    const sharedMesh = { geometry, material };
     const empty = {};
 
     disposeSceneResources({
-      traverse: (callback) => [mesh, empty].forEach(callback),
+      traverse: (callback) => [mesh, sharedMesh, empty].forEach(callback),
     });
 
     expect(geometry.dispose).toHaveBeenCalledTimes(1);
     expect(material.dispose).toHaveBeenCalledTimes(1);
     expect(secondMaterial.dispose).toHaveBeenCalledTimes(1);
-    expect(texture.dispose).toHaveBeenCalledTimes(2);
+    expect(texture.dispose).toHaveBeenCalledTimes(1);
   });
 
   it('tolerates a missing graph, a partial object and a throwing material', () => {

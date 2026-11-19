@@ -81,3 +81,12 @@ The owner directed that the toolkit become automatically available and usable, n
   `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` exit 0, production build 378,582,202 bytes
   (361.1 MiB; 376 MiB by `du -sm`), zero page chunks containing Three.js (engine code is async-only).
   Playwright visual runs and the CI checkers remain pending after the push; no ESLint config exists.
+
+### Round 2 (current head)
+
+Five genuine review findings were repaired: `CreativeSurface` requirement identity, explicit
+`aria-hidden`, the `audio-sync.attach` timeline contract, once-per-teardown disposal of shared
+resources, and a stall timeout for `loadGLTF`. Clock reset, context-loss ordering, SMAA order and the
+bloom handle remain fixed from round 1; the context-restore and camera-aspect claims were re-checked
+and are not defects. Focused tests 41, full suite 103 files / 1087 tests, `tsc` exit 0,
+`freebuff-verify.sh` exit 0, clean build 394.53 MiB by `du -sb .next public`.

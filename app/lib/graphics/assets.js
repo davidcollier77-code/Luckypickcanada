@@ -19,6 +19,14 @@
 import { disposeSceneResources } from './resources.js';
 
 /**
+ * A request that stops making progress is treated as a failed one. Without
+ * this, a stalled connection would leave the caller awaiting a promise that
+ * never settles, which contradicts the fail-soft contract. The timer restarts
+ * on every progress event, so a slow but live download is never cut short.
+ */
+const STALL_TIMEOUT_MS = 30_000;
+
+/**
  * Loads a glTF/GLB model.
  *
  * @param {string} url
@@ -44,17 +52,38 @@ export async function loadGLTF(url, { onProgress } = {}) {
 
   return new Promise((resolve) => {
     let settled = false;
+    let stallTimer = null;
+
+    const clearStallTimer = () => {
+      if (stallTimer === null) return;
+      clearTimeout(stallTimer);
+      stallTimer = null;
+    };
+
     const finish = (value) => {
       if (settled) return;
       settled = true;
+      clearStallTimer();
       resolve(value);
+    };
+
+    const watchForStall = () => {
+      clearStallTimer();
+      stallTimer = setTimeout(() => finish(null), STALL_TIMEOUT_MS);
     };
 
     try {
       const loader = new GLTFLoader();
+      watchForStall();
       loader.load(
         url,
         (gltf) => {
+          if (settled) {
+            // The request finished after it was given up on: release what it
+            // parsed instead of leaking it.
+            if (gltf?.scene) disposeSceneResources(gltf.scene);
+            return;
+          }
           if (!gltf?.scene) {
             finish(null);
             return;
@@ -69,6 +98,8 @@ export async function loadGLTF(url, { onProgress } = {}) {
           });
         },
         (event) => {
+          // Progress means the request is alive; restart the stall window.
+          watchForStall();
           if (typeof onProgress !== 'function') return;
           onProgress({
             loaded: Number.isFinite(event?.loaded) ? event.loaded : 0,
