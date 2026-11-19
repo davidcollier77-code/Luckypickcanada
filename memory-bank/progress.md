@@ -1,3 +1,19 @@
+## 2026-11-19 — Creative Workbench and sound-reactive cinematics (spec 193 continuation)
+- Added an opt-in sound-reactivity bridge on the existing audio system: one shared `AnalyserNode`
+  taps Howler's Web Audio mix through a silent zero-gain branch, and a smoothed envelope (fast
+  attack/slow release, transient detection) drives the existing light rig, particle field and any
+  numeric property. No audio context, player or second audio system is created; `html5: true` cues
+  are documented as bypassing Web Audio.
+- Added a development-only Creative Workbench at `/workbench/creative`: a pure scene catalogue with
+  forced tier/seed and a bounded clock, deterministic Three.js and Canvas 2D scenes built through
+  the production runtime, PNG capture and `window.__creativeWorkbench` (`getState`, `setTime`,
+  `playCue`, `capture`, …) so agents can inspect and photograph visuals before PR approval. The
+  route 404s in production unless `CREATIVE_WORKBENCH=1`.
+- Verified 26 focused tests, 62 existing graphics tests, 105 files / 1,113 unit tests, `tsc` exit 0,
+  `./freebuff-verify.sh` exit 0, a clean 416,012,104-byte build (396.74 MiB), a real Chromium run
+  that measured a live envelope (level 0.437) from an existing Lucky Meter cue and captured a Canvas
+  2D PNG, and a production 404 for the sandbox route.
+
 ## 2026-11-19 — Three.js concise LLM documentation source
 - Added `/websites/threejs_llms_txt` as a distinct URL source for `https://threejs.org/docs/llms.txt`, routed to Creation and Polishing with a canonical Creation snapshot and Polishing symlink.
 - Preserved the existing `/websites/threejs` full-documentation source (`llms-full.txt`) unchanged. No application code, dependencies or updater workflow changed.

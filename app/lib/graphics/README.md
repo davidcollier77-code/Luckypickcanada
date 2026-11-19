@@ -25,6 +25,8 @@ The rendering contract is [`docs/graphics-rendering-architecture.md`](../../../d
 | Timelines, transitions, staggered choreography | GSAP, lazy | `timeline.js` |
 | Managed 2D drawing: DPR cap, adaptive frames, resize, teardown | Canvas 2D | `canvas-surface.js` |
 | Synchronised sound cues on a visual timeline | Existing Howler/Web Audio path | `audio-sync.js` |
+| Sound-reactive visuals: envelope from the live mix bound to lights, particles and values | Web Audio analyser on the existing Howler graph | `audio-reactivity.js` |
+| Shared visual-QA sandbox: deterministic scenes, frozen frames, PNG capture, agent inspection API | This toolkit, development-only route | `workbench.js`, `components/graphics/CreativeWorkbench.jsx` |
 | Automatic technology selection and surface creation | This toolkit | `technologies.js`, `runtime.js` |
 | Automatic resource discovery and preparation | Resource-Readiness Hub | `experiences.js`, `adapters.js` |
 | Reusable React surface | React | `components/graphics/CreativeSurface.jsx` |
@@ -172,6 +174,77 @@ not mounted by any page, so it adds no chunk and no visual change.
 
 `createAudioSync().attach(timeline, schedule)` accepts the `createMotionTimeline`
 wrapper or a raw GSAP timeline; `at` is forwarded as the position in both cases.
+
+## Sound-reactive cinematics
+
+`audio-reactivity.js` makes the visuals follow the sound the visitor is already
+hearing. It creates no audio context and no player: one shared `AnalyserNode`
+taps the mix Howler already built (`masterGain → analyser → 0-gain →
+destination`), so the audible output is unchanged.
+
+Ask for it declaratively — `reactiveAudio: true` in the requirements — and the
+runtime creates the envelope and includes it on every frame:
+
+```js
+const surface = await createCreativeSurface({
+  canvas,
+  requirements: { dimension: '3d', particles: true, reactiveAudio: true },
+  onFrame: ({ delta, envelope }) => {
+    // envelope.level / bass / mids / highs / transient / peak are 0–1
+  },
+});
+
+surface.reactive?.bindLightRig(rig);
+surface.reactive?.bindParticleField(motes);
+surface.reactive?.bindValue(material, 'emissiveIntensity', { min: 0, max: 2 });
+surface.reactive?.onBeat((strength) => body.scale.setScalar(1 + strength * 0.08));
+```
+
+The envelope is smoothed asymmetrically (fast attack, slow release) and reports
+a transient when the mix jumps, with a 140 ms cooldown so one loud hit is one
+accent. Reduces motion switches it off entirely, a hidden page freezes it, and a
+missing or blocked audio graph resolves to a neutral all-zero envelope — the
+visual keeps its authored resting state. `selectGraphicsTechnologies` reports
+`audioReactive` plus the reason (`sound-reactivity-enabled`,
+`sound-reactivity-reduced-motion`, `sound-reactivity-unavailable`).
+
+Known limitation: Howler cues declared `html5: true` play through a media
+element and bypass Web Audio, so they cannot be analysed without re-routing
+audio the site already ships. Web Audio cues — the Lucky Meter set and the
+Crystal Ball sounds — are measured normally.
+
+## Creative Workbench
+
+The workbench is the shared sandbox for building and reviewing visuals. It
+mounts the catalogue in `workbench.js` through the same runtime a production
+feature uses, at a forced tier and seed, with deterministic controls:
+
+- choose a scene, tier (`high`/`balanced`/`constrained`), seed and reduced motion;
+- scrub the scene clock to freeze one composed frame;
+- play an existing Lucky Meter recording and watch the envelope drive lights,
+  particles and exposure;
+- capture a PNG and download it.
+
+Agents drive the same controls through `window.__creativeWorkbench`:
+
+```js
+__creativeWorkbench.getState();            // plan, surface, envelope, fps, errors
+__creativeWorkbench.listScenes();
+__creativeWorkbench.selectScene('reactive-aurora');
+__creativeWorkbench.setTier('constrained');
+__creativeWorkbench.setReducedMotion(true);
+__creativeWorkbench.setTime(2.5);          // deterministic, paused frame
+await __creativeWorkbench.capture();       // { ok, filename, width, height, bytes }
+__creativeWorkbench.readCapture();         // PNG data URL, or null
+```
+
+The route is `/workbench/creative`. It is development only: production answers
+404 unless the deployment sets `CREATIVE_WORKBENCH=1` for a deliberate review
+environment. It adds no visitor navigation, no page chunk on existing routes and
+no second renderer. Playwright remains the repository's browser tool; the page
+gives it a stable surface to inspect and photograph. For WebGL canvases, use a
+Playwright screenshot after `setTime()` — a direct `toDataURL` read-back can be
+empty without `preserveDrawingBuffer`, which the stage deliberately does not set.
 
 ## Rules the toolkit enforces
 

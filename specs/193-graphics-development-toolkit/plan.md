@@ -162,3 +162,48 @@ The owner requested completed, automatic capability rather than installed depend
   skipped instead of throwing.
 - **Build growth** → chunks stay literal dynamic imports reached only through descriptors; no live
   experience declares a Three.js chunk.
+
+## Continuation plan — Creative Workbench and sound reactivity (2026-11-19)
+
+### Sound-reactive cinematics
+
+`app/lib/graphics/audio-reactivity.js` owns the bridge. It creates no audio context: `attachHowlerAnalyser()`
+takes the `Howler.ctx` / `Howler.masterGain` the site already uses and connects
+`masterGain → analyser → gain(0) → destination`, so analysis is pulled every render block and the
+mix is unchanged. `createAudioReactive()` reads `getByteFrequencyData` into three bands plus level
+and peak, applies asymmetric smoothing (attack 0.45, release 0.12 per 60 Hz frame), detects a
+transient when the raw level jumps by more than 0.16 with a 140 ms cooldown, and applies registered
+bindings: `bindLightRig` (uses the existing `pulse` and its wall-time decay), `bindParticleField`
+(existing `setIntensity`), `bindValue` (any numeric property with its own glide) and `onBeat`.
+
+`technologies.js` gains `reactiveAudio` and a third `overrides` argument carrying a deterministic
+`reducedMotion` value for harnesses. The plan exposes `audioReactive` and a reason. `runtime.js`
+creates the envelope for the THREE and Canvas 2D branches only, updates it before the caller's
+frame, passes `frame.envelope`, exposes `surface.reactive` and disposes it with the surface. An
+existing-engine or DOM plan creates nothing.
+
+### Creative Workbench
+
+- `workbench.js` is pure: three scene descriptors, the tier table, clamped state normalisation,
+  `resolveWorkbenchPlan` (selector with the reduced-motion override), deterministic capture names and
+  `isWorkbenchEnabled`.
+- `workbench-runtime.js` builds those descriptors through the production runtime, materials, light
+  rig, particles and envelope. The Three.js scene binds particles, lights and `toneMappingExposure`;
+  the Canvas 2D scene draws seeded stars and ribbons whose amplitude, hue and brightness follow the
+  envelope. Both own an internal clock with `setTime()` so a capture is reproducible.
+- `CreativeWorkbench.jsx` mounts one surface per scene/tier/seed, applies play/pause and clock
+  scrubbing, plays an existing Lucky Meter recording for real sound input, captures a PNG and
+  publishes `window.__creativeWorkbench` with the inspection API.
+- `app/workbench/creative/page.js` is `force-dynamic` and calls `notFound()` unless
+  `isWorkbenchEnabled(process.env)`; production therefore answers 404 unless the deployment sets
+  `CREATIVE_WORKBENCH=1`.
+
+### Continuation risks
+
+- **Analysis changes the audio** → the tap is a zero-gain branch; the existing mix path is untouched.
+- **A second audio system appears** → no context is ever created; the analyser is shared per page.
+- **Reactivity fights preserved timing** → it is opt-in; no existing experience declares it.
+- **A sandbox leaks to visitors** → the route is dynamic, unlinked and 404-gated in production.
+- **Non-deterministic captures** → fixed tier, seed, clock and time-bound state normalisation.
+- **WebGL read-back is empty** → the capture result says so and Playwright screenshots are documented
+  as the primary path.
