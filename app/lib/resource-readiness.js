@@ -77,6 +77,11 @@ const RETRY_TIMER_SLACK_MS = 10;
 const FAILED_RETRY_COOLDOWN_MS = 5000;
 const IDLE_TIMEOUT_MS = 2000;
 
+// Identities of responsive images the hub has itself loaded. Once one derivative
+// of an artwork is in memory, fetching another width of the same artwork would
+// add bytes without adding any visible pixels.
+const loadedImageIdentities = new Set();
+
 const definitions = new Map();
 const resourceEntries = new Map();
 const resourceInflight = new Map();
@@ -124,6 +129,61 @@ function resourceKey(definition, resource) {
 
 function resourceLabel(resource) {
   return resource.label ?? resource.id ?? normalizeTarget(resource) ?? 'resource';
+}
+
+/**
+ * The identity of a responsive image: its path with any `-640w`, `-1024w` or
+ * similar width token removed. Two derivatives of one artwork share an
+ * identity, while different artwork, formats and directories do not.
+ *
+ * @param {string} url
+ * @returns {string|null}
+ */
+export function imageIdentity(url) {
+  if (typeof url !== 'string' || !url.trim()) return null;
+  let path;
+  try {
+    // `img.currentSrc` and resource-timing names are absolute, while manifest
+    // URLs are root-relative; both must compare as the same identity.
+    path = new URL(url.trim(), 'https://image.invalid').pathname;
+  } catch {
+    path = url.trim().split('?')[0].split('#')[0];
+  }
+  return path.replace(/-\d+w(\.[a-z0-9]+)$/i, '$1');
+}
+
+/**
+ * Whether the page has already loaded any derivative of this image identity.
+ * It checks rendered images, the browser's resource timing entries and the
+ * hub's own successful loads, so a route that already painted the 1024w sky is
+ * never asked to download its 640w variant as well.
+ *
+ * @param {string|null} identity
+ * @returns {boolean}
+ */
+function imageIdentityIsLoaded(identity) {
+  if (!identity) return false;
+  if (loadedImageIdentities.has(identity)) return true;
+
+  if (typeof document !== 'undefined' && document.images) {
+    for (const image of Array.from(document.images)) {
+      if (!image || image.complete !== true || !(image.naturalWidth > 0)) continue;
+      if (imageIdentity(image.currentSrc || image.src) === identity) return true;
+    }
+  }
+
+  if (typeof performance !== 'undefined' && typeof performance.getEntriesByType === 'function') {
+    const entries = performance.getEntriesByType('resource') || [];
+    for (const entry of entries) {
+      if (!entry) continue;
+      const delivered =
+        (entry.transferSize || 0) + (entry.encodedBodySize || 0) + (entry.decodedBodySize || 0);
+      if (delivered <= 0) continue;
+      if (imageIdentity(entry.name) === identity) return true;
+    }
+  }
+
+  return false;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -248,6 +308,14 @@ function prepareImageResource(resource, context) {
     return Promise.resolve({ skipped: true, reason: 'images-unavailable' });
   }
 
+  // A responsive `<picture>` may already have painted a different width of this
+  // artwork. Reuse it: the browser chose that derivative for the rendered box,
+  // and downloading a second width cannot improve what is on screen.
+  const identity = imageIdentity(resource.url);
+  if (imageIdentityIsLoaded(identity)) {
+    return Promise.resolve({ reused: true, identity, reason: 'same-image-loaded' });
+  }
+
   return new Promise((resolve, reject) => {
     const image = new Image();
     let settled = false;
@@ -265,6 +333,7 @@ function prepareImageResource(resource, context) {
     image.onload = () => {
       if (settled) return;
       context.report(READINESS.FETCHED);
+      if (identity) loadedImageIdentities.add(identity);
       const decoded = typeof image.decode === 'function' ? image.decode() : Promise.resolve();
       decoded.then(
         () => {
@@ -1113,6 +1182,7 @@ export function resetResourceReadiness() {
   experienceRuns.clear();
   experienceSnapshots.clear();
   preparingExperiences.clear();
+  loadedImageIdentities.clear();
   runningJobs = 0;
   activeExperiences = 0;
   jobSequence = 0;
