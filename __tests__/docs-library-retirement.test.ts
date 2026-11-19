@@ -28,6 +28,41 @@ describe("documentation library retirement", () => {
     }
   });
 
+  it("keeps the retired Gemini API library sources absent everywhere", () => {
+    const retiredGemini = [
+      "/websites/ai_google_dev_gemini-api",
+      "/google-gemini/gemini-skills/gemini-api-dev"
+    ];
+
+    for (const id of retiredGemini) {
+      for (const [group, ids] of Object.entries(manifest.groups)) {
+        expect(ids, `${id} must not be routed from ${group}`).not.toContain(id);
+      }
+      expect(manifest.sources).not.toHaveProperty(id);
+      expect(manifest.inventory).not.toContain(id);
+      expect(manifest.githubShas ?? {}).not.toHaveProperty(id);
+    }
+
+    const routingFiles = Object.keys(manifest.groups).map((group) => `.freebuff/${group}.md`);
+    for (const id of retiredGemini) {
+      for (const routingFile of routingFiles) {
+        expect(readFileSync(routingFile, "utf8"), `${id} must not appear in ${routingFile}`).not.toContain(id);
+      }
+    }
+
+    // Both Gemini API documents were intentionally retired; no canonical copy or
+    // group link may be restored, recreated or regenerated in any group.
+    const retiredSnapshots = [
+      ".docs/creation/_websites_ai_google_dev_gemini-api.md",
+      ".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md",
+      ".docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md",
+      ".docs/troubleshooting/_google-gemini_gemini-skills_gemini-api-dev.md"
+    ];
+    for (const path of retiredSnapshots) {
+      expect(existsSync(path), `${path} must stay deleted`).toBe(false);
+    }
+  });
+
   it("keeps the earlier PR #1740 retirements absent", () => {
     const previousRetirements = [
       "/python-pillow/Pillow",

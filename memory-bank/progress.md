@@ -1,3 +1,17 @@
+## 2026-11-19 — HTML5 audio reactivity and Gemini retirement QA (spec 195)
+
+- Extended the existing sound-reactivity bridge so Howler `html5: true` cues feed the shared
+  analyser through a `MediaElementAudioSourceNode` on Howler's existing context. The element keeps a
+  unity path to the destination for unchanged playback; only the analysis edge is released. Unsupported
+  capture, a non-running context, cross-origin media and already-owned elements fall back to neutral
+  analysis without throwing.
+- Added a development-only `playHtml5Cue` workbench hook and capture diagnostics for browser evidence.
+- Corrected the retirement suites that still required an intentionally removed Gemini API snapshot and
+  removed the two orphaned canonical snapshots. Both documents stay retired; no routing, reviewer
+  wiring or Oracle integration changed.
+- Verified 42 focused tests, refresh-docs 48/48, `tsc` exit 0, a Chromium HTML5-only envelope peak of
+  0.065 (`html5Sources: 1`) and a media-capture-disabled fallback with playback intact and peak 0.
+
 ## 2026-11-19 — PR #1972 review repairs
 
 - Repaired the genuine findings from two review services: analyser attachment is re-armed instead of

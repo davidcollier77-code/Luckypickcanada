@@ -89,6 +89,27 @@ export const WORKBENCH_SCENES = Object.freeze([
   }),
 ]);
 
+/**
+ * Same-origin recordings the sandbox can play through Howler's HTML5 path.
+ *
+ * This exists so an agent can verify that an `html5: true` cue drives the same
+ * analyser as the Web Audio mix. It names the recordings the catalogue scenes
+ * already use; it is not a second audio system and is never mounted by a
+ * visitor route.
+ */
+export const WORKBENCH_HTML5_CUES = Object.freeze({
+  colourPour: '/sounds/mixkit-magic-sparkles.mp3',
+  dockChime: '/sounds/chime-sound.mp3',
+});
+
+/** @returns {string|null} The same-origin source for a catalogue cue. */
+export function workbenchHtml5CueSource(name) {
+  if (typeof name !== 'string') return null;
+  return Object.prototype.hasOwnProperty.call(WORKBENCH_HTML5_CUES, name)
+    ? WORKBENCH_HTML5_CUES[name]
+    : null;
+}
+
 const scenesById = new Map(WORKBENCH_SCENES.map((scene) => [scene.id, scene]));
 
 /** @returns {object|null} One scene descriptor. */

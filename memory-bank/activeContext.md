@@ -1,5 +1,39 @@
 # Active Context — Graphics Development Toolkit
 
+## HTML5 audio reactivity and Gemini retirement QA (spec 195, current)
+
+- **Spec Kit feature:** `specs/195-html5-audio-reactivity-gemini-retirement`
+- **Base:** main at `e8bbd0a9` (after PR #1972)
+
+### Added
+
+- `app/lib/graphics/audio-reactivity.js` now captures playing Howler `html5: true` cues with a
+  `MediaElementAudioSourceNode` on Howler's existing `AudioContext`. The source reaches the context
+  destination at unity first (audible playback unchanged) and the shared analyser second. Capture is
+  refused for an unsupported API, a suspended/closed context, a cross-origin element or an element
+  another owner already captured; the envelope stays neutral. Scans are throttled to 500 ms, forced by
+  `refresh()`, and captured sources reconnect if the analyser is rebuilt. Releasing the analyser
+  removes only the analysis edge, so a cue that is still playing is never silenced.
+- The development workbench gained `playHtml5Cue`, a small same-origin HTML5 cue catalogue and
+  `audio.html5Sources`/`audio.html5Playing` diagnostics. It remains development-only.
+- `__tests__/graphics-sound-reactivity.test.js` covers capture, audible-path ordering, de-duplication,
+  fallbacks and Howler HTML5 discovery.
+
+### Corrected
+
+- `__tests__/reviewer-retirement.test.ts` no longer requires the retired
+  `.docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md`.
+- `__tests__/docs-library-retirement.test.ts` asserts both retired Gemini API identifiers absent from
+  every manifest index, routing file and snapshot path.
+- The two orphaned `.docs/creation` Gemini API snapshots were removed. Nothing was restored,
+  recreated, regenerated or replaced.
+
+### Verified
+
+- Focused 42 tests, refresh-docs 48/48, Chromium Web Audio baseline 0.064 and HTML5-only peak 0.065
+  (`html5Sources: 1`), fallback playback with `html5Sources: 0` and peak 0, no page errors.
+
+
 ## Creative Workbench and sound reactivity (spec 193 continuation, current)
 
 - **Spec Kit feature:** `specs/193-graphics-development-toolkit` (continuation section)

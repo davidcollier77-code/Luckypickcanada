@@ -30,10 +30,16 @@
  *     binding resolves to a neutral envelope (all zeros) and the visual simply
  *     keeps its authored resting state.
  *
- * Known limitation: Howler's `html5: true` sounds play through a media element
- * and bypass Web Audio, so they cannot be analysed without re-routing audio the
- * site already ships. Web Audio cues — including the Lucky Meter sound set and
- * the Crystal Ball sounds — are measured normally.
+ * HTML5 cues: Howler's `html5: true` sounds play through a media element, so
+ * they are not part of `masterGain`. When the browser supports media-element
+ * capture, this module routes a playing cue's element through a
+ * `MediaElementAudioSourceNode` on the same Howler context: the element feeds
+ * the shared analyser for measurement and the context destination directly for
+ * unchanged, audible playback (the analyser's own output stays on its silent
+ * branch). That keeps one audio system and one analyser. A browser without
+ * media capture, a suspended context, a cross-origin element or an element
+ * another owner already captured simply keeps playing unanalysed: the envelope
+ * stays neutral and the visual keeps its authored resting state.
  */
 
 import { isPageVisible, prefersReducedMotion } from '../graphics-capabilities.js';
@@ -59,6 +65,9 @@ const TRANSIENT_DECAY_SECONDS = 0.22;
 const ATTACH_RETRY_MS = 750;
 const MAX_ATTACH_ATTEMPTS = 40;
 const MAX_STEP_SECONDS = 0.25;
+// A new HTML5 cue can start at any time; scanning Howler's sound pool twice a
+// second keeps it cheap while still catching a cue within a frame or two.
+const HTML5_SCAN_INTERVAL_MS = 500;
 
 /**
  * Whether this browser can analyse audio at all. Reads the constructor only;
@@ -83,6 +92,14 @@ export function supportsAudioAnalysis() {
 // add a second zero-gain branch and duplicate the analysis work for nothing.
 let sharedGraph = null;
 let sharedGraphPromise = null;
+// Media elements stay captured for the page's lifetime: a
+// MediaElementAudioSourceNode permanently re-routes an element's output, so
+// disconnecting it would silence audio that is still playing. The weak set
+// prevents a second capture attempt (the constructor would throw); the strong
+// set of sources lets a rebuilt analyser reconnect to them.
+const capturedHtml5Elements = new WeakSet();
+const html5SourceNodes = new Set();
+let lastHtml5ScanAt = 0;
 // How many live reactive objects hold the shared tap. The branch is released
 // only when the last one disposes, so one consumer unmounting cannot silence
 // another consumer's analysis.
@@ -141,7 +158,10 @@ export function attachHowlerAnalyser({ fftSize = DEFAULT_FFT_SIZE, smoothing = D
         return null;
       }
 
-      sharedGraph = { analyser, context, master, silent };
+      sharedGraph = { analyser, context, master, silent, howler: Howler };
+      // A rebuilt graph (the previous context was closed) must measure the
+      // HTML5 cues that were already captured.
+      reconnectHtml5Analyser(analyser);
       return analyser;
     })
     .catch(() => null)
@@ -152,9 +172,182 @@ export function attachHowlerAnalyser({ fftSize = DEFAULT_FFT_SIZE, smoothing = D
   return sharedGraphPromise;
 }
 
+/* ------------------------------------------------------------------------- *
+ * HTML5 cue capture
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Whether this context can capture a media element for analysis. Reads the
+ * method only; no node is created.
+ *
+ * @param {any} context
+ * @returns {boolean}
+ */
+export function supportsHtml5AudioAnalysis(context) {
+  return Boolean(
+    context &&
+      typeof context.createMediaElementSource === 'function' &&
+      context.destination &&
+      typeof context.destination === 'object'
+  );
+}
+
+/**
+ * Whether an element's audio can be captured without tainting the graph.
+ * Same-origin and in-memory (`blob:`/`data:`) sources are safe; a cross-origin
+ * HTTP(S) element without CORS would produce silence, so it is refused and
+ * keeps playing through the element exactly as before.
+ *
+ * @param {any} element
+ * @returns {boolean}
+ */
+export function isSameOriginMediaElement(element) {
+  if (!element || typeof window === 'undefined' || !window.location) return false;
+  const raw = element.currentSrc || element.src;
+  if (!raw) return false;
+  try {
+    const url = new URL(raw, window.location.href);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return url.protocol === 'blob:' || url.protocol === 'data:';
+    }
+    return url.origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Routes a playing HTML5 cue's media element into the shared analyser on the
+ * existing Howler context.
+ *
+ * The element is connected to the context destination at unity first, so the
+ * cue stays audible exactly once even if the analysis edge fails; the analyser
+ * output itself remains on its silent branch. Capture is attempted only while
+ * the context is running, because moving an element into Web Audio redirects
+ * its native output for the rest of the page's life.
+ *
+ * @param {{ context: any, analyser: any, element: any }} options
+ * @returns {boolean} Whether this element now feeds the analyser.
+ */
+export function attachHtml5Analyser({ context, analyser, element } = {}) {
+  if (!supportsHtml5AudioAnalysis(context) || !analyser || !element) return false;
+  if (context.state !== 'running') return false;
+  if (!isSameOriginMediaElement(element)) return false;
+  if (capturedHtml5Elements.has(element)) return true;
+
+  let source;
+  try {
+    source = context.createMediaElementSource(element);
+  } catch {
+    // The element is already owned by another source, or capture is blocked.
+    return false;
+  }
+
+  // Audible path first: an element routed into Web Audio no longer reaches the
+  // speakers on its own, so this must succeed before analysis is attempted.
+  try {
+    source.connect(context.destination);
+  } catch {
+    return false;
+  }
+
+  capturedHtml5Elements.add(element);
+  html5SourceNodes.add(source);
+
+  try {
+    source.connect(analyser);
+  } catch {
+    // The cue remains audible; analysis simply starts on the next rebuild.
+    return false;
+  }
+  return true;
+}
+
+/**
+ * How many HTML5 media elements currently feed the shared analyser. Diagnostic
+ * only: the Creative Workbench reports it so browser evidence can distinguish a
+ * captured cue from a neutral envelope.
+ *
+ * @returns {number}
+ */
+export function getHtml5AnalyserCount() {
+  return html5SourceNodes.size;
+}
+
+/**
+ * Collects the media elements of playing `html5: true` Howler sounds. Howler's
+ * HTML5 mode keeps one element per sound id, so this is a small, bounded scan.
+ * Private fields are read defensively: an unexpected Howler shape yields no
+ * elements rather than an exception.
+ *
+ * @param {any} howler The Howler namespace (`Howler` from `howler`).
+ * @returns {any[]}
+ */
+export function collectHtml5MediaElements(howler) {
+  const elements = [];
+  const howls = Array.isArray(howler?._howls) ? howler._howls : [];
+  for (const howl of howls) {
+    if (howl?._html5 !== true || !Array.isArray(howl._sounds)) continue;
+    for (const sound of howl._sounds) {
+      const element = sound?._node;
+      if (!element || typeof element !== 'object') continue;
+      // `_playing` is Howler's own flag; `paused` is the element's truth. Either
+      // one reporting playback is enough to tap it.
+      if (sound._playing !== true && element.paused !== false) continue;
+      if (!elements.includes(element)) elements.push(element);
+    }
+  }
+  return elements;
+}
+
+/**
+ * Re-attaches every captured element to a rebuilt analyser. The audible edge to
+ * the destination is never touched.
+ *
+ * @param {any} analyser
+ */
+function reconnectHtml5Analyser(analyser) {
+  if (!analyser) return;
+  for (const source of html5SourceNodes) {
+    try {
+      source.connect(analyser);
+    } catch {
+      // A closed source is simply no longer analysable.
+    }
+  }
+}
+
+/**
+ * Captures any HTML5 cue that started playing since the previous scan. Cheap
+ * because it is throttled and Howler exposes its whole Howl list.
+ *
+ * @param {boolean} [force]
+ * @returns {number} Newly captured elements.
+ */
+function syncHtml5Analyser(force = false) {
+  const graph = sharedGraph;
+  if (!graph?.howler || graph.context.state !== 'running') return 0;
+
+  const now = Date.now();
+  if (!force && lastHtml5ScanAt && now - lastHtml5ScanAt < HTML5_SCAN_INTERVAL_MS) return 0;
+  lastHtml5ScanAt = now;
+
+  const before = html5SourceNodes.size;
+  for (const element of collectHtml5MediaElements(graph.howler)) {
+    attachHtml5Analyser({
+      context: graph.context,
+      analyser: graph.analyser,
+      element,
+    });
+  }
+  return html5SourceNodes.size - before;
+}
+
 /**
  * Releases the shared tap. The audio itself is untouched: only the extra
- * analysis branch is disconnected. Safe to call when nothing is attached.
+ * analysis branch is disconnected. HTML5 cues keep their audible unity path to
+ * the destination; only their edge into the analyser is removed, so a cue that
+ * is still playing is never silenced. Safe to call when nothing is attached.
  *
  * @returns {boolean} Whether a graph was disconnected.
  */
@@ -167,6 +360,13 @@ export function releaseHowlerAnalyser() {
     graph.master.disconnect(graph.analyser);
   } catch {
     // The graph may already be closed.
+  }
+  for (const source of html5SourceNodes) {
+    try {
+      source.disconnect(graph.analyser);
+    } catch {
+      // This source may not be connected, or may already be closed.
+    }
   }
   try {
     graph.analyser.disconnect();
@@ -422,6 +622,11 @@ export function createAudioReactive({
       return envelope;
     }
 
+    // A cue declared `html5: true` plays outside the Web Audio mix. Once it is
+    // playing, route it into the same analyser; this is throttled and a no-op
+    // when the browser cannot capture media elements.
+    syncHtml5Analyser();
+
     const raw = measure();
     if (!raw) return envelope;
 
@@ -550,6 +755,9 @@ export function createAudioReactive({
         lastAttemptAt = 0;
         ensureAnalyser();
       }
+      // A paused surface calls this as playback starts, so an HTML5 cue is
+      // captured before the first frame rather than on the next scan tick.
+      syncHtml5Analyser(true);
       return Boolean(node);
     },
     reset() {
