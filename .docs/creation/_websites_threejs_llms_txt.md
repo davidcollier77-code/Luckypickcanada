@@ -5,12 +5,14 @@
 ## Instructions for Large Language Models
 
 When generating Three.js code, follow these guidelines:
+
 ### 1. Use Import Maps (Not Old CDN Patterns)
 
 WRONG - outdated pattern:
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 ```
+
 CORRECT - modern pattern (always use latest version):
 ```html
 <script type="importmap">
@@ -26,6 +28,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 </script>
 ```
+
 ### 2. Choosing Between WebGLRenderer and WebGPURenderer
 
 Three.js maintains both renderers:
@@ -44,11 +47,13 @@ const renderer = new THREE.WebGLRenderer();
 - Custom shaders/materials using TSL (Three.js Shading Language)
 - Compute shaders
 - Advanced node-based materials
+
 ```js
 import * as THREE from 'three/webgpu';
 const renderer = new THREE.WebGPURenderer();
 await renderer.init();
 ```
+
 ### 3. TSL (Three.js Shading Language)
 
 When using WebGPURenderer, use TSL instead of raw GLSL for custom materials:
@@ -65,6 +70,7 @@ TSL benefits:
 - No string manipulation or onBeforeCompile hacks
 - Type-safe, composable shader nodes
 - Automatic optimization
+
 ### 4. NodeMaterial Classes (for WebGPU/TSL)
 
 When using TSL, use node-based materials:
@@ -80,10 +86,13 @@ When using TSL, use node-based materials:
 - [Creating a Scene](https://threejs.org/manual/#creating-a-scene)
 - [Fundamentals](https://threejs.org/manual/#fundamentals)
 - [Responsive Design](https://threejs.org/manual/#responsive)
+
 ## Renderer Guides
 
 - [WebGPURenderer](https://threejs.org/manual/#webgpurenderer)
+
 ## Core Concepts
+
 - [TSL Guide](https://threejs.org/tsl/): Three.js Shading Language guide with playground
 - [TSL Reference](https://threejs.org/docs/#TSL): All TSL functions
 - [Animation System](https://threejs.org/manual/#animation-system)
@@ -94,6 +103,7 @@ When using TSL, use node-based materials:
 - [Lights](https://threejs.org/manual/#lights)
 - [Cameras](https://threejs.org/manual/#cameras)
 - [Shadows](https://threejs.org/manual/#shadows)
+
 ## Essential API
 
 ### Core
@@ -107,6 +117,7 @@ When using TSL, use node-based materials:
 ### Cameras
 - [PerspectiveCamera](https://threejs.org/docs/#api/en/cameras/PerspectiveCamera)
 - [OrthographicCamera](https://threejs.org/docs/#api/en/cameras/OrthographicCamera)
+
 ### Renderers
 - [WebGLRenderer](https://threejs.org/docs/#api/en/renderers/WebGLRenderer)
 - [WebGPURenderer](https://threejs.org/docs/#api/en/renderers/webgpu/WebGPURenderer)
@@ -115,14 +126,17 @@ When using TSL, use node-based materials:
 - [Mesh](https://threejs.org/docs/#api/en/objects/Mesh)
 - [InstancedMesh](https://threejs.org/docs/#api/en/objects/InstancedMesh)
 - [Group](https://threejs.org/docs/#api/en/objects/Group)
+
 ### Materials
 - [MeshBasicMaterial](https://threejs.org/docs/#api/en/materials/MeshBasicMaterial)
 - [MeshStandardMaterial](https://threejs.org/docs/#api/en/materials/MeshStandardMaterial)
 - [MeshPhysicalMaterial](https://threejs.org/docs/#api/en/materials/MeshPhysicalMaterial)
+
 ### Geometries
 - [BoxGeometry](https://threejs.org/docs/#api/en/geometries/BoxGeometry)
 - [SphereGeometry](https://threejs.org/docs/#api/en/geometries/SphereGeometry)
 - [PlaneGeometry](https://threejs.org/docs/#api/en/geometries/PlaneGeometry)
+
 ### Lights
 - [AmbientLight](https://threejs.org/docs/#api/en/lights/AmbientLight)
 - [DirectionalLight](https://threejs.org/docs/#api/en/lights/DirectionalLight)
@@ -132,6 +146,7 @@ When using TSL, use node-based materials:
 ### Loaders
 - [TextureLoader](https://threejs.org/docs/#api/en/loaders/TextureLoader)
 - [GLTFLoader](https://threejs.org/docs/#examples/en/loaders/GLTFLoader)
+
 ### Controls
 - [OrbitControls](https://threejs.org/docs/#examples/en/controls/OrbitControls)
 - [TransformControls](https://threejs.org/docs/#examples/en/controls/TransformControls)

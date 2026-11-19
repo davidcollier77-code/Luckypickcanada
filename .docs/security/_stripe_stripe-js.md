@@ -16934,7 +16934,7 @@ The following subset of [IETF language tags](https://en.wikipedia.org/wiki/IETF_
 Value   | Locale                                   | Elements | Checkout
 --------|------------------------------------------|----------|----------
 `auto`  | Stripe detects the locale of the browser | ✔        | ✔
-`ar`    | Arabic                                   | ✔        |
+`ar`    | Arabic                                   | ✔        | ✔
 `bg`    | Bulgarian (Bulgaria)                     | ✔        | ✔
 `cs`    | Czech (Czech Republic)                   | ✔        | ✔
 `da`    | Danish (Denmark)                         | ✔        | ✔
@@ -16949,7 +16949,7 @@ Value   | Locale                                   | Elements | Checkout
 `fil`   | Filipino (Philipines)                    | ✔        | ✔
 `fr`    | French (France)                          | ✔        | ✔
 `fr-CA` | French (Canada)                          | ✔        | ✔
-`he`    | Hebrew (Israel)                          | ✔        |
+`he`    | Hebrew (Israel)                          | ✔        | ✔
 `hr`    | Croatian (Croatia)                       | ✔        | ✔
 `hu`    | Hungarian (Hungary)                      | ✔        | ✔
 `id`    | Indonesian (Indonesia)                   | ✔        | ✔
