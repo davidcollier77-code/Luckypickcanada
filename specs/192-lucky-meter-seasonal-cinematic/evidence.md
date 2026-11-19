@@ -26,15 +26,35 @@ are all visible at once.
 | --- | --- | --- |
 | Type check | `pnpm exec tsc --noEmit` | exit 0 |
 | Full unit suite | `pnpm exec vitest run` | 101 files / 1,046 tests passed |
-| Browser, desktop | `pnpm exec playwright test tests/visual/lucky-meter-daily-resonance.spec.ts --project=desktop` | 13 passed, 1 skipped |
-| Browser, 390 px | `... --project=mobile-390` | 13 passed, 1 skipped |
-| Browser, 412 px | `... --project=mobile-412` | 13 passed, 1 skipped |
-| Evidence capture | `LUCKY_METER_CAPTURE=1 pnpm exec playwright test ... --grep "captures the arrival"` | 2 passed |
-| Repository gate | `./freebuff-verify.sh` | exit 0 (type check, build, Spec Kit gate, governance and docs tests) |
-| Production size | clean `pnpm run build`, then `.next` + `public` | 350 MiB (`du -sm`; 334.5 MiB actual), below 495 MiB |
+| Browser, desktop | `./scripts/playwright-cli.sh test tests/visual/lucky-meter-daily-resonance.spec.ts --project=desktop` | 13 passed, 1 opt-in skip |
+| Browser, 390 px | `... --project=mobile-390` | 13 passed, 1 opt-in skip |
+| Browser, 412 px | `... --project=mobile-412` | 13 passed, 1 opt-in skip |
+| Mobile accessibility | `... tests/visual/mobile-accessibility.spec.ts --project=mobile-390 --project=mobile-412` | 12 passed (both mobile projects, six routes each) |
+| Crystal Ball control | `... tests/visual/crystal-ball-interactions.spec.ts --project=desktop` | 1 passed (the CI failure did not reproduce) |
+| Evidence capture | `LUCKY_METER_CAPTURE=1 ./scripts/playwright-cli.sh test ... --grep "captures the arrival"` | 2 passed |
+| Repository gate | `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` | exit 0 (Spec Kit gate, governance, type check, build and 48 docs tests) |
+| Production size | clean `rm -rf .next && pnpm run build`, then `.next` + `public` | 350 MiB (`du -sm`; 334.28 MiB actual), below 495 MiB |
+| Advisory checkers | `checker_suite.py performance` and `test-quality` on the eight changed source/test files | no findings |
 
 The skipped Playwright test is the opt-in evidence block; it passes when `LUCKY_METER_CAPTURE=1` is set, as
 recorded above.
+
+## Review repairs (PR #1964)
+
+The repository owner asked for a review and repair of the open PR. Confirmed findings were fixed; potential findings without a reproduction were not treated as defects.
+
+| Finding | Disposition |
+| --- | --- |
+| The welcome-screen pointer used a gradient defined only inside the conditional wheel SVG, so it painted as a dark outline. | **Fixed.** The gradient now lives in the always-mounted pointer SVG, and the arrival browser test asserts it exists before a reading. |
+| The arrival fallback timer was hard-coded to 4,300 ms instead of the storyboard total (1,750 + 1,300 + 700 = 3,750 ms). | **Fixed.** `ARRIVAL_TOTAL_MS` is derived from `STORYBOARD_TIMING` and used by the fallback. |
+| `DailyResonance` duplicated `colourPointerRotation` with hard-coded 180°/30°. | **Fixed.** All call sites use the shared `reveal.js` export. |
+| `playEventCue` was listed as a dependency of `handleReveal` but was not called there. | **Fixed.** Removed the unused dependency. |
+| The tier-message writer reused the Spark punctuation constant. | **Fixed.** Added a dedicated `messagePunctuationPauseMs` with the same 220 ms value so the two writers can evolve independently. |
+| Two legacy audio paths omitted the `/sounds/` prefix. | **Verified.** Both files ship from `public/`; the intentional root paths are now documented beside the source map. |
+| Mobile `/lucky-meter` and `/` exposed 10–11 px reading text, failing the 12 px Visual QA floor. | **Fixed.** Lucky Meter labels, result text, countdown and Spark header, plus the homepage visits pill, are 12 px. |
+| The `landed` phase is a deliberate 450 ms beat that locator polling can miss. | **Test fixed.** The browser test records phase transitions from the first frame and stops its animation-frame loop on `revealed`. |
+| Crystal Ball Visual QA failure appeared in the same shard run. | **Not reproducible.** The exact desktop test passes locally (1 passed); no Crystal Ball code changed. |
+| WebGL context-loss hardening suggestion. | **Not changed.** It remains a potential hardening follow-up; no context-loss reproduction was available and this repair did not touch the renderer lifecycle. |
 
 ## Visual findings
 

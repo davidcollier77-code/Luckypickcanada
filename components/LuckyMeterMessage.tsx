@@ -66,7 +66,7 @@ export default function LuckyMeterMessage({
       timer = window.setTimeout(
         tick,
         /[.,!?:;—–]/.test(previous)
-          ? STORYBOARD_TIMING.sparkPunctuationPauseMs
+          ? STORYBOARD_TIMING.messagePunctuationPauseMs
           : STORYBOARD_TIMING.messageCharMs,
       );
     };

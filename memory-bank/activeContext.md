@@ -45,17 +45,35 @@ owned by one Sparks & Seasonal Colours config beside the thirty Sparks.
 - The Milky Way artwork, `objectPosition`, overlay, Aurora, ornaments, tier/event mapping, sharing,
   entertainment disclaimer and compact mode are unchanged.
 
+## Review Repairs
+
+- The always-mounted pointer owns its `lucky-pointer-gold` gradient; the arrival test now asserts
+  it before a reading exists. The 4,300 ms fallback is replaced by `ARRIVAL_TOTAL_MS` (3,750 ms),
+  the local angle helper is replaced by shared `colourPointerRotation`, and the unused
+  `playEventCue` dependency is removed.
+- The tier message has its own punctuation constant. The two legacy audio root paths were verified
+  against `public/` and documented. Mobile reading text is 12 px on the Lucky Meter and the homepage
+  visits pill, satisfying the Visual QA floor.
+- The transient `landed` browser assertion now records phase history from the first frame and stops
+  its animation-frame loop. The Crystal Ball failure from the same shard run did not reproduce.
+
 ## Verification
 
 - Full Vitest: 101 files / 1,046 tests pass.
 - `pnpm exec tsc --noEmit`: exit 0.
 - Lucky Meter Playwright spec passes on desktop, mobile-390 and mobile-412 (13 passed / 1 opt-in skip each).
+- Mobile accessibility spec: 12 passed across mobile-390 and mobile-412 (six audited routes each).
+- Crystal Ball desktop control: 1 passed; the CI-only failure did not reproduce.
 - Evidence captures: `artifacts/lucky-meter-seasonal-cinematic-20261119/{before,after}`.
-- Production build and `./freebuff-verify.sh` are run before submission and recorded in
-  `specs/192-lucky-meter-seasonal-cinematic/evidence.md`.
+- Clean production build: 350 MiB by `du -sm` (334.28 MiB actual), below 495 MiB.
+- `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh`: exit 0.
+- Advisory `performance` and `test-quality` checkers on the eight changed source/test files: no findings.
+- Full evidence is recorded in `specs/192-lucky-meter-seasonal-cinematic/evidence.md`.
 
 ## Limitations
 
 - No hardware GPU; captures are software-rendered.
 - Audio was not auditioned; cue scheduling is covered by unit tests.
 - The static fallback is tested by blocking WebGL, not on a GPU-less device.
+- A WebGL context-loss hardening suggestion remains a potential follow-up; no reproduction was available.
+- The Crystal Ball Visual QA failure from the same earlier shard run did not reproduce locally.

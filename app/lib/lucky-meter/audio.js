@@ -8,6 +8,8 @@
  * or plays anything: the Start press still owns playback.
  */
 const SOUND_SOURCES = Object.freeze({
+  // These two legacy recordings ship from the web root, not /sounds/; keep
+  // their exact paths so the existing files continue to resolve.
   buildup: { src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 },
   segmentOpen: {
     src: ['/sounds/crystal-ball-leaf.mp3', '/sounds/crystal-ball-leaf.wav'],

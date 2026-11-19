@@ -26,6 +26,7 @@ import {
 } from '../app/lib/lucky-meter/storage';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
+  ARRIVAL_TOTAL_MS,
   STORYBOARD_TIMING,
   getDockMs,
   getMessageTypingMs,
@@ -33,9 +34,8 @@ import {
 } from '../app/lib/lucky-meter/storyboard';
 import {
   buildColourSpin,
-  getColourIndex,
+  colourPointerRotation,
   getEventDurationMs,
-  normalizeAngle,
   sampleColourSpin,
   sampleGenerationPercentage,
 } from '../app/lib/lucky-meter/reveal';
@@ -170,7 +170,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (result || leavesCleared) return undefined;
     const timer = window.setTimeout(() => {
       if (isMountedRef.current) setLeavesCleared(true);
-    }, 4300);
+    }, ARRIVAL_TOTAL_MS);
     return () => window.clearTimeout(timer);
   }, [result, leavesCleared]);
 
@@ -498,7 +498,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           rafRef.current = null;
         }
         setMotion({
-          wheelAngle: colourPointerRotationFor(next.colour.id, activePalette),
+          wheelAngle: colourPointerRotation(next.colour.id, activePalette),
           percentage: next.percentage,
           numberReveal: 1,
           pourProgress: 1,
@@ -717,7 +717,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       setResult(saved);
       setMotion({
-        wheelAngle: colourPointerRotationFor(
+        wheelAngle: colourPointerRotation(
           saved.colour.id,
           getPaletteForSeasonKey(saved.season || '').length > 0
             ? getPaletteForSeasonKey(saved.season || '')
@@ -858,7 +858,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           : getSeasonForDateKey(next.dateKey)?.colours || [];
       setStage('revealed');
       setMotion({
-        wheelAngle: colourPointerRotationFor(next.colour.id, activePalette),
+        wheelAngle: colourPointerRotation(next.colour.id, activePalette),
         percentage: next.percentage,
         numberReveal: 1,
         pourProgress: 1,
@@ -975,7 +975,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     dateKey,
     ensureRevealAudio,
     history,
-    playEventCue,
     protectRevealWindow,
     ready,
     reducedMotion,
@@ -1049,7 +1048,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const countdownBlock = (
     <div className="lucky-countdown lucky-countdown--dock" data-testid="lucky-meter-countdown">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-slate-300/80">
+      <p className="text-[12px] uppercase tracking-[0.18em] text-slate-300/80">
         Next Resonance In
       </p>
       <div
@@ -1159,7 +1158,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       >
         <div className={`flex w-full flex-col items-center ${isCompact ? '' : 'max-w-4xl'}`}>
           {totalVisits !== null && !isCompact && (
-            <div className="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[11px] sm:text-xs tracking-widest uppercase">
+            <div className="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[12px] tracking-widest uppercase">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
@@ -1252,7 +1251,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             {stage === 'anticipating' || stage === 'generating' ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1.5 text-[clamp(10px,1.3vh,12px)] uppercase tracking-[0.16em] text-amber-200/70">
+                <p className="mb-1.5 text-[12px] uppercase tracking-[0.16em] text-amber-200/70">
                   Daily Resonance
                 </p>
                 <div
@@ -1264,14 +1263,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   {motion.percentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-slate-400 sm:text-[11px]">
+                <p className="mt-1.5 text-[12px] uppercase tracking-[0.14em] text-slate-400">
                   {stage === 'anticipating' ? 'The sky is listening' : 'The wheel is turning'}
                 </p>
               </div>
             ) : stage === 'landed' || hasDetails ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1 text-[clamp(10px,1.3vh,12px)] uppercase tracking-[0.16em] text-amber-200/65">
+                <p className="mb-1 text-[12px] uppercase tracking-[0.16em] text-amber-200/65">
                   Daily Resonance
                 </p>
                 <div
@@ -1294,13 +1293,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ) : (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Daily Resonance Ritual</h1>
-                <p className="text-[11px] uppercase tracking-[0.2em] text-amber-200/60 sm:text-[12px]">
+                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60">
                   Daily Resonance
                 </p>
                 <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
                   —
                 </span>
-                <p className="mt-1.5 text-[11px] uppercase tracking-[0.16em] text-slate-400 sm:text-[12px]">
+                <p className="mt-1.5 text-[12px] uppercase tracking-[0.16em] text-slate-400">
                   Awaiting the reading
                 </p>
               </div>
@@ -1340,7 +1339,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   }}
                 />
                 <div className="min-w-0 text-left">
-                  <h2 className="lucky-panel-label text-[10px] uppercase sm:text-[11px]">
+                  <h2 className="lucky-panel-label text-[12px] uppercase">
                     {LUCKY_COLOUR_LABEL}
                   </h2>
                   <p
@@ -1350,13 +1349,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     {result.colour.name}
                   </p>
                   <p
-                    className="text-[10px] uppercase tracking-wider text-slate-300/85 tabular-nums sm:text-[11px]"
+                    className="text-[12px] uppercase tracking-wider text-slate-300/85 tabular-nums"
                     style={{ opacity: 0.35 + pourFill * 0.65 }}
                   >
                     {result.colour.hex}
                   </p>
                 </div>
-                <span className="ml-auto hidden text-[10px] uppercase tracking-[0.16em] text-amber-200/60 sm:block">
+                <span className="ml-auto hidden text-[12px] uppercase tracking-[0.16em] text-amber-200/60 sm:block">
                   {getSeasonForDateKey(result.dateKey)?.name ?? ''}
                 </span>
               </div>
@@ -1375,7 +1374,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     className={`${panelClass} col-span-1 p-2.5 sm:p-3`}
                     data-testid="lucky-number-panel"
                   >
-                    <h2 className="lucky-panel-label text-[11px] uppercase sm:text-[12px]">
+                    <h2 className="lucky-panel-label text-[12px] uppercase">
                       {LUCKY_NUMBER_LABEL}
                     </h2>
                     <p
@@ -1385,7 +1384,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     >
                       {result.luckyNumber}
                     </p>
-                    <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-slate-400 sm:text-[11px]">
+                    <p className="mt-1 text-[12px] uppercase tracking-[0.14em] text-slate-400">
                       1 – 50
                     </p>
                   </section>
@@ -1396,7 +1395,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     className={`${panelClass} col-span-1 p-2.5 sm:p-3`}
                     data-testid="lucky-event-panel"
                   >
-                    <h2 className="lucky-panel-label text-[11px] uppercase sm:text-[12px]">
+                    <h2 className="lucky-panel-label text-[12px] uppercase">
                       Today&apos;s Event
                     </h2>
                     <p className="mt-0.5 text-[13px] font-semibold leading-tight text-white sm:text-base">
@@ -1435,7 +1434,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     <div className="mt-2">{countdownBlock}</div>
                   )}
                   {!isCompact && sparkComplete && (
-                    <p className="mt-2 hidden text-center text-[11px] text-slate-500 sm:block">
+                    <p className="mt-2 hidden text-center text-[12px] text-slate-500 sm:block">
                       A new reading appears after local midnight.
                     </p>
                   )}
@@ -1451,13 +1450,4 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       </div>
     </div>
   );
-}
-
-/** The settled wheel rotation for a stored colour: selected segment under 6 o'clock. */
-function colourPointerRotationFor(
-  colourId: string,
-  palette: ReadonlyArray<ColourRecord>,
-): number {
-  const index = Math.max(0, getColourIndex(colourId, palette));
-  return normalizeAngle(180 - index * 30);
 }

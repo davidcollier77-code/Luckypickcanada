@@ -49,6 +49,8 @@ export const STORYBOARD_TIMING = Object.freeze({
   messageDelayMs: 700,
   /** Frame 6: one character at a time. */
   messageCharMs: 34,
+  /** Frame 6: the longer beat after punctuation in the faster tier line. */
+  messagePunctuationPauseMs: 220,
   /** Frame 6: the finished sentence stays readable. */
   messageHoldMs: 2500,
   /** Frame 6: and fades away before the celebration. */
@@ -70,6 +72,12 @@ export const STORYBOARD_TIMING = Object.freeze({
   flashMs: 700,
   flashCount: 2,
 });
+
+/** Milliseconds from first paint until Start can appear without the arrival canvas. */
+export const ARRIVAL_TOTAL_MS =
+  STORYBOARD_TIMING.leafHoldMs +
+  STORYBOARD_TIMING.leafBreezeMs +
+  STORYBOARD_TIMING.startDelayMs;
 
 /**
  * Milliseconds from Start until the percentage and the wheel stop. Both use the
@@ -104,7 +112,7 @@ export function getMessageTypingMs(message) {
   for (let index = 0; index < characters.length; index += 1) {
     const character = characters[index];
     total += PUNCTUATION.test(character)
-      ? STORYBOARD_TIMING.sparkPunctuationPauseMs
+      ? STORYBOARD_TIMING.messagePunctuationPauseMs
       : STORYBOARD_TIMING.messageCharMs;
   }
   return total;

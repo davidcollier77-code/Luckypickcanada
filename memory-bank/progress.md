@@ -1,3 +1,16 @@
+## 2026-11-19 — Lucky Meter PR #1964 review repairs
+- Fixed the confirmed review/Visual QA findings on the seasonal cinematic branch: the welcome pointer's
+  gradient now lives in the always-mounted pointer SVG; the arrival fallback derives 3,750 ms from the
+  storyboard; the duplicated wheel-angle helper and unused `handleReveal` dependency are gone; and the
+  tier message has its own punctuation constant.
+- Raised every Lucky Meter reading label and the homepage visits pill to the 12 px mobile floor, verified
+  with the full 12-test mobile accessibility suite. The transient `landed` assertion now records phase
+  transitions instead of polling a 450 ms state.
+- Verified 101 files / 1,046 unit tests, type check, 13 Playwright passes on each of desktop, 390 and 412,
+  two evidence captures, the Crystal Ball desktop control, both advisory checkers with no findings,
+  `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0, and a clean 334.28 MiB build (350 MiB by
+  `du -sm`), below the 495 MiB cap.
+
 ## 2026-11-18 — Site-wide resource-readiness hub
 - Added one preparation hub over the existing adaptive plan: experience registrations with version, routes,
   dependencies and ordered resources; image (load + decode), code (Next router prefetch) and audio (existing

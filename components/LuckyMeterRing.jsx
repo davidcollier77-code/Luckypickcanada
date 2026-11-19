@@ -289,12 +289,6 @@ export default function LuckyMeterRing({
             <clipPath id="lucky-wheel-drain-clip">
               <path d={drainClip} />
             </clipPath>
-            <linearGradient id="lucky-pointer-gold" x1="0" y1="0" x2="0.55" y2="1">
-              <stop offset="0%" stopColor="#fff8d8" />
-              <stop offset="30%" stopColor="#f3d583" />
-              <stop offset="62%" stopColor="#c9962f" />
-              <stop offset="100%" stopColor="#7d5310" />
-            </linearGradient>
           </defs>
 
           {/* Pigment body. The whole group rotates beneath the fixed pointer. */}
@@ -482,6 +476,16 @@ export default function LuckyMeterRing({
         }}
       >
         <svg viewBox="0 0 100 100" className="h-auto w-full drop-shadow-[0_4px_10px_rgba(0,0,0,0.75)]">
+          {/* The gradient lives with the always-mounted pointer, not inside the
+              wheel SVG that only exists once a reading is present. */}
+          <defs>
+            <linearGradient id="lucky-pointer-gold" x1="0" y1="0" x2="0.55" y2="1">
+              <stop offset="0%" stopColor="#fff8d8" />
+              <stop offset="30%" stopColor="#f3d583" />
+              <stop offset="62%" stopColor="#c9962f" />
+              <stop offset="100%" stopColor="#7d5310" />
+            </linearGradient>
+          </defs>
           <path
             d={POINTER_PATH}
             fill="url(#lucky-pointer-gold)"

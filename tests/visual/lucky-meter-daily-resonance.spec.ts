@@ -191,7 +191,11 @@ test.describe('Daily Resonance arrival and Start', () => {
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
     await expect(page.getByTestId('lucky-colour-panel')).toHaveCount(0);
-    await expect(page.getByTestId('lucky-meter-pointer')).toHaveAttribute('data-position', '6');
+    const pointer = page.getByTestId('lucky-meter-pointer');
+    await expect(pointer).toHaveAttribute('data-position', '6');
+    // The fixed leaf must be gold before any reading exists, not only after
+    // the wheel (and its gradient definitions) mounts.
+    await expect(pointer.locator('#lucky-pointer-gold')).toHaveCount(1);
   });
 });
 
@@ -200,22 +204,52 @@ test.describe('Daily Resonance storyboard', () => {
     page,
   }) => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    // `landed` is a deliberate 450 ms beat before the pour. Polling can miss it
+    // on a slow runner, so record the phase transitions from the first frame.
+    await page.evaluate(() => {
+      const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
+      const phases: string[] = [];
+      (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases = phases;
+      let last = '';
+      let frame = 0;
+      const stop = () => {
+        window.removeEventListener('pagehide', stop);
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
+      };
+      const sample = () => {
+        const phase = ring?.getAttribute('data-phase') ?? '';
+        if (phase && phase !== last) {
+          phases.push(phase);
+          last = phase;
+        }
+        if (phase === 'revealed') {
+          stop();
+          return;
+        }
+        frame = window.requestAnimationFrame(sample);
+      };
+      window.addEventListener('pagehide', stop, { once: true });
+      frame = window.requestAnimationFrame(sample);
+    });
     await startReveal(page);
 
     const ring = page.getByTestId('lucky-meter-ring');
     const stored = (await readStoredResult(page)).result;
     const palette = getPaletteForSeasonKey(stored.season);
 
-    await expect(ring).toHaveAttribute('data-phase', 'landed', { timeout: 12_000 });
+    await expect(ring).toHaveAttribute('data-phase', 'revealed', { timeout: 20_000 });
+    const phases = await page.evaluate(
+      () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
+    );
+    expect(phases).toContain('landed');
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(stored.percentage),
     );
     const angle = Number(await ring.getAttribute('data-wheel-angle'));
     expect(Math.abs(angle - settledAngle(stored.colour.id, stored.season))).toBeLessThan(0.03);
-    await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
 
-    await expect(ring).toHaveAttribute('data-phase', 'revealed', { timeout: 8_000 });
     await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
     await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
       'data-value',
