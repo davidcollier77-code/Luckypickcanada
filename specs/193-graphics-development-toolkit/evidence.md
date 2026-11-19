@@ -151,6 +151,37 @@ Environment: Node.js 26.13.0, pnpm 10.30.3, frozen lockfile install
 | Graphite: Three.js does not restore its own context | `node_modules/three/src/renderers/WebGLRenderer.js` lines 1127+ contain `onContextRestore`, which resets `_isContextLost` and re-initialises GL state | **Not a defect** — the existing restore path is correct; a comment now names the mechanism |
 | Visual QA shard cancelled | The run was `cancelled`, not a test failure; shard 1 evidence was not available locally | **Unverified locally** — CI re-runs after the push |
 
+### PR #1972 review repair round
+
+Two review services reported findings on the first commit. Each was checked against the code; the
+genuine ones were repaired and the rest were confirmed already correct.
+
+| Finding | Verdict | Repair |
+| --- | --- | --- |
+| Analyser retry budget never re-armed, so a first cue played after ~30 s was never measured | Genuine | `refresh()` resets the attempt budget before attaching, and a late cue is covered by a regression test |
+| A beat frame decayed its own transient before publishing it | Genuine | The decay now applies only when the frame did not fire a beat |
+| A closed audio context left the shared tap permanently dead | Genuine | Analysis failure drops the stale tap, releases the caller's hold and re-arms attachment |
+| Shared tap was never released on dispose | Genuine (multi-consumer risk) | Reference-counted holders: released only when the last consumer disposes |
+| `capture()` stopped the runtime behind the state's back and could serve a stale data URL | Genuine | Capture pauses through the shared state path, resumes only if it was playing, and clears the capture on rebuild |
+| Paused/reduced-motion frames advanced the scene clock, breaking deterministic capture | Genuine | Only a playing, motion-enabled loop advances the clock; explicit renders repaint frozen time |
+| `playCue()` could start the loop under reduced motion | Genuine | The surface is not started when reduced motion is on |
+| `workbenchCaptureName` embedded an unvalidated tier | Genuine | Unknown tiers are replaced with `balanced` |
+| `playCue` forwarded any caller string into the audio module | Hardened | Cue names are restricted to those the catalogue declares |
+| Inspector interval depended on the whole state object | Genuine | The interval now depends only on the stable `getState` callback |
+
+Executed after the repairs:
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused suites | `pnpm exec vitest run __tests__/graphics-sound-reactivity.test.js __tests__/graphics-creative-workbench.test.js` | PASS — 29 tests |
+| Full unit suite | `pnpm exec vitest run` | PASS — 105 files / 1116 tests |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=b92959fa ./freebuff-verify.sh` | PASS — exit 0 |
+| Clean production build | `rm -rf .next && pnpm run build`, `du -sb .next public` | PASS — 416,323,017 bytes (397.04 MiB), below 495 MiB |
+| Existing-route chunk guard | `grep -rl WebGLRenderer .next/static/chunks/app` | PASS — only the workbench route chunk |
+| Chromium re-run | `node artifacts/creative-workbench/check.mjs` | PASS — `colourPour` produced level 0.438 / bass 0.686, aurora captured 738×461 at 278,973 bytes with a full-strength transient, reduced motion `motion: none` / `audioReactive: false` / `envelope: null`, zero page errors |
+| Production route | `next start`: `/workbench/creative`, `/` | PASS — 404 and 200 |
+
 ### Limitations
 
 - No hardware GPU: any graphics rendered here is software-rendered.
@@ -189,3 +220,66 @@ before any change. Five were real and are fixed; three were not defects.
 | Repository gate | `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` | PASS — exit 0, 48 docs-updater tests |
 | Production build (repository gate metric) | `rm -rf .next && pnpm run build`, then `du -sb .next public` | PASS — 413,698,875 bytes (394.53 MiB), below 495 MiB |
 | Initial page JavaScript | `grep -rl WebGLRenderer .next/static/chunks/app \| wc -l` | PASS — 0 files |
+
+## Creative Workbench and sound reactivity (2026-11-19, continuation)
+
+### What was added
+
+- `app/lib/graphics/audio-reactivity.js` — one shared `AnalyserNode` on the graph Howler already
+  created (`masterGain → analyser → gain(0) → destination`), a smoothed/banded envelope with fast
+  attack and slow release, transient detection with a 140 ms cooldown, and bindings for the existing
+  light rig, particle field, any numeric property and beat callbacks. No `AudioContext` is created
+  and the audible mix is untouched.
+- `reactiveAudio` in `technologies.js` (with a deterministic `reducedMotion` override) and runtime
+  wiring: `frame.envelope`, `surface.reactive`, disposal with the surface.
+- `app/lib/graphics/workbench.js` (pure catalogue/state/plan/capture/gate),
+  `workbench-runtime.js` (deterministic Three.js and Canvas 2D scenes) and
+  `components/graphics/CreativeWorkbench.jsx` with `window.__creativeWorkbench`.
+- `app/workbench/creative/page.js` — dynamic, development-only, 404 in production.
+
+### Browser verification (real Chromium, software rendering)
+
+Environment: Chromium from the Playwright cache provisioned with
+`scripts/setup-chromium-libs.sh`; development server `next dev` on `localhost:3000`; script
+`artifacts/creative-workbench/check.mjs`; raw state in
+`artifacts/creative-workbench/state.json`; captures in `artifacts/creative-workbench/`.
+
+| Check | Result |
+| --- | --- |
+| Workbench loads and exposes `window.__creativeWorkbench` | **PASS** — `ready: true`, API present |
+| Resolved plan for Golden motes | **PASS** — `three`, post-processing and particles true, reasons `three-requested-webgl-available`, `sound-reactivity-enabled` |
+| Frozen frame at 2.5 s | **PASS** — `playing: false`, `time: 2.5` |
+| Existing Lucky Meter cue drives the envelope | **PASS** — after a real click on “Play cue”, `cue: colourPour`, `analysing: true`, `level 0.437`, `bass 0.674` |
+| Scene switch to Canvas 2D | **PASS** — `surfaceKind: canvas2d` (a fresh canvas element per scene; one canvas cannot hold both contexts) |
+| Canvas 2D capture | **PASS** — `creative-workbench-reactive-aurora-balanced-t2.50-seed37.png`, 738×461, 271,113 bytes |
+| Reduced motion + constrained tier | **PASS** — `motion: none`, `audioReactive: false`, `envelope: null`, `analysing: false` |
+| Page errors / console errors | **PASS** — none (only Chromium’s software-GL `GL Driver Message` warning) |
+| Production route | **PASS** — `next start`: `/workbench/creative` → 404, `/` → 200 |
+
+A hydration mismatch found in the first browser run (the plan was resolved during render, so the
+server rendered `dom` and the browser `three`) was fixed by resolving the plan after mount and
+re-verified: zero page errors.
+
+### Executed checks
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused suites | `pnpm exec vitest run __tests__/graphics-sound-reactivity.test.js __tests__/graphics-creative-workbench.test.js` | PASS — 26 tests |
+| Existing graphics suites | `pnpm exec vitest run __tests__/graphics-creative-capabilities.test.js __tests__/graphics-three-toolkit.test.js __tests__/graphics-capabilities.test.js` | PASS — 62 tests |
+| Full unit suite | `pnpm exec vitest run` | PASS — 105 files / 1113 tests |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` | PASS — exit 0 |
+| Production build | `rm -rf .next && pnpm run build`, `du -sb .next public` | PASS — 416,012,104 bytes (396.74 MiB), below 495 MiB |
+| Existing-route chunk guard | `grep -rl WebGLRenderer .next/static/chunks/app` | PASS — only the development workbench route chunk references the string; every visitor route is unchanged |
+
+### Limitations
+
+- No hardware GPU: the workbench rendered through Chromium's software rasteriser.
+- The workbench is development-only; a production deployment that sets `CREATIVE_WORKBENCH=1`
+  exposes it deliberately.
+- Howler cues declared `html5: true` bypass Web Audio and cannot be analysed; the workbench uses the
+  Web Audio Lucky Meter recordings, and this limitation is documented.
+- A WebGL canvas may refuse a direct `toDataURL` read-back without `preserveDrawingBuffer`; the
+  capture result reports `canvas-not-readable` and Playwright screenshots after `setTime()` are the
+  documented path.
+- No eslint configuration exists in the repository, so style linting could not run.

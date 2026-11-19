@@ -1,0 +1,293 @@
+{
+  "scenes": [
+    {
+      "id": "golden-motes",
+      "label": "Golden motes",
+      "description": "Three.js torus knot in gold, tiered light rig, bounded particles, bloom and ACES output.",
+      "duration": 8,
+      "cue": "colourPour"
+    },
+    {
+      "id": "reactive-crystal",
+      "label": "Reactive crystal",
+      "description": "Glass body, emissive glow, exposure and light pulses driven by the live audio envelope.",
+      "duration": 8,
+      "cue": "dockChime"
+    },
+    {
+      "id": "reactive-aurora",
+      "label": "Reactive aurora",
+      "description": "Canvas 2D ribbons and stars whose amplitude, hue and brightness follow the mix.",
+      "duration": 10,
+      "cue": "colourPour"
+    }
+  ],
+  "initial": {
+    "version": 1,
+    "ready": true,
+    "sceneId": "golden-motes",
+    "label": "Golden motes",
+    "description": "Three.js torus knot in gold, tiered light rig, bounded particles, bloom and ACES output.",
+    "tier": "balanced",
+    "seed": 11,
+    "time": 0,
+    "playing": true,
+    "reducedMotion": false,
+    "surface": "ready",
+    "surfaceKind": "three",
+    "plan": {
+      "renderer": "three",
+      "fallbacks": [
+        "canvas2d",
+        "dom"
+      ],
+      "postProcessing": true,
+      "particles": true,
+      "motion": "gsap",
+      "audio": "howler",
+      "audioReactive": true,
+      "tier": "balanced",
+      "reducedMotion": false,
+      "reasons": [
+        "three-requested-webgl-available",
+        "sound-reactivity-enabled"
+      ]
+    },
+    "envelope": {
+      "available": false,
+      "reason": "pending",
+      "level": 0,
+      "bass": 0,
+      "mids": 0,
+      "highs": 0,
+      "transient": 0,
+      "peak": 0
+    },
+    "audio": {
+      "cue": null,
+      "analysing": false
+    },
+    "fps": 0,
+    "canvas": {
+      "width": 738,
+      "height": 461
+    },
+    "capture": null,
+    "error": null,
+    "errors": []
+  },
+  "frozen": {
+    "version": 1,
+    "ready": true,
+    "sceneId": "golden-motes",
+    "label": "Golden motes",
+    "description": "Three.js torus knot in gold, tiered light rig, bounded particles, bloom and ACES output.",
+    "tier": "balanced",
+    "seed": 11,
+    "time": 2.5,
+    "playing": false,
+    "reducedMotion": false,
+    "surface": "ready",
+    "surfaceKind": "three",
+    "plan": {
+      "renderer": "three",
+      "fallbacks": [
+        "canvas2d",
+        "dom"
+      ],
+      "postProcessing": true,
+      "particles": true,
+      "motion": "gsap",
+      "audio": "howler",
+      "audioReactive": true,
+      "tier": "balanced",
+      "reducedMotion": false,
+      "reasons": [
+        "three-requested-webgl-available",
+        "sound-reactivity-enabled"
+      ]
+    },
+    "envelope": {
+      "available": false,
+      "reason": "pending",
+      "level": 0,
+      "bass": 0,
+      "mids": 0,
+      "highs": 0,
+      "transient": 0,
+      "peak": 0
+    },
+    "audio": {
+      "cue": null,
+      "analysing": false
+    },
+    "fps": 0,
+    "canvas": {
+      "width": 738,
+      "height": 461
+    },
+    "capture": null,
+    "error": null,
+    "errors": []
+  },
+  "sounding": {
+    "version": 1,
+    "ready": true,
+    "sceneId": "golden-motes",
+    "label": "Golden motes",
+    "description": "Three.js torus knot in gold, tiered light rig, bounded particles, bloom and ACES output.",
+    "tier": "balanced",
+    "seed": 11,
+    "time": 2.5,
+    "playing": true,
+    "reducedMotion": false,
+    "surface": "ready",
+    "surfaceKind": "three",
+    "plan": {
+      "renderer": "three",
+      "fallbacks": [
+        "canvas2d",
+        "dom"
+      ],
+      "postProcessing": true,
+      "particles": true,
+      "motion": "gsap",
+      "audio": "howler",
+      "audioReactive": true,
+      "tier": "balanced",
+      "reducedMotion": false,
+      "reasons": [
+        "three-requested-webgl-available",
+        "sound-reactivity-enabled"
+      ]
+    },
+    "envelope": {
+      "available": true,
+      "reason": null,
+      "level": 0.437,
+      "bass": 0.673,
+      "mids": 0.37,
+      "highs": 0.219,
+      "transient": 0,
+      "peak": 0.965
+    },
+    "audio": {
+      "cue": "colourPour",
+      "analysing": true
+    },
+    "fps": 60,
+    "canvas": {
+      "width": 738,
+      "height": 461
+    },
+    "capture": null,
+    "error": null,
+    "errors": []
+  },
+  "aurora": {
+    "version": 1,
+    "ready": true,
+    "sceneId": "reactive-aurora",
+    "label": "Reactive aurora",
+    "description": "Canvas 2D ribbons and stars whose amplitude, hue and brightness follow the mix.",
+    "tier": "balanced",
+    "seed": 37,
+    "time": 2.5,
+    "playing": false,
+    "reducedMotion": false,
+    "surface": "ready",
+    "surfaceKind": "canvas2d",
+    "plan": {
+      "renderer": "canvas2d",
+      "fallbacks": [
+        "dom"
+      ],
+      "postProcessing": false,
+      "particles": true,
+      "motion": "css",
+      "audio": "howler",
+      "audioReactive": true,
+      "tier": "balanced",
+      "reducedMotion": false,
+      "reasons": [
+        "canvas2d-requested",
+        "sound-reactivity-enabled"
+      ]
+    },
+    "envelope": {
+      "available": true,
+      "reason": null,
+      "level": 0.194,
+      "bass": 0.288,
+      "mids": 0.17,
+      "highs": 0.105,
+      "transient": 0.935,
+      "peak": 0.992
+    },
+    "audio": {
+      "cue": null,
+      "analysing": true
+    },
+    "fps": 0,
+    "canvas": {
+      "width": 738,
+      "height": 461
+    },
+    "capture": null,
+    "error": null,
+    "errors": []
+  },
+  "capture": {
+    "ok": true,
+    "filename": "creative-workbench-reactive-aurora-balanced-t2.50-seed37.png",
+    "width": 738,
+    "height": 461,
+    "bytes": 271113,
+    "reason": null
+  },
+  "calm": {
+    "version": 1,
+    "ready": true,
+    "sceneId": "reactive-aurora",
+    "label": "Reactive aurora",
+    "description": "Canvas 2D ribbons and stars whose amplitude, hue and brightness follow the mix.",
+    "tier": "constrained",
+    "seed": 37,
+    "time": 2.5,
+    "playing": false,
+    "reducedMotion": true,
+    "surface": "ready",
+    "surfaceKind": "canvas2d",
+    "plan": {
+      "renderer": "canvas2d",
+      "fallbacks": [
+        "dom"
+      ],
+      "postProcessing": false,
+      "particles": true,
+      "motion": "none",
+      "audio": "howler",
+      "audioReactive": false,
+      "tier": "constrained",
+      "reducedMotion": true,
+      "reasons": [
+        "canvas2d-requested",
+        "sound-reactivity-reduced-motion"
+      ]
+    },
+    "envelope": null,
+    "audio": {
+      "cue": null,
+      "analysing": false
+    },
+    "fps": 0,
+    "canvas": {
+      "width": 738,
+      "height": 461
+    },
+    "capture": null,
+    "error": null,
+    "errors": []
+  },
+  "errors": []
+}

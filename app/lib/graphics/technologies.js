@@ -22,6 +22,7 @@ import {
   supportsCanvas2D,
   supportsWebGL,
 } from '../graphics-capabilities.js';
+import { supportsAudioAnalysis } from './audio-reactivity.js';
 
 /** Render technologies the toolkit can build or adopt. */
 export const GRAPHICS_TECHNOLOGY = Object.freeze({
@@ -67,6 +68,7 @@ function tierOf(quality) {
  *   particles?: boolean,
  *   timeline?: boolean,
  *   audio?: boolean,
+ *   reactiveAudio?: boolean,
  * }} [requirements]
  */
 export function normalizeRequirements(requirements = {}) {
@@ -84,6 +86,7 @@ export function normalizeRequirements(requirements = {}) {
     particles: requirements.particles === true,
     timeline: requirements.timeline === true,
     audio: requirements.audio === true,
+    reactiveAudio: requirements.reactiveAudio === true,
   });
 }
 
@@ -94,8 +97,13 @@ export function normalizeRequirements(requirements = {}) {
  * caller may use when `renderer` fails. `postProcessing` is only ever true for
  * a Three.js stage, because the composer needs a Three renderer and scene.
  *
+ * `overrides.reducedMotion` exists so a deterministic harness (the Creative
+ * Workbench, a visual-QA run) can exercise both presentations without changing
+ * the visitor's OS setting.
+ *
  * @param {object} [requirements]
  * @param {{ tier?: string, maxPixelRatio?: number }} [quality]
+ * @param {{ reducedMotion?: boolean }} [overrides]
  * @returns {{
  *   renderer: string,
  *   fallbacks: string[],
@@ -103,15 +111,19 @@ export function normalizeRequirements(requirements = {}) {
  *   particles: boolean,
  *   motion: string,
  *   audio: string,
+ *   audioReactive: boolean,
  *   tier: string,
  *   reducedMotion: boolean,
  *   reasons: string[],
  * }}
  */
-export function selectGraphicsTechnologies(requirements = {}, quality) {
+export function selectGraphicsTechnologies(requirements = {}, quality, overrides = {}) {
   const wanted = normalizeRequirements(requirements);
   const tier = tierOf(quality);
-  const reducedMotion = prefersReducedMotion();
+  const reducedMotion =
+    typeof overrides?.reducedMotion === 'boolean'
+      ? overrides.reducedMotion
+      : prefersReducedMotion();
   const reasons = [];
 
   const wantsThree =
@@ -162,6 +174,15 @@ export function selectGraphicsTechnologies(requirements = {}, quality) {
 
   const audio = wanted.audio ? AUDIO_TECHNOLOGY.HOWLER : AUDIO_TECHNOLOGY.NONE;
 
+  // Sound reactivity analyses the existing mix; it never creates an audio
+  // context of its own. Reduced motion turns it off with the rest of the motion.
+  const audioReactive = wanted.reactiveAudio && !reducedMotion && supportsAudioAnalysis();
+  if (wanted.reactiveAudio && !audioReactive) {
+    reasons.push(reducedMotion ? 'sound-reactivity-reduced-motion' : 'sound-reactivity-unavailable');
+  } else if (audioReactive) {
+    reasons.push('sound-reactivity-enabled');
+  }
+
   return Object.freeze({
     renderer,
     fallbacks: Object.freeze(fallbacks),
@@ -169,6 +190,7 @@ export function selectGraphicsTechnologies(requirements = {}, quality) {
     particles: wanted.particles,
     motion,
     audio,
+    audioReactive,
     tier,
     reducedMotion,
     reasons: Object.freeze(reasons),

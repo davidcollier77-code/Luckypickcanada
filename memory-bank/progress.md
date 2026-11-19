@@ -1,3 +1,32 @@
+## 2026-11-19 — PR #1972 review repairs
+
+- Repaired the genuine findings from two review services: analyser attachment is re-armed instead of
+  permanently locked out after its retry budget, a beat frame publishes its full transient, a dead
+  audio context releases the shared tap and reconnects, the tap is reference-counted across
+  consumers, capture pauses through the shared state path and clears stale data URLs, only a playing
+  loop advances the scene clock, reduced motion never starts a loop, capture names validate their
+  tier and cue names are restricted to the catalogue.
+- Verified 29 focused tests, 105 files / 1,116 tests, `tsc` exit 0,
+  `SPEC_KIT_BASE_REF=b92959fa ./freebuff-verify.sh` exit 0, a clean 416,323,017-byte build
+  (397.04 MiB) and a Chromium re-run with a live envelope of 0.438 and a reduced-motion frame that
+  reports no reactivity.
+
+## 2026-11-19 — Creative Workbench and sound-reactive cinematics (spec 193 continuation)
+- Added an opt-in sound-reactivity bridge on the existing audio system: one shared `AnalyserNode`
+  taps Howler's Web Audio mix through a silent zero-gain branch, and a smoothed envelope (fast
+  attack/slow release, transient detection) drives the existing light rig, particle field and any
+  numeric property. No audio context, player or second audio system is created; `html5: true` cues
+  are documented as bypassing Web Audio.
+- Added a development-only Creative Workbench at `/workbench/creative`: a pure scene catalogue with
+  forced tier/seed and a bounded clock, deterministic Three.js and Canvas 2D scenes built through
+  the production runtime, PNG capture and `window.__creativeWorkbench` (`getState`, `setTime`,
+  `playCue`, `capture`, …) so agents can inspect and photograph visuals before PR approval. The
+  route 404s in production unless `CREATIVE_WORKBENCH=1`.
+- Verified 26 focused tests, 62 existing graphics tests, 105 files / 1,113 unit tests, `tsc` exit 0,
+  `./freebuff-verify.sh` exit 0, a clean 416,012,104-byte build (396.74 MiB), a real Chromium run
+  that measured a live envelope (level 0.437) from an existing Lucky Meter cue and captured a Canvas
+  2D PNG, and a production 404 for the sandbox route.
+
 ## 2026-11-19 — Three.js concise LLM documentation source
 - Added `/websites/threejs_llms_txt` as a distinct URL source for `https://threejs.org/docs/llms.txt`, routed to Creation and Polishing with a canonical Creation snapshot and Polishing symlink.
 - Preserved the existing `/websites/threejs` full-documentation source (`llms-full.txt`) unchanged. No application code, dependencies or updater workflow changed.

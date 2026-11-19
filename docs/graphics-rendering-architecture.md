@@ -314,6 +314,8 @@ plays a sound, draws a frame or runs business logic.
 | `components/graphics/CreativeSurface.jsx` | React wrapper that builds, starts and disposes the selected surface |
 | `app/lib/use-creative-experience.js` | React binding that resolves the plan and prepares the experience automatically |
 | `examples/golden-motes.js` | Runnable worked example (not mounted) |
+| `audio-reactivity.js` | Shared analyser on the existing Howler mix; smoothed envelope bound to lights, particles and numeric values |
+| `workbench.js`, `workbench-runtime.js`, `components/graphics/CreativeWorkbench.jsx` | Development-only visual-QA sandbox with deterministic scenes and an inspection API |
 
 ### Integration of existing experiences
 

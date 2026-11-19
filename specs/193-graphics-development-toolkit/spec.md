@@ -239,3 +239,82 @@ No visual, artwork, layout, copy, audio or timing change to an existing experien
 forced onto the existing renderers. The documentation-library, its manifest, updater workflows and
 Cloudflare scheduler remain the owner's separate work and are untouched here. The production build
 stays strictly below 495 MiB.
+
+---
+
+## Continuation — Creative Workbench and sound-reactive cinematics (2026-11-19)
+
+The owner asked for two improvements to this same layer, in this same pull request:
+
+1. **Creative Workbench** — a shared sandbox where AI coding agents can experiment with graphics,
+   inspect visual effects, capture screenshots and perform visual QA before PR approval.
+2. **Sound-Reactive Cinematics** — connect existing audio effects with particles, lighting and
+   animations so the visuals respond naturally to the sounds being played.
+
+Both build on the existing infrastructure. No visitor route, artwork, animation, timing, sound,
+layout, dependency or service changes.
+
+### User Story 9 — An agent can inspect a visual before approving a PR (P1)
+
+A coding agent opens `/workbench/creative`, selects a catalogue scene, forces a tier and seed,
+freezes the scene clock at a known time and captures a PNG. It reads the resolved technology plan,
+surface kind, audio envelope, frame rate and errors as plain JSON through
+`window.__creativeWorkbench`.
+
+**Independent Test**: in development, call `getState()`, `setTime(2.5)` and `capture()`; confirm the
+plan, the frozen frame and the deterministic filename.
+
+**Acceptance scenarios**:
+
+1. **Given** the workbench in development, **When** it loads, **Then** it mounts a catalogue scene
+   through `createCreativeSurface` and reports `ready: true` with the plan it actually resolved.
+2. **Given** a ready workbench, **When** `setTime(2.5)` is called, **Then** animation stops and one
+   composed frame is painted from a frozen clock.
+3. **Given** a capture, **Then** the PNG name is
+   `creative-workbench-<scene>-<tier>-t<t>s-seed<s>.png` and `readCapture()` returns its data URL.
+4. **Given** `setTier('constrained')` or `setReducedMotion(true)`, **Then** the plan resolves with
+   that tier, or with `motion: 'none'` and `audioReactive: false`, independent of the OS setting.
+
+### User Story 10 — Visuals follow the sound the visitor already hears (P1)
+
+An experience declares `reactiveAudio: true`; the layer measures the existing audio mix and binds a
+smoothed envelope to the existing light rig, particle field or any numeric property.
+
+**Independent Test**: create a surface with `reactiveAudio: true`, play a Lucky Meter cue in the
+workbench and confirm `frame.envelope.level` rises while the bound values follow.
+
+**Acceptance scenarios**:
+
+1. **Given** `audioReactive` in the plan, **When** a frame renders, **Then** it carries
+   `{ level, bass, mids, highs, transient, peak, beat, available }`.
+2. **Given** a bound rig, **When** the mix jumps, **Then** one pulse fires for that transient
+   (140 ms cooldown) and a glow proportional to the level holds between beats.
+3. **Given** reduced motion, a hidden page or no analysable audio, **Then** the envelope stays
+   neutral, no analyser is read and the visual keeps its resting state.
+4. **Given** an experience that does not request reactivity, **Then** no analyser and no envelope
+   work exist for it.
+
+### Continuation requirements
+
+- **FR-013**: Tap the audio graph Howler already created with one shared `AnalyserNode` through a
+  zero-gain branch; never create an `AudioContext` and never change the audible mix.
+- **FR-014**: Produce a smoothed, banded envelope with fast attack, slow release and transient
+  detection; expose `bindLightRig`, `bindParticleField`, `bindValue` and `onBeat`, each unbindable.
+- **FR-015**: Select `audioReactive` from the requirement, the capability probe and reduced motion,
+  report the reason, and attach the envelope to runtime frames and `surface.reactive`.
+- **FR-016**: Add a deterministic workbench catalogue, builders, UI, inspection API, PNG capture and
+  a production 404 gate; build scenes only through the existing runtime.
+- **FR-017**: Add no dependency, service, visitor route or visible change; keep the build strictly
+  below 495 MiB.
+- **FR-018**: Document both capabilities in `app/lib/graphics/README.md` and
+  `docs/graphics-rendering-architecture.md`.
+
+### Continuation edge cases
+
+- WebGL unavailable: the workbench reports the Canvas 2D or DOM plan it actually got.
+- Audio context not created before the first gesture: attaching resolves `null`, retries on a
+  throttle and never throws.
+- `html5: true` Howler cues bypass Web Audio: documented; the workbench demonstrates reactivity with
+  the Web Audio Lucky Meter set.
+- A WebGL canvas may refuse a direct `toDataURL` read-back: the capture reports
+  `canvas-not-readable` and a Playwright screenshot after `setTime()` is the documented path.

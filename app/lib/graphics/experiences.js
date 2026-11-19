@@ -54,6 +54,7 @@ function lazyAudioPrepare(namespace, name) {
  *                 the toolkit only prepares its resources and reports its plan.
  *   dimension     '2d' | '3d'
  *   postProcessing / particles / timeline
+ *   reactiveAudio true when the visual should follow the live audio envelope.
  *   audio[]       { id, prepare, background? } — prepare is an existing function.
  *   chunks[]      engine chunk names from `engine-chunks.js`.
  *   textures[]    { id, url, bytes? }
@@ -133,6 +134,7 @@ export function visualExperienceRequirements(experience) {
     particles: experience?.particles === true,
     timeline: experience?.timeline === true,
     audio: Array.isArray(experience?.audio) && experience.audio.length > 0,
+    reactiveAudio: experience?.reactiveAudio === true,
   };
 }
 
