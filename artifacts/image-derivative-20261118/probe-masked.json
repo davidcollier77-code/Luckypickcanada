@@ -1,0 +1,109 @@
+[
+  {
+    "viewport": "1440x900@1x",
+    "route": "/lucky-meter",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/images/lucky-meter-night-sky.avif",
+      "/images/lucky-meter-night-sky-640w.avif"
+    ],
+    "duplicateUnderlyingDerivative": true,
+    "counts": {
+      "/images/lucky-meter-night-sky.avif": 1,
+      "/homepage-hero-lucky-pick-canada.avif": 1,
+      "/images/lucky-meter-night-sky-640w.avif": 1
+    },
+    "totalImageBytes": 654987,
+    "painted": [],
+    "errors": []
+  },
+  {
+    "viewport": "1440x900@1x",
+    "route": "/crystal-ball",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/assets/crystal-ball-pedestal-420w.avif"
+    ],
+    "duplicateUnderlyingDerivative": false,
+    "counts": {
+      "/assets/crystal-ball-pedestal-420w.avif": 1,
+      "/assets/crystal-ball-bg-desktop.webp": 1,
+      "/assets/golden-maple-leaf.avif": 1
+    },
+    "totalImageBytes": 497014,
+    "painted": [],
+    "errors": []
+  },
+  {
+    "viewport": "1024x768@1x",
+    "route": "/lucky-meter",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/images/lucky-meter-night-sky-1024w.avif",
+      "/images/lucky-meter-night-sky-640w.avif"
+    ],
+    "duplicateUnderlyingDerivative": true,
+    "counts": {
+      "/images/lucky-meter-night-sky-1024w.avif": 1,
+      "/homepage-hero-lucky-pick-canada.avif": 1,
+      "/images/lucky-meter-night-sky-640w.avif": 1
+    },
+    "totalImageBytes": 429071,
+    "painted": [],
+    "errors": []
+  },
+  {
+    "viewport": "1024x768@1x",
+    "route": "/crystal-ball",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/assets/crystal-ball-pedestal-420w.avif"
+    ],
+    "duplicateUnderlyingDerivative": false,
+    "counts": {
+      "/assets/crystal-ball-pedestal-420w.avif": 1,
+      "/assets/crystal-ball-bg-desktop.webp": 1,
+      "/assets/golden-maple-leaf.avif": 1
+    },
+    "totalImageBytes": 497014,
+    "painted": [],
+    "errors": []
+  },
+  {
+    "viewport": "1024x768@2x",
+    "route": "/lucky-meter",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/images/lucky-meter-night-sky.avif",
+      "/images/lucky-meter-night-sky-640w.avif"
+    ],
+    "duplicateUnderlyingDerivative": true,
+    "counts": {
+      "/images/lucky-meter-night-sky.avif": 1,
+      "/homepage-hero-lucky-pick-canada.avif": 1,
+      "/images/lucky-meter-night-sky-640w.avif": 1
+    },
+    "totalImageBytes": 654987,
+    "painted": [],
+    "errors": []
+  },
+  {
+    "viewport": "1024x768@2x",
+    "route": "/crystal-ball",
+    "maskLoadedSignals": true,
+    "artworkDerivativeRequests": [
+      "/assets/crystal-ball-pedestal.avif",
+      "/assets/crystal-ball-pedestal-420w.avif"
+    ],
+    "duplicateUnderlyingDerivative": true,
+    "counts": {
+      "/assets/crystal-ball-pedestal.avif": 1,
+      "/assets/crystal-ball-bg-desktop.webp": 1,
+      "/assets/golden-maple-leaf.avif": 1,
+      "/assets/crystal-ball-pedestal-420w.avif": 1
+    },
+    "totalImageBytes": 723677,
+    "painted": [],
+    "errors": []
+  }
+]

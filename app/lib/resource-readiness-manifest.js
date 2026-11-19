@@ -42,6 +42,10 @@ const REVEAL_BACKDROP = {
   background: true,
 };
 
+// Responsive artwork registrations name one derivative. The hub compares image
+// identity (`imageIdentity` strips a `-640w`/`-1024w` token), so a route that has
+// already painted a larger or smaller width of the same artwork reuses it
+// instead of downloading this derivative as a second copy.
 const LUCKY_METER_SKY = {
   id: 'lucky-meter-sky',
   kind: 'image',
