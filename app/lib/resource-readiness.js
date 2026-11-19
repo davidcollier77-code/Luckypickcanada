@@ -400,8 +400,24 @@ function teardownPlanSubscription() {
 }
 
 function supports(priority) {
-  if (priority !== PREPARE_PRIORITY.BACKGROUND) return true;
-  return backgroundAllowed();
+  if (priority === PREPARE_PRIORITY.BACKGROUND) return backgroundAllowed();
+  return true;
+}
+
+/**
+ * A resource the definition itself marks as `background` never competes with a
+ * foreground experience, even when its experience was requested at critical
+ * priority. Route warm-up that starts after the page has settled is not critical
+ * to the visitor, and letting it run during a reveal is the competition the
+ * audit measured. Non-background critical and intent work still runs.
+ *
+ * @param {object} job
+ * @returns {boolean}
+ */
+function foregroundAllows(job) {
+  if (job.resource?.background !== true) return true;
+  if (job.priority === PREPARE_PRIORITY.BACKGROUND) return backgroundAllowed();
+  return activeExperiences === 0;
 }
 
 function nextRunnableIndex(limit) {
@@ -409,6 +425,7 @@ function nextRunnableIndex(limit) {
   for (let index = 0; index < queue.length; index += 1) {
     const job = queue[index];
     if (job.notBefore && job.notBefore > timestamp) continue;
+    if (!foregroundAllows(job)) continue;
     if (job.priority === PREPARE_PRIORITY.BACKGROUND) {
       // A background resource must also be allowed to run in the background and
       // must fit the conservative idle budget declared in the manifest.

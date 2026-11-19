@@ -105,6 +105,22 @@ function settledMotion(result: DailyResult): RevealMotion {
   };
 }
 
+/**
+ * Milliseconds from the Start press until the cinematic event begins: the held
+ * breath, the three settles and the short delay after the last one. The reveal's
+ * protection window covers this pre-roll even though `stageActive` is only set
+ * at the end of it.
+ */
+const REVEAL_STAGE_PREROLL_MS =
+  REVEAL_TIMING.anticipationMs + REVEAL_TIMING.colourSettleMs + REVEAL_TIMING.eventDelayMs;
+
+/**
+ * Fallback margin after the cinematic. If a stage never reports completion (an
+ * interrupted render, a thrown child), the foreground hold is released here so
+ * queued background work can never starve.
+ */
+const REVEAL_PROTECTION_SLACK_MS = 15_000;
+
 const EMPTY_SOUNDS = () => ({
   buildup: null as any,
   impactMeteor: null as any,
@@ -190,6 +206,35 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const eventSoundInstancesRef = useRef<Record<string, Array<{ id: number; volume: number }>>>({});
   // Fade-out timers for cues that can outlive their action (thunder, crackle).
   const audioStopTimersRef = useRef<number[]>([]);
+  // The hub's foreground hold, taken at the activation press rather than when
+  // the cinematic mounts. `stageActive` only flips after the ~8 s pre-roll, so
+  // relying on it left the spins open to competing background work.
+  const revealProtectionRef = useRef<(() => void) | null>(null);
+  const revealSafetyTimerRef = useRef<number | null>(null);
+
+  const releaseRevealWindow = useCallback(() => {
+    if (revealSafetyTimerRef.current !== null) {
+      window.clearTimeout(revealSafetyTimerRef.current);
+      revealSafetyTimerRef.current = null;
+    }
+    const release = revealProtectionRef.current;
+    revealProtectionRef.current = null;
+    release?.();
+  }, []);
+
+  const protectRevealWindow = useCallback(
+    (durationMs: number) => {
+      if (typeof window === 'undefined' || revealProtectionRef.current) return;
+      revealProtectionRef.current = beginActiveExperience('lucky-meter-reveal');
+      // A bounded fallback: if the stage never reports completion, the hold is
+      // released after the cinematic plus a margin, so queued background work
+      // can never starve.
+      const safetyMs =
+        REVEAL_STAGE_PREROLL_MS + Math.max(0, durationMs) + REVEAL_PROTECTION_SLACK_MS;
+      revealSafetyTimerRef.current = window.setTimeout(releaseRevealWindow, safetyMs);
+    },
+    [releaseRevealWindow],
+  );
 
   const ringPhase: RingPhase =
     isAnticipating || isRevealing ? 'scrambling' : isRevealed ? 'landed' : 'idle';
@@ -206,14 +251,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // The countdown waits for the sky-writing, so the finished Spark is never
   // covered by a reset clock that still says the day is over.
   const showCountdown = showHome && sparkComplete;
-
-  // Hold background resource preparation while the cinematic owns the frame and
-  // audio timeline. The hub resumes its queued, non-essential work when this
-  // releases; nothing about the animation or its sound changes.
-  useEffect(() => {
-    if (!stageActive) return undefined;
-    return beginActiveExperience('lucky-meter-reveal');
-  }, [stageActive]);
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -304,8 +341,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      releaseRevealWindow();
     };
-  }, []);
+  }, [releaseRevealWindow]);
 
   // Reduced motion is respected for the three spins, the landing flash, the
   // cinematic stage and the sky writing; the result is presented calmly instead.
@@ -389,11 +427,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           // Refresh during the reveal: replay the three motions on the stored
           // values, then the cinematic. No value is redrawn and the stage is
           // never skipped just because the tab was reloaded.
+          protectRevealWindow(duration);
           setAnnouncement('Preparing today’s resonance.');
           animateRevealRef.current?.(saved, loaded.history, duration);
         } else {
           // Resume the unfinished cinematic from the start of its event. The
           // result stays visible and Home remains hidden until it completes.
+          protectRevealWindow(duration);
           setStageActive(true);
         }
       } else if (loaded.sparkCompleted !== true && !prefersReducedMotion()) {
@@ -749,6 +789,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     colourSpinRef.current = buildColourSpin(next.colour.id);
     setStageDuration(duration);
     clearSequence();
+    // Hold the hub's foreground from the press itself, through the spins and the
+    // cinematic, until the stage completes. Critical and intent work still run.
+    if (!reducedMotion) protectRevealWindow(duration);
 
     void playButtonClick().catch(() => {});
     revealStartedAtRef.current = performance.now();
@@ -824,12 +867,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     ensureRevealAudio,
     history,
     persistLifecycle,
+    protectRevealWindow,
     ready,
     reducedMotion,
     schedule,
   ]);
 
   const handleStageComplete = useCallback(() => {
+    releaseRevealWindow();
     setStageActive(false);
     setEventCompleted(true);
     eventCompletedRef.current = true;
@@ -852,7 +897,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         if (isMountedRef.current) setSparkWriting(true);
       }, REVEAL_TIMING.sparkStartDelayMs);
     }
-  }, [persistLifecycle, schedule, stopEventAudio]);
+  }, [persistLifecycle, releaseRevealWindow, schedule, stopEventAudio]);
 
   const handleShare = useCallback(async () => {
     if (!result) return;
