@@ -21,6 +21,9 @@ const mocks = vi.hoisted(() => ({
     return () => {};
   }),
   registerExperienceResources: vi.fn(() => () => {}),
+  getExperienceDefinition: vi.fn(() => ({})),
+  registerResourceAdapter: vi.fn(() => () => {}),
+  READINESS: { FETCHED: 'fetched', INITIALIZED: 'initialized' },
 }));
 
 vi.mock('next/navigation', () => ({
@@ -39,6 +42,9 @@ vi.mock('../app/lib/resource-readiness', () => ({
   whenIdle: mocks.whenIdle,
   whenPageSettled: mocks.whenPageSettled,
   registerExperienceResources: mocks.registerExperienceResources,
+  getExperienceDefinition: mocks.getExperienceDefinition,
+  registerResourceAdapter: mocks.registerResourceAdapter,
+  READINESS: mocks.READINESS,
 }));
 
 import ResourceReadiness from '../components/ResourceReadiness';

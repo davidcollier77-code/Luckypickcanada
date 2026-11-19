@@ -101,3 +101,64 @@ Playwright CLI against the local dev server (`next dev --webpack -p 3001`):
 - The toolkit has no production consumer, so a future effect still needs its own browser, mobile,
   accessibility and performance verification.
 - `gsap` remains a dev dependency and remains unused; moving it was deliberately out of scope.
+
+## Continuation — automatic integration verification (2026-11-19)
+
+Environment: Node.js 26.13.0, pnpm 10.30.3, frozen lockfile install
+(`CI=true pnpm install --frozen-lockfile` → exit 0; only `three 0.187.0` and
+`@types/three 0.187.0` were installed because the rest was already present).
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused creative layer | `pnpm exec vitest run __tests__/graphics-creative-capabilities.test.js` | **PASS** — 19 tests |
+| Focused toolkit + manifest | `pnpm exec vitest run __tests__/graphics-three-toolkit.test.js __tests__/resource-readiness-manifest.test.js` | **PASS** — 27 tests |
+| Full unit suite | `pnpm exec vitest run` | **PASS** — 103 files / 1083 tests |
+| Type check | `pnpm exec tsc --noEmit` | **PASS** — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` | **PASS** — exit 0 (includes `pnpm run build` and 48 documentation-updater tests) |
+| Production build size | `du -sb .next` / `du -sm .next` | **PASS** — 378,582,202 bytes (361.1 MiB); 376 MiB by `du -sm`; below 495 MiB |
+| Initial JavaScript is free of Three.js | `grep -rl WebGLRenderer .next/static/chunks/app` | **PASS** — 0 page chunks |
+| Engine chunks are lazy | `.next/react-loadable-manifest.json` | Three.js id 8876 → `static/chunks/d02cf09b…`, `c23c07e0…`; gsap id 9637; confetti id 1354; howler id 1468. All are async loadable chunks. |
+| ESLint | `pnpm exec eslint …` | **NOT RUN** — the repository has no `eslint.config.*`, so ESLint 10 refuses to run. No suppression was added. |
+| Playwright Lucky Meter (desktop) | `CI=1 pnpm exec playwright test tests/visual/lucky-meter-daily-resonance.spec.ts --project=desktop --workers=1 --reporter=line` | **PASS** — 13 passed, 1 opt-in skip; arrival/Start gating, storyboard, all four seasonal palettes, resume points, reduced motion, WebGL fallback and evidence capture |
+| Playwright reveal selection (desktop) | `CI=1 pnpm exec playwright test tests/visual/lucky-reveal-selection.spec.ts --project=desktop --workers=1 --reporter=line` | **PASS** — 9 passed; homepage selection, paid checkout payloads, keyboard and reduced motion, no free preview or payment bypass |
+
+### What was verified by execution
+
+- The selector chooses `three` only for a 3D/post-processing request and preserves
+  an existing `webgl` engine, resolves to Canvas 2D/DOM without WebGL, and chooses
+  no motion under reduced motion (7 tests).
+- Resource derivation emits exactly the declared `module`/`texture`/`model`/`audio`
+  resources, and installing the creative layer registers the reveal, Lucky Meter
+  and Crystal Ball experiences automatically (3 tests).
+- The managed Canvas 2D surface draws, disposes idempotently and returns `null`
+  without a context; the runtime returns the existing-engine plan and `null` with
+  no canvas (4 tests).
+- Materials, the tiered light rig, bounded particles and the audio-cue scheduler
+  behave as specified, including muted audio and teardown (5 tests).
+- The toolkit guards now assert the real `getRenderQuality` import, SMAA before
+  `OutputPass`, the exposed bloom handle and `Clock.start()`.
+
+### Review findings and disposition
+
+| Finding | Verification | Disposition |
+| --- | --- | --- |
+| `THREE.Clock` fallback `reset()` discarded the delta | Read the fallback path; `start()` zeroes `elapsedTime` and `oldTime` | **Fixed** — `clock.start()` |
+| `bloomPass` assigned but never read | Read the composer | **Fixed** — exposed as `bloomPass` with `setBloom()` |
+| `forceContextLoss()` after `dispose()` | Read the teardown order | **Fixed** — context lost before the renderer is disposed |
+| Architecture guard matched a comment, not the import | Read the test and `stage.js` imports | **Fixed** — asserts `from '../graphics-capabilities.js'` and `getRenderQuality` |
+| SMAA after `OutputPass` | Read Three.js's pass contract and the composer order | **Fixed** — SMAA → bloom → `OutputPass` |
+| README quick-start double render | Read the snippet | **Fixed** — plain `if (effects) … else …` is no longer needed; the runtime renders after the callback |
+| Graphite: Three.js does not restore its own context | `node_modules/three/src/renderers/WebGLRenderer.js` lines 1127+ contain `onContextRestore`, which resets `_isContextLost` and re-initialises GL state | **Not a defect** — the existing restore path is correct; a comment now names the mechanism |
+| Visual QA shard cancelled | The run was `cancelled`, not a test failure; shard 1 evidence was not available locally | **Unverified locally** — CI re-runs after the push |
+
+### Limitations
+
+- No hardware GPU: any graphics rendered here is software-rendered.
+- Headless Chromium ran the Lucky Meter and reveal desktop specs (22 passes); the
+  full suite, both mobile projects and the committed visual baselines were not
+  run locally. The Visual QA workflow remains the authoritative run and is
+  **PENDING — runs after the push**.
+- No eslint configuration exists in the repository, so style linting could not
+  run; the TypeScript check and the full unit suite are the executed gates.
+- The Three.js and GSAP experience descriptors are exercised by tests, but no
+  live page mounts a 3D effect, so no Three.js chunk is requested at runtime.

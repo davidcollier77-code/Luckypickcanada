@@ -68,9 +68,10 @@ export function resolveEffectBudget(quality, overrides = {}) {
 /**
  * Builds an EffectComposer for an existing stage.
  *
- * Order: the scene renders in linear HDR, bloom adds the light bleed, the
- * output pass applies the renderer's tone mapping and sRGB conversion, and SMAA
- * cleans the final LDR edges.
+ * Order: the scene renders in linear HDR, SMAA cleans those linear edges while
+ * they are still high precision, bloom adds the light bleed, and the output pass
+ * applies the renderer's tone mapping and sRGB conversion last, as Three.js's
+ * pass contract requires.
  *
  * @param {{
  *   renderer?: any,
@@ -83,10 +84,12 @@ export function resolveEffectBudget(quality, overrides = {}) {
  * }} [options]
  * @returns {Promise<null | {
  *   composer: any,
+ *   bloomPass: any|null,
  *   budget: object,
  *   readonly size: { width: number, height: number, pixelRatio: number },
  *   render: () => void,
  *   setSize: (size: { width?: number, height?: number, pixelRatio?: number }) => void,
+ *   setBloom: (settings: { strength?: number, radius?: number, threshold?: number }) => void,
  *   dispose: () => void,
  * }>}
  */
@@ -130,6 +133,13 @@ export async function createCinematicEffects({
     composer = new composerModule.EffectComposer(renderer);
     composer.addPass(new renderPassModule.RenderPass(scene, camera));
 
+    // SMAA operates on linear-sRGB input: it runs before the output pass, which
+    // is the pass that tone maps and converts to sRGB. Running it afterwards
+    // would detect edges on already encoded LDR output.
+    if (budget.antialias && smaaModule) {
+      composer.addPass(new smaaModule.SMAAPass());
+    }
+
     if (budget.bloom && bloomModule) {
       // UnrealBloomPass accepts any { x, y } resolution; the composer resizes it
       // through setSize below.
@@ -143,10 +153,6 @@ export async function createCinematicEffects({
     }
 
     composer.addPass(new outputModule.OutputPass());
-
-    if (budget.antialias && smaaModule) {
-      composer.addPass(new smaaModule.SMAAPass());
-    }
 
     applySize(initial);
   } catch {
@@ -198,6 +204,7 @@ export async function createCinematicEffects({
 
   return {
     composer,
+    bloomPass,
     budget,
     get size() {
       return { ...initial };
@@ -207,6 +214,16 @@ export async function createCinematicEffects({
       composer.render();
     },
     setSize,
+    /**
+     * Tunes the existing bloom pass at runtime. A stage built on a tier without
+     * bloom has no pass, so this is a no-op rather than a new render target.
+     */
+    setBloom({ strength, radius, threshold } = {}) {
+      if (disposed || !bloomPass) return;
+      if (Number.isFinite(strength)) bloomPass.strength = strength;
+      if (Number.isFinite(radius)) bloomPass.radius = radius;
+      if (Number.isFinite(threshold)) bloomPass.threshold = threshold;
+    },
     dispose,
   };
 }

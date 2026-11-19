@@ -1,3 +1,18 @@
+## 2026-11-19 — Graphics and audio development layer completed (PR #1966)
+- Turned the installed Three.js toolkit into an automatic creative layer: a deterministic technology
+  selector (Three.js only for 3D/post-processing, Canvas 2D for 2D, existing WebGL engines preserved),
+  a single visual registry that derives `module`/`texture`/`model`/`audio` resources and registers new
+  experiences automatically, and `module`/`texture`/`model` adapters on the existing readiness hub.
+- Added managed Canvas 2D, lazy GSAP timelines, PBR material presets, a tiered light rig with event
+  pulses, bounded GPU particles, synchronised audio cues, a unified runtime, a reusable React surface
+  and a runnable example. Integrated the Lucky Meter and Card Reveal through `useCreativeExperience`
+  with no change to their artwork, timing, sound or fallbacks.
+- Repaired the PR review findings (Clock reset, context-loss ordering, SMAA before `OutputPass`, bloom
+  handle, guard assertion, README double render); the context-restore finding was verified as not a
+  defect against Three.js source.
+- Verified 103 files / 1083 tests, `tsc --noEmit`, `./freebuff-verify.sh` exit 0 and a 361.1 MiB build
+  (376 MiB by `du -sm`) with no initial page JavaScript containing Three.js.
+
 ## 2026-11-19 — Graphics development toolkit (Three.js)
 - Installed `three` 0.187.0 and `@types/three` 0.187.0 (MIT) and added an additive, unused-by-default
   toolkit under `app/lib/graphics/`: a lazy stage (dynamic `import('three')`, tiered renderer/scene/

@@ -16,11 +16,28 @@
  * (`/reveal` also covers `/reveal/[revealId]`). Gift delivery and sharing are a
  * separate email/share path with no animation resource set, so they are not
  * registered here as another reveal.
+ *
+ * Graphics and audio resources are not listed by hand. Each experience declares
+ * its render technology, engine chunks and sound cues once in
+ * `app/lib/graphics/experiences.js`; `creativeResourcesFor` derives the hub
+ * resources from that descriptor, and `installCreativeExperiences` installs the
+ * `module`, `texture` and `model` adapters and registers any future visual
+ * experience that has no manifest entry. This keeps one preparation system
+ * instead of a second preloader.
  */
 
-import { preloadCrystalBallAudio } from './audio.js';
-import { prepareLuckyMeterAudio } from './lucky-meter/audio.js';
+import { creativeResourcesFor, getVisualExperience, installCreativeExperiences } from './graphics/experiences.js';
 import { registerExperienceResources } from './resource-readiness.js';
+
+/**
+ * The automatically derived graphics/audio resources for an experience.
+ *
+ * @param {string} id Visual-experience id.
+ * @returns {Array<object>}
+ */
+function visualResources(id) {
+  return creativeResourcesFor(getVisualExperience(id));
+}
 
 /**
  * Rough byte sizes for the registered assets, used as an evidence-backed budget
@@ -84,8 +101,11 @@ const MAP_SKY = {
 /** @type {ReadonlyArray<object>} */
 export const EXPERIENCE_DEFINITIONS = Object.freeze([
   {
+    // Version 2 adds the automatically derived graphics resources: the confetti
+    // engine chunk and the reveal's sparkle, applause and pop cues. The register
+    // below is the single source; nothing is listed twice.
     id: 'reveal',
-    version: 1,
+    version: 2,
     label: 'Lucky Card Reveal (personal and gift)',
     routes: ['/reveal'],
     dependsOn: [],
@@ -93,25 +113,22 @@ export const EXPERIENCE_DEFINITIONS = Object.freeze([
       REVEAL_CARD_BACK,
       REVEAL_BACKDROP,
       { id: 'reveal-route', kind: 'code', route: '/reveal' },
+      ...visualResources('reveal'),
     ],
   },
   {
-    // Version 2 adds the cinematic's sound set to the same registration. The
-    // audio adapter only prepares; the Start press still owns playback.
+    // Version 3 moves the sound set into the visual-experience descriptor, so the
+    // audio resource is derived rather than registered by hand. The audio adapter
+    // only prepares; the Start press still owns playback.
     id: 'lucky-meter',
-    version: 2,
+    version: 3,
     label: 'Lucky Meter / Daily Resonance',
     routes: ['/lucky-meter'],
     dependsOn: [],
     resources: [
       LUCKY_METER_SKY,
       { id: 'lucky-meter-route', kind: 'code', route: '/lucky-meter' },
-      {
-        id: 'lucky-meter-audio',
-        kind: 'audio',
-        prepare: prepareLuckyMeterAudio,
-        background: false,
-      },
+      ...visualResources('lucky-meter'),
     ],
   },
   {
@@ -127,22 +144,16 @@ export const EXPERIENCE_DEFINITIONS = Object.freeze([
   },
   {
     id: 'crystal-ball',
-    version: 1,
+    version: 2,
     label: 'Crystal Ball',
     routes: ['/crystal-ball'],
     dependsOn: [],
     resources: [
       CRYSTAL_BALL_PEDESTAL,
       { id: 'crystal-ball-route', kind: 'code', route: '/crystal-ball' },
-      // Preparing a sound never unlocks or starts it. The existing loader still
-      // defers on a constrained connection and the activation path still owns
-      // the unlock and playback.
-      {
-        id: 'crystal-ball-audio',
-        kind: 'audio',
-        prepare: preloadCrystalBallAudio,
-        background: false,
-      },
+      // The sound cue comes from the visual-experience descriptor. Preparing it
+      // never unlocks or starts it; the activation path still owns playback.
+      ...visualResources('crystal-ball'),
     ],
   },
   {
@@ -155,6 +166,7 @@ export const EXPERIENCE_DEFINITIONS = Object.freeze([
       MAP_STORY_IMAGE,
       MAP_SKY,
       { id: 'map-route', kind: 'code', route: '/map' },
+      ...visualResources('lucky-map'),
     ],
   },
   {
@@ -180,6 +192,10 @@ export const HOMEPAGE_LIKELY_NEXT = Object.freeze([
 for (const definition of EXPERIENCE_DEFINITIONS) {
   registerExperienceResources(definition);
 }
+
+// Installs the graphics resource adapters and registers any visual experience
+// that has no manifest entry above. Existing ids are left exactly as declared.
+installCreativeExperiences();
 
 /**
  * Resolves the registered experiences for a pathname. A route matches exactly or

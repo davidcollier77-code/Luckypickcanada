@@ -85,3 +85,39 @@ depend on T006–T010. T020–T025 depend on all implementation tasks.
 Any visual effect, artwork, animation, layout or copy change; PixiJS, `@react-three/fiber`,
 Babylon.js, the experimental WebGPU renderer, Draco/KTX2 decoders, and any production import of the
 toolkit.
+
+## Phase 7: Automatic integration (continuation)
+
+- [X] T026 Add `technologies.js`: deterministic selection of `three` / `canvas2d` / `webgl` / `dom`
+      plus motion and audio technology, with WebGL-unavailable fallbacks and reduced-motion rules
+- [X] T027 Add `canvas-surface.js`: managed Canvas 2D surface (tier DPR cap, adaptive frames, resize,
+      reduced-motion single frame, context loss/restore, idempotent disposal)
+- [X] T028 Add `timeline.js`: lazy GSAP timelines that apply the final state under reduced motion and
+      return `null` on failure
+- [X] T029 Add `materials.js`, `lighting.js` and `particles.js`: tiered Three.js building blocks with
+      disposal and bounded budgets
+- [X] T030 Add `audio-sync.js`: named cues bound to timeline positions, played once, never after
+      teardown
+- [X] T031 Add `engine-chunks.js` and `adapters.js`: `module`, `texture` and `model` adapters on the
+      existing hub, installed idempotently
+- [X] T032 Add `experiences.js`: the single visual registry, resource derivation, automatic
+      registration for future experiences and per-experience plan resolution
+- [X] T033 Add `runtime.js`: `createCreativeSurface` returning one lifecycle for every renderer
+- [X] T034 Add `components/graphics/CreativeSurface.jsx` and `use-creative-experience.js`
+- [X] T035 Add the runnable, unmounted worked example `examples/golden-motes.js`
+- [X] T036 Compose derived resources into the readiness manifest; move Lucky Meter, reveal and Crystal
+      Ball audio into the registry and bump those experience versions
+- [X] T037 Integrate `useCreativeExperience` into the Lucky Meter and the Lucky Card Reveal without
+      changing artwork, timing, sound or fallback behaviour
+- [X] T038 Repair review findings: `Clock.start()` reset, `forceContextLoss` before `dispose`, SMAA
+      before `OutputPass`, bloom handle and `setBloom`, real source-guard assertion, README double
+      render
+- [X] T039 Update `app/lib/graphics/README.md` and `docs/graphics-rendering-architecture.md`
+- [X] T040 Add `__tests__/graphics-creative-capabilities.test.js` and extend the toolkit guard tests
+- [X] T041 Run the full Vitest suite, `tsc --noEmit`, `./freebuff-verify.sh` and the measured
+      production build; record evidence and update the Memory Bank
+
+## Continuation dependencies
+
+T026–T035 are independent building blocks; T032 depends on T026–T031. T036–T037 depend on T032–T033.
+T038–T041 depend on all implementation tasks.

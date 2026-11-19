@@ -1,107 +1,201 @@
-# Graphics development toolkit
+# Graphics and audio development toolkit
 
-Additive rendering capabilities for cinematic, realistic and gaming-quality
-visual enhancements. Nothing here is imported by a page yet, so the live site
-renders exactly as it did before this toolkit existed.
+The creative development layer for Lucky Pick Canada. It wraps the graphics and
+audio technologies the project already ships — Three.js, GSAP, Canvas 2D, the
+existing additive WebGL cinematics, Howler/Web Audio, confetti and the share-card
+raster path — behind one automatic entry point, and extends the existing
+Resource-Readiness Hub instead of adding a second preloader.
 
-The rendering contract is [`docs/graphics-rendering-architecture.md`](../../../docs/graphics-rendering-architecture.md);
-this file explains how to use the toolkit without breaking it.
+Nothing here changes a current experience. Every existing artwork, animation
+sequence, sound, timing and layout keeps its own code and its own renderer. What
+this layer adds is *capability*, *selection* and *preparation*.
+
+The rendering contract is [`docs/graphics-rendering-architecture.md`](../../../docs/graphics-rendering-architecture.md).
 
 ## What is available
 
-| Capability | Package | Where it comes from |
+| Capability | Technology | Entry point |
 | --- | --- | --- |
-| 3D scenes: PBR materials, lighting, depth, shadows, instancing, GLSL shaders | [`three`](https://threejs.org) 0.187 (MIT) | `stage.js` |
-| Bloom, ACES tone mapping, sRGB output, SMAA | `three/addons/postprocessing/*` (bundled with Three.js) | `effects.js` |
-| glTF / GLB model loading | `three/addons/loaders/GLTFLoader.js` (bundled) | `assets.js` |
-| Resource disposal | — | `resources.js` |
-| Declarative animation timelines | `gsap` (already a dev dependency, MIT) | `import { gsap } from 'gsap'` |
-| 2D/3D motion, drag and layout animation | `framer-motion` (already installed, MIT) | existing components |
-| Particle confetti | `canvas-confetti` (already installed, MIT) | existing components |
-| Share-card raster composition | `html2canvas` (already installed, MIT) | existing components |
-| Additive particle cinematics, metallic meshes, sky light | existing `app/lib/gpu-*.js` + `components/*-engine.js` | existing features |
+| 3D scenes: PBR materials, lighting, shadows, depth, instancing, GLSL | Three.js 0.187 (MIT), lazy | `stage.js`, `runtime.js` |
+| Cinematic grading: SMAA, HDR bloom, ACES tone mapping, sRGB output | Three.js addons (bundled) | `effects.js` |
+| glTF / GLB models | `GLTFLoader` (bundled), lazy | `assets.js` |
+| Materials: gold, enamel, glass, emissive glow | Three.js presets | `materials.js` |
+| Lighting: tiered hemisphere/key/rim/fill rig with event pulses | Three.js | `lighting.js` |
+| GPU particles: bounded, seeded, intensity-controlled | Three.js `Points` | `particles.js` |
+| Timelines, transitions, staggered choreography | GSAP, lazy | `timeline.js` |
+| Managed 2D drawing: DPR cap, adaptive frames, resize, teardown | Canvas 2D | `canvas-surface.js` |
+| Synchronised sound cues on a visual timeline | Existing Howler/Web Audio path | `audio-sync.js` |
+| Automatic technology selection and surface creation | This toolkit | `technologies.js`, `runtime.js` |
+| Automatic resource discovery and preparation | Resource-Readiness Hub | `experiences.js`, `adapters.js` |
+| Reusable React surface | React | `components/graphics/CreativeSurface.jsx` |
+| Worked example (not mounted) | Everything above | `examples/golden-motes.js` |
 
-`three` is a runtime dependency; `@types/three` is the matching dev-time type
-package. Both are MIT and free.
+The existing cinematic family (`app/lib/gpu-*.js`, `cosmic-event-engine.js`,
+`lucky-meter-*-engine.js`) remains the right choice for the Lucky Meter and the
+Daily Resonance stage. The toolkit does not replace it and never routes it
+through Three.js.
 
-## Quick start
+## Automatic behaviour
+
+### Technology selection
+
+A feature describes what it needs; `selectGraphicsTechnologies` decides what
+draws it.
 
 ```js
-import { createThreeStage } from '@/app/lib/graphics/stage.js';
-import { createCinematicEffects } from '@/app/lib/graphics/effects.js';
+import { selectGraphicsTechnologies } from '@/app/lib/graphics/technologies.js';
 
-const canvas = canvasRef.current;
-const stage = await createThreeStage({
-  canvas,
-  cameraPosition: { z: 6 },
-  onFrame: ({ scene, camera, delta }) => {
-    // Animate your own scene here.
-    effects?.render() ?? stage.renderer.render(scene, camera);
-  },
-});
+selectGraphicsTechnologies({ dimension: '3d', postProcessing: true });
+// → { renderer: 'three', fallbacks: ['canvas2d', 'dom'], postProcessing: true, … }
 
-if (!stage) {
-  // WebGL unavailable or the chunk failed: keep the existing static artwork.
-  return;
-}
+selectGraphicsTechnologies({ renderer: 'webgl' });
+// → { renderer: 'webgl' } — an existing engine keeps its frames.
 
-const effects = await createCinematicEffects({
-  renderer: stage.renderer,
-  scene: stage.scene,
-  camera: stage.camera,
-  quality: stage.quality,
-  size: stage.size,
-});
-
-stage.start();
-// ...
-stage.dispose();
-effects?.dispose();
+selectGraphicsTechnologies({ particles: true });
+// → { renderer: 'canvas2d', fallbacks: ['dom'] }
 ```
 
-React cleanup must call `dispose()`; it stops the frame loop, disconnects the
-resize observer, removes context-loss and reduced-motion listeners, releases
-scene resources and the WebGL context.
+Reduced motion selects no motion technology; it never downgrades the renderer.
+Without WebGL, a 3D request resolves to Canvas 2D and then DOM, so the caller
+always has a static fallback.
 
-## Rules the toolkit already enforces
+### Resource discovery and preparation
 
-- **Bounded work.** Quality comes from `resolveRenderQuality` in
-  `app/lib/graphics-capabilities.js`. Budgets: `high` 2× DPR, MSAA and shadows;
-  `balanced` 1.6× DPR, MSAA, no shadows; `constrained` 1.25× DPR, no MSAA, no
-  shadows, 0.6× post-processing resolution.
-- **The browser owns the backend.** No user-agent or vendor checks, no
-  `powerPreference`, no `failIfMajorPerformanceCaveat`, no renderer-string
-  branching.
-- **Lazy by default.** `import('three')` and the addon imports happen only when
-  a stage or effect is created, so a page without 3D ships no Three.js bytes.
-- **Paused when idle.** Frames come from `createAdaptiveFrameLoop`, so hidden
-  tabs stop, reduced motion paints one static frame, and constrained devices
-  step down to 30 fps.
-- **Fails soft.** Every entry point returns `null` instead of throwing. Keep a
-  static or Canvas 2D fallback for the `null` case.
-- **No WebGPU requirement.** WebGPU is still probe-only in this repository; the
-  toolkit renders through WebGL. Three's experimental WebGPU renderer is not
-  used and no effect may depend on it.
+`app/lib/graphics/experiences.js` is the one registry. A descriptor declares the
+renderer, the engine chunks, the texture/model URLs and the sound cues:
 
-## Adding a feature
+```js
+{
+  id: 'my-experience',
+  renderer: 'three',            // or 'canvas2d' | 'webgl' | 'dom'
+  dimension: '3d',
+  postProcessing: true,
+  chunks: ['three', 'gsap'],
+  textures: [{ id: 'sky-texture', url: '/images/sky.avif' }],
+  audio: [{ id: 'my-chime', prepare: prepareMyChime }],
+}
+```
 
-1. Commission the visual change first; this toolkit is infrastructure only.
-2. Keep the scene inside a canvas that has a static fallback underneath it.
-3. Register any model or texture URL with the existing resource-readiness hub
-   (`app/lib/resource-readiness.js`) instead of preloading it at module scope.
-4. Add the feature's own Playwright evidence and visual baseline review.
-5. Measure the production build size; the hard cap is 495 MiB.
+`creativeResourcesFor` derives the hub resources (`module`, `texture`, `model`,
+`audio`) from that descriptor. The readiness manifest spreads the derived list
+into the experience's registration, and `installCreativeExperiences()` installs
+the adapters and registers any visual experience that has no manifest entry. No
+one has to remember an individual module, texture or sound registration.
+
+Preparation is still the hub's: it is deduplicated, bounded to the adaptive
+plan's parallel-request limit, paused for an active experience, a hidden page or
+Save-Data, started only after the page has settled, and retried once on failure.
+Ready, failed and skipped states are reported truthfully. The hub never plays a
+sound or draws a frame.
+
+### Runtime and cleanup
+
+`createCreativeSurface()` (used by `CreativeSurface.jsx`) returns the same
+lifecycle for every renderer — `start`, `stop`, `render`, `resize`, `dispose` —
+so a component never branches on the technology:
+
+- Three.js path: a budgeted stage plus the composer when requested.
+- Canvas 2D path: a managed surface with the tier's DPR cap and adaptive frames.
+- Existing-engine/DOM path: no renderer is created; the plan is reported and the
+  lifecycle is a safe no-op.
+
+Frames come from `createAdaptiveFrameLoop`, so a hidden tab stops and a
+constrained device steps down. Reduced motion paints one composed frame.
+Context loss stops the surface and restoration resumes it. `dispose()` releases
+the composer, scene resources, listeners, timers and the WebGL context, and is
+safe to call twice.
+
+### React
+
+```jsx
+'use client';
+import { useCreativeExperience } from '@/app/lib/use-creative-experience.js';
+
+export default function Experience() {
+  const { plan, readiness, prepare } = useCreativeExperience('my-experience');
+  // plan.renderer, plan.postProcessing, plan.reducedMotion are already resolved.
+  // Preparation is automatic after the page settles; `prepare()` forces it now.
+  return null;
+}
+```
+
+```jsx
+import CreativeSurface from '@/components/graphics/CreativeSurface';
+
+<CreativeSurface
+  className="absolute inset-0"
+  requirements={{ dimension: '3d', postProcessing: true, particles: true }}
+  onSurface={(surface) => surface?.start()}
+  onFrame={({ delta, elapsed }) => { /* animate */ }}
+/>;
+```
+
+## A complete 3D scene
+
+```js
+import { createCreativeSurface } from '@/app/lib/graphics/runtime.js';
+import { createMaterialLibrary } from '@/app/lib/graphics/materials.js';
+import { createLightRig } from '@/app/lib/graphics/lighting.js';
+import { createParticleField } from '@/app/lib/graphics/particles.js';
+import { createMotionTimeline } from '@/app/lib/graphics/timeline.js';
+import { createAudioSync } from '@/app/lib/graphics/audio-sync.js';
+
+const surface = await createCreativeSurface({ canvas, requirements: { dimension: '3d', postProcessing: true } });
+if (!surface || surface.kind !== 'three') return; // keep the static artwork
+
+const THREE = surface.stage.three;
+const materials = createMaterialLibrary(THREE, { quality: surface.plan });
+const rig = createLightRig(THREE, { quality: surface.stage.quality, budget: surface.stage.budget });
+rig.addTo(surface.stage.scene);
+
+const motes = createParticleField(THREE, { count: 900, quality: surface.stage.quality });
+surface.stage.scene.add(motes.points);
+
+const timeline = await createMotionTimeline({ reducedMotion: surface.plan.reducedMotion });
+const audio = createAudioSync({ resolve: (name) => preparedSounds[name] });
+timeline?.call(() => { rig.pulse(1); audio.cue('chime'); }, 0.4);
+
+surface.start();
+timeline?.play();
+
+// teardown
+timeline?.dispose();
+audio.dispose();
+motes.dispose();
+rig.dispose();
+materials.dispose();
+surface.dispose();
+```
+
+`examples/golden-motes.js` is this scene as a runnable module. It is deliberately
+not mounted by any page, so it adds no chunk and no visual change.
+
+## Rules the toolkit enforces
+
+- **Bounded work.** Quality comes from `resolveRenderQuality`; DPR, shadows,
+  light count, particle count and post-processing resolution are capped per tier.
+- **The browser owns the backend.** No user-agent or vendor branching, no
+  `powerPreference`, no `failIfMajorPerformanceCaveat`, no renderer strings.
+- **Lazy by default.** `three`, `gsap`, `canvas-confetti` and `howler` are loaded
+  through literal dynamic imports in `engine-chunks.js`, only when a registered
+  experience asks for them.
+- **Fails soft.** Every entry point returns `null` or a no-op instead of throwing;
+  callers keep their static or Canvas 2D fallback.
+- **No WebGPU requirement.** WebGPU remains probe-only; the toolkit renders
+  through WebGL.
+- **One preparation system.** The Resource-Readiness Hub is the only preloader.
+  `module`, `texture` and `model` are adapters on it, not a second scheduler.
 
 ## Known limitations
 
-- No hardware GPU is available in the Freebuff Cloud VM, so any graphics the
-  toolkit draws there is software-rendered.
-- Draco and KTX2 compressed assets need decoder files under `public/`; add them
+- No hardware GPU is available in the Freebuff Cloud VM; any graphics it draws is
+  software-rendered.
+- Draco and KTX2 compressed models need decoder files under `public/`; add them
   with the effect that first needs them. `loadGLTF` handles uncompressed
-  glTF/GLB today.
-- `@react-three/fiber` is deliberately not installed: it is a second React
-  renderer model beside the site's existing vanilla engines. PixiJS is
-  deliberately not installed either: its 2D WebGL batching would duplicate the
-  existing Canvas 2D and additive WebGL renderers.
-- The toolkit is not consumed by any page yet, so it adds no visual effect and
-  no bundle chunk today.
+  glTF/GLB.
+- `@react-three/fiber` and PixiJS are deliberately not installed: they would add
+  a second React renderer model or duplicate the existing 2D/WebGL pipelines.
+- `gsap` remains declared in `devDependencies`; Next and the Workers build resolve
+  it at build time, so no dependency change is required to use it.
+- The toolkit draws nothing by itself. A visual change is still a commissioned
+  feature with its own review, Playwright evidence and baseline update.

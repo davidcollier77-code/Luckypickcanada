@@ -117,7 +117,10 @@ function createTimeSource(THREE) {
       return { delta: clock.getDelta(), elapsed: clock.elapsedTime };
     },
     reset() {
-      clock.getDelta();
+      // `getDelta()` only advances the internal old-time marker; `start()` also
+      // zeroes `elapsedTime`, so the first frame after a restored context never
+      // reports a multi-second stale delta.
+      clock.start();
     },
     dispose() {},
   };
@@ -382,8 +385,9 @@ export async function createThreeStage({
       if (typeof onContextLost === 'function') onContextLost();
     },
     onRestored: () => {
-      // The renderer restores its own WebGL state; the clock must not report a
-      // multi-second frame delta after the gap.
+      // Three.js's WebGLRenderer listens for `webglcontextrestored` itself and
+      // re-initialises its GL state, programs and textures in `initGLContext`.
+      // The clock must not report a multi-second frame delta after the gap.
       timeSource.reset();
       if (typeof onContextRestored === 'function') onContextRestored();
       if (wantsAnimation) loop.request(draw);
@@ -403,14 +407,16 @@ export async function createThreeStage({
     timeSource.dispose();
     disposeSceneResources(scene);
     try {
-      renderer.dispose();
-    } catch {
-      // The context may already be gone.
-    }
-    try {
+      // The context is lost before the renderer releases it, so a released
+      // renderer never has to drop a context it no longer owns.
       renderer.forceContextLoss?.();
     } catch {
       // Releasing the context is an optimisation, never a requirement.
+    }
+    try {
+      renderer.dispose();
+    } catch {
+      // The context may already be gone.
     }
     if (typeof onDispose === 'function') onDispose();
   }

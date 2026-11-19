@@ -173,3 +173,69 @@ user-agent branching and WebGPU requirements; the production build is measured.
   and no console error.
 - **SC-006**: No existing file under `app/`, `components/`, `public/`, `themes/` or `styles` has a
   visual or behavioural change.
+
+---
+
+## Continuation — completed automatic integration (2026-11-19)
+
+The owner directed that the toolkit become **genuinely usable and automatic**, not merely installed:
+new and existing experiences must get the right capabilities without individual registrations, and
+resource loading, scheduling, performance adaptation, cleanup, disposal and recovery must run through
+the existing architecture.
+
+### Added user stories
+
+**User Story 5 — An experience gets the right technology automatically (P1)**
+
+A developer describes what a visual needs (`dimension`, `renderer`, `particles`, `postProcessing`,
+`timeline`, `audio`). The layer selects the technology from the shared capability probes and adaptive
+tier: Three.js only for genuine 3D/post-processing, Canvas 2D for 2D layers, and the existing
+hand-written WebGL engines are never replaced. Reduced motion selects no motion technology without
+downgrading the renderer.
+
+**User Story 6 — Resources are discovered and prepared without manual registration (P1)**
+
+One descriptor per experience drives resource derivation: engine chunks (`module`), textures
+(`texture`), glTF preflights (`model`) and existing audio prepare functions (`audio`). The registry
+composes the Resource-Readiness Hub registration; the manifest spreads the derived resources; future
+visual experiences are registered automatically on install. No second preloader, scheduler or cache.
+
+**User Story 7 — Existing experiences use the capability layer without changing (P1)**
+
+The Lucky Meter and the Lucky Card Reveal declare their renderer and cues once and call
+`useCreativeExperience`. Their artwork, animation sequence, timing, sounds, fallbacks, responsive
+behaviour and functionality are unchanged. The Crystal Ball, Lucky Map and Lucky Number Generator
+declare their capabilities the same way.
+
+**User Story 8 — Creative building blocks are available (P2)**
+
+Materials (gold, enamel, glass, glow), a tiered light rig with event pulses, bounded GPU particles,
+GSAP timelines with reduced-motion completion, a managed Canvas 2D surface, synchronised audio cues,
+a runtime that returns one lifecycle for every renderer, a reusable React surface and a runnable
+worked example.
+
+### Acceptance scenarios
+
+1. **Given** a descriptor with `dimension: '3d'` and WebGL, **When** the selector runs, **Then** the
+   renderer is `three` with Canvas 2D and DOM fallbacks; without WebGL it is Canvas 2D, and without
+   Canvas 2D it is DOM.
+2. **Given** a descriptor with an existing `renderer: 'webgl'`, **When** the selector runs, **Then**
+   the renderer remains the existing engine and post-processing is not offered.
+3. **Given** a descriptor with a chunk, texture, model or audio cue, **When** it is registered,
+   **Then** exactly those hub resources are derived, and preparing the experience loads them through
+   the existing hub.
+4. **Given** a new visual experience with no manifest entry, **When** the manifest installs the
+   creative layer, **Then** the experience is registered automatically.
+5. **Given** a component using `useCreativeExperience`, **When** the page settles, **Then** its
+   resources prepare at critical priority without competing with the first paint.
+6. **Given** reduced motion, **When** a timeline is created, **Then** playing it applies the final
+   state without scheduling animation frames.
+7. **Given** any creative surface, **When** `dispose()` runs, **Then** frames, observers, listeners,
+   composer passes, scene resources and the WebGL context are released once and the call is safe twice.
+
+### Scope boundaries (unchanged)
+
+No visual, artwork, layout, copy, audio or timing change to an existing experience. Three.js is not
+forced onto the existing renderers. The documentation-library, its manifest, updater workflows and
+Cloudflare scheduler remain the owner's separate work and are untouched here. The production build
+stays strictly below 495 MiB.

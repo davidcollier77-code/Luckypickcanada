@@ -127,3 +127,38 @@ performance, licensing and build-size analysis.
 Focused Vitest suite, `tsc --noEmit`, production build with a measured size and a chunk inspection
 for Three.js, `./freebuff-verify.sh`, a Playwright desktop/mobile homepage check for unchanged
 visuals and clean console, and a static, software-rendered render check of the toolkit itself.
+
+## Phase 2 — Automatic integration (continuation)
+
+The owner requested completed, automatic capability rather than installed dependencies:
+
+- **Selection** is a pure function of declared requirements plus the shared probes and tier. It
+  returns a renderer, an ordered fallback ladder, post-processing availability, motion and audio
+  technologies and the reasons for the choice. Existing `webgl` experiences keep their renderer.
+- **Discovery** lives in one registry. `creativeResourcesFor` derives hub resources from a descriptor;
+  the manifest spreads them into the existing experience definitions, and `installCreativeExperiences`
+  registers anything not declared there. The hub remains the only scheduler and cache.
+- **Building blocks** (materials, lighting, particles, timelines, managed Canvas 2D, audio sync) are
+  additive APIs with disposal, reduced-motion behaviour and `null` fallbacks.
+- **Runtime** returns one lifecycle (`start`/`stop`/`render`/`resize`/`dispose`) for Three.js, Canvas
+  2D and existing-engine/DOM paths, so consumers never branch on technology.
+- **Existing integration** adds `useCreativeExperience` to the Lucky Meter and the Card Reveal. It
+  prepares their derived resources after the page settles and resolves their plan; neither component's
+  rendering, sound, timing or fallback code changed.
+- **Review repairs** are folded in: the Clock fallback now calls `start()`, the context is lost before
+  the renderer is disposed, SMAA runs before `OutputPass`, the bloom pass is exposed with `setBloom`,
+  the architecture guard asserts the real shared-layer import, and the README quick-start no longer
+  double-renders.
+
+## Risks in the continuation
+
+- **A feature routes an existing engine through Three.js** → descriptors declare `renderer: 'webgl'`
+  and the selector preserves it; a test asserts this.
+- **Audio is prepared on the critical path** → the hook waits for the hub's settled window or an idle
+  slice; the manifest's route preparation keeps its post-settle gate.
+- **A new resource kind bypasses the hub** → adapters register through `registerResourceAdapter`; no
+  new scheduler is introduced.
+- **Partial mocks or code splitting omit an audio export** → audio cues resolve lazily and report
+  skipped instead of throwing.
+- **Build growth** → chunks stay literal dynamic imports reached only through descriptors; no live
+  experience declares a Three.js chunk.

@@ -158,9 +158,26 @@ describe('architecture guards', () => {
   });
 
   it('takes quality and frame cadence from the shared layers', () => {
-    expect(stageSource).toContain('resolveRenderQuality');
+    // The guard asserts the real import, not a phrase in the module header.
+    expect(stageSource).toContain("from '../graphics-capabilities.js'");
+    expect(stageSource).toContain('getRenderQuality');
     expect(stageSource).toContain('createAdaptiveFrameLoop');
     expect(stageSource).toContain('watchContextLoss');
     expect(stageSource).toContain('onReducedMotionChange');
+  });
+
+  it('runs SMAA in linear space before the output pass converts to sRGB', () => {
+    const smaa = effectsSource.indexOf('SMAAPass());');
+    const output = effectsSource.indexOf('OutputPass());');
+    expect(smaa).toBeGreaterThan(-1);
+    expect(output).toBeGreaterThan(-1);
+    expect(smaa).toBeLessThan(output);
+  });
+
+  it('exposes the bloom pass and the clock reset that a restored context needs', () => {
+    expect(effectsSource).toContain('bloomPass,');
+    expect(effectsSource).toContain('setBloom');
+    expect(stageSource).toContain('clock.start()');
+    expect(stageSource).not.toContain('clock.getDelta();\n    },\n    dispose() {},');
   });
 });
