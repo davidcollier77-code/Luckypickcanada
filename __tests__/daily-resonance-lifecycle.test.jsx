@@ -97,7 +97,7 @@ describe('DailyResonance Lifecycle & Audio', () => {
     // Wait for the asynchronous import rejection as well as the visible reading.
     await waitFor(
       () => {
-        expect(screen.queryByText(/Reading today/i)).not.toBeNull();
+        expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
         expect(audioWarning).toHaveBeenCalledWith(
           'Lucky Meter audio unavailable; continuing without sound.',
           expect.any(Error),

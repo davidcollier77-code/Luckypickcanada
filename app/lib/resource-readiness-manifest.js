@@ -19,6 +19,7 @@
  */
 
 import { preloadCrystalBallAudio } from './audio.js';
+import { prepareLuckyMeterAudio } from './lucky-meter/audio.js';
 import { registerExperienceResources } from './resource-readiness.js';
 
 /**
@@ -95,14 +96,22 @@ export const EXPERIENCE_DEFINITIONS = Object.freeze([
     ],
   },
   {
+    // Version 2 adds the cinematic's sound set to the same registration. The
+    // audio adapter only prepares; the Start press still owns playback.
     id: 'lucky-meter',
-    version: 1,
+    version: 2,
     label: 'Lucky Meter / Daily Resonance',
     routes: ['/lucky-meter'],
     dependsOn: [],
     resources: [
       LUCKY_METER_SKY,
       { id: 'lucky-meter-route', kind: 'code', route: '/lucky-meter' },
+      {
+        id: 'lucky-meter-audio',
+        kind: 'audio',
+        prepare: prepareLuckyMeterAudio,
+        background: false,
+      },
     ],
   },
   {

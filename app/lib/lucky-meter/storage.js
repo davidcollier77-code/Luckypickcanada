@@ -10,7 +10,6 @@
  * number is drawn and written back immediately, so a refresh cannot reroll it.
  */
 import {
-  COLOURS_BY_ID,
   HISTORY_LIMITS,
   LUCKY_NUMBER_MAX,
   LUCKY_NUMBER_MIN,
@@ -20,6 +19,7 @@ import {
   PERCENTAGE_MIN,
 } from './config';
 import { SPARKS_BY_ID } from './little-sparks';
+import { isKnownColourId } from './sparks-and-seasonal-colours';
 import { hasValidLuckyNumber, validateDailyResult } from './selection';
 
 export function emptyMeterHistory() {
@@ -41,6 +41,9 @@ export function emptyMeterState() {
     // cinematic but before the sky finished writing resumes the writing instead of
     // skipping it or replaying the completed cinematic.
     sparkCompleted: false,
+    // The tier message has not finished writing and fading. A refresh during
+    // the message resumes it before the celebration instead of skipping it.
+    messageCompleted: false,
     stageDurationMs: 0,
   };
 }
@@ -91,7 +94,7 @@ function normalizeHistory(value) {
   }
   if (Array.isArray(value.colours)) {
     history.colours = value.colours
-      .filter((entry) => typeof entry === 'string' && COLOURS_BY_ID.has(entry))
+      .filter((entry) => isKnownColourId(entry))
       .slice(0, HISTORY_LIMITS.colours);
   }
   if (Array.isArray(value.sparks)) {
@@ -158,6 +161,12 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
       Boolean(result) &&
       (parsed.sparkCompleted === true ||
         (parsed.sparkCompleted === undefined && eventCompleted));
+    // The message precedes the celebration. A payload from before this flag
+    // existed has necessarily finished its message if its event finished.
+    const messageCompleted =
+      Boolean(result) &&
+      (parsed.messageCompleted === true ||
+        (parsed.messageCompleted === undefined && eventCompleted));
     const stageDurationMs = result ? normalizeStageDuration(parsed.stageDurationMs) : 0;
 
 
@@ -173,6 +182,7 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
             history,
             eventCompleted,
             revealCompleted,
+            messageCompleted,
             sparkCompleted,
             stageDurationMs,
           }),
@@ -188,6 +198,7 @@ export function loadMeterState(storage = getBrowserStorage(), options = {}) {
       history,
       eventCompleted,
       revealCompleted,
+      messageCompleted,
       sparkCompleted,
       stageDurationMs,
     };
@@ -211,6 +222,7 @@ export function saveMeterState(state, storage = getBrowserStorage()) {
     history: normalizeHistory(state.history),
     eventCompleted: state.eventCompleted === true,
     revealCompleted: state.revealCompleted === true,
+    messageCompleted: state.messageCompleted === true,
     sparkCompleted: state.sparkCompleted === true,
     stageDurationMs: normalizeStageDuration(state.stageDurationMs),
   };
@@ -240,7 +252,7 @@ export function appendResultToHistory(history, result) {
       .filter(isValidLuckyNumber)
       .slice(0, HISTORY_LIMITS.numbers),
     colours: [result?.colour?.id, ...base.colours]
-      .filter((entry) => typeof entry === 'string' && COLOURS_BY_ID.has(entry))
+      .filter((entry) => isKnownColourId(entry))
       .slice(0, HISTORY_LIMITS.colours),
     sparks: [result?.spark?.id, ...base.sparks]
       .filter((entry) => typeof entry === 'string' && SPARKS_BY_ID.has(entry))

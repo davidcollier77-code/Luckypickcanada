@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  COLOURS,
   ENTERTAINMENT_DISCLAIMER,
   EVENTS,
   LUCKY_COLOUR_LABEL,
@@ -12,6 +11,11 @@ import {
   TIERS,
 } from '../app/lib/lucky-meter/config';
 import { LITTLE_SPARKS } from '../app/lib/lucky-meter/little-sparks';
+import {
+  ALL_COLOURS,
+  getPaletteForSeasonKey,
+  getSeasonForDateKey,
+} from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
 import {
   createDailyResult,
   getEventForPercentage,
@@ -264,62 +268,80 @@ describe('Lucky Number selection', () => {
 });
 
 describe('Lucky Colour selection', () => {
-  it('offers the twelve approved colours exactly', () => {
-    expect(COLOURS).toHaveLength(12);
-    expect(COLOURS.map((colour) => colour.hex)).toEqual([
-      '#B52B32',
-      '#28543C',
-      '#23395B',
-      '#722F3E',
-      '#2855A6',
-      '#45484D',
-      '#F1E8D5',
-      '#C49A35',
-      '#F7F5EF',
-      '#28666B',
-      '#C96A25',
-      '#B68A5A',
+  it('uses the active season’s twelve exact values', () => {
+    const autumn = getPaletteForSeasonKey('autumn');
+    expect(autumn).toHaveLength(12);
+    expect(autumn.map((colour) => colour.hex)).toEqual([
+      '#A83232',
+      '#C45A24',
+      '#D87925',
+      '#C99A24',
+      '#B58A32',
+      '#A65E3B',
+      '#702D3D',
+      '#A34B32',
+      '#405B42',
+      '#32666A',
+      '#426789',
+      '#B58A65',
     ]);
-    expect(COLOURS.map((colour) => colour.name)).toEqual([
+    expect(autumn.map((colour) => colour.name)).toEqual([
       'Maple Red',
-      'Forest Green',
-      'Navy Blue',
-      'Burgundy',
-      'Royal Blue',
-      'Charcoal',
-      'Cream',
+      'Burnt Orange',
+      'Pumpkin',
+      'Goldenrod',
       'Mustard Gold',
-      'Winter White',
+      'Copper',
+      'Burgundy',
+      'Rust',
+      'Forest Green',
       'Deep Teal',
-      'Pumpkin Orange',
+      'Denim Blue',
       'Warm Camel',
     ]);
   });
 
-  it('selects each remaining colour with equal probability', () => {
+  it('selects each remaining seasonal colour with equal probability', () => {
     const counts = new Map();
     const draws = 33_000;
     const random = mulberry32(88);
+    const palette = getPaletteForSeasonKey('autumn');
     for (let index = 0; index < draws; index += 1) {
-      const colour = pickColour(['maple-red'], random);
+      const colour = pickColour(['maple-red'], random, palette);
       counts.set(colour.id, (counts.get(colour.id) || 0) + 1);
     }
     expect(counts.has('maple-red')).toBe(false);
     expect(counts.size).toBe(11);
-    for (const colour of COLOURS.filter((entry) => entry.id !== 'maple-red')) {
+    for (const colour of palette.filter((entry) => entry.id !== 'maple-red')) {
       expect(counts.get(colour.id) / draws).toBeCloseTo(1 / 11, 2);
+    }
+    // Every colour carries the palette's exact HEX and painted finish.
+    for (const colour of palette) {
+      expect(ALL_COLOURS.find((entry) => entry.id === colour.id)?.hex).toBe(colour.hex);
+      expect(colour.texture.finish).toBeTruthy();
     }
   });
 
   it('excludes only the most recent colour, so older colours return', () => {
     const random = mulberry32(21);
     const seen = new Set();
+    const palette = getPaletteForSeasonKey('winter');
     for (let index = 0; index < 3000; index += 1) {
-      seen.add(pickColour(['navy-blue', 'cream'], random).id);
+      seen.add(pickColour(['winter-berry', 'winter-wool-red'], random, palette).id);
     }
-    expect(seen.has('navy-blue')).toBe(false);
-    expect(seen.has('cream')).toBe(true);
+    expect(seen.has('winter-berry')).toBe(false);
+    expect(seen.has('winter-wool-red')).toBe(true);
     expect(seen.size).toBe(11);
+  });
+
+  it('draws from the season of the local date, not a fixed list', () => {
+    const spring = createDailyResult({ dateKey: '2027-04-10', random: () => 0 });
+    const winter = createDailyResult({ dateKey: '2027-01-10', random: () => 0 });
+    expect(spring.season).toBe('spring');
+    expect(winter.season).toBe('winter');
+    expect(spring.colour.id).toBe(getPaletteForSeasonKey('spring')[0].id);
+    expect(winter.colour.id).toBe(getPaletteForSeasonKey('winter')[0].id);
+    expect(spring.colour.hex).not.toBe(winter.colour.hex);
   });
 });
 
@@ -361,7 +383,8 @@ describe('complete daily result', () => {
     expect(Number.isInteger(result.luckyNumber)).toBe(true);
     expect(result.luckyNumber).toBeGreaterThanOrEqual(LUCKY_NUMBER_MIN);
     expect(result.luckyNumber).toBeLessThanOrEqual(LUCKY_NUMBER_MAX);
-    expect(COLOURS.map((colour) => colour.id)).toContain(result.colour.id);
+    expect(ALL_COLOURS.map((colour) => colour.id)).toContain(result.colour.id);
+    expect(getSeasonForDateKey(dateKey)?.key).toBe(result.season);
     expect(LITTLE_SPARKS.map((spark) => spark.id)).toContain(result.spark.id);
   });
 
@@ -394,9 +417,9 @@ describe('complete daily result', () => {
   });
 
   it('marks light colours from the shared palette rather than hard-coded ids', () => {
-    const cream = createDailyResult({ dateKey, random: () => 0.5 });
-    expect(cream.colour.id).toBe('cream');
-    expect(cream.colour.light).toBe(true);
+    const snow = createDailyResult({ dateKey: '2027-01-10', random: () => 0 });
+    expect(snow.colour.id).toBe('winter-snowfall');
+    expect(snow.colour.light).toBe(true);
 
     const mapleRed = createDailyResult({ dateKey, random: () => 0 });
     expect(mapleRed.colour.id).toBe('maple-red');
@@ -410,13 +433,13 @@ describe('complete daily result', () => {
       history: {
         percentages: [53],
         numbers: [26],
-        colours: ['cream'],
+        colours: ['burgundy'],
         sparks: ['spark-16'],
       },
     });
     expect(result.percentage).toBe(52);
     expect(result.luckyNumber).not.toBe(26);
-    expect(result.colour.id).not.toBe('cream');
+    expect(result.colour.id).not.toBe('burgundy');
     expect(result.spark.id).not.toBe('spark-16');
   });
 
@@ -452,8 +475,11 @@ describe('saved result validation and lucky-number migration', () => {
       message: "Your luck is running high today!",
     });
     expect(normalized.event).toEqual({ id: 'fireworks', name: 'Fireworks' });
-    // The saved colour and Spark are preserved, not rerolled.
+    // The saved colour and Spark are preserved, not rerolled. A legacy value
+    // keeps its exact stored HEX even though Maple Red now has a new one.
     expect(normalized.colour.id).toBe('maple-red');
+    expect(normalized.colour.hex).toBe('#B52B32');
+    expect(normalized.season).toBe('autumn');
     expect(normalized.spark.id).toBe('spark-04');
     expect(normalized.dateKey).toBe(dateKey);
     expect(normalized.createdAt).toBe(1234567890);

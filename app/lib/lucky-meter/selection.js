@@ -18,8 +18,6 @@
  * guards can be tested deterministically.
  */
 import {
-  COLOURS,
-  COLOURS_BY_ID,
   EVENTS_BY_ID,
   LUCKY_NUMBER_MAX,
   LUCKY_NUMBER_MIN,
@@ -29,6 +27,17 @@ import {
   TIERS_BY_ID,
 } from './config';
 import { LITTLE_SPARKS, SPARKS_BY_ID } from './little-sparks';
+import {
+  COLOUR_FINISHES,
+  COLOURS_BY_ID,
+  LEGACY_COLOUR_IDS,
+  SEASONS_BY_KEY,
+  dateFromLocalKey,
+  getPaletteForDate,
+  getSeasonForDate,
+  getSeasonForDateKey,
+  isKnownColourId,
+} from './sparks-and-seasonal-colours';
 
 function clampRandom(value) {
   if (!Number.isFinite(value)) return 0;
@@ -126,17 +135,29 @@ export function pickLuckyNumber(recentNumbers = [], random = Math.random) {
 }
 
 /**
- * Equal-probability colour selection from the twelve approved colours,
+ * Equal-probability colour selection from the active season's twelve colours,
  * excluding only the colour id in the most recent saved result.
+ *
+ * The palette is the season resolved from the local date, so the wheel, the
+ * pour and the result card always present the same twelve exact values.
  *
  * @param {string[]} [recentColours] Last known colour ids, newest first.
  * @param {() => number} [random] Injectable random source.
- * @returns {{ id: string, name: string, hex: string, light?: boolean }}
+ * @param {ReadonlyArray<object>} [palette] The active twelve-colour palette.
+ * @returns {{ id: string, name: string, hex: string, light: boolean, texture: object }}
  */
-export function pickColour(recentColours = [], random = Math.random) {
+export function pickColour(
+  recentColours = [],
+  random = Math.random,
+  palette = getPaletteForDate(),
+) {
   const newest = mostRecentEntry(recentColours);
-  const avoid = typeof newest === 'string' && COLOURS_BY_ID.has(newest) ? newest : null;
-  const pool = avoid ? COLOURS.filter((colour) => colour.id !== avoid) : COLOURS;
+  const colours =
+    Array.isArray(palette) && palette.length > 0 ? palette : getPaletteForDate();
+  const avoid = typeof newest === 'string' && colours.some((colour) => colour.id === newest)
+    ? newest
+    : null;
+  const pool = avoid ? colours.filter((colour) => colour.id !== avoid) : colours;
   return pool[randomIndex(pool.length, random)];
 }
 
@@ -167,12 +188,17 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
   if (typeof dateKey !== 'string' || dateKey.length === 0) {
     throw new TypeError('createDailyResult requires a local date key');
   }
+  const date = dateFromLocalKey(dateKey);
+  const season = date ? getSeasonForDate(date) : null;
+  if (!season) {
+    throw new TypeError('createDailyResult requires a valid local date key');
+  }
 
   const percentage = pickPercentage(history.percentages, random);
   const tier = getTierForPercentage(percentage);
   const event = getEventForPercentage(percentage);
   const luckyNumber = pickLuckyNumber(history.numbers, random);
-  const colour = pickColour(history.colours, random);
+  const colour = pickColour(history.colours, random, season.colours);
   const spark = pickSpark(history.sparks, random);
 
   return {
@@ -185,11 +211,13 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
     },
     event: { id: event.id, name: event.name },
     luckyNumber,
+    season: season.key,
     colour: {
       id: colour.id,
       name: colour.name,
       hex: colour.hex,
       light: colour.light === true,
+      texture: { ...colour.texture },
     },
     spark: { id: spark.id, message: spark.message },
     createdAt: Date.now(),
@@ -199,6 +227,64 @@ export function createDailyResult({ dateKey, history = {}, random = Math.random 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
+
+const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
+
+/**
+ * Normalises a stored colour record without ever re-drawing it.
+ *
+ * A reading saved before the seasonal palettes existed keeps its exact id,
+ * name and HEX value; only a missing texture falls back to a documented finish.
+ * Unknown ids are rejected rather than painted with invented colour values.
+ *
+ * @param {unknown} value
+ * @returns {{ id: string, name: string, hex: string, light: boolean, texture: object } | null}
+ */
+export function normalizeStoredColour(value) {
+  if (!isPlainObject(value)) return null;
+  const id = typeof value.id === 'string' ? value.id.trim() : '';
+  if (!id || !isKnownColourId(id)) return null;
+
+  const known = COLOURS_BY_ID.get(id) || null;
+  const name =
+    typeof value.name === 'string' && value.name.trim()
+      ? value.name.trim()
+      : known?.name || null;
+  const hex =
+    typeof value.hex === 'string' && HEX_PATTERN.test(value.hex.trim())
+      ? value.hex.trim()
+      : known?.hex || null;
+  if (!name || !hex) return null;
+
+  const knownTexture = known?.texture || COLOUR_FINISHES.satin;
+  const stored = isPlainObject(value.texture) ? value.texture : null;
+  const finish =
+    stored && typeof stored.finish === 'string'
+      ? stored.finish
+      : known?.texture?.finish || 'satin';
+  const texture = {
+    finish,
+    grain: Number.isFinite(stored?.grain) ? stored.grain : knownTexture.grain,
+    sheen: Number.isFinite(stored?.sheen) ? stored.sheen : knownTexture.sheen,
+    highlight: Number.isFinite(stored?.highlight) ? stored.highlight : knownTexture.highlight,
+  };
+
+  return {
+    id,
+    name,
+    hex,
+    light: value.light === true || known?.light === true,
+    texture,
+  };
+}
+
+/** True when a stored colour id belongs to the seasonal or preserved palette. */
+export function isStoredColourId(value) {
+  return isKnownColourId(value);
+}
+
+/** The legacy ids are exported for storage tests and migration coverage. */
+export const LEGACY_COLOUR_ID_LIST = LEGACY_COLOUR_IDS;
 
 /** True when a stored result already carries a usable Lucky Number. */
 export function hasValidLuckyNumber(value) {
@@ -242,10 +328,18 @@ export function validateDailyResult(value, expectedDateKey, random = Math.random
   const event = getEventForPercentage(percentage);
   if (!event) return null;
 
-  const colour = COLOURS_BY_ID.get(value.colour?.id);
+  const colour = normalizeStoredColour(value.colour);
   if (!colour) return null;
   const spark = SPARKS_BY_ID.get(value.spark?.id);
   if (!spark) return null;
+
+  const storedSeason =
+    typeof value.season === 'string' && SEASONS_BY_KEY.has(value.season) ? value.season : null;
+  const derivedSeason = getSeasonForDateKey(dateKey);
+  // The local date is the authority for the active season, so a corrupt or
+  // stale season field can never paint a different palette than the caption.
+  // The stored colour itself is still preserved by normalizeStoredColour.
+  const seasonKey = derivedSeason?.key || storedSeason || null;
 
   const luckyNumber = hasValidLuckyNumber(value)
     ? value.luckyNumber
@@ -261,12 +355,8 @@ export function validateDailyResult(value, expectedDateKey, random = Math.random
     },
     event: { id: event.id, name: event.name },
     luckyNumber,
-    colour: {
-      id: colour.id,
-      name: colour.name,
-      hex: colour.hex,
-      light: colour.light === true,
-    },
+    season: seasonKey,
+    colour,
     spark: { id: spark.id, message: spark.message },
     // A saved date, colour, Spark and number are preserved; only the derived
     // reveal is normalised, so storage is never cleared or rolled again.

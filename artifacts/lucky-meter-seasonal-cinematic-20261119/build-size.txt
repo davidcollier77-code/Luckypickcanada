@@ -1,0 +1,5 @@
+Measured after clean production build: 2026-11-19T06:12:19Z
+316	.next
+34	public
+Sum MiB: 350
+Sum bytes: 350698286 (334.5 MiB)
