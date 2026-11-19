@@ -1,3 +1,18 @@
+## 2026-11-19 — Graphics development toolkit (Three.js)
+- Installed `three` 0.187.0 and `@types/three` 0.187.0 (MIT) and added an additive, unused-by-default
+  toolkit under `app/lib/graphics/`: a lazy stage (dynamic `import('three')`, tiered renderer/scene/
+  perspective camera, adaptive frame loop, reduced-motion static frame, context loss/restore,
+  idempotent disposal), a tiered cinematic composer (bloom, ACES/sRGB output, SMAA from
+  `three/addons`), lazy uncompressed glTF loading and best-effort resource disposal.
+- Reused the existing capability layer, adaptive plan, context-loss watcher and resource-readiness
+  rules; rejected PixiJS, `@react-three/fiber`, the `postprocessing` library, Babylon.js and Three's
+  experimental WebGPU renderer with recorded reasons. WebGPU stays probe-only.
+- Verified 16 focused toolkit tests plus the 10 dependency-policy tests, `tsc --noEmit`, and
+  `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0. Production build 370.55 MiB (386 MiB by
+  `du -sm`) with zero Three.js chunks. A software-rendered harness (SwiftShader WebGL2) created a
+  stage and bloom composer, rendered 34 frames, read back a lit frame and reported `glError 0`; the
+  desktop and mobile homepage captures are unchanged.
+
 ## 2026-11-19 — Lucky Meter PR #1964 review repairs
 - Fixed the confirmed review/Visual QA findings on the seasonal cinematic branch: the welcome pointer's
   gradient now lives in the always-mounted pointer SVG; the arrival fallback derives 3,750 ms from the

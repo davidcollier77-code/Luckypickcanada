@@ -240,3 +240,37 @@ policy, audio policy and release registry.
 
 `specs/186-resource-readiness-hub/` holds this hub's specification, plan, tasks
 and evidence.
+
+## Three.js graphics toolkit (spec 193)
+
+The site now has an installed 3D capability for future cinematic, realistic or
+gaming-quality work. It is **infrastructure only**: no page imports it, so it
+adds no effect, no initial bundle chunk and no visual change today.
+
+- `three` 0.187 (MIT) is the 3D engine and `@types/three` provides its types.
+  Three's own addons supply post-processing and model loading, so no second
+  post-processing or asset library was added.
+- `app/lib/graphics/stage.js` creates a renderer, scene and perspective camera
+  with a dynamic `import('three')`. Quality tiers, antialias, shadow budget and
+  the pixel-ratio cap come from `resolveRenderQuality`; frames come from
+  `createAdaptiveFrameLoop`; reduced motion paints one static frame; context
+  loss stops the scene and restoration resumes it; `dispose()` releases the
+  scene and the WebGL context.
+- `app/lib/graphics/effects.js` composes `EffectComposer`, `RenderPass`,
+  `UnrealBloomPass`, `OutputPass` (ACES tone mapping and sRGB) and `SMAAPass`
+  from `three/addons`, scaled by tier (bloom and SMAA are dropped on the
+  constrained tier).
+- `app/lib/graphics/assets.js` loads uncompressed glTF/GLB through
+  `GLTFLoader`, lazily, returning `null` on failure. Draco/KTX2 decoders are
+  intentionally absent until an effect needs them.
+- `app/lib/graphics/resources.js` disposes geometries, materials and textures.
+- `app/lib/graphics/README.md` is the usage guide and records the rejected
+alternatives (PixiJS, `@react-three/fiber`, the experimental WebGPU renderer).
+
+The layer contract is unchanged: WebGL is still the render path, WebGPU stays
+probe-only and optional, the browser still chooses its backend (no vendor
+branching, no `powerPreference`, no `failIfMajorPerformanceCaveat`), and every
+effect must keep a static or Canvas 2D fallback for a `null` stage.
+
+`specs/193-graphics-development-toolkit/` holds this toolkit's specification,
+plan, tasks, research and evidence.
