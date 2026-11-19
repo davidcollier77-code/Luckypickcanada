@@ -1,3 +1,8 @@
+## 2026-11-19 — Three.js concise LLM documentation source
+- Added `/websites/threejs_llms_txt` as a distinct URL source for `https://threejs.org/docs/llms.txt`, routed to Creation and Polishing with a canonical Creation snapshot and Polishing symlink.
+- Preserved the existing `/websites/threejs` full-documentation source (`llms-full.txt`) unchanged. No application code, dependencies or updater workflow changed.
+- Local updater/repository checks were not run in ChatGPT: Node.js 26 and pnpm 10.30.3 are unavailable in this environment. The owner explicitly authorized documenting this capability limitation; checks remain unverified.
+
 ## 2026-11-19 — PR #1966 round 2 review repairs
 - Repaired the review findings that were genuine in the automatic creative layer: `CreativeSurface` now compares its `requirements` descriptor by value (an inline literal no longer rebuilds the surface and its WebGL context), an explicit `aria-hidden={false}` is honoured, `audio-sync.attach` forwards the position correctly to either a `createMotionTimeline` wrapper or a raw GSAP timeline, `disposeSceneResources` releases each shared geometry/material/texture once per teardown, and `loadGLTF` resolves `null` after a 30 s stall window instead of leaving the caller waiting.
 - Verified 41 focused creative-layer tests, 103 files / 1087 unit tests, `tsc --noEmit`, `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` exit 0, and a clean production build of 413,698,875 bytes (394.53 MiB by the repository's `du -sb .next public` gate) with no Three.js in initial page chunks. Context-restore and camera-aspect claims were re-checked against the code and are not defects.
