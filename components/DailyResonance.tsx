@@ -14,6 +14,7 @@ import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
 import { beginActiveExperience } from '../app/lib/resource-readiness';
+import { useCreativeExperience } from '../app/lib/use-creative-experience';
 import { useDailyResetCountdown } from './daily-reset-countdown';
 import { getLocalDateKey } from '../app/lib/daily-reset';
 import { prefersReducedMotion } from '../app/lib/graphics-capabilities';
@@ -151,6 +152,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [announcement, setAnnouncement] = useState('');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [history, setHistory] = useState(emptyMeterHistory);
+
+  // The Lucky Meter declares its renderer and sound set once in the visual
+  // registry; the readiness hub prepares those resources automatically. The
+  // activation path below still owns playback and the toolkit does not draw.
+  useCreativeExperience('lucky-meter');
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
   const { ready, dateKey, formatted: resetCountdown } = useDailyResetCountdown();

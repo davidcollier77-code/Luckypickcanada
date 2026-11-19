@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { playConfettiPop, preloadConfettiPop } from './lib/audio';
 import { MAPLE_LEAF_PATH, createMapleLeafShape, loadConfetti } from './lib/mapleLeafConfetti';
 import { getCanvas2DContext } from './lib/graphics-capabilities';
+import { useCreativeExperience } from './lib/use-creative-experience';
 
 // The reveal celebrates with the homepage's Explore Your Luck moment: the same
 // maple-leaf outline and gold palette, the same confetti pop, and the same
@@ -182,6 +183,12 @@ export default function LuckyRevealCelebration({
   // Stored in a ref so it persists across React strict-mode double-invocations of
   // the wave-scheduling effect without resetting the budget mid-celebration.
   const firedParticlesRef = useRef(0);
+
+  // The reveal's Canvas 2D particle layer and its three cues are declared once
+  // in the visual registry; the readiness hub prepares them automatically. The
+  // preloads below remain the activation-path guarantee and playback is still
+  // owned here, so the celebration's timing, artwork and sound are unchanged.
+  useCreativeExperience('reveal');
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

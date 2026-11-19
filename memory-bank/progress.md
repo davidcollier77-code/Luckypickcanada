@@ -1,3 +1,37 @@
+## 2026-11-19 — PR #1966 round 2 review repairs
+- Repaired the review findings that were genuine in the automatic creative layer: `CreativeSurface` now compares its `requirements` descriptor by value (an inline literal no longer rebuilds the surface and its WebGL context), an explicit `aria-hidden={false}` is honoured, `audio-sync.attach` forwards the position correctly to either a `createMotionTimeline` wrapper or a raw GSAP timeline, `disposeSceneResources` releases each shared geometry/material/texture once per teardown, and `loadGLTF` resolves `null` after a 30 s stall window instead of leaving the caller waiting.
+- Verified 41 focused creative-layer tests, 103 files / 1087 unit tests, `tsc --noEmit`, `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` exit 0, and a clean production build of 413,698,875 bytes (394.53 MiB by the repository's `du -sb .next public` gate) with no Three.js in initial page chunks. Context-restore and camera-aspect claims were re-checked against the code and are not defects.
+
+## 2026-11-19 — Graphics and audio development layer completed (PR #1966)
+- Turned the installed Three.js toolkit into an automatic creative layer: a deterministic technology
+  selector (Three.js only for 3D/post-processing, Canvas 2D for 2D, existing WebGL engines preserved),
+  a single visual registry that derives `module`/`texture`/`model`/`audio` resources and registers new
+  experiences automatically, and `module`/`texture`/`model` adapters on the existing readiness hub.
+- Added managed Canvas 2D, lazy GSAP timelines, PBR material presets, a tiered light rig with event
+  pulses, bounded GPU particles, synchronised audio cues, a unified runtime, a reusable React surface
+  and a runnable example. Integrated the Lucky Meter and Card Reveal through `useCreativeExperience`
+  with no change to their artwork, timing, sound or fallbacks.
+- Repaired the PR review findings (Clock reset, context-loss ordering, SMAA before `OutputPass`, bloom
+  handle, guard assertion, README double render); the context-restore finding was verified as not a
+  defect against Three.js source.
+- Verified 103 files / 1083 tests, `tsc --noEmit`, `./freebuff-verify.sh` exit 0 and a 361.1 MiB build
+  (376 MiB by `du -sm`) with no initial page JavaScript containing Three.js.
+
+## 2026-11-19 — Graphics development toolkit (Three.js)
+- Installed `three` 0.187.0 and `@types/three` 0.187.0 (MIT) and added an additive, unused-by-default
+  toolkit under `app/lib/graphics/`: a lazy stage (dynamic `import('three')`, tiered renderer/scene/
+  perspective camera, adaptive frame loop, reduced-motion static frame, context loss/restore,
+  idempotent disposal), a tiered cinematic composer (bloom, ACES/sRGB output, SMAA from
+  `three/addons`), lazy uncompressed glTF loading and best-effort resource disposal.
+- Reused the existing capability layer, adaptive plan, context-loss watcher and resource-readiness
+  rules; rejected PixiJS, `@react-three/fiber`, the `postprocessing` library, Babylon.js and Three's
+  experimental WebGPU renderer with recorded reasons. WebGPU stays probe-only.
+- Verified 16 focused toolkit tests plus the 10 dependency-policy tests, `tsc --noEmit`, and
+  `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0. Production build 370.55 MiB (386 MiB by
+  `du -sm`) with zero Three.js chunks. A software-rendered harness (SwiftShader WebGL2) created a
+  stage and bloom composer, rendered 34 frames, read back a lit frame and reported `glError 0`; the
+  desktop and mobile homepage captures are unchanged.
+
 ## 2026-11-19 — Lucky Meter PR #1964 review repairs
 - Fixed the confirmed review/Visual QA findings on the seasonal cinematic branch: the welcome pointer's
   gradient now lives in the always-mounted pointer SVG; the arrival fallback derives 3,750 ms from the

@@ -240,3 +240,102 @@ policy, audio policy and release registry.
 
 `specs/186-resource-readiness-hub/` holds this hub's specification, plan, tasks
 and evidence.
+
+## Graphics and audio development layer (spec 193)
+
+The site has a complete creative development layer for cinematic, realistic and
+gaming-quality work. It is additive: no current artwork, sequence, timing or
+sound changes, and the toolkit draws nothing unless a commissioned feature asks
+it to. It is also automatic: a feature describes what it needs and the layer
+selects the technology, derives the resources and hands preparation to the
+existing readiness hub.
+
+### Technology selection, not a single engine
+
+`app/lib/graphics/technologies.js` is the selector. A descriptor declares
+`dimension`, `renderer`, `postProcessing`, `particles`, `timeline` and `audio`;
+the selector resolves the render technology from the shared capability probes and
+the adaptive tier:
+
+- `renderer: 'webgl'` means an existing hand-written engine keeps its frames.
+  The Lucky Meter cinematics are never moved to Three.js.
+- 3D or post-processing with WebGL available selects `three` (fallbacks Canvas 2D,
+  then DOM). Without WebGL it resolves to Canvas 2D or DOM.
+- A 2D particle layer selects the managed Canvas 2D surface.
+- Atmosphere with no canvas need stays CSS/DOM.
+- Reduced motion selects no motion technology but never downgrades the renderer;
+  a timeline chooses GSAP, otherwise CSS.
+
+Selection is deterministic and side-effect free, so an experience can render the
+resolved plan in SSR-safe tests and on the server without touching a canvas.
+
+### Automatic discovery and preparation
+
+`app/lib/graphics/experiences.js` is the single registry of visual/audio
+experiences. `creativeResourcesFor()` derives the readiness resources from a
+descriptor: engine chunks, texture and model preflights, and audio prepare
+functions. The manifest spreads that derived list into the experience's
+registration, and `installCreativeExperiences()` installs the adapters and
+registers any future visual experience that has no manifest entry.
+
+The adapters extend the existing hub through its documented
+`registerResourceAdapter` contract — no second preloader, scheduler, cache or
+memory detector:
+
+- `module` warms a heavy chunk through literal dynamic imports in
+  `engine-chunks.js` (Three.js, GSAP, canvas-confetti, Howler) so nothing is
+  executed and no chunk is downloaded until an experience asks for it.
+- `texture` fetches and decodes into an `ImageBitmap` (or an `Image` fallback)
+  with an explicit `dispose()`.
+- `model` preflights a glTF/GLB into the HTTP cache; parsing stays lazy through
+  `assets.js`.
+
+Preparation inherits every hub guarantee: deduplication by kind + target +
+version, `min(plan.maxParallelRequests, 3)` concurrency, pause for an active
+experience or hidden page, Save-Data and slow-connection skips, a post-settle
+start window, one automatic retry, truthful `fetched`/`initialized`/`ready`/
+`failed`/`skipped` states and re-evaluated policy skips. The hub still never
+plays a sound, draws a frame or runs business logic.
+
+### Creative capability surface
+
+| Module | Capability |
+| --- | --- |
+| `stage.js` | Lazy budgeted Three.js stage: scene, perspective camera, resize, reduced motion, context loss/restore, teardown |
+| `effects.js` | Tiered composer: SMAA in linear space, HDR bloom, ACES + sRGB `OutputPass` last; runtime bloom tuning; `null` on failure |
+| `materials.js` | Gold, enamel, glass and emissive presets; transmission and clear-coat only on the high tier |
+| `lighting.js` | Tiered hemisphere/key/rim/fill rig with wall-time event pulses |
+| `particles.js` | Seeded, bounded GPU point field with intensity control |
+| `timeline.js` | Lazy GSAP timelines; reduced motion applies the final state without frames |
+| `canvas-surface.js` | Managed Canvas 2D: capped DPR, adaptive frames, resize, context restore, clean teardown |
+| `audio-sync.js` | Named sound cues bound to timeline positions, played once, never after teardown |
+| `assets.js` / `resources.js` | Lazy glTF loading and best-effort GPU disposal |
+| `runtime.js` | `createCreativeSurface()` — the automatic entry point returning one lifecycle for every renderer |
+| `components/graphics/CreativeSurface.jsx` | React wrapper that builds, starts and disposes the selected surface |
+| `app/lib/use-creative-experience.js` | React binding that resolves the plan and prepares the experience automatically |
+| `examples/golden-motes.js` | Runnable worked example (not mounted) |
+
+### Integration of existing experiences
+
+The Lucky Meter and the Lucky Card Reveal now declare their renderer and cues in
+the registry. Their resources — including the Lucky Meter sound set, the reveal
+sparkle, applause and confetti pop, and the confetti chunk — are derived and
+prepared by the hub; both components call `useCreativeExperience` and nothing
+about their artwork, animation timing, playback or fallback changed. The Crystal
+Ball, Lucky Map and Lucky Number Generator declare their capabilities the same
+way. New features use `CreativeSurface` and the registry, so they get the same
+budgets, lazy loading, cleanup and recovery without a new registration.
+
+### Preserved contract
+
+WebGL is still the render path, WebGPU stays probe-only and optional, the browser
+still chooses its backend (no vendor branching, no `powerPreference`, no
+`failIfMajorPerformanceCaveat`), and every effect keeps a static or Canvas 2D
+fallback for a `null` stage. The build budget stays strictly below 495 MiB. The
+engine chunks (Three.js, GSAP, confetti, Howler) exist only as async chunks
+recorded in `react-loadable-manifest.json`; no page's initial JavaScript includes
+them, and they are requested only when a descriptor asks for that chunk.
+
+`specs/193-graphics-development-toolkit/` holds this toolkit's specification,
+plan, research, tasks and evidence; `app/lib/graphics/README.md` is the usage
+guide.
