@@ -97,7 +97,7 @@ def chromium_job(restore=None, miss="missing", job_id="10"):
 def miss_step(conclusion="skipped"):
     return step(
         "Install Playwright Chromium (cache miss)",
-        "2026-11-15T16:05:45Z",
+        "2026-11-15T16:05:45Z",  # DevSkim: ignore DS173237
         "2026-11-15T16:05:45Z",
         conclusion=conclusion,
         number=3,
