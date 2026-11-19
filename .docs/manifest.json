@@ -25,7 +25,8 @@
       "/coreyhaines31/marketingskills/copy-frameworks",
       "/coreyhaines31/marketingskills/ai-tells",
       "/coreyhaines31/marketingskills/natural-transitions",
-      "/vercel-labs/agent-skills/react-best-practices"
+      "/vercel-labs/agent-skills/react-best-practices",
+      "/websites/threejs"
     ],
     "troubleshooting": [
       "/github/docs",
@@ -70,7 +71,8 @@
       "/coreyhaines31/marketingskills/copy-editing-checklist",
       "/coreyhaines31/marketingskills/plain-english-alternatives",
       "/coreyhaines31/marketingskills/content-refresh",
-      "/vercel-labs/agent-skills/react-best-practices"
+      "/vercel-labs/agent-skills/react-best-practices",
+      "/websites/threejs"
     ],
     "testing": [
       "/github/docs",
@@ -428,6 +430,10 @@
     "/trailofbits/skills/post-patch-validation-evidence-model": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/post-patch-validation/skills/post-patch-validation/references/evidence-model.md"
+    },
+    "/websites/threejs": {
+      "type": "url",
+      "url": "https://threejs.org/docs/llms-full.txt"
     }
   },
   "inventory": [
@@ -494,7 +500,8 @@
     "/trailofbits/skills/fp-check-evidence-templates",
     "/trailofbits/skills/sarif-parsing",
     "/trailofbits/skills/sarif-parsing-jq-queries",
-    "/numpy/numpy"
+    "/numpy/numpy",
+    "/websites/threejs"
   ],
   "githubShas": {
     "/github/docs": "c8d18813b261f243c2a4d47607d527fdcfe4ef8b",
