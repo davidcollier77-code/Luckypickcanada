@@ -1,3 +1,17 @@
+## 2026-11-19 — Creative Workbench and sound-reactive cinematics (spec 193 continuation)
+- Added an opt-in sound-reactivity bridge on the existing audio system: one shared `AnalyserNode`
+  taps Howler's Web Audio mix through a silent zero-gain branch, and a smoothed envelope (fast
+  attack/slow release, transient detection) drives the existing light rig, particle field and any
+  numeric property. No audio context, player or second audio system is created; `html5: true` cues
+  are documented as bypassing Web Audio.
+- Added a development-only Creative Workbench at `/workbench/creative`: a pure scene catalogue with
+  forced tier/seed and a bounded clock, deterministic Three.js and Canvas 2D scenes built through
+  the production runtime, PNG capture and `window.__creativeWorkbench` (`getState`, `setTime`,
+  `playCue`, `capture`, …) so agents can inspect and photograph visuals before PR approval. The
+  route 404s in production unless `CREATIVE_WORKBENCH=1`.
+- Verification: 25 focused tests, existing graphics suites 62 tests, type check exit 0; full suite,
+  repository gate and measured build recorded in `specs/193-graphics-development-toolkit/evidence.md`.
+
 ## 2026-11-19 — PR #1966 round 2 review repairs
 - Repaired the review findings that were genuine in the automatic creative layer: `CreativeSurface` now compares its `requirements` descriptor by value (an inline literal no longer rebuilds the surface and its WebGL context), an explicit `aria-hidden={false}` is honoured, `audio-sync.attach` forwards the position correctly to either a `createMotionTimeline` wrapper or a raw GSAP timeline, `disposeSceneResources` releases each shared geometry/material/texture once per teardown, and `loadGLTF` resolves `null` after a 30 s stall window instead of leaving the caller waiting.
 - Verified 41 focused creative-layer tests, 103 files / 1087 unit tests, `tsc --noEmit`, `SPEC_KIT_BASE_REF=722e17b7 ./freebuff-verify.sh` exit 0, and a clean production build of 413,698,875 bytes (394.53 MiB by the repository's `du -sb .next public` gate) with no Three.js in initial page chunks. Context-restore and camera-aspect claims were re-checked against the code and are not defects.

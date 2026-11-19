@@ -1,5 +1,37 @@
 # Active Context — Graphics Development Toolkit
 
+## Creative Workbench and sound reactivity (spec 193 continuation, current)
+
+- **Spec Kit feature:** `specs/193-graphics-development-toolkit` (continuation section)
+- **Branch:** `freebuff/4710ddd25ee135d8c2e93310` (continues PR #1966's layer from `c5a3bd74`)
+
+### Added
+
+- `app/lib/graphics/audio-reactivity.js`: one shared `AnalyserNode` on the graph Howler already
+  built (`masterGain → analyser → 0-gain → destination`, so the audible mix is untouched), a
+  smoothed envelope (fast attack, slow release, band splits, peak, transient with a 140 ms cooldown)
+  and bindings for a light rig, a particle field, any numeric property and beat callbacks. No
+  `AudioContext` is created; `html5: true` Howler cues bypass Web Audio and are documented as
+  unanalysable.
+- `reactiveAudio` in `technologies.js` resolves to `audioReactive` only when the browser can analyse
+  audio and motion is allowed, with `selectGraphicsTechnologies(requirements, quality, overrides)`
+  gaining a deterministic `reducedMotion` override for harnesses.
+- `runtime.js` creates the envelope when the plan enables it, updates it before the caller's frame,
+  passes it as `frame.envelope`, exposes it as `surface.reactive` and disposes it with the surface.
+- `app/lib/graphics/workbench.js` (pure catalogue, state, plan, capture names, production gate),
+  `workbench-runtime.js` (deterministic Three.js/Canvas 2D scenes) and
+  `components/graphics/CreativeWorkbench.jsx` with `window.__creativeWorkbench` (getState,
+  selectScene, setTier, setSeed, setReducedMotion, setTime, play, pause, playCue, capture,
+  readCapture). The route `/workbench/creative` is dynamic and 404s in production unless
+  `CREATIVE_WORKBENCH=1`.
+- `CreativeSurface.jsx` accepts an optional value-compared `quality` prop.
+
+### Preserved
+
+No visitor route, artwork, animation, timing, sound, layout, dependency or service changed. Existing
+surfaces never request `reactiveAudio`, so they create no analyser. The documentation-library,
+manifest, updater workflows and Cloudflare scheduler work remain untouched.
+
 - **Updated:** 2026-11-19
 - **Branch:** freebuff/5675fb1c2b649136e34a4b21
 - **Base:** main at 722e17b7

@@ -6,12 +6,16 @@ import { createCreativeSurface } from '../../app/lib/graphics/runtime';
 /**
  * A canvas that builds its own renderer from a capability description.
  *
- * Pass `requirements` (`{ dimension, renderer, particles, postProcessing }`) and
- * receive the selected surface through `onSurface`: a Three.js stage with an
- * optional cinematic composer, a managed Canvas 2D context, or a plan-only
- * object when an existing engine keeps ownership of the frame. Call
- * `surface.start()` when the visual should begin and dispose is automatic on
- * unmount.
+ * Pass `requirements` (`{ dimension, renderer, particles, postProcessing,
+ * reactiveAudio }`) and receive the selected surface through `onSurface`: a
+ * Three.js stage with an optional cinematic composer, a managed Canvas 2D
+ * context, or a plan-only object when an existing engine keeps ownership of the
+ * frame. Call `surface.start()` when the visual should begin and dispose is
+ * automatic on unmount.
+ *
+ * `quality` optionally forces a tier (a deterministic harness), and
+ * `onEnvelope` receives the live audio envelope when the plan enables sound
+ * reactivity. Both are optional; a normal experience passes only requirements.
  *
  * The element is decorative by default. Pass `aria-hidden={false}` plus a label
  * when the visual carries information; an explicit value always wins.
@@ -21,6 +25,8 @@ import { createCreativeSurface } from '../../app/lib/graphics/runtime';
  *
  * @param {{
  *   requirements?: object,
+ *   quality?: { tier?: string, maxPixelRatio?: number },
+ *   reducedMotion?: boolean,
  *   className?: string,
  *   style?: object,
  *   onSurface?: (surface: object|null) => void,
@@ -30,6 +36,8 @@ import { createCreativeSurface } from '../../app/lib/graphics/runtime';
  */
 export default function CreativeSurface({
   requirements,
+  quality,
+  reducedMotion,
   className,
   style,
   onSurface,
@@ -42,6 +50,10 @@ export default function CreativeSurface({
   callbacksRef.current = { onSurface, onFrame, onError };
   const requirementsRef = useRef(requirements);
   requirementsRef.current = requirements;
+  const qualityRef = useRef(quality);
+  qualityRef.current = quality;
+  const reducedMotionRef = useRef(reducedMotion);
+  reducedMotionRef.current = reducedMotion;
 
   // An inline descriptor is a new object on every parent render, so rebuilding
   // on identity would tear down and recreate the whole surface — including a
@@ -56,6 +68,15 @@ export default function CreativeSurface({
     }
   }, [requirements]);
 
+  // A forced tier must rebuild too: it changes the plan the surface resolves.
+  const qualitySignature = useMemo(() => {
+    try {
+      return JSON.stringify(quality ?? null);
+    } catch {
+      return quality;
+    }
+  }, [quality]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
@@ -66,6 +87,8 @@ export default function CreativeSurface({
     createCreativeSurface({
       canvas,
       requirements: requirementsRef.current,
+      quality: qualityRef.current,
+      reducedMotion: reducedMotionRef.current,
       onFrame: (frame) => callbacksRef.current.onFrame?.(frame),
       onError: (error) => callbacksRef.current.onError?.(error),
     })
@@ -87,7 +110,7 @@ export default function CreativeSurface({
       surface?.dispose?.();
       surface = null;
     };
-  }, [requirementsSignature]);
+  }, [requirementsSignature, qualitySignature, reducedMotion]);
 
   return (
     <canvas

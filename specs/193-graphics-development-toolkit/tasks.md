@@ -121,3 +121,26 @@ toolkit.
 
 T026–T035 are independent building blocks; T032 depends on T026–T031. T036–T037 depend on T032–T033.
 T038–T041 depend on all implementation tasks.
+
+## Phase 8: Creative Workbench and sound reactivity (continuation)
+
+- [X] T042 Add `audio-reactivity.js`: shared analyser on the existing Howler graph through a
+      zero-gain branch, smoothed/banded envelope, transient detection, bindings, neutral fallbacks
+- [X] T043 Add `reactiveAudio` to the selector with a deterministic reduced-motion override and
+      reasons; pass it through the experience descriptor
+- [X] T044 Wire the envelope into the runtime (per-frame `envelope`, `surface.reactive`, disposal)
+- [X] T045 Add `workbench.js`: pure catalogue, tiers, state clamping, plan, capture naming, 404 gate
+- [X] T046 Add `workbench-runtime.js`: deterministic Three.js and Canvas 2D scene builders
+- [X] T047 Add `CreativeWorkbench.jsx` with controls, inspector and `window.__creativeWorkbench`
+- [X] T048 Add the dynamic `/workbench/creative` route, development-only
+- [X] T049 Add an optional value-compared `quality` prop to `CreativeSurface`
+- [X] T050 Add `__tests__/graphics-sound-reactivity.test.js` (11 tests)
+- [X] T051 Add `__tests__/graphics-creative-workbench.test.js` (14 tests)
+- [X] T052 Document both capabilities in the README and architecture doc; update the Memory Bank
+- [X] T053 Run the full suite, `tsc --noEmit`, `./freebuff-verify.sh` and the measured build
+- [X] T054 Browser-check the workbench route in development and its 404 in production
+
+## Continuation dependencies (phase 8)
+
+T043–T044 depend on T042. T045–T049 are the workbench. T050–T051 cover T042–T049. T052–T054 depend
+on all implementation tasks.
