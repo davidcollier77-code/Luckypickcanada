@@ -462,6 +462,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (result && result.dateKey !== dateKey) {
       clearSequence();
       stopEventAudio();
+      releaseRevealWindow();
       resultRef.current = null;
       historyRef.current = emptyMeterHistory();
       stageDurationRef.current = 0;
@@ -484,7 +485,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setAnnouncement('');
       auroraRef.current?.setPhase('idle');
     }
-  }, [ready, dateKey, result, clearSequence, stopEventAudio]);
+  }, [ready, dateKey, result, clearSequence, stopEventAudio, releaseRevealWindow]);
 
   // Unload only the Howl instances this component created.
   useEffect(() => {
