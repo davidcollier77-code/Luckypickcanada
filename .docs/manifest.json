@@ -13,8 +13,6 @@
       "/react-hook-form/resolvers",
       "/emilkowalski/sonner",
       "/bvaughn/react-error-boundary",
-      "/websites/ai_google_dev_gemini-api",
-      "/google-gemini/gemini-skills/gemini-api-dev",
       "/dropbox/zxcvbn",
       "/websites/google_webp",
       "/lovell/sharp",
@@ -43,7 +41,6 @@
       "/bvaughn/react-error-boundary",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/google-gemini/gemini-skills/gemini-api-dev",
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
       "/websites/neon",
@@ -143,7 +140,6 @@
       "/upstash/docs",
       "/stripe/stripe-js",
       "/resend/resend-node",
-      "/google-gemini/gemini-skills/gemini-api-dev",
       "/getsentry/sentry-docs",
       "/bvaughn/react-error-boundary",
       "/microsoft/playwright",
@@ -180,10 +176,6 @@
     "/github/docs": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/github/docs/main/data/llms-txt/docs.md"
-    },
-    "/websites/ai_google_dev_gemini-api": {
-      "type": "url",
-      "url": "https://aistudio.google.com/llms.txt"
     },
     "/vercel/next.js": {
       "type": "url",
@@ -345,10 +337,6 @@
       "type": "url",
       "url": "https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types"
     },
-    "/google-gemini/gemini-skills/gemini-api-dev": {
-      "type": "url",
-      "url": "https://raw.githubusercontent.com/google-gemini/gemini-skills/main/skills/gemini-api-dev/SKILL.md"
-    },
     "/google/eng-practices": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/google/eng-practices/master/review/reviewer/looking-for.md"
@@ -454,8 +442,6 @@
     "/react-hook-form/resolvers",
     "/emilkowalski/sonner",
     "/bvaughn/react-error-boundary",
-    "/websites/ai_google_dev_gemini-api",
-    "/google-gemini/gemini-skills/gemini-api-dev",
     "/dropbox/zxcvbn",
     "/websites/google_webp",
     "/lovell/sharp",
@@ -541,7 +527,6 @@
     "/resend/resend-node": "f469296e8affa8be59d9c1f73119909ec1554bc7",
     "/numpy/numpy": "c60f172b3330f76d6592362137f34c4a3030a001",
     "/lovell/sharp": "249971a743ebf1044a1a7b0d709e610e8b74fa02",
-    "/google-gemini/gemini-skills/gemini-api-dev": "c4d0c62c1240e08a90546186bf320600ab6a039a",
     "/google/eng-practices": "3bb3ec25b3b0199f4940b1aa75f0ac5c5753301c",
     "/coreyhaines31/marketingskills/copy-frameworks": "73573e94a06a39965978b3fa1f9c1eace8cebc7c",
     "/coreyhaines31/marketingskills/ai-tells": "73573e94a06a39965978b3fa1f9c1eace8cebc7c",
