@@ -39,7 +39,7 @@ describe('Homepage hero navigation', () => {
 
   it('keeps the map route and the homepage call to action that reaches it', () => {
     expect(existsSync(join(process.cwd(), 'app/map/page.js'))).toBe(true);
-    expect(homePageSource).toMatch(/<Link href="\/map"/);
+    expect(homePageSource).toMatch(/<IntentPrefetchLink href="\/map"/);
     expect(homePageSource).toContain('EXPLORE LUCKY COMMUNITY STORIES');
     expect(read('app/layout.js')).toMatch(/href="\/map"[^>]*>Lucky Community Stories</);
   });

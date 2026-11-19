@@ -200,7 +200,7 @@ describe('Lucky Card reveal presentation markup', () => {
       .map(line => line.trim());
     expect(imports).toEqual([
       "import { useEffect, useRef, useState, useCallback } from 'react';",
-      "import Link from 'next/link';",
+      "import IntentPrefetchLink from '../components/IntentPrefetchLink';",
       "import CollectionBinder from './collection-binder';",
       "import { Howl } from 'howler';",
       "import { motion, useAnimate, useReducedMotion } from 'framer-motion';",

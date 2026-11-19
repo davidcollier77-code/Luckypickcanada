@@ -1,5 +1,5 @@
 // components/AboutSection.tsx
-import Link from 'next/link';
+import IntentPrefetchLink from './IntentPrefetchLink';
 
 export default function AboutSection() {
   return (
@@ -9,31 +9,31 @@ export default function AboutSection() {
       <p className="text-lg leading-relaxed text-slate-700 mb-4">
         Whether you want to draw a quick card or calculate your daily energy, start
         your morning with our{' '}
-        <Link
+        <IntentPrefetchLink
           href="/lucky-meter"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
           interactive Luck Generator
-        </Link>
+        </IntentPrefetchLink>
         . It's designed to bring a fast, fun spark of optimism coast to coast.
       </p>
 
       <p className="text-lg leading-relaxed text-slate-700 mb-4">
         Want to see how others across the country are sharing good energy? Explore
         real user posts on our{' '}
-        <Link
+        <IntentPrefetchLink
           href="/#community-stories"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
           Lucky Community Stories section
-        </Link>{' '}
+        </IntentPrefetchLink>{' '}
         or discover regional highlights on the{' '}
-        <Link
+        <IntentPrefetchLink
           href="/map"
           className="text-amber-600 font-semibold underline hover:text-amber-700"
         >
           Lucky Community Stories map
-        </Link>
+        </IntentPrefetchLink>
         .
       </p>
     </section>

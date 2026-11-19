@@ -2,7 +2,7 @@
 import { playButtonClick, preloadCrystalBallAudio, playCrystalBallEnergy, stopCrystalBallEnergy, playCrystalBallReveal, playCrystalBallLeaf } from '../../lib/audio';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import Link from 'next/link';
+import IntentPrefetchLink from '../../../components/IntentPrefetchLink';
 import styles from './CrystalBall.module.css';
 import GoldenLeaf from './GoldenLeaf';
 import { useDailyResetCountdown } from '../../../components/daily-reset-countdown';
@@ -914,15 +914,15 @@ export default function CrystalBall({
         </section>
 
         <nav className={styles.nav} aria-label="Crystal Ball navigation">
-          <Link href={backHref} className={styles.navButton}>
+          <IntentPrefetchLink href={backHref} className={styles.navButton}>
             Back to Home
-          </Link>
-          <Link href={luckMeterHref} className={styles.navButton}>
+          </IntentPrefetchLink>
+          <IntentPrefetchLink href={luckMeterHref} className={styles.navButton}>
             Luck Generator
-          </Link>
-          <Link href={communityMapHref} className={styles.navButton}>
+          </IntentPrefetchLink>
+          <IntentPrefetchLink href={communityMapHref} className={styles.navButton}>
             Community Map
-          </Link>
+          </IntentPrefetchLink>
         </nav>
       </div>
     </div>

@@ -22,8 +22,7 @@ import { useAdaptivePlan } from '../app/lib/use-adaptive-plan';
  * hover prefetching. The link itself always navigates, and the policy recovers
  * as soon as the connection improves.
  *
- * @param {Object} props Link props; `children` and navigation props pass through.
- * @param {import('react').ReactNode} props.children The link contents.
+ * @param {Record<string, any>} props Link props; `children` and navigation props pass through.
  * @returns {import('react').ReactElement} The same link, prefetching on intent.
  */
 export default function IntentPrefetchLink({ children, onPointerEnter, onPointerDown, onFocus, onTouchStart, ...props }) {

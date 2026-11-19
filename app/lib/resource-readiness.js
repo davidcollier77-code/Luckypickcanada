@@ -33,6 +33,7 @@
  */
 
 import {
+  PREFETCH_POLICY,
   allowSpeculativeAudio,
   getAdaptivePlan,
   registerReleasableResource,
@@ -372,7 +373,7 @@ function isCurrentRoute(route) {
   return path === target || path.startsWith(`${target}/`);
 }
 
-function prepareCodeResource(resource) {
+function prepareCodeResource(resource, context) {
   if (typeof routePrefetch !== 'function') {
     return Promise.resolve({ skipped: true, reason: 'no-route-prefetcher' });
   }
@@ -381,6 +382,21 @@ function prepareCodeResource(resource) {
   // visitor, so the current route is reported skipped instead.
   if (isCurrentRoute(resource.route)) {
     return Promise.resolve({ skipped: true, reason: 'current-route' });
+  }
+  // The adaptive plan is the single prefetch authority, so speculative route
+  // warming must obey it exactly like a Link's own prefetch. Save-Data or a
+  // measured slow connection disables it; a moderate one waits for the press,
+  // tap or keyboard focus that the delegated strong-intent path represents.
+  const plan = getAdaptivePlan();
+  if (plan?.prefetch === PREFETCH_POLICY.NONE) {
+    return Promise.resolve({ skipped: true, reason: 'prefetch-disabled' });
+  }
+  if (
+    plan?.prefetch === PREFETCH_POLICY.STRONG_INTENT &&
+    context?.priority !== PREPARE_PRIORITY.INTENT &&
+    context?.priority !== PREPARE_PRIORITY.CRITICAL
+  ) {
+    return Promise.resolve({ skipped: true, reason: 'prefetch-strong-intent' });
   }
   const result = routePrefetch(resource.route);
   return Promise.resolve(result).then(() => ({ route: resource.route }));
@@ -575,6 +591,7 @@ async function executeJob(job) {
   const context = {
     report: (state) => reportState(entry, state),
     signal: job.controller.signal,
+    priority: job.priority,
   };
 
   try {

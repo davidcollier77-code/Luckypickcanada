@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import IntentPrefetchLink from '../../components/IntentPrefetchLink';
 
 export const metadata = {
   title: 'Terms of Service | Lucky Pick Canada',
@@ -15,9 +15,9 @@ export const metadata = {
 export default function TermsOfService() {
   return (
     <div className="legal-page">
-      <Link href="/" className="legal-back-link">
+      <IntentPrefetchLink href="/" className="legal-back-link">
         ← Back to Home
-      </Link>
+      </IntentPrefetchLink>
       <h1 className="legal-title">Terms of Service</h1>
       <p className="legal-meta">Last Updated: August 10, 2026</p>
 
