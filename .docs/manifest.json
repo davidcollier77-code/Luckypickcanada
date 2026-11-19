@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-19T16:45:00-04:00",
+  "lastUpdated": "2026-11-19T14:54:42-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -468,6 +468,7 @@
     "/coreyhaines31/marketingskills/natural-transitions",
     "/vercel-labs/agent-skills/react-best-practices",
     "/websites/threejs",
+    "/websites/threejs_llms_txt",
     "/opennextjs/opennextjs-cloudflare",
     "/opennextjs/docs",
     "/cloudflare/workers-sdk",
@@ -507,21 +508,20 @@
     "/trailofbits/skills/fp-check-evidence-templates",
     "/trailofbits/skills/sarif-parsing",
     "/trailofbits/skills/sarif-parsing-jq-queries",
-    "/numpy/numpy",
-    "/websites/threejs_llms_txt"
+    "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "973f29df4a725aed49de5dc45a041376f50369ba",
+    "/github/docs": "1d0f4e29e7d9e9d8619ab24898e54fe47c1a4005",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
-    "/lucide-icons/lucide": "891daab994797c003cc427d0e14777f4bdb91e83",
+    "/lucide-icons/lucide": "742ea78395b4122e13fd46743caba5140f47fb66",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "f14fc25bbf205e92266c8abf8512b3b517bcae4a",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
-    "/cloudflare/cloudflare-docs/turnstile": "0d1b7bb16d56d2c84ae0bb7d401bedddb6a864e9",
-    "/cloudflare/cloudflare-docs/pages": "0d1b7bb16d56d2c84ae0bb7d401bedddb6a864e9",
+    "/cloudflare/cloudflare-docs/turnstile": "fbebabb8e5ffcf979710aaea91fd1a37c85f95b1",
+    "/cloudflare/cloudflare-docs/pages": "fbebabb8e5ffcf979710aaea91fd1a37c85f95b1",
     "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "09dab5d70932724a848540549f33ff6f9b817e1b",
