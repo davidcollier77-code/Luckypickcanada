@@ -138,7 +138,7 @@ describe('Lucky Community Stories and Community Map', () => {
     );
     // The existing non-testimonial note is preserved, not replaced.
     expect(homePageSource).toContain('these are not business reviews or testimonials');
-    expect(homePageSource).toMatch(/<Link href="\/map"[^>]*>[\s\S]{0,200}EXPLORE LUCKY COMMUNITY STORIES/);
+    expect(homePageSource).toMatch(/<IntentPrefetchLink href="\/map"[^>]*>[\s\S]{0,200}EXPLORE LUCKY COMMUNITY STORIES/);
   });
 
   it('preserves story reading, celebration and the running tally', () => {

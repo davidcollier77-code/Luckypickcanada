@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import IntentPrefetchLink from '../../components/IntentPrefetchLink';
 
 export const metadata = {
   title: 'About the Creator & Our Story | Lucky Pick Canada',
@@ -146,13 +146,13 @@ export default function AboutPage() {
           </p>
 
           <div className="mt-12 flex justify-center w-full max-w-sm mx-auto px-4">
-            <Link
+            <IntentPrefetchLink
               href="/"
               className="gold-3d-btn w-full inline-flex items-center justify-center px-6 py-3 rounded-full font-bold"
             >
               <span className="gold-cta-emoji" aria-hidden="true">🏠</span>
               Return to Home
-            </Link>
+            </IntentPrefetchLink>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import IntentPrefetchLink from '../../components/IntentPrefetchLink';
 
 /**
  * Sections of the homepage that carry no state and no event handlers.
@@ -28,7 +28,7 @@ export function CommunityStoriesSection() {
         <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Community Stories</h2>
         <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-3">Luck means something different to everyone. It might be a funny coincidence, an unexpected helping hand, a life-changing moment, a second chance, or simply being lucky to be here. Every story, big or small, has a place in our community.</p>
         <p className="homepage-offer-note">Please note: these are not business reviews or testimonials.</p>
-        <Link href="/map" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🍀</span>EXPLORE LUCKY COMMUNITY STORIES →</Link>
+        <IntentPrefetchLink href="/map" className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🍀</span>EXPLORE LUCKY COMMUNITY STORIES →</IntentPrefetchLink>
         </div>
       </article>
     </div>
@@ -58,13 +58,13 @@ export function AboutTeaserSection() {
       <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#cbd5e1', marginBottom: '20px' }}>
         Discover the story behind Lucky Pick Canada and the journey that brought this digital experience to life.
       </p>
-      <Link
+      <IntentPrefetchLink
         href="/about"
         className="gold-3d-btn relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
       >
         <span className="gold-cta-emoji" aria-hidden="true">ℹ️</span>Read Our Story <span aria-hidden="true">→</span>
 
-      </Link>
+      </IntentPrefetchLink>
     </section>
   );
 }

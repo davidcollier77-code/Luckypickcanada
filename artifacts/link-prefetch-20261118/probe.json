@@ -1,0 +1,45 @@
+[
+  {
+    "label": "save-data",
+    "saveData": true,
+    "rscAfterLoad": 0,
+    "rscAfterHover": 0,
+    "beforeHoverPaths": [],
+    "afterHoverPaths": [],
+    "hoverPrefetched": false,
+    "navigation": {
+      "url": "/about",
+      "heading": "About the Creator & Our Story"
+    },
+    "errors": []
+  },
+  {
+    "label": "capable",
+    "saveData": false,
+    "rscAfterLoad": 7,
+    "rscAfterHover": 9,
+    "beforeHoverPaths": [
+      "/lucky-meter?_rsc=5CB68i4pnAekjehf",
+      "/lucky-meter?_rsc=yIp22O3xgPPxC28X",
+      "/lucky-meter?_rsc=h3TX98CDoMV3pIWC",
+      "/reveal?_rsc=5CB68i4pnAekjehf",
+      "/crystal-ball?_rsc=5CB68i4pnAekjehf",
+      "/reveal?_rsc=tXyZJ52UQVBCVsD3",
+      "/crystal-ball?_rsc=QTVG2NJT2qVeQ_HP"
+    ],
+    "afterHoverPaths": [
+      "/lucky-meter?_rsc=5CB68i4pnAekjehf",
+      "/lucky-meter?_rsc=yIp22O3xgPPxC28X",
+      "/lucky-meter?_rsc=h3TX98CDoMV3pIWC",
+      "/reveal?_rsc=5CB68i4pnAekjehf",
+      "/crystal-ball?_rsc=5CB68i4pnAekjehf",
+      "/reveal?_rsc=tXyZJ52UQVBCVsD3",
+      "/crystal-ball?_rsc=QTVG2NJT2qVeQ_HP",
+      "/about?_rsc=5CB68i4pnAekjehf",
+      "/about?_rsc=hzcUC6YqarYE9pKE"
+    ],
+    "hoverPrefetched": true,
+    "navigation": null,
+    "errors": []
+  }
+]

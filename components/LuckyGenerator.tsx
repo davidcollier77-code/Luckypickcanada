@@ -18,7 +18,7 @@ import React, {
   useMemo,
   memo,
 } from 'react';
-import Link from 'next/link';
+import IntentPrefetchLink from './IntentPrefetchLink';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1132,12 +1132,12 @@ export default function LuckyGenerator() {
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none -z-20" />
 
       <div className="relative z-10 flex justify-start p-4 pt-12 sm:pt-6">
-        <Link
+        <IntentPrefetchLink
           href="/"
           className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
         >
           <span aria-hidden>←</span> Return to Home
-        </Link>
+        </IntentPrefetchLink>
       </div>
 
       <main className="relative z-10 flex min-h-[80vh] items-center justify-center px-4 pb-12">

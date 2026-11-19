@@ -3,7 +3,7 @@
 import Aurora, { AuroraHandle } from './Aurora';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import IntentPrefetchLink from './IntentPrefetchLink';
 
 import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
@@ -967,7 +967,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       {showHome && (
         <div className="lucky-home-dock fixed right-3 top-3 z-50 flex flex-col items-end gap-2 sm:right-5 sm:top-5">
-          <Link
+          <IntentPrefetchLink
             href="/"
             data-testid="lucky-meter-home"
             aria-label="Return to Home"
@@ -987,7 +987,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               <path d="M5.6 9.6V21h12.8V9.6" />
             </svg>
             <span>Home</span>
-          </Link>
+          </IntentPrefetchLink>
           {showCountdown && countdownBlock}
         </div>
       )}

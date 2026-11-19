@@ -1,5 +1,5 @@
 import Script from 'next/script';
-import Link from 'next/link';
+import IntentPrefetchLink from '../components/IntentPrefetchLink';
 import { inter, manrope, playfair, cinzel } from './fonts';
 import JsonLd from './components/JsonLd';
 import ResourceReadiness from '../components/ResourceReadiness';
@@ -107,12 +107,12 @@ export default function RootLayout({ children }) {
               <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
 
               <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-xs text-white/90 max-w-lg mb-2">
-                <Link href="/" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Home</Link>
-                <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Luck Generator</Link>
-                <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Crystal Ball</Link>
-                <Link href="/reveal" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Daily Reveal</Link>
-                <Link href="/map" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Community Stories</Link>
-                <Link href="/about" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">About</Link>
+                <IntentPrefetchLink href="/" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Home</IntentPrefetchLink>
+                <IntentPrefetchLink href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Luck Generator</IntentPrefetchLink>
+                <IntentPrefetchLink href="/crystal-ball" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Crystal Ball</IntentPrefetchLink>
+                <IntentPrefetchLink href="/reveal" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Daily Reveal</IntentPrefetchLink>
+                <IntentPrefetchLink href="/map" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">Lucky Community Stories</IntentPrefetchLink>
+                <IntentPrefetchLink href="/about" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-1 sm:before:-inset-2 before:content-['']">About</IntentPrefetchLink>
               </nav>
 
               <nav className="flex flex-wrap justify-center gap-3 sm:gap-4 text-white/75 text-xs max-w-sm mb-2" aria-label="Social links">
@@ -125,8 +125,8 @@ export default function RootLayout({ children }) {
 
               <div className="w-16 h-px bg-white/10 my-2"></div>
               <nav className="flex flex-wrap justify-center gap-4 text-white/60 text-xs" aria-label="Legal links">
-                <Link href="/privacy" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Terms of Service</Link>
+                <IntentPrefetchLink href="/privacy" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Privacy Policy</IntentPrefetchLink>
+                <IntentPrefetchLink href="/terms" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Terms of Service</IntentPrefetchLink>
               </nav>
 
               <p className="text-xs text-white/50 max-w-2xl mx-auto leading-relaxed">
