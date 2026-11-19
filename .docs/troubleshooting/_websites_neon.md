@@ -175,7 +175,7 @@ PostgREST-style REST interface for your Neon database.
 
 Realtime reactivity on standard Postgres. Live SQL API makes any SQL query live (full support for joins, aggregates, ordering, extensions, UDFs). Plus end-to-end reactive DX: live queries and optimistic mutations as type-safe client primitives, on standard Neon Postgres.
 
-- [All 18 Realtime pages](https://neon.com/docs/realtime/llms.txt) — key pages below
+- [All 24 Realtime pages](https://neon.com/docs/realtime/llms.txt) — key pages below
 
 - [Neon Realtime](https://neon.com/docs/realtime/overview.md): Live queries that update your app's UI the moment your data changes.
 - [Quickstart](https://neon.com/docs/realtime/quickstart.md): Get started with Realtime.
@@ -218,7 +218,7 @@ Step-by-step integration guides for frameworks, ORMs, auth providers, and deploy
 
 - [All 160 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
-- [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
+- [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Connect a Next.js app to Lakebase Postgres on Neon, query it from a Server Component, a Server Action, and a Route Handler, develop on a branch, deploy, and add the rest of your backend
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
 - [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Learn how to connect to Neon from Drizzle
 - [Neon integration guides](https://neon.com/docs/guides/integrations.md): Find setup instructions for connecting Neon to platforms and services.
@@ -298,7 +298,7 @@ Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701,
 
 Postgres extensions supported by Neon, with install and usage instructions.
 
-- [All 46 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
+- [All 47 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
 
 - [Postgres extensions](https://neon.com/docs/extensions/pg-extensions.md)
 - [The pg_stat_statements extension](https://neon.com/docs/extensions/pg_stat_statements.md): Track planning and execution statistics for all SQL statements
