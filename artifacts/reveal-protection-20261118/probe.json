@@ -1,0 +1,64 @@
+{
+  "pressedAt": "2026-11-19T00:53:50.794Z",
+  "pressToRevealCompletedMs": 8372,
+  "pressToEventCompletedMs": 20516,
+  "measuredForMs": 24518,
+  "state": {
+    "version": 1,
+    "dateKey": "2026-11-19",
+    "result": {
+      "dateKey": "2026-11-19",
+      "percentage": 100,
+      "tier": {
+        "id": "high",
+        "label": "High Resonance",
+        "message": "Your luck is running high today!"
+      },
+      "event": {
+        "id": "fireworks",
+        "name": "Fireworks"
+      },
+      "luckyNumber": 35,
+      "colour": {
+        "id": "winter-white",
+        "name": "Winter White",
+        "hex": "#F7F5EF",
+        "light": true
+      },
+      "spark": {
+        "id": "spark-17",
+        "message": "Slow work still builds something real."
+      },
+      "createdAt": 1795049630662
+    },
+    "history": {
+      "percentages": [
+        100
+      ],
+      "numbers": [
+        35
+      ],
+      "colours": [
+        "winter-white"
+      ],
+      "sparks": [
+        "spark-17"
+      ]
+    },
+    "eventCompleted": true,
+    "revealCompleted": true,
+    "sparkCompleted": true,
+    "stageDurationMs": 11720
+  },
+  "requestsDuringReveal": [
+    {
+      "msAfterPress": 20514,
+      "path": "/images/lucky-meter-night-sky-640w.avif",
+      "type": "image",
+      "revealOwned": false
+    }
+  ],
+  "competingRequestsAfterPress": [],
+  "requestsAfterCompletion": [],
+  "consoleErrors": []
+}
