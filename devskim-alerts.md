@@ -29,3 +29,7 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `components/DailyResonance.tsx:265` — Review setTimeout for untrusted data <!-- devskim-id:ca472f626da6007efcf9 -->
 
 - **NOTE — DS172411** — `components/DailyResonance.tsx:302` — Review setTimeout for untrusted data <!-- devskim-id:e30305db20c49b81c5d1 -->
+
+- **NOTE — DS172411** — `components/DailyResonance.tsx:311` — Review setTimeout for untrusted data <!-- devskim-id:d20f5471748cbc172ef9 -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:171` — Review setTimeout for untrusted data <!-- devskim-id:a20bba1513309c69da03 -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:161` — Review setTimeout for untrusted data <!-- devskim-id:7d322eb3210414609ec3 -->
