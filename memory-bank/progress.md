@@ -11,6 +11,11 @@
   wiring or Oracle integration changed.
 - Verified 42 focused tests, refresh-docs 48/48, `tsc` exit 0, a Chromium HTML5-only envelope peak of
   0.065 (`html5Sources: 1`) and a media-capture-disabled fallback with playback intact and peak 0.
+- Owner-directed review repairs on PR #1975: a failed analysis edge is retried instead of being
+  recorded as analysed, Howler's automatic suspension is disabled once a cue is captured and a
+  suspended context is resumed while a captured cue plays, the HTML5 capture registry resets between
+  tests, and the retired Gemini mandate left `.freebuff/sentinel.md` while the retirement assertion
+  now covers every `.freebuff/*.md` file. Focused suites then passed 44 tests.
 
 ## 2026-11-19 — PR #1972 review repairs
 

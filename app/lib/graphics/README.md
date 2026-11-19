@@ -214,9 +214,14 @@ cue's element is routed through the same Howler `AudioContext`: it feeds the
 shared analyser for measurement and the context destination at unity for
 unchanged playback. The analyser's own output stays on its silent branch, so
 the audible mix does not change. Capture is only attempted on a running
-context and for same-origin (or `blob:`/`data:`) media. A browser without media
-capture, a suspended context, a cross-origin element, or an element another
-owner already captured keeps playing unanalysed: the envelope stays neutral.
+context and for same-origin (or `blob:`/`data:`) media. Because capture moves
+an element's output into the context, the module also keeps that context
+running once a cue is captured: Howler's automatic suspension is switched off,
+and a suspended context is resumed while a captured cue is playing, so a
+rerouted cue is never silenced by inactivity. A browser without media capture, a
+cross-origin element, or an element another owner already captured keeps playing
+unanalysed: the envelope stays neutral. A failed analysis edge is retried on the
+next scan instead of marking the cue as analysed.
 Web Audio cues — the Lucky Meter set and the Crystal Ball sounds — are measured
 exactly as before.
 

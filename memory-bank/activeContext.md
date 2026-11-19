@@ -28,10 +28,22 @@
 - The two orphaned `.docs/creation` Gemini API snapshots were removed. Nothing was restored,
   recreated, regenerated or replaced.
 
+### Review repairs (owner-directed PR #1975)
+
+- A failed analysis connect no longer marks the element as analysed: the captured source is tracked
+  with a pending edge and retried on each scan or graph rebuild without re-capturing the element.
+- Howler's `autoSuspend` is switched off once a cue is captured (its scheduled timeout re-checks the
+  flag) and `ensureCapturedCuePlayback` resumes a suspended or interrupted context while a captured
+  cue is playing, so inactivity can never silence a rerouted cue.
+- `resetHtml5AnalyserCapture()` gives each HTML5 test a clean registry, removing order dependence.
+- `.freebuff/sentinel.md` no longer mandates the retired Gemini API source, and the retirement test
+  now checks every `.freebuff/*.md` file.
+
 ### Verified
 
-- Focused 42 tests, refresh-docs 48/48, Chromium Web Audio baseline 0.064 and HTML5-only peak 0.065
-  (`html5Sources: 1`), fallback playback with `html5Sources: 0` and peak 0, no page errors.
+- Focused 44 tests after the review repairs (42 before), refresh-docs 48/48, Chromium Web Audio
+  baseline 0.064 and HTML5-only peak 0.065 (`html5Sources: 1`), fallback playback with
+  `html5Sources: 0` and peak 0, no page errors.
 
 
 ## Creative Workbench and sound reactivity (spec 193 continuation, current)

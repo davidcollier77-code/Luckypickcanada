@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const manifest = JSON.parse(readFileSync(".docs/manifest.json", "utf8"));
@@ -43,7 +43,12 @@ describe("documentation library retirement", () => {
       expect(manifest.githubShas ?? {}).not.toHaveProperty(id);
     }
 
-    const routingFiles = Object.keys(manifest.groups).map((group) => `.freebuff/${group}.md`);
+    // Check every agent routing file, including `.freebuff/sentinel.md`, which is
+    // not a manifest group and used to mandate the retired Gemini source.
+    const routingFiles = readdirSync(".freebuff")
+      .filter((name) => name.endsWith(".md"))
+      .map((name) => `.freebuff/${name}`);
+    expect(routingFiles).toContain(".freebuff/sentinel.md");
     for (const id of retiredGemini) {
       for (const routingFile of routingFiles) {
         expect(readFileSync(routingFile, "utf8"), `${id} must not appear in ${routingFile}`).not.toContain(id);

@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   attachHtml5Analyser,
   collectHtml5MediaElements,
   createAudioReactive,
+  ensureCapturedCuePlayback,
   getHtml5AnalyserCount,
   isSameOriginMediaElement,
+  resetHtml5AnalyserCapture,
   supportsAudioAnalysis,
   supportsHtml5AudioAnalysis,
 } from '../app/lib/graphics/audio-reactivity.js';
@@ -254,6 +256,12 @@ describe('reactive bindings', () => {
 });
 
 describe('HTML5 cue capture', () => {
+  // Captures are module-level for the page's lifetime, so each test starts from
+  // a clean registry instead of depending on the order the tests run in.
+  beforeEach(() => {
+    resetHtml5AnalyserCapture();
+  });
+
   function fakeMediaContext({ state = 'running', canCapture = true } = {}) {
     const destination = { name: 'destination' };
     const sources = [];
@@ -326,6 +334,62 @@ describe('HTML5 cue capture', () => {
 
     expect(sources).toHaveLength(1);
     expect(getHtml5AnalyserCount()).toBe(before + 1);
+  });
+
+  it('retries a failed analysis edge instead of reporting a captured cue as analysed', () => {
+    const destination = { name: 'destination' };
+    const analyser = loudAnalyser();
+    const element = mediaElement();
+    let analyserEdgeAllowed = false;
+    const source = {
+      connect: vi.fn((target) => {
+        if (target !== destination && !analyserEdgeAllowed) throw new Error('analysis blocked');
+      }),
+      disconnect: vi.fn(),
+    };
+    const context = {
+      state: 'running',
+      destination,
+      createMediaElementSource: vi.fn(() => source),
+    };
+
+    // The audible path succeeds and the analysis edge fails: the cue is still
+    // tracked, so the next attempt attaches measurement without recapturing.
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(false);
+    expect(source.connect).toHaveBeenCalledWith(destination);
+
+    analyserEdgeAllowed = true;
+    expect(attachHtml5Analyser({ context, analyser, element })).toBe(true);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+    expect(source.connect).toHaveBeenLastCalledWith(analyser);
+    expect(getHtml5AnalyserCount()).toBe(1);
+  });
+
+  it('keeps a captured cue audible when Howler suspends its context', async () => {
+    const { context } = fakeMediaContext();
+    const element = mediaElement();
+    expect(attachHtml5Analyser({ context, analyser: loudAnalyser(), element })).toBe(true);
+
+    // Capture switches automatic suspension off, so the context stays running.
+    const howler = {
+      state: 'running',
+      autoSuspend: true,
+      ctx: context,
+      _autoResume: vi.fn(),
+    };
+    context.state = 'suspended';
+    context.resume = vi.fn(() => Promise.resolve());
+
+    expect(ensureCapturedCuePlayback(howler)).toBe(true);
+    expect(howler.autoSuspend).toBe(false);
+    expect(howler._autoResume).toHaveBeenCalledTimes(1);
+    expect(context.resume).toHaveBeenCalledTimes(1);
+
+    // A paused cue does not force a resume.
+    element.paused = true;
+    context.resume.mockClear();
+    expect(ensureCapturedCuePlayback(howler)).toBe(false);
+    expect(context.resume).not.toHaveBeenCalled();
   });
 
   it('finds only playing html5 sounds and tolerates an unknown Howler shape', () => {

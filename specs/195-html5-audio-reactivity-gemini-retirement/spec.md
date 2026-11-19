@@ -44,6 +44,8 @@ A maintainer runs the Visual QA verification job after the Gemini API library so
 - Howler has not created its audio context yet (no Web Audio cue has played): the HTML5 cue keeps playing unanalysed and a later scan captures it once the context is running.
 - A cue is still playing when the last reactive consumer disposes: its audible path is never disconnected; only the analyser edge is removed.
 - The audio context is closed and rebuilt: captured elements are reconnected to the rebuilt analyser.
+- Howler auto-suspends its context after inactivity: because capture reroutes the element into that context, automatic suspension is switched off once a cue is captured and a suspended or interrupted context is resumed while a captured cue is playing.
+- Connecting the analysis edge fails after the audible path succeeded: the cue stays tracked and the edge is retried on the next scan or graph rebuild instead of being reported as analysed.
 - The retired snapshots are absent while historical spec records still mention them: only the QA expectations change, not history.
 
 ## Requirements *(mandatory)*
@@ -56,10 +58,12 @@ A maintainer runs the Visual QA verification job after the Gemini API library so
 - **FR-004**: Capture MUST be refused safely for an unsupported context, a non-running context, a cross-origin element or an already-owned element; the envelope MUST remain neutral and nothing may throw.
 - **FR-005**: Releasing the shared analyser MUST NOT silence an HTML5 cue that is still playing.
 - **FR-006**: The development workbench MUST expose a way to play a catalogue recording through Howler's HTML5 path and report capture/playback state for browser evidence.
-- **FR-007**: Retirement tests MUST assert both Gemini API documents absent from every manifest index, routing file and snapshot location.
+- **FR-007**: Retirement tests MUST assert both Gemini API documents absent from every manifest index, every `.freebuff/*.md` agent routing file (including `sentinel.md`) and every snapshot location.
 - **FR-008**: No retired Gemini document may be restored, recreated, regenerated or replaced.
 - **FR-009**: Unrelated Gemini protections (Pullfrog key wiring, Oracle runtime integration, historical reviewer specs) MUST remain asserted.
 - **FR-010**: The production build MUST remain strictly below 495 MiB.
+- **FR-011**: A captured HTML5 cue MUST remain audible while Howler's context is idle: automatic suspension MUST be switched off once a cue is captured and a suspended or interrupted context MUST be resumed while a captured cue is playing.
+- **FR-012**: A failed analysis edge MUST NOT mark the element as analysed; the edge MUST be retried without re-capturing the element.
 
 ## Success Criteria
 

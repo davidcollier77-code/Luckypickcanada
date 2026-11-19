@@ -34,3 +34,10 @@
 - [x] T017 Chromium fallback with media capture disabled: HTML5 playback reported, captured sources 0, envelope 0, Web Audio baseline still 0.064, no page errors.
 - [x] T018 `pnpm exec tsc --noEmit`, full Vitest suite, production build and 495 MiB cap measurement.
 - [x] T019 Prepare the PR with the QA scope declaration, browser evidence and complete handoff report.
+
+## Phase 5: Owner-directed review repairs
+
+- [x] T020 Track a captured source even when its analysis edge fails, and retry that edge on later scans and graph rebuilds without re-capturing the element.
+- [x] T021 Switch Howler's `autoSuspend` off once a cue is captured and resume a suspended or interrupted context while a captured cue plays, so capture cannot silence a cue through inactivity.
+- [x] T022 Reset the HTML5 capture registry between tests so count and de-duplication assertions do not depend on execution order.
+- [x] T023 Remove the retired Gemini API mandate from `.freebuff/sentinel.md` and broaden the retirement assertion to every `.freebuff/*.md` routing file.

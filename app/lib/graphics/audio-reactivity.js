@@ -36,10 +36,13 @@
  * `MediaElementAudioSourceNode` on the same Howler context: the element feeds
  * the shared analyser for measurement and the context destination directly for
  * unchanged, audible playback (the analyser's own output stays on its silent
- * branch). That keeps one audio system and one analyser. A browser without
- * media capture, a suspended context, a cross-origin element or an element
- * another owner already captured simply keeps playing unanalysed: the envelope
- * stays neutral and the visual keeps its authored resting state.
+ * branch). That keeps one audio system and one analyser. Because capture moves
+ * an element's output into the context, this module also keeps that context
+ * running once a cue is captured: Howler's automatic suspension is switched
+ * off, and a suspended context is resumed while a captured cue is playing. A
+ * browser without media capture, a suspended context, a cross-origin element or
+ * an element another owner already captured simply keeps playing unanalysed:
+ * the envelope stays neutral and the visual keeps its authored resting state.
  */
 
 import { isPageVisible, prefersReducedMotion } from '../graphics-capabilities.js';
@@ -97,9 +100,18 @@ let sharedGraphPromise = null;
 // disconnecting it would silence audio that is still playing. The weak set
 // prevents a second capture attempt (the constructor would throw); the strong
 // set of sources lets a rebuilt analyser reconnect to them.
-const capturedHtml5Elements = new WeakSet();
-const html5SourceNodes = new Set();
+let capturedHtml5Elements = new WeakSet();
+let html5SourceByElement = new WeakMap();
+// Every captured source with the element it belongs to and the analyser its
+// analysis edge currently reaches. `analyser: null` means that edge still has
+// to be retried (a connect can fail without the cue losing its sound). Entries
+// live for the page's lifetime: `createMediaElementSource` permanently reroutes
+// an element, so disconnecting its source would silence a playing cue.
+const html5Captures = new Map();
 let lastHtml5ScanAt = 0;
+// The Howler namespace whose `autoSuspend` this module switched off, and the
+// value it had before, so the change can be undone cleanly.
+let autoSuspendOverride = null;
 // How many live reactive objects hold the shared tap. The branch is released
 // only when the last one disposes, so one consumer unmounting cannot silence
 // another consumer's analysis.
@@ -231,9 +243,15 @@ export function isSameOriginMediaElement(element) {
  */
 export function attachHtml5Analyser({ context, analyser, element } = {}) {
   if (!supportsHtml5AudioAnalysis(context) || !analyser || !element) return false;
-  if (context.state !== 'running') return false;
   if (!isSameOriginMediaElement(element)) return false;
-  if (capturedHtml5Elements.has(element)) return true;
+
+  // An element is captured for the page's lifetime. Retry its analysis edge
+  // rather than reporting success for an edge that never connected.
+  const captured = html5SourceByElement.get(element);
+  if (captured) {
+    return context.state === 'running' ? connectHtml5AnalysisEdge(captured, analyser) : false;
+  }
+  if (context.state !== 'running') return false;
 
   let source;
   try {
@@ -251,15 +269,36 @@ export function attachHtml5Analyser({ context, analyser, element } = {}) {
     return false;
   }
 
+  // The element is now permanently rerouted into this context, so track it even
+  // if the analysis edge fails: the next scan or graph rebuild retries the edge
+  // instead of leaving the cue silently unanalysable.
   capturedHtml5Elements.add(element);
-  html5SourceNodes.add(source);
+  html5SourceByElement.set(element, source);
+  html5Captures.set(source, { element, analyser: null });
+  preventCapturedCueSuspension(sharedGraph?.howler, context);
 
+  return connectHtml5AnalysisEdge(source, analyser);
+}
+
+/**
+ * Connects one captured source's analysis edge, remembering which analyser it
+ * reaches so a repeat call is a no-op. A failure keeps the audible path intact
+ * and leaves the edge pending for the next scan or graph rebuild.
+ *
+ * @param {any} source
+ * @param {any} analyser
+ * @returns {boolean} Whether the edge is connected.
+ */
+function connectHtml5AnalysisEdge(source, analyser) {
+  const capture = source ? html5Captures.get(source) : null;
+  if (!capture || !analyser) return false;
+  if (capture.analyser === analyser) return true;
   try {
     source.connect(analyser);
   } catch {
-    // The cue remains audible; analysis simply starts on the next rebuild.
     return false;
   }
+  capture.analyser = analyser;
   return true;
 }
 
@@ -271,7 +310,90 @@ export function attachHtml5Analyser({ context, analyser, element } = {}) {
  * @returns {number}
  */
 export function getHtml5AnalyserCount() {
-  return html5SourceNodes.size;
+  return html5Captures.size;
+}
+
+/**
+ * Keeps captured HTML5 cues audible across Howler's inactivity handling.
+ *
+ * `createMediaElementSource` reroutes an element into the context, so a context
+ * Howler suspends would silence it. Two safeguards apply: once a cue is
+ * captured, Howler's `autoSuspend` is switched off for the page's lifetime, and
+ * a context that is already suspended or interrupted is resumed while a
+ * captured cue is playing. `_autoResume` also clears Howler's pending suspend
+ * timer; the direct `resume()` covers a context suspended by the browser.
+ *
+ * @param {any} howler The Howler namespace (`Howler` from `howler`).
+ * @returns {boolean} Whether a resume was requested.
+ */
+export function ensureCapturedCuePlayback(howler) {
+  if (!howler || html5Captures.size === 0) return false;
+  const context = howler.ctx;
+  if (!context || typeof context.resume !== 'function') return false;
+
+  preventCapturedCueSuspension(howler);
+
+  const state = context.state ?? howler.state;
+  if (state === 'running' || state === 'closed') return false;
+
+  let playing = false;
+  for (const capture of html5Captures.values()) {
+    if (capture.element && capture.element.paused === false) {
+      playing = true;
+      break;
+    }
+  }
+  if (!playing) return false;
+
+  try {
+    if (typeof howler._autoResume === 'function') howler._autoResume();
+    const resumed = context.resume();
+    if (resumed && typeof resumed.catch === 'function') resumed.catch(() => {});
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Switches Howler's automatic suspension off once an element has been captured.
+ * Howler's scheduled timeout re-checks the flag before suspending, so turning it
+ * off also neutralises a suspension that was already scheduled.
+ *
+ * @param {any} howler
+ * @param {any} [context] Only act on the context that owns the capture.
+ */
+function preventCapturedCueSuspension(howler, context) {
+  if (!howler || html5Captures.size === 0) return;
+  if (context && howler.ctx && context !== howler.ctx) return;
+  if (autoSuspendOverride?.howler === howler) return;
+  autoSuspendOverride = { howler, previous: howler.autoSuspend };
+  try {
+    howler.autoSuspend = false;
+  } catch {
+    // A namespace that cannot be changed keeps its own suspend behaviour; the
+    // resume safeguard in `ensureCapturedCuePlayback` still runs.
+  }
+}
+
+/**
+ * Drops capture bookkeeping so a test or a full page teardown starts clean.
+ * It cannot restore an element's native output — that reroute is permanent — so
+ * it is not a way to "release" a cue in production.
+ */
+export function resetHtml5AnalyserCapture() {
+  if (autoSuspendOverride) {
+    try {
+      autoSuspendOverride.howler.autoSuspend = autoSuspendOverride.previous;
+    } catch {
+      // The namespace is gone; nothing to restore.
+    }
+    autoSuspendOverride = null;
+  }
+  capturedHtml5Elements = new WeakSet();
+  html5SourceByElement = new WeakMap();
+  html5Captures.clear();
+  lastHtml5ScanAt = 0;
 }
 
 /**
@@ -308,12 +430,8 @@ export function collectHtml5MediaElements(howler) {
  */
 function reconnectHtml5Analyser(analyser) {
   if (!analyser) return;
-  for (const source of html5SourceNodes) {
-    try {
-      source.connect(analyser);
-    } catch {
-      // A closed source is simply no longer analysable.
-    }
+  for (const source of html5Captures.keys()) {
+    connectHtml5AnalysisEdge(source, analyser);
   }
 }
 
@@ -326,13 +444,18 @@ function reconnectHtml5Analyser(analyser) {
  */
 function syncHtml5Analyser(force = false) {
   const graph = sharedGraph;
-  if (!graph?.howler || graph.context.state !== 'running') return 0;
+  if (!graph?.howler) return 0;
 
   const now = Date.now();
   if (!force && lastHtml5ScanAt && now - lastHtml5ScanAt < HTML5_SCAN_INTERVAL_MS) return 0;
   lastHtml5ScanAt = now;
 
-  const before = html5SourceNodes.size;
+  // A captured cue is rerouted into the context, so a suspended context would
+  // make it silent. Resume before deciding that capture is impossible.
+  ensureCapturedCuePlayback(graph.howler);
+  if (graph.context.state !== 'running') return 0;
+
+  const before = html5Captures.size;
   for (const element of collectHtml5MediaElements(graph.howler)) {
     attachHtml5Analyser({
       context: graph.context,
@@ -340,7 +463,9 @@ function syncHtml5Analyser(force = false) {
       element,
     });
   }
-  return html5SourceNodes.size - before;
+  // Retry an analysis edge that failed earlier; a no-op when it is connected.
+  reconnectHtml5Analyser(graph.analyser);
+  return html5Captures.size - before;
 }
 
 /**
@@ -361,12 +486,14 @@ export function releaseHowlerAnalyser() {
   } catch {
     // The graph may already be closed.
   }
-  for (const source of html5SourceNodes) {
+  for (const [source, capture] of html5Captures) {
+    if (capture.analyser !== graph.analyser) continue;
     try {
       source.disconnect(graph.analyser);
     } catch {
       // This source may not be connected, or may already be closed.
     }
+    capture.analyser = null;
   }
   try {
     graph.analyser.disconnect();
