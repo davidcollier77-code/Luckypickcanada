@@ -1,3 +1,10 @@
+## 2026-11-20 — Shared Graphics Toolkit Guidance (spec 197)
+
+- Added a permanent 🟢 shared `AGENTS.md` section for ChatGPT and Freebuff, routing visual creation and polishing to the existing graphics README, rendering architecture, `useCreativeExperience` integration hook, visual registry/runtime and centralized Resource-Readiness Hub.
+- Named the existing development-only Creative Workbench and routed task-relevant references through `.docs/creation/`, `.docs/polishing/` and `.docs/manifest.json`; Three.js references apply only to Three.js work.
+- Added a focused governance regression assertion. No production application code, artwork, animation, audio, layout, dependencies or deployment configuration changed.
+- The startup preflight reports Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. ChatGPT did not run repository scripts, tests or builds; those results remain unverified and PR-triggered governance checks/owner approvals remain pending.
+
 ## 2026-11-19 — HTML5 audio reactivity and Gemini retirement QA (spec 195)
 
 - Extended the existing sound-reactivity bridge so Howler `html5: true` cues feed the shared

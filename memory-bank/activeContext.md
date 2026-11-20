@@ -1,5 +1,14 @@
 # Active Context — Graphics Development Toolkit
 
+## Current Task — Shared Graphics Toolkit Guidance (spec 197)
+
+- **Spec Kit feature:** `specs/197-shared-graphics-toolkit-guidance`
+- **Branch:** `chatgpt/197-shared-graphics-toolkit-guidance`
+- **Scope:** Add a 🟢 [BOTH — CHATGPT AND FREEBUFF] rule to `AGENTS.md` for future visual creation and polishing.
+- **Required integration:** Use `app/lib/use-creative-experience.js`, `app/lib/graphics/experiences.js` and `app/lib/graphics/runtime.js` with the existing `app/lib/resource-readiness.js` hub wherever applicable. Do not create a competing preloader.
+- **Development sandbox:** Existing Workbench at `/workbench/creative`; this does not replace Playwright or repository QA.
+- **Verification limitation:** ChatGPT's startup preflight reports Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. ChatGPT's repository instructions prohibit running repository scripts, so local tests, builds and verification scripts were not executed. GitHub workflow checks and protected-file approvals remain outstanding.
+
 ## HTML5 audio reactivity and Gemini retirement QA (spec 195, current)
 
 - **Spec Kit feature:** `specs/195-html5-audio-reactivity-gemini-retirement`
