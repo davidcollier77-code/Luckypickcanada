@@ -47,6 +47,7 @@ Renderers consume the resolved profile; they do not re-implement detection or ch
 | --- | --- | --- |
 | Homepage starfield | Canvas 2D | Static night-sky artwork remains |
 | Lucky Meter ring trails | WebGL (`lucky-meter-ring-engine.js`) | Meter and result stay fully usable; only the trails are lost |
+| Lucky Meter glass vessel and colour pour | Three.js, built through `createCreativeSurface` (`app/lib/lucky-meter/vessel-scene.js`) | The CSS vessel and the full result panel remain; the scene is never required for the reading |
 | Daily Resonance cinematic stage | WebGL, far surface plus optional near surface (`CosmicEventStage.jsx`, `cosmic-event-engine.js`) | Static gradient glow, existing safety timer still completes the sequence |
 | Lucky Card reveal | Canvas 2D | Card content and reveal remain |
 | Maple-leaf confetti | Canvas 2D with `Path2D` | Confetti is omitted |
@@ -258,7 +259,11 @@ the selector resolves the render technology from the shared capability probes an
 the adaptive tier:
 
 - `renderer: 'webgl'` means an existing hand-written engine keeps its frames.
-  The Lucky Meter cinematics are never moved to Three.js.
+  The Lucky Meter medallion, wheel and tier celebrations stay on their
+  hand-written WebGL engines. The one commissioned Three.js surface is the
+  glass vessel and pour, registered separately as `lucky-meter-vessel` with
+  `renderer: 'three'`, `dimension: '3d'`, particles and no post-processing.
+  Its CSS vessel is both the first paint and the permanent fallback.
 - 3D or post-processing with WebGL available selects `three` (fallbacks Canvas 2D,
   then DOM). Without WebGL it resolves to Canvas 2D or DOM.
 - A 2D particle layer selects the managed Canvas 2D surface.
@@ -319,11 +324,12 @@ plays a sound, draws a frame or runs business logic.
 
 ### Integration of existing experiences
 
-The Lucky Meter and the Lucky Card Reveal now declare their renderer and cues in
-the registry. Their resources — including the Lucky Meter sound set, the reveal
-sparkle, applause and confetti pop, and the confetti chunk — are derived and
-prepared by the hub; both components call `useCreativeExperience` and nothing
-about their artwork, animation timing, playback or fallback changed. The Crystal
+The Lucky Meter, its new glass-vessel surface and the Lucky Card Reveal now
+declare their renderer and cues in the registry. Their resources — including the
+Lucky Meter sound set, the vessel's Three.js chunk, the reveal sparkle, applause
+and confetti pop, and the confetti chunk — are derived and prepared by the hub;
+the components call `useCreativeExperience` and nothing about their artwork,
+timing, playback or fallback changed. The Crystal
 Ball, Lucky Map and Lucky Number Generator declare their capabilities the same
 way. New features use `CreativeSurface` and the registry, so they get the same
 budgets, lazy loading, cleanup and recovery without a new registration.

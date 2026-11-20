@@ -85,6 +85,15 @@ export const VISUAL_EXPERIENCES = Object.freeze([
     ]),
   }),
   Object.freeze({
+    id: 'lucky-meter-vessel',
+    label: 'Lucky Meter glass vessel and colour pour',
+    renderer: 'three',
+    dimension: '3d',
+    postProcessing: true,
+    particles: true,
+    chunks: ['three'],
+  }),
+  Object.freeze({
     id: 'crystal-ball',
     label: 'Crystal Ball',
     renderer: 'webgl',

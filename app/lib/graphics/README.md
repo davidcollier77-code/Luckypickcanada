@@ -33,9 +33,13 @@ The rendering contract is [`docs/graphics-rendering-architecture.md`](../../../d
 | Worked example (not mounted) | Everything above | `examples/golden-motes.js` |
 
 The existing cinematic family (`app/lib/gpu-*.js`, `cosmic-event-engine.js`,
-`lucky-meter-*-engine.js`) remains the right choice for the Lucky Meter and the
-Daily Resonance stage. The toolkit does not replace it and never routes it
-through Three.js.
+`lucky-meter-*-engine.js`) still owns the Lucky Meter medallion, the wheel and
+the tier celebrations; those are never rerouted through Three.js. A new
+commissioned surface sits beside them: the glass vessel and colour pour
+(`app/lib/lucky-meter/vessel-scene.js`) is built on `createCreativeSurface`, the
+material library, the light rig and the particle field, and falls back to the
+CSS vessel when WebGL is unavailable. It is registered as
+`lucky-meter-vessel` so the readiness hub derives its Three.js chunk.
 
 ## Automatic behaviour
 

@@ -182,12 +182,18 @@ test.describe('Daily Resonance arrival and Start', () => {
 
     const start = page.getByTestId('lucky-meter-start');
     await expect(start).toHaveAttribute('data-ready', 'false');
-    await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
+    // Home is in its usual top-right position from the first moment, but the
+    // countdown belongs to the finished reading and is not shown yet.
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
 
     const button = await waitForStart(page);
     await expect(button).toBeVisible();
     await button.click();
+
+    // Starting the reveal hides Home at once; it returns with the countdown
+    // only after the Spark and the final hold.
+    await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
@@ -195,7 +201,8 @@ test.describe('Daily Resonance arrival and Start', () => {
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
-    await expect(page.getByTestId('lucky-colour-panel')).toHaveCount(0);
+    // The vessel surface warms up off-screen; it must not be presented yet.
+    await expect(page.getByTestId('lucky-colour-panel')).not.toBeVisible();
     const pointer = page.getByTestId('lucky-meter-pointer');
     await expect(pointer).toHaveAttribute('data-position', '6');
     // The fixed leaf must be gold before any reading exists, not only after
@@ -307,8 +314,11 @@ test.describe('Daily Resonance storyboard', () => {
       timeout: 45_000,
     });
     await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 30_000 });
+    // The Spark is written glyph by glyph; under software WebGL the character
+    // clock runs slower, so the content assertion allows the writing to finish.
     await expect(page.getByTestId('lucky-spark-message')).toContainText(
       stored.spark.message.slice(0, 24),
+      { timeout: 20_000 },
     );
     // Home is still withheld while the maple-leaf cursor writes.
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);

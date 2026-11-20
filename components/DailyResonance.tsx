@@ -11,6 +11,7 @@ import LuckyMeterArrivalLeaves from './LuckyMeterArrivalLeaves';
 import LuckyMeterMessage, { TierMessageState } from './LuckyMeterMessage';
 import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
+import LuckyMeterVessel from './LuckyMeterVessel';
 import { playButtonClick } from '../app/lib/audio';
 import { beginActiveExperience } from '../app/lib/resource-readiness';
 import { useCreativeExperience } from '../app/lib/use-creative-experience';
@@ -47,7 +48,6 @@ import { shareDailyResult } from '../app/lib/lucky-meter/share';
 import {
   ENTERTAINMENT_DISCLAIMER,
   EVENTS_BY_ID,
-  LUCKY_COLOUR_LABEL,
   LUCKY_NUMBER_LABEL,
   LUCKY_NUMBER_MAX,
   LUCKY_NUMBER_MIN,
@@ -148,7 +148,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [sparkWriting, setSparkWriting] = useState(false);
   const [sparkComplete, setSparkComplete] = useState(false);
   const [dockReady, setDockReady] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
   const [leavesCleared, setLeavesCleared] = useState(false);
   const [shareStatus, setShareStatus] = useState<ShareStatus>('idle');
   const [announcement, setAnnouncement] = useState('');
@@ -266,9 +265,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const isRevealed = stage === 'revealed';
   const hasDetails = stage === 'pouring' || stage === 'revealed';
-  // Both controls arrive together, and only once the Spark has finished.
-  const showHome = hasLoaded && !isCompact && dockReady && !stageActive;
-  const showCountdown = showHome;
+  // Home sits in its usual top-right position from the moment the page opens,
+  // including the server-rendered first paint: it is not gated behind a
+  // hydration flag. Starting the reveal hides it at once; it returns together
+  // with the countdown only after the Spark and the final hold are complete.
+  // The countdown is never present at the beginning.
+  const showHome = !isCompact && (dockReady || !result);
+  const showCountdown = !isCompact && dockReady && !stageActive;
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -726,7 +729,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const loaded = loadMeterState();
     setHistory(loaded.history);
     historyRef.current = loaded.history;
-    setHasLoaded(true);
 
     if (isResultForDate(loaded.result, localKey)) {
       const saved = loaded.result as DailyResult;
@@ -1074,11 +1076,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         ? 'Sharing unavailable'
         : 'Share My Resonance';
 
-  const isLightColour = result?.colour?.light === true;
   const panelClass = 'lucky-panel rounded-2xl';
-  const colourTexture = result?.colour?.texture;
-  const colourGrain = Math.max(0, Math.min(1, colourTexture?.grain ?? 0.1));
-  const colourSheen = Math.max(0, Math.min(1, colourTexture?.sheen ?? 0.3));
   const pourFill = hasDetails ? motion.pourProgress : 0;
   const showSparkWriting = (sparkWriting || sparkComplete) && Boolean(result);
 
@@ -1340,95 +1338,19 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           {/* Stages 5–6: the transparent square vessel opens with real depth,
               then the selected colour pours into it and fills it. The caption
               stays flat and readable outside the three-dimensional scene. */}
-          {hasDetails && result && (
-            <section
-              data-testid="lucky-colour-panel"
-              data-vessel-open={motion.vesselOpen.toFixed(2)}
-              data-vessel-fill={pourFill.toFixed(3)}
-              className={`lucky-vessel-stage relative mx-auto w-full ${
-                isCompact ? 'mt-2 max-w-[300px]' : 'mt-3 max-w-[26rem]'
-              }`}
-            >
-              <div className="lucky-vessel-scene" aria-hidden="true">
-                <div
-                  className="lucky-vessel"
-                  style={{
-                    transform: `rotateX(-9deg) rotateY(-6deg) scale(${(
-                      0.9 +
-                      0.1 * motion.vesselOpen
-                    ).toFixed(3)})`,
-                  }}
-                >
-                  <span className="lucky-vessel__shadow" />
-                  <span className="lucky-vessel__back" />
-                  <span className="lucky-vessel__body">
-                    <span
-                      className="lucky-vessel__liquid"
-                      style={{
-                        height: `${Math.max(0, Math.min(1, pourFill)) * 100}%`,
-                        background: `linear-gradient(180deg, ${result.colour.hex} 0%, ${result.colour.hex}e6 58%, ${result.colour.hex}9c 100%)`,
-                        boxShadow: `0 0 18px ${result.colour.hex}99, inset 0 0 12px ${result.colour.hex}`,
-                      }}
-                    >
-                      <span
-                        className="lucky-vessel__surface"
-                        style={{ background: `radial-gradient(ellipse at 42% 40%, #ffffffcc 0%, ${result.colour.hex} 46%, ${result.colour.hex}55 100%)` }}
-                      />
-                    </span>
-                    <span className="lucky-vessel__glow" />
-                  </span>
-                  <span className="lucky-vessel__wall lucky-vessel__wall--left" />
-                  <span className="lucky-vessel__wall lucky-vessel__wall--right" />
-                  <span className="lucky-vessel__glass" />
-                  <span className="lucky-vessel__rim" />
-                  <span
-                    className="lucky-vessel__lid"
-                    style={{
-                      opacity: 1 - Math.min(1, motion.vesselOpen * 1.25),
-                      transform: `rotateX(${(-104 * motion.vesselOpen).toFixed(2)}deg)`,
-                    }}
-                  />
-                  <span className="lucky-vessel__specular" />
-                </div>
-              </div>
-
-              <div className="lucky-vessel__caption">
-                <span
-                  aria-hidden="true"
-                  className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-full border shadow-inner sm:h-9 sm:w-9 ${
-                    isLightColour ? 'border-slate-500/70' : 'border-white/25'
-                  }`}
-                  style={{
-                    backgroundColor: result.colour.hex,
-                    backgroundImage: `radial-gradient(circle at 32% 26%, rgba(255,255,255,${
-                      0.16 + colourSheen * 0.4
-                    }) 0%, rgba(255,255,255,0) 58%), repeating-linear-gradient(118deg, rgba(255,255,255,${
-                      colourGrain * 0.22
-                    }) 0 1px, rgba(0,0,0,${colourGrain * 0.28}) 1px 2.4px)`,
-                  }}
-                />
-                <div className="min-w-0 text-left">
-                  <h2 className="lucky-panel-label text-[12px] uppercase">
-                    {LUCKY_COLOUR_LABEL}
-                  </h2>
-                  <p
-                    className="truncate text-sm font-semibold leading-tight text-white sm:text-base"
-                    style={{ opacity: 0.35 + pourFill * 0.65 }}
-                  >
-                    {result.colour.name}
-                  </p>
-                  <p
-                    className="text-[12px] uppercase tracking-wider text-slate-300/85 tabular-nums"
-                    style={{ opacity: 0.35 + pourFill * 0.65 }}
-                  >
-                    {result.colour.hex}
-                  </p>
-                </div>
-                <span className="ml-auto hidden text-[12px] uppercase tracking-[0.16em] text-amber-200/60 sm:block">
-                  {getSeasonForDateKey(result.dateKey)?.name ?? ''}
-                </span>
-              </div>
-            </section>
+          {/* The vessel is mounted as soon as a reading exists so its Three.js
+              scene has the whole generation and landing beat to warm up. It
+              stays hidden until the vessel stage actually opens. */}
+          {result && (
+            <LuckyMeterVessel
+              colour={result.colour}
+              fill={hasDetails ? pourFill : 0}
+              open={hasDetails ? motion.vesselOpen : 0}
+              hidden={!hasDetails}
+              isCompact={isCompact}
+              reducedMotion={reducedMotion}
+              seasonName={getSeasonForDateKey(result.dateKey)?.name ?? ''}
+            />
           )}
 
           {hasDetails && result && (
