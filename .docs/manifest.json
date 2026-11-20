@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-20T14:39:20-04:00",
+  "lastUpdated": "2026-11-20T17:50:39-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,7 +497,7 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "5ac6007fc3573a9306e1d4c904bb4cf7cb54825a",
+    "/github/docs": "59c6175a7d35c1b34ca5beb68faaf326a139187b",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
@@ -506,11 +506,11 @@
     "/react-hook-form/resolvers": "128b8abb223167f0f9bcb4070b540acf31edac12",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
-    "/cloudflare/cloudflare-docs/turnstile": "dc14acb02616851d2c5087ca6d8aa6dacb6c66dd",
-    "/cloudflare/cloudflare-docs/pages": "dc14acb02616851d2c5087ca6d8aa6dacb6c66dd",
+    "/cloudflare/cloudflare-docs/turnstile": "4ec7b414455640fce1cb1b2e0f89dc34e36daf63",
+    "/cloudflare/cloudflare-docs/pages": "4ec7b414455640fce1cb1b2e0f89dc34e36daf63",
     "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "2f1592a70bdd82049f5086df18c4359ca64d415b",
+    "/microsoft/playwright": "99d4c415db3794d1c989be16ac4987f4529e3220",
     "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
     "/colinhacks/zod": "19c40d2072288b4cafec851e9d056a72a88e5973",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
@@ -535,7 +535,7 @@
     "/coreyhaines31/marketingskills/copy-editing-checklist": "5b2b400eec1e7e1cec76245a715d0b0d4fd2a9c1",
     "/coreyhaines31/marketingskills/plain-english-alternatives": "5b2b400eec1e7e1cec76245a715d0b0d4fd2a9c1",
     "/coreyhaines31/marketingskills/content-refresh": "5b2b400eec1e7e1cec76245a715d0b0d4fd2a9c1",
-    "/vercel-labs/agent-skills/react-best-practices": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+    "/vercel-labs/agent-skills/react-best-practices": "5a37a6329fbad3666c3207392a6a7c0110e92efb",
     "/trailofbits/skills/fp-check": "149d7b21f4067765b82e67029730b42d228ef4b4",
     "/trailofbits/skills/fp-check-standard-verification": "149d7b21f4067765b82e67029730b42d228ef4b4",
     "/trailofbits/skills/fp-check-deep-verification": "149d7b21f4067765b82e67029730b42d228ef4b4",
