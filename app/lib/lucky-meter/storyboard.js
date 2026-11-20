@@ -81,10 +81,12 @@ export const STORYBOARD_TIMING = Object.freeze({
 
   /**
    * Stage 11 plus the dock settle: the completed scene is held first, and both
-   * controls arrive together at the end of this window.
+   * controls arrive together at the end of this window. The gap between
+   * `finalHoldMs` and this value is the dock's own approach, so the stage list
+   * leaves it unrepresented on purpose instead of stretching the hold over it.
    */
   dockDelayMs: 3400,
-  /** The part of the dock window that is pure hold, so the stage list can split it. */
+  /** The part of the dock window that is pure hold: `hold` ends here. */
   finalHoldMs: 2600,
 
   /** The landing flash on the percentage. */
@@ -105,8 +107,17 @@ export const ARRIVAL_TOTAL_MS =
 export const REVEAL_MOTION_MS =
   STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs;
 
-/** Milliseconds from Start until the colour selection has finished unfolding. */
+/**
+ * Milliseconds from Start until the colour selection has finished unfolding.
+ *
+ * `settlePauseMs` is split: `landingMs` completes the wheel's arrival and the
+ * remainder is the colour selection itself. Anyone deriving that beat must
+ * subtract `COLOUR_SELECT_START_MS`, not `REVEAL_MOTION_MS`, from this value.
+ */
 export const COLOUR_SELECT_END_MS = REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs;
+
+/** Milliseconds from Start until the colour selection begins after the landing. */
+export const COLOUR_SELECT_START_MS = REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs;
 
 /** Milliseconds from Start until the vessel has finished opening. */
 export const VESSEL_OPEN_END_MS = COLOUR_SELECT_END_MS + STORYBOARD_TIMING.segmentOpenMs;
@@ -235,7 +246,7 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
   const sparkDuration = getSparkWritingMs(sparkMessage);
   const sparkEnd = sparkStart + sparkDuration;
   const dockStart = sparkEnd + STORYBOARD_TIMING.dockDelayMs;
-  const holdEnd = sparkEnd + Math.min(STORYBOARD_TIMING.finalHoldMs, STORYBOARD_TIMING.dockDelayMs);
+  const holdEnd = sparkEnd + STORYBOARD_TIMING.finalHoldMs;
   const messageStart = REVEAL_COMPLETE_MS;
 
   return [
@@ -252,7 +263,7 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
     },
     {
       id: 'colourSelect',
-      startMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs,
+      startMs: COLOUR_SELECT_START_MS,
       endMs: COLOUR_SELECT_END_MS,
     },
     {
