@@ -2821,11 +2821,10 @@ This method retrieves a previously created Address Element.
   The type of Element being retrieved, which is `address` in this case.
 
 - `options`
-  Options for retrieving the Address Element.
+  Options for retrieving the Address Element. You can omit this object when retrieving a single Address Element.
+If you provide options, you must specify `mode` to identify which Address Element to retrieve.
     - `mode`
-      Required when using multiple Address Elements.
-
-Specify which mode of the Address Element you would like to retrieve.
+      The mode of the Address Element to retrieve.
 
 ### Example
 
@@ -3401,7 +3400,7 @@ The following Stripe.js methods are available to use as part of your integration
 
 ## Initialize the Checkout Elements SDK
 
-`stripe.initCheckoutElementsSdk(options?: object)`
+`stripe.initCheckoutElementsSdk(options: object)`
 
 This method initializes Checkout for [Checkout elements](https://docs.stripe.com/payments/quickstart-checkout-sessions.md) integrations, where you compose individual Elements on your checkout page.
 
@@ -3489,7 +3488,7 @@ Initialize the Checkout Elements SDK
 
 ## Initialize the Embedded form SDK
 
-`stripe.initCheckoutFormSdk(options?: object)`
+`stripe.initCheckoutFormSdk(options: object)`
 
 This method initializes Checkout for [embedded form](https://docs.stripe.com/elements/embeddable-payment-form.md) integrations, where a single form handles payment, address, and other elements.
 
@@ -3513,7 +3512,7 @@ Default is `'auto'` (Stripe determines whether or not to show a loader UI).
       - `enableSave`
         Toggle if the embedded form collects consent to save a customer's payment methods. Default is `'auto'`.
     - `defaultValues`
-      If customer details are already known, you can pass this option to prefill the Checkout Session and the embedded form.
+      If customer details are already known, you can pass this option to prefill the Checkout Session and the embedded form. For example, use `billingAddress: {name: 'Jenny Rosen'}` to prefill only the billing name.
       - `billingAddress`
         The Customer's billing address.
         - `name`
