@@ -37,10 +37,28 @@ description: "Tasks for the seven-category PR verification contract"
 - [X] T014 [US3] Retarget `__tests__/qa-review-comment.test.js` to the consolidated sticky comment, including refusal of unmarked or oversized bodies.
 - [X] T015 [US3] Run the checker suites, focused and full Vitest suites, the TypeScript check, the production build and the build-size measurement.
 
+## Phase 5: Review repairs (US1, US3)
+
+- [X] T016 Add `issue_comment` refresh for owner `/approve-` commands, resolve the PR from `github.event.issue.number`, and include the issue number in the concurrency group.
+- [X] T017 Fail closed on empty or malformed verification audits and on an audit whose `pr.head_sha` differs from the current PR HEAD.
+- [X] T018 Reject a check run without a `head_sha` as current-head evidence.
+- [X] T019 Publish a marker-first `NOT RUN` placeholder when rendering fails, refuse a missing comment body, and distinguish renderer exit 2 from a failed category in the gate message.
+- [X] T020 Render changed-code findings from `excerpt` and `recommendation`, and assert the excerpt appears in the report.
+- [X] T021 Report the human attestation as `NOT RUN` for bot-authored pull requests instead of failing them solely for the missing declaration.
+- [X] T022 Paginate check-run retrieval and fetch open dependency advisories for the seventh category.
+- [X] T023 Slice the final report fallback on UTF-8 bytes and decode safely.
+
+## Phase 6: Dependency Health & Vulnerability Review (US4)
+
+- [X] T024 Add the seventh category with PASSED/FAILED/WARNING/NOT RUN rules for unchanged dependencies, changed dependencies, unmatched advisories, unreadable advisory sources and bot-authored updates.
+- [X] T025 Keep `.github/dependabot.yml` unchanged and report the weekly updater as context inside the category, never as a prerequisite.
+- [X] T026 Update `PR_SUBMISSION.md` and `.github/pull_request_template.md` so all seven standards and the Dependabot context are consistently represented.
+
 ## Completion Summary
 
-- **Total tasks**: 15
-- **User Story 1**: 8 tasks
-- **User Story 2**: 3 tasks
+- **Total tasks**: 26
+- **User Story 1**: 8 tasks (plus review-repair tasks T016–T023)
+- **User Story 2**: 3 tasks (plus T026)
 - **User Story 3**: 4 tasks
+- **User Story 4**: 3 tasks (T024–T026)
 - **Independent test**: The Python suite asserts the exactly-seven-category contract, declaration matching, status classification and current-head evidence; the Vitest workflow-hygiene suite proves the existing Playwright, DevSkim, build and upsert behaviour remains intact.

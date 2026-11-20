@@ -142,6 +142,7 @@ def evidence(**overrides):
         + [check(report.DEVSKIM_CHECK, "success")],
         "verification": verification(),
         "alerts": [],
+        "dependabot_alerts": [],
     }
     value.update(overrides)
     # GitHub's pull request payload always reports changed_files; the scope
@@ -164,11 +165,11 @@ class CategoryContractTests(unittest.TestCase):
             [
                 "qa-checker",
                 "devskim",
-                "dependabot",
                 "pr-scope",
                 "protected-files",
                 "verification-integrity",
                 "governance",
+                "dependency-health",
             ],
         )
         self.assertEqual(
@@ -176,11 +177,11 @@ class CategoryContractTests(unittest.TestCase):
             [
                 "QA Checker",
                 "DevSkim",
-                "Dependabot",
                 "PR Scope Verification",
                 "Protected File Changes",
                 "Verification Integrity",
                 "Governance and Workflow Verification",
+                "Dependency Health & Vulnerability Review",
             ],
         )
 
@@ -214,6 +215,13 @@ class CategoryContractTests(unittest.TestCase):
         self.assertEqual(rendered.splitlines()[0], report.REPORT_MARKER)
         self.assertEqual(rendered.count(report.REPORT_MARKER), 1)
         self.assertEqual(rendered.count("| # | Checker category |"), 1)
+
+    def test_byte_budget_truncation_keeps_valid_utf8(self):
+        result = report.build_report(evidence())
+        rendered = report.render_comment(result, limit=600)
+        self.assertLessEqual(len(rendered.encode("utf-8")), 600)
+        rendered.encode("utf-8").decode("utf-8")
+        self.assertTrue(rendered.startswith(report.REPORT_MARKER))
 
     def test_report_is_below_the_comment_cap(self):
         files = file_records(
@@ -265,6 +273,28 @@ class QaDeclarationTests(unittest.TestCase):
         )
         result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
         self.assertEqual(result["status"], "FAILED")
+
+    def test_bot_authored_pull_request_reports_the_attestation_as_not_run(self):
+        pr = evidence()["pull_request"]
+        pr["user"] = {"login": "dependabot[bot]"}
+        pr["body"] = pr["body"].replace(report.QA_DECLARATION, "")
+        result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
+        self.assertEqual(result["status"], "WARNING")
+        self.assertIn("NOT RUN", json.dumps(result["details"]))
+
+    def test_changed_code_finding_renders_the_matched_excerpt(self):
+        files = file_records(
+            extra=[
+                {
+                    "filename": "app/lib/queue.js",
+                    "status": "modified",
+                    "patch": "@@ -0,0 +1,1 @@\n+} catch { }",
+                }
+            ]
+        )
+        result = category(report.build_report(evidence(files=files)), "qa-checker")
+        rendered = "\n".join(result["details"])
+        self.assertIn("Evidence: `} catch { }`", rendered)
 
     def test_changed_code_review_findings_are_retained_in_the_qa_category(self):
         files = file_records(
@@ -407,6 +437,35 @@ class StatusClassificationTests(unittest.TestCase):
         result = category(report.build_report(evidence(verification=None)), "verification-integrity")
         self.assertEqual(result["status"], "NOT RUN")
 
+    def test_empty_verification_audit_is_not_run(self):
+        result = category(
+            report.build_report(evidence(verification={})), "verification-integrity"
+        )
+        self.assertEqual(result["status"], "NOT RUN")
+        self.assertIn("empty or malformed", result["summary"])
+
+    def test_audit_without_required_checks_is_not_run(self):
+        result = category(
+            report.build_report(evidence(verification=verification(required=[]))),
+            "verification-integrity",
+        )
+        self.assertEqual(result["status"], "NOT RUN")
+
+    def test_audit_for_another_commit_is_failed(self):
+        values = verification(head=EARLIER)
+        result = category(
+            report.build_report(evidence(verification=values)), "verification-integrity"
+        )
+        self.assertEqual(result["status"], "FAILED")
+        self.assertTrue(any(EARLIER in item for item in result["details"]))
+
+    def test_check_run_without_a_head_sha_is_not_current_head_evidence(self):
+        runs = all_supporting()
+        runs[0].pop("head_sha")
+        result = category(report.build_report(evidence(check_runs=runs)), "qa-checker")
+        self.assertNotEqual(result["status"], "PASSED")
+        self.assertIn("no run is attached to the current head", json.dumps(result["details"]))
+
 
 class DevskimTests(unittest.TestCase):
     def test_passing_scan_and_no_alerts_pass(self):
@@ -440,25 +499,137 @@ class DevskimTests(unittest.TestCase):
         self.assertEqual(result["status"], "WARNING")
 
 
-class DependabotTests(unittest.TestCase):
-    def test_ordinary_pull_request_reports_not_run_with_an_explanation(self):
-        result = category(report.build_report(evidence()), "dependabot")
-        self.assertEqual(result["status"], "NOT RUN")
-        self.assertIn("weekly", json.dumps(result["details"]).lower())
-        self.assertIn("not a per-pull-request verification job", json.dumps(result["details"]))
+def advisory(name, severity="high", state="open"):
+    return {
+        "state": state,
+        "dependency": {"package": {"name": name}},
+        "security_advisory": {"severity": severity},
+    }
 
-    def test_dependabot_pull_request_reports_the_applicable_update(self):
-        pr = evidence()["pull_request"]
-        pr["user"] = {"login": "dependabot[bot]"}
-        files = [
-            {"filename": "package.json", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
-            {"filename": "pnpm-lock.yaml", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
-        ]
+
+def dependency_files(package_lines=(), lock_lines=()):
+    extra = []
+    if package_lines:
+        extra.append(
+            {
+                "filename": "package.json",
+                "status": "modified",
+                "patch": "@@ -1,1 +1,6 @@\n"
+                + "\n".join("+" + line for line in package_lines),
+            }
+        )
+    if lock_lines:
+        extra.append(
+            {
+                "filename": "pnpm-lock.yaml",
+                "status": "modified",
+                "patch": "@@ -1,1 +1,6 @@\n"
+                + "\n".join("+" + line for line in lock_lines),
+            }
+        )
+    return file_records(extra=extra)
+
+
+class DependencyHealthTests(unittest.TestCase):
+    def dependency_evidence(self, **overrides):
+        value = evidence()
+        value.update(overrides)
+        return value
+
+    def test_every_pull_request_gets_a_dependency_health_result(self):
+        result = category(report.build_report(evidence()), "dependency-health")
+        self.assertEqual(result["status"], "PASSED")
+        details = json.dumps(result["details"])
+        self.assertIn("does not depend on a Dependabot update", details)
+        self.assertIn("does not duplicate the DevSkim", details)
+
+    def test_unrelated_open_advisories_do_not_fail_a_clean_pull_request(self):
         result = category(
-            report.build_report(evidence(pull_request=pr, files=files)), "dependabot"
+            report.build_report(
+                evidence(dependabot_alerts=[advisory("left-pad", "critical")])
+            ),
+            "dependency-health",
         )
         self.assertEqual(result["status"], "PASSED")
-        self.assertTrue(any("applicable Dependabot update" in detail for detail in result["details"]))
+        self.assertTrue(any("not attributed" in detail for detail in result["details"]))
+
+    def test_changed_dependency_with_a_high_advisory_fails(self):
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.20",'],
+            lock_lines=["  lodash@4.17.20:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(
+                    files=files,
+                    dependabot_alerts=[advisory("lodash", "critical")],
+                )
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "FAILED")
+        self.assertTrue(any("lodash" in detail for detail in result["details"]))
+
+    def test_changed_dependency_with_a_moderate_advisory_warns(self):
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.20",'],
+            lock_lines=["  lodash@4.17.20:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(files=files, dependabot_alerts=[advisory("lodash", "medium")])
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "WARNING")
+
+    def test_dependency_update_without_an_advisory_passes(self):
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.21",'],
+            lock_lines=["  lodash@4.17.21:"],
+        )
+        result = category(
+            report.build_report(evidence(files=files, dependabot_alerts=[])),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "PASSED")
+
+    def test_manifest_without_its_lockfile_warns(self):
+        files = dependency_files(package_lines=['"lodash": "^4.17.21",'])
+        result = category(
+            report.build_report(evidence(files=files, dependabot_alerts=[])),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "WARNING")
+        self.assertTrue(any("lockfile" in item for item in result["attention"]))
+
+    def test_unreadable_advisory_source_is_not_run(self):
+        result = category(
+            report.build_report(
+                evidence(dependabot_alerts={"message": "the API returned 403"})
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "NOT RUN")
+        self.assertTrue(any("403" in detail for detail in result["details"]))
+
+    def test_dependabot_pull_request_is_assessed_without_requiring_an_update(self):
+        pr = evidence()["pull_request"]
+        pr["user"] = {"login": "dependabot[bot]"}
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.21",'],
+            lock_lines=["  lodash@4.17.21:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(pull_request=pr, files=files, dependabot_alerts=[])
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "PASSED")
+        self.assertTrue(
+            any("applicable weekly Dependabot update" in detail for detail in result["details"])
+        )
 
     def test_changed_dependabot_configuration_is_surfaced(self):
         files = file_records(
@@ -470,8 +641,9 @@ class DependabotTests(unittest.TestCase):
                 }
             ]
         )
-        result = category(report.build_report(evidence(files=files)), "dependabot")
+        result = category(report.build_report(evidence(files=files)), "dependency-health")
         self.assertEqual(result["status"], "WARNING")
+        self.assertTrue(any("weekly" in item for item in result["attention"]))
 
 
 class ScopeExpansionTests(unittest.TestCase):
@@ -824,6 +996,42 @@ class DocumentationContractTests(unittest.TestCase):
 
 
 class WorkflowContractTests(unittest.TestCase):
+    def test_report_refreshes_after_owner_approval_comments(self):
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        self.assertIn("issue_comment:", text)
+        self.assertIn("github.event.issue.number", text)
+        self.assertIn(
+            "github.event.comment.user.login == github.repository_owner", text
+        )
+        self.assertIn("startsWith(github.event.comment.body, '/approve-')", text)
+
+    def test_check_runs_and_dependency_advisories_are_paginated(self):
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        self.assertIn("check-runs?per_page=100&filter=all", text)
+        self.assertIn("[.[].check_runs[]]", text)
+        self.assertIn("dependabot/alerts?state=open&per_page=100", text)
+        self.assertIn("dependency-alerts.json", text)
+
+    def test_render_failure_publishes_a_not_run_placeholder(self):
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+        self.assertIn("could not be built from the supplied evidence", text)
+        self.assertIn("NOT RUN placeholder", text)
+        self.assertIn("RENDER_STATUS", text)
+        self.assertIn('"$RENDER_STATUS" == "2"', text)
+        self.assertIn('"$RENDER_STATUS" == "1"', text)
+
     def test_report_workflow_is_triggered_by_pr_events_and_checker_completion(self):
         path = os.path.join(
             os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
@@ -855,6 +1063,7 @@ class WorkflowContractTests(unittest.TestCase):
                 ("checks.json", {"check_runs": evidence()["check_runs"]}),
                 ("verification.json", verification()),
                 ("alerts.json", []),
+                ("dependency-alerts.json", []),
             ):
                 paths[name] = os.path.join(folder, name)
                 with open(paths[name], "w", encoding="utf-8") as handle:
@@ -875,6 +1084,8 @@ class WorkflowContractTests(unittest.TestCase):
                     paths["verification.json"],
                     "--alerts",
                     paths["alerts.json"],
+                    "--dependency-alerts",
+                    paths["dependency-alerts.json"],
                     "--owner",
                     OWNER,
                     "--comment",

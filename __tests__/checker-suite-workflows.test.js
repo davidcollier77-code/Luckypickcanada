@@ -18,11 +18,11 @@ const suite = read('.github/scripts/checker_suite.py');
 const CATEGORY_NAMES = [
   'QA Checker',
   'DevSkim',
-  'Dependabot',
   'PR Scope Verification',
   'Protected File Changes',
   'Verification Integrity',
   'Governance and Workflow Verification',
+  'Dependency Health & Vulnerability Review',
 ];
 
 describe('consolidated PR verification report', () => {
@@ -64,6 +64,28 @@ describe('consolidated PR verification report', () => {
     expect(reportWorkflow.match(/upsert_pr_comment\.sh/g)).toHaveLength(1);
     expect(reportWorkflow).toContain("'<!-- qa-verification-report -->'");
     expect(reportWorkflow).toContain('Publish or update the consolidated report');
+  });
+
+  it('refreshes after owner approvals and never leaves a stale report', () => {
+    expect(reportWorkflow).toContain('issue_comment:');
+    expect(reportWorkflow).toContain('github.event.issue.number');
+    expect(reportWorkflow).toContain(
+      "startsWith(github.event.comment.body, '/approve-')",
+    );
+    expect(reportWorkflow).toContain('check-runs?per_page=100&filter=all');
+    expect(reportWorkflow).toContain('[.[].check_runs[]]');
+    expect(reportWorkflow).toContain('NOT RUN placeholder');
+    expect(reportWorkflow).toContain('RENDER_STATUS');
+    expect(upsert).toContain('refusing to leave a stale report visible');
+  });
+
+  it('runs Dependency Health and Vulnerability Review on every pull request', () => {
+    expect(reportScript).toContain('Dependency Health & Vulnerability Review');
+    expect(reportScript).toContain('does not depend on a Dependabot update having run');
+    expect(reportScript).toContain('not duplicate the DevSkim security check');
+    expect(reportWorkflow).toContain('dependabot/alerts?state=open&per_page=100');
+    // The weekly updater stays configured exactly as before.
+    expect(dependabot.match(/interval: weekly/g)).toHaveLength(2);
   });
 
   it('uses only trusted-event triggers and never executes pull request code', () => {

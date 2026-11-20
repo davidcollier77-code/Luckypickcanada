@@ -6,6 +6,8 @@
 
 Add one consolidated verification-report renderer and workflow that publishes exactly seven checker categories on the pull request and updates the same comment in place. Fold the existing advisory comment outputs (test quality, performance, security alert text, changed-code review, Visual QA summary) into the category that owns them while keeping every underlying checker and its detailed findings. Require the two exact declarations in the PR description. Remove the submitter-side browser-evidence requirement from the scope checker. Add Spec Kit, regression and workflow-hygiene coverage.
 
+The review round replaces the former top-level Dependabot category with Dependency Health & Vulnerability Review, so the report still has exactly seven categories and governance is preserved. The new seventh category runs on every pull request from the changed dependency files and GitHub's open dependency advisories; it does not require Dependabot to have run and does not fail a pull request for unchanged outdated dependencies. The same round repairs the report's fail-closed paths: owner-approval refreshes, empty-audit handling, audit-to-head matching, missing check-run head SHAs, stale-report replacement on render errors, changed-code excerpt rendering, paginated check-run retrieval and UTF-8 byte truncation.
+
 ## Technical Context
 
 **Language/Version**: Python 3 standard library for the checkers; JavaScript (Vitest) for repository workflow-hygiene tests; YAML for GitHub Actions; Node.js 26.x repository runtime.
@@ -22,9 +24,9 @@ Add one consolidated verification-report renderer and workflow that publishes ex
 
 **Performance Goals**: The report is rendered from a handful of GitHub API responses; no application runtime change.
 
-**Constraints**: Do not modify `AGENTS.md`, `.github/dependabot.yml`, DevSkim configuration or the three external reviewers. Do not remove or weaken any automated test, security check, build check, Playwright test or protection gate. Keep the production build strictly below 495 MiB.
+**Constraints**: Do not modify `AGENTS.md`, `.github/dependabot.yml`, DevSkim configuration or the three external reviewers. Do not remove or weaken any automated test, security check, build check, Playwright test or protection gate. Keep the production build strictly below 495 MiB. Dependency Health must not duplicate DevSkim and must not depend on a Dependabot update having run.
 
-**Scale/Scope**: One new checker module, one new workflow, five updated workflows/tests, two documentation files, one Spec Kit feature and Memory Bank records.
+**Scale/Scope**: One new checker module, one new workflow, one changed comment-upsert script, updated checker and workflow tests, two documentation files, one Spec Kit feature and Memory Bank records.
 
 ## Constitution Check
 
@@ -66,10 +68,14 @@ memory-bank/{activeContext,techContext,progress}.md
 
 The existing `checker_suite.py` wrote four independent advisory comments; `visual-qa-summary.yml` aggregated Playwright results separately; `pr-scope-verification.yml` published a fifth changed-code comment; `check_qa_pr_scope.py` required submitter browser evidence for visual paths; and `verify_pr_verification_status.py` already matched check runs to the exact head SHA. The seven-category contract is implemented by aggregating these results into one report while leaving every scanning, testing and build workflow intact.
 
+For the seventh category, GitHub's Dependabot advisory endpoint supplies open advisories independently of any Dependabot update pull request; the changed `package.json`/lockfile patches supply the dependency names. The rules deliberately fail only when a dependency changed by the pull request matches an open high or critical advisory; unchanged packages are reported as context. The weekly Dependabot configuration is neither read as a gate nor modified.
+
 ## Phase 1 — Design
 
-The report is a pure function of an evidence bundle: pull request metadata, changed files, owner comments, current-head check runs, the verification audit and code-scanning alerts. Category evaluation reuses the existing validators, so approval digests, scope rules, protected-file detection and head-SHA matching stay in one place. The renderer always emits seven table rows, uses only `PASSED`/`FAILED`/`WARNING`/`NOT RUN`, and shrinks detail blocks rather than truncating findings when the 60,000-byte comment cap is approached. The workflow resolves the pull request for `workflow_run` events, publishes with the existing marker-based upsert script, and fails only after publishing when a category is `FAILED`.
+The report is a pure function of an evidence bundle: pull request metadata, changed files, owner comments, current-head check runs, the verification audit, code-scanning alerts and open dependency advisories. Category evaluation reuses the existing validators, so approval digests, scope rules, protected-file detection and head-SHA matching stay in one place. The renderer always emits seven table rows, uses only `PASSED`/`FAILED`/`WARNING`/`NOT RUN`, and shrinks detail blocks rather than truncating findings when the 60,000-byte comment cap is approached; the last-resort slice operates on encoded bytes.
+
+Fail-closed design: check runs must carry the exact current head SHA; the verification audit must be shaped correctly and describe the same head; an empty or malformed audit is `NOT RUN`; bot-authored pull requests report the human attestation as `NOT RUN` instead of failing; and owner approval comments trigger a refresh from `github.event.issue.number`. If rendering fails, the workflow publishes a marker-first `NOT RUN` placeholder so a previous passing comment cannot remain visible, and the gate distinguishes renderer status 2 from a failed category. Check runs and advisories are fetched with pagination.
 
 ## Verification and Limitations
 
-Local verification runs the Python checker suites, the new and updated Vitest contract tests, the full unit suite, the TypeScript check, the production build and the build-size measurement. GitHub-triggered results remain pending until the pull request exists; the workflow is defined on `main` and only runs on later pull requests, which is recorded in the PR handoff rather than claimed as executed.
+Local verification runs the Python checker suites, the new and updated Vitest contract tests, the full unit suite, the TypeScript check, the production build and the build-size measurement. GitHub-triggered results remain pending until the pull request exists; the workflow is defined on `main` and only runs on later pull requests, which is recorded in the PR handoff rather than claimed as executed. The review repairs are verified locally through unit-level workflow-hygiene assertions and the checker suites, not by claiming the GitHub workflow ran.

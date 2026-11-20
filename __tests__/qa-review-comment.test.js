@@ -125,6 +125,7 @@ function renderAndPublish({ existingId = '', bodyOverride = null } = {}) {
   });
   const verificationPath = write('verification.json', fixtureVerification);
   const alertsPath = write('alerts.json', []);
+  const dependencyAlertsPath = write('dependency-alerts.json', []);
   const commentPath = join(directory, 'comment.md');
 
   const rendered = spawnSync(
@@ -143,6 +144,8 @@ function renderAndPublish({ existingId = '', bodyOverride = null } = {}) {
       verificationPath,
       '--alerts',
       alertsPath,
+      '--dependency-alerts',
+      dependencyAlertsPath,
       '--owner',
       'davidcollier77-code',
       '--comment',
@@ -195,11 +198,11 @@ describe('consolidated verification report comment', () => {
       for (const name of [
         'QA Checker',
         'DevSkim',
-        'Dependabot',
         'PR Scope Verification',
         'Protected File Changes',
         'Verification Integrity',
         'Governance and Workflow Verification',
+        'Dependency Health & Vulnerability Review',
       ]) {
         expect(run.comment).toContain(name);
       }
@@ -207,6 +210,7 @@ describe('consolidated verification report comment', () => {
       expect(run.comment).toContain('Automated changed-code review');
       expect(run.comment).toContain('What happened:');
       expect(run.comment).toContain('`catch (error) { console.error(error); }`');
+      expect(run.comment).toContain('Evidence: `} catch { }`');
       expect(run.comment).toContain('**NOT RUN**');
       expect(Buffer.byteLength(run.comment, 'utf8')).toBeLessThanOrEqual(60000);
     } finally {

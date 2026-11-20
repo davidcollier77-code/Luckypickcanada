@@ -2,7 +2,9 @@
 
 This is the single source of truth for PR preparation, submission and handoff. Follow it after implementation and verification are complete.
 
-The repository's automated PR verification has exactly seven checker categories: **QA Checker**, **DevSkim**, **Dependabot**, **PR Scope Verification**, **Protected File Changes**, **Verification Integrity** and **Governance and Workflow Verification**. One consolidated report publishes all seven on the pull request, with the statuses `PASSED`, `FAILED`, `WARNING` or `NOT RUN`. Visual QA, the full test suite, the type check, the build and both Playwright shards are supporting results inside the QA Checker category; they are never separate top-level categories.
+The repository's automated PR verification has exactly seven checker categories: **QA Checker**, **DevSkim**, **PR Scope Verification**, **Protected File Changes**, **Verification Integrity**, **Governance and Workflow Verification** and **Dependency Health & Vulnerability Review**. One consolidated report publishes all seven on the pull request, with the statuses `PASSED`, `FAILED`, `WARNING` or `NOT RUN`. Visual QA, the full test suite, the type check, the build and both Playwright shards are supporting results inside the QA Checker category; they are never separate top-level categories.
+
+Dependabot remains the scheduled weekly updater for npm/pnpm and GitHub Actions; its configuration is unchanged. Its status is reported as context inside the Dependency Health & Vulnerability Review category, which runs on every pull request and does not depend on a Dependabot update having run.
 
 ## 1. Complete the work before submission
 
@@ -153,11 +155,11 @@ After the PR exists, the **PR Verification Report** workflow publishes one conso
 | --- | --- | --- |
 | 1 | QA Checker | Exact pre-submission declaration; automated changed-code review; test quality; performance/resource cleanup; full unit suite; TypeScript check; production build and build-size gate; both Playwright shards and automated visual results as supporting evidence |
 | 2 | DevSkim | DevSkim security scan result, suppression handling, SARIF processing, Security-tab upload and open code-scanning alerts |
-| 3 | Dependabot | Weekly npm and GitHub Actions update configuration status; reported as NOT RUN with an explanation when no applicable update exists |
-| 4 | PR Scope Verification | Exact-path declaration, per-file purposes, scope-expansion wording and owner approval digests, optional visual metadata |
-| 5 | Protected File Changes | Protected-file detection, required authorization declaration, and the separate human authorization gate result |
-| 6 | Verification Integrity | Whether the results belong to the exact current HEAD SHA; missing, skipped, cancelled, incomplete, stale or outdated results are never reported as passed |
-| 7 | Governance and Workflow Verification | Spec Kit stages and artifact evidence, selected task group, Library documents consulted and Memory Bank reporting |
+| 3 | PR Scope Verification | Exact-path declaration, per-file purposes, scope-expansion wording and owner approval digests, optional visual metadata |
+| 4 | Protected File Changes | Protected-file detection, required authorization declaration, and the separate human authorization gate result |
+| 5 | Verification Integrity | Whether the results belong to the exact current HEAD SHA; missing, skipped, cancelled, incomplete, stale or outdated results are never reported as passed |
+| 6 | Governance and Workflow Verification | Spec Kit stages and artifact evidence, selected task group, Library documents consulted and Memory Bank reporting |
+| 7 | Dependency Health & Vulnerability Review | Runs on every PR: changed dependency manifests and lockfiles are checked for consistency and for matching open dependency advisories; unrelated or unchanged outdated dependencies are context only and never fail the PR; the weekly Dependabot schedule is unchanged and not required to have run |
 
 Statuses are exactly **PASSED**, **FAILED**, **WARNING** and **NOT RUN**. Every failure, warning or unrun result is explained with what needs attention. Visual QA and Visual QA Summary never appear as extra top-level categories: their results belong to QA Checker, and both Playwright shards remain visible as supporting evidence.
 

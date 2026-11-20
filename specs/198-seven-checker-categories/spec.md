@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-20
 
-**Status**: Implemented — PR prepared for owner review
+**Status**: Implemented — review repairs and the Dependency Health checker added on PR #1983
 
 **Input**: Bring the Luckypickcanada pull-request verification system into alignment with exactly seven checker categories, with accurate current-head results, complete reporting on every PR, and submitter documentation that states exactly what must be provided.
 
@@ -36,23 +36,36 @@ The existing automated checks keep running and keep their detailed findings: Dev
 
 **Independent Test**: Assert the existing workflow steps remain present and that their results are rendered as supporting evidence inside the QA Checker category.
 
+### User Story 4 — Dependency health on every pull request (Priority: P1)
+
+Every pull request, including a bot-authored update, receives a dependency-health result even when no Dependabot update has run. The check compares changed manifests and lockfiles with open dependency advisories and does not fail a pull request for unchanged, outdated dependencies.
+
+**Independent Test**: Build the report with changed dependency files and with unrelated open advisories; assert `PASSED` for an unmodified clean pull request, `FAILED` for a changed dependency with a high advisory, `WARNING` for a manifest without its lockfile or a moderate advisory, and `NOT RUN` when the advisory source is unreadable.
+
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: The verification system MUST expose exactly seven top-level checker categories: QA Checker, DevSkim, Dependabot, PR Scope Verification, Protected File Changes, Verification Integrity and Governance and Workflow Verification.
+- **FR-001**: The verification system MUST expose exactly seven top-level checker categories: QA Checker, DevSkim, PR Scope Verification, Protected File Changes, Verification Integrity, Governance and Workflow Verification and Dependency Health & Vulnerability Review.
 - **FR-002**: Every category MUST use exactly one of `PASSED`, `FAILED`, `WARNING` or `NOT RUN`; the consolidated report MUST NOT use the earlier `PASS`/`WARN`/`FAIL`/`BLOCKED` vocabulary.
 - **FR-003**: The QA Checker MUST verify the exact declaration `Pre-Submission Code Quality Review: VERIFIED — Pre-check completed before PR submission.` and MUST keep the automated changed-code review, test quality, performance, full test suite, type check, build and automated visual results.
 - **FR-004**: The report MUST NOT require the submitter to run Playwright, take screenshots or supply manual browser evidence; Playwright MUST continue to run automatically when required.
 - **FR-005**: DevSkim scanning, suppression, SARIF handling, Security-tab upload and alert reporting MUST be preserved without configuration changes.
-- **FR-006**: Dependabot MUST be reported honestly as `NOT RUN` with an explanation when no applicable update exists; `.github/dependabot.yml` MUST NOT change.
+- **FR-006**: Dependency Health & Vulnerability Review MUST run on every pull request, MUST assess changed dependency manifests and lockfiles plus open dependency advisories, MUST NOT fail a pull request for unchanged outdated dependencies, and MUST report `NOT RUN` when the advisory source is unavailable. Dependabot MUST remain the unchanged weekly updater and MUST NOT be a prerequisite for the category.
 - **FR-007**: PR Scope Verification MUST keep the exact-path declaration, exact file-purpose matching and owner approval digests, and MUST require the exact words `Scope changed` plus a specific explanation when scope expands.
 - **FR-008**: Protected File Changes MUST keep fail-closed detection and the human authorization gate, and MUST require the exact human authorization declaration when the task explicitly authorizes protected-file changes.
 - **FR-009**: Verification Integrity MUST only accept results attached to the exact current HEAD SHA and MUST detect missing, skipped, cancelled, incomplete, stale and outdated results.
 - **FR-010**: Governance and Workflow Verification MUST check Spec Kit stage/artifact reporting, the selected task group, Library documents consulted and Memory Bank reporting, without claiming independent verification of submitter declarations.
 - **FR-011**: Visual QA and Visual QA Summary MUST NOT appear as extra top-level categories; their aggregation belongs to QA Checker and both shards remain visible.
 - **FR-012**: `PR_SUBMISSION.md` and `.github/pull_request_template.md` MUST agree on all required description content and declarations.
-- **FR-013**: Regression tests MUST cover the exact declarations, seven categories, status classification, current-head verification, scope expansion, protected-file authorization, the removed browser-evidence requirement and workflow hygiene.
+- **FR-013**: Regression tests MUST cover the exact declarations, seven categories, status classification, current-head verification, scope expansion, protected-file authorization, the removed browser-evidence requirement, dependency health and workflow hygiene.
+- **FR-014**: The report workflow MUST refresh after an owner `/approve-` comment so a digest approval replaces a stale `FAILED` report.
+- **FR-015**: Verification Integrity MUST fail closed on empty or malformed audit evidence and MUST reject an audit whose `pr.head_sha` differs from the current PR HEAD.
+- **FR-016**: A check run without a `head_sha` MUST NOT be accepted as current-head evidence.
+- **FR-017**: A render or build failure MUST replace the previous comment with a marker-first `NOT RUN` placeholder instead of leaving a stale pass visible, and the gate message MUST distinguish a render error from a failed category.
+- **FR-018**: Changed-code findings MUST render the matched `excerpt` and `recommendation` when those are the fields the reviewer emits.
+- **FR-019**: Check-run retrieval MUST paginate beyond the first 100 runs.
+- **FR-020**: The final byte-budget truncation MUST operate on UTF-8 bytes and decode safely.
 
 ### Key Entities
 
@@ -69,6 +82,8 @@ The existing automated checks keep running and keep their detailed findings: Dev
 - **SC-005**: Protected-file changes fail closed without the declaration and never treat the declaration as the human gate.
 - **SC-006**: Both documentation files state the same obligations, and neither asks the submitter for manual browser evidence.
 - **SC-007**: The full unit suite, type check, production build and build size are measured locally before submission.
+- **SC-008**: An owner approval comment causes the report to refresh, and a render error never leaves a stale passing report visible.
+- **SC-009**: Dependency Health reports accurately for clean, changed, unrelated-advisory, unreadable-source and bot-authored pull requests without depending on Dependabot running.
 
 ## Assumptions
 

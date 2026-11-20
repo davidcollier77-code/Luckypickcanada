@@ -5,7 +5,8 @@ The seven categories are fixed. Every category is always rendered with exactly
 one of the four report statuses: ``PASSED``, ``FAILED``, ``WARNING`` or
 ``NOT RUN``. No extra top-level category exists; the detailed findings of the
 existing checkers (changed-code review, test quality, performance, Visual QA,
-DevSkim alerts) are kept as evidence inside the category that owns them.
+DevSkim alerts and dependency advisories) are kept as evidence inside the
+category that owns them.
 
 The PR description is the submitter's task summary and handoff: it carries the
 declarations and documentation. This report publishes the checker results that
@@ -52,11 +53,11 @@ SCOPE_CHANGE_PHRASE = "Scope changed"
 CATEGORIES = (
     ("qa-checker", "QA Checker"),
     ("devskim", "DevSkim"),
-    ("dependabot", "Dependabot"),
     ("pr-scope", "PR Scope Verification"),
     ("protected-files", "Protected File Changes"),
     ("verification-integrity", "Verification Integrity"),
     ("governance", "Governance and Workflow Verification"),
+    ("dependency-health", "Dependency Health & Vulnerability Review"),
 )
 CATEGORY_NAMES = {key: name for key, name in CATEGORIES}
 
@@ -83,6 +84,13 @@ QA_SUPPORTING_CHECKS = (
 
 DEVSKIM_CHECK = "DevSkim scan and Security upload"
 PROTECTED_AUTHORIZATION_CHECK = "Protected File Authorization"
+
+# Manifest and lockfile names that make a pull request a dependency change.
+DEPENDENCY_MANIFEST = re.compile(
+    r"(^|/)(package\.json|pnpm-lock\.yaml|package-lock\.json|yarn\.lock)$"
+)
+DEPENDENCY_CONFIG = ".github/dependabot.yml"
+SEVERITY_ORDER = {"critical": 4, "high": 3, "medium": 2, "moderate": 2, "low": 1}
 
 # Kept identical to .github/workflows/protected-files.yml. A regression test
 # compares both lists so the two cannot drift apart silently.
@@ -201,11 +209,13 @@ def _run_status(run):
 
 def _named_runs(evidence, name):
     head = _head_sha(evidence)
+    if not head:
+        return []
     runs = [
         run
         for run in _check_runs(evidence)
         if (run.get("name") or "") == name
-        and (not head or (run.get("head_sha") or head) == head)
+        and (run.get("head_sha") or "") == head
     ]
     return runs
 
@@ -246,6 +256,15 @@ def _supporting_rows(evidence):
 def _render_finding(item):
     path = item.get("path") or "unknown"
     line = item.get("line") or 1
+    # ``review_pr_changes`` emits the matched source line as ``excerpt`` and a
+    # short ``recommendation``; older evidence bundles used ``evidence`` and
+    # ``suggestion``. Read both so a finding never renders an empty excerpt.
+    evidence = item.get("excerpt") or item.get("evidence") or ""
+    fix = (
+        item.get("suggestion")
+        or item.get("recommendation")
+        or "Review the finding."
+    )
     return "\n".join(
         [
             "- **%s · %s · %s** `%s:%s`"
@@ -258,8 +277,8 @@ def _render_finding(item):
             ),
             "  - What happened: %s" % (item.get("message") or ""),
             "  - Evidence: `%s`"
-            % " ".join(str(item.get("evidence") or "").split())[:200].replace("`", "'"),
-            "  - Suggested fix: %s" % (item.get("suggestion") or "Review the finding."),
+            % " ".join(str(evidence).split())[:200].replace("`", "'"),
+            "  - Suggested fix: %s" % fix,
         ]
     )
 
@@ -286,7 +305,10 @@ def _findings_summary(findings):
 
 
 def qa_checker_category(evidence):
-    body = _plain_text((evidence.get("pull_request") or {}).get("body"))
+    pr = evidence.get("pull_request") or {}
+    body = _plain_text(pr.get("body"))
+    author = ((pr.get("user") or {}).get("login") or "")
+    is_bot = author.endswith("[bot]")
     declaration_present = QA_DECLARATION in body
     details = []
     attention = []
@@ -296,6 +318,15 @@ def qa_checker_category(evidence):
             "Pre-submission declaration present: the submitter attested that the personal "
             "code quality review was completed. Its presence is an attestation, not proof "
             "that the review was performed."
+        )
+    elif is_bot:
+        details.append(
+            "This pull request is authored by `%s`. The human pre-submission attestation is "
+            "not applicable and is reported as NOT RUN, not as a failure." % author
+        )
+        attention.append(
+            "Bot-authored pull request: the human pre-submission attestation is NOT RUN. Its "
+            "supporting automated results still decide this category."
         )
     else:
         attention.append(
@@ -362,11 +393,12 @@ def qa_checker_category(evidence):
     for block in _finding_blocks(findings):
         details.append(block)
 
-    statuses = [row["status"] for row in supporting]
-    if not declaration_present or hard or review.get("status") == "FAIL":
+    if (not declaration_present and not is_bot) or hard or review.get("status") == "FAIL":
         status = FAILED
     elif any(row["status"] == FAILED for row in supporting):
         status = FAILED
+    elif not declaration_present and is_bot:
+        status = WARNING
     elif any(row["status"] in {WARNING, NOT_RUN} for row in supporting):
         status = WARNING
     elif review.get("status") == "BLOCKED":
@@ -384,6 +416,11 @@ def qa_checker_category(evidence):
         summary = "Declaration present and every supporting automated result passed."
     elif status == FAILED:
         summary = "Required QA evidence is missing or failed."
+    elif not declaration_present and is_bot:
+        summary = (
+            "Bot-authored pull request: the human attestation is NOT RUN; supporting results "
+            "are reported without failing the pull request for the missing attestation."
+        )
     elif status == WARNING:
         summary = "Incomplete coverage: at least one supporting result is not a pass."
     else:
@@ -474,62 +511,250 @@ def devskim_category(evidence):
 
 
 # ---------------------------------------------------------------------------
-# 3. Dependabot
+# 7. Dependency Health & Vulnerability Review
 # ---------------------------------------------------------------------------
 
 
-def dependabot_category(evidence):
+def _changed_dependency_records(evidence):
+    records = [
+        record
+        for record in _flatten(evidence.get("files") or [])
+        if isinstance(record, dict)
+    ]
+    return [
+        record
+        for record in records
+        if DEPENDENCY_MANIFEST.search(record.get("filename") or "")
+    ]
+
+
+def _added_dependency_names(records):
+    """Read dependency names from added manifest or lockfile lines."""
+    names = set()
+    for record in records:
+        filename = record.get("filename") or ""
+        patch = record.get("patch") or ""
+        base = PurePosixPath(filename).name
+        for line in patch.splitlines():
+            if not line.startswith("+") or line.startswith("+++"):
+                continue
+            text = line[1:].strip().rstrip(",")
+            if base == "package.json":
+                match = re.match(
+                    r'^"(@?[^"]+)"\s*:\s*"([~^<>=*\d]|workspace:|npm:|file:|link:|github:|https?:)',
+                    text,
+                )
+                if match and not match.group(1).startswith("$"):
+                    names.add(match.group(1))
+            elif base in {"pnpm-lock.yaml", "package-lock.json", "yarn.lock"}:
+                match = re.match(
+                    r"^['\"]?((?:@[^/@'\"]+/)?[^@'\":\s]+)@[^'\":\s]+['\"]?:?$",
+                    text,
+                )
+                if match:
+                    names.add(match.group(1))
+    return names
+
+
+def _alert_package(alert):
+    dependency = alert.get("dependency")
+    dependency = dependency if isinstance(dependency, dict) else {}
+    package = dependency.get("package")
+    package = package if isinstance(package, dict) else {}
+    return (package.get("name") or alert.get("package_name") or "").strip()
+
+
+def _alert_severity(alert):
+    advisory = alert.get("security_advisory")
+    advisory = advisory if isinstance(advisory, dict) else {}
+    vulnerability = alert.get("security_vulnerability")
+    vulnerability = vulnerability if isinstance(vulnerability, dict) else {}
+    return (advisory.get("severity") or vulnerability.get("severity") or "").casefold()
+
+
+def dependency_health_category(evidence):
     pr = evidence.get("pull_request") or {}
-    author = ((pr.get("user") or {}).get("login") or "").lower()
-    paths = {record.get("filename") for record in _flatten(evidence.get("files") or [])}
-    config_changed = ".github/dependabot.yml" in paths
+    author = ((pr.get("user") or {}).get("login") or "").casefold()
+    records = _changed_dependency_records(evidence)
+    filenames = {
+        record.get("filename")
+        for record in _flatten(evidence.get("files") or [])
+        if isinstance(record, dict)
+    }
+    config_changed = DEPENDENCY_CONFIG in filenames
+    manifest_changed = any(
+        PurePosixPath(record.get("filename") or "").name == "package.json"
+        for record in records
+    )
+    lock_changed = any(
+        PurePosixPath(record.get("filename") or "").name
+        in {"pnpm-lock.yaml", "package-lock.json", "yarn.lock"}
+        for record in records
+    )
     details = [
-        "Dependabot is configured for weekly npm (pnpm-lock.yaml) and weekly GitHub Actions "
-        "updates. It is a scheduled updater, not a per-pull-request verification job."
+        "Known vulnerabilities are read from GitHub's Dependabot advisory alerts; that is a "
+        "dependency-advisory source, separate from the DevSkim code scan, so this category does "
+        "not duplicate the DevSkim security check.",
+        "Dependabot remains the scheduled weekly updater for npm/pnpm and GitHub Actions. This "
+        "review runs on every pull request and does not depend on a Dependabot update having run.",
     ]
     attention = []
-    if config_changed:
-        details.append(
-            "`.github/dependabot.yml` is changed in this pull request; the weekly update "
-            "configuration is expected to remain unchanged by PR verification work."
-        )
-        attention.append(
-            "Confirm the Dependabot configuration change is intentional and separately authorized."
-        )
 
     if author == "dependabot[bot]":
-        if config_changed:
-            return _category(
-                "dependabot",
-                WARNING,
-                "A Dependabot update is present, but the update configuration also changed.",
-                details,
-                attention,
-            )
         details.append(
-            "This pull request is an applicable Dependabot update; its CI results are reported "
-            "under QA Checker and Verification Integrity."
+            "This pull request is an applicable weekly Dependabot update; the same dependency "
+            "health and advisory rules apply to it."
+        )
+    if config_changed:
+        details.append(
+            "`.github/dependabot.yml` is changed in this pull request. The weekly update schedule "
+            "is expected to remain unchanged."
+        )
+        attention.append(
+            "Confirm the Dependabot configuration change is intentional and separately authorized; "
+            "its weekly schedule must stay in place."
+        )
+
+    alerts = evidence.get("dependabot_alerts")
+    if isinstance(alerts, dict):
+        message = alerts.get("message") or "the dependency advisory API was unavailable"
+        details.append(
+            "Dependency advisories could not be read: %s. Dependency-manifest health was still "
+            "checked, but the known-vulnerability review did not run." % message
+        )
+        attention.append(
+            "Restore access to Dependabot alerts or triage dependency advisories manually; this "
+            "category is not a pass while the advisory source is unavailable."
         )
         return _category(
-            "dependabot",
-            PASSED,
-            "Applicable weekly Dependabot update detected for this pull request.",
+            "dependency-health",
+            NOT_RUN,
+            "The known-vulnerability review could not run, so no dependency-health pass is claimed.",
+            details,
+            attention,
+        )
+    if alerts is None:
+        details.append(
+            "No dependency-advisory evidence was supplied to this report, so known vulnerabilities "
+            "could not be assessed."
+        )
+        attention.append(
+            "Supply the Dependabot alert evidence and re-run the report; this category is not a pass."
+        )
+        return _category(
+            "dependency-health",
+            NOT_RUN,
+            "No dependency-advisory evidence is available; the review did not run.",
             details,
             attention,
         )
 
-    details.append(
-        "No applicable Dependabot update runs for this pull request, so there is no Dependabot "
-        "result to report. No successful Dependabot result is inferred."
+    open_alerts = [
+        alert
+        for alert in alerts
+        if isinstance(alert, dict) and (alert.get("state") or "open") == "open"
+    ]
+    by_package = {}
+    for alert in open_alerts:
+        name = _alert_package(alert)
+        if not name:
+            continue
+        severity = _alert_severity(alert)
+        if SEVERITY_ORDER.get(severity, 0) >= SEVERITY_ORDER.get(by_package.get(name, ""), 0):
+            by_package[name] = severity
+    high_repo = sum(
+        1 for severity in by_package.values() if SEVERITY_ORDER.get(severity, 0) >= 3
     )
-    status = WARNING if config_changed else NOT_RUN
-    return _category(
-        "dependabot",
-        status,
-        "NOT RUN: no applicable Dependabot update for this pull request.",
-        details,
-        attention,
+
+    if not records:
+        details.append(
+            "No dependency manifest or lockfile is changed by this pull request, so no dependency "
+            "risk is attributed to it."
+        )
+        if by_package:
+            details.append(
+                "%d open dependabot advisory(ies) exist for packages this pull request does not "
+                "change (%d high or critical). They are reported as context and are not attributed "
+                "to, or failed against, this pull request." % (len(by_package), high_repo)
+            )
+        status = WARNING if config_changed else PASSED
+        summary = (
+            "No dependency change in this pull request; unrelated advisories do not fail it."
+            if status == PASSED
+            else "No dependency change, but the Dependabot configuration changed."
+        )
+        return _category("dependency-health", status, summary, details, attention)
+
+    names = _added_dependency_names(records)
+    matched = {name: severity for name, severity in by_package.items() if name in names}
+    if matched:
+        details.append(
+            "Changed dependencies with open advisories: %s."
+            % ", ".join(
+                "%s (%s)" % (name, severity or "unknown")
+                for name, severity in sorted(matched.items())
+            )
+        )
+    else:
+        details.append(
+            "No open advisory matches a dependency added or changed by this pull request."
+        )
+    if names:
+        details.append(
+            "Dependency names read from the changed manifest/lockfile: %s."
+            % ", ".join(sorted(names)[:20])
+        )
+    else:
+        details.append(
+            "The changed dependency names could not be read from the supplied patches."
+        )
+
+    worst = max(
+        (SEVERITY_ORDER.get(severity, 0) for severity in matched.values()), default=0
     )
+    lockfile_missing = manifest_changed and bool(names) and not lock_changed
+    if lockfile_missing:
+        details.append(
+            "`package.json` adds or changes dependencies but no lockfile is changed with it."
+        )
+        attention.append(
+            "Regenerate the lockfile with the repository's package manager so package.json and "
+            "pnpm-lock.yaml stay consistent."
+        )
+
+    if worst >= 3:
+        status = FAILED
+        summary = "A dependency changed by this pull request has an open high or critical advisory."
+        attention.append(
+            "Update or remove the affected dependency, or record an approved disposition before merge."
+        )
+    elif worst:
+        status = WARNING
+        summary = "A dependency changed by this pull request has an open advisory that needs triage."
+        attention.append("Review the advisory and update or disposition the affected dependency.")
+    elif lockfile_missing:
+        status = WARNING
+        summary = "The dependency manifest changed without its lockfile."
+    elif not names and high_repo:
+        status = WARNING
+        summary = (
+            "Dependencies changed, but their names could not be read, so open high or critical "
+            "advisories could not be attributed."
+        )
+        attention.append(
+            "Provide readable dependency patches or confirm manually that no changed dependency "
+            "has an open high or critical advisory."
+        )
+    else:
+        status = PASSED
+        summary = (
+            "Dependency changes in this pull request have no matching open advisory and keep the "
+            "manifest and lockfile consistent."
+        )
+    if config_changed and status == PASSED:
+        status = WARNING
+        summary = "Dependencies are healthy, but the Dependabot configuration changed."
+    return _category("dependency-health", status, summary, details, attention)
 
 
 # ---------------------------------------------------------------------------
@@ -719,16 +944,59 @@ def verification_integrity_category(evidence):
             ["Re-run the Verification Integrity audit for this pull request."],
         )
 
-    pr = report.get("pr") or {}
+    pr = report.get("pr") if isinstance(report.get("pr"), dict) else {}
     head_sha = pr.get("head_sha") or ""
-    required = report.get("required_checks") or []
-    conditional = report.get("conditional_checks") or []
+    current_head = _head_sha(evidence)
+    required = report.get("required_checks")
+    conditional = report.get("conditional_checks")
     stale = report.get("stale_check_runs") or []
-    head_commit = report.get("head_commit") or {}
+    head_commit = (
+        report.get("head_commit") if isinstance(report.get("head_commit"), dict) else {}
+    )
     directives = head_commit.get("skip_directives") or []
 
+    # Fail closed: an empty or malformed audit is not evidence that anything
+    # ran. Every required record must also be readable.
+    if (
+        not isinstance(required, list)
+        or not required
+        or not all(isinstance(record, dict) for record in required)
+        or not isinstance(conditional, list)
+        or not all(isinstance(record, dict) for record in conditional)
+    ):
+        return _category(
+            "verification-integrity",
+            NOT_RUN,
+            "The current-head verification audit is empty or malformed, so no result is claimed.",
+            [
+                "The audit must contain at least one required check and readable check lists.",
+                "An empty or misshapen audit is never reported as passed.",
+            ],
+            ["Re-run the Verification Integrity audit for this pull request."],
+        )
+    if not current_head:
+        return _category(
+            "verification-integrity",
+            FAILED,
+            "The pull request has no current HEAD SHA, so verification cannot be proven.",
+            ["No current head is available to match the audit against."],
+            ["Re-run verification against the current head."],
+        )
+    if head_sha != current_head:
+        return _category(
+            "verification-integrity",
+            FAILED,
+            "The verification audit describes a different commit than the current PR HEAD.",
+            [
+                "Audit head: `%s`." % (head_sha or "missing"),
+                "Current PR head: `%s`." % current_head,
+                "An audit for another commit is never accepted as current-head evidence.",
+            ],
+            ["Re-run the verification audit against the current head."],
+        )
+
     details = [
-        "Results are audited against head `%s`." % (head_sha or "missing"),
+        "Results are audited against head `%s`." % head_sha,
         "Check runs attached to earlier commits are ignored and are never accepted as proof "
         "that the latest commit passed.",
     ]
@@ -760,11 +1028,7 @@ def verification_integrity_category(evidence):
     observed = required_statuses + conditional_statuses
     no_runs = bool(observed) and all(status == NOT_RUN for status in observed)
 
-    if not head_sha:
-        status = FAILED
-        summary = "The pull request has no current HEAD SHA, so verification cannot be proven."
-        attention.append("Re-run verification against the current head.")
-    elif directives:
+    if directives:
         status = FAILED
         summary = "The head commit carries a CI-skip directive, so its checks did not run."
         attention.append(
@@ -803,7 +1067,7 @@ def verification_integrity_category(evidence):
 
 
 # ---------------------------------------------------------------------------
-# 7. Governance and Workflow Verification
+# 6. Governance and Workflow Verification
 # ---------------------------------------------------------------------------
 
 
@@ -913,11 +1177,11 @@ def build_report(evidence):
     categories = [
         qa_checker_category(evidence),
         devskim_category(evidence),
-        dependabot_category(evidence),
         pr_scope_category(evidence),
         protected_files_category(evidence),
         verification_integrity_category(evidence),
         governance_category(evidence),
+        dependency_health_category(evidence),
     ]
     expected = [key for key, _name in CATEGORIES]
     if [item["id"] for item in categories] != expected:
@@ -1069,7 +1333,11 @@ def render_comment(report, limit=LIMIT):
         body = "\n".join(lines).rstrip() + "\n"
         if len(body.encode("utf-8")) <= limit:
             return body
-    return body[: limit - 2] + "\n"
+    # Slice the encoded bytes, never the code points: the em dashes used in the
+    # category headings are multi-byte, so a character slice can exceed the
+    # byte budget. Decoding with ``ignore`` keeps the tail valid UTF-8.
+    encoded = body.encode("utf-8")[: limit - 2]
+    return encoded.decode("utf-8", errors="ignore") + "\n"
 
 
 def _read_json(path):
@@ -1095,6 +1363,9 @@ def build_parser():
     parser.add_argument("--checks", help="check runs JSON for the current head")
     parser.add_argument("--verification", help="current-head verification audit JSON")
     parser.add_argument("--alerts", help="code-scanning alerts JSON")
+    parser.add_argument(
+        "--dependency-alerts", help="open Dependabot dependency advisory records JSON"
+    )
     parser.add_argument("--comment", help="write the sticky pull request comment here")
     parser.add_argument("--summary", help="append the report to this Markdown file")
     parser.add_argument("--json", help="write the machine-readable report here")
@@ -1103,12 +1374,18 @@ def build_parser():
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    evidence = {
-        "pull_request": _read_json(args.pull_request),
-        "files": _read_json(args.files),
-        "comments": _read_json(args.comments) if args.comments else [],
-        "owner": args.owner,
-    }
+    try:
+        evidence = {
+            "pull_request": _read_json(args.pull_request),
+            "files": _read_json(args.files),
+            "comments": _read_json(args.comments) if args.comments else [],
+            "owner": args.owner,
+        }
+    except (OSError, json.JSONDecodeError) as error:
+        # Missing or unreadable evidence is a render error (2), not a failed
+        # category (1); the workflow reports it separately.
+        print("PR verification report could not be built: %s" % error, file=sys.stderr)
+        return 2
     checks = _read_optional(args.checks)
     if checks is not None:
         evidence["check_runs"] = checks
@@ -1120,6 +1397,13 @@ def main(argv=None):
         evidence["alerts"] = alerts
     elif args.alerts:
         evidence["alerts"] = {"message": "the code-scanning alerts could not be read"}
+    dependency_alerts = _read_optional(args.dependency_alerts)
+    if dependency_alerts is not None:
+        evidence["dependabot_alerts"] = dependency_alerts
+    elif args.dependency_alerts:
+        evidence["dependabot_alerts"] = {
+            "message": "the Dependabot alerts could not be read"
+        }
 
     try:
         report = build_report(evidence)

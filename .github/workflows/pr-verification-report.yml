@@ -3,23 +3,28 @@ name: PR Verification Report
 # Publishes ONE consolidated report with exactly seven checker categories:
 #   1. QA Checker
 #   2. DevSkim
-#   3. Dependabot
-#   4. PR Scope Verification
-#   5. Protected File Changes
-#   6. Verification Integrity
-#   7. Governance and Workflow Verification
+#   3. PR Scope Verification
+#   4. Protected File Changes
+#   5. Verification Integrity
+#   6. Governance and Workflow Verification
+#   7. Dependency Health & Vulnerability Review
 #
 # The report is updated in place (one sticky comment) and always describes the
 # current pull request HEAD. Supporting results keep their detailed findings:
 # changed-code review, test quality, performance, the full unit suite, the
 # TypeScript check, the production build and both Playwright shards.
 #
-# pull_request_target and workflow_run only: the pull request's code is never
-# checked out or executed. Only the trusted base branch is checked out.
+# pull_request_target, issue_comment and workflow_run only: the pull request's
+# code is never checked out or executed. Only the trusted base branch is checked
+# out. The issue_comment trigger refreshes the report after an owner approval so
+# a digest approval replaces the previous FAILED result instead of leaving it
+# stale.
 on:
   pull_request_target:
     branches: [main]
     types: [opened, synchronize, reopened, edited]
+  issue_comment:
+    types: [created]
   workflow_run:
     workflows:
       - Visual QA
@@ -37,10 +42,11 @@ permissions:
   checks: read
   security-events: read
 
-# One report per branch, whatever event refreshed it, so a PR event and a
-# workflow_run completion cannot publish two reports at the same time.
+# One report per branch or pull request, whatever event refreshed it, so a PR
+# event, an approval comment and a workflow_run completion cannot publish two
+# reports at the same time.
 concurrency:
-  group: pr-verification-report-${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch || github.event.pull_request.number || github.event.workflow_run.id }}
+  group: pr-verification-report-${{ github.event.pull_request.head.ref || github.event.issue.number || github.event.workflow_run.head_branch || github.event.pull_request.number || github.event.workflow_run.id }}
   cancel-in-progress: true
 
 env:
@@ -51,6 +57,13 @@ jobs:
     name: PR verification report
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # An issue_comment refresh is owner-only and must be one of the digest
+    # approval commands; every other comment leaves the report untouched.
+    if: >-
+      github.event_name != 'issue_comment' ||
+      (github.event.issue.pull_request != null &&
+       github.event.comment.user.login == github.repository_owner &&
+       startsWith(github.event.comment.body, '/approve-'))
     steps:
       - name: Checkout trusted base-branch checker
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -65,12 +78,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           EVENT_PR: ${{ github.event.pull_request.number }}
+          EVENT_ISSUE: ${{ github.event.issue.number }}
           WORKFLOW_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
           WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
         shell: bash
         run: |
           set -euo pipefail
           number="${EVENT_PR:-}"
+          if [[ -z "$number" && -n "${EVENT_ISSUE:-}" ]]; then
+            number="$EVENT_ISSUE"
+          fi
           if [[ -z "$number" && -n "${WORKFLOW_PR:-}" ]]; then
             number="$WORKFLOW_PR"
           fi
@@ -107,14 +124,28 @@ jobs:
             "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
             | jq 'add // []' > "$RUNNER_TEMP/comments.json"
           head_sha="$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
-          gh api "repos/${REPOSITORY}/commits/${head_sha}/check-runs?per_page=100" \
-            > "$RUNNER_TEMP/checks.json"
+          # Paginate: a busy head can carry more than 100 check runs, and a
+          # missing page would be reported as NOT RUN instead of its real result.
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/commits/${head_sha}/check-runs?per_page=100&filter=all" \
+            | jq '[.[].check_runs[]]' > "$RUNNER_TEMP/checks.json"
           if ! gh api \
             "repos/${REPOSITORY}/code-scanning/alerts?pr=${PR_NUMBER}&state=open&per_page=100" \
             > "$RUNNER_TEMP/alerts.json" 2> "$RUNNER_TEMP/alerts.err"; then
             printf '{"message": "the code-scanning alerts could not be read"}\n' \
               > "$RUNNER_TEMP/alerts.json"
             cat "$RUNNER_TEMP/alerts.err" >&2 || true
+          fi
+          # Dependency advisories feed the seventh category. They come from the
+          # advisory database, not from a Dependabot update run, so the review
+          # works whether or not Dependabot has opened a pull request.
+          if ! gh api --paginate --slurp \
+            "repos/${REPOSITORY}/dependabot/alerts?state=open&per_page=100" \
+            2> "$RUNNER_TEMP/dependency-alerts.err" \
+            | jq 'add // []' > "$RUNNER_TEMP/dependency-alerts.json"; then
+            printf '{"message": "the Dependabot alert list could not be read"}\n' \
+              > "$RUNNER_TEMP/dependency-alerts.json"
+            cat "$RUNNER_TEMP/dependency-alerts.err" >&2 || true
           fi
 
       # The audit matches every check run to the current head SHA and reports
@@ -148,6 +179,7 @@ jobs:
         continue-on-error: true
         env:
           OWNER: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         shell: bash
         run: |
           set +e
@@ -158,6 +190,7 @@ jobs:
             --checks "$RUNNER_TEMP/checks.json" \
             --verification "$RUNNER_TEMP/verification.json" \
             --alerts "$RUNNER_TEMP/alerts.json" \
+            --dependency-alerts "$RUNNER_TEMP/dependency-alerts.json" \
             --owner "$OWNER" \
             --comment "$RUNNER_TEMP/comment.md" \
             --summary "$GITHUB_STEP_SUMMARY" \
@@ -165,8 +198,23 @@ jobs:
           status=$?
           set -e
           echo "status=$status" >> "$GITHUB_OUTPUT"
-          if [[ "$status" -eq 2 ]]; then
-            echo "::error::The consolidated verification report could not be built from the supplied evidence."
+          # A build/render error must never leave the previous PASSED comment
+          # visible. Publish a marker-first NOT RUN placeholder instead.
+          if [[ "$status" -ne 0 || ! -s "$RUNNER_TEMP/comment.md" ]]; then
+            head_sha="$(jq -r '.head.sha // "unknown"' "$RUNNER_TEMP/pr.json" 2>/dev/null || echo unknown)"
+            cat > "$RUNNER_TEMP/comment.md" <<EOF
+          <!-- qa-verification-report -->
+          ## PR verification report — seven checker categories
+
+          - Pull request: #${PR_NUMBER}
+          - Current PR head: \`${head_sha}\`
+          - Overall: **NOT RUN**
+
+          The consolidated report could not be built from the supplied evidence (renderer exit ${status}).
+          No checker result is claimed, and the previous report has been replaced so a stale passing result
+          is not left visible. Fix the evidence or renderer error, then re-run this workflow.
+          EOF
+            echo "::error::The consolidated verification report could not be built (exit ${status}); a NOT RUN placeholder replaced the previous report."
           fi
 
       # The report is updated in place, so subsequent runs never create a second
@@ -185,8 +233,16 @@ jobs:
 
       - name: Enforce the report status
         if: always() && steps.pr.outputs.number != '' && steps.render.outputs.status != '0'
+        env:
+          RENDER_STATUS: ${{ steps.render.outputs.status }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "::error::At least one of the seven checker categories is FAILED. See the consolidated PR verification report and the job summary."
+          if [[ "$RENDER_STATUS" == "2" ]]; then
+            echo "::error::The consolidated verification report could not be built from the supplied evidence (renderer exit 2). The NOT RUN placeholder was published."
+          elif [[ "$RENDER_STATUS" == "1" ]]; then
+            echo "::error::At least one of the seven checker categories is FAILED. See the consolidated PR verification report and the job summary."
+          else
+            echo "::error::The consolidated verification report failed with unexpected status '${RENDER_STATUS:-unknown}'. See the job log."
+          fi
           exit 1

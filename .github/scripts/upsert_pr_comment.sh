@@ -14,8 +14,11 @@ marker="${1:?marker is required}"
 body_file="${2:?body file is required}"
 
 if [[ ! -s "$body_file" ]]; then
-  echo "::warning::No comment body was rendered; nothing to publish."
-  exit 0
+  # A missing body means the renderer failed. Exiting 0 here would leave a
+  # stale previous report visible, so fail and force the caller to publish a
+  # NOT RUN placeholder instead.
+  echo "::error::No comment body was rendered; refusing to leave a stale report visible."
+  exit 1
 fi
 
 if [[ "$(head -n 1 "$body_file")" != "$marker" ]]; then

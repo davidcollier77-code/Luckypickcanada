@@ -91,7 +91,7 @@ Record the checks actually run, their results, and any skipped or blocked checks
 - Use only **PASS**, **FAIL**, **BLOCKED**, **PENDING**, **NOT RUN** or **N/A**, and explain every status other than PASS.
 - Include local tests, type check, build and the measured production build size (it must be strictly below 495 MiB), plus every applicable repository checker you reviewed.
 - Mark PR-triggered checks **PENDING — runs after PR creation**. Do not wait for them before opening the PR and do not report them as passed.
-- The consolidated seven-category report uses only **PASSED**, **FAILED**, **WARNING** and **NOT RUN**, and reports the current-head results afterwards for the QA Checker, DevSkim, Dependabot, PR Scope Verification, Protected File Changes, Verification Integrity and Governance and Workflow Verification. Those results are not yours to pre-fill.
+- The consolidated seven-category report uses only **PASSED**, **FAILED**, **WARNING** and **NOT RUN**, and reports the current-head results afterwards for the QA Checker, DevSkim, PR Scope Verification, Protected File Changes, Verification Integrity, Governance and Workflow Verification, and Dependency Health & Vulnerability Review. Those results are not yours to pre-fill. Dependabot remains the weekly updater; its status is context inside Dependency Health, not a separate category.
 
 ## Remaining work and handoff
 
