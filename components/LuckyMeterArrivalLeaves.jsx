@@ -63,6 +63,65 @@ function rgb(albedo, factor = 1, towardWhite = 0) {
     .join(', ');
 }
 
+/**
+ * Shared gradients, keyed by context.
+ *
+ * A gradient stores its coordinates, and the canvas transforms those
+ * coordinates with the current matrix at paint time. One gradient per colour,
+ * per shadow radius and one sheen can therefore be painted under every leaf's
+ * own translate/rotate/scale, instead of allocating three gradients for each
+ * of the leaves on every frame.
+ */
+const GRADIENT_CACHE = new WeakMap();
+
+function gradientCacheFor(ctx) {
+  let cache = GRADIENT_CACHE.get(ctx);
+  if (!cache) {
+    cache = { fill: new Map(), shadow: new Map(), sheen: null };
+    GRADIENT_CACHE.set(ctx, cache);
+  }
+  return cache;
+}
+
+function getFillGradient(ctx, albedo) {
+  const cache = gradientCacheFor(ctx);
+  const key = Array.isArray(albedo) ? albedo.join(',') : 'default';
+  let gradient = cache.fill.get(key);
+  if (!gradient) {
+    gradient = ctx.createLinearGradient(18, 8, 82, 96);
+    gradient.addColorStop(0, `rgb(${rgb(albedo, 1.12, 0.26)})`);
+    gradient.addColorStop(0.52, `rgb(${rgb(albedo, 0.92, 0.05)})`);
+    gradient.addColorStop(1, `rgb(${rgb(albedo, 0.58, 0)})`);
+    cache.fill.set(key, gradient);
+  }
+  return gradient;
+}
+
+function getSheenGradient(ctx) {
+  const cache = gradientCacheFor(ctx);
+  if (!cache.sheen) {
+    cache.sheen = ctx.createLinearGradient(8, 4, 62, 70);
+    cache.sheen.addColorStop(0, 'rgba(255, 246, 218, 0.18)');
+    cache.sheen.addColorStop(0.55, 'rgba(255, 236, 190, 0.04)');
+    cache.sheen.addColorStop(1, 'rgba(255, 236, 190, 0)');
+  }
+  return cache.sheen;
+}
+
+function getShadowGradient(ctx, radius) {
+  const cache = gradientCacheFor(ctx);
+  const key = radius.toFixed(2);
+  let gradient = cache.shadow.get(key);
+  if (!gradient) {
+    gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.3)');
+    gradient.addColorStop(0.62, 'rgba(0, 0, 0, 0.15)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    cache.shadow.set(key, gradient);
+  }
+  return gradient;
+}
+
 function drawLeaf(ctx, leaf, state, width, height) {
   const size = leaf.size;
   const x = state.x * width;
@@ -73,21 +132,14 @@ function drawLeaf(ctx, leaf, state, width, height) {
   // on a phone and enough to sit the leaf against the sky.
   const shadowX = x + size * 0.16;
   const shadowY = y + size * 0.45;
-  const shadow = ctx.createRadialGradient(
-    shadowX,
-    shadowY,
-    0,
-    shadowX,
-    shadowY,
-    size * 0.46,
-  );
-  shadow.addColorStop(0, `rgba(0, 0, 0, ${0.3 * state.alpha})`);
-  shadow.addColorStop(0.62, `rgba(0, 0, 0, ${0.15 * state.alpha})`);
-  shadow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  const radius = size * 0.46;
   ctx.save();
-  ctx.fillStyle = shadow;
+  // The gradient is cached at full opacity, so the fade stays on globalAlpha.
+  ctx.globalAlpha = state.alpha;
+  ctx.translate(shadowX, shadowY);
+  ctx.fillStyle = getShadowGradient(ctx, radius);
   ctx.beginPath();
-  ctx.ellipse(shadowX, shadowY, size * 0.46, size * 0.13, -0.18, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, radius, size * 0.13, -0.18, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
@@ -101,21 +153,13 @@ function drawLeaf(ctx, leaf, state, width, height) {
   ctx.scale((state.scaleX * size) / 100, (state.scaleY * size) / 100);
   ctx.translate(-50, -50);
 
-  const fill = ctx.createLinearGradient(18, 8, 82, 96);
-  fill.addColorStop(0, `rgb(${rgb(leaf.colour.albedo, 1.12, 0.26)})`);
-  fill.addColorStop(0.52, `rgb(${rgb(leaf.colour.albedo, 0.92, 0.05)})`);
-  fill.addColorStop(1, `rgb(${rgb(leaf.colour.albedo, 0.58, 0)})`);
-  ctx.fillStyle = fill;
+  ctx.fillStyle = getFillGradient(ctx, leaf.colour.albedo);
   ctx.fill(path);
 
   // A narrow moonlit sheen across the upper-left half of the blade.
   ctx.save();
   ctx.clip(path);
-  const sheen = ctx.createLinearGradient(8, 4, 62, 70);
-  sheen.addColorStop(0, 'rgba(255, 246, 218, 0.18)');
-  sheen.addColorStop(0.55, 'rgba(255, 236, 190, 0.04)');
-  sheen.addColorStop(1, 'rgba(255, 236, 190, 0)');
-  ctx.fillStyle = sheen;
+  ctx.fillStyle = getSheenGradient(ctx);
   ctx.fillRect(0, 0, 100, 100);
   ctx.restore();
 

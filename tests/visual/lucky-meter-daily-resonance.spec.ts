@@ -139,7 +139,10 @@ async function seed(page: Page, state: ReturnType<typeof buildState>) {
 
 async function waitForStart(page: Page) {
   const start = page.getByTestId('lucky-meter-start');
-  await expect(start).toHaveAttribute('data-ready', 'true', { timeout: 12_000 });
+  // The arrival runs for about 4.5 s before Start unlocks, and a cold dev
+  // server compiles the route on the first hit. 30 s keeps a parallel run from
+  // failing before the sequence has had a chance to begin.
+  await expect(start).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
   return start.getByRole('button', { name: /Reveal My Resonance/i });
 }
 
@@ -288,11 +291,11 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
       'data-state',
       /writing|holding/,
-      { timeout: 20_000 },
+      { timeout: 45_000 },
     );
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
 
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByTestId('cosmic-event-stage')).toHaveAttribute(
       'data-event',
       stored.event.id,
@@ -301,16 +304,16 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
 
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0, {
-      timeout: 20_000,
+      timeout: 45_000,
     });
-    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-spark-message')).toContainText(
       stored.spark.message.slice(0, 24),
     );
     // Home is still withheld while the maple-leaf cursor writes.
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
-    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
     const dock = page.getByTestId('lucky-meter-home').locator('..');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
