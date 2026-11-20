@@ -528,9 +528,16 @@ def _changed_dependency_records(evidence):
     ]
 
 
-def _added_dependency_names(records):
-    """Read dependency names from added manifest or lockfile lines."""
-    names = set()
+def _version_tuple(value):
+    match = re.search(r"(\d+)\.(\d+)\.(\d+)", str(value or ""))
+    if not match:
+        return ()
+    return tuple(int(part) for part in match.groups())
+
+
+def _added_dependencies(records):
+    """Read changed dependency names and their highest added version."""
+    found = {}
     for record in records:
         filename = record.get("filename") or ""
         patch = record.get("patch") or ""
@@ -540,20 +547,38 @@ def _added_dependency_names(records):
                 continue
             text = line[1:].strip().rstrip(",")
             if base == "package.json":
-                match = re.match(
-                    r'^"(@?[^"]+)"\s*:\s*"([~^<>=*\d]|workspace:|npm:|file:|link:|github:|https?:)',
-                    text,
-                )
-                if match and not match.group(1).startswith("$"):
-                    names.add(match.group(1))
+                match = re.match(r'^"(@?[^"]+)"\s*:\s*"([^"]+)"', text)
+                if not match or match.group(1).startswith("$"):
+                    continue
+                if not re.match(
+                    r"([~^<>=*\d]|workspace:|npm:|file:|link:|github:|https?:)",
+                    match.group(2),
+                ):
+                    continue
+                name, value = match.group(1), match.group(2)
             elif base in {"pnpm-lock.yaml", "package-lock.json", "yarn.lock"}:
                 match = re.match(
-                    r"^['\"]?((?:@[^/@'\"]+/)?[^@'\":\s]+)@[^'\":\s]+['\"]?:?$",
+                    r"^['\"]?((?:@[^/@'\"]+/)?[^@'\":\s]+)@([^'\":\s]+)['\"]?:?$",
                     text,
                 )
-                if match:
-                    names.add(match.group(1))
-    return names
+                if not match:
+                    continue
+                name, value = match.group(1), match.group(2)
+            else:
+                continue
+            version = _version_tuple(value)
+            previous = found.get(name, ())
+            found[name] = max(previous, version)
+    return found
+
+
+def _patched_version(alert):
+    vulnerability = alert.get("security_vulnerability")
+    vulnerability = vulnerability if isinstance(vulnerability, dict) else {}
+    patched = vulnerability.get("first_patched_version")
+    if not isinstance(patched, dict):
+        return ()
+    return _version_tuple(patched.get("identifier"))
 
 
 def _alert_package(alert):
@@ -654,11 +679,13 @@ def dependency_health_category(evidence):
         for alert in alerts
         if isinstance(alert, dict) and (alert.get("state") or "open") == "open"
     ]
+    alerts_for = {}
     by_package = {}
     for alert in open_alerts:
         name = _alert_package(alert)
         if not name:
             continue
+        alerts_for.setdefault(name, []).append(alert)
         severity = _alert_severity(alert)
         if SEVERITY_ORDER.get(severity, 0) >= SEVERITY_ORDER.get(by_package.get(name, ""), 0):
             by_package[name] = severity
@@ -685,8 +712,26 @@ def dependency_health_category(evidence):
         )
         return _category("dependency-health", status, summary, details, attention)
 
-    names = _added_dependency_names(records)
-    matched = {name: severity for name, severity in by_package.items() if name in names}
+    changed = _added_dependencies(records)
+    names = set(changed)
+    matched = {}
+    addressed = 0
+    for name in sorted(names & set(alerts_for)):
+        version = changed.get(name) or ()
+        still_open = []
+        for alert in alerts_for[name]:
+            patched = _patched_version(alert)
+            if version and patched and version >= patched:
+                # The changed version reaches the recorded first patched
+                # release, so that advisory is addressed by this update.
+                continue
+            still_open.append(_alert_severity(alert))
+        if still_open:
+            matched[name] = max(
+                still_open, key=lambda severity: SEVERITY_ORDER.get(severity, 0)
+            )
+        else:
+            addressed += 1
     if matched:
         details.append(
             "Changed dependencies with open advisories: %s."
@@ -698,6 +743,11 @@ def dependency_health_category(evidence):
     else:
         details.append(
             "No open advisory matches a dependency added or changed by this pull request."
+        )
+    if addressed:
+        details.append(
+            "%d changed dependenc(ies) are at or above the recorded first patched version, so "
+            "their open advisory is treated as addressed by this update." % addressed
         )
     if names:
         details.append(
@@ -722,7 +772,7 @@ def dependency_health_category(evidence):
             "pnpm-lock.yaml stay consistent."
         )
 
-    if worst >= 3:
+    if worst >= 3 and author != "dependabot[bot]":
         status = FAILED
         summary = "A dependency changed by this pull request has an open high or critical advisory."
         attention.append(
@@ -730,7 +780,12 @@ def dependency_health_category(evidence):
         )
     elif worst:
         status = WARNING
-        summary = "A dependency changed by this pull request has an open advisory that needs triage."
+        summary = (
+            "The Dependabot update touches a dependency with an open advisory; confirm the new "
+            "version reaches the patched release."
+            if author == "dependabot[bot]"
+            else "A dependency changed by this pull request has an open advisory that needs triage."
+        )
         attention.append("Review the advisory and update or disposition the affected dependency.")
     elif lockfile_missing:
         status = WARNING

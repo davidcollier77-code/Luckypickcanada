@@ -499,12 +499,18 @@ class DevskimTests(unittest.TestCase):
         self.assertEqual(result["status"], "WARNING")
 
 
-def advisory(name, severity="high", state="open"):
-    return {
+def advisory(name, severity="high", state="open", patched=None):
+    value = {
         "state": state,
         "dependency": {"package": {"name": name}},
         "security_advisory": {"severity": severity},
     }
+    if patched:
+        value["security_vulnerability"] = {
+            "severity": severity,
+            "first_patched_version": {"identifier": patched},
+        }
+    return value
 
 
 def dependency_files(package_lines=(), lock_lines=()):
@@ -593,6 +599,58 @@ class DependencyHealthTests(unittest.TestCase):
             "dependency-health",
         )
         self.assertEqual(result["status"], "PASSED")
+
+    def test_dependency_update_to_the_patched_version_passes(self):
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.21",'],
+            lock_lines=["  lodash@4.17.21:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(
+                    files=files,
+                    dependabot_alerts=[advisory("lodash", "critical", patched="4.17.21")],
+                )
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "PASSED")
+        self.assertTrue(any("treated as addressed" in detail for detail in result["details"]))
+
+    def test_dependency_update_below_the_patched_version_fails(self):
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.20",'],
+            lock_lines=["  lodash@4.17.20:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(
+                    files=files,
+                    dependabot_alerts=[advisory("lodash", "critical", patched="4.17.21")],
+                )
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "FAILED")
+
+    def test_dependabot_update_of_a_flagged_dependency_warns_not_fails(self):
+        pr = evidence()["pull_request"]
+        pr["user"] = {"login": "dependabot[bot]"}
+        files = dependency_files(
+            package_lines=['"lodash": "^4.17.20",'],
+            lock_lines=["  lodash@4.17.20:"],
+        )
+        result = category(
+            report.build_report(
+                evidence(
+                    pull_request=pr,
+                    files=files,
+                    dependabot_alerts=[advisory("lodash", "high", patched="4.17.21")],
+                )
+            ),
+            "dependency-health",
+        )
+        self.assertEqual(result["status"], "WARNING")
 
     def test_manifest_without_its_lockfile_warns(self):
         files = dependency_files(package_lines=['"lodash": "^4.17.21",'])
