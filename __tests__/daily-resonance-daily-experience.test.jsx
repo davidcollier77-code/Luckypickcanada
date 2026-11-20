@@ -184,9 +184,10 @@ describe('Daily Resonance daily experience', () => {
     expect(stored.eventCompleted).toBe(false);
     expect(stored.sparkCompleted).toBe(false);
 
-    // Frame 1: the held breath. Nothing has been exposed.
+    // Stage 3: the plaque is gone and the readout starts at the scale minimum.
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
-    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
 
@@ -207,17 +208,27 @@ describe('Daily Resonance daily experience', () => {
     advance(STORYBOARD_TIMING.settlePauseMs);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'pouring');
     expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '0.00');
     expect(screen.getByText(result.colour.name)).toBeInTheDocument();
     expect(screen.getByText(result.colour.hex)).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+    // The vessel is still closed, the fill is empty and the number stays hidden
+    // for the whole drain.
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '0.00');
+    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '0.00');
+    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.000');
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
 
-    // Once the pour ends, the Lucky Number has been progressively exposed.
+    // Once the colour has finished draining, the Lucky Number is revealed.
     advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs + 30);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
     expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
       'data-value',
       String(result.luckyNumber),
     );
+    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-flashing', 'true');
+    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '1.00');
+    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '1.000');
     expect(screen.getByText(result.event.name)).toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
 

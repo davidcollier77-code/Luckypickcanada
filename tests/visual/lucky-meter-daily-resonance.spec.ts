@@ -9,7 +9,7 @@ import {
  *
  * Every stored-reading scenario is seeded into Local Storage before the page
  * loads, so the result is deterministic. One real run walks the complete
- * nine-stage storyboard; the rest resume from a stored lifecycle point so the
+ * twelve-stage storyboard; the rest resume from a stored lifecycle point so the
  * browser suite stays fast without skipping the states it protects.
  */
 
@@ -139,7 +139,10 @@ async function seed(page: Page, state: ReturnType<typeof buildState>) {
 
 async function waitForStart(page: Page) {
   const start = page.getByTestId('lucky-meter-start');
-  await expect(start).toHaveAttribute('data-ready', 'true', { timeout: 12_000 });
+  // The arrival runs for about 4.5 s before Start unlocks, and a cold dev
+  // server compiles the route on the first hit. 30 s keeps a parallel run from
+  // failing before the sequence has had a chance to begin.
+  await expect(start).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
   return start.getByRole('button', { name: /Reveal My Resonance/i });
 }
 
@@ -172,7 +175,7 @@ function settledAngle(colourId: string, season: Season) {
 }
 
 test.describe('Daily Resonance arrival and Start', () => {
-  test('holds Start until the breeze has cleared, then exposes a 0% reading', async ({
+  test('holds Start until the breeze has cleared, then exposes a 5% reading', async ({
     page,
   }) => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
@@ -188,7 +191,9 @@ test.describe('Daily Resonance arrival and Start', () => {
 
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
-    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
+    // The readout sweeps the meter's real 5–100 scale, never an arbitrary 0.
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
     await expect(page.getByTestId('lucky-colour-panel')).toHaveCount(0);
     const pointer = page.getByTestId('lucky-meter-pointer');
@@ -256,6 +261,7 @@ test.describe('Daily Resonance storyboard', () => {
       String(stored.luckyNumber),
     );
     await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '1.000');
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.name);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.hex);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(
@@ -285,11 +291,11 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
       'data-state',
       /writing|holding/,
-      { timeout: 20_000 },
+      { timeout: 45_000 },
     );
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
 
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 45_000 });
     await expect(page.getByTestId('cosmic-event-stage')).toHaveAttribute(
       'data-event',
       stored.event.id,
@@ -298,16 +304,16 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
 
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0, {
-      timeout: 20_000,
+      timeout: 45_000,
     });
-    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-spark-message')).toContainText(
       stored.spark.message.slice(0, 24),
     );
     // Home is still withheld while the maple-leaf cursor writes.
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
-    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
     const dock = page.getByTestId('lucky-meter-home').locator('..');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);

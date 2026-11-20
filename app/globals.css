@@ -1024,23 +1024,52 @@ body {
 }
 
 @keyframes luckySkyCursor {
-  0%, 100% { opacity: 0.5; transform: scale(0.82); }
-  50% { opacity: 1; transform: scale(1.12); }
+  0%, 100% { transform: translateY(0) rotate(-12deg) scale(0.92); filter: brightness(1); }
+  50% { transform: translateY(-1px) rotate(8deg) scale(1.06); filter: brightness(1.25); }
 }
 
-/* The tiny golden point at the writing edge. */
+/* The writing tip: a small, glowing golden maple leaf. It is the same
+   silhouette as the meter's fixed pointer, so the Spark is visibly written by
+   a maple leaf rather than a dot or a generic point of light. */
 .lucky-sky-writing__cursor {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-left: 3px;
-  border-radius: 9999px;
-  vertical-align: middle;
-  background: radial-gradient(circle at 40% 32%, #fffdf0 0%, #ffe4a0 46%, #e6ad43 100%);
-  box-shadow:
-    0 0 7px 2px rgba(255, 210, 120, 0.9),
-    0 0 20px 6px rgba(255, 170, 52, 0.38);
-  animation: luckySkyCursor 820ms ease-in-out infinite;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15em;
+  height: 1.15em;
+  margin-left: 0.12em;
+  vertical-align: -0.22em;
+  transform-origin: 50% 78%;
+  animation: luckySkyCursor 900ms ease-in-out infinite;
+}
+
+.lucky-sky-writing__cursor::before {
+  content: '';
+  position: absolute;
+  inset: -55%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 236, 176, 0.55) 0%,
+    rgba(255, 194, 84, 0.22) 46%,
+    rgba(255, 170, 52, 0) 78%
+  );
+  pointer-events: none;
+}
+
+.lucky-sky-writing__cursor-leaf {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: #ffe4a0;
+  stroke: rgba(120, 72, 8, 0.55);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 226, 152, 0.95))
+    drop-shadow(0 0 12px rgba(255, 176, 60, 0.65));
 }
 
 /* ── Countdown dock beneath Home ───────────────────────────────────────────
@@ -1063,6 +1092,9 @@ body {
   .lucky-sky-writing__ember,
   .lucky-sky-writing__cursor {
     animation: none !important;
+  }
+  .lucky-vessel {
+    transform: rotateX(-9deg) rotateY(-6deg) !important;
   }
 }
 
@@ -1118,19 +1150,250 @@ body {
 }
 
 /* ── Lucky Colour vessel ──────────────────────────────────────────────────
-   The colour that pours out of the opened segment lands here. The vessel takes
-   the stored HEX value and its painted finish, so the card is the same colour
-   as the wheel, never an approximation. */
-.lucky-colour-vessel {
-  border-color: rgba(234, 190, 82, 0.32);
+   Stages 5–6: a transparent square vessel with real depth. It is built from
+   actual three-dimensional layers — a recessed back wall, side walls, a glass
+   front pane, a lit gold rim and a lid that tilts back as it opens — so it
+   reads as an object standing in the scene, not a flat panel. The colour that
+   pours out of the opened segment rises inside it using the stored HEX value,
+   so the vessel and the wheel can never disagree. */
+.lucky-vessel-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.lucky-vessel-scene {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: clamp(7.2rem, 17vh, 9.5rem);
+  margin-bottom: 0.15rem;
+  perspective: 780px;
+  perspective-origin: 50% 16%;
+  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, 0.5));
+}
+
+.lucky-vessel {
+  position: relative;
+  width: clamp(5.4rem, 22vw, 6.9rem);
+  aspect-ratio: 1 / 1;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* The object stands on the scene, so it casts a soft contact shadow. */
+.lucky-vessel__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -16%;
+  width: 130%;
+  height: 30%;
+  transform: translateX(-50%) translateZ(-26px) rotateX(84deg);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.3) 56%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  filter: blur(5px);
+}
+
+/* Recessed far wall. */
+.lucky-vessel__back {
+  position: absolute;
+  inset: 4%;
+  transform: translateZ(-16px);
+  border-radius: 3px;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 46%, rgba(0, 0, 0, 0.3)),
+    rgba(8, 14, 20, 0.52);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.6);
+}
+
+/* The hollow interior that holds the liquid. */
+.lucky-vessel__body {
+  position: absolute;
+  inset: 5%;
+  overflow: hidden;
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
   box-shadow:
-    inset 0 1px 0 rgba(255, 240, 190, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
-    0 16px 32px -18px rgba(0, 0, 0, 0.85);
+    inset 0 0 20px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.lucky-vessel__liquid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  will-change: height;
+}
+
+/* The free surface of the poured colour, seen slightly from above. */
+.lucky-vessel__surface {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0.95;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+.lucky-vessel__glow {
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.18), transparent 70%);
+  mix-blend-mode: screen;
+}
+
+/* Side walls: narrow lit quads that give the cube its thickness. */
+.lucky-vessel__wall {
+  position: absolute;
+  top: 5%;
+  bottom: 5%;
+  width: 9%;
+  opacity: 0.72;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0.06) 60%,
+    rgba(0, 0, 0, 0.35)
+  );
+}
+
+.lucky-vessel__wall--left {
+  left: 0;
+  transform-origin: right center;
+  transform: skewY(-9deg) translateZ(6px);
+}
+
+.lucky-vessel__wall--right {
+  right: 0;
+  transform-origin: left center;
+  transform: skewY(9deg) translateZ(6px);
+}
+
+/* The front glass pane: a real transparent surface with an edge and a
+   diagonal specular streak. */
+.lucky-vessel__glass {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(16px);
+  border: 1px solid rgba(210, 236, 255, 0.42);
+  border-radius: 3px;
+  background:
+    linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0.3) 0 6%,
+      rgba(255, 255, 255, 0.02) 6% 22%,
+      rgba(255, 255, 255, 0.16) 22% 25%,
+      rgba(255, 255, 255, 0) 25%
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 34%);
+  box-shadow:
+    inset 0 0 12px rgba(255, 255, 255, 0.16),
+    0 0 0 1px rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(1.5px);
+  backdrop-filter: blur(1.5px);
+}
+
+/* The lit gold rim, matching the medallion's metal. */
+.lucky-vessel__rim {
+  position: absolute;
+  top: -2.5%;
+  left: -1.5%;
+  right: -1.5%;
+  height: 5%;
+  transform: translateZ(18px);
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    #8c5f18 0%,
+    #f7e0a2 18%,
+    #c9962f 46%,
+    #fff3c8 62%,
+    #8c5f18 100%
+  );
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(255, 214, 130, 0.35);
+}
+
+/* The lid: closed at rest, tilting back and fading as the vessel opens. */
+.lucky-vessel__lid {
+  position: absolute;
+  top: -1%;
+  left: -2%;
+  right: -2%;
+  height: 8%;
+  transform-origin: 50% 0%;
+  border: 1px solid rgba(255, 236, 186, 0.5);
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(255, 246, 214, 0.62), rgba(180, 138, 52, 0.28));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.lucky-vessel__specular {
+  position: absolute;
+  top: 8%;
+  left: 12%;
+  width: 34%;
+  height: 46%;
+  opacity: 0.75;
+  border-radius: 40% 50% 45% 40%;
+  transform: translateZ(19px) rotate(-8deg);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 72%);
+  filter: blur(2px);
+}
+
+/* The caption stays flat, so the stored colour is always readable. */
+.lucky-vessel__caption {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: 22rem;
+  margin: 0 auto;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgba(234, 190, 82, 0.26);
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgba(6, 12, 18, 0.74), rgba(4, 9, 14, 0.58));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 190, 0.1),
+    0 12px 26px -18px rgba(0, 0, 0, 0.9);
+}
+
+/* Stage 7: the revealed number flashes twice, then settles into its placard. */
+.animate-lucky-number-flash {
+  animation: luckyNumberFlash 0.42s ease-in-out 2;
+}
+
+/* Stage 4: the seasonal colour selection settles under the fixed pointer. */
+@keyframes luckyColourSelect {
+  0% { transform: scale(1.045); filter: brightness(1.35) saturate(1.12); }
+  60% { transform: scale(1.005); filter: brightness(1.08) saturate(1.02); }
+  100% { transform: scale(1); filter: none; }
+}
+
+.resonance-ring[data-phase='landed'] [data-testid='lucky-meter-wheel'] {
+  transform-origin: 50% 50%;
+  animation: luckyColourSelect 1.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lucky-tier-message__cursor {
+    animation: none !important;
+  }
+  .animate-lucky-number-flash {
+    animation: none !important;
+  }
+  .resonance-ring[data-phase='landed'] [data-testid='lucky-meter-wheel'] {
     animation: none !important;
   }
 }

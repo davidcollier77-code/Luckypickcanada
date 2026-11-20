@@ -1,6 +1,39 @@
-# Active Context — Seven Checker Categories
+# Active Context — Lucky Meter Twelve-Stage Cinematic Polish
 
-## Current Task — Seven-category PR verification (spec 198, PR #1983)
+## Current Task — Twelve-stage Lucky Meter presentation polish (spec 199)
+
+- **Spec Kit feature:** `specs/199-lucky-meter-twelve-stage-polish`
+- **Branch:** `freebuff/e2b73e42c5b7204636ab22eb`
+- **Scope:** presentation, animation, timing and audio polish only. Selection,
+  storage, tiers, messages, palettes, celebrations, the Milky Way backdrop and
+  the Medallion Gold identity are unchanged.
+- **Storyboard:** `app/lib/lucky-meter/storyboard.js` now owns one clock with
+  twelve ordered stages (anticipation, generation, landing, colourSelect,
+  vesselOpen, pour, numberReveal, message, celebration, spark, hold, dock) and
+  a complete run of roughly forty seconds. Only the non-celebration stages were
+  lengthened; each tier keeps its stored celebration duration.
+- **Arrival:** the edge scatter is replaced by a four-layer foreground mound plus
+  two side drifts (34 leaves, depth sorted) that disperses from the centre. The
+  continuous drifting-leaf ornament layer is no longer mounted on the route.
+- **Generation:** the readout sweeps the real 5–100 scale, the plaque and labels
+  step aside, and the result is reached only on the final frame.
+- **Vessel:** the flat colour card is replaced by a DOM + CSS 3D transparent
+  vessel (recessed back wall, side walls, glass front, gold rim, tilting lid,
+  contact shadow, liquid surface, specular). It opens before any colour flows;
+  the pour then fills it on one clock.
+- **Lucky Number:** `numberReveal` is held at 0 for the entire drain and the
+  placard only mounts when the draw is revealed. It flashes exactly twice, then
+  settles.
+- **Spark:** the writing cursor is the shared maple-leaf silhouette, glowing
+  gold, and the final hold (2.6 s) precedes the paired Home/countdown dock.
+- **Audio:** the pour cue is timed to the first drop, a `number-reveal` cue was
+  added on the existing metal recording, and the deeper layered finale boom is
+  unchanged.
+- **Verification:** focused and full Vitest suites, `tsc --noEmit`, the
+  production build (416,229,183 bytes / 396.95 MiB) and the Playwright
+  `lucky-meter-daily-resonance` spec on desktop and both mobile projects.
+
+## Previous Task — Seven-category PR verification (spec 198, PR #1983)
 
 - **Spec Kit feature:** `specs/198-seven-checker-categories`
 - **Branch:** `freebuff/25590a89225c606a9ca3e3ec` (PR #1983, open and unmerged)

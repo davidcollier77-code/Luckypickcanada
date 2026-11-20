@@ -10,38 +10,54 @@ import {
 const still = () => 0.5;
 
 describe('arrival leaves composition', () => {
-  it('places small leaves around the edges, never over the copy column', () => {
-    const leaves = createArrivalLeaves(still, 5, { width: 1440, height: 900 });
+  it('piles substantial leaves in the foreground around the base of the meter', () => {
+    const leaves = createArrivalLeaves(still, 34, { width: 1440, height: 900 });
 
-    expect(leaves).toHaveLength(5);
+    expect(leaves).toHaveLength(34);
     for (const leaf of leaves) {
-      expect(leaf.x <= 0.25 || leaf.x >= 0.75).toBe(true);
-      expect(leaf.y).toBeGreaterThanOrEqual(0.2);
-      expect(leaf.y).toBeLessThanOrEqual(0.92);
-      expect(leaf.size).toBeGreaterThanOrEqual(28);
-      expect(leaf.size).toBeLessThanOrEqual(44);
+      // The whole pile sits below the headline and the Start control.
+      expect(leaf.y).toBeGreaterThanOrEqual(0.55);
+      expect(leaf.y).toBeLessThanOrEqual(0.94);
+      expect(leaf.x).toBeGreaterThanOrEqual(0.03);
+      expect(leaf.x).toBeLessThanOrEqual(0.97);
+      expect(leaf.size).toBeGreaterThanOrEqual(24);
+      expect(leaf.size).toBeLessThanOrEqual(56);
       expect(leaf.colour.albedo).toHaveLength(3);
       expect(leaf.id).toMatch(/^arrival-leaf-/);
     }
+
+    // A pile needs depth and overlap, not one flat row of the same object.
+    const depths = leaves.map((leaf) => leaf.depth);
+    expect(Math.min(...depths)).toBeLessThan(0.6);
+    expect(Math.max(...depths)).toBeGreaterThan(0.9);
+    // Back to front, so the near leaves always paint over the far ones.
+    expect(depths).toEqual([...depths].sort((left, right) => left - right));
+    // Most of the composition is the central mound around the meter.
+    expect(leaves.filter((leaf) => leaf.x > 0.2 && leaf.x < 0.8).length).toBeGreaterThan(
+      leaves.length / 2,
+    );
   });
 
-  it('uses smaller leaves on a phone without moving them into the meter', () => {
-    const mobile = createArrivalLeaves(still, 5, { width: 390, height: 844 });
-    const desktop = createArrivalLeaves(still, 5, { width: 1440, height: 900 });
+  it('uses a smaller, lower pile on a phone without moving it into the copy', () => {
+    const mobile = createArrivalLeaves(still, 34, { width: 390, height: 844 });
+    const desktop = createArrivalLeaves(still, 34, { width: 1440, height: 900 });
 
+    expect(mobile).toHaveLength(34);
     expect(Math.max(...mobile.map((leaf) => leaf.size))).toBeLessThan(
       Math.max(...desktop.map((leaf) => leaf.size)),
     );
     for (const leaf of mobile) {
-      expect(leaf.x <= 0.12 || leaf.x >= 0.88).toBe(true);
-      // The phone headline spans the width, so the leaves stay below it.
-      expect(leaf.y).toBeGreaterThanOrEqual(0.5);
+      // The phone headline and Start span the width, so the leaves stay below.
+      expect(leaf.y).toBeGreaterThanOrEqual(0.72);
+      expect(leaf.y).toBeLessThanOrEqual(0.975);
+      expect(leaf.x).toBeGreaterThanOrEqual(0.03);
+      expect(leaf.x).toBeLessThanOrEqual(0.97);
     }
   });
 
   it('is deterministic for a fixed random source and varies otherwise', () => {
-    const first = createArrivalLeaves(still, 5, { width: 1440, height: 900 });
-    const second = createArrivalLeaves(still, 5, { width: 1440, height: 900 });
+    const first = createArrivalLeaves(still, 34, { width: 1440, height: 900 });
+    const second = createArrivalLeaves(still, 34, { width: 1440, height: 900 });
     expect(second).toEqual(first);
 
     let value = 0;
@@ -49,7 +65,7 @@ describe('arrival leaves composition', () => {
       value = (value + 0.137) % 1;
       return value;
     };
-    const varied = createArrivalLeaves(stepping, 5, { width: 1440, height: 900 });
+    const varied = createArrivalLeaves(stepping, 34, { width: 1440, height: 900 });
     expect(varied.map((leaf) => leaf.x)).not.toEqual(first.map((leaf) => leaf.x));
   });
 });
@@ -92,6 +108,15 @@ describe('arrival leaves motion', () => {
     expect(later.x).toBeGreaterThan(state.x);
     expect(later.y).toBeLessThan(state.y);
     expect(later.alpha).toBe(1);
+  });
+
+  it('carries the left half of the pile the other way so the gust opens out', () => {
+    const start = ARRIVAL_TIMING.restMs + leaf.liftDelay + 300;
+    const right = sampleArrivalLeaf({ ...leaf, driftSign: 1 }, start, { gust: 0, cross: 0 });
+    const left = sampleArrivalLeaf({ ...leaf, driftSign: -1 }, start, { gust: 0, cross: 0 });
+
+    expect(right.x).toBeGreaterThan(left.x);
+    expect(left.x).toBeLessThan(leaf.x);
   });
 
   it('fades and disappears exactly at the end of its crossing', () => {

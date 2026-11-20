@@ -78,15 +78,16 @@ export function dialEase(progress) {
 /**
  * The displayed percentage during generation.
  *
- * Generation deliberately begins at 0%, which is outside the 5–100 result range
- * and can therefore never be mistaken for a result. The readout accelerates and
- * decelerates with the wheel, but is nudged one point away from the true value
- * on every intermediate frame and reaches that value only on the final frame.
+ * The readout sweeps the real 5–100 range, so it always looks like the meter's
+ * own scale rather than an arbitrary 0–100 counter. It accelerates and
+ * decelerates with the wheel, tops out one point below 100 while it is still
+ * moving, and is nudged one point away from the true value on every
+ * intermediate frame: the exact result is reached only on the final frame.
  *
  * @param {number} elapsedMs Milliseconds since the wheel started turning.
  * @param {number} durationMs The generation window.
  * @param {number} finalPercentage The already-selected result.
- * @returns {number} 0–99 while generating, the exact result at the end.
+ * @returns {number} 5–99 while generating, the exact result at the end.
  */
 export function sampleGenerationPercentage(elapsedMs, durationMs, finalPercentage) {
   const final = clampPercentage(finalPercentage);
@@ -95,9 +96,13 @@ export function sampleGenerationPercentage(elapsedMs, durationMs, finalPercentag
   if (elapsed >= duration) return final;
 
   const eased = dialEase(elapsed / duration);
-  const value = Math.min(99, Math.max(0, Math.floor(eased * 100)));
+  const span = PERCENTAGE_MAX - PERCENTAGE_MIN;
+  const value = Math.min(
+    PERCENTAGE_MAX - 1,
+    Math.max(PERCENTAGE_MIN, PERCENTAGE_MIN + Math.floor(eased * span)),
+  );
   if (value !== final) return value;
-  return value >= 99 ? 98 : value + 1;
+  return value >= PERCENTAGE_MAX - 1 ? value - 1 : value + 1;
 }
 
 /* ── Colour wheel ────────────────────────────────────────────────────────── */

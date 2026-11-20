@@ -9,7 +9,6 @@ import ResonanceButton from './ResonanceButton';
 import CosmicEventStage from './CosmicEventStage';
 import LuckyMeterArrivalLeaves from './LuckyMeterArrivalLeaves';
 import LuckyMeterMessage, { TierMessageState } from './LuckyMeterMessage';
-import LuckyMeterOrnaments from './LuckyMeterOrnaments';
 import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
 import LuckyMeterRing from './LuckyMeterRing';
 import { playButtonClick } from '../app/lib/audio';
@@ -52,6 +51,7 @@ import {
   LUCKY_NUMBER_LABEL,
   LUCKY_NUMBER_MAX,
   LUCKY_NUMBER_MIN,
+  PERCENTAGE_MIN,
 } from '../app/lib/lucky-meter/config';
 import {
   getCueLayers,
@@ -95,14 +95,15 @@ interface RevealMotion {
   percentage: number;
   numberReveal: number;
   pourProgress: number;
+  vesselOpen: number;
 }
 
 function initialMotion(): RevealMotion {
-  return { wheelAngle: 0, percentage: 0, numberReveal: 0, pourProgress: 0 };
+  return { wheelAngle: 0, percentage: 0, numberReveal: 0, pourProgress: 0, vesselOpen: 0 };
 }
 
 /**
- * Milliseconds allowed for the complete nine-stage flow plus a generous margin.
+ * Milliseconds allowed for the complete twelve-stage flow plus a generous margin.
  * The hold is released when the celebration actually completes; this only keeps
  * queued background work from starving if a stage never reports completion.
  */
@@ -137,6 +138,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [stage, setStage] = useState<Stage>('idle');
   const [motion, setMotion] = useState<RevealMotion>(initialMotion);
   const [isFlashing, setIsFlashing] = useState(false);
+  const [numberFlashing, setNumberFlashing] = useState(false);
   const [numberSettled, setNumberSettled] = useState(false);
   const [colourSettled, setColourSettled] = useState(false);
   const [stageActive, setStageActive] = useState(false);
@@ -490,10 +492,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}.`,
       );
       auroraRef.current?.setPhase('impact', next.event.name);
+      // The vessel opens first; the pour cue is timed to the exact frame the
+      // colour starts to flow, not to the start of the stage.
       playEventCue('segment-open');
-      schedule(() => playEventCue('colour-pour'), 220);
+      schedule(() => playEventCue('colour-pour'), STORYBOARD_TIMING.segmentOpenMs);
 
-      const total = STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs;
+      const openMs = Math.max(1, STORYBOARD_TIMING.segmentOpenMs);
+      const pourMs = Math.max(1, STORYBOARD_TIMING.pourMs);
+      const total = openMs + pourMs;
       const startedAt = performance.now();
       let finished = false;
       const finishPour = () => {
@@ -508,10 +514,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           percentage: next.percentage,
           numberReveal: 1,
           pourProgress: 1,
+          vesselOpen: 1,
         });
         setStage('revealed');
-        setNumberSettled(true);
         setColourSettled(true);
+        // The colour has finished draining, so the Lucky Number may now be
+        // revealed. It flashes twice, then settles into its placard.
+        setNumberSettled(true);
+        setNumberFlashing(!reducedMotion);
+        playEventCue('number-reveal');
+        if (!reducedMotion) {
+          schedule(
+            () => {
+              if (isMountedRef.current) setNumberFlashing(false);
+            },
+            STORYBOARD_TIMING.numberFlashMs * STORYBOARD_TIMING.numberFlashCount + 80,
+          );
+        }
         persistLifecycle(
           next,
           historyRef.current,
@@ -538,11 +557,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         if (!isMountedRef.current) return;
         const elapsed = performance.now() - startedAt;
         const linear = Math.min(1, elapsed / total);
-        const progress = pourEase(linear);
+        // Stage 5 completes before a single drop falls: the vessel unfolds,
+        // and only then does the colour leave the segment.
+        const openProgress = pourEase(Math.min(1, elapsed / openMs));
+        const pourProgress = pourEase(Math.max(0, Math.min(1, (elapsed - openMs) / pourMs)));
         setMotion((current) => ({
           ...current,
-          pourProgress: progress,
-          numberReveal: Math.max(0, Math.min(1, (progress - 0.18) / 0.62)),
+          vesselOpen: openProgress,
+          pourProgress,
+          // The number stays hidden for the entire drain.
+          numberReveal: 0,
         }));
 
         if (linear >= 1) {
@@ -554,7 +578,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       rafRef.current = window.requestAnimationFrame(step);
       schedule(finishPour, total + 20);
     },
-    [beginMessagePhase, persistLifecycle, playEventCue, schedule],
+    [beginMessagePhase, persistLifecycle, playEventCue, reducedMotion, schedule],
   );
 
   /** Runs the three part reveal: generation, stop, then open and pour. */
@@ -575,9 +599,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setStage('anticipating');
       setMotion({
         wheelAngle: spin.startRotation,
-        percentage: 0,
+        percentage: PERCENTAGE_MIN,
         numberReveal: 0,
         pourProgress: 0,
+        vesselOpen: 0,
       });
       setNumberSettled(false);
       setColourSettled(false);
@@ -617,6 +642,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             percentage: next.percentage,
             numberReveal: 0,
             pourProgress: 0,
+            vesselOpen: 0,
           });
           setStage('landed');
           setIsFlashing(true);
@@ -644,6 +670,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ),
             numberReveal: 0,
             pourProgress: 0,
+            vesselOpen: 0,
           });
 
           if (elapsed >= STORYBOARD_TIMING.generationMs) {
@@ -732,6 +759,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         percentage: saved.percentage,
         numberReveal: 1,
         pourProgress: 1,
+        vesselOpen: 1,
       });
       setNumberSettled(true);
       setColourSettled(true);
@@ -868,8 +896,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         percentage: next.percentage,
         numberReveal: 1,
         pourProgress: 1,
+        vesselOpen: 1,
       });
       setNumberSettled(true);
+      setNumberFlashing(false);
       setColourSettled(true);
       setMessageState('hidden');
       setEventCompleted(true);
@@ -1110,10 +1140,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         <LuckyMeterArrivalLeaves onCleared={handleArrivalCleared} />
       )}
 
-      {/* Golden maple leaves: a far layer behind the scene and, on capable
-          profiles, a near layer in front of the meter and its panels. */}
-      {!reducedMotion && <LuckyMeterOrnaments reducedMotion={reducedMotion} />}
-
       {stageActive && result && (
         <CosmicEventStage
           eventId={result.event.id as 'meteor' | 'lightning' | 'fireworks'}
@@ -1248,7 +1274,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             colours={palette}
             colourId={result?.colour?.id ?? null}
             colourSettled={colourSettled}
-            number={hasDetails ? result?.luckyNumber ?? null : null}
+            number={numberSettled ? result?.luckyNumber ?? null : null}
             numberSettled={numberSettled}
             numberReveal={motion.numberReveal}
             pourProgress={motion.pourProgress}
@@ -1257,21 +1283,20 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             {stage === 'anticipating' || stage === 'generating' ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1.5 text-[12px] uppercase tracking-[0.16em] text-amber-200/70">
-                  Daily Resonance
-                </p>
+                {/* Stage 3: the plaque and its labels step aside, so the
+                    percentage that generates from 5 to 100 sits alone in the
+                    exact centre of the meter. */}
                 <div
                   data-testid="lucky-meter-value"
                   data-value={motion.percentage}
+                  data-plaque="hidden"
+                  aria-label={`${motion.percentage} percent`}
                   className="text-gold-gradient flex items-center font-bold leading-none tabular-nums"
-                  style={{ fontSize: isCompact ? '2.1rem' : 'clamp(2rem, 6.4vh, 3.9rem)' }}
+                  style={{ fontSize: isCompact ? '2.5rem' : 'clamp(2.4rem, 7.2vh, 4.3rem)' }}
                 >
                   {motion.percentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <p className="mt-1.5 text-[12px] uppercase tracking-[0.14em] text-slate-400">
-                  {stage === 'anticipating' ? 'The sky is listening' : 'The wheel is turning'}
-                </p>
               </div>
             ) : stage === 'landed' || hasDetails ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
@@ -1290,7 +1315,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   {motion.percentage}
                   <span className="ml-0.5 align-top text-[0.42em]">%</span>
                 </div>
-                <div className="lucky-tier-plate mt-1">
+                <div className="lucky-tier-plate mt-1" data-testid="lucky-meter-plaque">
                   <span aria-hidden="true" className="lucky-tier-plate__rule" />
                   <p className="lucky-tier-plate__label whitespace-nowrap">{result?.tier.label}</p>
                   <span aria-hidden="true" className="lucky-tier-plate__rule" />
@@ -1312,27 +1337,65 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             )}
           </LuckyMeterRing>
 
-          {/* Frame 5: the Lucky Colour result area, filled from the opened
-              segment by the pour above it. */}
+          {/* Stages 5–6: the transparent square vessel opens with real depth,
+              then the selected colour pours into it and fills it. The caption
+              stays flat and readable outside the three-dimensional scene. */}
           {hasDetails && result && (
             <section
               data-testid="lucky-colour-panel"
-              className={`${panelClass} lucky-colour-vessel relative mx-auto mt-2 w-full overflow-hidden ${
-                isCompact ? 'max-w-[280px] p-2' : 'max-w-md p-2.5 sm:p-3'
+              data-vessel-open={motion.vesselOpen.toFixed(2)}
+              data-vessel-fill={pourFill.toFixed(3)}
+              className={`lucky-vessel-stage relative mx-auto w-full ${
+                isCompact ? 'mt-2 max-w-[300px]' : 'mt-3 max-w-[26rem]'
               }`}
             >
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background: `linear-gradient(180deg, ${result.colour.hex}55 0%, ${result.colour.hex}22 100%)`,
-                  clipPath: `inset(0 0 ${Math.max(0, (1 - pourFill) * 100)}% 0)`,
-                }}
-              />
-              <div className="relative flex items-center gap-2.5">
+              <div className="lucky-vessel-scene" aria-hidden="true">
+                <div
+                  className="lucky-vessel"
+                  style={{
+                    transform: `rotateX(-9deg) rotateY(-6deg) scale(${(
+                      0.9 +
+                      0.1 * motion.vesselOpen
+                    ).toFixed(3)})`,
+                  }}
+                >
+                  <span className="lucky-vessel__shadow" />
+                  <span className="lucky-vessel__back" />
+                  <span className="lucky-vessel__body">
+                    <span
+                      className="lucky-vessel__liquid"
+                      style={{
+                        height: `${Math.max(0, Math.min(1, pourFill)) * 100}%`,
+                        background: `linear-gradient(180deg, ${result.colour.hex} 0%, ${result.colour.hex}e6 58%, ${result.colour.hex}9c 100%)`,
+                        boxShadow: `0 0 18px ${result.colour.hex}99, inset 0 0 12px ${result.colour.hex}`,
+                      }}
+                    >
+                      <span
+                        className="lucky-vessel__surface"
+                        style={{ background: `radial-gradient(ellipse at 42% 40%, #ffffffcc 0%, ${result.colour.hex} 46%, ${result.colour.hex}55 100%)` }}
+                      />
+                    </span>
+                    <span className="lucky-vessel__glow" />
+                  </span>
+                  <span className="lucky-vessel__wall lucky-vessel__wall--left" />
+                  <span className="lucky-vessel__wall lucky-vessel__wall--right" />
+                  <span className="lucky-vessel__glass" />
+                  <span className="lucky-vessel__rim" />
+                  <span
+                    className="lucky-vessel__lid"
+                    style={{
+                      opacity: 1 - Math.min(1, motion.vesselOpen * 1.25),
+                      transform: `rotateX(${(-104 * motion.vesselOpen).toFixed(2)}deg)`,
+                    }}
+                  />
+                  <span className="lucky-vessel__specular" />
+                </div>
+              </div>
+
+              <div className="lucky-vessel__caption">
                 <span
                   aria-hidden="true"
-                  className={`relative h-9 w-9 shrink-0 overflow-hidden rounded-full border shadow-inner sm:h-10 sm:w-10 ${
+                  className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-full border shadow-inner sm:h-9 sm:w-9 ${
                     isLightColour ? 'border-slate-500/70' : 'border-white/25'
                   }`}
                   style={{
@@ -1384,9 +1447,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                       {LUCKY_NUMBER_LABEL}
                     </h2>
                     <p
-                      className="lucky-number-value mt-1 text-[clamp(1.6rem,4vh,2.4rem)] font-bold leading-none tabular-nums"
+                      className={`lucky-number-value mt-1 text-[clamp(1.6rem,4vh,2.4rem)] font-bold leading-none tabular-nums ${
+                        numberFlashing ? 'animate-lucky-number-flash' : ''
+                      }`}
                       data-testid="lucky-number-value"
                       data-value={result.luckyNumber}
+                      data-flashing={numberFlashing ? 'true' : 'false'}
                     >
                       {result.luckyNumber}
                     </p>
