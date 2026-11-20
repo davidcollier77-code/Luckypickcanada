@@ -16,3 +16,7 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **ERROR — DS173237** — `.github/scripts/test_pr_verification_report.py:15` — Do not store tokens or keys in source code. <!-- devskim-id:de31f4bde00146ae4537 -->
 - **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:427` — Suspicious comment <!-- devskim-id:19d0361a93f9b414dc5c -->
 - **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:163` — Suspicious comment <!-- devskim-id:0bb65fb0f0c437c648dd -->
+
+- **NOTE — DS172411** — `components/DailyResonance.tsx:319` — Review setTimeout for untrusted data <!-- devskim-id:a643efb690d49bf9e4a4 -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:179` — Review setTimeout for untrusted data <!-- devskim-id:9f20e035c23e8f63cd3b -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:169` — Review setTimeout for untrusted data <!-- devskim-id:ccb892a7cfa5858a0a32 -->
