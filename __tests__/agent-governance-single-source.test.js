@@ -220,6 +220,32 @@ describe('single-source agent governance', () => {
     expect(exitCode).toBe(2);
   });
 
+  it('requires shared graphics toolkit and resource-readiness guidance for both agents', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('🟢 SHARED GRAPHICS TOOLKIT AND CREATIVE WORKBENCH');
+    const end = agents.indexOf('\\n\\nPR SUBMISSION DOCUMENTATION', start);
+    const section = agents.slice(start, end);
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    expect(section).toContain('[BOTH — CHATGPT AND FREEBUFF]');
+    expect(section).toContain('app/lib/graphics/README.md');
+    expect(section).toContain('docs/graphics-rendering-architecture.md');
+    expect(section).toContain('app/lib/resource-readiness.js');
+    expect(section).toContain('do not create a second preloader');
+    expect(section).toContain('.docs/creation/');
+    expect(section).toContain('.docs/polishing/');
+    expect(section).toContain('_websites_threejs.md');
+    expect(section).toContain('_websites_threejs_llms_txt.md');
+    expect(section).toContain('app/lib/use-creative-experience.js');
+    expect(section).toContain('app/lib/graphics/experiences.js');
+    expect(section).toContain('app/lib/graphics/runtime.js');
+    expect(section).toContain('components/graphics/CreativeWorkbench.jsx');
+    expect(section).toContain('Three.js is not mandatory');
+    expect(section).toContain('does not replace required Playwright');
+    expect(section).toContain('Preserve existing artwork, functionality, animation, sound, timing and layout');
+  });
+
   it('retains every specialist task-group instruction', () => {
     for (const group of taskGroups) {
       expect(existsSync(join(root, '.freebuff', group + '.md'))).toBe(true);

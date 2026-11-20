@@ -49,6 +49,27 @@ Lucky Pick Canada uses GitHub for source control, repository management and pull
 
 Production website: https://luckypickcanada.ca
 
+🟢 SHARED GRAPHICS TOOLKIT AND CREATIVE WORKBENCH
+
+[BOTH — CHATGPT AND FREEBUFF]
+
+Use the existing Graphics and audio toolkit as the standard foundation for new visual experiences, animations, effects and audio-reactive work. Extend its shared systems instead of creating competing renderers, registries, runtimes or preloaders.
+
+Before visual creation or polishing, consult:
+- `app/lib/graphics/README.md` and `docs/graphics-rendering-architecture.md`.
+- `app/lib/resource-readiness.js` — the centralized Resource-Readiness Hub. Extend this hub; do not create a second preloader.
+- Task-relevant references in `.docs/creation/` and `.docs/polishing/`, selected through `.docs/manifest.json`.
+- For Three.js work, read `_websites_threejs.md` and `_websites_threejs_llms_txt.md` in both groups.
+
+Use the existing integration and development entry points:
+- `app/lib/use-creative-experience.js` — component-level integration and automatic resource preparation.
+- `app/lib/graphics/experiences.js` and `app/lib/graphics/runtime.js` — shared experience registry, resource derivation and automatic rendering runtime.
+- `components/graphics/CreativeWorkbench.jsx`, `app/lib/graphics/workbench.js` and `app/lib/graphics/workbench-runtime.js`; route: `/workbench/creative`.
+
+Register new experiences through the shared registry and use the runtime, readiness hub and audio systems wherever applicable. Choose the renderer suited to the experience; Three.js is not mandatory. Preserve existing cinematic engines when they remain the right fit. The development-only Workbench supports experimentation and inspection; it does not replace required Playwright or other QA checks.
+
+Preserve existing artwork, functionality, animation, sound, timing and layout unless explicitly authorized to change them.
+
 PR SUBMISSION DOCUMENTATION
 
 "PR_SUBMISSION.md" is mandatory. Read and follow it whenever preparing or submitting a pull request.
