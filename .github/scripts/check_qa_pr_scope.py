@@ -6,9 +6,16 @@ intent and a narrow path manifest; GitHub's API supplies the actual changed
 files and owner-authored approval comments. PR text is never approval by itself.
 
 An unlisted path is a scope violation. To expand scope, add an exact path and
-rationale under scope_expansion, then obtain /approve-scope <digest> from the
-repository owner. Visual baseline and governance changes have separate
-approvals. Existing protected-file governance gates remain independent.
+rationale under scope_expansion, write the exact words "Scope changed" and an
+explanation in the PR description, then obtain /approve-scope <digest> from the
+repository owner. A description never substitutes for that approval. Visual
+baseline and governance changes have separate approvals. Existing protected-file
+governance gates remain independent.
+
+Browser verification belongs to the automated Playwright workflow. This checker
+never requires the submitter to run a browser, take screenshots or supply manual
+browser evidence; optional browser_evidence entries are accepted and reported
+when a submitter chooses to supply them.
 """
 
 from __future__ import annotations
@@ -40,6 +47,8 @@ APPROVAL_COMMANDS = {
     "visual_baseline_updates": "approve-visual-baselines",
     "governance_changes": "approve-governance",
 }
+SCOPE_CHANGE_PHRASE = "Scope changed"
+SCOPE_CHANGE_MIN_EXPLANATION = 20
 
 
 class ScopeError(ValueError):
@@ -219,6 +228,37 @@ def _visual_impact(value) -> dict | None:
     return {"required": required, "reason": reason.strip()}
 
 
+def _prose(body: str) -> str:
+    """Strip HTML comments so template guidance is not read as a declaration."""
+    if not isinstance(body, str):
+        return ""
+    return re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL)
+
+
+def _scope_change_statement(body: str) -> str:
+    """Return the explanation written after the exact words "Scope changed".
+
+    The phrase must begin a line, so an unrelated mention inside prose cannot
+    satisfy the requirement. The explanation must be specific: the phrase alone,
+    a placeholder, or a different sentence is not enough. The explanation is not
+    an approval; the owner digest command remains mandatory.
+    """
+    body = _prose(body)
+    pattern = re.compile(
+        r"(?m)^[\s>*\-]*\**\s*"
+        + re.escape(SCOPE_CHANGE_PHRASE)
+        + r"[ \t]*(?:[:—–-][ \t]*)?\**[ \t]*([^\n]+)$"
+    )
+    for match in pattern.finditer(body):
+        statement = " ".join(match.group(1).split()).strip()
+        if len(statement) < SCOPE_CHANGE_MIN_EXPLANATION:
+            continue
+        if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", statement, re.I):
+            continue
+        return statement
+    return ""
+
+
 def _digest(entries: dict | list) -> str:
     payload = json.dumps(entries, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
@@ -337,7 +377,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     }
     evidence = declaration.get("browser_evidence", [])
     if not isinstance(evidence, list):
-        raise ScopeError("browser_evidence must be an array")
+        raise ScopeError("browser_evidence must be an array when supplied")
     normalized_evidence = []
     for item in evidence:
         if not isinstance(item, dict):
@@ -356,6 +396,8 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
             "reference": reference.strip(),
             "purpose": purpose.strip(),
         })
+
+    scope_change_statement = _scope_change_statement(pr["body"])
 
     errors = []
     if set(file_purposes) != set(patterns):
@@ -399,13 +441,17 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         if stale:
             errors.append("declared governance changes are not in this diff: " + ", ".join(stale))
 
-    visual_changes = sorted(path for path in actual if _is_visual_path(path))
-    if visual_changes and not normalized_evidence:
-        errors.append("visual/application paths changed without browser evidence; declare Playwright, Firecrawl, or Browserless evidence")
-    if visual_impact and visual_impact["required"] and not normalized_evidence:
+    if expansion and not scope_change_statement:
         errors.append(
-            "visual_impact is declared as required but no browser evidence was supplied"
+            'scope_expansion requires the exact words "%s" followed by a specific explanation '
+            "of what was added or changed in the PR description; the structured entry is not "
+            "enough and the owner approval digest is still required" % SCOPE_CHANGE_PHRASE
         )
+
+    # Browser verification is the automated Playwright workflow's responsibility.
+    # A visual path never requires the submitter to run a browser, take
+    # screenshots or supply manual evidence.
+    visual_changes = sorted(path for path in actual if _is_visual_path(path))
 
     warnings = []
     if visual_changes and visual_impact and not visual_impact["required"]:
@@ -446,6 +492,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         "visual_impact": visual_impact,
         "visual_baseline_updates": sorted(declared_baselines),
         "governance_changes": sorted(declared_governance),
+        "scope_change_statement": scope_change_statement,
         "browser_evidence": normalized_evidence,
         "approvals": approvals,
         "warnings": warnings,
@@ -471,16 +518,18 @@ def render_markdown(report: dict) -> str:
         f"- {path}: {purpose}"
         for path, purpose in sorted(report.get("file_purposes", {}).items())
     )
-    lines.extend(["", "### Browser evidence"])
+    lines.extend(["", "### Browser verification"])
+    lines.append(
+        "- Automated Playwright verification owns browser evidence; the submitter is not "
+        "required to run a browser, take screenshots or supply manual evidence."
+    )
     if report.get("browser_evidence"):
+        lines.append("- Optional submitter-supplied browser references:")
         for item in report["browser_evidence"]:
-            lines.append(f"- {item['tool']}: {item['reference']} — {item['purpose']}")
-    elif report.get("visual_changes") or (
-        report.get("visual_impact") and report["visual_impact"]["required"]
-    ):
-        lines.append("- No browser evidence was supplied for a change set that requires it.")
-    else:
-        lines.append("- No browser evidence declaration was required for this non-visual change set.")
+            lines.append(f"  - {item['tool']}: {item['reference']} — {item['purpose']}")
+    if report.get("scope_change_statement"):
+        lines.extend(["", "### Declared scope change"])
+        lines.append(f"- {report['scope_change_statement']}")
     if report.get("visual_impact"):
         impact = report["visual_impact"]
         lines.append(

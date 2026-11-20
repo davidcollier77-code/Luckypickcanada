@@ -1,9 +1,9 @@
 # Technical Context
 
 ## QA checker suite
-- `.github/scripts/checker_suite.py` holds four independent advisory checkers: `test-quality`, `performance`, `security-summary` and `browser-summary`. Each writes a marker-first sticky comment through `.github/scripts/upsert_pr_comment.sh`, which updates in place and refuses an unmarked or over-60,000-byte body.
-- `.github/workflows/checker-suite.yml` runs test quality, performance and security alerts from `pull_request_target` with a trusted `main` checkout; `.github/workflows/visual-qa-summary.yml` runs from `workflow_run` after Visual QA and labels a skipped shard NOT RUN.
-- Security findings come from the existing DevSkim/CodeQL code scanning through the code-scanning alerts API; no additional scanner, dependency or paid service is used.
+- `.github/workflows/pr-verification-report.yml` publishes the single consolidated PR verification report with exactly seven categories: QA Checker, DevSkim, Dependabot, PR Scope Verification, Protected File Changes, Verification Integrity and Governance and Workflow Verification. Statuses are limited to `PASSED`, `FAILED`, `WARNING` and `NOT RUN`; the report is a marker-first sticky comment updated in place by `.github/scripts/upsert_pr_comment.sh`, which refuses an unmarked or over-60,000-byte body.
+- `.github/scripts/pr_verification_report.py` builds the report from GitHub evidence. QA Checker keeps the exact pre-submission declaration, `review_pr_changes.py` findings, `checker_suite.py` test-quality and performance findings, and the full unit suite, TypeScript check, production build and both Playwright shards as supporting evidence. The changed-code findings and the former Visual QA summary are consolidated into that report rather than published as separate comments.
+- DevSkim scanning, suppression, SARIF handling, Security-tab upload and alert reporting are unchanged; the report only reads the scan check and the existing code-scanning alerts API. Dependabot is reported `NOT RUN` with an explanation unless the pull request is an applicable weekly update. `check_qa_pr_scope.py` still enforces exact paths, per-file purposes and owner approval digests, requires the exact words `Scope changed` for expansions, and no longer requires submitter browser evidence. `verify_pr_verification_status.py` supplies the current-head audit, so missing, skipped, stale or earlier-commit results are never reported as passed.
 
 ## Application Stack
 - **Framework:** Next.js App Router 16.4.3, React 19.3.1 and TypeScript.

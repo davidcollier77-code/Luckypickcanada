@@ -1,0 +1,192 @@
+name: PR Verification Report
+
+# Publishes ONE consolidated report with exactly seven checker categories:
+#   1. QA Checker
+#   2. DevSkim
+#   3. Dependabot
+#   4. PR Scope Verification
+#   5. Protected File Changes
+#   6. Verification Integrity
+#   7. Governance and Workflow Verification
+#
+# The report is updated in place (one sticky comment) and always describes the
+# current pull request HEAD. Supporting results keep their detailed findings:
+# changed-code review, test quality, performance, the full unit suite, the
+# TypeScript check, the production build and both Playwright shards.
+#
+# pull_request_target and workflow_run only: the pull request's code is never
+# checked out or executed. Only the trusted base branch is checked out.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+  workflow_run:
+    workflows:
+      - Visual QA
+      - DevSkim
+      - Validate OpenNext Repair
+      - PR Scope Verification
+      - Protected File Changes
+      - Verification Integrity
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: read
+  checks: read
+  security-events: read
+
+# One report per branch, whatever event refreshed it, so a PR event and a
+# workflow_run completion cannot publish two reports at the same time.
+concurrency:
+  group: pr-verification-report-${{ github.event.pull_request.head.ref || github.event.workflow_run.head_branch || github.event.pull_request.number || github.event.workflow_run.id }}
+  cancel-in-progress: true
+
+env:
+  REPOSITORY: ${{ github.repository }}
+
+jobs:
+  report:
+    name: PR verification report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted base-branch checker
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+
+      # workflow_run events raised by pull_request_target workflows do not carry
+      # pull_requests[]. The head branch resolves the open pull request instead.
+      - name: Resolve the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
+          WORKFLOW_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+          WORKFLOW_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          number="${EVENT_PR:-}"
+          if [[ -z "$number" && -n "${WORKFLOW_PR:-}" ]]; then
+            number="$WORKFLOW_PR"
+          fi
+          if [[ -z "$number" && -n "${WORKFLOW_BRANCH:-}" ]]; then
+            owner="${REPOSITORY%%/*}"
+            number="$(gh api --paginate \
+              "repos/${REPOSITORY}/pulls?state=open&head=${owner}:${WORKFLOW_BRANCH}" \
+              --jq '.[0].number // empty' 2>/dev/null || true)"
+            if [[ -z "$number" ]]; then
+              number="$(gh pr list --repo "$REPOSITORY" --head "$WORKFLOW_BRANCH" \
+                --state open --json number --jq '.[0].number // empty' 2>/dev/null || true)"
+            fi
+          fi
+          if [[ -z "$number" ]]; then
+            echo "::warning::No open pull request is associated with this run, so no verification report is published."
+            echo "number=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch pull request, diff, comments and current-head checks
+        if: steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}" > "$RUNNER_TEMP/pr.json"
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            | jq 'add // []' > "$RUNNER_TEMP/files.json"
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
+            | jq 'add // []' > "$RUNNER_TEMP/comments.json"
+          head_sha="$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
+          gh api "repos/${REPOSITORY}/commits/${head_sha}/check-runs?per_page=100" \
+            > "$RUNNER_TEMP/checks.json"
+          if ! gh api \
+            "repos/${REPOSITORY}/code-scanning/alerts?pr=${PR_NUMBER}&state=open&per_page=100" \
+            > "$RUNNER_TEMP/alerts.json" 2> "$RUNNER_TEMP/alerts.err"; then
+            printf '{"message": "the code-scanning alerts could not be read"}\n' \
+              > "$RUNNER_TEMP/alerts.json"
+            cat "$RUNNER_TEMP/alerts.err" >&2 || true
+          fi
+
+      # The audit matches every check run to the current head SHA and reports
+      # skipped, cancelled, stale and missing results as NOT RUN. It exits
+      # non-zero when verification is not complete, which is a result this
+      # report must publish rather than a reason to stop.
+      - name: Audit current-head verification
+        if: steps.pr.outputs.number != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        shell: bash
+        run: |
+          set +e
+          python3 .github/scripts/verify_pr_verification_status.py \
+            --repo "$REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --json "$RUNNER_TEMP/verification.json" \
+            --summary "$RUNNER_TEMP/verification.md"
+          status=$?
+          set -e
+          if [[ -f "$RUNNER_TEMP/verification.md" ]]; then
+            cat "$RUNNER_TEMP/verification.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "audit_status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Render the seven-category report
+        id: render
+        if: steps.pr.outputs.number != ''
+        continue-on-error: true
+        env:
+          OWNER: ${{ github.repository_owner }}
+        shell: bash
+        run: |
+          set +e
+          PYTHONPATH=.github/scripts python3 .github/scripts/pr_verification_report.py \
+            --pull-request "$RUNNER_TEMP/pr.json" \
+            --files "$RUNNER_TEMP/files.json" \
+            --comments "$RUNNER_TEMP/comments.json" \
+            --checks "$RUNNER_TEMP/checks.json" \
+            --verification "$RUNNER_TEMP/verification.json" \
+            --alerts "$RUNNER_TEMP/alerts.json" \
+            --owner "$OWNER" \
+            --comment "$RUNNER_TEMP/comment.md" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json "$RUNNER_TEMP/report.json"
+          status=$?
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          if [[ "$status" -eq 2 ]]; then
+            echo "::error::The consolidated verification report could not be built from the supplied evidence."
+          fi
+
+      # The report is updated in place, so subsequent runs never create a second
+      # report. A comment failure must not hide the rendered report from the job
+      # summary or change the gate below.
+      - name: Publish or update the consolidated report
+        if: always() && steps.pr.outputs.number != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        shell: bash
+        run: |
+          bash .github/scripts/upsert_pr_comment.sh '<!-- qa-verification-report -->' \
+            "$RUNNER_TEMP/comment.md"
+
+      - name: Enforce the report status
+        if: always() && steps.pr.outputs.number != '' && steps.render.outputs.status != '0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::error::At least one of the seven checker categories is FAILED. See the consolidated PR verification report and the job summary."
+          exit 1

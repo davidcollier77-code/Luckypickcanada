@@ -1,6 +1,16 @@
-# Active Context — Graphics Development Toolkit
+# Active Context — Seven Checker Categories
 
-## Current Task — Shared Graphics Toolkit Guidance (spec 197)
+## Current Task — Seven-category PR verification (spec 198)
+
+- **Spec Kit feature:** `specs/198-seven-checker-categories`
+- **Branch:** `freebuff/25590a89225c606a9ca3e3ec`
+- **Scope:** Replace the four independent advisory comments and the separate Visual QA summary with one consolidated PR verification report that has exactly seven categories (QA Checker, DevSkim, Dependabot, PR Scope Verification, Protected File Changes, Verification Integrity, Governance and Workflow Verification) and the statuses `PASSED`, `FAILED`, `WARNING` and `NOT RUN`.
+- **Preserved:** DevSkim scanning/suppression/SARIF/upload, the full unit suite, the TypeScript check, the OpenNext build and 495 MiB gate, both Playwright shards and all committed baselines. They are supporting evidence inside QA Checker, never extra top-level categories.
+- **Declarations:** the exact pre-submission code quality review line is required for QA Checker; the exact human authorization line is required for protected-file changes in addition to the existing environment-protected gate. Scope expansion requires the exact words `Scope changed` plus an explanation and the existing owner digest approval.
+- **Removed requirement:** submitters no longer supply personal browser runs, screenshots or manual browser evidence; automated Playwright owns browser verification against the current head.
+- **Documentation:** `PR_SUBMISSION.md` and `.github/pull_request_template.md` were rewritten to agree on the complete PR description, declarations and reporting.
+
+## Previous Task — Shared Graphics Toolkit Guidance (spec 197)
 
 - **Spec Kit feature:** `specs/197-shared-graphics-toolkit-guidance`
 - **Branch:** `chatgpt/197-shared-graphics-toolkit-guidance`
