@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-20T11:38:25-04:00",
+  "lastUpdated": "2026-11-20T14:39:20-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,20 +497,20 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "7b5450f9c7c5d9dcc90c37094f2a33777b55577a",
+    "/github/docs": "5ac6007fc3573a9306e1d4c904bb4cf7cb54825a",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
     "/lucide-icons/lucide": "c1a02a04d4f3f7049d44567d62b8b06cff0b9103",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
-    "/react-hook-form/resolvers": "f14fc25bbf205e92266c8abf8512b3b517bcae4a",
+    "/react-hook-form/resolvers": "128b8abb223167f0f9bcb4070b540acf31edac12",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "797fe9c1174b375aa454806b90d80145515eb8db",
-    "/cloudflare/cloudflare-docs/turnstile": "df54b83a101b6026434ffdeff0b52bbec963b9bc",
-    "/cloudflare/cloudflare-docs/pages": "df54b83a101b6026434ffdeff0b52bbec963b9bc",
+    "/cloudflare/cloudflare-docs/turnstile": "dc14acb02616851d2c5087ca6d8aa6dacb6c66dd",
+    "/cloudflare/cloudflare-docs/pages": "dc14acb02616851d2c5087ca6d8aa6dacb6c66dd",
     "/dequelabs/axe-core": "e80f6b797b32b5f9d60ddaa0a7afad6ed864f121",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "a018f24a4fc76e2120d3b35d2415f1e5bd4b073e",
+    "/microsoft/playwright": "2f1592a70bdd82049f5086df18c4359ca64d415b",
     "/vitest-dev/vitest": "f21f224bad11e738840bda1f4b6d64dd7de4a425",
     "/colinhacks/zod": "19c40d2072288b4cafec851e9d056a72a88e5973",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
