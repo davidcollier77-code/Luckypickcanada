@@ -1,72 +1,91 @@
 /**
- * The Lucky Meter's nine-step cinematic storyboard.
+ * The Lucky Meter's twelve-stage cinematic storyboard.
  *
  * Every stage length lives here so the component, the copy animator, the audio
  * cues and the tests all read one source. The values are deliberately generous:
- * the image's timings are estimates, and the experience is meant to breathe
- * rather than rush.
+ * the sequence is meant to breathe, and a complete run lands at roughly forty
+ * seconds — the tier's own established celebration length is what makes the
+ * last few seconds differ between tiers, and it is never shortened to force
+ * every run into an identical clock.
  *
  * The sequence after Start:
  *
- *   1. anticipation      the sky listens, the reading is 0%
- *   2. generation        the wheel turns and the percentage counts up together
- *   3. landing           both stop on the same frame
- *   4. segmentOpen       the selected segment lifts and opens
- *   5. pour              its colour drains down while the number is exposed
- *   6. message           the tier line is written above the meter, held, faded
- *   7. celebration       the tier's existing cinematic
- *   8. spark             the maple-leaf cursor writes the Little Spark
- *   9. dock              Home and the countdown arrive together
+ *   1. anticipation      the sky listens, the reading sits at 5%
+ *   2. generation        the wheel turns and the percentage counts up to 100
+ *   3. landing           both stop on the same frame; the reading holds
+ *   4. colourSelect      the seasonal colour selection settles under the pointer
+ *   5. vesselOpen        the transparent vessel unfolds and opens
+ *   6. pour              its colour drains down and fills the vessel
+ *   7. numberReveal      only now is the Lucky Number exposed, flashed, settled
+ *   8. message           the tier line is written above the meter, held, faded
+ *   9. celebration       the tier's existing cinematic, at its full length
+ *  10. spark             the maple-leaf cursor writes the Little Spark
+ *  11. hold              the finished scene is held so it can be taken in
+ *  12. dock              Home and the countdown arrive together
  *
- * Before Start, the resting scene holds, the breeze carries the leaves away and
+ * Before Start, the resting pile holds, the breeze carries the leaves away and
  * only then does Start appear. Those pre-Start values are here too so the
  * arrival and the button share the same clock.
  */
 
 export const STORYBOARD_TIMING = Object.freeze({
-  /** Frame 1: the gold pointer, leaves and dial are still. */
-  leafHoldMs: 1750,
-  /** Frame 2: the breeze lifts and carries every leaf out of frame. */
-  leafBreezeMs: 1300,
-  /** Frame 3: a short quiet beat before Start appears. */
-  startDelayMs: 700,
+  /** Stages 1–2: the pile of leaves rests long enough to register as an object. */
+  leafHoldMs: 2400,
+  /** Stage 2: the gust lifts the pile and carries every leaf out of frame. */
+  leafBreezeMs: 2100,
+  /** A short quiet beat after the last leaf before Start appears. */
+  startDelayMs: 800,
 
-  /** Frame 4: a held breath after Start, before anything moves. */
-  anticipationMs: 900,
-  /** Frame 4: percentage generation and wheel rotation, start to stop. */
-  generationMs: 4200,
+  /** Stage 1: a held breath after Start, before anything moves. */
+  anticipationMs: 1200,
+  /** Stage 2: percentage generation and wheel rotation, start to stop. */
+  generationMs: 5200,
 
-  /** Frame 5: the stopped wheel rests for a moment. */
-  settlePauseMs: 450,
-  /** Frame 5: the selected segment physically opens. */
-  segmentOpenMs: 800,
-  /** Frame 5: the colour pours down and the Lucky Number is exposed. */
-  pourMs: 1900,
-  /** Frame 5: number and colour settle into their result areas. */
-  resultSettleMs: 800,
+  /** Stage 3: the stopped wheel and the reading rest, plaque-free, in the well. */
+  landingMs: 600,
+  /** Stage 4: the landing beat plus the seasonal colour selection unfolding. */
+  settlePauseMs: 1800,
+  /** Stage 5: the transparent vessel unfolds from a flat plate into a cube. */
+  segmentOpenMs: 1400,
+  /** Stage 6: the colour drains from the segment and fills the vessel. */
+  pourMs: 3000,
 
-  /** Frame 6: lead-in before the tier message starts writing. */
-  messageDelayMs: 700,
-  /** Frame 6: one character at a time. */
+  /**
+   * Stage 7: the post-drain beat. The number appears only when this window
+   * opens, flashes twice and then settles into its placard.
+   */
+  resultSettleMs: 2600,
+  /** One flash of the revealed Lucky Number. */
+  numberFlashMs: 420,
+  numberFlashCount: 2,
+
+  /** Stage 8: lead-in before the tier message starts writing. */
+  messageDelayMs: 800,
+  /** Stage 8: one character at a time. */
   messageCharMs: 34,
-  /** Frame 6: the longer beat after punctuation in the faster tier line. */
-  messagePunctuationPauseMs: 220,
-  /** Frame 6: the finished sentence stays readable. */
-  messageHoldMs: 2500,
-  /** Frame 6: and fades away before the celebration. */
-  messageFadeMs: 700,
+  /** Stage 8: the longer beat after punctuation in the faster tier line. */
+  messagePunctuationPauseMs: 240,
+  /** Stage 8: the finished sentence stays readable. */
+  messageHoldMs: 2800,
+  /** Stage 8: and fades away before the celebration. */
+  messageFadeMs: 800,
 
-  /** Frame 7: a last breath between the message and the cinematic. */
-  eventDelayMs: 800,
+  /** Stage 9: a last breath between the message and the cinematic. */
+  eventDelayMs: 900,
 
-  /** Frame 8: the sky is still after the celebration. */
-  sparkStartDelayMs: 1200,
-  /** Frame 8: the maple-leaf cursor writes one character at a time. */
-  sparkMsPerCharacter: 28,
-  sparkPunctuationPauseMs: 220,
+  /** Stage 10: the sky is still after the celebration. */
+  sparkStartDelayMs: 1300,
+  /** Stage 10: the maple-leaf cursor writes one character at a time. */
+  sparkMsPerCharacter: 32,
+  sparkPunctuationPauseMs: 240,
 
-  /** Frame 9: Home and the countdown settle into the dock together. */
-  dockDelayMs: 800,
+  /**
+   * Stage 11 plus the dock settle: the completed scene is held first, and both
+   * controls arrive together at the end of this window.
+   */
+  dockDelayMs: 3400,
+  /** The part of the dock window that is pure hold, so the stage list can split it. */
+  finalHoldMs: 2600,
 
   /** The landing flash on the percentage. */
   flashMs: 700,
@@ -86,14 +105,16 @@ export const ARRIVAL_TOTAL_MS =
 export const REVEAL_MOTION_MS =
   STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs;
 
-/** Milliseconds from Start until the selected segment has completely emptied. */
-export const POUR_END_MS =
-  REVEAL_MOTION_MS +
-  STORYBOARD_TIMING.settlePauseMs +
-  STORYBOARD_TIMING.segmentOpenMs +
-  STORYBOARD_TIMING.pourMs;
+/** Milliseconds from Start until the colour selection has finished unfolding. */
+export const COLOUR_SELECT_END_MS = REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs;
 
-/** Milliseconds from Start until the number and colour have settled. */
+/** Milliseconds from Start until the vessel has finished opening. */
+export const VESSEL_OPEN_END_MS = COLOUR_SELECT_END_MS + STORYBOARD_TIMING.segmentOpenMs;
+
+/** Milliseconds from Start until the selected segment has completely emptied. */
+export const POUR_END_MS = VESSEL_OPEN_END_MS + STORYBOARD_TIMING.pourMs;
+
+/** Milliseconds from Start until the number has been revealed, flashed and settled. */
 export const REVEAL_COMPLETE_MS = POUR_END_MS + STORYBOARD_TIMING.resultSettleMs;
 
 /** Characters that earn a longer pause while writing. */
@@ -188,7 +209,12 @@ export function getSparkEndMs(tierMessage, eventDurationMs, sparkMessage) {
   );
 }
 
-/** Milliseconds from Start until Home and the countdown arrive together. */
+/**
+ * Milliseconds from Start until Home and the countdown arrive together.
+ *
+ * The window includes the final hold, so the finished scene is never cut short
+ * by a control appearing.
+ */
 export function getDockMs(tierMessage, eventDurationMs, sparkMessage) {
   return getSparkEndMs(tierMessage, eventDurationMs, sparkMessage) + STORYBOARD_TIMING.dockDelayMs;
 }
@@ -204,9 +230,12 @@ export function getDockMs(tierMessage, eventDurationMs, sparkMessage) {
 export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) {
   const eventStart = getEventStartMs(tierMessage);
   const eventDuration = Math.max(0, Number(eventDurationMs) || 0);
-  const sparkStart = eventStart + eventDuration + STORYBOARD_TIMING.sparkStartDelayMs;
+  const eventEnd = eventStart + eventDuration;
+  const sparkStart = eventEnd + STORYBOARD_TIMING.sparkStartDelayMs;
   const sparkDuration = getSparkWritingMs(sparkMessage);
-  const dockStart = sparkStart + sparkDuration + STORYBOARD_TIMING.dockDelayMs;
+  const sparkEnd = sparkStart + sparkDuration;
+  const dockStart = sparkEnd + STORYBOARD_TIMING.dockDelayMs;
+  const holdEnd = sparkEnd + Math.min(STORYBOARD_TIMING.finalHoldMs, STORYBOARD_TIMING.dockDelayMs);
   const messageStart = REVEAL_COMPLETE_MS;
 
   return [
@@ -219,21 +248,25 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
     {
       id: 'landing',
       startMs: REVEAL_MOTION_MS,
-      endMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs,
+      endMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs,
     },
     {
-      id: 'segmentOpen',
-      startMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs,
-      endMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs + STORYBOARD_TIMING.segmentOpenMs,
+      id: 'colourSelect',
+      startMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs,
+      endMs: COLOUR_SELECT_END_MS,
+    },
+    {
+      id: 'vesselOpen',
+      startMs: COLOUR_SELECT_END_MS,
+      endMs: VESSEL_OPEN_END_MS,
     },
     {
       id: 'pour',
-      startMs:
-        REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs + STORYBOARD_TIMING.segmentOpenMs,
+      startMs: VESSEL_OPEN_END_MS,
       endMs: POUR_END_MS,
     },
     {
-      id: 'resultSettle',
+      id: 'numberReveal',
       startMs: POUR_END_MS,
       endMs: REVEAL_COMPLETE_MS,
     },
@@ -245,12 +278,17 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
     {
       id: 'celebration',
       startMs: eventStart,
-      endMs: eventStart + eventDuration,
+      endMs: eventEnd,
     },
     {
       id: 'spark',
       startMs: sparkStart,
-      endMs: sparkStart + sparkDuration,
+      endMs: sparkEnd,
+    },
+    {
+      id: 'hold',
+      startMs: sparkEnd,
+      endMs: holdEnd,
     },
     {
       id: 'dock',

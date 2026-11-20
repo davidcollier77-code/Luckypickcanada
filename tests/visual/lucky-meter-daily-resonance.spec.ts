@@ -9,7 +9,7 @@ import {
  *
  * Every stored-reading scenario is seeded into Local Storage before the page
  * loads, so the result is deterministic. One real run walks the complete
- * nine-stage storyboard; the rest resume from a stored lifecycle point so the
+ * twelve-stage storyboard; the rest resume from a stored lifecycle point so the
  * browser suite stays fast without skipping the states it protects.
  */
 
@@ -172,7 +172,7 @@ function settledAngle(colourId: string, season: Season) {
 }
 
 test.describe('Daily Resonance arrival and Start', () => {
-  test('holds Start until the breeze has cleared, then exposes a 0% reading', async ({
+  test('holds Start until the breeze has cleared, then exposes a 5% reading', async ({
     page,
   }) => {
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
@@ -188,7 +188,9 @@ test.describe('Daily Resonance arrival and Start', () => {
 
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
-    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
+    // The readout sweeps the meter's real 5–100 scale, never an arbitrary 0.
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
     await expect(page.getByTestId('lucky-colour-panel')).toHaveCount(0);
     const pointer = page.getByTestId('lucky-meter-pointer');
@@ -256,6 +258,7 @@ test.describe('Daily Resonance storyboard', () => {
       String(stored.luckyNumber),
     );
     await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '1.000');
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.name);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.hex);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(

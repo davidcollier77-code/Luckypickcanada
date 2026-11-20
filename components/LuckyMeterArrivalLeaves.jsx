@@ -18,17 +18,20 @@ import {
 /**
  * The maple-leaf arrival.
  *
- * A handful of small, earth-toned leaves rest at the edges of the sky when the
- * Lucky Meter appears. One second later the shared wind lifts them, turns them
- * and carries them out of the frame; the canvas then removes itself, so the
- * introduction costs nothing once it is over and nothing runs while a visitor
- * reads the headline or presses Start.
+ * A substantial pile of earth-toned maple leaves rests in the foreground around
+ * the base of the meter when the Lucky Meter appears. A few seconds later the
+ * shared wind lifts the pile, turns every leaf and carries it out of frame; the
+ * canvas then removes itself, so the introduction costs nothing once it is over
+ * and nothing runs while a visitor reads the headline or presses Start.
  *
- * It is one canvas and at most five leaves at a capped backing-store ratio, with
- * no filter passes. Under reduced motion the leaves are drawn once at rest and
- * never animate. The layer is decorative, hidden from assistive technology and
- * pointer-transparent.
+ * It is one canvas with depth-sorted leaves at a capped backing-store ratio,
+ * no filter passes and no WebGL context. Each leaf carries a contact shadow and
+ * a moonlit sheen, and the near leaves are drawn larger and warmer, so the pile
+ * reads as a mound of real leaves rather than a flat decal. Under reduced
+ * motion the leaves are drawn once at rest and never animate. The layer is
+ * decorative, hidden from assistive technology and pointer-transparent.
  */
+const ARRIVAL_LEAF_COUNT = 34;
 const LEAF_PATH = 'M50 3 C52.5 10 55 14 59 16.5 C57.3 19.2 57.8 22.1 60.6 24.6 '
   + 'C62.6 20.8 66.1 18.4 70.6 18.2 C69.3 22.8 70.4 27.2 73.4 30.7 '
   + 'C69.4 32.5 66.6 35.6 64.7 39.5 C69.9 41.2 73.9 44.7 76.6 49.3 '
@@ -157,6 +160,8 @@ function drawScene(ctx, leaves, elapsedMs, width, height) {
   ctx.clearRect(0, 0, width, height);
   if (!Array.isArray(leaves)) return;
   const wind = sampleArrivalWind(elapsedMs);
+  // The composition is already back-to-front; drawing in that order keeps the
+  // mound's overlap stable while the leaves are lifted one by one.
   for (const leaf of leaves) {
     const state = sampleArrivalLeaf(leaf, elapsedMs, wind);
     if (state.visible) drawLeaf(ctx, leaf, state, width, height);
@@ -185,7 +190,7 @@ export default function LuckyMeterArrivalLeaves({ onCleared }) {
     }
     const ratio = getCanvasPixelRatio(quality?.maxPixelRatio);
 
-    let leaves = createArrivalLeaves(Math.random, 5, {
+    let leaves = createArrivalLeaves(Math.random, ARRIVAL_LEAF_COUNT, {
       width: window.innerWidth,
       height: window.innerHeight,
     });
@@ -296,7 +301,7 @@ export default function LuckyMeterArrivalLeaves({ onCleared }) {
       aria-hidden="true"
       data-testid="lucky-meter-arrival-leaves"
       data-phase={phase}
-      className="pointer-events-none absolute inset-0 z-[7] h-full w-full"
+      className="pointer-events-none absolute inset-0 z-[22] h-full w-full"
     />
   );
 }

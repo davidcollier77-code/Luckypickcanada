@@ -35,6 +35,9 @@ export const EVENT_CUE_LAYERS = Object.freeze({
   'wheel-stop': [{ sound: 'segmentOpen', rate: 0.78, volume: 0.34 }],
   'segment-open': [{ sound: 'segmentOpen', rate: 1.04, volume: 0.42 }],
   'colour-pour': [{ sound: 'colourPour', rate: 0.86, volume: 0.4 }],
+  // The number lands after the drain has finished: a short, bright lift of the
+  // same metal recording, sitting clearly above the pour but below the finale.
+  'number-reveal': [{ sound: 'segmentOpen', rate: 1.46, volume: 0.3 }],
   'message-write': [{ sound: 'segmentOpen', rate: 1.3, volume: 0.2, jitter: 0.03 }],
   'spark-write': [{ sound: 'segmentOpen', rate: 0.9, volume: 0.26, jitter: 0.03 }],
   'dock-arrive': [{ sound: 'dockChime', rate: 1, volume: 0.24 }],
@@ -66,6 +69,9 @@ export const EVENT_CUE_LAYERS = Object.freeze({
   // Finale: two layers. The recorded boom carries the weight; the second layer
   // is the same burst recording slowed down, which adds body below the pop
   // without raising the peak into clipping.
+  // The deeper, layered finale boom is retained exactly: the recorded boom
+  // carries the weight and the same burst recording slowed down adds body
+  // below the pop without raising the peak into clipping.
   'finale-boom': [
     { sound: 'finaleBoom', rate: 1, volume: 0.96 },
     { sound: 'fireworkBurst', rate: 0.72, volume: 0.5 },

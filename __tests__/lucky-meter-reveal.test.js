@@ -39,18 +39,22 @@ const angularGap = (left, right) => {
   return Math.min(difference, 360 - difference);
 };
 
-describe('nine-step storyboard timing', () => {
+describe('twelve-stage storyboard timing', () => {
   it('gives every stage an unhurried, ordered window', () => {
-    expect(REVEAL_TIMING.anticipationMs).toBe(900);
-    expect(REVEAL_TIMING.generationMs).toBe(4200);
-    expect(REVEAL_TIMING.settlePauseMs).toBeGreaterThanOrEqual(400);
-    expect(REVEAL_TIMING.segmentOpenMs).toBeGreaterThanOrEqual(700);
-    expect(REVEAL_TIMING.pourMs).toBeGreaterThanOrEqual(1700);
-    expect(REVEAL_TIMING.resultSettleMs).toBeGreaterThanOrEqual(600);
-    expect(REVEAL_TIMING.messageHoldMs).toBeGreaterThanOrEqual(2200);
-    expect(REVEAL_TIMING.messageFadeMs).toBeGreaterThanOrEqual(600);
-    expect(REVEAL_TIMING.sparkStartDelayMs).toBeGreaterThanOrEqual(900);
-    expect(REVEAL_TIMING.dockDelayMs).toBeGreaterThanOrEqual(500);
+    expect(REVEAL_TIMING.anticipationMs).toBe(1200);
+    expect(REVEAL_TIMING.generationMs).toBe(5200);
+    expect(REVEAL_TIMING.landingMs).toBeGreaterThanOrEqual(400);
+    expect(REVEAL_TIMING.settlePauseMs).toBeGreaterThanOrEqual(1500);
+    expect(REVEAL_TIMING.segmentOpenMs).toBeGreaterThanOrEqual(1200);
+    expect(REVEAL_TIMING.pourMs).toBeGreaterThanOrEqual(2600);
+    expect(REVEAL_TIMING.resultSettleMs).toBeGreaterThanOrEqual(2400);
+    expect(REVEAL_TIMING.numberFlashCount).toBe(2);
+    expect(REVEAL_TIMING.messageHoldMs).toBeGreaterThanOrEqual(2600);
+    expect(REVEAL_TIMING.messageFadeMs).toBeGreaterThanOrEqual(700);
+    expect(REVEAL_TIMING.sparkStartDelayMs).toBeGreaterThanOrEqual(1100);
+    // The final hold is a real hold, and the dock follows it.
+    expect(REVEAL_TIMING.finalHoldMs).toBeGreaterThanOrEqual(2400);
+    expect(REVEAL_TIMING.dockDelayMs).toBeGreaterThan(REVEAL_TIMING.finalHoldMs);
   });
 
   it('stops the percentage and the wheel on the same frame', () => {
@@ -59,7 +63,7 @@ describe('nine-step storyboard timing', () => {
     expect(REVEAL_COMPLETE_MS).toBe(POUR_END_MS + REVEAL_TIMING.resultSettleMs);
   });
 
-  it('builds nine ordered stages whose ends meet cleanly', () => {
+  it('builds twelve ordered stages whose ends meet cleanly', () => {
     const stages = buildStoryboard({
       tierMessage: 'Your luck is in the mid-range today.',
       eventDurationMs: 9800,
@@ -69,12 +73,14 @@ describe('nine-step storyboard timing', () => {
       'anticipation',
       'generation',
       'landing',
-      'segmentOpen',
+      'colourSelect',
+      'vesselOpen',
       'pour',
-      'resultSettle',
+      'numberReveal',
       'message',
       'celebration',
       'spark',
+      'hold',
       'dock',
     ]);
     for (let index = 0; index < stages.length - 1; index += 1) {
@@ -91,14 +97,45 @@ describe('nine-step storyboard timing', () => {
     );
   });
 
-  it('takes roughly 25–32 seconds for a complete, unhurried run', () => {
+  it('takes roughly forty seconds for a complete, unhurried run', () => {
     const total = getDockMs(
       'Your luck is in the mid-range today.',
       9800,
       'Even a small step forward can change the direction of your day.',
     );
-    expect(total).toBeGreaterThanOrEqual(25_000);
-    expect(total).toBeLessThanOrEqual(32_000);
+    expect(total).toBeGreaterThanOrEqual(36_000);
+    expect(total).toBeLessThanOrEqual(45_000);
+  });
+
+  it('never shortens the tier celebration to force an identical clock', () => {
+    const message = 'Your luck is running high today!';
+    const spark = 'Even a small step forward can change the direction of your day.';
+    const meteor = getDockMs(message, EVENTS.find((event) => event.id === 'meteor').minDurationMs, spark);
+    const fireworks = getDockMs(
+      message,
+      EVENTS.find((event) => event.id === 'fireworks').maxDurationMs,
+      spark,
+    );
+    // The fireworks finale is three seconds longer than the shortest meteor
+    // shower, and the storyboard keeps that difference instead of trimming it.
+    expect(fireworks - meteor).toBe(3500);
+  });
+
+  it('reveals the Lucky Number only after the colour has finished draining', () => {
+    const stages = buildStoryboard({
+      tierMessage: 'Your luck is in the mid-range today.',
+      eventDurationMs: 9800,
+      sparkMessage: 'Even a small step forward can change the direction of your day.',
+    });
+    const vessel = stages.find((stage) => stage.id === 'vesselOpen');
+    const pour = stages.find((stage) => stage.id === 'pour');
+    const number = stages.find((stage) => stage.id === 'numberReveal');
+    // The vessel finishes opening before a single drop falls.
+    expect(vessel.endMs).toBe(pour.startMs);
+    expect(pour.startMs + STORYBOARD_TIMING.pourMs).toBe(POUR_END_MS);
+    // The number window opens only when the drain has completely finished.
+    expect(pour.endMs).toBe(POUR_END_MS);
+    expect(number.startMs).toBe(pour.endMs);
   });
 
   it('starts the celebration only after the message has been held and faded', () => {
@@ -127,13 +164,14 @@ describe('nine-step storyboard timing', () => {
 });
 
 describe('percentage generation', () => {
-  it('begins at 0% and never reveals the result early', () => {
+  it('sweeps the real 5–100 scale and never reveals the result early', () => {
     const finals = [5, 30, 31, 65, 66, 100];
+    // A result above the minimum starts the readout on the real scale minimum.
+    expect(sampleGenerationPercentage(0, 4200, 100)).toBe(5);
     for (const final of finals) {
-      expect(sampleGenerationPercentage(0, 4200, final)).toBe(0);
       for (let elapsed = 0; elapsed < 4200; elapsed += 16) {
         const value = sampleGenerationPercentage(elapsed, 4200, final);
-        expect(value).toBeGreaterThanOrEqual(0);
+        expect(value).toBeGreaterThanOrEqual(5);
         expect(value).toBeLessThanOrEqual(99);
         expect(value).not.toBe(final);
       }
@@ -161,8 +199,10 @@ describe('percentage generation', () => {
   it('keeps the result inside the existing 5–100 range', () => {
     for (const final of [5, 100]) {
       expect(sampleGenerationPercentage(4200, 4200, final)).toBe(final);
-      expect(sampleGenerationPercentage(0, 4200, final)).toBe(0);
     }
+    // 5 is the floor of the scale, so a 5% result starts one point away from it.
+    expect(sampleGenerationPercentage(0, 4200, 5)).toBe(6);
+    expect(sampleGenerationPercentage(0, 4200, 100)).toBe(5);
   });
 });
 

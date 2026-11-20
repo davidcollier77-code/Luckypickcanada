@@ -1,3 +1,26 @@
+## 2026-11-20 — Lucky Meter twelve-stage cinematic polish (spec 199)
+
+- Reworked the Lucky Meter presentation into one continuous twelve-stage
+  cinematic: a layered foreground leaf pile carried away by one gust, a
+  plaque-free 5–100 percentage generation, a seasonal colour settle, a
+  three-dimensional transparent vessel that opens before it is filled, a Lucky
+  Number held until the drain completes and flashed twice, the existing tier
+  celebrations at their full stored lengths, a maple-leaf Spark cursor, a real
+  final hold and the paired Home/countdown dock.
+- Retimed `app/lib/lucky-meter/storyboard.js` to roughly forty seconds without
+  shortening any tier's celebration, and exposed the twelve ordered stages plus
+  the new landing, number-flash and final-hold values.
+- Changed generation sampling to the meter's real 5–100 scale, removed the
+  continuous drifting-leaf ornament overlay from the route and replaced the
+  flat colour card with a DOM + CSS 3D vessel, adding no renderer, dependency,
+  preloader or WebGPU path.
+- Timed the pour cue to the first drop and added a `number-reveal` cue on the
+  existing recording; the deeper layered finale boom is unchanged.
+- Verified the focused and full Vitest suites (1,133 tests), `tsc --noEmit`, the
+  production build and a measured 416,229,183-byte (396.95 MiB) build under the
+  495 MiB cap, and the Playwright `lucky-meter-daily-resonance` spec on desktop,
+  mobile-390 and mobile-412 including reduced motion and the WebGL fallback.
+
 ## 2026-11-20 — PR #1983 review repairs and Dependency Health checker (spec 198)
 
 - Added Dependency Health & Vulnerability Review as the seventh universal category, replacing the former top-level Dependabot row while keeping exactly seven categories and preserving governance. It checks changed manifests/lockfiles against open dependency advisories, never fails a PR for unchanged outdated dependencies, reports NOT RUN when the advisory source is unreadable, and does not require Dependabot to have run; `.github/dependabot.yml` is unchanged.
