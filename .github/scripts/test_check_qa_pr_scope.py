@@ -13,6 +13,7 @@ from check_qa_pr_scope import (
 
 OWNER = "davidcollier77-code"
 HEAD_SHA = "fixture-head-sha"
+SCOPE_CHANGE = "Scope changed: the shared component is required by the QA change.\n\n"
 
 
 def declaration(**overrides):
@@ -40,9 +41,10 @@ def declaration(**overrides):
     return value
 
 
-def pr_body(value):
+def pr_body(value, preamble=""):
     return (
         "## Purpose\nThis change improves QA infrastructure.\n\n"
+        + preamble
         + START_MARKER
         + "\n"
         + json.dumps(value)
@@ -67,13 +69,13 @@ def approval_digest(entries, value, body=None):
     return _digest({"head_sha": HEAD_SHA, "entries": entries, "scope": scope_context})
 
 
-def run_check(paths, value=None, comments=None):
+def run_check(paths, value=None, comments=None, preamble=""):
     records = [
         {"filename": path, "status": "modified"}
         for path in paths
     ]
     return validate(
-        {"number": 42, "body": pr_body(value or declaration()), "head": {"sha": HEAD_SHA}, "changed_files": len(records)},
+        {"number": 42, "body": pr_body(value or declaration(), preamble), "head": {"sha": HEAD_SHA}, "changed_files": len(records)},
         records,
         comments or [],
         OWNER,
@@ -223,17 +225,20 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
                 {"tool": "playwright", "reference": "pending-pr-check", "purpose": "Visual regression verification"}
             ],
         )
-        result = run_check(["app/new-component.tsx"], value)
+        result = run_check(["app/new-component.tsx"], value, preamble=SCOPE_CHANGE)
         self.assertEqual(result["status"], "FAIL")
         approval = result["approvals"]["scope_expansion"]
         self.assertFalse(approval["approved"])
-        self.assertIn("/approve-scope " + approval_digest(entries, value), approval["command"])
+        self.assertIn(
+            "/approve-scope " + approval_digest(entries, value, pr_body(value, SCOPE_CHANGE)),
+            approval["command"],
+        )
 
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries, value),
+            "body": "/approve-scope " + approval_digest(entries, value, pr_body(value, SCOPE_CHANGE)),
             "user": {"login": OWNER},
         }]
-        approved = run_check(["app/new-component.tsx"], value, comments)
+        approved = run_check(["app/new-component.tsx"], value, comments, SCOPE_CHANGE)
         self.assertEqual(approved["status"], "PASS")
         self.assertTrue(approved["approvals"]["scope_expansion"]["approved"])
 
@@ -245,10 +250,10 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries, value),
+            "body": "/approve-scope " + approval_digest(entries, value, pr_body(value, SCOPE_CHANGE)),
             "user": {"login": "outside-contributor"},
         }]
-        result = run_check(["app/new-component.tsx"], value, comments)
+        result = run_check(["app/new-component.tsx"], value, comments, SCOPE_CHANGE)
         self.assertEqual(result["status"], "FAIL")
 
     def test_scope_approval_digest_is_bound_to_paths_and_reasons(self):
@@ -260,10 +265,10 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries, value),
+            "body": "/approve-scope " + approval_digest(entries, value, pr_body(value, SCOPE_CHANGE)),
             "user": {"login": OWNER},
         }]
-        result = run_check(["app/new-component.tsx"], value, comments)
+        result = run_check(["app/new-component.tsx"], value, comments, SCOPE_CHANGE)
         self.assertEqual(result["status"], "FAIL")
 
     def test_approval_is_invalidated_when_prose_scope_description_changes(self):
@@ -273,7 +278,7 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             scope_expansion=[{"path": "app/new-component.tsx", "reason": entries["app/new-component.tsx"]}],
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
-        original_body = pr_body(value)
+        original_body = pr_body(value, SCOPE_CHANGE)
         comments = [{
             "body": "/approve-scope " + approval_digest(entries, value, original_body),
             "user": {"login": OWNER},
@@ -299,12 +304,12 @@ class ScopeExpansionApprovalTests(unittest.TestCase):
             browser_evidence=[{"tool": "playwright", "reference": "run-42", "purpose": "Visual regression verification"}],
         )
         comments = [{
-            "body": "/approve-scope " + approval_digest(entries, value),
+            "body": "/approve-scope " + approval_digest(entries, value, pr_body(value, SCOPE_CHANGE)),
             "user": {"login": OWNER},
         }]
         records = [{"filename": "app/new-component.tsx"}]
         changed_head = validate(
-            {"number": 44, "body": pr_body(value), "head": {"sha": "newer-head-sha"}, "changed_files": 1},
+            {"number": 44, "body": pr_body(value, SCOPE_CHANGE), "head": {"sha": "newer-head-sha"}, "changed_files": 1},
             records,
             comments,
             OWNER,
@@ -337,19 +342,23 @@ class VisualEvidenceTests(unittest.TestCase):
                 self.assertEqual(result["status"], "PASS")
                 self.assertEqual(result["browser_evidence"][0]["tool"], tool.casefold())
 
-    def test_global_stylesheet_and_visual_tooling_config_require_browser_evidence(self):
+    def test_global_stylesheet_and_visual_tooling_config_need_no_submitter_browser_evidence(self):
         for path in ("styles/tokens.css", "app/theme.scss", "tailwind.config.ts", "next.config.mjs"):
             with self.subTest(path=path):
                 value = declaration(paths=[path])
                 result = run_check([path], value)
-                self.assertEqual(result["status"], "FAIL")
-                self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+                self.assertEqual(result["status"], "PASS")
+                self.assertEqual(result["browser_evidence"], [])
+                self.assertFalse(any("browser evidence" in error for error in result["errors"]))
 
-    def test_visual_change_without_browser_evidence_fails(self):
+    def test_visual_change_needs_no_personal_browser_evidence(self):
+        # Automated Playwright verification owns the browser result; the
+        # submitter is never required to run a browser or take screenshots.
         value = declaration(paths=["components/Example.tsx"])
         result = run_check(["components/Example.tsx"], value)
-        self.assertEqual(result["status"], "FAIL")
-        self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["browser_evidence"], [])
+        self.assertEqual(result["visual_changes"], ["components/Example.tsx"])
 
     def test_backend_api_and_ci_paths_do_not_require_browser_evidence(self):
         for path in (
@@ -366,14 +375,16 @@ class VisualEvidenceTests(unittest.TestCase):
                 self.assertEqual(result["status"], "PASS")
                 self.assertEqual(result["browser_evidence"], [])
 
-    def test_frontend_paths_still_require_browser_evidence_when_mixed_with_api_changes(self):
+    def test_mixed_api_and_frontend_paths_need_no_submitter_browser_evidence(self):
         paths = ["app/api/checkout/route.js", "app/page.tsx"]
         value = declaration(paths=paths)
         result = run_check(paths, value)
-        self.assertEqual(result["status"], "FAIL")
-        self.assertTrue(any("without browser evidence" in error for error in result["errors"]))
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["browser_evidence"], [])
 
-    def test_declared_visual_impact_requires_browser_evidence_on_nonvisual_path(self):
+    def test_declared_visual_impact_forces_automated_visual_qa_without_submitter_evidence(self):
+        # Visual QA already reads visual_impact.required; the submitter still
+        # supplies no personal browser run.
         value = declaration(
             visual_impact={
                 "required": True,
@@ -381,8 +392,9 @@ class VisualEvidenceTests(unittest.TestCase):
             }
         )
         result = run_check([".github/scripts/checker.py"], value)
-        self.assertEqual(result["status"], "FAIL")
-        self.assertTrue(any("visual_impact" in error for error in result["errors"]))
+        self.assertEqual(result["status"], "PASS")
+        self.assertTrue(result["visual_impact"]["required"])
+        self.assertEqual(result["browser_evidence"], [])
 
     def test_nonvisual_impact_on_visual_path_is_a_reviewer_warning(self):
         value = declaration(
@@ -393,7 +405,7 @@ class VisualEvidenceTests(unittest.TestCase):
             },
         )
         result = run_check(["components/Example.tsx"], value)
-        self.assertEqual(result["status"], "FAIL")
+        self.assertEqual(result["status"], "PASS")
         self.assertTrue(result["warnings"])
         self.assertTrue(any("visual_impact.required is declared as false" in item for item in result["warnings"]))
         self.assertTrue(any("A reviewer should confirm" in item for item in result["warnings"]))
@@ -443,6 +455,68 @@ class VisualEvidenceTests(unittest.TestCase):
         result = run_check(["components/Example.tsx"], value)
         self.assertEqual(result["browser_evidence"][0]["tool"], "browserless")
         self.assertEqual(result["browser_evidence"][0]["reference"], "browserless-session-42")
+
+
+class ScopeChangeWordingTests(unittest.TestCase):
+    def expansion_declaration(self):
+        return declaration(
+            paths=["app/new-component.tsx"],
+            scope_expansion=[
+                {
+                    "path": "app/new-component.tsx",
+                    "reason": "Shared component required by the QA change",
+                }
+            ],
+        )
+
+    def run_expansion(self, preamble):
+        return run_check(
+            ["app/new-component.tsx"], self.expansion_declaration(), preamble=preamble
+        )
+
+    def test_expansion_requires_the_exact_scope_changed_wording(self):
+        for preamble in (
+            "",
+            "Scope Change: the component was added.\n\n",
+            "scope changed: the component was added.\n\n",
+            "Changed scope: the component was added.\n\n",
+        ):
+            with self.subTest(preamble=preamble):
+                result = self.run_expansion(preamble)
+                self.assertTrue(any("Scope changed" in error for error in result["errors"]))
+                self.assertEqual(result["scope_change_statement"], "")
+
+    def test_a_mid_sentence_mention_does_not_satisfy_the_requirement(self):
+        result = self.run_expansion(
+            "This description mentions Scope changed: but not as its own line.\n\n"
+        )
+        self.assertEqual(result["scope_change_statement"], "")
+        self.assertTrue(any("Scope changed" in error for error in result["errors"]))
+
+    def test_a_line_starting_with_the_phrase_and_an_explanation_is_accepted(self):
+        result = self.run_expansion(
+            "**Scope changed:** the shared component is required by the QA change.\n\n"
+        )
+        self.assertEqual(
+            result["scope_change_statement"],
+            "the shared component is required by the QA change.",
+        )
+
+    def test_scope_changed_requires_a_specific_explanation(self):
+        result = self.run_expansion("Scope changed:\n\n")
+        self.assertTrue(any("Scope changed" in error for error in result["errors"]))
+        self.assertEqual(result["scope_change_statement"], "")
+
+    def test_scope_changed_wording_is_captured_but_not_an_approval(self):
+        result = self.run_expansion(SCOPE_CHANGE)
+        self.assertEqual(
+            result["scope_change_statement"],
+            "the shared component is required by the QA change.",
+        )
+        self.assertFalse(result["approvals"]["scope_expansion"]["approved"])
+        self.assertTrue(
+            any("scope_expansion" in error for error in result["errors"])
+        )
 
 
 class BaselineAndGovernanceApprovalTests(unittest.TestCase):

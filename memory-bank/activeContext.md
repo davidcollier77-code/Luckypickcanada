@@ -1,6 +1,18 @@
-# Active Context — Graphics Development Toolkit
+# Active Context — Seven Checker Categories
 
-## Current Task — Shared Graphics Toolkit Guidance (spec 197)
+## Current Task — Seven-category PR verification (spec 198, PR #1983)
+
+- **Spec Kit feature:** `specs/198-seven-checker-categories`
+- **Branch:** `freebuff/25590a89225c606a9ca3e3ec` (PR #1983, open and unmerged)
+- **Scope:** One consolidated PR verification report with exactly seven categories: QA Checker, DevSkim, PR Scope Verification, Protected File Changes, Verification Integrity, Governance and Workflow Verification and Dependency Health & Vulnerability Review. Statuses are `PASSED`, `FAILED`, `WARNING` and `NOT RUN`.
+- **Checker 7 — Dependency Health & Vulnerability Review:** runs on every pull request from changed `package.json`/lockfiles plus GitHub's open dependency advisories. Unchanged or unrelated outdated dependencies are context only and never fail a PR; a changed dependency with an open high/critical advisory fails; a manifest without its lockfile or a moderate advisory warns; an unreadable advisory source is `NOT RUN`. Dependabot remains the unchanged weekly updater and is not a prerequisite.
+- **Review repairs on PR #1983:** owner `/approve-` comments refresh the report; empty or malformed verification audits are `NOT RUN` and an audit for another head fails; a check run without `head_sha` is not current-head evidence; a render failure replaces the previous comment with a marker-first `NOT RUN` placeholder; changed-code findings render `excerpt`/`recommendation`; bot-authored PRs report the human attestation as `NOT RUN` instead of failing; check runs and dependency advisories are paginated; the final size fallback slices UTF-8 bytes.
+- **Preserved:** DevSkim scanning/suppression/SARIF/upload, the full unit suite, the TypeScript check, the OpenNext build and 495 MiB gate, both Playwright shards and all committed baselines. They are supporting evidence inside QA Checker, never extra top-level categories.
+- **Declarations:** the exact pre-submission code quality review line is required for QA Checker; the exact human authorization line is required for protected-file changes in addition to the existing environment-protected gate. Scope expansion requires the exact words `Scope changed` plus an explanation and the existing owner digest approval.
+- **Removed requirement:** submitters no longer supply personal browser runs, screenshots or manual browser evidence; automated Playwright owns browser verification against the current head.
+- **Documentation:** `PR_SUBMISSION.md` and `.github/pull_request_template.md` agree on the complete PR description, declarations and all seven categories.
+
+## Previous Task — Shared Graphics Toolkit Guidance (spec 197)
 
 - **Spec Kit feature:** `specs/197-shared-graphics-toolkit-guidance`
 - **Branch:** `chatgpt/197-shared-graphics-toolkit-guidance`

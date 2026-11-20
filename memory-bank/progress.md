@@ -1,3 +1,19 @@
+## 2026-11-20 — PR #1983 review repairs and Dependency Health checker (spec 198)
+
+- Added Dependency Health & Vulnerability Review as the seventh universal category, replacing the former top-level Dependabot row while keeping exactly seven categories and preserving governance. It checks changed manifests/lockfiles against open dependency advisories, never fails a PR for unchanged outdated dependencies, reports NOT RUN when the advisory source is unreadable, and does not require Dependabot to have run; `.github/dependabot.yml` is unchanged.
+- Repaired the review findings: owner `/approve-` comments refresh the report from `github.event.issue.number`; empty or malformed verification audits fail closed and an audit for another head fails; check runs without `head_sha` are rejected; a render failure publishes a marker-first NOT RUN placeholder and the gate distinguishes exit 2 from a failed category; changed-code findings render `excerpt`/`recommendation`; bot-authored PRs report the human attestation as NOT RUN; check runs and dependency advisories are paginated; the final size fallback slices UTF-8 bytes.
+- Updated `PR_SUBMISSION.md`, `.github/pull_request_template.md`, the Spec 198 spec/plan/tasks and the Memory Bank so all seven standards are consistent.
+- Local checks: Python checker suites 116 tests, focused Vitest 16 tests; full-suite, type-check, build and size results are recorded in the PR body.
+
+## 2026-11-20 — Seven-category PR verification report (spec 198)
+
+- Added `.github/scripts/pr_verification_report.py` and `.github/workflows/pr-verification-report.yml`: one sticky report with exactly seven categories and the statuses `PASSED`, `FAILED`, `WARNING` and `NOT RUN`, always evaluated against the current head SHA.
+- Folded the changed-code review, test-quality, performance, security-alert and Visual QA summary reporting into the owning categories and removed the duplicate standalone comment workflows. DevSkim scanning/suppression/SARIF/upload, the full unit suite, the TypeScript check, the OpenNext build and 495 MiB gate, both Playwright shards and all baselines remain intact; no `pull_request` code is checked out by the reporting workflow.
+- Added the exact pre-submission code quality review and protected-file human authorization declarations, required the exact words `Scope changed` plus an explanation for expansions while retaining owner digest approvals, and removed the submitter browser-evidence requirement from the scope checker. `Dependabot` is reported `NOT RUN` with an explanation when no applicable update exists.
+- Rewrote `PR_SUBMISSION.md` and `.github/pull_request_template.md` so both require the same declarations, QA scope fields, Spec Kit/library/Memory Bank reporting and handoff.
+- Added `test_pr_verification_report.py`, updated the scope checker tests, rewrote the workflow-hygiene test and retargeted the sticky-comment test to the consolidated report.
+- Verification is recorded in the PR body after the local checker, Vitest, type-check, build and build-size results are measured.
+
 ## 2026-11-20 — Shared Graphics Toolkit Guidance (spec 197)
 
 - Added a permanent 🟢 shared `AGENTS.md` section for ChatGPT and Freebuff, routing visual creation and polishing to the existing graphics README, rendering architecture, `useCreativeExperience` integration hook, visual registry/runtime and centralized Resource-Readiness Hub.

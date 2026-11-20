@@ -188,6 +188,7 @@ jobs:
           python3 -m py_compile \
             .github/scripts/check_qa_pr_scope.py \
             .github/scripts/checker_suite.py \
+            .github/scripts/pr_verification_report.py \
             .github/scripts/report_visual_qa_install_timings.py \
             .github/scripts/review_pr_changes.py \
             .github/scripts/summarize_devskim_findings.py \
@@ -195,6 +196,7 @@ jobs:
           PYTHONPATH=.github/scripts python3 -m unittest \
             test_check_qa_pr_scope \
             test_checker_suite \
+            test_pr_verification_report \
             test_report_visual_qa_install_timings \
             test_review_pr_changes \
             test_summarize_devskim_findings \
