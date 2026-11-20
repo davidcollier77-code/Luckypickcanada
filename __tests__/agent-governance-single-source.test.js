@@ -223,7 +223,7 @@ describe('single-source agent governance', () => {
   it('requires shared graphics toolkit and resource-readiness guidance for both agents', () => {
     const agents = readAgents();
     const start = agents.indexOf('🟢 SHARED GRAPHICS TOOLKIT AND CREATIVE WORKBENCH');
-    const end = agents.indexOf('\\n\\nPR SUBMISSION DOCUMENTATION', start);
+    const end = agents.indexOf('\n\nPR SUBMISSION DOCUMENTATION', start);
     const section = agents.slice(start, end);
 
     expect(start).toBeGreaterThanOrEqual(0);
