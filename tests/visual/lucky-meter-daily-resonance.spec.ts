@@ -158,6 +158,17 @@ async function startReveal(page: Page) {
   }).toPass({ timeout: 15_000 });
 }
 
+/**
+ * A run that crosses local midnight correctly clears today's reading for the
+ * new day, which aborts a storyboard mid-sequence and leaves the page back at
+ * its arrival screen. Pin the wall clock at midday so a long cinematic can
+ * never straddle the rollover. `setFixedTime` freezes only `Date`; timers and
+ * `performance.now` keep running, so the sequence still animates normally.
+ */
+async function pinNoon(page: Page) {
+  await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
+}
+
 async function readStoredResult(page: Page) {
   return page.evaluate((key) => {
     const raw = window.localStorage.getItem(key);
@@ -215,6 +226,12 @@ test.describe('Daily Resonance storyboard', () => {
   test('stops the wheel and percentage together, then pours the colour', async ({
     page,
   }) => {
+    // The storyboard alone holds this test for 15.2 s before the twelve segment
+    // assertions run, so the default 30 s budget is short on the mobile
+    // projects under software WebGL. The assertions are unchanged; only the
+    // budget grows, as it already does for the full storyboard test below.
+    test.slow();
+    await pinNoon(page);
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     // `landed` is a deliberate 450 ms beat before the pour. Polling can miss it
     // on a slow runner, so record the phase transitions from the first frame.
@@ -291,6 +308,7 @@ test.describe('Daily Resonance storyboard', () => {
     page,
   }) => {
     test.slow();
+    await pinNoon(page);
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
     await startReveal(page);
 
