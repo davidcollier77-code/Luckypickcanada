@@ -237,8 +237,12 @@ jobs:
           set -e
           echo "status=$status" >> "$GITHUB_OUTPUT"
           # A build/render error must never leave the previous PASSED comment
-          # visible. Publish a marker-first NOT RUN placeholder instead.
-          if [[ "$status" -ne 0 || ! -s "$RUNNER_TEMP/comment.md" ]]; then
+          # visible. Exit 1 is not a render error: at least one category is
+          # FAILED and the renderer has already written the real report, which
+          # must be published so that failure stays visible. Replace the report
+          # with a marker-first NOT RUN placeholder only when rendering failed
+          # or produced no body.
+          if [[ ( "$status" -ne 0 && "$status" -ne 1 ) || ! -s "$RUNNER_TEMP/comment.md" ]]; then
             head_sha="$(jq -r '.head.sha // "unknown"' "$RUNNER_TEMP/pr.json" 2>/dev/null || echo unknown)"
             cat > "$RUNNER_TEMP/comment.md" <<EOF
           <!-- qa-verification-report -->

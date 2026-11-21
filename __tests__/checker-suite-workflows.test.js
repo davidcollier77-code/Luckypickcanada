@@ -92,6 +92,9 @@ describe('consolidated PR verification report', () => {
     expect(reportWorkflow).toContain('[.[].check_runs[]]');
     expect(reportWorkflow).toContain('NOT RUN placeholder');
     expect(reportWorkflow).toContain('RENDER_STATUS');
+    // Exit 1 is a FAILED category with a rendered report, not a render error.
+    expect(reportWorkflow).toContain('"$status" -ne 1');
+    expect(reportWorkflow).not.toContain('if [[ "$status" -ne 0 ||');
     expect(upsert).toContain('refusing to leave a stale report visible');
   });
 
