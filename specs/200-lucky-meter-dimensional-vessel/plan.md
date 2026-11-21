@@ -4,6 +4,12 @@
 
 **Branch**: `freebuff/856a686c49f64f37f6ddb027`
 
+> **Reconciled 21 November 2026.** The approved outline supersedes this plan's
+> top-right Home contract and glyph-by-glyph Spark. The CSS vessel is a
+> functional fallback, not only a pending-scene cover. Every celebration runs
+> for 12,000 ms, including a celebration restarted after a refresh; the saved
+> reading is unchanged. T038–T041 and T052 remain unverified.
+
 ## Technical Context
 
 - Next.js 16 App Router, React 19, Tailwind 4; Three.js 0.187 is already a
@@ -35,16 +41,18 @@
    whole generation/landing beat to compile shaders and compose its
    environment. Hidden content is excluded from the accessibility tree and
    from layout.
-4. **CSS remains the fallback.** The existing CSS vessel renders under the
-   canvas and is shown whenever the scene is unavailable or still pending.
+4. **CSS remains the functional fallback.** The existing CSS vessel renders
+   under the canvas and is shown whenever the scene is unavailable or still
+   pending. It must support the same cylindrical silhouette and open, fill and
+   drain states, including first paint and WebGL context loss.
 5. **No post-processing for this surface.** A full-screen bloom chain costs
    more shader compilation than it adds on a 416×216 scene; emissive liquid,
    additive stream layers, the env-lit glass and the gold dust carry the light.
 6. **Home contract without a flash.** `showHome = !isCompact && (dockReady ||
    !result)`; `showCountdown = !isCompact && dockReady && !stageActive`. Home is
-   in its top-right position from the server-rendered first paint, hides the
-   moment the reveal starts and returns with the countdown only after the Spark
-   and the final hold. The countdown never appears before the dock.
+   in the last row of the results panel from the server-rendered first paint,
+   hides the moment the reveal starts and returns with the countdown only after
+   the Spark and the final hold. The countdown never appears before the dock.
 
 ## Files
 
@@ -54,7 +62,7 @@
 | `components/LuckyMeterVessel.tsx` | New panel: warm-up host, imperative canvas, CSS fallback, caption |
 | `components/DailyResonance.tsx` | Mounts the vessel early, Home/countdown derivation |
 | `components/LuckyMeterRing.jsx` | Wheel radii, bevel shading, flat pour streak removed |
-| `components/LuckyMeterSkyWriting.tsx` | Whole-word glyph reveal and flourish |
+| `components/LuckyMeterSkyWriting.tsx` | Single-stroke path-traced Spark and flourish |
 | `app/globals.css` | Canvas host, gold script, dock arrival, reduced-motion rules |
 | `app/lib/gpu-geometry.js` | Higher-contrast medallion rim, bezel, groove and well |
 | `app/lib/graphics/experiences.js` | `lucky-meter-vessel` descriptor |
