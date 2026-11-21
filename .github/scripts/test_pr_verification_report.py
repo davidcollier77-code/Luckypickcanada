@@ -1090,6 +1090,31 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn('"$RENDER_STATUS" == "2"', text)
         self.assertIn('"$RENDER_STATUS" == "1"', text)
 
+    def test_report_waits_for_the_current_head_before_reading_evidence(self):
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+
+        # The bounded wait uses the audit's existing --wait-seconds capability
+        # instead of a second polling loop.
+        self.assertIn("--wait-seconds 600", text)
+        self.assertIn("--poll-interval 15", text)
+        self.assertIn("Wait for current-head checks to settle", text)
+        self.assertLess(
+            text.index("Wait for current-head checks to settle"),
+            text.index("Fetch pull request, diff, comments and current-head checks"),
+        )
+        # Waiting is not a gate: the audit, renderer and status gate still decide.
+        self.assertIn("wait_status", text)
+        self.assertNotIn("--wait-seconds 0", text)
+
+        # The wait stays inside the job's own time bound.
+        wait_seconds = int(re.search(r"--wait-seconds (\d+)", text).group(1))
+        timeout_minutes = int(re.search(r"timeout-minutes: (\d+)", text).group(1))
+        self.assertLess(wait_seconds, timeout_minutes * 60)
+
     def test_report_workflow_is_triggered_by_pr_events_and_checker_completion(self):
         path = os.path.join(
             os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"

@@ -1,3 +1,11 @@
+<!--
+Read `PR_SUBMISSION.md` twice: before implementation begins, alongside the
+applicable QA checker requirements, and again immediately before creating this
+pull request as the final submission checklist.
+
+Keep the declarations below exact.
+-->
+
 ## Purpose, task goal and scope
 
 Describe the problem, the intended outcome, the task goal and the scope boundaries. List the task groups selected from `.freebuff/` with a brief reason for each.

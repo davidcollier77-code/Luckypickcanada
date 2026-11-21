@@ -36,10 +36,20 @@ else
 fi
 
 echo -e "\n--- Testing Verification Status Integrity Checker ---"
-# Proves skipped or unrun checks are reported NOT RUN and that checks from an
-# earlier commit are never accepted as evidence for the current head.
+# Proves skipped or unrun checks are reported NOT RUN, that checks from an
+# earlier commit are never accepted as evidence for the current head, and that
+# the bounded wait the report relies on follows the current head.
 if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_verify_pr_verification_status.py'; then
   echo "❌ Verification status integrity tests failed; remaining verification was not run." >&2
+  exit 1
+fi
+
+echo -e "\n--- Testing the Consolidated Report Contract ---"
+# Proves the report waits, bounded, for the current head's applicable checks
+# before reading evidence, and that the seven categories, declarations and
+# publication behaviour are unchanged.
+if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_pr_verification_report.py'; then
+  echo "❌ Consolidated report contract tests failed; remaining verification was not run." >&2
   exit 1
 fi
 
@@ -71,4 +81,6 @@ if ! node scripts/test-refresh-docs.js; then
   exit 1
 fi
 
-echo -e "\n✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!"
+echo -e "\n✅ All verification steps passed."
+echo "Before opening the pull request, re-read PR_SUBMISSION.md as the final submission checklist."
+echo "Automated Playwright/Visual QA runs after PR creation; submitters do not need to supply browser evidence."
