@@ -161,7 +161,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     vi.restoreAllMocks();
   });
 
-  it('shows the meter and Start in the welcome state without Home or a reading', () => {
+  it('shows the meter, Home and Start in the welcome state without a reading', () => {
     render(<DailyResonance />);
 
     expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
@@ -169,8 +169,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'idle');
     expect(screen.getByTestId('lucky-meter-start')).toHaveAttribute('data-ready', 'false');
 
-    // Home and the countdown are docked only after the Spark is written.
-    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    // Home is present from the first frame; the countdown belongs to the end
+    // of the reading and must not be shown yet.
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
 
     // Nothing that could reveal or suggest today's reading.
@@ -412,7 +413,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'idle');
-    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    // A new day returns to the welcome state: Home is still available, but the
+    // previous reading's countdown is gone with the reading itself.
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
     expect(screen.queryByText(/Lucky Number/i)).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();

@@ -402,26 +402,28 @@ export const MEDALLION_PROFILE = Object.freeze([
   // Milled rim: the coin edge, rippled radially. The frequency has to stay far
   // enough below the lathe's segment count that the ripple reads as milling and
   // not as a jagged sawtooth after rasterising.
-  { r: 0.998, z: 0.19, albedo: [0.96, 0.79, 0.4], modulate: { amplitude: 0.008, frequency: 36 } },
-  // Flat top annulus of the rim, the catch-light band.
-  { r: 0.958, z: 0.205, albedo: [0.97, 0.83, 0.46] },
+  { r: 0.998, z: 0.19, albedo: [1.0, 0.87, 0.5], modulate: { amplitude: 0.008, frequency: 36 } },
+  // Flat top annulus of the rim, the catch-light band. With the colour wheel
+  // pulled inward this band is fully visible, so it carries the coin's read.
+  { r: 0.958, z: 0.205, albedo: [1.0, 0.9, 0.56] },
   // Outer chamfer: a wide, polished bevel down from the rim.
-  { r: 0.93, z: 0.158, albedo: [0.94, 0.72, 0.31] },
+  { r: 0.93, z: 0.158, albedo: [0.98, 0.77, 0.33] },
   // Narrow shadow groove, the dark line that reads as struck relief.
-  { r: 0.918, z: 0.124, albedo: [0.32, 0.21, 0.07] },
+  { r: 0.918, z: 0.124, albedo: [0.24, 0.15, 0.05] },
   // Raised inner bezel with its own bevel and flat crown.
-  { r: 0.912, z: 0.152, albedo: [1.0, 0.89, 0.53] },
-  { r: 0.888, z: 0.16, albedo: [1.0, 0.91, 0.57] },
+  { r: 0.912, z: 0.152, albedo: [1.0, 0.92, 0.6] },
+  { r: 0.888, z: 0.16, albedo: [1.0, 0.94, 0.66] },
   // Inner chamfer stepping down into the enamel well.
-  { r: 0.878, z: 0.118, albedo: [0.88, 0.63, 0.24] },
-  { r: 0.872, z: 0.088, albedo: [0.4, 0.27, 0.09] },
-  // Enamel well wall and recessed floor.
-  { r: 0.866, z: 0.058, albedo: [0.1, 0.08, 0.055] },
-  { r: 0.858, z: 0.038, albedo: [0.08, 0.065, 0.048] },
+  { r: 0.878, z: 0.118, albedo: [0.9, 0.66, 0.26] },
+  { r: 0.872, z: 0.088, albedo: [0.36, 0.23, 0.08] },
+  // Enamel well wall and recessed floor. It is darker than before so the lit
+  // bezel around it has a real edge instead of blending into the face.
+  { r: 0.866, z: 0.058, albedo: [0.075, 0.06, 0.042] },
+  { r: 0.858, z: 0.038, albedo: [0.06, 0.048, 0.036] },
   // A shallow enamel dome, so the well holds light instead of reading flat.
-  { r: 0.62, z: 0.045, albedo: [0.062, 0.05, 0.038] },
-  { r: 0.3, z: 0.055, albedo: [0.058, 0.047, 0.036] },
-  { r: 0.0, z: 0.06, albedo: [0.052, 0.043, 0.033] },
+  { r: 0.62, z: 0.045, albedo: [0.05, 0.04, 0.03] },
+  { r: 0.3, z: 0.055, albedo: [0.046, 0.038, 0.029] },
+  { r: 0.0, z: 0.06, albedo: [0.042, 0.035, 0.027] },
 ]);
 
 /**

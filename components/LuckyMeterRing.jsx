@@ -5,9 +5,17 @@ import { createLuckyMeterMedallionEngine } from './lucky-meter-medallion-engine'
 import { LUCKY_NUMBER_MAX, LUCKY_NUMBER_MIN } from '../app/lib/lucky-meter/config';
 import { getColourIndex } from '../app/lib/lucky-meter/reveal';
 
-/** Geometry of the twelve-segment wheel, in the shared 100×100 view box. */
-const WHEEL_OUTER_RADIUS = 43.4;
-const WHEEL_INNER_RADIUS = 31.2;
+/**
+ * Geometry of the twelve-segment wheel, in the shared 100×100 view box.
+ *
+ * The band is deliberately narrower than the coin: with the previous 43.4/31.2
+ * radii the wheel covered almost the entire struck face, so the milled rim, the
+ * raised bezel and the enamel well the medallion renderer draws were invisible.
+ * Pulling it in to 38.6/28.8 leaves a broad lit gold face around the pigments
+ * and a larger recessed well, which is what makes the object read as a coin.
+ */
+const WHEEL_OUTER_RADIUS = 38.6;
+const WHEEL_INNER_RADIUS = 28.8;
 const SEGMENT_GAP_DEGREES = 2.4;
 
 /** The maple-leaf pointer, drawn as a filled gold silhouette with a stem. */
@@ -25,8 +33,8 @@ const POINTER_PATH =
 
 /** Annulus used to clip the pigment grain to the wheel band. */
 const WHEEL_CLIP_PATH =
-  'M 50 50 m -43.2 0 a 43.2 43.2 0 1 0 86.4 0 a 43.2 43.2 0 1 0 -86.4 0 ' +
-  'M 50 50 m -31 0 a 31 31 0 1 0 62 0 a 31 31 0 1 0 -62 0';
+  'M 50 50 m -38.4 0 a 38.4 38.4 0 1 0 76.8 0 a 38.4 38.4 0 1 0 -76.8 0 ' +
+  'M 50 50 m -28.6 0 a 28.6 28.6 0 1 0 57.2 0 a 28.6 28.6 0 1 0 -57.2 0';
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -390,6 +398,25 @@ export default function LuckyMeterRing({
             stroke="url(#lucky-wheel-rim)"
             strokeWidth="1.5"
           />
+          {/* Bevel shading: a dark seat inside the outer rim and a thin lit
+              edge on the well lip, so the pigment band sits in a struck channel
+              instead of floating on the face. */}
+          <circle
+            cx="50"
+            cy="50"
+            r={WHEEL_OUTER_RADIUS - 0.55}
+            fill="none"
+            stroke="rgba(0, 0, 0, 0.38)"
+            strokeWidth="0.9"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r={WHEEL_INNER_RADIUS + 0.5}
+            fill="none"
+            stroke="rgba(0, 0, 0, 0.32)"
+            strokeWidth="0.7"
+          />
           <circle
             cx="50"
             cy="50"
@@ -419,7 +446,7 @@ export default function LuckyMeterRing({
           data-value={shownNumber}
           className="pointer-events-none absolute left-1/2 z-[16] flex -translate-x-1/2 flex-col items-center"
           style={{
-            bottom: '20.5%',
+            bottom: '22.5%',
             clipPath: `inset(${(1 - reveal) * 100}% 0 0 0)`,
             opacity: 0.35 + reveal * 0.65,
           }}
@@ -441,23 +468,12 @@ export default function LuckyMeterRing({
         </div>
       )}
 
-      {/* The pour: one continuous column from the opened segment down into the
-          Lucky Colour result area. It is attached to the meter, never a
-          detached blob. */}
+      {/* The pour itself is drawn by the Three.js vessel scene below, where it
+          has a curved body, a leading droplet and a splash. The ring keeps only
+          the segment draining, so there is no flat streak pretending to be
+          liquid. This invisible marker preserves the pour test hook. */}
       {selected && isPouring && drain > 0 && (
-        <div
-          aria-hidden="true"
-          data-testid="lucky-meter-pour"
-          className="pointer-events-none absolute left-1/2 z-[18] w-[7px] -translate-x-1/2 rounded-full"
-          style={{
-            top: 'calc(100% - 4px)',
-            height: compact ? '2rem' : '2.75rem',
-            transformOrigin: 'top center',
-            transform: `translateX(-50%) scaleY(${drain})`,
-            background: `linear-gradient(180deg, ${selected.hex} 0%, ${selected.hex}dd 58%, ${selected.hex}00 100%)`,
-            boxShadow: `0 0 12px ${selected.hex}aa`,
-          }}
-        />
+        <span aria-hidden="true" data-testid="lucky-meter-pour" className="sr-only" />
       )}
 
       {/* Fixed pointer: a gold maple leaf seated in a milled socket at 6 o'clock.

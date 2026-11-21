@@ -130,10 +130,33 @@ export default function LuckyMeterSkyWriting({
         <p
           aria-hidden="true"
           data-testid="lucky-spark-message"
-          className={`lucky-sky-writing__text ${isCompact ? 'text-[13px]' : 'text-[15px] sm:text-lg'}`}
+          className="lucky-sky-writing__text"
+          style={isCompact ? { fontSize: '1.02rem' } : undefined}
         >
           <span className="lucky-sky-writing__quote">“</span>
-          <span data-testid="lucky-spark-visible">{chars.slice(0, visibleCount).join('')}</span>
+          <span data-testid="lucky-spark-visible">
+            {/* Words are kept whole so a line never breaks mid-word, while each
+                glyph still arrives on its own writing beat. */}
+            {chars
+              .slice(0, visibleCount)
+              .join('')
+              .split(/(\s+)/)
+              .map((part, partIndex) =>
+                /^\s+$/.test(part) ? (
+                  <span key={`space-${partIndex}`} className="lucky-sky-writing__space">
+                    {part}
+                  </span>
+                ) : (
+                  <span key={`word-${partIndex}`} className="lucky-sky-writing__word">
+                    {Array.from(part).map((character, index) => (
+                      <span key={`${partIndex}-${index}`} className="lucky-sky-writing__char">
+                        {character}
+                      </span>
+                    ))}
+                  </span>
+                ),
+              )}
+          </span>
           {isWriting && (
             <span
               aria-hidden="true"
@@ -148,6 +171,8 @@ export default function LuckyMeterSkyWriting({
           <span className="lucky-sky-writing__quote">”</span>
         </p>
       )}
+
+      <span aria-hidden="true" className="lucky-sky-writing__flourish" />
     </section>
   );
 }
