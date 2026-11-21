@@ -761,7 +761,9 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       // liquid, the stream and the two plane materials are created here and are
       // not, so the scene owns their release.
       shadow?.material?.dispose();
+      shadow?.geometry?.dispose();
       caustic?.material?.dispose();
+      caustic?.geometry?.dispose();
       glassGeometry.dispose();
       liquidGeometry.dispose();
       liquidMaterial.dispose();
