@@ -125,6 +125,22 @@ describe('Lucky Meter vessel hidden warm-up lifecycle', () => {
     scene.dispose();
   });
 
+  it('restarts after an explicit stop when the visitor’s reading begins', async () => {
+    const scene = await mountScene();
+    expect(control.start).toHaveBeenCalledTimes(1);
+
+    // A consumer can pause the surface directly; that pause is still an idle
+    // stop, so the first real reading must be able to start the loop again.
+    scene.stop();
+    expect(control.stop).toHaveBeenCalledTimes(1);
+
+    scene.setState({ colour: '#2f8f6b', fill: 0.2, open: 0.12 });
+    expect(control.start).toHaveBeenCalledTimes(2);
+    expect(control.stop).toHaveBeenCalledTimes(1);
+
+    scene.dispose();
+  });
+
   it('does not restart for unchanged idle states while the warm-up is hidden', async () => {
     const scene = await mountScene();
     renderFrame(0.3);

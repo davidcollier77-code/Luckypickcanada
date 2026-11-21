@@ -775,6 +775,9 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       surface.start();
     },
     stop() {
+      // An explicit stop is an idle stop: the next state change must be able
+      // to wake the loop, exactly like the internal settled-empty path.
+      idleStopped = true;
       surface.stop();
     },
     dispose() {
