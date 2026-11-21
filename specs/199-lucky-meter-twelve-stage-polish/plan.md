@@ -4,6 +4,13 @@
 
 **Input**: Feature specification from `/specs/199-lucky-meter-twelve-stage-polish/spec.md`
 
+> **Historical plan (reconciled 21 November 2026).** This plan records the
+> implementation as built on 20 November 2026. The approved outline and Spec 200
+> supersede its square CSS 3D vessel, 5–100 monotonic generation,
+> number-after-drain, per-tier celebration lengths, top-right Home dock and
+> approximately 40 second timing. D12 is resolved: every celebration runs for
+> 12,000 ms, including a refresh restart, and the saved reading is unchanged.
+
 ## Summary
 
 Turn the existing Lucky Meter storyboard into one continuous twelve-stage
@@ -168,6 +175,6 @@ the tests assert that every window meets its neighbour.
 | Risk | Mitigation |
 | --- | --- |
 | CSS 3D flattens when a `filter` is applied to the transformed element | The drop shadow lives on the scene wrapper, not on the `preserve-3d` element |
-| A longer sequence makes restore points stale | Restore logic is unchanged; the stored duration still governs the celebration |
+| A longer sequence makes restore points stale | Historical note: the stored duration governed the celebration in this build. D12 now requires 12,000 ms for every celebration, including a refresh restart, without changing the saved reading. |
 | Retiming silently breaks an assertion that encoded the old contract | Every timing assertion was updated explicitly to the new contract, not deleted |
 | The pile covers the Start control | Composition is bounded below the copy column and asserted in tests |
