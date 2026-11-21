@@ -385,6 +385,7 @@ test.describe('Daily Resonance seasonal palettes', () => {
   }
 
   test('keeps a legacy stored HEX intact instead of rerolling it', async ({ page }) => {
+    await pinNoon(page);
     const legacy = {
       id: 'maple-red',
       name: 'Maple Red',
@@ -401,6 +402,7 @@ test.describe('Daily Resonance seasonal palettes', () => {
 
 test.describe('Daily Resonance resume points', () => {
   test('resumes the message and celebration after the pour', async ({ page }) => {
+    await pinNoon(page);
     const state = buildState({
       tierId: 'medium',
       started: true,
@@ -420,6 +422,7 @@ test.describe('Daily Resonance resume points', () => {
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
+    await pinNoon(page);
     const state = buildState({
       tierId: 'low',
       started: true,
@@ -441,6 +444,7 @@ test.describe('Daily Resonance resume points', () => {
   });
 
   test('shows a completed reading without replaying the cinematic', async ({ page }) => {
+    await pinNoon(page);
     await seed(page, buildState({ tierId: 'high', started: true }));
 
     await expect(page.getByTestId('lucky-spark-finale')).toHaveAttribute(
@@ -493,6 +497,7 @@ test.describe('Daily Resonance WebGL fallback', () => {
       } as typeof HTMLCanvasElement.prototype.getContext;
     });
 
+    await pinNoon(page);
     await seed(page, buildState({ tierId: 'medium', started: true }));
     await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
       'data-medallion',
