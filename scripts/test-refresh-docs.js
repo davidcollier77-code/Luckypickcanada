@@ -30,7 +30,7 @@ https.get = function (urlOrOptions, optionsOrCallback, callback) {
 
   const res = new EventEmitter();
   res.resume = () => {};
-  res.destroy = function (err) { if (err) req.emit('error', err); };
+  res.destroy = function (err) { if (err) res.emit('error', err); };
   const req = new EventEmitter();
 
   /* DevSkim: ignore DS172411 */ setTimeout(() => {
@@ -53,12 +53,15 @@ https.get = function (urlOrOptions, optionsOrCallback, callback) {
     if (cb) cb(res);
 
     if (mockRes.tooLarge) {
-      res.emit('data', Buffer.alloc(11 * 1024 * 1024).toString());
-      return;
+      res.emit('data', Buffer.alloc(11 * 1024 * 1024));
+      return req;
     }
 
-    if (mockRes.data) {
-      res.emit('data', mockRes.data);
+    const responseChunks = Array.isArray(mockRes.chunks)
+      ? mockRes.chunks
+      : (mockRes.data !== undefined ? [mockRes.data] : []);
+    for (const chunk of responseChunks) {
+      res.emit('data', Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
     res.emit('end');
   }, 10);
@@ -746,6 +749,94 @@ async function runTests() {
     const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
     assert.ok(!data.includes('abc123') && !data.includes('xyz789something'));
     assert.strictEqual((data.match(/sealed_token=REDACTED/g) || []).length, 2);
+  });
+
+  await test('fetchDocumentationResponse preserves UTF-8 code points split across response chunks', async () => {
+    const url = 'https://example.com/docs/split-utf8';
+    const content = '# UTF-8 Documentation\n\nThis page includes café, façade, and maple 🍁 examples across several readable documentation words.\n';
+    const bytes = Buffer.from(content, 'utf8');
+    const marker = Buffer.from('🍁', 'utf8');
+    const markerOffset = bytes.indexOf(marker);
+    assert.ok(markerOffset >= 0, 'fixture must contain the four-byte maple-leaf code point');
+    mockResponses[url] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      chunks: [
+        bytes.subarray(0, markerOffset + 1),
+        bytes.subarray(markerOffset + 1, markerOffset + 3),
+        bytes.subarray(markerOffset + 3)
+      ]
+    };
+
+    const response = await fetchDocumentationResponse('/example/docs', { type: 'url', url });
+    assert.strictEqual(response.content, content);
+    assert.ok(validateDocumentContent(response.content).ok);
+  });
+
+  await test('fetchDocumentationResponse rejects genuinely malformed UTF-8', async () => {
+    const url = 'https://example.com/docs/malformed-utf8';
+    const prefix = Buffer.from('# UTF-8 Integrity\n\nThis documentation has a malformed byte sequence ');
+    const suffix = Buffer.from(' and enough readable documentation words to pass text validation.\n');
+    const malformed = Buffer.concat([prefix, Buffer.from([0xF0, 0x28, 0x8C, 0x28]), suffix]);
+    mockResponses[url] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      chunks: [
+        malformed.subarray(0, prefix.length + 2),
+        malformed.subarray(prefix.length + 2)
+      ]
+    };
+
+    await assert.rejects(
+      () => fetchDocumentationResponse('/example/docs', { type: 'url', url }),
+      /invalid UTF-8/i
+    );
+  });
+
+  await test('runRefresh preserves an existing snapshot when upstream UTF-8 is malformed', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    const library = '/example/docs';
+    const url = 'https://example.com/docs/malformed-utf8-refresh';
+    const existing = '# Existing Documentation\n\nThis known-good snapshot remains readable and must not be replaced.\n';
+    const prefix = Buffer.from('# Broken Documentation\n\nThe upstream response contains ');
+    const suffix = Buffer.from(' malformed bytes and otherwise readable documentation content.\n');
+    const malformed = Buffer.concat([prefix, Buffer.from([0xF0, 0x28, 0x8C, 0x28]), suffix]);
+    mockResponses[url] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      chunks: [
+        malformed.subarray(0, prefix.length + 1),
+        malformed.subarray(prefix.length + 1)
+      ]
+    };
+    fs.writeFileSync(path.join(root, 'creation', '_example_docs.md'), existing);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url } },
+      inventory: [library],
+      githubShas: {}
+    }, null, 2));
+
+    const previousRetryDelay = process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+    process.env.DOCS_REFRESH_RETRY_DELAY_MS = '0';
+    try {
+      const report = createRefreshReport();
+      await runRefresh({ docsDir: root, reportPath: null }, report);
+      assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_example_docs.md'), 'utf8'), existing);
+      assert.strictEqual(report.downloadFailures.length, 1);
+      assert.match(report.downloadFailures[0].error, /invalid UTF-8/i);
+      assert.strictEqual(report.validationRejections.length, 0);
+    } finally {
+      if (previousRetryDelay === undefined) {
+        delete process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+      } else {
+        process.env.DOCS_REFRESH_RETRY_DELAY_MS = previousRetryDelay;
+      }
+      restoreDocsDirectory();
+    }
   });
 
   await test('fetchDocumentation: 15-second timeout', async () => {

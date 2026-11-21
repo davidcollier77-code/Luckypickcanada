@@ -208,6 +208,11 @@ jobs:
       - name: Run all unit tests
         run: pnpm run test
 
+      # Run the standalone updater regressions in CI as well as in the
+      # local verification script, including split-UTF-8 response boundaries.
+      - name: Run documentation refresh regression tests
+        run: node scripts/test-refresh-docs.js
+
       # Keep the application type check in QA without making QA depend on
       # Freebuff's own Agent MD verification script. Build validation runs in
       # the dedicated OpenNext workflow.
