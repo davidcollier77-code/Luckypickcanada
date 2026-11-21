@@ -1160,6 +1160,7 @@ function getUpstreamSha(lib, sourceConfig) {
             if (totalSize > MAX_DOWNLOAD_BYTES) {
               sizeExceeded = true;
               chunks.length = 0;
+              res.destroy();
               return;
             }
             chunks.push(bytes);
