@@ -1039,7 +1039,7 @@ function fetchUrlResponse(requestUrl, allowedOrigin, redirectCount = 5) {
           reject(error);
           return;
         }
-        const sanitizedData = data.replace(/sealed_token=[^&"'\\s]+/g, 'sealed_token=REDACTED');
+        const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
         resolve({
           content: sanitizedData,
           contentType: getContentType(responseHeaders),
