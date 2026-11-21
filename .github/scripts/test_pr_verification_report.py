@@ -1131,6 +1131,19 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("dependabot/alerts?state=open&per_page=100", text)
         self.assertIn("dependency-alerts.json", text)
 
+    def test_a_failed_category_is_published_instead_of_a_placeholder(self):
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
+        )
+        with open(path, encoding="utf-8") as handle:
+            text = handle.read()
+
+        # Exit 1 means a category FAILED and the renderer already wrote the real
+        # report; only a render error (any other status) or an empty body may
+        # replace it with the NOT RUN placeholder.
+        self.assertIn('( "$status" -ne 0 && "$status" -ne 1 )', text)
+        self.assertNotIn('if [[ "$status" -ne 0 ||', text)
+
     def test_render_failure_publishes_a_not_run_placeholder(self):
         path = os.path.join(
             os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
@@ -1248,6 +1261,7 @@ class WorkflowContractTests(unittest.TestCase):
                 json.dump(pr, handle)
             with open(files, "w", encoding="utf-8") as handle:
                 json.dump(evidence()["files"], handle)
+            comment = os.path.join(folder, "comment.md")
             status = report.main(
                 [
                     "--pull-request",
@@ -1256,9 +1270,17 @@ class WorkflowContractTests(unittest.TestCase):
                     files,
                     "--owner",
                     OWNER,
+                    "--comment",
+                    comment,
                 ]
             )
-        self.assertEqual(status, 1)
+            self.assertEqual(status, 1)
+            # Exit 1 must still have produced the real report for publication:
+            # the workflow publishes this body instead of a NOT RUN placeholder.
+            with open(comment, encoding="utf-8") as handle:
+                rendered = handle.read()
+        self.assertTrue(rendered.startswith(report.REPORT_MARKER))
+        self.assertIn("**FAILED**", rendered)
 
 
 if __name__ == "__main__":
