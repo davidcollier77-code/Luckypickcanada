@@ -18,7 +18,8 @@ name: PR Verification Report
 # code is never checked out or executed. Only the trusted base branch is checked
 # out. The issue_comment trigger refreshes the report after an owner approval so
 # a digest approval replaces the previous FAILED result instead of leaving it
-# stale.
+# stale. Because those triggers fire before sibling checks finish, the job waits
+# (bounded) for the current head's applicable checks before reading evidence.
 on:
   pull_request_target:
     branches: [main]
@@ -107,6 +108,43 @@ jobs:
             exit 0
           fi
           echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      # Trigger events arrive when the pull request is opened or edited and
+      # whenever a single checker finishes, so an early run of a head usually
+      # sees its sibling checks still queued or running. Wait, bounded, on the
+      # current head before reading any evidence: the audit and the renderer
+      # below then describe settled results instead of publishing a NOT RUN
+      # placeholder that a later refresh has to replace. The wait re-reads the
+      # pull request on every poll, so a commit that lands mid-wait is followed
+      # rather than reported against the previous head, and it returns at the
+      # deadline so a missing or never-finishing check cannot stall the report.
+      # It is not a gate: the audit, the renderer and the status gate below still
+      # decide the published result.
+      - name: Wait for current-head checks to settle
+        id: wait
+        if: steps.pr.outputs.number != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        shell: bash
+        run: |
+          set +e
+          python3 .github/scripts/verify_pr_verification_status.py \
+            --repo "$REPOSITORY" \
+            --pr "$PR_NUMBER" \
+            --wait-seconds 600 \
+            --poll-interval 15 \
+            > "$RUNNER_TEMP/wait.md" 2>&1
+          status=$?
+          set -e
+          echo "wait_status=$status" >> "$GITHUB_OUTPUT"
+          # 0 = settled and verified, 1 = settled but incomplete, 2 = audit
+          # error. None of them stops the report; the evidence below is audited
+          # and published with its real status.
+          if [[ "$status" -eq 2 ]]; then
+            cat "$RUNNER_TEMP/wait.md" >&2
+          fi
 
       - name: Fetch pull request, diff, comments and current-head checks
         if: steps.pr.outputs.number != ''

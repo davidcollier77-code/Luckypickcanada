@@ -536,6 +536,193 @@ class PollingDeadlineTests(unittest.TestCase):
         self.assertLessEqual(max(sleeps), 10)
 
 
+class SettlingWaitTests(unittest.TestCase):
+    """The bounded wait the report workflow uses before it reads evidence.
+
+    The workflow is triggered when the pull request is opened or edited and
+    whenever one checker finishes, so the first run for a head normally sees its
+    sibling checks queued, running or not yet created. These tests pin the
+    behaviour the report now relies on: wait for the current head, follow a new
+    head, and return at the deadline with honest evidence instead of a pass.
+    """
+
+    NEW = "c" * 40
+
+    def _harness(self, responses, timeout=600, poll=15):
+        state = {"now": 0.0}
+        polls = []
+        sleeps = []
+
+        def clock():
+            return state["now"]
+
+        def sleep(seconds):
+            sleeps.append(seconds)
+            state["now"] += seconds
+
+        def loader(repo, pr_number, token):
+            index = len(polls)
+            polls.append(index)
+            if index >= len(responses):
+                return responses[-1]
+            return responses[index]
+
+        auditor.wait_for_current_head(
+            "owner/repo",
+            42,
+            "token",
+            timeout,
+            poll,
+            loader=loader,
+            clock=clock,
+            sleep=sleep,
+        )
+        return {"polls": polls, "sleeps": sleeps, "now": state["now"]}
+
+    def _pending_required(self, sha=HEAD):
+        return [
+            check_run(
+                name,
+                sha=sha,
+                status="in_progress",
+                conclusion=None,
+                run_id=index,
+            )
+            for index, name in enumerate(auditor.REQUIRED_CHECKS, start=1)
+        ]
+
+    def test_pending_required_check_is_waited_for_until_it_completes(self):
+        pending = self._pending_required()
+        pending[0] = check_run(auditor.REQUIRED_CHECKS[0], run_id=1)
+        settled = green_checks()
+        run = self._harness(
+            [
+                (pull_request(), [commit(HEAD, "fix: head")], pending),
+                (pull_request(), [commit(HEAD, "fix: head")], settled),
+            ]
+        )
+
+        self.assertEqual(len(run["polls"]), 2)
+        self.assertEqual(len(run["sleeps"]), 1)
+        self.assertEqual(
+            auditor.audit_verification(
+                pull_request(), [commit(HEAD, "fix: head")], settled
+            )["overall_status"],
+            "VERIFIED",
+        )
+
+    def test_early_snapshot_without_check_runs_is_not_verified_and_the_wait_polls_again(
+        self,
+    ):
+        empty = (pull_request(), [commit(HEAD, "fix: head")], [])
+        settled = (pull_request(), [commit(HEAD, "fix: head")], green_checks())
+
+        # The trigger fires before GitHub has created the checks: publishing
+        # that snapshot would report every required check NOT RUN.
+        self.assertEqual(auditor.audit_verification(*empty)["overall_status"], "NOT VERIFIED")
+
+        run = self._harness([empty, empty, settled])
+        self.assertEqual(len(run["polls"]), 3)
+        self.assertEqual(
+            auditor.audit_verification(*settled)["overall_status"], "VERIFIED"
+        )
+
+    def test_wait_continues_until_every_required_check_has_been_created(self):
+        partial = [check_run(auditor.REQUIRED_CHECKS[0], run_id=1)]
+        settled = green_checks()
+        run = self._harness(
+            [
+                (pull_request(), [commit(HEAD, "fix: head")], partial),
+                (pull_request(), [commit(HEAD, "fix: head")], partial),
+                (pull_request(), [commit(HEAD, "fix: head")], settled),
+            ]
+        )
+
+        self.assertEqual(len(run["polls"]), 3)
+
+    def test_a_new_head_landing_during_the_wait_is_followed(self):
+        commits = [commit(HEAD, "fix: head"), commit(self.NEW, "fix: follow-up")]
+        old_head = (
+            pull_request(),
+            commits,
+            self._pending_required(sha=HEAD),
+        )
+        new_head_pending = (
+            pull_request(sha=self.NEW),
+            commits,
+            self._pending_required(sha=self.NEW),
+        )
+        new_head_settled = (
+            pull_request(sha=self.NEW),
+            commits,
+            green_checks(sha=self.NEW),
+        )
+
+        run = self._harness([old_head, new_head_pending, new_head_settled])
+
+        self.assertEqual(len(run["polls"]), 3)
+        self.assertEqual(
+            auditor.audit_verification(*new_head_settled)["pr"]["head_sha"], self.NEW
+        )
+
+    def test_a_pending_visual_qa_shard_keeps_the_wait_alive(self):
+        pending = green_checks() + [
+            check_run(
+                "Visual QA (shard 1/2)", status="in_progress", conclusion=None, run_id=21
+            ),
+            check_run("Visual QA (shard 2/2)", run_id=22),
+        ]
+        settled = green_checks() + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run("Visual QA (shard 2/2)", run_id=22),
+        ]
+        run = self._harness(
+            [
+                (pull_request(), [commit(HEAD, "test: visual")], pending),
+                (pull_request(), [commit(HEAD, "test: visual")], settled),
+            ]
+        )
+
+        self.assertEqual(len(run["polls"]), 2)
+
+    def test_deadline_returns_pending_evidence_instead_of_hanging(self):
+        pending = (pull_request(), [commit(HEAD, "fix: head")], self._pending_required())
+
+        run = self._harness([pending], timeout=30, poll=15)
+
+        self.assertLessEqual(run["now"], 30)
+        report = auditor.audit_verification(*pending)
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+        self.assertTrue(
+            all(record["status"] == "PENDING" for record in report["required_checks"])
+        )
+
+    def test_docs_only_head_returns_as_soon_as_required_checks_are_settled(self):
+        run = self._harness(
+            [(pull_request(), [commit(HEAD, "docs: readme")], green_checks())]
+        )
+
+        self.assertEqual(len(run["polls"]), 1)
+        self.assertEqual(run["sleeps"], [])
+
+    def test_cancelled_required_check_settles_the_wait_and_is_never_a_pass(self):
+        runs = green_checks()
+        runs[0] = check_run(
+            auditor.REQUIRED_CHECKS[0], conclusion="cancelled", run_id=99
+        )
+        snapshot = (pull_request(), [commit(HEAD, "fix: head")], runs)
+
+        run = self._harness([snapshot])
+
+        self.assertEqual(len(run["polls"]), 1)
+        self.assertEqual(
+            statuses(auditor.audit_verification(*snapshot))[
+                auditor.REQUIRED_CHECKS[0]
+            ],
+            "NOT RUN",
+        )
+
+
 class CommandLineTests(unittest.TestCase):
 
     def _fixture(self, pr, commits, check_runs):

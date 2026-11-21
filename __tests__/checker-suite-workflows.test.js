@@ -66,6 +66,22 @@ describe('consolidated PR verification report', () => {
     expect(reportWorkflow).toContain('Publish or update the consolidated report');
   });
 
+  it('waits for the current head, bounded, before reading report evidence', () => {
+    expect(reportWorkflow).toContain('--wait-seconds 600');
+    expect(reportWorkflow).toContain('--poll-interval 15');
+    // The wait must precede the evidence fetch so the report describes settled
+    // current-head checks, and it must be bounded by the job timeout.
+    expect(reportWorkflow.indexOf('Wait for current-head checks to settle')).toBeLessThan(
+      reportWorkflow.indexOf('Fetch pull request, diff, comments and current-head checks'),
+    );
+    const waitSeconds = Number(reportWorkflow.match(/--wait-seconds (\d+)/)[1]);
+    const timeoutMinutes = Number(reportWorkflow.match(/timeout-minutes: (\d+)/)[1]);
+    expect(waitSeconds).toBeLessThan(timeoutMinutes * 60);
+    // Waiting never replaces or weakens the status gate below.
+    expect(reportWorkflow).toContain('wait_status');
+    expect(reportWorkflow).toContain('RENDER_STATUS');
+  });
+
   it('refreshes after owner approvals and never leaves a stale report', () => {
     expect(reportWorkflow).toContain('issue_comment:');
     expect(reportWorkflow).toContain('github.event.issue.number');

@@ -1,6 +1,11 @@
 # PR Submission and Handoff
 
-This is the single source of truth for PR preparation, submission and handoff. Follow it after implementation and verification are complete.
+This is the single source of truth for PR preparation, submission and handoff.
+
+Read it twice for every repository-changing task:
+
+1. **Before implementation begins**, together with the applicable QA checker requirements in Section 9 of `AGENTS.md`. The declarations, protected-file rules and required code-quality review below must shape the task scope, plan and implementation instead of being discovered at submission time.
+2. **Immediately before creating the pull request**, as the final submission checklist. Re-read Section 2 and Section 4 and confirm the complete PR body contains every required declaration and result.
 
 The repository's automated PR verification has exactly seven checker categories: **QA Checker**, **DevSkim**, **PR Scope Verification**, **Protected File Changes**, **Verification Integrity**, **Governance and Workflow Verification** and **Dependency Health & Vulnerability Review**. One consolidated report publishes all seven on the pull request, with the statuses `PASSED`, `FAILED`, `WARNING` or `NOT RUN`. Visual QA, the full test suite, the type check, the build and both Playwright shards are supporting results inside the QA Checker category; they are never separate top-level categories.
 
@@ -167,7 +172,7 @@ The workflows publish the real results; the submitter must not invent, pre-fill 
 
 ## 4. Submit once
 
-Immediately before creation:
+Immediately before creation, re-read this document as the final submission checklist, then:
 
 1. Confirm the source branch, base and full HEAD SHA match the prepared description.
 2. Confirm the PR body is complete and accurate, including every required declaration, the QA scope declaration, the Spec Kit/library/Memory Bank reporting, local results and limitations. Do not wait for post-submission checks.
