@@ -213,6 +213,159 @@ class ScopeDeclarationTests(unittest.TestCase):
             validate({"number": 1, "body": pr_body(declaration()), "head": {"sha": HEAD_SHA}}, [], [], OWNER)
 
 
+class PlaceholderWordTests(unittest.TestCase):
+    """The marker word is rejected as a whole value or a leading marker phrase."""
+
+    PATHS = [".github/scripts/checker.py", ".github/scripts/test_checker.py"]
+
+    def test_filled_summary_may_mention_the_marker_word(self):
+        value = declaration(
+            summary="Publish the rendered report instead of the marker-first placeholder fallback."
+        )
+        result = run_check(self.PATHS, value)
+        self.assertEqual(result["status"], "PASS")
+
+    def test_filled_feature_name_may_mention_the_marker_word(self):
+        value = declaration(features=["Preserve the marker-first placeholder fallback"])
+        result = run_check(self.PATHS, value)
+        self.assertEqual(result["status"], "PASS")
+
+    def test_filled_file_purpose_may_mention_the_marker_word(self):
+        value = declaration(
+            file_purposes=[
+                {
+                    "path": ".github/scripts/checker.py",
+                    "purpose": "Keep the marker-first placeholder fallback visible in the report.",
+                },
+                {
+                    "path": ".github/scripts/test_checker.py",
+                    "purpose": "Cover both outcomes of the marker wording.",
+                },
+            ]
+        )
+        result = run_check(self.PATHS, value)
+        self.assertEqual(result["status"], "PASS")
+
+    def test_filled_field_may_start_with_the_marker_word(self):
+        value = declaration(
+            summary="Placeholder fallback remains visible for failed reports."
+        )
+        result = run_check(self.PATHS, value)
+        self.assertEqual(result["status"], "PASS")
+
+    def test_marker_only_summary_feature_and_purpose_are_rejected(self):
+        markers = (
+            "**placeholder**",
+            "placeholder value for the new feature",
+            "placeholder text for the new feature",
+            "placeholder goes here",
+            "TODO",
+            "TBD",
+            "fill this in",
+        )
+        for marker in markers:
+            with self.subTest(field="summary", marker=marker):
+                with self.assertRaises(ScopeError):
+                    run_check(self.PATHS, declaration(summary=marker))
+            with self.subTest(field="features", marker=marker):
+                with self.assertRaises(ScopeError):
+                    run_check(self.PATHS, declaration(features=[marker]))
+            with self.subTest(field="file_purposes", marker=marker):
+                value = declaration(
+                    file_purposes=[
+                        {"path": ".github/scripts/checker.py", "purpose": marker},
+                        {
+                            "path": ".github/scripts/test_checker.py",
+                            "purpose": "Cover the scope checker behavior.",
+                        },
+                    ]
+                )
+                with self.assertRaises(ScopeError):
+                    run_check(self.PATHS, value)
+
+    def test_filled_scope_reason_may_mention_the_marker_word(self):
+        path = "app/new-component.tsx"
+        value = declaration(
+            paths=[path],
+            scope_expansion=[
+                {
+                    "path": path,
+                    "reason": "Shared component preserves the marker-first placeholder fallback.",
+                }
+            ],
+        )
+        result = run_check(
+            [path],
+            value,
+            preamble="Scope changed: preserve the marker-first placeholder fallback in the report.\n\n",
+        )
+        self.assertEqual(
+            result["scope_change_statement"],
+            "preserve the marker-first placeholder fallback in the report.",
+        )
+        self.assertFalse(any("placeholder wording" in error for error in result["errors"]))
+        self.assertTrue(any("scope_expansion" in error for error in result["errors"]))
+
+    def test_filled_visual_impact_reason_may_mention_the_marker_word(self):
+        value = declaration(
+            paths=[".github/scripts/checker.py"],
+            visual_impact={
+                "required": False,
+                "reason": "Only the marker-first placeholder fallback changes in report text.",
+            },
+        )
+        result = run_check([".github/scripts/checker.py"], value)
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["warnings"], [])
+
+    def test_marker_only_scope_reasons_are_rejected(self):
+        path = "app/new-component.tsx"
+        for marker in (
+            "**placeholder**",
+            "placeholder text",
+            "placeholder value for the new feature",
+            "TODO",
+            "fill this in",
+        ):
+            with self.subTest(field="scope_expansion", marker=marker):
+                value = declaration(
+                    paths=[path],
+                    scope_expansion=[{"path": path, "reason": marker}],
+                )
+                with self.assertRaises(ScopeError):
+                    run_check([path], value, preamble=SCOPE_CHANGE)
+            with self.subTest(field="visual_impact", marker=marker):
+                value = declaration(
+                    paths=[".github/scripts/checker.py"],
+                    visual_impact={"required": False, "reason": marker},
+                )
+                with self.assertRaises(ScopeError):
+                    run_check([".github/scripts/checker.py"], value)
+
+    def test_marker_only_scope_change_explanation_is_rejected(self):
+        path = "app/new-component.tsx"
+        for marker in (
+            "**placeholder**",
+            "placeholder text",
+            "placeholder goes here",
+            "placeholder value for the new feature",
+            "TODO",
+            "fill this in",
+        ):
+            with self.subTest(marker=marker):
+                value = declaration(
+                    paths=[path],
+                    scope_expansion=[
+                        {"path": path, "reason": "Shared component required by the QA change"}
+                    ],
+                )
+                result = run_check(
+                    [path], value, preamble=f"Scope changed: {marker}\n\n"
+                )
+                self.assertEqual(result["scope_change_statement"], "")
+                self.assertTrue(any("Scope changed" in error for error in result["errors"]))
+
+
 class ScopeExpansionApprovalTests(unittest.TestCase):
     def test_scope_expansion_requires_owner_comment_for_exact_digest(self):
         entries = {"app/new-component.tsx": "Shared component required by the QA change"}
