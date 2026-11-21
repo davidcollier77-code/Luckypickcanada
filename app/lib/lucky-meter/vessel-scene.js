@@ -559,9 +559,15 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
 
   const streamGeometries = [streamGeometry, streamGlowGeometry, streamCoreGeometry];
 
-  // Once the vessel is full and still, the scene spends no more frames. The
-  // last composed frame stays on the canvas, and a later state change (a new
-  // reading or a resize) restarts the loop.
+  // The scene spends no frames while nothing is moving. It stops once the pour
+  // is finished and the vessel is full, and equally once the untouched empty
+  // vessel has settled: the hidden warm-up would otherwise animate dust, lights
+  // and glass through the whole anticipation for nothing. The last composed
+  // frame stays on the canvas, and a later state change or a resize draws
+  // again. The empty state keeps a short grace so its first frames still
+  // compile the glass, liquid, dust and light shaders the pour will use.
+  const SETTLE_FULL_DELAY = 1.4;
+  const SETTLE_EMPTY_DELAY = 0.25;
   let settleStart = null;
   let idleStopped = false;
 
@@ -671,10 +677,23 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
     lights.update(0.016);
     lights.pulse(fill > 0 ? 0.001 : 0, state.colour.getHex());
 
-    const settled = state.targetFill >= 0.999 && state.targetOpen >= 0.999 && fill > 0.994;
-    if (settled) {
+    const settledFull = state.targetFill >= 0.999 && state.targetOpen >= 0.999 && fill > 0.994;
+    // The hidden warm-up mounts at zero and stays there until the reveal, so an
+    // untouched empty vessel is a resting state, not a permanently moving one.
+    const settledEmpty =
+      state.targetFill <= 0.001 &&
+      state.targetPour <= 0.001 &&
+      state.targetOpen <= 0.001 &&
+      fill <= 0.001 &&
+      pour <= 0.001 &&
+      open <= 0.001 &&
+      state.impact <= 0.001;
+    if (settledFull || settledEmpty) {
       if (settleStart === null) settleStart = elapsed;
-      else if (!idleStopped && elapsed - settleStart > 1.4) {
+      else if (
+        !idleStopped &&
+        elapsed - settleStart > (settledFull ? SETTLE_FULL_DELAY : SETTLE_EMPTY_DELAY)
+      ) {
         idleStopped = true;
         surface.stop();
       }
@@ -707,6 +726,10 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
 
   return {
     setState(next = {}) {
+      const previousFill = state.targetFill;
+      const previousPour = state.targetPour;
+      const previousOpen = state.targetOpen;
+      const previousColour = state.targetColour.getHex();
       if (typeof next.fill === 'number' && Number.isFinite(next.fill)) {
         state.targetFill = Math.min(1, Math.max(0, next.fill));
       }
@@ -723,8 +746,15 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       if (typeof next.colour === 'string' && /^#[0-9a-f]{6}$/i.test(next.colour)) {
         state.targetColour.set(next.colour);
       }
-      // A new pour or a reveal re-arms the frame loop after an idle stop.
-      if (state.targetFill < 0.999 || state.targetOpen < 0.999 || state.targetPour < 0.999) {
+      // A real state change re-arms the frame loop after an idle stop, including
+      // the move from the empty warm-up to the first live reading. Repeating the
+      // same state (the hidden warm-up reporting zero again) leaves it stopped.
+      const changed =
+        state.targetFill !== previousFill ||
+        state.targetPour !== previousPour ||
+        state.targetOpen !== previousOpen ||
+        state.targetColour.getHex() !== previousColour;
+      if (changed) {
         settleStart = null;
         if (idleStopped) {
           idleStopped = false;
