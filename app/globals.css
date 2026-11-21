@@ -971,23 +971,91 @@ body {
   font-weight: 700;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: rgba(255, 226, 168, 0.6);
-  text-shadow: 0 0 12px rgba(255, 196, 90, 0.3);
+  background: linear-gradient(180deg, #fff6d8 0%, #f2d38e 55%, #c99a44 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(255, 196, 90, 0.35));
 }
 
+/* The Spark is written in warm gold script, not UI text: a display serif with
+   a real italic, a struck-gold gradient and a fine bloom behind each glyph. */
 .lucky-sky-writing__text {
   margin: 0 auto;
-  max-width: 40rem;
+  max-width: 42rem;
+  font-family: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   font-style: italic;
-  font-weight: 300;
-  line-height: 1.6;
-  color: rgba(255, 246, 224, 0.96);
+  font-weight: 500;
+  font-size: clamp(1.05rem, 1.9vw, 1.42rem);
+  line-height: 1.55;
+  letter-spacing: 0.012em;
   text-wrap: pretty;
   min-height: 3.2em;
+  /* A solid warm gold rather than a clipped gradient: the reveal renders each
+     glyph in its own inline box, and a background clip on the paragraph does
+     not paint those boxes in every engine. The glow carries the metal read. */
+  color: #ffe7ae;
   text-shadow:
-    0 0 7px rgba(255, 214, 140, 0.5),
-    0 0 22px rgba(255, 176, 66, 0.26),
-    0 1px 2px rgba(0, 0, 0, 0.68);
+    0 0 6px rgba(255, 214, 140, 0.55),
+    0 0 20px rgba(255, 178, 66, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.7);
+  filter: drop-shadow(0 0 8px rgba(255, 198, 106, 0.22));
+}
+
+/* Each glyph arrives on its own, so the line is written rather than typed. */
+@keyframes luckySkyChar {
+  from {
+    opacity: 0;
+    transform: translateY(0.3em) rotate(1.4deg) scale(0.94);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.lucky-sky-writing__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.lucky-sky-writing__space {
+  white-space: pre;
+}
+
+.lucky-sky-writing__char {
+  display: inline-block;
+  white-space: pre;
+  animation: luckySkyChar 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.lucky-sky-writing__flourish {
+  display: block;
+  width: min(15rem, 62%);
+  height: 1px;
+  margin: 0.5rem auto 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 214, 130, 0) 0%,
+    rgba(255, 220, 150, 0.55) 42%,
+    rgba(255, 236, 190, 0.85) 50%,
+    rgba(255, 220, 150, 0.55) 58%,
+    rgba(255, 214, 130, 0) 100%
+  );
+  box-shadow: 0 0 12px rgba(255, 196, 90, 0.4);
+}
+
+.lucky-sky-writing[data-state="written"] .lucky-sky-writing__flourish {
+  animation: luckySkyFlourish 1000ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes luckySkyFlourish {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
 }
 
 .lucky-sky-writing__quote {
@@ -1036,12 +1104,33 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.15em;
-  height: 1.15em;
+  width: 1.3em;
+  height: 1.3em;
   margin-left: 0.12em;
-  vertical-align: -0.22em;
+  vertical-align: -0.26em;
   transform-origin: 50% 78%;
   animation: luckySkyCursor 900ms ease-in-out infinite;
+}
+
+/* The comet trail behind the writing tip, so the cursor reads as travelling
+   gold rather than a stationary leaf. */
+.lucky-sky-writing__cursor::after {
+  content: '';
+  position: absolute;
+  right: 82%;
+  top: 46%;
+  width: 3rem;
+  height: 0.38em;
+  border-radius: 9999px;
+  pointer-events: none;
+  transform: rotate(-9deg);
+  background: linear-gradient(
+    270deg,
+    rgba(255, 234, 178, 0.72) 0%,
+    rgba(255, 202, 112, 0.32) 42%,
+    rgba(255, 178, 70, 0) 100%
+  );
+  filter: blur(2px);
 }
 
 .lucky-sky-writing__cursor::before {
@@ -1075,6 +1164,15 @@ body {
 /* ── Countdown dock beneath Home ───────────────────────────────────────────
    It appears only after the Spark has finished writing, tucked under the Home
    control rather than inside the result panels. */
+@keyframes luckyDockArrive {
+  from { opacity: 0; transform: translateY(-7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lucky-home-dock {
+  animation: luckyDockArrive 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 .lucky-countdown--dock {
   flex-direction: column;
   align-items: flex-end;
@@ -1090,8 +1188,20 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .lucky-anticipation,
   .lucky-sky-writing__ember,
-  .lucky-sky-writing__cursor {
+  .lucky-sky-writing__cursor,
+  .lucky-sky-writing__char,
+  .lucky-home-dock {
     animation: none !important;
+  }
+  .lucky-sky-writing[data-state="written"] .lucky-sky-writing__flourish {
+    transform: scaleX(1);
+    opacity: 1;
+    animation: none !important;
+  }
+  .lucky-sky-writing__text {
+    color: rgba(255, 246, 224, 0.96);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.68);
+    filter: none;
   }
   .lucky-vessel {
     transform: rotateX(-9deg) rotateY(-6deg) !important;
@@ -1166,11 +1276,43 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: clamp(7.2rem, 17vh, 9.5rem);
+  height: clamp(10.5rem, 24vh, 13.5rem);
   margin-bottom: 0.15rem;
   perspective: 780px;
   perspective-origin: 50% 16%;
-  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, 0.42));
+}
+
+/* The Three.js vessel: transparent until its first composed frame, so the CSS
+   fallback underneath is what the visitor sees while the engine loads. */
+.lucky-vessel-canvas-host {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+.lucky-vessel-canvas-host.is-ready {
+  opacity: 1;
+}
+
+/* The scene's own alpha already composites onto the sky; the container's drop
+   shadow would rasterise the transparent canvas into a faint box. */
+.lucky-vessel-stage[data-vessel-renderer="three"] .lucky-vessel-scene {
+  filter: none;
+}
+
+.lucky-vessel-canvas-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lucky-vessel--hidden {
+  opacity: 0;
+  transition: opacity 600ms ease;
 }
 
 .lucky-vessel {

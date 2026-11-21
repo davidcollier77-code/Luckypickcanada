@@ -189,7 +189,9 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
+    // The vessel surface mounts early so its renderer can warm up, but it is
+    // hidden until its own stage opens.
+    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeVisible();
 
     advance(STORYBOARD_TIMING.anticipationMs);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
@@ -436,7 +438,7 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
   });
 
   it('presents the whole reading calmly under reduced motion', () => {
