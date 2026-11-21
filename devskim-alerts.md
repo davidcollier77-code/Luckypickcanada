@@ -27,3 +27,8 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 
 - **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:958` — Suspicious comment <!-- devskim-id:6ce67e02006a2b2dd831 -->
 - **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:881` — Suspicious comment <!-- devskim-id:abe37735c2596d5a95bd -->
+
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:580` — Suspicious comment <!-- devskim-id:ec2c845d1ee5aef28792 -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:352` — Suspicious comment <!-- devskim-id:c26835f032f8f8f4623e -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:327` — Suspicious comment <!-- devskim-id:4f323238c35e0917c28a -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:262` — Suspicious comment <!-- devskim-id:ff1fffba0621271732e7 -->
