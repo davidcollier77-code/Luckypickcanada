@@ -11,6 +11,12 @@ description: "Task list for the Lucky Meter twelve-stage cinematic polish"
 **Organization**: Tasks are grouped by user story. Every task below was
 completed in this task's diff.
 
+> **Historical record.** The checkboxes preserve what was completed in this
+> task. T001, T004, T009, T017 and T018 contain timing, number or generation
+> assertions superseded by the approved 21 November 2026 outline. Their checked
+> state is preserved, but they are not current acceptance criteria. Current
+> authority is the approved outline and Spec 200.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Could run in parallel (different files, no dependencies)

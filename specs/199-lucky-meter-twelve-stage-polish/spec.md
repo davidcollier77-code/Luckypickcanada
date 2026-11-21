@@ -4,9 +4,34 @@
 
 **Created**: 2026-11-20
 
-**Status**: Implemented
+**Status**: Implemented — partly superseded on 21 November 2026
 
 **Input**: User description: "Polish the existing Lucky Meter into a cohesive, cinematic, high-end 3D video-game experience, with all 12 storyboard stages flowing naturally from the opening leaf arrival through the final result and controls."
+
+> **Current authority (21 November 2026).** The approved Lucky Meter Living
+> Requirements Outline and Approval Sheet resolve OD-1–OD-13. This spec remains
+> the historical implementation record for the twelve-stage polish. The
+> following clauses are superseded and are not current acceptance criteria:
+>
+> - **Vessel:** square CSS 3D vessel → cylindrical Three.js vessel on the shared
+>   creative surface, with a functional CSS fallback.
+> - **Generation:** 5–100 monotonic generation starting at 5 → the five-beat
+>   0 → 100 → fall → rise → erratic → settle sequence ending on the stored
+>   5–100 reading.
+> - **Lucky Number:** reveal only after the drain, with two fixed flashes →
+>   progressive top-down reveal during the 4.0 s drain, fully visible on the
+>   empty vessel, followed by the approved flash/highlight and card rise/
+>   crossfade.
+> - **Celebration:** per-tier established durations → one 12,000 ms celebration
+>   for every tier.
+> - **Home/countdown:** top-right dock → the last row of the results panel.
+> - **Timing:** approximately 40 seconds / 36–45 seconds → the approved
+>   54–57 second emergent total.
+>
+> **D12 (resolved 21 November 2026):** every celebration runs for 12,000 ms,
+> including the same celebration restarted after a page refresh. An older stored
+> duration does not re-time it. The saved percentage, Lucky Number, colour and
+> tier remain unchanged.
 
 ## Context
 
