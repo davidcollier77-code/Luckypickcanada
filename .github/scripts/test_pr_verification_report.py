@@ -860,6 +860,40 @@ class ProtectedFileTests(unittest.TestCase):
         self.assertEqual(candidates, set(report.PROTECTED_FILES))
 
 
+class PlaceholderHeuristicTests(unittest.TestCase):
+    def test_a_filled_value_may_mention_placeholder(self):
+        value = (
+            "Read `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, "
+            "`memory-bank/techContext.md` and `memory-bank/progress.md`. The "
+            "marker-first placeholder fallback is documented for later review."
+        )
+        self.assertFalse(report._placeholder(value))
+
+    def test_real_placeholder_markers_are_still_rejected(self):
+        for value in (
+            "placeholder",
+            "**Placeholder**",
+            "`placeholder`",
+            "PLACEHOLDER",
+            "placeholder text",
+            "Placeholder value",
+            "placeholder goes here",
+            "TODO",
+            "TBD",
+            "fill this in",
+            "name each task group",
+            "describe the change",
+            "replace with the real text",
+            "list the completed tasks",
+            "select the applicable groups",
+            "<memory bank>",
+            "",
+            "   ",
+        ):
+            with self.subTest(value=value):
+                self.assertTrue(report._placeholder(value))
+
+
 class GovernanceTests(unittest.TestCase):
     def test_complete_reporting_passes(self):
         result = category(report.build_report(evidence()), "governance")
@@ -909,6 +943,25 @@ class GovernanceTests(unittest.TestCase):
                 )
                 result = category(report.build_report(evidence(pull_request=pr)), "governance")
                 self.assertEqual(result["status"], "FAILED")
+
+    def test_memory_bank_mentioning_placeholder_passes(self):
+        pr = evidence()["pull_request"]
+        pr["body"] = body().replace(
+            "**Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` were read.",
+            "**Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` were read. The marker-first placeholder fallback is documented.",
+        )
+        result = category(report.build_report(evidence(pull_request=pr)), "governance")
+        self.assertEqual(result["status"], "PASSED")
+
+    def test_real_placeholder_markers_still_fail_governance(self):
+        line = "**Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` were read."
+        for marker in ("placeholder", "TODO", "<memory bank>"):
+            with self.subTest(marker=marker):
+                pr = evidence()["pull_request"]
+                pr["body"] = body().replace(line, "**Memory Bank:** " + marker)
+                result = category(report.build_report(evidence(pull_request=pr)), "governance")
+                self.assertEqual(result["status"], "FAILED")
+                self.assertTrue(any("Memory Bank" in item for item in result["attention"]))
 
     def test_governance_never_claims_independent_verification(self):
         result = category(report.build_report(evidence()), "governance")

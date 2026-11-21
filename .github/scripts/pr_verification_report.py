@@ -115,8 +115,15 @@ PROTECTED_FILES = (
 )
 
 PLACEHOLDER = re.compile(
-    r"\b(todo|tbd|placeholder|fill this in|name each|describe the|replace with|list the completed|select the applicable)\b"
+    r"\b(todo|tbd|fill this in|name each|describe the|replace with|list the completed|select the applicable)\b"
     r"|<[^>]+>",
+    re.I,
+)
+# ``placeholder`` is legitimate prose in a filled declaration (for example,
+# "the marker-first placeholder fallback is preserved"), so it is rejected only
+# when the whole value is that marker rather than a sentence that uses it.
+PLACEHOLDER_ONLY = re.compile(
+    r"^[\W_]*placeholder(?:\s+(?:text|value|here|goes here))?[\W_]*$",
     re.I,
 )
 GOVERNANCE_LABELS = {
@@ -153,7 +160,10 @@ def _label_value(body, label):
 
 
 def _placeholder(value):
-    return not value or bool(PLACEHOLDER.search(value))
+    text = (value or "").strip()
+    if not text:
+        return True
+    return bool(PLACEHOLDER.search(text) or PLACEHOLDER_ONLY.match(text))
 
 
 def _category(key, status, summary, details=None, attention=None):
