@@ -4,7 +4,7 @@ description: "Tasks for the placeholder heuristic correction"
 
 # Tasks: Reject Only Real Template Markers in Governance Declarations
 
-**Input**: Design documents from `/specs/203-placeholder-heuristic/`
+**Input**: Design documents from `/specs/203-governance-marker-heuristic/`
 
 **Prerequisites**: `plan.md` and `spec.md`
 

@@ -1,6 +1,6 @@
 # Implementation Plan: Reject Only Real Template Markers in Governance Declarations
 
-**Branch**: `freebuff/856a686c49f64f37f6ddb027-placeholder-heuristic` | **Date**: 2026-11-21 | **Spec**: `specs/203-placeholder-heuristic/spec.md`
+**Branch**: `freebuff/856a686c49f64f37f6ddb027-placeholder-heuristic` | **Date**: 2026-11-21 | **Spec**: `specs/203-governance-marker-heuristic/spec.md`
 
 ## Summary
 
@@ -37,7 +37,7 @@
 ```text
 .github/scripts/pr_verification_report.py       # placeholder patterns and helper
 .github/scripts/test_pr_verification_report.py  # helper and Governance regressions
-specs/203-placeholder-heuristic/{spec,plan,tasks}.md
+specs/203-governance-marker-heuristic/{spec,plan,tasks}.md
 .specify/feature.json                           # active feature pointer
 ```
 
