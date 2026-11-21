@@ -89,7 +89,8 @@ export const VISUAL_EXPERIENCES = Object.freeze([
     label: 'Lucky Meter glass vessel and colour pour',
     renderer: 'three',
     dimension: '3d',
-    postProcessing: true,
+    // No post-processing: the scene asks the runtime for none, and the hub must
+    // not prepare a bloom chain it will never render.
     particles: true,
     chunks: ['three'],
   }),

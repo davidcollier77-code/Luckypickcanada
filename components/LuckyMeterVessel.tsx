@@ -47,6 +47,9 @@ export default function LuckyMeterVessel({
 }: LuckyMeterVesselProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<Awaited<ReturnType<typeof createLuckyMeterVesselScene>>>(null);
+  // The scene resolves asynchronously, so the values it starts from are the
+  // newest props, not the ones captured when the effect first ran.
+  const latestStateRef = useRef({ colour: colour.hex, fill, open });
   const [renderMode, setRenderMode] = useState<'pending' | 'three' | 'fallback'>('pending');
 
   // Register with the shared readiness hub. The Three chunk is loaded lazily by
@@ -80,16 +83,26 @@ export default function LuckyMeterVessel({
         // Diagnostics only.
       }
 
+      let sceneReady = false;
+      let stateApplied = false;
+      // Only present the canvas once the scene is ready *and* it has been given
+      // the real reading, so the default pour colour is never on screen.
+      const present = () => {
+        if (cancelled || !sceneReady || !stateApplied) return;
+        try {
+          performance.mark('lucky-vessel-ready');
+        } catch {
+          // Marks are diagnostics only.
+        }
+        setRenderMode('three');
+      };
+
       createLuckyMeterVesselScene({
         canvas,
         onReady: () => {
           if (cancelled) return;
-          try {
-            performance.mark('lucky-vessel-ready');
-          } catch {
-            // Marks are diagnostics only.
-          }
-          setRenderMode('three');
+          sceneReady = true;
+          present();
         },
         onUnavailable: () => {
           if (!cancelled) setRenderMode('fallback');
@@ -102,10 +115,21 @@ export default function LuckyMeterVessel({
           }
           scene = created;
           sceneRef.current = created;
+          if (!created) {
+            setRenderMode('fallback');
+            return;
+          }
           // A refreshed reading mounts already complete: present the finished
           // vessel rather than replaying a pour the visitor already watched.
-          created?.setState({ colour: colour.hex, fill, open, instant: fill >= 0.999 });
-          if (!created) setRenderMode('fallback');
+          const latest = latestStateRef.current;
+          created.setState({
+            colour: latest.colour,
+            fill: latest.fill,
+            open: latest.open,
+            instant: latest.fill >= 0.999,
+          });
+          stateApplied = true;
+          present();
         })
         .catch(() => {
           if (!cancelled) setRenderMode('fallback');
@@ -127,6 +151,7 @@ export default function LuckyMeterVessel({
   }, []);
 
   useEffect(() => {
+    latestStateRef.current = { colour: colour.hex, fill, open };
     sceneRef.current?.setState({ colour: colour.hex, fill, open });
   }, [colour.hex, fill, open]);
 

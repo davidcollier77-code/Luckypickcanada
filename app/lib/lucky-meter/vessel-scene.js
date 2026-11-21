@@ -254,7 +254,7 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
     return null;
   }
 
-  const { stage, effects } = surface;
+  const { stage } = surface;
   mark('vessel-surface');
   const THREE = stage.three;
   const scene = stage.scene;
@@ -442,7 +442,10 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
   vessel.add(streamCore);
 
   // The leading droplet: a stretched sphere that rides the head of the stream.
-  const droplet = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), streamMaterial);
+  // It owns its material because it is tinted every frame; sharing the stream's
+  // material would recolour the whole column with the droplet's tint.
+  const headMaterial = streamMaterial.clone();
+  const droplet = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), headMaterial);
   vessel.add(droplet);
 
   const splashMaterial = new THREE.MeshBasicMaterial({
@@ -624,11 +627,12 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       streamCoreMaterial.color.copy(state.colour).offsetHSL(0, -0.25, 0.38);
       streamCoreMaterial.opacity = 0.22 + Math.sin(elapsed * 11) * 0.05;
 
-      // The droplet rides the visible head of the pour.
-      const head = streamCurve.getPointAt(Math.min(0.999, reveal * 0.32));
+      // The droplet rides the visible head of the pour, using the same curve
+      // parameter as the reveal, so it never floats inside the column.
+      const head = streamCurve.getPointAt(Math.min(0.999, reveal));
       droplet.position.copy(head);
       droplet.scale.set(1, 1.5 + Math.sin(elapsed * 12) * 0.12, 1);
-      droplet.material.color.copy(state.colour).offsetHSL(0, -0.04, 0.08);
+      headMaterial.color.copy(state.colour).offsetHSL(0, -0.04, 0.08);
 
       // Splash sits exactly where the stream meets the free surface.
       const impactY = LIQUID_FLOOR + liquidHeight;
@@ -753,14 +757,22 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       environment?.dispose();
       shadowTexture?.dispose();
       glowTexture?.dispose();
+      // The glass and gold presets are tracked by the material library, but the
+      // liquid, the stream and the two plane materials are created here and are
+      // not, so the scene owns their release.
+      shadow?.material?.dispose();
+      caustic?.material?.dispose();
       glassGeometry.dispose();
       liquidGeometry.dispose();
+      liquidMaterial.dispose();
       streamGeometry.dispose();
+      streamMaterial.dispose();
       streamGlowGeometry.dispose();
       streamGlowMaterial.dispose();
       streamCoreGeometry.dispose();
       streamCoreMaterial.dispose();
       droplet.geometry.dispose();
+      headMaterial.dispose();
       splash.geometry.dispose();
       splashMaterial.dispose();
       dropletGeometry.dispose();

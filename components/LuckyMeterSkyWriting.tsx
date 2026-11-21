@@ -149,7 +149,7 @@ export default function LuckyMeterSkyWriting({
                 ) : (
                   <span key={`word-${partIndex}`} className="lucky-sky-writing__word">
                     {Array.from(part).map((character, index) => (
-                      <span key={`${index}-${character}`} className="lucky-sky-writing__char">
+                      <span key={`${partIndex}-${index}`} className="lucky-sky-writing__char">
                         {character}
                       </span>
                     ))}

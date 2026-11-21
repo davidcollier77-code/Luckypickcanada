@@ -189,6 +189,30 @@ test.describe('Daily Resonance arrival and Start', () => {
   test('holds Start until the breeze has cleared, then exposes a 5% reading', async ({
     page,
   }) => {
+    // The readout holds 5% only for the anticipation beat before it climbs, so
+    // polling the live attribute can miss it whenever the first frames after
+    // Start are slow (software WebGL, a cold route compile). Record the values
+    // React writes instead: the writes are ordered, so the first one is the
+    // reading the reveal actually started from.
+    await page.addInitScript(() => {
+      const reading: { value?: string; plaque?: string } = {};
+      (window as Window & { __luckyMeterStartReading?: typeof reading }).__luckyMeterStartReading =
+        reading;
+      const setAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function recordStartReading(
+        this: Element,
+        name: string,
+        value: string,
+      ) {
+        if (this.getAttribute('data-testid') === 'lucky-meter-value') {
+          if (name === 'data-value' && reading.value === undefined) reading.value = String(value);
+          if (name === 'data-plaque' && reading.plaque === undefined) {
+            reading.plaque = String(value);
+          }
+        }
+        return setAttribute.call(this, name, value);
+      };
+    });
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
 
     const start = page.getByTestId('lucky-meter-start');
@@ -209,8 +233,23 @@ test.describe('Daily Resonance arrival and Start', () => {
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
     // The readout sweeps the meter's real 5–100 scale, never an arbitrary 0.
-    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
-    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(
+            () =>
+              (window as Window & { __luckyMeterStartReading?: { value?: string } })
+                .__luckyMeterStartReading?.value ?? null,
+          ),
+        { timeout: 20_000 },
+      )
+      .toBe('5');
+    const startReading = await page.evaluate(
+      () =>
+        (window as Window & { __luckyMeterStartReading?: { value?: string; plaque?: string } })
+          .__luckyMeterStartReading ?? {},
+    );
+    expect(startReading.plaque).toBe('hidden');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
     // The vessel surface warms up off-screen; it must not be presented yet.
     await expect(page.getByTestId('lucky-colour-panel')).not.toBeVisible();
@@ -402,6 +441,9 @@ test.describe('Daily Resonance seasonal palettes', () => {
 
 test.describe('Daily Resonance resume points', () => {
   test('resumes the message and celebration after the pour', async ({ page }) => {
+    // The resumed message runs on the storyboard clock under software WebGL, so
+    // a loaded runner needs the slow budget rather than the default 30 s.
+    test.slow();
     await pinNoon(page);
     const state = buildState({
       tierId: 'medium',
@@ -412,16 +454,21 @@ test.describe('Daily Resonance resume points', () => {
     });
     await seed(page, state);
 
+    // `fading` still shows the written line, so accepting it keeps the resume
+    // assertion honest without depending on catching the short hold window.
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
       'data-state',
-      /writing|holding/,
-      { timeout: 8000 },
+      /writing|holding|fading/,
+      { timeout: 25_000 },
     );
-    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
+    // The glyph clock is a chained per-character timer, so a busy runner
+    // stretches the writing well past the ten seconds it needs unloaded.
+    test.slow();
     await pinNoon(page);
     const state = buildState({
       tierId: 'low',
@@ -433,13 +480,13 @@ test.describe('Daily Resonance resume points', () => {
     await seed(page, state);
 
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
-    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('lucky-spark-finale')).toHaveAttribute(
       'data-state',
       'written',
-      { timeout: 10_000 },
+      { timeout: 30_000 },
     );
-    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
   });
 

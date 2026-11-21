@@ -40,10 +40,11 @@
 5. **No post-processing for this surface.** A full-screen bloom chain costs
    more shader compilation than it adds on a 416×216 scene; emissive liquid,
    additive stream layers, the env-lit glass and the gold dust carry the light.
-6. **Home contract without a flash.** `showHome = hasLoaded && !isCompact &&
-   (dockReady || !result)`; `showCountdown = hasLoaded && !isCompact &&
-   dockReady && !stageActive`. A persisted in-progress result therefore never
-   flashes Home before the reveal hides it.
+6. **Home contract without a flash.** `showHome = !isCompact && (dockReady ||
+   !result)`; `showCountdown = !isCompact && dockReady && !stageActive`. Home is
+   in its top-right position from the server-rendered first paint, hides the
+   moment the reveal starts and returns with the countdown only after the Spark
+   and the final hold. The countdown never appears before the dock.
 
 ## Files
 
