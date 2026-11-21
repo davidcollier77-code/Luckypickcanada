@@ -112,10 +112,16 @@ function advanceToCelebration(message) {
   advance(STORYBOARD_TIMING.anticipationMs);
   advance(STORYBOARD_TIMING.generationMs + 30);
   advance(STORYBOARD_TIMING.settlePauseMs);
-  advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs + 30);
   advance(
-    STORYBOARD_TIMING.resultSettleMs +
-      STORYBOARD_TIMING.messageDelayMs +
+    STORYBOARD_TIMING.segmentOpenMs +
+      STORYBOARD_TIMING.fillMs +
+      STORYBOARD_TIMING.fullHoldMs +
+      STORYBOARD_TIMING.drainMs +
+      STORYBOARD_TIMING.highlightMs +
+      40,
+  );
+  advance(
+    STORYBOARD_TIMING.messageDelayMs +
       getMessageTypingMs(message) +
       STORYBOARD_TIMING.messageHoldMs +
       STORYBOARD_TIMING.messageFadeMs +
@@ -186,7 +192,7 @@ describe('Daily Resonance daily experience', () => {
 
     // Stage 3: the plaque is gone and the readout starts at the scale minimum.
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
-    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '5');
+    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     // The vessel surface mounts early so its renderer can warm up, but it is
@@ -221,25 +227,40 @@ describe('Daily Resonance daily experience', () => {
     expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.000');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
 
-    // Once the colour has finished draining, the Lucky Number is revealed.
-    advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.pourMs + 30);
-    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
+    // The vessel fills to the top and is held full. The Lucky Number is still
+    // hidden while the colour is arriving.
+    advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.fillMs + 30);
+    const vessel = screen.getByTestId('lucky-colour-panel');
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'holding');
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '0.00');
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+
+    // The drain begins. The number is not in its placard yet.
+    advance(STORYBOARD_TIMING.fullHoldMs + STORYBOARD_TIMING.drainMs / 2);
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'draining');
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+
+    // The drain completes: the vessel is empty and the number is whole. It
+    // flashes, and the empty vessel is highlighted before the message.
+    advance(STORYBOARD_TIMING.drainMs / 2 + 60);
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'empty');
     expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
       'data-value',
       String(result.luckyNumber),
     );
     expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-flashing', 'true');
-    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '1.00');
-    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '1.000');
-    expect(screen.getByText(result.event.name)).toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
 
+    // The highlight finishes and the vessel beat hands off to the message.
+    advance(STORYBOARD_TIMING.highlightMs + 60);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
+    expect(vessel).toHaveAttribute('data-vessel-open', '1.00');
+    expect(vessel).toHaveAttribute('data-vessel-fill', '0.000');
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '1.00');
+    expect(screen.getByText(result.event.name)).toBeInTheDocument();
+
     // Frame 6: the exact tier message, written above the meter.
-    advance(
-      STORYBOARD_TIMING.resultSettleMs +
-        STORYBOARD_TIMING.messageDelayMs +
-        STORYBOARD_TIMING.messageCharMs,
-    );
+    advance(STORYBOARD_TIMING.messageDelayMs + STORYBOARD_TIMING.messageCharMs);
     expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'writing');
 
     advance(

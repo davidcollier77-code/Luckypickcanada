@@ -186,10 +186,10 @@ function settledAngle(colourId: string, season: Season) {
 }
 
 test.describe('Daily Resonance arrival and Start', () => {
-  test('holds Start until the breeze has cleared, then exposes a 5% reading', async ({
+  test('holds Start until the breeze has cleared, then starts the reading at 0', async ({
     page,
   }) => {
-    // The readout holds 5% only for the anticipation beat before it climbs, so
+    // The readout starts at 0 and only holds it for the anticipation beat, so
     // polling the live attribute can miss it whenever the first frames after
     // Start are slow (software WebGL, a cold route compile). Record the values
     // React writes instead: the writes are ordered, so the first one is the
@@ -232,7 +232,8 @@ test.describe('Daily Resonance arrival and Start', () => {
 
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
-    // The readout sweeps the meter's real 5–100 scale, never an arbitrary 0.
+    // The five approved beats start at the bottom of the scale: 0 → 100 →
+    // fall → rise → erratic → settle on the stored reading.
     await expect
       .poll(
         async () =>
@@ -243,7 +244,7 @@ test.describe('Daily Resonance arrival and Start', () => {
           ),
         { timeout: 20_000 },
       )
-      .toBe('5');
+      .toBe('0');
     const startReading = await page.evaluate(
       () =>
         (window as Window & { __luckyMeterStartReading?: { value?: string; plaque?: string } })
@@ -265,8 +266,8 @@ test.describe('Daily Resonance storyboard', () => {
   test('stops the wheel and percentage together, then pours the colour', async ({
     page,
   }) => {
-    // The storyboard alone holds this test for 15.2 s before the twelve segment
-    // assertions run, so the default 30 s budget is short on the mobile
+    // The storyboard alone holds this test for about 21 s before the twelve
+    // segment assertions run, so the default 30 s budget is short on the mobile
     // projects under software WebGL. The assertions are unchanged; only the
     // budget grows, as it already does for the full storyboard test below.
     test.slow();
@@ -277,7 +278,16 @@ test.describe('Daily Resonance storyboard', () => {
     await page.evaluate(() => {
       const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
       const phases: string[] = [];
+      const vesselBeats: Array<{
+        phase: string;
+        reveal: number;
+        fill: number;
+        clip: string;
+      }> = [];
       (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases = phases;
+      (
+        window as Window & { __luckyMeterVesselBeats?: typeof vesselBeats }
+      ).__luckyMeterVesselBeats = vesselBeats;
       let last = '';
       let frame = 0;
       const stop = () => {
@@ -290,6 +300,21 @@ test.describe('Daily Resonance storyboard', () => {
         if (phase && phase !== last) {
           phases.push(phase);
           last = phase;
+        }
+        // The vessel mounts only once a reading exists, so it must be looked up
+        // on every frame rather than captured before Start.
+        const vessel = document.querySelector('[data-testid="lucky-colour-panel"]');
+        const vesselPhase = vessel?.getAttribute('data-vessel-phase') ?? '';
+        if (vesselPhase) {
+          const revealedNumber = document.querySelector(
+            '[data-testid="lucky-meter-number-reveal"]',
+          );
+          vesselBeats.push({
+            phase: vesselPhase,
+            reveal: Number(ring?.getAttribute('data-number-reveal') ?? 0),
+            fill: Number(vessel?.getAttribute('data-vessel-fill') ?? 0),
+            clip: revealedNumber instanceof HTMLElement ? revealedNumber.style.clipPath : '',
+          });
         }
         if (phase === 'revealed') {
           stop();
@@ -306,11 +331,45 @@ test.describe('Daily Resonance storyboard', () => {
     const stored = (await readStoredResult(page)).result;
     const palette = getPaletteForSeasonKey(stored.season);
 
-    await expect(ring).toHaveAttribute('data-phase', 'revealed', { timeout: 20_000 });
+    await expect(ring).toHaveAttribute('data-phase', 'revealed', { timeout: 35_000 });
     const phases = await page.evaluate(
       () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
     );
     expect(phases).toContain('landed');
+
+    // The drain is the progressive reveal: at least one sampled frame had a
+    // partly-drained vessel and a partly-revealed number, and the empty vessel
+    // is reached only when the number is whole.
+    const beats = await page.evaluate(
+      () =>
+        (window as Window & {
+          __luckyMeterVesselBeats?: Array<{
+            phase: string;
+            reveal: number;
+            fill: number;
+            clip: string;
+          }>;
+        }).__luckyMeterVesselBeats ?? [],
+    );
+    expect(beats.some((beat) => beat.phase === 'draining')).toBe(true);
+    // The approved reveal moves downward from the top edge: while the number is
+    // partly shown, the clip's top inset stays zero and its bottom inset grows.
+    expect(
+      beats.some(
+        (beat) =>
+          beat.phase === 'draining' &&
+          beat.reveal > 0 &&
+          beat.reveal < 1 &&
+          /^inset\(0(px|%)?\s/.test(beat.clip),
+      ),
+    ).toBe(true);
+    expect(
+      beats.some((beat) => beat.phase === 'draining' && beat.reveal > 0 && beat.reveal < 1),
+    ).toBe(true);
+    expect(
+      beats.some((beat) => beat.phase === 'draining' && beat.fill > 0 && beat.fill < 1),
+    ).toBe(true);
+    expect(beats.some((beat) => beat.phase === 'empty' && beat.fill === 0)).toBe(true);
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(stored.percentage),
@@ -324,7 +383,8 @@ test.describe('Daily Resonance storyboard', () => {
       String(stored.luckyNumber),
     );
     await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
-    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '1.000');
+    // The approved sequence ends on the empty vessel, not a full one.
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.000');
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.name);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.hex);
     await expect(page.getByTestId('lucky-colour-panel')).toContainText(
@@ -384,6 +444,116 @@ test.describe('Daily Resonance storyboard', () => {
     const dock = page.getByTestId('lucky-meter-home').locator('..');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
+  });
+});
+
+test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
+  test('keeps the functional CSS vessel when WebGL is unavailable', async ({ page }) => {
+    test.slow();
+    await pinNoon(page);
+    // Deny every WebGL context before any application script runs. The vessel
+    // must still present its approved open, fill, drain and empty states.
+    await page.addInitScript(() => {
+      const original = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function getContextWithoutWebGL(
+        this: HTMLCanvasElement,
+        type: string,
+        ...args: unknown[]
+      ) {
+        if (typeof type === 'string' && /webgl/i.test(type)) return null;
+        return (original as unknown as (...parameters: unknown[]) => unknown).call(
+          this,
+          type,
+          ...args,
+        );
+      } as typeof HTMLCanvasElement.prototype.getContext;
+    });
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await startReveal(page);
+
+    const panel = page.getByTestId('lucky-colour-panel');
+    await expect(panel).toBeVisible({ timeout: 30_000 });
+    await expect(panel).toHaveAttribute('data-vessel-renderer', 'fallback', {
+      timeout: 30_000,
+    });
+    await expect(panel).toHaveAttribute('data-vessel-phase', /opening|filling|holding/);
+
+    // The CSS liquid actually fills, not just the caption.
+    await expect(panel).toHaveAttribute('data-vessel-phase', 'filling', {
+      timeout: 20_000,
+    });
+    await expect
+      .poll(async () => Number(await panel.getAttribute('data-vessel-fill')))
+      .toBeGreaterThan(0);
+
+    // And it drains to the highlighted empty vessel when the number is whole.
+    await expect(panel).toHaveAttribute('data-vessel-phase', 'empty', {
+      timeout: 30_000,
+    });
+    await expect(panel).toHaveAttribute('data-vessel-fill', '0.000');
+    await expect(page.getByTestId('lucky-vessel-highlight')).toHaveClass(/is-active/);
+    await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
+  });
+
+  test('restarts a refresh celebration at the full 12,000 ms (D12)', async ({ page }) => {
+    await pinNoon(page);
+    // A stored legacy duration from the superseded per-tier clock must not
+    // re-time the celebration, and the saved reading must not be redrawn.
+    await seed(
+      page,
+      buildState({
+        tierId: 'medium',
+        started: true,
+        messageCompleted: true,
+        eventCompleted: false,
+        sparkCompleted: false,
+        stageDurationMs: 9000,
+      }),
+    );
+
+    const stage = page.getByTestId('cosmic-event-stage');
+    await expect(stage).toBeVisible({ timeout: 15_000 });
+    await expect(stage).toHaveAttribute('data-duration', '12000');
+    const stored = (await readStoredResult(page)).result;
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(stored.percentage),
+    );
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(stored.luckyNumber),
+    );
+    await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
+  });
+
+  test('presents the reading, Spark and dock at once under reduced motion', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await pinNoon(page);
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+
+    const button = await waitForStart(page);
+    await button.click();
+    const stored = (await readStoredResult(page)).result;
+
+    await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
+      'data-value',
+      String(stored.percentage),
+    );
+    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
+      'data-value',
+      String(stored.luckyNumber),
+    );
+    await expect(page.getByTestId('lucky-spark-finale')).toHaveAttribute(
+      'data-state',
+      'written',
+    );
+    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
+    // Home and the countdown arrive together in the last row of the panel.
+    const dock = page.getByTestId('lucky-meter-dock');
+    await expect(dock.getByTestId('lucky-meter-home')).toBeVisible();
+    await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
   });
 });
 
@@ -595,5 +765,53 @@ test.describe('Daily Resonance visual evidence', () => {
       await expect(page.getByTestId('lucky-colour-panel')).toContainText(colour.hex);
       await page.screenshot({ path: `${directory}/${prefix}-${season}.png` });
     }
+  });
+
+  test('captures the approved vessel beats', async ({ page }, testInfo) => {
+    test.slow();
+    const directory = 'artifacts/lucky-meter-approved-build-20261121';
+    const prefix = testInfo.project.name;
+
+    await pinNoon(page);
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('lucky-meter-start')).toHaveAttribute('data-ready', 'true', {
+      timeout: 30_000,
+    });
+    await page.screenshot({ path: `${directory}/${prefix}-arrival.png` });
+
+    await startReveal(page);
+
+    await page.waitForFunction(
+      () => {
+        const vessel = document.querySelector('[data-testid="lucky-colour-panel"]');
+        return (
+          vessel?.getAttribute('data-vessel-phase') === 'filling' &&
+          Number(vessel.getAttribute('data-vessel-fill') ?? 0) >= 0.35
+        );
+      },
+      null,
+      { timeout: 30_000 },
+    );
+    await page.screenshot({ path: `${directory}/${prefix}-fill.png` });
+
+    await page.waitForFunction(
+      () => {
+        const vessel = document.querySelector('[data-testid="lucky-colour-panel"]');
+        const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
+        const reveal = Number(ring?.getAttribute('data-number-reveal') ?? 0);
+        return (
+          vessel?.getAttribute('data-vessel-phase') === 'draining' &&
+          reveal > 0.55 &&
+          reveal < 0.9
+        );
+      },
+      null,
+      { timeout: 30_000 },
+    );
+    await page.screenshot({ path: `${directory}/${prefix}-drain.png` });
+
+    await expect(page.getByTestId('lucky-meter-dock')).toBeVisible({ timeout: 90_000 });
+    await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
+    await page.screenshot({ path: `${directory}/${prefix}-dock.png` });
   });
 });

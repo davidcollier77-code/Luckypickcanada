@@ -259,9 +259,11 @@ describe('Reveal window protection', () => {
     expect(isExperienceActive()).toBe(true);
 
     // The cinematic never reports completion; the bounded fallback still frees
-    // the queue, so background work can never starve.
+    // the queue, so background work can never starve. The approved sequence is
+    // longer than the superseded one, so the wait covers the full dock window
+    // and its safety slack.
     act(() => {
-      vi.advanceTimersByTime(40_000);
+      vi.advanceTimersByTime(60_000);
     });
     expect(isExperienceActive()).toBe(false);
   });

@@ -47,7 +47,7 @@ vi.mock('../components/CosmicEventStage', () => ({
 }));
 
 import DailyResonance from '../components/DailyResonance';
-import { EVENTS_BY_ID, METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
+import { METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
   appendResultToHistory,
@@ -55,6 +55,7 @@ import {
   saveMeterState,
 } from '../app/lib/lucky-meter/storage';
 import {
+  CELEBRATION_MS,
   getMessageTypingMs,
   getSparkWritingMs,
   STORYBOARD_TIMING,
@@ -93,7 +94,10 @@ function advanceToRevealed() {
       STORYBOARD_TIMING.generationMs +
       STORYBOARD_TIMING.settlePauseMs +
       STORYBOARD_TIMING.segmentOpenMs +
-      STORYBOARD_TIMING.pourMs +
+      STORYBOARD_TIMING.fillMs +
+      STORYBOARD_TIMING.fullHoldMs +
+      STORYBOARD_TIMING.drainMs +
+      STORYBOARD_TIMING.highlightMs +
       4000,
   );
 }
@@ -104,8 +108,10 @@ function advanceToCelebration(message) {
       STORYBOARD_TIMING.generationMs +
       STORYBOARD_TIMING.settlePauseMs +
       STORYBOARD_TIMING.segmentOpenMs +
-      STORYBOARD_TIMING.pourMs +
-      STORYBOARD_TIMING.resultSettleMs +
+      STORYBOARD_TIMING.fillMs +
+      STORYBOARD_TIMING.fullHoldMs +
+      STORYBOARD_TIMING.drainMs +
+      STORYBOARD_TIMING.highlightMs +
       STORYBOARD_TIMING.messageDelayMs +
       getMessageTypingMs(message) +
       STORYBOARD_TIMING.messageHoldMs +
@@ -295,6 +301,21 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(readStoredResult().history).toEqual(before.history);
   });
 
+  it('keeps Home in the last row of the results panel, not in a fixed dock', () => {
+    render(<DailyResonance />);
+
+    const dock = screen.getByTestId('lucky-meter-dock');
+    expect(dock).toHaveClass('lucky-results-dock');
+    expect(dock).toContainElement(screen.getByTestId('lucky-meter-home'));
+    expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+    // The last row belongs to the same results column as the meter itself.
+    const resultsPanel = dock.parentElement;
+    expect(resultsPanel).toContainElement(screen.getByTestId('lucky-meter-ring'));
+    // Only the assistive live region follows it: the dock is the last visible
+    // row of the results panel.
+    expect(dock.nextElementSibling).toHaveClass('sr-only');
+  });
+
   it('shows Home and the countdown immediately for a fully completed restored result', () => {
     const result = seedToday();
     render(<DailyResonance />);
@@ -313,7 +334,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
   });
 
-  it('replaces an out-of-window stored duration so the finale is never truncated', () => {
+  it('restarts a refresh celebration for the full 12,000 ms regardless of a stored duration (D12)', () => {
     const result = createDailyResult({ dateKey: TODAY, random: () => 0.5 });
     const history = appendResultToHistory(emptyMeterHistory(), result);
     saveMeterState({
@@ -323,18 +344,18 @@ describe('Lucky Meter cinematic lifecycle', () => {
       messageCompleted: true,
       eventCompleted: false,
       sparkCompleted: false,
-      stageDurationMs: 2000,
+      // A legacy in-window duration from the superseded per-tier clock.
+      stageDurationMs: 9500,
     });
 
     render(<DailyResonance />);
 
-    const duration = Number(
-      screen.getByTestId('cosmic-event-stage').getAttribute('data-duration'),
-    );
-    const eventWindow = EVENTS_BY_ID.get(result.event.id);
-    expect(duration).not.toBe(2000);
-    expect(duration).toBeGreaterThanOrEqual(eventWindow.minDurationMs);
-    expect(duration).toBeLessThanOrEqual(eventWindow.maxDurationMs);
+    const stage = screen.getByTestId('cosmic-event-stage');
+    expect(Number(stage.getAttribute('data-duration'))).toBe(12_000);
+    expect(CELEBRATION_MS).toBe(12_000);
+    // The celebration is mounted from its first frame, not resumed mid-run.
+    expect(stage).toHaveAttribute('data-event', result.event.id);
+    expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
   });
 
   it('treats an old payload without lifecycle fields as unfinished and resumes safely', () => {
