@@ -1,6 +1,7 @@
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
+const { TextDecoder } = require('util');
 
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 const MAX_DOWNLOAD_BYTES = 10 * 1024 * 1024;
@@ -8,6 +9,22 @@ const DEFAULT_RETRY_DELAY_MS = 180 * 1000;
 const MIN_DOCUMENT_CHARACTERS = 24;
 const MIN_READABLE_WORDS = 5;
 const MIN_WORD_CHARACTER_RATIO = 0.5;
+
+/**
+ * Decode complete HTTP response bytes as UTF-8 only after all chunks arrive.
+ * A streaming boundary can split a multi-byte character; decoding individual
+ * chunks would introduce false replacement characters. Fatal decoding keeps
+ * genuinely malformed UTF-8 from entering the documentation library.
+ */
+function decodeUtf8Chunks(chunks, byteLength) {
+  try {
+    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true })
+      .decode(Buffer.concat(chunks, byteLength));
+  } catch (error) {
+    throw new Error('Response contains invalid UTF-8.');
+  }
+}
+
 
 let DOCS_DIR = path.join(process.cwd(), '.docs');
 let DOCS_BASE_DIR = path.resolve(DOCS_DIR);
@@ -995,18 +1012,34 @@ function fetchUrlResponse(requestUrl, allowedOrigin, redirectCount = 5) {
         return;
       }
 
-      let data = '';
+      const chunks = [];
       let totalSize = 0;
+      let sizeExceeded = false;
+      // IncomingMessage emits Buffer chunks by default. Retain raw bytes until
+      // end so UTF-8 code points split across chunks remain intact.
+      res.on('error', reject);
       res.on('data', (chunk) => {
-        totalSize += chunk.length;
+        if (sizeExceeded) return;
+        const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        totalSize += bytes.length;
         if (totalSize > MAX_DOWNLOAD_BYTES) {
+          sizeExceeded = true;
+          chunks.length = 0;
           res.destroy(new Error('Response size exceeds 10MB limit'));
           return;
         }
-        data += chunk;
+        chunks.push(bytes);
       });
       res.on('end', () => {
-        const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
+        if (sizeExceeded) return;
+        let data;
+        try {
+          data = decodeUtf8Chunks(chunks, totalSize);
+        } catch (error) {
+          reject(error);
+          return;
+        }
+        const sanitizedData = data.replace(/sealed_token=[^&"'\\s]+/g, 'sealed_token=REDACTED');
         resolve({
           content: sanitizedData,
           contentType: getContentType(responseHeaders),
@@ -1116,18 +1149,20 @@ function getUpstreamSha(lib, sourceConfig) {
 
       https.get(options, (res) => {
         if (res.statusCode === 200) {
-          let data = '';
+          const chunks = [];
           let totalSize = 0;
           let sizeExceeded = false;
+          res.on('error', () => resolve(null));
           res.on('data', chunk => {
             if (sizeExceeded) return;
-            totalSize += chunk.length;
+            const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+            totalSize += bytes.length;
             if (totalSize > MAX_DOWNLOAD_BYTES) {
               sizeExceeded = true;
-              data = '';
+              chunks.length = 0;
               return;
             }
-            data += chunk;
+            chunks.push(bytes);
           });
           res.on('end', () => {
             if (sizeExceeded) {
@@ -1135,6 +1170,7 @@ function getUpstreamSha(lib, sourceConfig) {
               return;
             }
             try {
+              const data = decodeUtf8Chunks(chunks, totalSize);
               const parsed = JSON.parse(data);
               resolve(parsed.sha);
             } catch (e) {
