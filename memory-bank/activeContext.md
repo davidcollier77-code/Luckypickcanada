@@ -1,37 +1,62 @@
-# Active Context — Lucky Meter Twelve-Stage Cinematic Polish
+# Active Context — Lucky Meter Approved Requirements
 
-## Current Task — Twelve-stage Lucky Meter presentation polish (spec 199)
+## Current Task — Documentation reconciliation and pre-Build gate
+
+- **Authority:** the approved Lucky Meter Living Requirements Outline and
+  Approval Sheet (21 November 2026). All OD-1–OD-13 are resolved.
+- **This task:** documentation-only reconciliation of Specs 199/200 and the
+  Memory Bank. No production code, tests, build or deployment.
+- **Approved presentation:** cylindrical vessel; functional CSS fallback;
+  five-beat generation; progressive number reveal during the drain; equal
+  12,000 ms celebration; Home and countdown in the last row of the results
+  panel; path-traced Spark; full-width Event strip; compact widget pair.
+- **D12 (resolved):** every celebration runs for 12,000 ms, including the same
+  celebration restarted after a page refresh. An older stored duration does not
+  re-time it. The saved percentage, Lucky Number, colour and tier remain
+  unchanged.
+- **Specs:** Spec 199 is implemented but partly superseded; Spec 200 is
+  implemented with its verification/handoff record incomplete. T035–T037 are
+  recorded; T038–T041 and T052 remain unchecked and are not claimed as passed.
+- **Build gate:** Build has not started. The next step after this documentation
+  PR is owner review and merge, followed by explicit Build authorisation.
+- **Verification:** this documentation task changes Markdown only. No tests,
+  type check, production build or browser run are part of it.
+
+## Recent Implementation — Three-dimensional vessel and pour (Spec 200)
+
+- **Spec Kit feature:** `specs/200-lucky-meter-dimensional-vessel`
+- **Scope:** replaced the CSS vessel with a lathed Three.js tumbler on the
+  shared creative surface, added the curved stream and splash, raised the
+  medallion face, added gold sky writing and corrected the Home/countdown
+  contract.
+- **Verification record:** T035–T037 record `tsc --noEmit`, 23 focused tests and
+  105 files / 1,133 Vitest tests. T038–T041 (Playwright, production build,
+  `./freebuff-verify.sh`, final evidence/diff review) and T052 (PR handoff)
+  remain unchecked.
+- **Superseded by the approved outline:** top-right Home dock, glyph-by-glyph
+  Spark, fill-only vessel/full-vessel number timing and per-tier celebration
+  durations. The current contract is in the approved outline and Spec 200's
+  reconciliation note.
+
+## Previous Task — Twelve-stage Lucky Meter presentation polish (Spec 199)
 
 - **Spec Kit feature:** `specs/199-lucky-meter-twelve-stage-polish`
-- **Branch:** `freebuff/e2b73e42c5b7204636ab22eb`
-- **Scope:** presentation, animation, timing and audio polish only. Selection,
-  storage, tiers, messages, palettes, celebrations, the Milky Way backdrop and
-  the Medallion Gold identity are unchanged.
-- **Storyboard:** `app/lib/lucky-meter/storyboard.js` now owns one clock with
-  twelve ordered stages (anticipation, generation, landing, colourSelect,
-  vesselOpen, pour, numberReveal, message, celebration, spark, hold, dock) and
-  a complete run of roughly forty seconds. Only the non-celebration stages were
-  lengthened; each tier keeps its stored celebration duration.
-- **Arrival:** the edge scatter is replaced by a four-layer foreground mound plus
-  two side drifts (34 leaves, depth sorted) that disperses from the centre. The
-  continuous drifting-leaf ornament layer is no longer mounted on the route.
-- **Generation:** the readout sweeps the real 5–100 scale, the plaque and labels
-  step aside, and the result is reached only on the final frame.
-- **Vessel:** the flat colour card is replaced by a DOM + CSS 3D transparent
-  vessel (recessed back wall, side walls, glass front, gold rim, tilting lid,
-  contact shadow, liquid surface, specular). It opens before any colour flows;
-  the pour then fills it on one clock.
-- **Lucky Number:** `numberReveal` is held at 0 for the entire drain and the
-  placard only mounts when the draw is revealed. It flashes exactly twice, then
-  settles.
-- **Spark:** the writing cursor is the shared maple-leaf silhouette, glowing
-  gold, and the final hold (2.6 s) precedes the paired Home/countdown dock.
-- **Audio:** the pour cue is timed to the first drop, a `number-reveal` cue was
-  added on the existing metal recording, and the deeper layered finale boom is
-  unchanged.
-- **Verification:** focused and full Vitest suites, `tsc --noEmit`, the
-  production build (416,229,183 bytes / 396.95 MiB) and the Playwright
+- **Status:** implemented on 20 November 2026; partly superseded on 21 November
+  2026.
+- **Historical scope:** presentation, animation, timing and audio polish only.
+  Selection, storage, tiers, messages, palettes, celebrations, the Milky Way
+  backdrop and the Medallion Gold identity were unchanged.
+- **Historical result:** one clock with twelve ordered stages, a four-layer
+  arrival pile (34 leaves), 5–100 generation, a DOM + CSS 3D vessel, a number
+  held until the drain and flashed twice, per-tier celebration lengths, a
+  maple-leaf Spark cursor, a 2.6 s hold and a paired Home/countdown dock.
+- **Historical verification:** focused and full Vitest suites, `tsc --noEmit`,
+  a 416,229,183-byte (396.95 MiB) production build and the Playwright
   `lucky-meter-daily-resonance` spec on desktop and both mobile projects.
+  These are historical records, not re-run for this documentation task.
+- **Superseded:** square/CSS vessel, 5–100 monotonic generation, number only
+  after the drain, fixed two-flash requirement, per-tier celebration lengths,
+  top-right Home/countdown and approximately 40 s total timing.
 
 ## Previous Task — Seven-category PR verification (spec 198, PR #1983)
 
@@ -183,8 +208,9 @@ layout or behaviour. Free/MIT only, mobile and performance preserved, build stri
 
 - No hardware GPU in this VM, so no GPU performance measurement exists.
 - Draco/KTX2 compressed models are deferred until an effect needs them.
-- The toolkit has no production consumer yet; a future effect needs its own browser, mobile,
-  accessibility, performance and baseline verification.
+- The first production consumer is the Lucky Meter vessel (`lucky-meter-vessel`, Spec 200); the
+  Three.js chunk remains lazy and is requested only by that experience. A future effect still needs
+  its own browser, mobile, accessibility, performance and baseline verification.
 - The CI visual regression suite runs after PR creation; it was not run locally.
 
 ## Continuation — completed automatic integration (PR #1966, 2026-11-19)
@@ -204,7 +230,9 @@ The owner directed that the toolkit become automatically available and usable, n
   unmounted example `examples/golden-motes.js`.
 - The Lucky Meter and the Lucky Card Reveal call `useCreativeExperience`; their derived resources
   (Lucky Meter sound set, reveal sparkle/applause/pop, confetti chunk) are prepared by the hub after
-  the page settles. Their artwork, timing, sounds, responsive behaviour and fallbacks are unchanged.
+  the page settles. At the time of PR #1966 those visuals, timing, sounds, responsive behaviour and
+  fallbacks were unchanged; Specs 199 and 200 later changed the Lucky Meter presentation, while the
+  Card Reveal remained unchanged.
 - PR review findings were repaired: `Clock.start()` reset, context loss before `renderer.dispose()`,
   SMAA before `OutputPass`, exposed bloom handle with `setBloom`, real shared-layer guard assertion,
   README double render. Graphite's context-restore claim was checked against Three.js's

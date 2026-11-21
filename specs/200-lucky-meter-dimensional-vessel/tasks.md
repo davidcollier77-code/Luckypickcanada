@@ -2,6 +2,12 @@
 
 **Feature**: `specs/200-lucky-meter-dimensional-vessel`
 
+> **Historical record and verification status.** T035–T037 are genuine recorded
+> passes. T038–T041 and T052 remain unchecked and must not be reported as
+> passed. T022 records the earlier glyph-by-glyph implementation; its checked
+> state is preserved, but the approved current treatment is the single-stroke
+> path-traced Spark.
+
 ## Phase 1 — Capture and assess
 
 - [x] T001 Capture the current sequence (arrival, pour, dock) before changes:

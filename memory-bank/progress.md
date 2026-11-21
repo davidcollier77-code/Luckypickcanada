@@ -1,3 +1,34 @@
+## 2026-11-21 — Lucky Meter approved requirements and documentation reconciliation
+
+- Recorded the owner-approved Living Requirements Outline and Approval Sheet:
+  all OD-1–OD-13 resolved, the cylindrical vessel, functional CSS fallback,
+  five-beat generation, progressive number reveal, equal 12,000 ms celebration,
+  last-row Home/countdown, path-traced Spark, full-width Event strip and compact
+  widget pair.
+- Reconciled Specs 199 and 200 with the approved decisions. Spec 199 remains the
+  historical twelve-stage implementation record and is marked partly superseded;
+  Spec 200 remains the Three.js vessel implementation record with its current
+  clauses amended.
+- Recorded D12: every celebration runs for 12,000 ms, including a celebration
+  restarted after a page refresh. The saved percentage, Lucky Number, colour and
+  tier are unchanged.
+- Preserved the historical Spec 199 verification record and the Spec 200
+  T035–T037 pass records. T038–T041 and T052 remain unchecked and are not
+  claimed as passed.
+- Documentation only: no production code, tests, type check, build, browser run
+  or deployment. Build remains unauthorised.
+
+## 2026-11-20 — Lucky Meter three-dimensional vessel and pour (spec 200)
+
+- Replaced the CSS colour card with a lathed Three.js glass tumbler on the shared
+  creative surface, including the liquid surface, curved stream, leading
+  droplet, splash ring, gold dust and context-loss fallback.
+- Raised the medallion face by pulling the wheel band inward, then added the
+  gold sky-writing treatment and the Home/countdown derivation.
+- Recorded T035–T037 passing: `tsc --noEmit`, 23 focused tests and 105 files /
+  1,133 Vitest tests. T038–T041 and T052 remain unchecked and are not claimed
+  as passed.
+
 ## 2026-11-20 — Lucky Meter twelve-stage cinematic polish (spec 199)
 
 - Reworked the Lucky Meter presentation into one continuous twelve-stage
