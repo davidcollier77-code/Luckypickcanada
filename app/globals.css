@@ -1347,6 +1347,17 @@ body {
   100% { opacity: 0; transform: scale(1); }
 }
 
+/* Reduced motion keeps the empty-vessel highlight static: the rim glow already
+   marks the completed vessel, so no 1.6 s scale or opacity animation runs on a
+   fresh reveal or on a restored result. */
+@media (prefers-reduced-motion: reduce) {
+  .lucky-vessel__highlight.is-active {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+}
+
 .lucky-vessel-stage[data-vessel-phase="empty"] .lucky-vessel__rim {
   box-shadow:
     0 1px 4px rgba(0, 0, 0, 0.5),

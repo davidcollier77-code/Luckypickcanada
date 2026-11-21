@@ -702,7 +702,19 @@ export async function createLuckyMeterVesselScene({
       pour <= 0.001 &&
       open <= 0.001 &&
       state.impact <= 0.001;
-    if (settledFull || settledEmpty) {
+    // The finished reading rests as an empty but still-open vessel: the colour
+    // is gone, the lid stays back and the number is whole. Without its own
+    // predicate the terminal results state matches neither settledFull nor
+    // settledEmpty and the loop would keep rendering behind the whole panel.
+    const settledRevealed =
+      state.targetFill <= 0.001 &&
+      state.targetPour <= 0.001 &&
+      state.targetOpen >= 0.999 &&
+      fill <= 0.001 &&
+      pour <= 0.001 &&
+      open >= 0.999 &&
+      state.impact <= 0.001;
+    if (settledFull || settledEmpty || settledRevealed) {
       if (settleStart === null) settleStart = elapsed;
       else if (
         !idleStopped &&

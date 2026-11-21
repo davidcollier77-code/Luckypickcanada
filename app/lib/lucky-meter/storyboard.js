@@ -230,11 +230,16 @@ export function getSparkCharacterScheduleMs(message) {
   const weights = characterWeights(message);
   if (weights.length === 0) return [];
   const duration = getSparkWritingMs(message);
-  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-  if (totalWeight <= 0) return [];
+  const weightSum = weights.reduce((total, weight) => total + weight, 0);
+  // Degenerate weights must never collapse the schedule. An empty schedule
+  // makes the writer fall back to its 16 ms floor for every character, which
+  // would break the approved 3,800–5,200 ms window, so pace the Spark
+  // uniformly while still returning one timestamp per character.
+  const useUniform = !Number.isFinite(weightSum) || weightSum <= 0;
+  const totalWeight = useUniform ? weights.length : weightSum;
   let cumulative = 0;
   return weights.map((weight) => {
-    cumulative += weight;
+    cumulative += useUniform ? 1 : weight;
     return Math.round((cumulative / totalWeight) * duration);
   });
 }
@@ -305,7 +310,7 @@ export function getExperienceTotalMs(tierMessage, eventDurationMs, sparkMessage)
  * values so a stage can never start before the previous one has finished.
  *
  * @param {{ tierMessage: string, eventDurationMs: number, sparkMessage: string }} run
- * @returns {Array<{ id: string, startMs: number, endMs: number, durationMs: number }>}
+ * @returns {Array<{ id: string, startMs: number, endMs: number, durationMs: number, streamEndMs?: number }>}
  */
 export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) {
   const eventStart = getEventStartMs(tierMessage);
@@ -343,7 +348,12 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
     {
       id: 'pour',
       startMs: VESSEL_OPEN_END_MS,
+      // The stage owns the fill and the held-full beat, so its end is the full
+      // hold. The stream itself stops at FILL_END_MS; `streamEndMs` makes that
+      // distinction explicit for any consumer that needs the pour to end
+      // rather than the stage to close 700 ms later.
       endMs: FULL_HOLD_END_MS,
+      streamEndMs: FILL_END_MS,
     },
     {
       id: 'numberReveal',

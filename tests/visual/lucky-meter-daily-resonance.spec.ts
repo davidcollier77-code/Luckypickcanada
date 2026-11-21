@@ -694,6 +694,12 @@ test.describe('Daily Resonance reduced motion', () => {
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-value')).not.toHaveAttribute('data-value', '0');
+
+    // The completed vessel is highlighted by its static rim glow, not by the
+    // 1.6 s scale and opacity animation used when motion is allowed.
+    const highlight = page.getByTestId('lucky-vessel-highlight');
+    await expect(highlight).toHaveClass(/is-active/);
+    await expect(highlight).toHaveCSS('animation-name', 'none');
   });
 });
 

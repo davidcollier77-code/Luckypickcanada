@@ -128,8 +128,11 @@ describe('twelve-stage storyboard timing', () => {
     });
     const pour = stages.find((stage) => stage.id === 'pour');
     const number = stages.find((stage) => stage.id === 'numberReveal');
-    // The pour stage owns the fill and the full hold.
+    // The pour stage owns the fill and the full hold, while the stream itself
+    // stops at the fill boundary so a consumer never reads the stage end.
     expect(pour.endMs).toBe(FULL_HOLD_END_MS);
+    expect(pour.streamEndMs).toBe(FILL_END_MS);
+    expect(pour.streamEndMs - pour.startMs).toBe(STORYBOARD_TIMING.fillMs);
     expect(pour.endMs - pour.startMs).toBe(
       STORYBOARD_TIMING.fillMs + STORYBOARD_TIMING.fullHoldMs,
     );
