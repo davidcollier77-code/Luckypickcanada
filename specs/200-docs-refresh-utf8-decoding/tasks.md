@@ -38,7 +38,7 @@
 
 - [x] T008 Review that existing timeout, HTTPS/redirect, token-sanitization, 10 MB size, retry and scheduled-slot assertions remain in scripts/test-refresh-docs.js.
 - [x] T009 Verify the configured URL inventory and refresh schedule remain untouched in .docs/manifest.json and .github/workflows/refresh-docs.yml.
-- [x] T010 Record unavailable local execution and the PR-triggered verification responsibilities in the PR handoff PR_SUBMISSION.md.
+- [x] T010 Record unavailable local execution and PR-triggered verification in the handoff required by PR_SUBMISSION.md.
 
 ## Dependencies & Execution Order
 
