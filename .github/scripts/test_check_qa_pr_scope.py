@@ -214,7 +214,7 @@ class ScopeDeclarationTests(unittest.TestCase):
 
 
 class PlaceholderWordTests(unittest.TestCase):
-    """The marker word is rejected only when it is the whole field value."""
+    """The marker word is rejected as a whole value or a leading marker phrase."""
 
     PATHS = [".github/scripts/checker.py", ".github/scripts/test_checker.py"]
 
@@ -246,10 +246,18 @@ class PlaceholderWordTests(unittest.TestCase):
         result = run_check(self.PATHS, value)
         self.assertEqual(result["status"], "PASS")
 
+    def test_filled_field_may_start_with_the_marker_word(self):
+        value = declaration(
+            summary="Placeholder fallback remains visible for failed reports."
+        )
+        result = run_check(self.PATHS, value)
+        self.assertEqual(result["status"], "PASS")
+
     def test_marker_only_summary_feature_and_purpose_are_rejected(self):
         markers = (
             "**placeholder**",
-            "placeholder text",
+            "placeholder value for the new feature",
+            "placeholder text for the new feature",
             "placeholder goes here",
             "TODO",
             "TBD",
@@ -312,7 +320,13 @@ class PlaceholderWordTests(unittest.TestCase):
 
     def test_marker_only_scope_reasons_are_rejected(self):
         path = "app/new-component.tsx"
-        for marker in ("**placeholder**", "placeholder text", "TODO", "fill this in"):
+        for marker in (
+            "**placeholder**",
+            "placeholder text",
+            "placeholder value for the new feature",
+            "TODO",
+            "fill this in",
+        ):
             with self.subTest(field="scope_expansion", marker=marker):
                 value = declaration(
                     paths=[path],
@@ -330,7 +344,14 @@ class PlaceholderWordTests(unittest.TestCase):
 
     def test_marker_only_scope_change_explanation_is_rejected(self):
         path = "app/new-component.tsx"
-        for marker in ("**placeholder**", "placeholder text", "TODO", "fill this in"):
+        for marker in (
+            "**placeholder**",
+            "placeholder text",
+            "placeholder goes here",
+            "placeholder value for the new feature",
+            "TODO",
+            "fill this in",
+        ):
             with self.subTest(marker=marker):
                 value = declaration(
                     paths=[path],

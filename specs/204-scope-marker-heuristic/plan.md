@@ -4,7 +4,7 @@
 
 ## Summary
 
-`check_qa_pr_scope.py` repeats a regular expression containing the bare word `placeholder` in six places: the summary, feature names, file purposes, scope-expansion reasons, visual-impact reasons and the "Scope changed" explanation. Each check uses `search()` over the whole value, so a complete phrase that mentions the marker-first fallback report is rejected as unfilled. The fix keeps each field's existing instruction markers, removes the ambiguous word from the anywhere-match patterns, and adds one whole-value pattern for a bare marker.
+`check_qa_pr_scope.py` repeats a regular expression containing the bare word `placeholder` in six places: the summary, feature names, file purposes, scope-expansion reasons, visual-impact reasons and the "Scope changed" explanation. Each check uses `search()` over the whole value, so a complete phrase that mentions the marker-first fallback report is rejected as unfilled. The fix keeps each field's existing instruction markers, removes the ambiguous word from the anywhere-match patterns, and adds whole-value and leading-phrase patterns for a bare marker.
 
 ## Technical Context
 
@@ -49,12 +49,12 @@ The summary and scope-reason checks use `\b(todo|tbd|placeholder|fill this in)\b
 
 The production change is deliberately small:
 
-1. Add one `PLACEHOLDER_ONLY` pattern anchored to the whole value for a bare marker with optional formatting, punctuation and the common `text`, `value`, `here` or `goes here` suffix.
-2. Add a shared `_placeholder_wording(value, pattern)` helper that strips the value and returns true for either the field's existing instruction pattern or the whole-value marker.
+1. Add `PLACEHOLDER_ONLY` for a bare marker as the whole value and `PLACEHOLDER_PREFIX` for a value that begins with `placeholder` followed by `text`, `value`, `here` or `goes here`, both allowing optional formatting and punctuation where applicable.
+2. Add a shared `_placeholder_wording(value, pattern)` helper that strips the value and returns true for the field's existing instruction pattern, the whole-value marker or the leading marker phrase.
 3. Remove `placeholder` from each of the six anywhere-match patterns and call the shared helper. The existing per-field instruction sets are preserved, so the change does not add new instruction rejections to fields that did not have them.
 4. Use the same helper for the scope-expansion reason, visual-impact reason and "Scope changed" explanation because they share the identical bare-word bug.
 
-A sentence-length or prose-detection rule would be harder to reason about and could accept a real template line that happens to be long. Anchoring the ambiguous word to the whole value keeps the rule deterministic: a marker-shaped field is unfilled, while a phrase that uses the word is filled. The unambiguous instruction phrases still match anywhere, so they cannot hide inside a value.
+A sentence-length or prose-detection rule would be harder to reason about and could accept a real template line that happens to be long. Anchoring the ambiguous word to the whole value or a leading marker phrase keeps the rule deterministic: a marker-shaped field is unfilled, while a phrase that uses the word in prose is filled. A phrase such as "Placeholder fallback remains visible" still passes because it does not use the marker suffix. The unambiguous instruction phrases still match anywhere, so they cannot hide inside a value.
 
 ## Verification and Limitations
 

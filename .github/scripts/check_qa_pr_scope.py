@@ -53,6 +53,10 @@ PLACEHOLDER_ONLY = re.compile(
     r"^[\W_]*placeholder(?:\s+(?:text|value|here|goes here))?[\W_]*$",
     re.I,
 )
+PLACEHOLDER_PREFIX = re.compile(
+    r"^[\W_]*placeholder\s+(?:text|value|here|goes here)\b",
+    re.I,
+)
 SUMMARY_WORDING = re.compile(r"\b(todo|tbd|fill this in)\b|<[^>]+>", re.I)
 FEATURE_WORDING = re.compile(
     r"\b(todo|tbd|name each|describe the|fill this in)\b", re.I
@@ -68,9 +72,13 @@ class ScopeError(ValueError):
 
 
 def _placeholder_wording(value: str, pattern: re.Pattern) -> bool:
-    """Reject template instructions anywhere and a bare marker as the whole value."""
+    """Reject template instructions, a leading marker phrase and a bare marker."""
     text = value.strip()
-    return bool(pattern.search(text) or PLACEHOLDER_ONLY.match(text))
+    return bool(
+        pattern.search(text)
+        or PLACEHOLDER_ONLY.match(text)
+        or PLACEHOLDER_PREFIX.match(text)
+    )
 
 
 def normalize_path(raw: str) -> str:
