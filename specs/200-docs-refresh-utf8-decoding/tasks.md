@@ -24,7 +24,7 @@
 ### Tests
 
 - [x] T003 [US1] Extend the HTTPS response mock to emit multiple Buffer chunks and response-stream errors in scripts/test-refresh-docs.js.
-- [x] T004 [US1] Add valid split-code-point and malformed-UTF-8 regression tests in scripts/test-refresh-docs.js.
+- [x] T004 [US1] Add valid split-code-point, malformed-UTF-8 and existing-snapshot preservation regressions in scripts/test-refresh-docs.js.
 
 ### Implementation
 
