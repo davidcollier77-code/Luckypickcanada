@@ -49,10 +49,28 @@ APPROVAL_COMMANDS = {
 }
 SCOPE_CHANGE_PHRASE = "Scope changed"
 SCOPE_CHANGE_MIN_EXPLANATION = 20
+PLACEHOLDER_ONLY = re.compile(
+    r"^[\W_]*placeholder(?:\s+(?:text|value|here|goes here))?[\W_]*$",
+    re.I,
+)
+SUMMARY_WORDING = re.compile(r"\b(todo|tbd|fill this in)\b|<[^>]+>", re.I)
+FEATURE_WORDING = re.compile(
+    r"\b(todo|tbd|name each|describe the|fill this in)\b", re.I
+)
+REASON_WORDING = re.compile(r"\b(todo|tbd|fill this in)\b|<[^>]+>", re.I)
+PURPOSE_WORDING = re.compile(
+    r"\b(todo|tbd|describe this|fill this in)\b|<[^>]+>", re.I
+)
 
 
 class ScopeError(ValueError):
     """The declaration or GitHub evidence cannot be classified safely."""
+
+
+def _placeholder_wording(value: str, pattern: re.Pattern) -> bool:
+    """Reject template instructions anywhere and a bare marker as the whole value."""
+    text = value.strip()
+    return bool(pattern.search(text) or PLACEHOLDER_ONLY.match(text))
 
 
 def normalize_path(raw: str) -> str:
@@ -103,10 +121,10 @@ def extract_declaration(body: str) -> dict:
     summary = declaration.get("summary")
     if not isinstance(summary, str) or len(summary.strip()) < 12:
         raise ScopeError("QA scope summary must describe the intended change")
-    if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", summary, re.I):
+    if _placeholder_wording(summary, SUMMARY_WORDING):
         raise ScopeError("QA scope summary still contains placeholder wording")
     features = _string_list(declaration.get("features"), "features", required=True)
-    if any(re.search(r"\b(todo|tbd|placeholder|name each|describe the|fill this in)\b", item, re.I) for item in features):
+    if any(_placeholder_wording(item, FEATURE_WORDING) for item in features):
         raise ScopeError("features still contains placeholder wording")
     patterns = _string_list(declaration.get("paths"), "paths", required=True)
     for pattern in patterns:
@@ -181,7 +199,7 @@ def _entries_with_reasons(value, field: str) -> dict[str, str]:
         reason = item.get("reason")
         if not isinstance(reason, str) or len(reason.strip()) < 12:
             raise ScopeError(f"{field} requires a specific reason for {path}")
-        if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", reason, re.I):
+        if _placeholder_wording(reason, REASON_WORDING):
             raise ScopeError(f"{field} reason for {path} contains placeholder wording")
         if path in entries:
             raise ScopeError(f"{field} contains duplicate path {path}")
@@ -203,7 +221,7 @@ def _file_purpose_entries(value) -> dict[str, str]:
         purpose = item.get("purpose")
         if not isinstance(purpose, str) or len(purpose.strip()) < 12:
             raise ScopeError(f"file_purposes requires a specific purpose for {path}")
-        if re.search(r"\b(todo|tbd|placeholder|describe this|fill this in)\b|<[^>]+>", purpose, re.I):
+        if _placeholder_wording(purpose, PURPOSE_WORDING):
             raise ScopeError(f"file purpose for {path} contains placeholder wording")
         if path in entries:
             raise ScopeError(f"file_purposes contains duplicate path {path}")
@@ -223,7 +241,7 @@ def _visual_impact(value) -> dict | None:
     reason = value.get("reason")
     if not isinstance(reason, str) or len(reason.strip()) < 12:
         raise ScopeError("visual_impact requires a specific reason")
-    if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", reason, re.I):
+    if _placeholder_wording(reason, REASON_WORDING):
         raise ScopeError("visual_impact reason contains placeholder wording")
     return {"required": required, "reason": reason.strip()}
 
@@ -253,7 +271,7 @@ def _scope_change_statement(body: str) -> str:
         statement = " ".join(match.group(1).split()).strip()
         if len(statement) < SCOPE_CHANGE_MIN_EXPLANATION:
             continue
-        if re.search(r"\b(todo|tbd|placeholder|fill this in)\b|<[^>]+>", statement, re.I):
+        if _placeholder_wording(statement, REASON_WORDING):
             continue
         return statement
     return ""
