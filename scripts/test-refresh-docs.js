@@ -793,6 +793,52 @@ async function runTests() {
     );
   });
 
+  await test('runRefresh preserves an existing snapshot when upstream UTF-8 is malformed', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    const library = '/example/docs';
+    const url = 'https://example.com/docs/malformed-utf8-refresh';
+    const existing = '# Existing Documentation\n\nThis known-good snapshot remains readable and must not be replaced.\n';
+    const prefix = Buffer.from('# Broken Documentation\n\nThe upstream response contains ');
+    const suffix = Buffer.from(' malformed bytes and otherwise readable documentation content.\n');
+    const malformed = Buffer.concat([prefix, Buffer.from([0xF0, 0x28, 0x8C, 0x28]), suffix]);
+    mockResponses[url] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      chunks: [
+        malformed.subarray(0, prefix.length + 1),
+        malformed.subarray(prefix.length + 1)
+      ]
+    };
+    fs.writeFileSync(path.join(root, 'creation', '_example_docs.md'), existing);
+    fs.writeFileSync(path.join(root, 'manifest.json'), JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url } },
+      inventory: [library],
+      githubShas: {}
+    }, null, 2));
+
+    const previousRetryDelay = process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+    process.env.DOCS_REFRESH_RETRY_DELAY_MS = '0';
+    try {
+      const report = createRefreshReport();
+      await runRefresh({ docsDir: root, reportPath: null }, report);
+      assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_example_docs.md'), 'utf8'), existing);
+      assert.strictEqual(report.downloadFailures.length, 1);
+      assert.match(report.downloadFailures[0].error, /invalid UTF-8/i);
+      assert.strictEqual(report.validationRejections.length, 0);
+    } finally {
+      if (previousRetryDelay === undefined) {
+        delete process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+      } else {
+        process.env.DOCS_REFRESH_RETRY_DELAY_MS = previousRetryDelay;
+      }
+      restoreDocsDirectory();
+    }
+  });
+
   await test('fetchDocumentation: 15-second timeout', async () => {
     mockResponses['https://timeout.example.com/'] = { timeout: true };
     await assert.rejects(
