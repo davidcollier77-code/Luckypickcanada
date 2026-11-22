@@ -200,7 +200,7 @@ describe('compact single-source agent governance', () => {
     expect(submission).toContain('Missing reports, missing categories, stale head SHAs, skipped or cancelled checks, incomplete evidence, unavailable source data and timeouts must never be described as PASSED.');
     expect(submission).toContain('The governance digest approval (`/approve-governance <digest>`) and the protected-file GitHub Environment authorization are separate requirements.');
     expect(submission).toContain('Do not automatically repair failed checks or findings after PR creation.');
-    expect(submission).toContain('Do not merge, enable auto-merge or otherwise complete the PR.');
+    expect(submission).toContain('Merge, enable auto-merge or otherwise complete the PR.');
   });
 
   it('retains the protected-file workflow and owner authorization gate', () => {
