@@ -5,7 +5,9 @@ import {
   verifyServedLuckyMeterCss,
 } from '../scripts/verify-deployed-lucky-meter-css.mjs';
 
-const BUILD_ID = '8c9c5f648dfe3abc14e1ff0c2e781432d8a9efa9';
+// A build ID is opaque. Keep the fixture non-secret-looking so secret scanners
+// do not treat a 40-character hexadecimal commit-shaped string as a token.
+const BUILD_ID = 'review-build-20261122';
 
 // The approved rules are deliberately split across the two linked stylesheets
 // so the passing assertion can only succeed when the union is inspected.
@@ -100,7 +102,7 @@ describe('deployed Lucky Meter CSS check', () => {
     const currentHtml = '<link rel="stylesheet" href="/_next/static/css/current.css">';
     const cachedHtml = '<link rel="stylesheet" href="/_next/static/css/legacy.css">';
     const fetchImpl = vi.fn(async (url) => {
-      if (url.includes('__css_check=')) return ok(currentHtml);
+      if (url.includes('__css_check')) return ok(currentHtml);
       if (url.endsWith('/lucky-meter')) return ok(cachedHtml);
       return ok(url.endsWith('current.css') ? APPROVED_CSS : '.lucky-colour-vessel{opacity:0}');
     });
@@ -138,7 +140,11 @@ describe('deployed Lucky Meter CSS check', () => {
     const fetchImpl = vi.fn(
       (_url, { signal }) =>
         new Promise((_resolve, reject) => {
-          signal.addEventListener('abort', () => reject(signal.reason));
+          const onAbort = () => {
+            signal.removeEventListener('abort', onAbort);
+            reject(signal.reason);
+          };
+          signal.addEventListener('abort', onAbort);
         }),
     );
 

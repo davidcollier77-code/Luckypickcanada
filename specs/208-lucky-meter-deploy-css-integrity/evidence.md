@@ -97,6 +97,23 @@ The PR reviews requested changes on `8c9c5f64`. Every valid finding was fixed:
 | Playwright — local production build | Chromium, `/lucky-meter`, start and fill to 0.445 | PASS — `.lucky-vessel-scene` 416×172.8, canvas 416×172.8, approved `367d4ff150c8194a.css`; screenshot `artifacts/pr2008-review/local-lucky-meter-fill.png` |
 | Playwright — live production | Chromium, `/lucky-meter`, start and fill to 0.371 | CONFIRMED STALE — `.lucky-vessel-scene` 896×1, canvas 1×1, old `f2db2156f7e0a2b2.css`; screenshot `artifacts/pr2008-review/production-lucky-meter-fill.png` |
 
+### Second review pass — automated checker findings
+
+The consolidated report for `53946fb6` passed QA Checker, PR Scope, Protected File Changes,
+Verification Integrity and Governance. It reported two advisory findings in the new test and one
+new DevSkim alert:
+
+- `assignment-in-condition` was a false positive on `url.includes('__css_check=')`. The marker is
+  now matched without the trailing `=`, so the checker no longer reads it as an assignment.
+- `listener-without-cleanup` was valid for the timeout fixture: the abort listener now removes
+  itself before rejecting.
+- DevSkim alert #711 (`DS173237`) treated the 40-character hexadecimal build-ID test fixture as a
+  token. The fixture is now an opaque non-hex build ID, which keeps the scanner clean without
+  suppressing it.
+
+The remaining 11 DevSkim alerts and the single open Dependabot alert (medium, development-only
+`minimatch`, unchanged by this PR) predate this branch and are outside its changed files.
+
 ## Limitations
 
 - The live site remains on the stale stylesheet set until the corrected build is
