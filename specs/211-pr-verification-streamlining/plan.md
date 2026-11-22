@@ -36,12 +36,14 @@ the check required.
 
 - JSON reporter added alongside the configured reporters; a tested summary
   script writes per-spec timings and flake warnings.
-- `tests/visual/shard-plan.json` supplies duration weights; the planner always
-  discovers the specs itself, assigns whole files and asserts the union equals
-  discovery with no duplicates.
+- `tests/visual/shard-plan.json` supplies duration weights recorded from a real
+  Visual QA run; the planner always discovers the specs itself, assigns whole
+  files and asserts the union equals discovery with no duplicates. Each shard is
+  passed as an anchored regular expression so a sibling spec cannot match.
 - `tests/visual/impact-map.json` maps changed areas to specs; unmatched paths,
-  shared chrome, unreachable specs and full sweeps select everything. Selection
-  is shadow-only until the owner enables subset mode.
+  shared chrome, unreachable specs and full sweeps select everything. The shadow
+  report lists the affected specs while every spec still runs; subset selection
+  remains off until the owner enables it.
 - No baseline, project, spec or configuration changes; `--forbid-only` guards
   against a stray focused test.
 

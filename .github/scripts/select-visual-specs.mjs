@@ -6,7 +6,7 @@
  *  - any unmapped changed path selects every spec;
  *  - any discovered spec that is not reachable from a rule is reported and
  *    selects every spec (a new spec can never be silently excluded);
- *  - shadow mode (the committed default) only reports the selection and the
+ *  - shadow mode (the committed default) reports the affected specs and the
  *    job still runs every spec;
  *  - full-sweep runs (merge group, dispatch, weekly) always select everything.
  */
@@ -95,14 +95,30 @@ export function selectSpecs(changedPaths, map, discovered, { mode = DEFAULT_MODE
   return { mode: 'subset', specs, reason: `selected ${specs.length} of ${all.length} spec file(s)` };
 }
 
+export function renderSummary(selection, discovered) {
+  const lines = [
+    `Visual spec selection: **${selection.mode}** — ${selection.reason}`,
+    '',
+  ];
+  if (selection.would_run) {
+    const affected = selection.would_run;
+    lines.push(
+      `Affected specs (${affected.length}/${discovered.length}): ${affected.length ? affected.join(', ') : 'none'}`,
+      `Shadow mode: all ${selection.specs.length} specs still run.`,
+    );
+  } else {
+    lines.push(`Specs (${selection.specs.length}/${discovered.length}): ${selection.specs.join(', ')}`);
+  }
+  return lines;
+}
+
 function parseArguments(argv) {
-  const options = { files: null, map: DEFAULT_MAP_PATH, mode: process.env.VISUAL_SPEC_SELECTION || DEFAULT_MODE, fullSweep: process.env.VISUAL_FULL_SWEEP === 'true', specs: null };
+  const options = { files: null, map: DEFAULT_MAP_PATH, mode: DEFAULT_MODE, fullSweep: false };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--files') options.files = argv[++index];
     else if (argument === '--map') options.map = argv[++index];
     else if (argument === '--mode') options.mode = argv[++index];
-    else if (argument === '--specs') options.specs = argv[++index];
     else if (argument === '--full-sweep') options.fullSweep = true;
     else throw new Error(`unknown argument: ${argument}`);
   }
@@ -116,23 +132,12 @@ function main() {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
-  const discovered = options.specs
-    ? readFileSync(options.specs, 'utf8')
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-    : discoverSpecFiles();
+  const discovered = discoverSpecFiles();
   if (!discovered.length) throw new Error('no Playwright spec files were discovered');
   const { map, problem } = loadImpactMap(options.map);
   if (problem) console.warn(`::warning::Visual spec selection: ${problem}`);
   const selection = selectSpecs(changed, map, discovered, { mode: options.mode, fullSweep: options.fullSweep });
-  const lines = [
-    `Visual spec selection: **${selection.mode}** — ${selection.reason}`,
-    '',
-    selection.would_run
-      ? `Would run: ${selection.specs.length === discovered.length ? 'all specs' : selection.would_run.join(', ')}`
-      : `Specs (${selection.specs.length}/${discovered.length}): ${selection.specs.join(', ')}`,
-  ];
+  const lines = renderSummary(selection, discovered);
   console.log(lines.join('\n'));
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
   if (process.env.GITHUB_OUTPUT) {

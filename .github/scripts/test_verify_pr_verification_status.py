@@ -340,6 +340,80 @@ class CurrentHeadAuditTests(unittest.TestCase):
         self.assertIn("**NOT RUN**", markdown)
 
 
+class ApplicabilityAuditTests(unittest.TestCase):
+    def _green_without_build(self):
+        return [
+            check_run(name, run_id=index)
+            for index, name in enumerate(auditor.REQUIRED_CHECKS, start=1)
+            if name != auditor.BUILD_CHECK
+        ]
+
+    def test_inapplicable_build_is_not_run_and_not_blocking(self):
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "docs: readme")],
+            self._green_without_build(),
+            build_required="false",
+            visual_required="false",
+        )
+
+        build = next(
+            record
+            for record in report["required_checks"]
+            if record["name"] == auditor.BUILD_CHECK
+        )
+        self.assertEqual(build["status"], "NOT RUN")
+        self.assertFalse(build["applicable"])
+        self.assertFalse(build["blocking"])
+        self.assertEqual(report["conditional_checks"][0]["status"], "NOT RUN")
+        self.assertEqual(report["overall_status"], "VERIFIED")
+
+    def test_required_build_that_did_not_run_still_blocks(self):
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "fix: app")],
+            self._green_without_build(),
+            build_required="true",
+            visual_required="true",
+        )
+
+        build = next(
+            record
+            for record in report["required_checks"]
+            if record["name"] == auditor.BUILD_CHECK
+        )
+        self.assertTrue(build["blocking"])
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+        self.assertIn(auditor.BUILD_CHECK, " ".join(report["blocking_reasons"]))
+        self.assertIn("Visual QA", " ".join(report["blocking_reasons"]))
+
+    def test_applicable_visual_qa_shards_must_all_pass(self):
+        runs = green_checks() + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run("Visual QA (shard 2/2)", run_id=22),
+        ]
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "fix: render")],
+            runs,
+            build_required="true",
+            visual_required="true",
+        )
+
+        self.assertEqual(report["conditional_checks"][0]["status"], "PASS")
+        self.assertEqual(report["overall_status"], "VERIFIED")
+        runs[-1] = check_run("Visual QA (shard 2/2)", conclusion="failure", run_id=22)
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "fix: render")],
+            runs,
+            build_required="true",
+            visual_required="true",
+        )
+        self.assertEqual(report["conditional_checks"][0]["status"], "FAIL")
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+
+
 class EmptyHeadShaTests(unittest.TestCase):
     def test_empty_head_sha_never_matches_runs_without_a_sha(self):
         runs = [
@@ -548,7 +622,7 @@ class SettlingWaitTests(unittest.TestCase):
 
     NEW = "c" * 40
 
-    def _harness(self, responses, timeout=600, poll=15):
+    def _harness(self, responses, timeout=600, poll=15, **wait_options):
         state = {"now": 0.0}
         polls = []
         sleeps = []
@@ -576,6 +650,7 @@ class SettlingWaitTests(unittest.TestCase):
             loader=loader,
             clock=clock,
             sleep=sleep,
+            **wait_options,
         )
         return {"polls": polls, "sleeps": sleeps, "now": state["now"]}
 
@@ -700,6 +775,21 @@ class SettlingWaitTests(unittest.TestCase):
     def test_docs_only_head_returns_as_soon_as_required_checks_are_settled(self):
         run = self._harness(
             [(pull_request(), [commit(HEAD, "docs: readme")], green_checks())]
+        )
+
+        self.assertEqual(len(run["polls"]), 1)
+        self.assertEqual(run["sleeps"], [])
+
+    def test_inapplicable_build_does_not_hold_the_wait_for_its_deadline(self):
+        runs = [
+            check_run(name, run_id=index)
+            for index, name in enumerate(auditor.REQUIRED_CHECKS, start=1)
+            if name != auditor.BUILD_CHECK
+        ]
+        run = self._harness(
+            [(pull_request(), [commit(HEAD, "docs: readme")], runs)],
+            timeout=600,
+            build_required="false",
         )
 
         self.assertEqual(len(run["polls"]), 1)

@@ -1,7 +1,26 @@
 {
   "version": 1,
   "shards": 2,
-  "generated_from": [],
-  "note": "Weights are refreshed by .github/scripts/update-playwright-shard-plan.mjs from committed Playwright timing artifacts. Until real durations are recorded the planner uses equal weights; file affinity and exact coverage still hold.",
-  "weights_ms": {}
+  "generated_from": [
+    "Visual QA run 45076917637, shards 1-2 (2026-11-22; sitewide-gold-cta sample from shard 1)"
+  ],
+  "note": "Weights are per-spec durations from a Visual QA run, summed across the three projects. Refresh with .github/scripts/update-playwright-shard-plan.mjs from the run timings artifacts. The shard-2 sample for sitewide-gold-cta was excluded because the pre-fix substring filter also ran it there.",
+  "weights_ms": {
+    "crystal-ball-daily-limit.spec.ts": 174250,
+    "crystal-ball-follow-up-outage.spec.ts": 36912,
+    "crystal-ball-greeting.spec.ts": 60833,
+    "crystal-ball-interactions.spec.ts": 46888,
+    "crystal-ball.spec.ts": 25635,
+    "gold-cta.spec.ts": 63023,
+    "homepage-content-refresh.spec.ts": 146064,
+    "homepage.spec.ts": 134998,
+    "lucky-meter-daily-resonance.spec.ts": 1092610,
+    "lucky-reveal-selection.spec.ts": 129593,
+    "lucky-stories-pagination.spec.ts": 53599,
+    "map-marker-interaction.spec.ts": 61088,
+    "mobile-accessibility.spec.ts": 124081,
+    "security-headers.spec.ts": 24070,
+    "sitewide-gold-cta.spec.ts": 117644,
+    "turnstile-loading.spec.ts": 21330
+  }
 }

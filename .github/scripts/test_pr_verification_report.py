@@ -204,6 +204,50 @@ class CategoryContractTests(unittest.TestCase):
             any("shard 2/2" in row["name"] for row in result["supporting_checks"])
         )
 
+    def test_inapplicable_build_and_visual_rows_do_not_warn(self):
+        required = [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {
+                "name": "Validate OpenNext build artifacts",
+                "status": "NOT RUN",
+                "detail": "not applicable: no changed path can affect the production build",
+                "applicable": False,
+                "blocking": False,
+                "head_sha": "",
+            },
+        ]
+        conditional = [
+            {
+                "name": "Visual QA",
+                "status": "NOT RUN",
+                "detail": "not applicable: no changed path can affect rendered output",
+                "applicable": False,
+                "blocking": False,
+                "head_sha": "",
+            }
+        ]
+        runs = [
+            check("Application Verification", "success"),
+            check(report.DEVSKIM_CHECK, "success"),
+        ]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=required, conditional=conditional),
+            )
+        )
+
+        qa = category(result, "qa-checker")
+        self.assertEqual(qa["status"], "PASSED")
+        self.assertEqual(category(result, "verification-integrity")["status"], "PASSED")
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertFalse(rows["Validate OpenNext build artifacts"]["applicable"])
+        self.assertFalse(rows["Visual QA (shard 1/2)"]["applicable"])
+        self.assertFalse(rows["Visual QA (shard 2/2)"]["applicable"])
+        self.assertIn("not applicable", rows["Visual QA (shard 1/2)"]["reason"])
+
     def test_every_status_uses_the_four_allowed_values(self):
         result = report.build_report(evidence())
         for item in result["categories"]:

@@ -641,6 +641,18 @@ def load_fixture(directory):
     return read("pr.json"), read("commits.json"), read("check-runs.json")
 
 
+def expected_required_checks(build_required="unknown"):
+    """Required checks that must actually appear for this change set.
+
+    A build proven inapplicable never runs, so waiting for it would only burn
+    the whole deadline. ``unknown`` keeps the build expected, matching the
+    audit's fail-closed default.
+    """
+    if applicability(build_required) is False:
+        return tuple(name for name in REQUIRED_CHECKS if name != BUILD_CHECK)
+    return REQUIRED_CHECKS
+
+
 def wait_for_current_head(
     repo,
     pr_number,
@@ -648,6 +660,7 @@ def wait_for_current_head(
     timeout_seconds,
     poll_seconds,
     *,
+    build_required="unknown",
     loader=None,
     clock=None,
     sleep=None,
@@ -694,7 +707,7 @@ def wait_for_current_head(
             if is_audited_check_name(run.get("name") or "")
             and (run.get("status") or "").lower() != "completed"
         ]
-        all_required_observed = set(REQUIRED_CHECKS).issubset(
+        all_required_observed = set(expected_required_checks(build_required)).issubset(
             {run.get("name") for run in on_head}
         )
         remaining = deadline - clock()
@@ -769,6 +782,7 @@ def main(argv=None):
                     token,
                     args.wait_seconds,
                     args.poll_interval,
+                    build_required=args.build_required,
                 )
             pr, commits, check_runs = load_live(args.repo, args.pr, token)
     except RuntimeError as error:

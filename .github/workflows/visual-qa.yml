@@ -146,8 +146,8 @@ jobs:
 
       # Report the specs this change would affect. Selection is shadow-only:
       # it never narrows the browser run, because every discovered spec still
-      # runs until the owner explicitly switches VISUAL_SPEC_SELECTION to
-      # subset after reviewing this evidence.
+      # runs until the owner changes this step to --mode subset after
+      # reviewing this evidence.
       - name: Report affected visual specs (shadow)
         if: steps.classify.outputs.visual_required == 'true'
         continue-on-error: true
@@ -166,7 +166,7 @@ jobs:
           node .github/scripts/select-visual-specs.mjs --files "$files" --mode shadow
 
   # Application verification that every pull request needs, independent of
-  # whether a browser is involved. This keeps one stable "Visual QA" check for
+  # whether a browser is involved. This keeps one stable check for
   # documentation-only pull requests and for the verification-integrity audit.
   verify:
     # The always-required application verification, independent of whether a
@@ -243,10 +243,12 @@ jobs:
       - name: Run standalone TypeScript check
         run: pnpm exec tsc --noEmit
 
-  # Browser verification runs in two Playwright-native shards. Sharding splits
-  # spec files across runners, so every test still runs and every committed
-  # baseline is still compared. Both shards must pass; the verification-integrity
-  # audit treats any failed shard as a failed Visual QA group.
+  # Browser verification runs in two Playwright-native shards, only when the
+  # change set can affect rendered output or the visual tests. Documentation,
+  # CI, backend-only and other non-rendering changes skip both shards. Sharding
+  # splits spec files across runners, so every test still runs and every
+  # committed baseline is still compared. Both shards must pass; the
+  # verification-integrity audit treats any failed shard as a failed group.
   visual:
     name: Visual QA (shard ${{ matrix.shard }}/2)
     needs: changes
@@ -362,7 +364,7 @@ jobs:
           # configured github/html/list reporters are kept by passing them too.
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/results.json
         run: >-
-          pnpm exec playwright test ${{ steps.shard-plan.outputs.files }}
+          pnpm exec playwright test "${{ steps.shard-plan.outputs.filter }}"
           --forbid-only
           --reporter=github --reporter=html --reporter=list --reporter=json
 

@@ -43,7 +43,7 @@ fi
 declared="false"
 body_file="$(mktemp)"
 jq -r '.body // ""' "$PR_JSON" >"$body_file" 2>/dev/null || true
-if python3 - "$body_file" <<'PYEOF'
+if ! declared_value="$(python3 - "$body_file" <<'PYEOF'
 import json
 import re
 import sys
@@ -52,7 +52,7 @@ try:
     with open(sys.argv[1], encoding="utf-8") as handle:
         body = handle.read()
 except OSError:
-    print("false")
+    print("true")
     raise SystemExit(0)
 match = re.search(r"<!-- qa-scope:start -->(.*?)<!-- qa-scope:end -->", body, re.S)
 if not match:
@@ -66,10 +66,16 @@ except json.JSONDecodeError:
 impact = payload.get("visual_impact") if isinstance(payload, dict) else None
 print("true" if isinstance(impact, dict) and impact.get("required") is True else "false")
 PYEOF
-then
-  declared="true"
+)"; then
+  rm -f "$body_file"
+  fail_closed "The declared visual impact could not be read"
 fi
 rm -f "$body_file"
+case "$declared_value" in
+  true) declared="true" ;;
+  false) ;;
+  *) fail_closed "The declared visual impact returned an unexpected value" ;;
+esac
 
 arguments=(
   --files "$FILES_JSON"

@@ -7,7 +7,9 @@
  * always discovers the spec files itself; the plan file only supplies weights.
  * A missing, invalid or stale plan degrades to equal weights, never to a
  * dropped spec. Any discovery failure exits non-zero, which fails the job
- * rather than silently shrinking coverage.
+ * rather than silently shrinking coverage. The shard is passed to Playwright
+ * as an anchored regular expression: Playwright treats positional arguments as
+ * regex filters, so a bare filename could also match a longer sibling spec.
  */
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -63,6 +65,14 @@ export function loadShardPlan(path = PLAN_PATH) {
 }
 
 /** Longest-processing-time greedy assignment. Deterministic for equal input. */
+export function buildFileFilter(files) {
+  const names = [...new Set(files)]
+    .sort()
+    .map((file) => file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  if (!names.length) throw new Error('no Playwright spec files were supplied for the filter');
+  return `(?:^|/)(?:${names.join('|')})$`;
+}
+
 export function planShards(files, weights = {}, shards = 2) {
   if (!Array.isArray(files) || files.length === 0) {
     throw new Error('no Playwright spec files were discovered; refusing to plan empty shards');
@@ -94,13 +104,11 @@ export function planShards(files, weights = {}, shards = 2) {
 
   const assigned = buckets.flatMap((bucket) => bucket.files);
   const unique = new Set(assigned);
-  if (unique.size !== files.length || assigned.length !== files.length) {
-    throw new Error('shard plan guard failed: a spec file was dropped or duplicated');
-  }
-  for (const file of files) {
-    if (!unique.has(file)) {
-      throw new Error(`shard plan guard failed: ${file} is not assigned to any shard`);
-    }
+  const missing = files.filter((file) => !unique.has(file));
+  if (missing.length || unique.size !== files.length || assigned.length !== files.length) {
+    throw new Error(
+      `shard plan guard failed: ${missing.length ? `${missing.join(', ')} missing` : 'a spec file was dropped or duplicated'}`,
+    );
   }
   return buckets;
 }
@@ -128,17 +136,29 @@ function main() {
   const selected = buckets.find((bucket) => bucket.index === options.shard);
   if (!selected) throw new Error(`shard ${options.shard} does not exist`);
 
+  const estimates = buckets.map((bucket) => bucket.estimated_ms);
+  const heaviest = Math.max(...estimates);
+  const lightest = Math.min(...estimates);
+  const spread = heaviest > 0 ? (heaviest - lightest) / heaviest : 0;
   const lines = [
     `Shard ${options.shard}/${options.shards}: ${selected.files.length} spec file(s), approx ${Math.round(selected.estimated_ms)} ms`,
+    '',
+    `Files: ${selected.files.join(', ')}`,
     '',
     '| Shard | Spec files | Estimated ms |',
     '| --- | --- | --- |',
     ...buckets.map((bucket) => `| ${bucket.index} | ${bucket.files.length} | ${Math.round(bucket.estimated_ms)} |`),
   ];
+  if (spread > 0.2) {
+    lines.push(
+      '',
+      `::warning::Playwright shard estimates are imbalanced by ${Math.round(spread * 100)}%; refresh the timing weights.`,
+    );
+  }
   console.log(lines.join('\n'));
   if (options.summary) appendFileSync(options.summary, lines.join('\n') + '\n');
   if (process.env.GITHUB_OUTPUT) {
-    appendFileSync(process.env.GITHUB_OUTPUT, `files=${selected.files.join(' ')}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `filter=${buildFileFilter(selected.files)}\n`);
     appendFileSync(process.env.GITHUB_OUTPUT, `estimated_ms=${Math.round(selected.estimated_ms)}\n`);
   }
 }

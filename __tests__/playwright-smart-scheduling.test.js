@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
   SPEC_DIRECTORY,
+  buildFileFilter,
   discoverSpecFiles,
   loadShardPlan,
   planShards,
 } from '../.github/scripts/plan-playwright-shards.mjs';
 import { summarize } from '../.github/scripts/summarize-playwright-timings.mjs';
-import { loadImpactMap, selectSpecs } from '../.github/scripts/select-visual-specs.mjs';
+import { loadImpactMap, renderSummary, selectSpecs } from '../.github/scripts/select-visual-specs.mjs';
+import { mergeTimings } from '../.github/scripts/update-playwright-shard-plan.mjs';
 
 const root = process.cwd();
 const workflow = readFileSync(join(root, '.github/workflows/visual-qa.yml'), 'utf8');
@@ -62,6 +65,54 @@ describe('Playwright shard planning', () => {
     expect(plan.version).toBe(1);
     expect(plan.shards).toBe(2);
     expect(plan.weights_ms).toBeTypeOf('object');
+  });
+
+  it('uses the committed real timings and keeps the two shards close', () => {
+    const { weights, problem } = loadShardPlan(join(root, 'tests/visual/shard-plan.json'));
+    expect(problem).toBeNull();
+    expect(Object.keys(weights).sort()).toEqual([...discovered].sort());
+    const buckets = planShards(discovered, weights, 2);
+    const estimates = buckets.map((bucket) => bucket.estimated_ms);
+    expect(Math.max(...estimates) / Math.min(...estimates)).toBeLessThan(1.1);
+  });
+
+  it('passes each shard as an anchored filter that cannot match a sibling spec', () => {
+    const buckets = planShards(discovered, loadShardPlan().weights, 2);
+    for (const bucket of buckets) {
+      const filter = new RegExp(buildFileFilter(bucket.files));
+      const matched = discovered
+        .filter((file) => filter.test(`tests/visual/${file}`))
+        .sort();
+      expect(matched).toEqual([...bucket.files].sort());
+    }
+    expect(new RegExp(buildFileFilter(['gold-cta.spec.ts'])).test('tests/visual/sitewide-gold-cta.spec.ts')).toBe(false);
+  });
+});
+
+describe('Playwright timing plan refresh', () => {
+  it('sums every project for a file and takes the median across artifacts', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'playwright-timings-'));
+    const write = (name, rows) => {
+      const path = join(directory, name);
+      writeFileSync(path, JSON.stringify({ rows }));
+      return path;
+    };
+    try {
+      const first = write('first.json', [
+        { file: 'homepage.spec.ts', duration_ms: 100 },
+        { file: 'homepage.spec.ts', duration_ms: 50 },
+        { file: 'gold-cta.spec.ts', duration_ms: 200 },
+      ]);
+      const second = write('second.json', [
+        { file: 'homepage.spec.ts', duration_ms: 300 },
+      ]);
+      expect(mergeTimings([first, second])).toEqual({
+        'gold-cta.spec.ts': 200,
+        'homepage.spec.ts': 225,
+      });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });
 
@@ -145,6 +196,11 @@ describe('visual spec selection', () => {
     expect(selection.mode).toBe('shadow');
     expect(selection.specs).toEqual([...discovered].sort());
     expect(selection.would_run.length).toBeLessThan(discovered.length);
+    const summary = renderSummary(selection, discovered).join('\n');
+    expect(summary).toContain(`Affected specs (${selection.would_run.length}/${discovered.length})`);
+    expect(summary).toContain('crystal-ball.spec.ts');
+    expect(summary).not.toContain('Would run: all specs');
+    expect(summary).toContain(`all ${discovered.length} specs still run`);
   });
 
   it('selects mapped specs only when subset mode is explicitly enabled', () => {
@@ -199,6 +255,7 @@ describe('Playwright workflow wiring', () => {
     expect(workflow).toContain('--reporter=github --reporter=html --reporter=list --reporter=json');
     expect(workflow).toContain('summarize-playwright-timings.mjs');
     expect(workflow).toContain('select-visual-specs.mjs --files "$files" --mode shadow');
+    expect(workflow).toContain('steps.shard-plan.outputs.filter');
     expect(workflow).toContain('shard: [1, 2]');
   });
 });

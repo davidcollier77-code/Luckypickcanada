@@ -776,6 +776,6 @@ This file is a concise record of meaningful completed work, not a chronological 
 
 - Added a fail-closed build applicability classifier and gated the protected OpenNext validation on it; merge groups and manual dispatches always build.
 - Verification Integrity and the consolidated report now recompute build/visual applicability from the trusted base. A required-but-skipped check blocks; a proven-inapplicable check is `NOT RUN — not applicable` with its reason, never a pass.
-- Renamed the always-required job to Application Verification. Added Playwright per-spec timing capture, whole-file duration-weighted shard planning with exact-coverage guards, shadow-mode affected-spec selection, and flake/imbalance warnings.
+- Renamed the always-required job to Application Verification. Added Playwright per-spec timing capture, whole-file duration-weighted shard planning seeded from Visual QA run 45076917637, exact-coverage guards, anchored file filters to prevent sibling-spec matches, shadow-mode affected-spec reporting, and flake/imbalance warnings.
 - `./freebuff-verify.sh` now runs every Python checker suite, the full Vitest suite, the type check, the Next.js build and a 495 MiB size check.
 - Preserved all 16 Playwright specs, three projects, the configuration and every committed baseline, plus Crystal Ball/Oracle, adaptive-performance, resource-readiness, DevSkim, CodeQL, Dependabot and the performance checker. Dead checker modes and obsolete root scripts remain pending separate owner approval.

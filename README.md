@@ -187,7 +187,9 @@ Next.js production build and a 495 MiB size check. It deliberately does **not** 
 artifact build, DevSkim or any deployment command; those run in GitHub Actions after the pull request is opened.
 
 Build validation and the Playwright shards are conditional: the trusted classifier decides whether the change set
-can affect them, and any unknown, empty or unreadable change set keeps them required. The always-required
-application job is named **Application Verification**; a check that could not apply is reported as
-`NOT RUN — not applicable` with its reason, never as a pass. Playwright remains two shards, assigned by whole spec
-file from recorded durations, and every spec, project and committed baseline still runs and is compared.
+can affect them, and any unknown, empty or unreadable change set keeps them required. Playwright is not part of this
+local gate and does not run for documentation, CI or backend-only pull requests; the browser shards run only when a
+change can affect rendered output or the visual tests. The always-required application job is named **Application
+Verification**; a check that could not apply is reported as `NOT RUN — not applicable` with its reason, never as a
+pass. Playwright remains two shards, assigned by whole spec file from recorded durations, and every spec, project
+and committed baseline still runs and is compared.

@@ -264,7 +264,12 @@ def _supporting_rows(evidence):
     audited = _audit_records(evidence)
     for name, purpose in QA_SUPPORTING_CHECKS:
         status, detail, run = _check_state(evidence, name)
-        record = audited.get(name) or {}
+        # The audit records the browser group once as "Visual QA"; its shard
+        # rows inherit that applicability so a docs-only change does not warn
+        # merely because both shards are absent.
+        record = audited.get(name) or (
+            audited.get("Visual QA") if name.startswith("Visual QA") else None
+        ) or {}
         applicable = record.get("applicable") is not False
         row = {
             "name": name,
@@ -1119,8 +1124,18 @@ def verification_integrity_category(evidence):
         )
 
     attention = []
-    required_statuses = [_audit_status(record) for record in required]
-    conditional_statuses = [_audit_status(record) for record in conditional]
+    # A proven-inapplicable check is reported as NOT RUN with its reason, but it
+    # is not incomplete verification and must not warn or fail the category.
+    required_statuses = [
+        _audit_status(record)
+        for record in required
+        if record.get("applicable") is not False
+    ]
+    conditional_statuses = [
+        _audit_status(record)
+        for record in conditional
+        if record.get("applicable") is not False
+    ]
     observed = required_statuses + conditional_statuses
     no_runs = bool(observed) and all(status == NOT_RUN for status in observed)
     # A conditional check the trusted classifier made applicable is a real

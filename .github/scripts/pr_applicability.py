@@ -151,6 +151,16 @@ def _single_line(value):
     return " ".join(str(value).split())
 
 
+def _emit(payload, output_format):
+    if output_format == "json":
+        print(json.dumps(payload, sort_keys=True))
+        return
+    for key, value in payload.items():
+        if isinstance(value, bool):
+            value = "true" if value else "false"
+        print("%s=%s" % (key, value))
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Decide, fail-closed, whether a change set requires the build and visual QA."
@@ -193,14 +203,7 @@ def main(argv=None):
             "visual_required": True,
             "visual_reason": _single_line(error),
         }
-        if args.format == "json":
-            print(json.dumps(payload, sort_keys=True))
-        else:
-            for key in ("build_required", "build_reason", "visual_required", "visual_reason"):
-                value = payload[key]
-                if isinstance(value, bool):
-                    value = "true" if value else "false"
-                print("%s=%s" % (key, value))
+        _emit(payload, args.format)
         return 0
 
     build_required, build_reason = classify_build(paths)
@@ -217,13 +220,7 @@ def main(argv=None):
         payload["visual_required"] = visual_required
         payload["visual_reason"] = _single_line(visual_reason)
 
-    if args.format == "json":
-        print(json.dumps(payload, sort_keys=True))
-    else:
-        for key, value in payload.items():
-            if isinstance(value, bool):
-                value = "true" if value else "false"
-            print("%s=%s" % (key, value))
+    _emit(payload, args.format)
     return 0
 
 
