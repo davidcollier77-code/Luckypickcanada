@@ -125,6 +125,33 @@ describe('Lucky Meter vessel hidden warm-up lifecycle', () => {
     scene.dispose();
   });
 
+  it('stops once the finished reading rests as an open, empty vessel', async () => {
+    const scene = await mountScene();
+    renderFrame(0.3);
+    expect(control.stop).toHaveBeenCalledTimes(1);
+
+    // The end of the approved sequence: the colour has drained, the stream is
+    // gone and the lid remains open on the revealed number. This terminal
+    // shape must be a resting state, not a permanently running render loop.
+    scene.setState({ fill: 0, pour: 0, open: 1 });
+    expect(control.start).toHaveBeenCalledTimes(2);
+
+    let elapsed = 0.4;
+    for (let frame = 0; frame < 80; frame += 1) {
+      renderFrame(elapsed);
+      elapsed += 0.016;
+    }
+    expect(control.stop).toHaveBeenCalledTimes(2);
+
+    // Repeating the same terminal state never wakes or stops it again.
+    renderFrame(elapsed);
+    scene.setState({ fill: 0, pour: 0, open: 1 });
+    expect(control.start).toHaveBeenCalledTimes(2);
+    expect(control.stop).toHaveBeenCalledTimes(2);
+
+    scene.dispose();
+  });
+
   it('restarts after an explicit stop when the visitor’s reading begins', async () => {
     const scene = await mountScene();
     expect(control.start).toHaveBeenCalledTimes(1);

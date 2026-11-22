@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EVENTS } from '../app/lib/lucky-meter/config';
 import {
   COLOUR_STEPS,
   DEGREES_PER_COLOUR,
@@ -11,14 +10,16 @@ import {
   dialEase,
   getColourIdAt,
   getColourIndex,
-  getEventDurationMs,
   normalizeAngle,
   rotationToColourIndex,
   sampleColourSpin,
   sampleGenerationPercentage,
 } from '../app/lib/lucky-meter/reveal';
 import {
-  POUR_END_MS,
+  CELEBRATION_MS,
+  DRAIN_END_MS,
+  FILL_END_MS,
+  FULL_HOLD_END_MS,
   REVEAL_COMPLETE_MS,
   REVEAL_MOTION_MS,
   STORYBOARD_TIMING,
@@ -26,7 +27,9 @@ import {
   getCelebrationEndMs,
   getDockMs,
   getEventStartMs,
+  getExperienceTotalMs,
   getMessageTypingMs,
+  getSparkCharacterScheduleMs,
   getSparkWritingMs,
 } from '../app/lib/lucky-meter/storyboard';
 import { getPaletteForSeasonKey } from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
@@ -34,40 +37,45 @@ import { getPaletteForSeasonKey } from '../app/lib/lucky-meter/sparks-and-season
 const autumn = getPaletteForSeasonKey('autumn');
 const noJitter = () => 0.5;
 
+const TIER_MESSAGE = 'Your luck is in the mid-range today.';
+const SPARK_MESSAGE = 'Even a small step forward can change the direction of your day.';
+
 const angularGap = (left, right) => {
   const difference = Math.abs(normalizeAngle(left) - normalizeAngle(right));
   return Math.min(difference, 360 - difference);
 };
 
 describe('twelve-stage storyboard timing', () => {
-  it('gives every stage an unhurried, ordered window', () => {
+  it('uses the approved stage lengths', () => {
     expect(REVEAL_TIMING.anticipationMs).toBe(1200);
-    expect(REVEAL_TIMING.generationMs).toBe(5200);
-    expect(REVEAL_TIMING.landingMs).toBeGreaterThanOrEqual(400);
-    expect(REVEAL_TIMING.settlePauseMs).toBeGreaterThanOrEqual(1500);
-    expect(REVEAL_TIMING.segmentOpenMs).toBeGreaterThanOrEqual(1200);
-    expect(REVEAL_TIMING.pourMs).toBeGreaterThanOrEqual(2600);
-    expect(REVEAL_TIMING.resultSettleMs).toBeGreaterThanOrEqual(2400);
+    expect(REVEAL_TIMING.generationMs).toBe(5600);
+    expect(REVEAL_TIMING.landingMs).toBe(600);
+    expect(REVEAL_TIMING.settlePauseMs).toBe(1800);
+    expect(REVEAL_TIMING.segmentOpenMs).toBe(1400);
+    expect(REVEAL_TIMING.fillMs).toBe(5000);
+    expect(REVEAL_TIMING.fullHoldMs).toBe(700);
+    expect(REVEAL_TIMING.drainMs).toBe(4000);
+    expect(REVEAL_TIMING.highlightMs).toBe(1600);
+    expect(REVEAL_TIMING.celebrationMs).toBe(12000);
     expect(REVEAL_TIMING.numberFlashCount).toBe(2);
-    expect(REVEAL_TIMING.messageHoldMs).toBeGreaterThanOrEqual(2600);
-    expect(REVEAL_TIMING.messageFadeMs).toBeGreaterThanOrEqual(700);
-    expect(REVEAL_TIMING.sparkStartDelayMs).toBeGreaterThanOrEqual(1100);
+    expect(REVEAL_TIMING.sparkMinMs).toBe(3800);
+    expect(REVEAL_TIMING.sparkMaxMs).toBe(5200);
     // The final hold is a real hold, and the dock follows it.
-    expect(REVEAL_TIMING.finalHoldMs).toBeGreaterThanOrEqual(2400);
+    expect(REVEAL_TIMING.finalHoldMs).toBeGreaterThanOrEqual(2600);
     expect(REVEAL_TIMING.dockDelayMs).toBeGreaterThan(REVEAL_TIMING.finalHoldMs);
   });
 
   it('stops the percentage and the wheel on the same frame', () => {
     expect(REVEAL_MOTION_MS).toBe(REVEAL_TIMING.anticipationMs + REVEAL_TIMING.generationMs);
-    expect(POUR_END_MS).toBeGreaterThan(REVEAL_MOTION_MS);
-    expect(REVEAL_COMPLETE_MS).toBe(POUR_END_MS + REVEAL_TIMING.resultSettleMs);
+    expect(FILL_END_MS).toBeGreaterThan(REVEAL_MOTION_MS);
+    expect(REVEAL_COMPLETE_MS).toBe(DRAIN_END_MS + REVEAL_TIMING.highlightMs);
   });
 
   it('builds twelve ordered stages whose ends meet cleanly', () => {
     const stages = buildStoryboard({
-      tierMessage: 'Your luck is in the mid-range today.',
-      eventDurationMs: 9800,
-      sparkMessage: 'Even a small step forward can change the direction of your day.',
+      tierMessage: TIER_MESSAGE,
+      eventDurationMs: CELEBRATION_MS,
+      sparkMessage: SPARK_MESSAGE,
     });
     expect(stages.map((stage) => stage.id)).toEqual([
       'anticipation',
@@ -88,121 +96,145 @@ describe('twelve-stage storyboard timing', () => {
       expect(stages[index].durationMs).toBeGreaterThanOrEqual(0);
     }
     expect(stages.at(-1).id).toBe('dock');
-    expect(stages.at(-1).startMs).toBe(
-      getDockMs(
-        'Your luck is in the mid-range today.',
-        9800,
-        'Even a small step forward can change the direction of your day.',
-      ),
-    );
+    expect(stages.at(-1).startMs).toBe(getDockMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE));
   });
 
-  it('takes roughly forty seconds for a complete, unhurried run', () => {
-    const total = getDockMs(
-      'Your luck is in the mid-range today.',
-      9800,
-      'Even a small step forward can change the direction of your day.',
-    );
-    expect(total).toBeGreaterThanOrEqual(36_000);
-    expect(total).toBeLessThanOrEqual(45_000);
+  it('takes the approved 54–57 seconds from first paint to the dock', () => {
+    const total = getExperienceTotalMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE);
+    expect(total).toBeGreaterThanOrEqual(54_000);
+    expect(total).toBeLessThanOrEqual(57_000);
   });
 
-  it('never shortens the tier celebration to force an identical clock', () => {
-    const message = 'Your luck is running high today!';
-    const spark = 'Even a small step forward can change the direction of your day.';
-    const meteor = getDockMs(message, EVENTS.find((event) => event.id === 'meteor').minDurationMs, spark);
-    const fireworks = getDockMs(
-      message,
-      EVENTS.find((event) => event.id === 'fireworks').maxDurationMs,
-      spark,
-    );
-    // The fireworks finale is three seconds longer than the shortest meteor
-    // shower, and the storyboard keeps that difference instead of trimming it.
-    expect(fireworks - meteor).toBe(3500);
-  });
-
-  it('reveals the Lucky Number only after the colour has finished draining', () => {
+  it('gives every tier the same 12,000 ms celebration', () => {
+    expect(CELEBRATION_MS).toBe(12_000);
     const stages = buildStoryboard({
-      tierMessage: 'Your luck is in the mid-range today.',
-      eventDurationMs: 9800,
-      sparkMessage: 'Even a small step forward can change the direction of your day.',
+      tierMessage: TIER_MESSAGE,
+      eventDurationMs: CELEBRATION_MS,
+      sparkMessage: SPARK_MESSAGE,
     });
-    const vessel = stages.find((stage) => stage.id === 'vesselOpen');
+    const celebration = stages.find((stage) => stage.id === 'celebration');
+    expect(celebration.startMs).toBe(getEventStartMs(TIER_MESSAGE));
+    expect(celebration.durationMs).toBe(12_000);
+    expect(getCelebrationEndMs(TIER_MESSAGE, CELEBRATION_MS)).toBe(
+      getEventStartMs(TIER_MESSAGE) + 12_000,
+    );
+  });
+
+  it('fills, holds and drains the vessel before the number is whole', () => {
+    const stages = buildStoryboard({
+      tierMessage: TIER_MESSAGE,
+      eventDurationMs: CELEBRATION_MS,
+      sparkMessage: SPARK_MESSAGE,
+    });
     const pour = stages.find((stage) => stage.id === 'pour');
     const number = stages.find((stage) => stage.id === 'numberReveal');
-    // The vessel finishes opening before a single drop falls.
-    expect(vessel.endMs).toBe(pour.startMs);
-    expect(pour.startMs + STORYBOARD_TIMING.pourMs).toBe(POUR_END_MS);
-    // The number window opens only when the drain has completely finished.
-    expect(pour.endMs).toBe(POUR_END_MS);
-    expect(number.startMs).toBe(pour.endMs);
+    // The pour stage owns the fill and the full hold, while the stream itself
+    // stops at the fill boundary so a consumer never reads the stage end.
+    expect(pour.endMs).toBe(FULL_HOLD_END_MS);
+    expect(pour.streamEndMs).toBe(FILL_END_MS);
+    expect(pour.streamEndMs - pour.startMs).toBe(STORYBOARD_TIMING.fillMs);
+    expect(pour.endMs - pour.startMs).toBe(
+      STORYBOARD_TIMING.fillMs + STORYBOARD_TIMING.fullHoldMs,
+    );
+    // The number window opens with the drain; the number is whole when the
+    // drain ends, and the empty highlight closes the window.
+    expect(number.startMs).toBe(FULL_HOLD_END_MS);
+    expect(DRAIN_END_MS - number.startMs).toBe(STORYBOARD_TIMING.drainMs);
+    expect(number.endMs).toBe(REVEAL_COMPLETE_MS);
+    expect(REVEAL_COMPLETE_MS - DRAIN_END_MS).toBe(STORYBOARD_TIMING.highlightMs);
   });
 
   it('starts the celebration only after the message has been held and faded', () => {
-    const message = 'Your luck is running high today!';
-    const start = getEventStartMs(message);
+    const start = getEventStartMs(TIER_MESSAGE);
     expect(start).toBeGreaterThan(REVEAL_COMPLETE_MS);
     expect(start).toBe(
       REVEAL_COMPLETE_MS +
         STORYBOARD_TIMING.messageDelayMs +
-        getMessageTypingMs(message) +
+        getMessageTypingMs(TIER_MESSAGE) +
         STORYBOARD_TIMING.messageHoldMs +
         STORYBOARD_TIMING.messageFadeMs +
         STORYBOARD_TIMING.eventDelayMs,
     );
-    expect(getCelebrationEndMs(message, 11000)).toBe(start + 11000);
+    expect(getCelebrationEndMs(TIER_MESSAGE, CELEBRATION_MS)).toBe(start + CELEBRATION_MS);
   });
 
-  it('scales writing time with the message and never returns a negative value', () => {
-    expect(getMessageTypingMs('')).toBe(0);
-    expect(getMessageTypingMs('Hi.')).toBeGreaterThan(0);
-    expect(getSparkWritingMs('A longer sentence takes longer to write.')).toBeGreaterThan(
-      getSparkWritingMs('Short.'),
-    );
+  it('writes every Spark inside the approved 3.8–5.2 second window', () => {
+    const lines = [
+      SPARK_MESSAGE,
+      'Short.',
+      'A much longer saved line still has to finish inside the approved writing window no matter how many words it holds, and it may not drag past the upper bound either.',
+    ];
+    for (const spark of lines) {
+      const duration = getSparkWritingMs(spark);
+      expect(duration).toBeGreaterThanOrEqual(3_800);
+      expect(duration).toBeLessThanOrEqual(5_200);
+      const schedule = getSparkCharacterScheduleMs(spark);
+      expect(schedule).toHaveLength(Array.from(spark).length);
+      expect(schedule[schedule.length - 1]).toBe(duration);
+      for (let index = 1; index < schedule.length; index += 1) {
+        expect(schedule[index]).toBeGreaterThanOrEqual(schedule[index - 1]);
+      }
+    }
+    expect(getSparkWritingMs('')).toBe(0);
     expect(getSparkWritingMs(null)).toBe(0);
   });
 });
 
 describe('percentage generation', () => {
-  it('sweeps the real 5–100 scale and never reveals the result early', () => {
-    const finals = [5, 30, 31, 65, 66, 100];
-    // A result above the minimum starts the readout on the real scale minimum.
-    expect(sampleGenerationPercentage(0, 4200, 100)).toBe(5);
-    for (const final of finals) {
-      for (let elapsed = 0; elapsed < 4200; elapsed += 16) {
-        const value = sampleGenerationPercentage(elapsed, 4200, final);
-        expect(value).toBeGreaterThanOrEqual(5);
-        expect(value).toBeLessThanOrEqual(99);
+  const DURATION = STORYBOARD_TIMING.generationMs;
+
+  it('runs the approved five beats: 0 → 100 → fall → rise → erratic → settle', () => {
+    const final = 73;
+    // Beat 1 starts at the bottom of the scale and peaks at 100.
+    expect(sampleGenerationPercentage(0, DURATION, final)).toBe(0);
+    expect(sampleGenerationPercentage(DURATION * 0.3, DURATION, final)).toBe(100);
+
+    // Beat 2 falls away from the peak.
+    const trough = sampleGenerationPercentage(DURATION * 0.46, DURATION, final);
+    expect(trough).toBeLessThan(30);
+
+    // Beat 3 rises again.
+    const rise = sampleGenerationPercentage(DURATION * 0.62, DURATION, final);
+    expect(rise).toBeGreaterThan(trough + 40);
+
+    // Beat 4 is genuinely erratic: it moves both up and down.
+    const erratic = [];
+    for (let progress = 0.63; progress < 0.86; progress += 0.01) {
+      erratic.push(sampleGenerationPercentage(DURATION * progress, DURATION, final));
+    }
+    expect(erratic.some((value, index) => index > 0 && value > erratic[index - 1])).toBe(true);
+    expect(erratic.some((value, index) => index > 0 && value < erratic[index - 1])).toBe(true);
+
+    // Beat 5 settles only on the final frame.
+    expect(sampleGenerationPercentage(DURATION, DURATION, final)).toBe(final);
+    expect(sampleGenerationPercentage(DURATION * 2, DURATION, final)).toBe(final);
+  });
+
+  it('never reveals the stored result before the last frame', () => {
+    for (const final of [5, 30, 31, 65, 66, 100]) {
+      for (let elapsed = 0; elapsed < DURATION; elapsed += 16) {
+        const value = sampleGenerationPercentage(elapsed, DURATION, final);
+        expect(value).toBeGreaterThanOrEqual(0);
+        expect(value).toBeLessThanOrEqual(100);
         expect(value).not.toBe(final);
       }
-      expect(sampleGenerationPercentage(4200, 4200, final)).toBe(final);
-      expect(sampleGenerationPercentage(9999, 4200, final)).toBe(final);
+      expect(sampleGenerationPercentage(DURATION, DURATION, final)).toBe(final);
+      expect(sampleGenerationPercentage(9999, DURATION, final)).toBe(final);
     }
   });
 
-  it('follows the wheel’s weighted deceleration rather than stepping linearly', () => {
-    const quarter = sampleGenerationPercentage(4200 * 0.25, 4200, 78);
-    const half = sampleGenerationPercentage(4200 * 0.5, 4200, 78);
-    const threeQuarters = sampleGenerationPercentage(4200 * 0.75, 4200, 78);
-    // The wheel leaves quickly and creeps into its last degrees, so the count
-    // mirrors its real speed instead of counting on a separate clock.
-    expect(quarter).toBeGreaterThan(50);
-    expect(half).toBeGreaterThan(quarter);
-    expect(threeQuarters).toBeGreaterThan(half);
-    // The easing reaches the last frames slowly rather than snapping.
-    expect(sampleGenerationPercentage(4200 * 0.5, 4200, 78)).toBeGreaterThan(80);
-    expect(sampleGenerationPercentage(4200 * 0.5, 4200, 78)).toBeLessThan(99);
-    // The generated readout tops out at 99 and only the landing shows 100.
-    expect(sampleGenerationPercentage(4200 * 0.999, 4200, 100)).toBeLessThanOrEqual(99);
-  });
-
-  it('keeps the result inside the existing 5–100 range', () => {
+  it('settles on the stored 5–100 result without leaving the scale', () => {
     for (const final of [5, 100]) {
-      expect(sampleGenerationPercentage(4200, 4200, final)).toBe(final);
+      expect(sampleGenerationPercentage(DURATION, DURATION, final)).toBe(final);
     }
-    // 5 is the floor of the scale, so a 5% result starts one point away from it.
-    expect(sampleGenerationPercentage(0, 4200, 5)).toBe(6);
-    expect(sampleGenerationPercentage(0, 4200, 100)).toBe(5);
+    expect(sampleGenerationPercentage(0, DURATION, 5)).toBe(0);
+    expect(sampleGenerationPercentage(0, DURATION, 100)).toBe(0);
+  });
+
+  it('uses a natural deceleration curve for the wheel', () => {
+    expect(dialEase(0)).toBe(0);
+    expect(dialEase(1)).toBe(1);
+    expect(dialEase(0.5)).toBeGreaterThan(0.9);
   });
 });
 
@@ -270,24 +302,5 @@ describe('colour wheel landing', () => {
       rotationToColourIndex(sample.rotation, autumn.length),
     );
     expect(sample.colourId).not.toBe(null);
-  });
-});
-
-describe('event duration', () => {
-  it('stays inside each event’s documented window', () => {
-    for (const event of EVENTS) {
-      for (const value of [0, 0.25, 0.5, 0.75, 0.999]) {
-        const duration = getEventDurationMs(event.id, () => value);
-        expect(duration).toBeGreaterThanOrEqual(event.minDurationMs);
-        expect(duration).toBeLessThanOrEqual(event.maxDurationMs);
-      }
-    }
-    expect(getEventDurationMs('unknown', noJitter)).toBe(0);
-  });
-
-  it('uses a natural deceleration curve for the wheel', () => {
-    expect(dialEase(0)).toBe(0);
-    expect(dialEase(1)).toBe(1);
-    expect(dialEase(0.5)).toBeGreaterThan(0.9);
   });
 });

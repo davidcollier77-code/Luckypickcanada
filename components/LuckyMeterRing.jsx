@@ -436,9 +436,9 @@ export default function LuckyMeterRing({
         </svg>
       )}
 
-      {/* The Lucky Number behind the emptying segment. It is clipped from the
-          top down on the same clock as the pour, so the number is genuinely
-          exposed rather than faded in over the meter. */}
+      {/* The Lucky Number behind the emptying segment. The segment empties
+          from the top down, so the number is exposed on the same clock from its
+          top edge downward rather than faded in over the meter. */}
       {shownNumber !== null && reveal > 0 && (
         <div
           aria-hidden="true"
@@ -447,7 +447,7 @@ export default function LuckyMeterRing({
           className="pointer-events-none absolute left-1/2 z-[16] flex -translate-x-1/2 flex-col items-center"
           style={{
             bottom: '22.5%',
-            clipPath: `inset(${(1 - reveal) * 100}% 0 0 0)`,
+            clipPath: `inset(0 0 ${(1 - reveal) * 100}% 0)`,
             opacity: 0.35 + reveal * 0.65,
           }}
         >

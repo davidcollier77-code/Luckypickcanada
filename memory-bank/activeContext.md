@@ -1,26 +1,38 @@
 # Active Context — Lucky Meter Approved Requirements
 
-## Current Task — Documentation reconciliation and pre-Build gate
+## Current Task — Approved Build implemented (spec 205)
 
 - **Authority:** the approved Lucky Meter Living Requirements Outline and
-  Approval Sheet (21 November 2026). All OD-1–OD-13 are resolved.
-- **This task:** documentation-only reconciliation of Specs 199/200 and the
-  Memory Bank. No production code, tests, build or deployment.
-- **Approved presentation:** cylindrical vessel; functional CSS fallback;
-  five-beat generation; progressive number reveal during the drain; equal
-  12,000 ms celebration; Home and countdown in the last row of the results
-  panel; path-traced Spark; full-width Event strip; compact widget pair.
-- **D12 (resolved):** every celebration runs for 12,000 ms, including the same
-  celebration restarted after a page refresh. An older stored duration does not
-  re-time it. The saved percentage, Lucky Number, colour and tier remain
-  unchanged.
-- **Specs:** Spec 199 is implemented but partly superseded; Spec 200 is
-  implemented with its verification/handoff record incomplete. T035–T037 are
-  recorded; T038–T041 and T052 remain unchecked and are not claimed as passed.
-- **Build gate:** Build has not started. The next step after this documentation
-  PR is owner review and merge, followed by explicit Build authorisation.
-- **Verification:** this documentation task changes Markdown only. No tests,
-  type check, production build or browser run are part of it.
+  Approval Sheet (21 November 2026), implemented after documentation PRs #2003
+  and #2004 merged into `main` at `8741c655`.
+- **This task:** the full Build. The five-beat 0 → 100 → fall → rise → erratic →
+  settle generation, the cylindrical vessel's open/fill/hold/drain/highlight
+  beats, the progressive top-down number reveal during the drain, one 12,000 ms
+  celebration for every tier, the Spark window, and Home plus the countdown in
+  the last row of the results panel.
+- **D12:** every celebration runs 12,000 ms, including the same celebration
+  restarted after a page refresh. An older stored duration is ignored. The saved
+  percentage, Lucky Number, colour, tier and Spark are unchanged.
+- **Fallbacks:** the CSS vessel is the first paint and takes over without WebGL
+  or after context loss; reduced motion presents the completed reading, Spark and
+  paired dock together.
+- **Spec Kit feature:** `specs/205-lucky-meter-approved-build` (spec, plan, tasks,
+  evidence).
+- **Verification:** full Vitest suite 107 files / 1,142 tests passed;
+  `tsc --noEmit` exit 0; Playwright desktop, mobile-390 and mobile-412 each 16
+  passed with the one opt-in evidence test skipped; clean production build
+  417,921,229 bytes (398.56 MiB) below the 495 MiB cap;
+  `SPEC_KIT_BASE_REF=8741c655 ./freebuff-verify.sh` exit 0. Evidence screenshots
+  are in `artifacts/lucky-meter-approved-build-20261121/`.
+- **Handoff:** the pull request is the remaining submission step.
+
+## Previous Task — Documentation reconciliation and pre-Build gate
+
+- Reconciled Specs 199/200 and the Memory Bank with the approved decisions and
+  recorded D12. Documentation only; no production code, tests or build.
+- Spec 199 remains the historical twelve-stage record and is marked partly
+  superseded; Spec 200 remains the Three.js vessel record with amended clauses.
+- The Build began only after both documentation PRs merged.
 
 ## Recent Implementation — Three-dimensional vessel and pour (Spec 200)
 

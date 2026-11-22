@@ -11,7 +11,7 @@
  * angle can select or change a percentage, a number or a colour.
  */
 import { COLOURS_BY_ID, getPaletteForDate } from './sparks-and-seasonal-colours';
-import { EVENTS_BY_ID, PERCENTAGE_MAX, PERCENTAGE_MIN } from './config';
+import { PERCENTAGE_MAX, PERCENTAGE_MIN } from './config';
 import { STORYBOARD_TIMING } from './storyboard';
 
 /**
@@ -76,18 +76,62 @@ export function dialEase(progress) {
 }
 
 /**
- * The displayed percentage during generation.
+ * The five-beat generation, expressed as fractions of the generation window.
  *
- * The readout sweeps the real 5–100 range, so it always looks like the meter's
- * own scale rather than an arbitrary 0–100 counter. It accelerates and
- * decelerates with the wheel, tops out one point below 100 while it is still
- * moving, and is nudged one point away from the true value on every
- * intermediate frame: the exact result is reached only on the final frame.
+ *   1. 0 → 100    the readout rushes to the top of the scale
+ *   2. 100 → 18   it falls back
+ *   3. 18 → 88    it rises again
+ *   4. erratic    it wobbles around the upper range
+ *   5. settle     it comes to rest on the stored result
+ */
+const GENERATION_BEATS = Object.freeze({
+  peak: 0.3,
+  trough: 0.46,
+  rise: 0.62,
+  erraticEnd: 0.86,
+});
+
+function clampUnit(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(1, number));
+}
+
+function easeOutCubic(value) {
+  const t = clampUnit(value);
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInOutCubic(value) {
+  const t = clampUnit(value);
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/**
+ * The erratic beat's value at normalised progress through that beat. Both ends
+ * are 88, so the readout moves continuously into and out of the wobble.
+ *
+ * @param {number} progress 0–1 through the erratic beat.
+ * @returns {number} A value inside 0–100 after clamping at the call site.
+ */
+function erraticGenerationValue(progress) {
+  const t = clampUnit(progress);
+  const wobble = Math.sin(t * Math.PI * 4) * 34 + Math.sin(t * Math.PI * 9) * 14;
+  return 88 + wobble * (1 - 0.25 * t);
+}
+
+/**
+ * The displayed percentage during the approved five-beat generation.
+ *
+ * The readout starts at 0, rushes to 100, falls, rises, becomes erratic and
+ * finally settles on the already-selected 5–100 result. The exact result is
+ * never shown before the last frame: whenever an intermediate frame would round
+ * onto it, the value is nudged one point away.
  *
  * @param {number} elapsedMs Milliseconds since the wheel started turning.
  * @param {number} durationMs The generation window.
  * @param {number} finalPercentage The already-selected result.
- * @returns {number} 5–99 while generating, the exact result at the end.
+ * @returns {number} 0–100 while generating, the exact result at the end.
  */
 export function sampleGenerationPercentage(elapsedMs, durationMs, finalPercentage) {
   const final = clampPercentage(finalPercentage);
@@ -95,14 +139,43 @@ export function sampleGenerationPercentage(elapsedMs, durationMs, finalPercentag
   const elapsed = Math.max(0, Math.min(duration, Number(elapsedMs) || 0));
   if (elapsed >= duration) return final;
 
-  const eased = dialEase(elapsed / duration);
-  const span = PERCENTAGE_MAX - PERCENTAGE_MIN;
-  const value = Math.min(
-    PERCENTAGE_MAX - 1,
-    Math.max(PERCENTAGE_MIN, PERCENTAGE_MIN + Math.floor(eased * span)),
-  );
-  if (value !== final) return value;
-  return value >= PERCENTAGE_MAX - 1 ? value - 1 : value + 1;
+  const progress = elapsed / duration;
+  let value;
+  if (progress < GENERATION_BEATS.peak) {
+    value = 100 * easeOutCubic(progress / GENERATION_BEATS.peak);
+  } else if (progress < GENERATION_BEATS.trough) {
+    value =
+      100 -
+      82 *
+        easeInOutCubic(
+          (progress - GENERATION_BEATS.peak) / (GENERATION_BEATS.trough - GENERATION_BEATS.peak),
+        );
+  } else if (progress < GENERATION_BEATS.rise) {
+    value =
+      18 +
+      70 *
+        easeOutCubic(
+          (progress - GENERATION_BEATS.trough) / (GENERATION_BEATS.rise - GENERATION_BEATS.trough),
+        );
+  } else if (progress < GENERATION_BEATS.erraticEnd) {
+    value = erraticGenerationValue(
+      (progress - GENERATION_BEATS.rise) /
+        (GENERATION_BEATS.erraticEnd - GENERATION_BEATS.rise),
+    );
+  } else {
+    const settleFrom = erraticGenerationValue(1);
+    value =
+      settleFrom +
+      (final - settleFrom) *
+        easeInOutCubic(
+          (progress - GENERATION_BEATS.erraticEnd) / (1 - GENERATION_BEATS.erraticEnd),
+        );
+  }
+
+  const rounded = Math.round(value);
+  const clamped = Math.max(0, Math.min(PERCENTAGE_MAX, rounded));
+  if (clamped !== final) return clamped;
+  return clamped >= PERCENTAGE_MAX ? PERCENTAGE_MAX - 1 : clamped + 1;
 }
 
 /* ── Colour wheel ────────────────────────────────────────────────────────── */
@@ -212,18 +285,3 @@ export function getColourById(colourId) {
   return COLOURS_BY_ID.get(colourId) || null;
 }
 
-/**
- * Picks this run's event length inside the event's documented range.
- *
- * @param {string} eventId One of `meteor`, `lightning`, `fireworks`.
- * @param {() => number} [random] Injectable random source.
- * @returns {number} Duration in milliseconds.
- */
-export function getEventDurationMs(eventId, random = Math.random) {
-  const event = EVENTS_BY_ID.get(eventId);
-  if (!event) return 0;
-  const { minDurationMs, maxDurationMs } = event;
-  const value = random();
-  const clamped = Number.isFinite(value) ? Math.max(0, Math.min(0.999999, value)) : 0;
-  return Math.round(minDurationMs + clamped * (maxDurationMs - minDurationMs));
-}

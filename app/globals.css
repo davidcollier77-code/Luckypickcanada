@@ -1161,24 +1161,25 @@ body {
     drop-shadow(0 0 12px rgba(255, 176, 60, 0.65));
 }
 
-/* ── Countdown dock beneath Home ───────────────────────────────────────────
-   It appears only after the Spark has finished writing, tucked under the Home
-   control rather than inside the result panels. */
+/* ── The last row of the results panel ─────────────────────────────────────
+   Home is here from the first paint. Starting the reveal hides it, and it
+   returns with the daily countdown only after the Spark and the final hold.
+   The row never carries one without the other at the end of the reading. */
 @keyframes luckyDockArrive {
-  from { opacity: 0; transform: translateY(-7px); }
+  from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.lucky-home-dock {
+.lucky-results-dock {
   animation: luckyDockArrive 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 .lucky-countdown--dock {
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
   padding: 0.35rem 0.7rem;
-  text-align: right;
+  text-align: left;
   background: rgba(2, 7, 12, 0.66);
   box-shadow: inset 0 1px 0 rgba(255, 240, 190, 0.08), 0 10px 24px -14px rgba(0, 0, 0, 0.85);
   -webkit-backdrop-filter: blur(6px);
@@ -1190,7 +1191,7 @@ body {
   .lucky-sky-writing__ember,
   .lucky-sky-writing__cursor,
   .lucky-sky-writing__char,
-  .lucky-home-dock {
+  .lucky-results-dock {
     animation: none !important;
   }
   .lucky-sky-writing[data-state="written"] .lucky-sky-writing__flourish {
@@ -1260,12 +1261,14 @@ body {
 }
 
 /* ── Lucky Colour vessel ──────────────────────────────────────────────────
-   Stages 5–6: a transparent square vessel with real depth. It is built from
-   actual three-dimensional layers — a recessed back wall, side walls, a glass
-   front pane, a lit gold rim and a lid that tilts back as it opens — so it
-   reads as an object standing in the scene, not a flat panel. The colour that
-   pours out of the opened segment rises inside it using the stored HEX value,
-   so the vessel and the wheel can never disagree. */
+   Stages 5–7: the functional CSS fallback for the cylindrical vessel. It is
+   built from real layers — a recessed curved back wall, side walls, a curved
+   glass front, a lit elliptical gold rim, a lid that tilts back as it opens
+   and a liquid body that rises on fill and falls on drain — so it reads as
+   the same tumbler the Three.js scene draws. It is the first paint and the
+   permanent fallback when WebGL is unavailable or its context is lost, and it
+   always uses the stored HEX value, so the vessel and the wheel can never
+   disagree. */
 .lucky-vessel-stage {
   position: relative;
   isolation: isolate;
@@ -1315,6 +1318,52 @@ body {
   transition: opacity 600ms ease;
 }
 
+/* The approved 1.6 s empty-vessel highlight. It is a separate layer above
+   either renderer, so the highlight is identical with and without WebGL. */
+.lucky-vessel__highlight {
+  position: absolute;
+  inset: 6% 8%;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 50% 50% 46% 46% / 12% 12% 14% 14%;
+  opacity: 0;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 226, 156, 0.34),
+    rgba(255, 196, 92, 0.12) 56%,
+    transparent 78%
+  );
+  box-shadow: 0 0 26px rgba(255, 206, 116, 0.32);
+}
+
+.lucky-vessel__highlight.is-active {
+  animation: luckyVesselHighlight 1600ms ease-out both;
+}
+
+@keyframes luckyVesselHighlight {
+  0% { opacity: 0; transform: scale(0.94); }
+  18% { opacity: 1; transform: scale(1.02); }
+  62% { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* Reduced motion keeps the empty-vessel highlight static: the rim glow already
+   marks the completed vessel, so no 1.6 s scale or opacity animation runs on a
+   fresh reveal or on a restored result. */
+@media (prefers-reduced-motion: reduce) {
+  .lucky-vessel__highlight.is-active {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+}
+
+.lucky-vessel-stage[data-vessel-phase="empty"] .lucky-vessel__rim {
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.5),
+    0 0 18px rgba(255, 220, 140, 0.7);
+}
+
 .lucky-vessel {
   position: relative;
   width: clamp(5.4rem, 22vw, 6.9rem);
@@ -1341,24 +1390,24 @@ body {
   filter: blur(5px);
 }
 
-/* Recessed far wall. */
+/* Recessed far wall of the tumbler. */
 .lucky-vessel__back {
   position: absolute;
   inset: 4%;
   transform: translateZ(-16px);
-  border-radius: 3px;
+  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
   background:
     linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 46%, rgba(0, 0, 0, 0.3)),
     rgba(8, 14, 20, 0.52);
   box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.6);
 }
 
-/* The hollow interior that holds the liquid. */
+/* The hollow cylindrical interior that holds the liquid. */
 .lucky-vessel__body {
   position: absolute;
   inset: 5%;
   overflow: hidden;
-  border-radius: 3px;
+  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
   box-shadow:
     inset 0 0 20px rgba(0, 0, 0, 0.45),
@@ -1394,13 +1443,14 @@ body {
   mix-blend-mode: screen;
 }
 
-/* Side walls: narrow lit quads that give the cube its thickness. */
+/* Side walls: narrow curved strips that give the tumbler its wall thickness. */
 .lucky-vessel__wall {
   position: absolute;
   top: 5%;
   bottom: 5%;
   width: 9%;
   opacity: 0.72;
+  border-radius: 46% 46% 46% 46% / 8% 8% 8% 8%;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0.42),
@@ -1428,7 +1478,7 @@ body {
   inset: 0;
   transform: translateZ(16px);
   border: 1px solid rgba(210, 236, 255, 0.42);
-  border-radius: 3px;
+  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
   background:
     linear-gradient(
       112deg,
@@ -1453,7 +1503,7 @@ body {
   right: -1.5%;
   height: 5%;
   transform: translateZ(18px);
-  border-radius: 2px;
+  border-radius: 50% / 50%;
   background: linear-gradient(
     90deg,
     #8c5f18 0%,
@@ -1476,7 +1526,7 @@ body {
   height: 8%;
   transform-origin: 50% 0%;
   border: 1px solid rgba(255, 236, 186, 0.5);
-  border-radius: 2px;
+  border-radius: 50% / 50%;
   background: linear-gradient(180deg, rgba(255, 246, 214, 0.62), rgba(180, 138, 52, 0.28));
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }

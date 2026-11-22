@@ -28,15 +28,14 @@ import {
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
   ARRIVAL_TOTAL_MS,
+  CELEBRATION_MS,
   STORYBOARD_TIMING,
   getDockMs,
   getMessageTypingMs,
-  getSparkWritingMs,
 } from '../app/lib/lucky-meter/storyboard';
 import {
   buildColourSpin,
   colourPointerRotation,
-  getEventDurationMs,
   sampleColourSpin,
   sampleGenerationPercentage,
 } from '../app/lib/lucky-meter/reveal';
@@ -47,11 +46,9 @@ import {
 import { shareDailyResult } from '../app/lib/lucky-meter/share';
 import {
   ENTERTAINMENT_DISCLAIMER,
-  EVENTS_BY_ID,
   LUCKY_NUMBER_LABEL,
   LUCKY_NUMBER_MAX,
   LUCKY_NUMBER_MIN,
-  PERCENTAGE_MIN,
 } from '../app/lib/lucky-meter/config';
 import {
   getCueLayers,
@@ -89,17 +86,31 @@ interface DailyResonanceProps {
 
 type ShareStatus = 'idle' | 'copied' | 'failed';
 type Stage = 'idle' | 'anticipating' | 'generating' | 'landed' | 'pouring' | 'revealed';
+type VesselPhase = 'idle' | 'opening' | 'filling' | 'holding' | 'draining' | 'empty';
 
 interface RevealMotion {
   wheelAngle: number;
   percentage: number;
   numberReveal: number;
+  /** The wheel's own drain: it empties as the vessel fills, then stays empty. */
   pourProgress: number;
+  /** How full the vessel is: rises during the fill and falls during the drain. */
+  vesselFill: number;
+  /** The falling stream: only present while colour is arriving. */
+  pour: number;
   vesselOpen: number;
 }
 
 function initialMotion(): RevealMotion {
-  return { wheelAngle: 0, percentage: 0, numberReveal: 0, pourProgress: 0, vesselOpen: 0 };
+  return {
+    wheelAngle: 0,
+    percentage: 0,
+    numberReveal: 0,
+    pourProgress: 0,
+    vesselFill: 0,
+    pour: 0,
+    vesselOpen: 0,
+  };
 }
 
 /**
@@ -136,6 +147,7 @@ function pourEase(progress: number) {
 export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
   const [result, setResult] = useState<DailyResult | null>(null);
   const [stage, setStage] = useState<Stage>('idle');
+  const [vesselPhase, setVesselPhase] = useState<VesselPhase>('idle');
   const [motion, setMotion] = useState<RevealMotion>(initialMotion);
   const [isFlashing, setIsFlashing] = useState(false);
   const [numberFlashing, setNumberFlashing] = useState(false);
@@ -482,8 +494,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     [playEventCue, schedule, startCelebration],
   );
 
-  /** Opens the selected segment and drains its colour into the result area. */
-  const startPour = useCallback(
+  /**
+   * Runs the approved vessel beat: open, fill, full hold, drain and empty
+   * highlight. The wheel's own segment empties as the vessel fills and stays
+   * empty; the vessel then drains while the Lucky Number is revealed from the
+   * top down, and the empty vessel is highlighted before the message.
+   */
+  const startVesselSequence = useCallback(
     (
       next: DailyResult,
       duration: number,
@@ -491,6 +508,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     ) => {
       if (!isMountedRef.current) return;
       setStage('pouring');
+      setVesselPhase('opening');
       setAnnouncement(
         `Today's resonance is ${next.percentage} percent. ${next.tier.label}.`,
       );
@@ -498,31 +516,37 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       // The vessel opens first; the pour cue is timed to the exact frame the
       // colour starts to flow, not to the start of the stage.
       playEventCue('segment-open');
-      schedule(() => playEventCue('colour-pour'), STORYBOARD_TIMING.segmentOpenMs);
 
       const openMs = Math.max(1, STORYBOARD_TIMING.segmentOpenMs);
-      const pourMs = Math.max(1, STORYBOARD_TIMING.pourMs);
-      const total = openMs + pourMs;
+      const fillMs = Math.max(1, STORYBOARD_TIMING.fillMs);
+      const holdMs = Math.max(0, STORYBOARD_TIMING.fullHoldMs);
+      const drainMs = Math.max(1, STORYBOARD_TIMING.drainMs);
+      const highlightMs = Math.max(0, STORYBOARD_TIMING.highlightMs);
+      const fillStart = openMs;
+      const holdStart = fillStart + fillMs;
+      const drainStart = holdStart + holdMs;
+      const drainEnd = drainStart + drainMs;
+      const total = drainEnd + highlightMs;
       const startedAt = performance.now();
+      let revealed = false;
       let finished = false;
-      const finishPour = () => {
-        if (finished || !isMountedRef.current) return;
-        finished = true;
-        if (rafRef.current !== null) {
-          window.cancelAnimationFrame(rafRef.current);
-          rafRef.current = null;
-        }
-        setMotion({
-          wheelAngle: colourPointerRotation(next.colour.id, activePalette),
-          percentage: next.percentage,
-          numberReveal: 1,
-          pourProgress: 1,
-          vesselOpen: 1,
-        });
-        setStage('revealed');
-        setColourSettled(true);
-        // The colour has finished draining, so the Lucky Number may now be
-        // revealed. It flashes twice, then settles into its placard.
+
+      schedule(() => playEventCue('colour-pour'), fillStart);
+      schedule(() => {
+        if (isMountedRef.current) setVesselPhase('filling');
+      }, fillStart);
+      schedule(() => {
+        if (isMountedRef.current) setVesselPhase('holding');
+      }, holdStart);
+      schedule(() => {
+        if (isMountedRef.current) setVesselPhase('draining');
+      }, drainStart);
+
+      // The drain has finished: the vessel is empty and the number is whole.
+      const revealNumber = () => {
+        if (revealed || !isMountedRef.current) return;
+        revealed = true;
+        setVesselPhase('empty');
         setNumberSettled(true);
         setNumberFlashing(!reducedMotion);
         playEventCue('number-reveal');
@@ -548,38 +572,90 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setAnnouncement(
           `Today's resonance is ${next.percentage} percent. ${next.tier.label}. Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
         );
-        // The number and colour hold in their result areas for the storyboard's
-        // settle beat before the tier message begins above the meter.
-        schedule(
-          () => beginMessagePhase(next, duration),
-          STORYBOARD_TIMING.resultSettleMs,
-        );
+      };
+
+      const finish = () => {
+        if (finished || !isMountedRef.current) return;
+        finished = true;
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        revealNumber();
+        setMotion({
+          wheelAngle: colourPointerRotation(next.colour.id, activePalette),
+          percentage: next.percentage,
+          numberReveal: 1,
+          pourProgress: 1,
+          vesselFill: 0,
+          pour: 0,
+          vesselOpen: 1,
+        });
+        setStage('revealed');
+        setColourSettled(true);
+        setVesselPhase('empty');
+        // The empty vessel, the number and the colour have been held for the
+        // highlight beat; the tier message now begins above the meter.
+        beginMessagePhase(next, duration);
       };
 
       const step = () => {
         if (!isMountedRef.current) return;
         const elapsed = performance.now() - startedAt;
-        const linear = Math.min(1, elapsed / total);
-        // Stage 5 completes before a single drop falls: the vessel unfolds,
-        // and only then does the colour leave the segment.
-        const openProgress = pourEase(Math.min(1, elapsed / openMs));
-        const pourProgress = pourEase(Math.max(0, Math.min(1, (elapsed - openMs) / pourMs)));
+        let vesselOpen = 1;
+        let vesselFill = 1;
+        let pour = 0;
+        let numberReveal = 0;
+
+        if (elapsed < fillStart) {
+          // Stage 5 completes before a single drop falls.
+          vesselOpen = pourEase(elapsed / openMs);
+          vesselFill = 0;
+        } else if (elapsed < holdStart) {
+          const progress = pourEase((elapsed - fillStart) / fillMs);
+          vesselFill = progress;
+          pour = progress;
+        } else if (elapsed < drainStart) {
+          vesselFill = 1;
+        } else if (elapsed < drainEnd) {
+          const progress = pourEase((elapsed - drainStart) / drainMs);
+          vesselFill = 1 - progress;
+          // The progressive top-down number reveal shares the drain clock.
+          numberReveal = progress;
+        } else {
+          vesselFill = 0;
+          numberReveal = 1;
+        }
+
+        // The wheel empties in step with the fill, then stays empty for the
+        // rest of the sequence so the stream and the segment cannot disagree.
+        const wheelDrain =
+          elapsed < fillStart
+            ? 0
+            : elapsed < holdStart
+              ? pourEase((elapsed - fillStart) / fillMs)
+              : 1;
         setMotion((current) => ({
           ...current,
-          vesselOpen: openProgress,
-          pourProgress,
-          // The number stays hidden for the entire drain.
-          numberReveal: 0,
+          vesselOpen,
+          vesselFill,
+          pour,
+          pourProgress: wheelDrain,
+          numberReveal,
         }));
 
-        if (linear >= 1) {
-          finishPour();
+        if (elapsed >= drainEnd) revealNumber();
+        if (elapsed >= total) {
+          finish();
           return;
         }
         rafRef.current = window.requestAnimationFrame(step);
       };
       rafRef.current = window.requestAnimationFrame(step);
-      schedule(finishPour, total + 20);
+      // Completion latches: a throttled frame clock can never strand the
+      // sequence between the drain and the highlight or the message.
+      schedule(revealNumber, drainEnd + 20);
+      schedule(finish, total + 20);
     },
     [beginMessagePhase, persistLifecycle, playEventCue, reducedMotion, schedule],
   );
@@ -600,11 +676,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       wheelSpinRef.current = spin;
 
       setStage('anticipating');
+      setVesselPhase('idle');
       setMotion({
         wheelAngle: spin.startRotation,
-        percentage: PERCENTAGE_MIN,
+        percentage: 0,
         numberReveal: 0,
         pourProgress: 0,
+        vesselFill: 0,
+        pour: 0,
         vesselOpen: 0,
       });
       setNumberSettled(false);
@@ -645,13 +724,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             percentage: next.percentage,
             numberReveal: 0,
             pourProgress: 0,
+            vesselFill: 0,
+            pour: 0,
             vesselOpen: 0,
           });
           setStage('landed');
           setIsFlashing(true);
           playEventCue('wheel-stop');
           schedule(() => setIsFlashing(false), STORYBOARD_TIMING.flashMs + 40);
-          schedule(() => startPour(next, duration, activePalette), STORYBOARD_TIMING.settlePauseMs);
+          schedule(
+            () => startVesselSequence(next, duration, activePalette),
+            STORYBOARD_TIMING.settlePauseMs,
+          );
         };
 
         const step = () => {
@@ -673,6 +757,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ),
             numberReveal: 0,
             pourProgress: 0,
+            vesselFill: 0,
+            pour: 0,
             vesselOpen: 0,
           });
 
@@ -688,7 +774,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         schedule(finishGeneration, STORYBOARD_TIMING.generationMs + 20);
       }, STORYBOARD_TIMING.anticipationMs);
     },
-    [playEventCue, schedule, startPour],
+    [playEventCue, schedule, startVesselSequence],
   );
 
   beginSequenceRef.current = beginSequence;
@@ -732,14 +818,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     if (isResultForDate(loaded.result, localKey)) {
       const saved = loaded.result as DailyResult;
-      const eventWindow = EVENTS_BY_ID.get(saved.event.id);
-      const storedDuration = loaded.stageDurationMs;
-      const duration =
-        eventWindow &&
-        storedDuration >= eventWindow.minDurationMs &&
-        storedDuration <= eventWindow.maxDurationMs
-          ? storedDuration
-          : getEventDurationMs(saved.event.id);
+      // D12: every celebration is exactly 12,000 ms. A legacy stored duration
+      // is deliberately ignored, so a refresh during the celebration restarts
+      // the same celebration for its full length without re-timing the saved
+      // percentage, Lucky Number, colour or tier.
+      const duration = CELEBRATION_MS;
       const eventDone = loaded.eventCompleted === true;
       const messageDone = loaded.messageCompleted === true;
 
@@ -761,10 +844,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         percentage: saved.percentage,
         numberReveal: 1,
         pourProgress: 1,
+        vesselFill: 0,
+        pour: 0,
         vesselOpen: 1,
       });
       setNumberSettled(true);
       setColourSettled(true);
+      setVesselPhase('empty');
       setStageDuration(duration);
       setEventCompleted(eventDone);
       setShareStatus('idle');
@@ -898,11 +984,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         percentage: next.percentage,
         numberReveal: 1,
         pourProgress: 1,
+        vesselFill: 0,
+        pour: 0,
         vesselOpen: 1,
       });
       setNumberSettled(true);
       setNumberFlashing(false);
       setColourSettled(true);
+      setVesselPhase('empty');
       setMessageState('hidden');
       setEventCompleted(true);
       setSparkComplete(true);
@@ -943,7 +1032,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       return;
     }
     const nextHistory = appendResultToHistory(history, next);
-    const duration = getEventDurationMs(next.event.id);
+    const duration = CELEBRATION_MS;
 
     resultRef.current = next;
     historyRef.current = nextHistory;
@@ -1077,7 +1166,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         : 'Share My Resonance';
 
   const panelClass = 'lucky-panel rounded-2xl';
-  const pourFill = hasDetails ? motion.pourProgress : 0;
   const showSparkWriting = (sparkWriting || sparkComplete) && Boolean(result);
 
   const countdownBlock = (
@@ -1146,35 +1234,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           onCue={playEventCue}
           onComplete={handleStageComplete}
         />
-      )}
-
-      {/* Home and the countdown appear together, only after the Spark is fully
-          written. The dock never carries one without the other. */}
-      {showHome && (
-        <div className="lucky-home-dock fixed right-3 top-3 z-50 flex flex-col items-end gap-2 sm:right-5 sm:top-5">
-          <IntentPrefetchLink
-            href="/"
-            data-testid="lucky-meter-home"
-            aria-label="Return to Home"
-            className="gold-3d-btn lucky-home-btn rounded-full font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4 shrink-0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M3 10.6 12 3l9 7.6" />
-              <path d="M5.6 9.6V21h12.8V9.6" />
-            </svg>
-            <span>Home</span>
-          </IntentPrefetchLink>
-          {showCountdown && countdownBlock}
-        </div>
       )}
 
       <div
@@ -1272,7 +1331,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             colours={palette}
             colourId={result?.colour?.id ?? null}
             colourSettled={colourSettled}
-            number={numberSettled ? result?.luckyNumber ?? null : null}
+            number={
+              hasDetails && (motion.numberReveal > 0 || numberSettled)
+                ? result?.luckyNumber ?? null
+                : null
+            }
             numberSettled={numberSettled}
             numberReveal={motion.numberReveal}
             pourProgress={motion.pourProgress}
@@ -1344,8 +1407,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           {result && (
             <LuckyMeterVessel
               colour={result.colour}
-              fill={hasDetails ? pourFill : 0}
+              fill={hasDetails ? motion.vesselFill : 0}
+              pour={hasDetails ? motion.pour : 0}
               open={hasDetails ? motion.vesselOpen : 0}
+              phase={vesselPhase}
               hidden={!hasDetails}
               isCompact={isCompact}
               reducedMotion={reducedMotion}
@@ -1434,6 +1499,40 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* The last row of the results panel. Home is here from the first
+              paint, hides the moment the reveal starts, and returns with the
+              daily countdown only after the Spark and the final hold. The row
+              never carries one without the other at the end of the reading. */}
+          {showHome && (
+            <div
+              data-testid="lucky-meter-dock"
+              className="lucky-results-dock mt-3 flex w-full flex-col items-center justify-center gap-2 sm:mt-4 sm:flex-row sm:gap-3"
+            >
+              <IntentPrefetchLink
+                href="/"
+                data-testid="lucky-meter-home"
+                aria-label="Return to Home"
+                className="gold-3d-btn lucky-home-btn rounded-full font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 10.6 12 3l9 7.6" />
+                  <path d="M5.6 9.6V21h12.8V9.6" />
+                </svg>
+                <span>Home</span>
+              </IntentPrefetchLink>
+              {showCountdown && countdownBlock}
             </div>
           )}
 

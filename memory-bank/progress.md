@@ -1,3 +1,26 @@
+## 2026-11-21 — Lucky Meter approved Build (spec 205)
+
+- Implemented the approved presentation on `freebuff/lucky-meter-build`: the
+  five-beat 0 → 100 → fall → rise → erratic → settle generation, the cylindrical
+  vessel opening over 1.4 s, filling over 5 s, holding 0.7 s, draining over 4 s
+  and highlighting empty for 1.6 s, the progressive top-down number reveal on the
+  drain clock, a single 12,000 ms celebration for every tier, the 3.8–5.2 s Spark
+  window and Home plus the countdown in the last row of the results panel.
+- Made `storyboard.js` the single timing source, including the derived stage
+  boundaries, the Spark character schedule and the emergent 54–57 s total.
+- Implemented D12: a celebration restarted after a refresh runs the full
+  12,000 ms from its beginning; a stored legacy duration is ignored and the saved
+  reading is never rerolled.
+- The CSS vessel remains the first paint and the functional fallback without
+  WebGL and after context loss, with the same open, fill, drain and empty states.
+- Verified: full Vitest suite 107 files / 1,142 tests passed; `tsc --noEmit`
+  exit 0; Playwright `lucky-meter-daily-resonance` 16 passed per project on
+  desktop, mobile-390 and mobile-412 (one opt-in evidence test skipped); clean
+  production build 417,921,229 bytes (398.56 MiB), below 495 MiB;
+  `SPEC_KIT_BASE_REF=8741c655 ./freebuff-verify.sh` exit 0.
+- Captured arrival, fill, mid-drain and dock screenshots for desktop and
+  mobile-390 under `artifacts/lucky-meter-approved-build-20261121/`.
+
 ## 2026-11-21 — Lucky Meter approved requirements and documentation reconciliation
 
 - Recorded the owner-approved Living Requirements Outline and Approval Sheet:

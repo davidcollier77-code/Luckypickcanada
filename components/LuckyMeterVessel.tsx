@@ -14,12 +14,16 @@ interface VesselColour {
 
 interface LuckyMeterVesselProps {
   colour: VesselColour;
-  /** 0–1: how much colour has drained into the vessel. */
+  /** 0–1: how much colour is inside the vessel (rises on fill, falls on drain). */
   fill: number;
+  /** 0–1: the falling stream; only present while colour is arriving. */
+  pour?: number;
   /** 0–1: the vessel's unfold-and-open progress. */
   open: number;
   /** True before the vessel stage: the scene warms up off-screen. */
   hidden?: boolean;
+  /** The approved vessel beat, exposed for the CSS fallback's own states. */
+  phase?: 'idle' | 'opening' | 'filling' | 'holding' | 'draining' | 'empty';
   isCompact?: boolean;
   seasonName?: string;
   reducedMotion?: boolean;
@@ -39,8 +43,10 @@ interface LuckyMeterVesselProps {
 export default function LuckyMeterVessel({
   colour,
   fill,
+  pour,
   open,
   hidden = false,
+  phase = 'idle',
   isCompact = false,
   seasonName = '',
   reducedMotion = false,
@@ -49,7 +55,8 @@ export default function LuckyMeterVessel({
   const sceneRef = useRef<Awaited<ReturnType<typeof createLuckyMeterVesselScene>>>(null);
   // The scene resolves asynchronously, so the values it starts from are the
   // newest props, not the ones captured when the effect first ran.
-  const latestStateRef = useRef({ colour: colour.hex, fill, open });
+  const pourRatio = Math.max(0, Math.min(1, typeof pour === 'number' ? pour : fill));
+  const latestStateRef = useRef({ colour: colour.hex, fill, pour: pourRatio, open });
   const [renderMode, setRenderMode] = useState<'pending' | 'three' | 'fallback'>('pending');
 
   // Register with the shared readiness hub. The Three chunk is loaded lazily by
@@ -107,6 +114,15 @@ export default function LuckyMeterVessel({
         onUnavailable: () => {
           if (!cancelled) setRenderMode('fallback');
         },
+        // A lost context is a real condition on a phone or after a GPU reset:
+        // the functional CSS vessel takes over while the stage rebuilds, and
+        // the scene is presented again only after it has restored.
+        onContextLost: () => {
+          if (!cancelled) setRenderMode('fallback');
+        },
+        onContextRestored: () => {
+          if (!cancelled && scene) setRenderMode('three');
+        },
       })
         .then((created) => {
           if (cancelled) {
@@ -125,6 +141,7 @@ export default function LuckyMeterVessel({
           created.setState({
             colour: latest.colour,
             fill: latest.fill,
+            pour: latest.pour,
             open: latest.open,
             instant: latest.fill >= 0.999,
           });
@@ -151,9 +168,11 @@ export default function LuckyMeterVessel({
   }, []);
 
   useEffect(() => {
-    latestStateRef.current = { colour: colour.hex, fill, open };
-    sceneRef.current?.setState({ colour: colour.hex, fill, open });
-  }, [colour.hex, fill, open]);
+    latestStateRef.current = { colour: colour.hex, fill, pour: pourRatio, open };
+    // `pour` is explicit: during the drain the vessel level falls while the
+    // stream is already gone, so the scene must not infer a pour from the fill.
+    sceneRef.current?.setState({ colour: colour.hex, fill, pour: pourRatio, open });
+  }, [colour.hex, fill, pourRatio, open]);
 
   const grain = Math.max(0, Math.min(1, colour.texture?.grain ?? 0.1));
   const sheen = Math.max(0, Math.min(1, colour.texture?.sheen ?? 0.3));
@@ -168,6 +187,7 @@ export default function LuckyMeterVessel({
       data-vessel-fill={fillRatio.toFixed(3)}
       data-vessel-renderer={renderMode}
       data-vessel-motion={reducedMotion ? 'calm' : 'full'}
+      data-vessel-phase={phase}
       className={`lucky-vessel-stage relative mx-auto w-full ${
         isCompact ? 'mt-2 max-w-[300px]' : 'mt-3 max-w-[26rem]'
       }`}
@@ -177,6 +197,13 @@ export default function LuckyMeterVessel({
           ref={hostRef}
           data-testid="lucky-vessel-canvas-host"
           className={`lucky-vessel-canvas-host ${showThree ? 'is-ready' : ''}`}
+        />
+        {/* The empty-vessel highlight. It sits above either renderer, so the
+            approved 1.6 s highlight is identical with and without WebGL. */}
+        <span
+          aria-hidden="true"
+          data-testid="lucky-vessel-highlight"
+          className={`lucky-vessel__highlight ${phase === 'empty' ? 'is-active' : ''}`}
         />
         {/* The static CSS vessel: first paint, and the fallback when WebGL is
             unavailable. It is hidden once the Three.js scene has drawn. */}

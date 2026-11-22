@@ -212,6 +212,8 @@ function createEnvironment(THREE, renderer) {
  *   quality?: { tier?: string, maxPixelRatio?: number, particleScale?: number, sparkBudget?: number },
  *   onReady?: () => void,
  *   onUnavailable?: () => void,
+ *   onContextLost?: () => void,
+ *   onContextRestored?: () => void,
  * }} options
  * @returns {Promise<null | {
  *   setState: (state: { colour?: string, fill?: number, pour?: number, open?: number, instant?: boolean }) => void,
@@ -221,7 +223,14 @@ function createEnvironment(THREE, renderer) {
  *   readonly ready: boolean,
  * }>}
  */
-export async function createLuckyMeterVesselScene({ canvas, quality, onReady, onUnavailable } = {}) {
+export async function createLuckyMeterVesselScene({
+  canvas,
+  quality,
+  onReady,
+  onUnavailable,
+  onContextLost,
+  onContextRestored,
+} = {}) {
   if (!canvas || typeof window === 'undefined') return null;
   // A test environment without a WebGL constructor never reaches the runtime;
   // the CSS vessel is the correct result there and no context is requested.
@@ -246,6 +255,11 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
     onFrame: ({ elapsed }) => {
       update(elapsed);
     },
+    // The shared stage owns the context-loss watcher. The CSS vessel underneath
+    // is the fallback while the context is gone, and the scene takes over again
+    // once the stage has re-initialised its GL state.
+    onContextLost,
+    onContextRestored,
   });
 
   if (!surface || surface.kind !== 'three' || !surface.stage) {
@@ -688,7 +702,19 @@ export async function createLuckyMeterVesselScene({ canvas, quality, onReady, on
       pour <= 0.001 &&
       open <= 0.001 &&
       state.impact <= 0.001;
-    if (settledFull || settledEmpty) {
+    // The finished reading rests as an empty but still-open vessel: the colour
+    // is gone, the lid stays back and the number is whole. Without its own
+    // predicate the terminal results state matches neither settledFull nor
+    // settledEmpty and the loop would keep rendering behind the whole panel.
+    const settledRevealed =
+      state.targetFill <= 0.001 &&
+      state.targetPour <= 0.001 &&
+      state.targetOpen >= 0.999 &&
+      fill <= 0.001 &&
+      pour <= 0.001 &&
+      open >= 0.999 &&
+      state.impact <= 0.001;
+    if (settledFull || settledEmpty || settledRevealed) {
       if (settleStart === null) settleStart = elapsed;
       else if (
         !idleStopped &&

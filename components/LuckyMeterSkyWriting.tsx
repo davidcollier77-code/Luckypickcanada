@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
+import { getSparkCharacterScheduleMs } from '../app/lib/lucky-meter/storyboard';
 
 export type SkyWritingState = 'waiting' | 'writing' | 'written';
 
@@ -36,9 +36,10 @@ interface LuckyMeterSkyWritingProps {
  * message is plain sky text with a warm glow, revealed one character at a time
  * by a small glowing golden maple leaf at the writing edge. It owns its own
  * character clock, so the rest of the page does not re-render per character —
- * which matters on a phone. The completed message stays exactly where it was
- * written, and the whole line is exposed to assistive technology only once the
- * writing has finished.
+ * which matters on a phone. The schedule comes from the storyboard, so every
+ * Spark takes the approved 3,800–5,200 ms however long the saved line is. The
+ * completed message stays exactly where it was written, and the whole line is
+ * exposed to assistive technology only once the writing has finished.
  *
  * Reduced motion presents the complete message immediately and reports
  * completion once, with no cursor.
@@ -51,6 +52,7 @@ export default function LuckyMeterSkyWriting({
   onComplete,
 }: LuckyMeterSkyWritingProps) {
   const chars = useMemo(() => (message ? Array.from(message) : []), [message]);
+  const schedule = useMemo(() => getSparkCharacterScheduleMs(message), [message]);
   const [visibleCount, setVisibleCount] = useState(state === 'written' ? chars.length : 0);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -75,6 +77,9 @@ export default function LuckyMeterSkyWriting({
     let timer = 0;
     setVisibleCount(0);
 
+    // Each character arrives on its cumulative storyboard beat. The final beat
+    // is exactly getSparkWritingMs(message), so the parent's own schedule and
+    // the visible writing can never drift apart.
     const tick = () => {
       if (cancelled) return;
       index += 1;
@@ -83,21 +88,17 @@ export default function LuckyMeterSkyWriting({
         onCompleteRef.current();
         return;
       }
-      const character = chars[index - 1];
-      timer = window.setTimeout(
-        tick,
-        /[.,!?:;]/.test(character)
-          ? REVEAL_TIMING.sparkPunctuationPauseMs
-          : REVEAL_TIMING.sparkMsPerCharacter,
-      );
+      const at = schedule[index] ?? schedule[schedule.length - 1] ?? 0;
+      const previous = schedule[index - 1] ?? 0;
+      timer = window.setTimeout(tick, Math.max(16, at - previous));
     };
 
-    timer = window.setTimeout(tick, REVEAL_TIMING.sparkMsPerCharacter);
+    timer = window.setTimeout(tick, Math.max(16, schedule[0] ?? 0));
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [state, reducedMotion, chars]);
+  }, [state, reducedMotion, chars, schedule]);
 
   // Reduced motion shows the finished line at once, so it never shows a
   // writing cursor even while the state is being promoted.

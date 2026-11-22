@@ -2,9 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import React from 'react';
 import LuckyMeterSkyWriting from '../components/LuckyMeterSkyWriting';
-import { REVEAL_TIMING } from '../app/lib/lucky-meter/reveal';
+import {
+  getSparkCharacterScheduleMs,
+  getSparkWritingMs,
+} from '../app/lib/lucky-meter/storyboard';
 
 const MESSAGE = 'A small light is enough.';
+const SCHEDULE = getSparkCharacterScheduleMs(MESSAGE);
 
 describe('Lucky Meter sky-writing', () => {
   beforeEach(() => {
@@ -45,12 +49,12 @@ describe('Lucky Meter sky-writing', () => {
     expect(screen.getByTestId('lucky-spark-visible')).toHaveTextContent('');
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkMsPerCharacter);
+      vi.advanceTimersByTime(SCHEDULE[0]);
     });
     expect(screen.getByTestId('lucky-spark-visible')).toHaveTextContent(/^A$/);
 
     act(() => {
-      vi.advanceTimersByTime(REVEAL_TIMING.sparkMsPerCharacter * 5);
+      vi.advanceTimersByTime(SCHEDULE[5] - SCHEDULE[0]);
     });
     expect(screen.getByTestId('lucky-spark-visible').textContent?.length).toBeGreaterThan(1);
     expect(screen.getByTestId('lucky-spark-visible').textContent?.length).toBeLessThan(
@@ -83,6 +87,31 @@ describe('Lucky Meter sky-writing', () => {
 
     expect(screen.getByTestId('lucky-spark-message')).toHaveTextContent(MESSAGE);
     expect(screen.queryByTestId('lucky-spark-cursor')).not.toBeInTheDocument();
+  });
+
+  it('writes the whole Spark inside the approved 3.8–5.2 second window', () => {
+    const onComplete = vi.fn();
+    render(
+      <LuckyMeterSkyWriting
+        message={MESSAGE}
+        state="writing"
+        onComplete={onComplete}
+      />,
+    );
+
+    const duration = getSparkWritingMs(MESSAGE);
+    expect(duration).toBeGreaterThanOrEqual(3_800);
+    expect(duration).toBeLessThanOrEqual(5_200);
+
+    act(() => {
+      vi.advanceTimersByTime(duration - 1);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
   it('presents the whole message at once under reduced motion', () => {
