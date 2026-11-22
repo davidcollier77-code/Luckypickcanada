@@ -279,8 +279,8 @@ describe('single-source agent governance', () => {
     expect(workflow).toContain('currently installed spec kit tooling');
     expect(workflow).toContain('fixed spec kit version');
     expect(workflow).toContain('hardcoded command count');
-    expect(workflow).toContain('`.freebuff/cmds/` command wrappers remain FREEBUFF ONLY');
-    expect(workflow).toContain('ChatGPT must not apply them as ChatGPT operating instructions.');
+    expect(workflow).toContain('`.freebuff/cmds/` command wrappers remain freebuff only');
+    expect(workflow).toContain('chatgpt must not apply them as chatgpt operating instructions.');
     const commandsDirectory = join(root, '.freebuff', 'cmds');
     const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
     expect(commandFiles.length).toBeGreaterThan(0);
