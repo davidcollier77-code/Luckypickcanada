@@ -30,6 +30,14 @@
  *     adapter has actually finished.
  *   - The hub never promises permanent retention. It relies on normal HTTP and
  *     browser caching; the browser may evict any entry at any time.
+ *   - Retention is bounded. Every record carries a declared or estimated byte
+ *     weight, and the hub enforces entry, weight and queue budgets for the
+ *     current adaptive tier. Speculative work that does not fit is deferred
+ *     rather than queued without limit.
+ *   - Ownership is explicit. A lease pins the resources an active experience is
+ *     using, so release, pressure, version replacement and eviction can never
+ *     dispose a payload the visitor is still seeing. The hub disposes what it
+ *     owns as soon as the last lease ends.
  */
 
 import {
@@ -78,6 +86,48 @@ const RETRY_TIMER_SLACK_MS = 10;
 const FAILED_RETRY_COOLDOWN_MS = 5000;
 const IDLE_TIMEOUT_MS = 2000;
 
+// Capacity budgets by adaptive tier. These bound the hub's own records and the
+// payloads it retains; the browser's HTTP cache is never owned or accounted.
+const RESOURCE_CAPACITY = Object.freeze({
+  high: Object.freeze({
+    maxEntries: 48,
+    maxBytes: 24 * 1024 * 1024,
+    maxQueue: 24,
+    maxPendingPerExperience: 12,
+  }),
+  balanced: Object.freeze({
+    maxEntries: 32,
+    maxBytes: 16 * 1024 * 1024,
+    maxQueue: 16,
+    maxPendingPerExperience: 8,
+  }),
+  constrained: Object.freeze({
+    maxEntries: 16,
+    maxBytes: 8 * 1024 * 1024,
+    maxQueue: 8,
+    maxPendingPerExperience: 6,
+  }),
+});
+
+// A resource without a declared size is charged a conservative estimate for its
+// kind, so an unmeasured adapter cannot silently bypass the weight budget.
+const DEFAULT_RESOURCE_WEIGHT = Object.freeze({
+  image: 96 * 1024,
+  texture: 512 * 1024,
+  model: 512 * 1024,
+  module: 256 * 1024,
+  audio: 96 * 1024,
+  code: 48 * 1024,
+});
+const UNKNOWN_RESOURCE_WEIGHT = 64 * 1024;
+// Skipped admission decisions are kept in a small bounded ledger so readiness
+// stays honest without letting metadata grow without limit.
+const MAX_REJECTED_RECORDS = 32;
+// Payloads of these kinds belong to another system: Howler/Web Audio, the
+// Next.js router, or an evaluated engine module. The hub drops its reference but
+// must never dispose them.
+const DELEGATED_KINDS = new Set(['audio', 'code', 'module']);
+
 // Identities of responsive images the hub has itself loaded. Once one derivative
 // of an artwork is in memory, fetching another width of the same artwork would
 // add bytes without adding any visible pixels.
@@ -89,6 +139,10 @@ const resourceInflight = new Map();
 const experienceRuns = new Map();
 const experienceSnapshots = new Map();
 const preparingExperiences = new Set();
+const rejectedEntries = new Map();
+const leases = new Map();
+const pinnedKeys = new Map();
+let leaseSequence = 0;
 
 let queue = [];
 let runningJobs = 0;
@@ -130,6 +184,44 @@ function resourceKey(definition, resource) {
 
 function resourceLabel(resource) {
   return resource.label ?? resource.id ?? normalizeTarget(resource) ?? 'resource';
+}
+
+function resourceWeight(resource) {
+  if (Number.isFinite(resource?.bytes) && resource.bytes > 0) return Math.round(resource.bytes);
+  const kind = typeof resource?.kind === 'string' ? resource.kind : '';
+  return DEFAULT_RESOURCE_WEIGHT[kind] ?? UNKNOWN_RESOURCE_WEIGHT;
+}
+
+function planCapacity() {
+  const tier = getAdaptivePlan()?.tier;
+  return RESOURCE_CAPACITY[tier] ?? RESOURCE_CAPACITY.balanced;
+}
+
+function isPinned(key) {
+  return (pinnedKeys.get(key) ?? 0) > 0;
+}
+
+function poolUsage() {
+  let bytes = 0;
+  let pinned = 0;
+  let retired = 0;
+  for (const entry of resourceEntries.values()) {
+    bytes += entry.weightBytes ?? 0;
+    if (isPinned(entry.key)) pinned += 1;
+    if (entry.retired) retired += 1;
+  }
+  return { entries: resourceEntries.size, bytes, pinned, retired };
+}
+
+function pendingForExperience(id) {
+  const jobs = new Set();
+  for (const job of queue) {
+    if (job.definition?.id === id) jobs.add(job);
+  }
+  for (const inflight of resourceInflight.values()) {
+    if (inflight.job?.definition?.id === id) jobs.add(inflight.job);
+  }
+  return jobs.size;
 }
 
 /**
@@ -270,7 +362,12 @@ export function registerExperienceResources(definition) {
   definitions.set(next.id, next);
   if (existing) {
     for (const resource of existing.resources) {
-      resourceEntries.delete(resourceKey(existing, resource));
+      const key = resourceKey(existing, resource);
+      rejectedEntries.delete(key);
+      // A leased or in-flight record is retired rather than disposed: an
+      // experience may still be using the old version while the new
+      // registration lands, and the next settle completes the retirement.
+      deleteEntry(key, 'version-changed', { retireInFlight: true });
     }
     experienceSnapshots.delete(next.id);
   }
@@ -302,6 +399,98 @@ export function getExperienceDefinition(id) {
 function reportState(entry, state) {
   entry.state = state;
   entry.updatedAt = now();
+}
+
+/**
+ * Disposes a payload the hub owns. Delegated payloads and results without a
+ * disposal contract are left alone. Never throws: a renderer that already freed
+ * a resource must not break preparation, release or reset.
+ *
+ * @param {object|null} entry
+ * @param {string} reason
+ * @returns {boolean} Whether something was disposed.
+ */
+function disposeEntry(entry, reason) {
+  if (!entry || DELEGATED_KINDS.has(entry.kind)) return false;
+  const result = entry.result;
+  if (!result || typeof result !== 'object') return false;
+  try {
+    if (typeof result.dispose === 'function') {
+      result.dispose();
+    } else if (result.image && typeof result.image.src === 'string') {
+      // The hub created this HTMLImageElement itself, so clearing its source
+      // releases the decoded bitmap without touching artwork the page renders.
+      result.image.src = '';
+    } else {
+      return false;
+    }
+  } catch {
+    return false;
+  }
+  entry.result = null;
+  entry.retired = false;
+  entry.disposedAt = now();
+  entry.disposedReason = reason;
+  return true;
+}
+
+function markRetired(entry, reason) {
+  if (entry.retired) return;
+  entry.retired = true;
+  entry.retiredReason = reason;
+  entry.retiredAt = now();
+}
+
+/**
+ * Drops one settled record unless a lease still owns it. A leased record is
+ * retired instead, and the lease release disposes it later.
+ *
+ * @param {string} key
+ * @param {string} reason
+ * @param {{ retireInFlight?: boolean }} [options] A version change retires a
+ *   queued or preparing record so the next settle releases it; an explicit
+ *   release leaves in-flight work alone unless a lease already owns it.
+ * @returns {boolean} Whether the record was removed.
+ */
+function deleteEntry(key, reason, { retireInFlight = false } = {}) {
+  const entry = resourceEntries.get(key);
+  if (!entry) return false;
+  if (entry.state === READINESS.PREPARING || entry.state === READINESS.QUEUED) {
+    if (retireInFlight || isPinned(key)) markRetired(entry, reason);
+    return false;
+  }
+  if (isPinned(key)) {
+    markRetired(entry, reason);
+    return false;
+  }
+  resourceEntries.delete(key);
+  disposeEntry(entry, reason);
+  return true;
+}
+
+/** Completes retirements whose last lease has ended. */
+function sweepRetiredEntries(reason = 'lease-released') {
+  let released = 0;
+  for (const [key, entry] of resourceEntries) {
+    if (!entry.retired || isPinned(key)) continue;
+    if (entry.state === READINESS.PREPARING || entry.state === READINESS.QUEUED) continue;
+    resourceEntries.delete(key);
+    disposeEntry(entry, reason);
+    released += 1;
+  }
+  return released;
+}
+
+function recordRejection(key, entry) {
+  // Refresh insertion order so the bounded ledger evicts the least recently
+  // rejected decision, not the one that happened to be first seen.
+  rejectedEntries.delete(key);
+  rejectedEntries.set(key, entry);
+  while (rejectedEntries.size > MAX_REJECTED_RECORDS) {
+    const oldest = rejectedEntries.keys().next().value;
+    if (oldest === undefined) break;
+    rejectedEntries.delete(oldest);
+  }
 }
 
 function prepareImageResource(resource, context) {
@@ -453,6 +642,151 @@ export function registerResourceAdapter(kind, adapter) {
  */
 export function configureRoutePrefetch(prefetch) {
   routePrefetch = typeof prefetch === 'function' ? prefetch : null;
+}
+
+/* ------------------------------------------------------------------------- *
+ * Capacity and admission
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Evicts settled, unleased records until the incoming weight fits. Critical
+ * work may evict any settled record; intent may evict only background records;
+ * background never evicts. Least valuable, then least recently used, goes first.
+ *
+ * @param {number} weight
+ * @param {string} priority
+ * @param {string} definitionId The requesting experience, whose own records are
+ *   never evicted to make room for itself.
+ * @returns {boolean} Whether the incoming record now fits.
+ */
+function evictForCapacity(weight, priority, definitionId) {
+  const capacity = planCapacity();
+  const fits = () => {
+    const usage = poolUsage();
+    return usage.entries < capacity.maxEntries && usage.bytes + weight <= capacity.maxBytes;
+  };
+  if (fits()) return true;
+
+  // Background work never evicts, and a request heavier than the whole pool can
+  // never fit, so neither path may destroy settled records.
+  if (priority === PREPARE_PRIORITY.BACKGROUND) return false;
+  if (weight > capacity.maxBytes) return false;
+
+  const candidates = [...resourceEntries.values()]
+    .filter((entry) => !isPinned(entry.key) && !entry.retired)
+    .filter((entry) => entry.definitionId !== definitionId)
+    .filter((entry) => entry.state !== READINESS.PREPARING && entry.state !== READINESS.QUEUED)
+    .filter(
+      (entry) =>
+        priority === PREPARE_PRIORITY.CRITICAL || entry.priority === PREPARE_PRIORITY.BACKGROUND,
+    )
+    .sort(
+      (first, second) =>
+        PRIORITY_RANK[second.priority] - PRIORITY_RANK[first.priority] ||
+        (first.lastAccessAt ?? first.updatedAt) - (second.lastAccessAt ?? second.updatedAt),
+    );
+
+  // Prove that evicting every candidate can admit the request before touching
+  // any payload; an impossible request must not empty the pool for nothing.
+  const usage = poolUsage();
+  const evictableBytes = candidates.reduce(
+    (total, entry) => total + (entry.weightBytes ?? 0),
+    0,
+  );
+  if (
+    usage.entries - candidates.length >= capacity.maxEntries ||
+    usage.bytes - evictableBytes + weight > capacity.maxBytes
+  ) {
+    return false;
+  }
+
+  for (const candidate of candidates) {
+    deleteEntry(candidate.key, 'capacity-evicted');
+    if (fits()) return true;
+  }
+  return false;
+}
+
+/**
+ * Removes one queued speculative job so committed work can be admitted. An
+ * in-flight job and any leased job are never shed.
+ *
+ * @param {{ allowIntent?: boolean }} [options]
+ * @returns {boolean} Whether a job was shed.
+ */
+function shedQueuedJob({ allowIntent = false } = {}) {
+  let candidateIndex = -1;
+  for (let index = 0; index < queue.length; index += 1) {
+    const job = queue[index];
+    if (isPinned(job.key)) continue;
+
+    if (job.priority === PREPARE_PRIORITY.BACKGROUND) {
+      if (candidateIndex === -1) {
+        candidateIndex = index;
+        continue;
+      }
+      const best = queue[candidateIndex];
+      if (best.priority !== PREPARE_PRIORITY.BACKGROUND || job.sequence < best.sequence) {
+        candidateIndex = index;
+      }
+      continue;
+    }
+
+    if (!allowIntent || job.priority !== PREPARE_PRIORITY.INTENT) continue;
+    const best = candidateIndex === -1 ? null : queue[candidateIndex];
+    if (!best || best.priority === PREPARE_PRIORITY.BACKGROUND) candidateIndex = index;
+    else if (job.sequence < best.sequence) candidateIndex = index;
+  }
+  if (candidateIndex === -1) return false;
+
+  const [job] = queue.splice(candidateIndex, 1);
+  job.entry.state = READINESS.SKIPPED;
+  job.entry.reason = 'capacity-shed';
+  job.entry.updatedAt = now();
+  // A shed job was never admitted as a retained resource. Drop its record and
+  // keep only the bounded rejection metadata so it cannot consume capacity.
+  if (resourceEntries.get(job.key) === job.entry) resourceEntries.delete(job.key);
+  recordRejection(job.key, job.entry);
+  const inflight = resourceInflight.get(job.key);
+  if (inflight && inflight.job === job) resourceInflight.delete(job.key);
+  job.settle(job.entry);
+  return true;
+}
+
+/**
+ * Decides whether a resource may consume a queue slot and a retained record.
+ * Validation and duplicate identity are handled before this point, so an
+ * invalid or repeated entry never reaches a capacity decision.
+ *
+ * @param {object} definition
+ * @param {string} priority
+ * @param {number} weight
+ * @returns {string|null} A skip reason, or null when admitted.
+ */
+function admissionRefusal(definition, priority, weight) {
+  const capacity = planCapacity();
+
+  if (
+    priority !== PREPARE_PRIORITY.CRITICAL &&
+    pendingForExperience(definition.id) >= capacity.maxPendingPerExperience
+  ) {
+    return 'experience-queue-full';
+  }
+
+  if (queue.length >= capacity.maxQueue) {
+    if (priority === PREPARE_PRIORITY.BACKGROUND) return 'queue-full';
+    const allowIntent = priority === PREPARE_PRIORITY.CRITICAL;
+    if (!shedQueuedJob({ allowIntent }) && priority !== PREPARE_PRIORITY.CRITICAL) {
+      return 'queue-full';
+    }
+    // A committed experience is never refused because speculative work filled
+    // the soft queue cap; it may exceed the cap by its own remaining resources.
+  }
+
+  if (!evictForCapacity(weight, priority, definition.id)) {
+    return priority === PREPARE_PRIORITY.BACKGROUND ? 'capacity-full' : 'capacity-exhausted';
+  }
+  return null;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -646,25 +980,79 @@ function settleJob(job) {
   runningJobs = Math.max(0, runningJobs - 1);
   const inflight = resourceInflight.get(job.key);
   if (inflight && inflight.job === job) resourceInflight.delete(job.key);
+  // A record retired while it was preparing is disposed as soon as it settles
+  // and no lease owns it any more.
+  if (job.entry?.retired && !isPinned(job.key)) {
+    resourceEntries.delete(job.key);
+    disposeEntry(job.entry, job.entry.retiredReason ?? 'retired');
+  }
   job.settle(job.entry);
   pump();
 }
 
+function skipResource(definition, resource, key, weight, priority, reason) {
+  const rejected = {
+    key,
+    kind: resource.kind,
+    label: resourceLabel(resource),
+    state: READINESS.SKIPPED,
+    reason,
+    attempts: 0,
+    weightBytes: weight,
+    priority,
+    definitionId: definition.id,
+    updatedAt: now(),
+  };
+  recordRejection(key, rejected);
+  return rejected;
+}
+
 function requestResource(definition, resource, priority) {
   const key = resourceKey(definition, resource);
+  const weight = resourceWeight(resource);
   const cached = resourceEntries.get(key);
+  const retiredByVersion =
+    cached?.retired === true && cached.retiredReason === 'version-changed';
+  if (retiredByVersion) {
+    // The old version may still be leased or preparing. Defer the replacement
+    // until that record is gone instead of reusing or overwriting its payload.
+    return Promise.resolve(
+      skipResource(definition, resource, key, weight, priority, 'version-change-in-progress'),
+    );
+  }
   if (cached && cached.state === READINESS.READY) {
+    if (cached.retired) {
+      // A release or pressure retirement only marks the record for later
+      // disposal. The payload is still valid, so a new consumer revives it
+      // instead of letting the old lease sweep dispose it underneath them.
+      cached.retired = false;
+      delete cached.retiredReason;
+      delete cached.retiredAt;
+    }
+    cached.lastAccessAt = now();
+    if (PRIORITY_RANK[priority] < PRIORITY_RANK[cached.priority]) cached.priority = priority;
     return Promise.resolve(cached);
   }
   if (cached && cached.state === READINESS.FAILED && cached.retryAfter && cached.retryAfter > now()) {
     return Promise.resolve(cached);
   }
-  // A skip is not cached as terminal. Skips such as `current-route` and
-  // `speculative-audio-deferred` depend on where the visitor is and on the
-  // current plan, so the same resource must be re-evaluated when either changes.
+  // A skip is not cached as terminal. Skips such as `current-route`,
+  // `speculative-audio-deferred` and a capacity deferral depend on where the
+  // visitor is and on the current plan, so the same resource must be
+  // re-evaluated when either changes.
 
   const inflight = resourceInflight.get(key);
   if (inflight) return inflight.promise;
+
+  const refusal = admissionRefusal(definition, priority, weight);
+  if (refusal) {
+    // A stale skip or expired failure from an earlier attempt is not a retained
+    // resource. Drop it unless a lease still protects it, so a refusal cannot
+    // leave dead weight in the capacity accounting.
+    if (cached && !isPinned(key)) resourceEntries.delete(key);
+    return Promise.resolve(skipResource(definition, resource, key, weight, priority, refusal));
+  }
+  rejectedEntries.delete(key);
 
   const entry = {
     key,
@@ -672,6 +1060,10 @@ function requestResource(definition, resource, priority) {
     label: resourceLabel(resource),
     state: READINESS.QUEUED,
     attempts: cached?.state === READINESS.QUEUED ? cached.attempts : 0,
+    weightBytes: weight,
+    priority,
+    definitionId: definition.id,
+    lastAccessAt: now(),
     updatedAt: now(),
   };
   resourceEntries.set(key, entry);
@@ -704,7 +1096,14 @@ function requestResource(definition, resource, priority) {
 
 function snapshotResources(definition, keys) {
   return keys.map((key) => {
-    const entry = resourceEntries.get(key);
+    const retained = resourceEntries.get(key);
+    const rejected = rejectedEntries.get(key);
+    // A retained record can outlive a newer rejection (for example while an old
+    // version is still leased), so report whichever decision is most recent.
+    const entry =
+      rejected && (!retained || (rejected.updatedAt ?? 0) >= (retained.updatedAt ?? 0))
+        ? rejected
+        : retained;
     return {
       key,
       kind: entry?.kind ?? 'unknown',
@@ -1105,7 +1504,8 @@ export function retryExperience(id, { priority = PREPARE_PRIORITY.CRITICAL } = {
   for (const resource of definition.resources) {
     const key = resourceKey(definition, resource);
     const entry = resourceEntries.get(key);
-    if (!entry || entry.state === READINESS.FAILED) resourceEntries.delete(key);
+    rejectedEntries.delete(key);
+    if (!entry || entry.state === READINESS.FAILED) deleteEntry(key, 'retry');
   }
   experienceSnapshots.delete(id);
   return prepareExperience(id, { priority, trigger: 'retry' });
@@ -1126,12 +1526,16 @@ export function retryExperience(id, { priority = PREPARE_PRIORITY.CRITICAL } = {
  */
 export function beginActiveExperience(label = 'experience') {
   if (typeof window === 'undefined') return () => {};
-  void label;
   activeExperiences += 1;
+  // When the caller names a registered experience, its prepared records are
+  // leased for the active period, so no release, pressure sweep, version change
+  // or capacity decision can dispose what the visitor is using.
+  const lease = definitions.has(label) ? leaseExperienceResources(label, 'active-experience') : null;
   let released = false;
   return () => {
     if (released) return;
     released = true;
+    if (lease) lease();
     activeExperiences = Math.max(0, activeExperiences - 1);
     if (activeExperiences === 0) pump();
   };
@@ -1140,6 +1544,69 @@ export function beginActiveExperience(label = 'experience') {
 /** @returns {boolean} Whether any experience currently holds the foreground. */
 export function isExperienceActive() {
   return activeExperiences > 0;
+}
+
+/* ------------------------------------------------------------------------- *
+ * Ownership and diagnostics
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Leases every resource identity of a registered experience for as long as an
+ * active experience is using it. Leases are counted, so two active owners can
+ * hold the same resource and neither release disposes it early.
+ *
+ * @param {string} id Registered experience id.
+ * @param {string} [label]
+ * @returns {() => void} Idempotent lease release.
+ */
+export function leaseExperienceResources(id, label = 'experience') {
+  if (typeof window === 'undefined') return () => {};
+  const definition = definitions.get(id);
+  if (!definition) return () => {};
+
+  const leaseId = ++leaseSequence;
+  const keys = new Set(definition.resources.map((resource) => resourceKey(definition, resource)));
+  leases.set(leaseId, { id, label, keys });
+  for (const key of keys) pinnedKeys.set(key, (pinnedKeys.get(key) ?? 0) + 1);
+
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    leases.delete(leaseId);
+    for (const key of keys) {
+      const remaining = (pinnedKeys.get(key) ?? 1) - 1;
+      if (remaining > 0) pinnedKeys.set(key, remaining);
+      else pinnedKeys.delete(key);
+    }
+    sweepRetiredEntries('lease-released');
+  };
+}
+
+/**
+ * Returns a payload-free view of retention against the current tier's limits.
+ *
+ * @returns {object}
+ */
+export function getResourcePoolStats() {
+  const capacity = planCapacity();
+  const usage = poolUsage();
+  return Object.freeze({
+    entries: usage.entries,
+    queued: queue.length,
+    running: runningJobs,
+    residentBytes: usage.bytes,
+    pinnedEntries: usage.pinned,
+    retiredEntries: usage.retired,
+    leases: leases.size,
+    rejected: rejectedEntries.size,
+    capacity: Object.freeze({
+      maxEntries: capacity.maxEntries,
+      maxBytes: capacity.maxBytes,
+      maxQueue: capacity.maxQueue,
+      maxPendingPerExperience: capacity.maxPendingPerExperience,
+    }),
+  });
 }
 
 /* ------------------------------------------------------------------------- *
@@ -1161,16 +1628,10 @@ export function releaseExperienceResources(id, reason = 'manual') {
   let released = 0;
   for (const resource of definition.resources) {
     const key = resourceKey(definition, resource);
-    const entry = resourceEntries.get(key);
-    if (!entry) continue;
-    if (entry.state === READINESS.PREPARING || entry.state === READINESS.QUEUED) continue;
-    resourceEntries.delete(key);
-    released += 1;
+    rejectedEntries.delete(key);
+    if (deleteEntry(key, reason)) released += 1;
   }
-  if (released > 0) {
-    experienceSnapshots.delete(id);
-    void reason;
-  }
+  if (released > 0) experienceSnapshots.delete(id);
   return released;
 }
 
@@ -1185,16 +1646,14 @@ export function releaseExperienceResources(id, reason = 'manual') {
  */
 export function releaseAllPreparedResources(reason = 'manual') {
   let released = 0;
-  for (const [key, entry] of resourceEntries) {
-    if (entry.state === READINESS.PREPARING || entry.state === READINESS.QUEUED) continue;
-    resourceEntries.delete(key);
-    released += 1;
+  for (const key of [...resourceEntries.keys()]) {
+    if (deleteEntry(key, reason)) released += 1;
   }
+  rejectedEntries.clear();
   if (released > 0) {
     for (const [id, snapshot] of experienceSnapshots) {
       if (snapshot.state !== READINESS.PREPARING) experienceSnapshots.delete(id);
     }
-    void reason;
   }
   return released;
 }
@@ -1211,7 +1670,14 @@ export function resetResourceReadiness() {
   }
   queue = [];
   definitions.clear();
-  resourceEntries.clear();
+  for (const [key, entry] of resourceEntries) {
+    resourceEntries.delete(key);
+    disposeEntry(entry, 'reset');
+  }
+  rejectedEntries.clear();
+  leases.clear();
+  pinnedKeys.clear();
+  leaseSequence = 0;
   resourceInflight.clear();
   experienceRuns.clear();
   experienceSnapshots.clear();

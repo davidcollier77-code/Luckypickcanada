@@ -1,6 +1,16 @@
-# Active Context — Compact Agent Governance Instructions
+# Active Context — Resource-readiness safety limits
 
-## Current Task — Compact Agent Governance (Spec 207)
+## Current Task — Resource-readiness safety limits (Spec 210)
+
+- **Goal:** bound the existing readiness hub before any two-container handover: capacity accounting, queue caps, counted leases and real disposal, with tests.
+- **Scope:** `app/lib/resource-readiness.js` and `__tests__/resource-readiness.test.js`, plus Spec 210 artifacts and this Memory Bank header. No new preloader, payload accessor, visual, audio, timing or layout change.
+- **Implemented:** per-tier entry/weight/queue/speculative budgets; declared-or-estimated weights; priority admission that defers speculative work, sheds queued speculative jobs for committed work and evicts settled unleased records; counted leases that retire rather than dispose on release, pressure, version change and eviction; best-effort disposal for hub-owned payloads only; `getResourcePoolStats()` diagnostics.
+- **Deferred:** the alternating two-container handover, reserve gates, overflow classes, replenishment and demand scaling remain future work until a current experience consumes a prepared payload.
+- **Verification:** readiness suite 45 tests; focused readiness/adaptive suites 116 tests; full suite 108 files / 1,172 tests; `tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=dda472cd620ed60e8841cb73582fdfdd00168013 ./freebuff-verify.sh` exit 0; production build 461,424,444 bytes (440.05 MiB), below the 495 MiB cap.
+- **Review repairs (owner-directed, post-submission):** removed shed and refused stale records from retained capacity while keeping them in the bounded rejection ledger; refreshed ledger insertion order on re-rejection; stopped background eviction and refused impossible requests without emptying the pool; revived release-retired records for a new consumer instead of sweeping them underneath it; deferred a same-key version replacement until the old record is disposed; made readiness snapshots report the most recent decision; added four regression tests. The remaining advisory findings were checked: the `allowIntent` claim is not a defect (intent still sheds background work first), the `disposeEntry` retired-flag note is harmless on detached entries, and explicit release intentionally leaves in-flight work alone under the documented policy.
+- **PR status:** regular, non-draft PR, open and unmerged for the owner; the consolidated seven-category report must refresh for the new review-repair head after push.
+
+## Previous Task — Compact Agent Governance (Spec 207)
 
 - **Goal:** Reduce `AGENTS.md` from 478 lines to a concise entry point while retaining every distinct requirement and all three agent-applicability classes.
 - **Approach:** Keep direct rules in `AGENTS.md`; refer detailed PR, startup, manifest and specialist procedures to their authoritative documents. Keep Freebuff-only and ChatGPT-only instructions separate.
