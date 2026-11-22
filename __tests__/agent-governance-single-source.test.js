@@ -253,4 +253,13 @@ describe('compact single-source agent governance', () => {
           '--changed-files', changed,
           '--base-agents-sha', BASE_SHA,
           '--head-agents-sha', HEAD_SHA,
-          '--title', 'chorh(½êçjwjšk¢÷ aM)º—Zµà¢ÒÀ¢²7FF–ó¢w—RrÒÀ¢“°¢Ò6F6‚†W'&÷"’°¢W†—D6öFRÒW'&÷"ç7FGW3°¢Ğ¢W‡V7B†W†—D6öFR’çFô&Rƒ"“°¢Ò“°§Ò“°
+          '--title', 'chore(governance): approved AGENTS.md update',
+        ],
+        { stdio: 'pipe' },
+      );
+    } catch (error) {
+      exitCode = error.status;
+    }
+    expect(exitCode).toBe(2);
+  });
+});
