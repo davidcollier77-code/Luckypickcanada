@@ -1,38 +1,21 @@
-# Active Context — Lucky Meter Approved Requirements
+# Active Context — Agent governance and current project state
 
-## Current Task — Approved Build implemented (spec 205)
+## Current Task — Agent governance and PR handoff (Spec 206)
 
-- **Authority:** the approved Lucky Meter Living Requirements Outline and
-  Approval Sheet (21 November 2026), implemented after documentation PRs #2003
-  and #2004 merged into `main` at `8741c655`.
-- **This task:** the full Build. The five-beat 0 → 100 → fall → rise → erratic →
-  settle generation, the cylindrical vessel's open/fill/hold/drain/highlight
-  beats, the progressive top-down number reveal during the drain, one 12,000 ms
-  celebration for every tier, the Spark window, and Home plus the countdown in
-  the last row of the results panel.
-- **D12:** every celebration runs 12,000 ms, including the same celebration
-  restarted after a page refresh. An older stored duration is ignored. The saved
-  percentage, Lucky Number, colour, tier and Spark are unchanged.
-- **Fallbacks:** the CSS vessel is the first paint and takes over without WebGL
-  or after context loss; reduced motion presents the completed reading, Spark and
-  paired dock together.
-- **Spec Kit feature:** `specs/205-lucky-meter-approved-build` (spec, plan, tasks,
-  evidence).
-- **Verification:** full Vitest suite 107 files / 1,142 tests passed;
-  `tsc --noEmit` exit 0; Playwright desktop, mobile-390 and mobile-412 each 16
-  passed with the one opt-in evidence test skipped; clean production build
-  417,921,229 bytes (398.56 MiB) below the 495 MiB cap;
-  `SPEC_KIT_BASE_REF=8741c655 ./freebuff-verify.sh` exit 0. Evidence screenshots
-  are in `artifacts/lucky-meter-approved-build-20261121/`.
-- **Handoff:** the pull request is the remaining submission step.
+- **Goal:** Make `AGENTS.md` require full-document reading, preserve BOTH / FREEBUFF ONLY / CHATGPT ONLY applicability, derive Freebuff task groups dynamically from `.docs/manifest.json`, add shared Memory Bank health checks, and protect secrets for both agents.
+- **PR handoff:** Align `PR_SUBMISSION.md` with the existing consolidated seven-category current-head report. Agents inspect the report after PR creation and hand it to the owner; they do not self-approve, merge or independently repair post-submission findings.
+- **Preserved:** The seven report categories, current-head audit workflow, protected-file classifier and separate protected-file authorization environment. The ChatGPT startup Library file and Freebuff Playwright procedures are outside this task.
+- **Verification boundary:** This ChatGPT environment is not on the repository's required Node.js 26 / pnpm runtime, and ChatGPT startup restrictions prohibit repository-script execution. GitHub Actions provides repository test and checker evidence. No local tests, install, build, Playwright session or repository shell script is claimed.
 
-## Previous Task — Documentation reconciliation and pre-Build gate
+## Current Project State — Lucky Meter approved Build (Spec 205)
 
-- Reconciled Specs 199/200 and the Memory Bank with the approved decisions and
-  recorded D12. Documentation only; no production code, tests or build.
-- Spec 199 remains the historical twelve-stage record and is marked partly
-  superseded; Spec 200 remains the Three.js vessel record with amended clauses.
-- The Build began only after both documentation PRs merged.
+- The approved Lucky Meter Build was implemented on `freebuff/lucky-meter-build` and merged through PR #2005.
+- Durable implementation and verification details remain in `memory-bank/progress.md` and `specs/205-lucky-meter-approved-build/`; old pre-Build gate notes below are historical, not current status.
+- The approved presentation and preserved CSS fallback, five-beat generation, progressive drain reveal, uniform 12,000 ms celebration, Spark window and results-panel dock are recorded in Spec 205 and the milestone history.
+
+## Previous Task — Pre-Build documentation reconciliation
+
+The earlier documentation-only reconciliation for Specs 199/200 is complete and was followed by the authorized Build. Its original planning and intermediate verification notes are retained below as historical context, not as current task status.
 
 ## Recent Implementation — Three-dimensional vessel and pour (Spec 200)
 
@@ -267,3 +250,4 @@ and are not defects. Focused tests 41, full suite 103 files / 1087 tests, `tsc` 
 ## Documentation Library Addition — Three.js concise LLM reference (2026-11-19)
 
 A separate `/websites/threejs_llms_txt` source now points to `https://threejs.org/docs/llms.txt` and is routed to Creation and Polishing. The existing `/websites/threejs` source remains the full `llms-full.txt` reference. The concise snapshot is canonical in Creation; Polishing uses the established relative symlink pattern. No application code or updater workflow was changed.
+
