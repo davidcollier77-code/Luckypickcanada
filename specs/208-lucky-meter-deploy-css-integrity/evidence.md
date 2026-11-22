@@ -46,7 +46,7 @@
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Focused tests | `pnpm exec vitest run __tests__/deploy-css-check.test.js __tests__/lucky-meter-sky-writing.test.jsx` | PASS — 2 files, 10 tests |
+| Focused tests | `pnpm exec vitest run __tests__/deploy-css-check.test.js __tests__/lucky-meter-sky-writing.test.jsx` | PASS — 2 files, 10 tests (16 after the third review pass) |
 | Full unit suite | `pnpm exec vitest run` | PASS — 108 files, 1,147 tests |
 | Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
 | Clean production build | `rm -rf .next && GITHUB_SHA=fixcss20261122 NODE_ENV=production pnpm run build` | PASS — 417,959,411 bytes (398.60 MiB), below 495 MiB |
@@ -113,6 +113,32 @@ new DevSkim alert:
 
 The remaining 11 DevSkim alerts and the single open Dependabot alert (medium, development-only
 `minimatch`, unchanged by this PR) predate this branch and are outside its changed files.
+
+### Third review pass — Graphite findings on `c41031d3`
+
+Graphite reviewed the final head and raised three findings. Two were valid and are fixed; the third
+was already covered by the strengthened tests.
+
+- **Visitor-facing stylesheets were cache-bypassed.** `inspectServedPage` passed only `timeoutMs`
+  to its stylesheet fetches, so they inherited `bypassCache: true` even for the bare visitor page.
+  The variant's cache policy is now passed through, and a new test asserts the origin stylesheet
+  carries `cache-control: no-cache` while the visitor stylesheet is fetched with no cache-busting
+  headers, matching what a visitor receives.
+- **Retry test was not hermetic and did not assert the delay.** The retry test now supplies
+  `siteUrl: 'https://example.test'` and asserts `sleep` is called with the configured 25 ms rather
+  than only checking the call count.
+- **Visitor cached-HTML path did not exercise build identity.** The stale-stylesheet test now
+  carries the expected build ID in both HTML variants and supplies `expectedBuildId`, so it proves
+  the selector failure is detected while build identity passes. A new test serves a visitor-facing
+  page from an earlier build and asserts the failure names the visitor-facing variant and the
+  expected build ID. The earlier selector-union finding was already fixed and remains covered by
+  the split-stylesheet pass test.
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused tests | `pnpm exec vitest run __tests__/deploy-css-check.test.js __tests__/lucky-meter-sky-writing.test.jsx` | PASS — 2 files, 16 tests (9 + 7) |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `SPEC_KIT_BASE_REF=FETCH_HEAD GITHUB_SHA=localreview20261122 ./freebuff-verify.sh` | PASS — exit 0 |
 
 ## Limitations
 

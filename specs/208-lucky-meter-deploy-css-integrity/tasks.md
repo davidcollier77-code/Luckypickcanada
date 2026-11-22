@@ -47,8 +47,17 @@
   against a local production server and `./freebuff-verify.sh`.
 - [x] T019 Commit and push the review resolution so every PR check runs on the new head.
 
+## Phase 6 — Graphite review pass on the final head
+
+- [x] T020 Pass each page variant's cache policy through to its stylesheet fetches so the
+  visitor-facing probe is not silently cache-bypassed.
+- [x] T021 Make the retry test hermetic and assert the configured delay, and exercise build
+  identity on the visitor-facing cached-HTML path plus an earlier-build cache case.
+- [x] T022 Run the focused suite, typecheck and `./freebuff-verify.sh`, then push the final head.
+
 ## Verification Results
 
+- Focused Vitest after the third review pass: 2 files / 16 tests passed.
 - Focused Vitest after review resolution: 2 files / 14 tests passed.
 - Full Vitest after review resolution: 108 files / 1,151 tests passed.
 - `tsc --noEmit`: exit 0.

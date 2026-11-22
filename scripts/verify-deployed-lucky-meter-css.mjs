@@ -125,7 +125,9 @@ async function inspectServedPage({
 
   const css = (
     await Promise.all(
-      stylesheetUrls.map((url) => fetchText(url, fetchImpl, { timeoutMs })),
+      stylesheetUrls.map((url) =>
+        fetchText(url, fetchImpl, { timeoutMs, bypassCache }),
+      ),
     )
   ).join('\n');
   const missing = missingLuckyMeterRules(css);

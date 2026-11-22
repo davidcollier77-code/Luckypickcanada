@@ -18,11 +18,13 @@ const CSS_VESSEL = [
 const CSS_DOCK = '.lucky-results-dock{display:flex}';
 const APPROVED_CSS = `${CSS_VESSEL}${CSS_DOCK}`;
 
+const BUILD_SCRIPT = `<script>self.__next_f.push([1,'{"b":"${BUILD_ID}"}'])</script>`;
+
 const PAGE_HTML = [
   '<link rel="stylesheet" href="/_next/static/css/shared.css">',
   "<link rel='stylesheet' href='https://luckypickcanada.ca/_next/static/css/lucky.css'>",
   '<link rel="preload" href="/_next/static/media/font.woff2" as="font">',
-  `<script>self.__next_f.push([1,'{"b":"${BUILD_ID}"}'])</script>`,
+  BUILD_SCRIPT,
 ].join('');
 
 function ok(text) {
@@ -88,19 +90,21 @@ describe('deployed Lucky Meter CSS check', () => {
 
     await expect(
       verifyServedLuckyMeterCss({
+        siteUrl: 'https://example.test',
         attempts: 2,
-        delayMs: 0,
+        delayMs: 25,
         fetchImpl,
         sleep,
         log: () => {},
       }),
     ).rejects.toThrow(/lucky-vessel-scene, \.lucky-vessel-canvas-host, \.lucky-results-dock/);
     expect(sleep).toHaveBeenCalledTimes(1);
+    expect(sleep).toHaveBeenCalledWith(25);
   });
 
   it('fails when the visitor-facing page is cached with stale stylesheet hashes', async () => {
-    const currentHtml = '<link rel="stylesheet" href="/_next/static/css/current.css">';
-    const cachedHtml = '<link rel="stylesheet" href="/_next/static/css/legacy.css">';
+    const currentHtml = `<link rel="stylesheet" href="/_next/static/css/current.css">${BUILD_SCRIPT}`;
+    const cachedHtml = `<link rel="stylesheet" href="/_next/static/css/legacy.css">${BUILD_SCRIPT}`;
     const fetchImpl = vi.fn(async (url) => {
       if (url.includes('__css_check')) return ok(currentHtml);
       if (url.endsWith('/lucky-meter')) return ok(cachedHtml);
@@ -110,14 +114,74 @@ describe('deployed Lucky Meter CSS check', () => {
 
     await expect(
       verifyServedLuckyMeterCss({
+        siteUrl: 'https://example.test',
         attempts: 2,
         delayMs: 0,
+        expectedBuildId: BUILD_ID,
         fetchImpl,
         sleep,
         log: () => {},
       }),
     ).rejects.toThrow(/visitor-facing page: missing selectors: \.lucky-vessel-scene/);
     expect(sleep).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails when the visitor-facing page is cached from an earlier build', async () => {
+    const currentHtml = `<link rel="stylesheet" href="/_next/static/css/current.css">${BUILD_SCRIPT}`;
+    const cachedHtml = [
+      '<link rel="stylesheet" href="/_next/static/css/legacy.css">',
+      '<script>self.__next_f.push([1,\'{"b":"earlier-build-20261121"}\'])</script>',
+    ].join('');
+    const fetchImpl = vi.fn(async (url) => {
+      if (url.includes('__css_check')) return ok(currentHtml);
+      if (url.endsWith('/lucky-meter')) return ok(cachedHtml);
+      return ok(APPROVED_CSS);
+    });
+
+    await expect(
+      verifyServedLuckyMeterCss({
+        siteUrl: 'https://example.test',
+        attempts: 2,
+        delayMs: 0,
+        expectedBuildId: BUILD_ID,
+        fetchImpl,
+        sleep: async () => {},
+        log: () => {},
+      }),
+    ).rejects.toThrow(
+      new RegExp(
+        `visitor-facing page: the served HTML does not identify the deployed build ${BUILD_ID}`,
+      ),
+    );
+  });
+
+  it('fetches visitor-facing stylesheets without cache-busting headers', async () => {
+    const fetchImpl = vi.fn(async (url) => {
+      if (url.includes('__css_check')) {
+        return ok('<link rel="stylesheet" href="/_next/static/css/origin.css">');
+      }
+      if (url.endsWith('/lucky-meter')) {
+        return ok('<link rel="stylesheet" href="/_next/static/css/visitor.css">');
+      }
+      return ok(APPROVED_CSS);
+    });
+
+    await verifyServedLuckyMeterCss({
+      siteUrl: 'https://example.test',
+      attempts: 1,
+      fetchImpl,
+      sleep: async () => {},
+      log: () => {},
+    });
+
+    const stylesheetCalls = fetchImpl.mock.calls.filter(([url]) =>
+      url.endsWith('.css'),
+    );
+    expect(stylesheetCalls).toHaveLength(2);
+    expect(stylesheetCalls[0][0]).toContain('origin.css');
+    expect(stylesheetCalls[0][1].headers['cache-control']).toBe('no-cache');
+    expect(stylesheetCalls[1][0]).toContain('visitor.css');
+    expect(stylesheetCalls[1][1].headers['cache-control']).toBeUndefined();
   });
 
   it('fails when the served HTML does not identify the deployed build', async () => {
