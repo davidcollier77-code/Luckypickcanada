@@ -17,6 +17,7 @@ describe('Lucky Meter sky-writing', () => {
 
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -112,6 +113,32 @@ describe('Lucky Meter sky-writing', () => {
       vi.advanceTimersByTime(1);
     });
     expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('schedules each glyph from the absolute deadline after a late frame', () => {
+    const delays = [];
+    const realSetTimeout = window.setTimeout;
+    vi.spyOn(window, 'setTimeout').mockImplementation((handler, delay) => {
+      delays.push(Number(delay ?? 0));
+      return realSetTimeout(handler, delay);
+    });
+
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+
+    render(
+      <LuckyMeterSkyWriting message={MESSAGE} state="writing" onComplete={vi.fn()} />,
+    );
+    expect(delays[0]).toBe(SCHEDULE[0]);
+
+    // Simulate the first glyph's frame arriving 1,200 ms late. The next delay
+    // must shrink by exactly that lateness instead of being added on top of it.
+    clock = SCHEDULE[0] + 1_200;
+    act(() => {
+      vi.advanceTimersByTime(SCHEDULE[0]);
+    });
+
+    expect(delays[1]).toBe(Math.max(0, SCHEDULE[1] - clock));
   });
 
   it('presents the whole message at once under reduced motion', () => {

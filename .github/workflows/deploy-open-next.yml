@@ -43,14 +43,12 @@ jobs:
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
 
-      - name: Build Next.js app
-        env:
-          GITHUB_SHA: ${{ github.sha }}
-          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
-        run: NODE_ENV=production pnpm run build
-
+      # Build once. OpenNext runs the configured `next build --webpack` itself;
+      # a second build in this job used to run without GITHUB_SHA and could
+      # leave the uploaded stylesheets and the HTML from different builds.
       - name: Build OpenNext for Cloudflare
         env:
+          GITHUB_SHA: ${{ github.sha }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
         run: pnpm exec opennextjs-cloudflare build
 
@@ -82,6 +80,22 @@ jobs:
           fi
 
           echo "TAILWIND CSS COMPILED"
+
+          # A deployment must never upload HTML that references a stylesheet
+          # set without the approved Lucky Meter vessel and dock rules. This
+          # catches a stale or partial build before wrangler uploads it.
+          missing=0
+          for selector in lucky-vessel-scene lucky-vessel-canvas-host lucky-results-dock; do
+            if ! grep -R -q -F ".$selector" "$css_dir"; then
+              echo "MISSING COMPILED CSS RULE: .$selector"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "The compiled CSS does not contain the approved Lucky Meter vessel/dock rules."
+            exit 1
+          fi
+          echo "LUCKY METER VESSEL AND DOCK RULES PRESENT"
 
       - name: Verify .open-next/worker.js exists
         run: |
@@ -141,6 +155,12 @@ jobs:
 
           echo "Cloudflare API remained rate-limited after bounded retries."
           exit 1
+
+      # The page can be served from Next's prerender cache and the stylesheets
+      # are content-addressed. Verify what visitors actually receive, not only
+      # the artifact that was uploaded.
+      - name: Verify served Lucky Meter stylesheets
+        run: node scripts/verify-deployed-lucky-meter-css.mjs
 
   # 🔴 CLOUDFLARE OBSERVABILITY ISSUE RESOLUTION — AUTHORIZATION REQUIRED
   #
