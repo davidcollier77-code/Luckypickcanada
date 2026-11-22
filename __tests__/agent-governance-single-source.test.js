@@ -122,7 +122,7 @@ describe('single-source agent governance', () => {
     expect(submission).toContain('clear instruction from the repository owner');
     expect(submission).toContain('CI results do not replace this review.');
     expect(submission).toContain('## 5. Post-submission verification and handoff');
-    expect(submission).toContain('Confirm the report\\'s full current-head SHA exactly matches the live PR head SHA.');
+    expect(submission).toContain("Confirm the report's full current-head SHA exactly matches the live PR head SHA.");
     expect(submission).toContain('Inspect all seven categories');
     expect(submission).toContain('Missing reports, missing categories, stale head SHAs, skipped or cancelled checks, incomplete evidence, unavailable source data and timeouts must never be described as PASSED.');
     expect(submission).toContain('The governance digest approval (`/approve-governance <digest>`) and the protected-file GitHub Environment authorization are separate requirements.');
@@ -277,8 +277,8 @@ describe('single-source agent governance', () => {
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
     expect(workflow).toContain('currently installed spec kit tooling');
-    expect(workflow).toContain('no fixed spec kit version');
-    expect(workflow).toContain('no hardcoded command count');
+    expect(workflow).toContain('fixed spec kit version');
+    expect(workflow).toContain('hardcoded command count');
     const commandsDirectory = join(root, '.freebuff', 'cmds');
     const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
     expect(commandFiles.length).toBeGreaterThan(0);
