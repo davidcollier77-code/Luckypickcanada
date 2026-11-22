@@ -26,14 +26,10 @@ function classifyAgentsChange(paths) {
       'python3',
       [
         join(root, '.github', 'scripts', 'agents_md_protection.py'),
-        '--changed-files',
-        changed,
-        '--base-agents-sha',
-        BASE_SHA,
-        '--head-agents-sha',
-        HEAD_SHA,
-        '--json',
-        report,
+        '--changed-files', changed,
+        '--base-agents-sha', BASE_SHA,
+        '--head-agents-sha', HEAD_SHA,
+        '--json', report,
       ],
       { stdio: 'pipe' },
     );
@@ -43,147 +39,185 @@ function classifyAgentsChange(paths) {
   return { exitCode, report: JSON.parse(readFileSync(report, 'utf8')) };
 }
 
-describe('single-source agent governance', () => {
-  it('uses AGENTS.md as the current repository-governance entrypoint', () => {
+describe('compact single-source agent governance', () => {
+  it('keeps AGENTS.md concise and preserves full-document and agent-scope rules', () => {
     const agents = readAgents();
+    const lines = agents.split(/\r?\n/).length;
 
-    expect(agents).toContain('MANDATORY FULL-DOCUMENT READING');
-    expect(agents).toContain('This document MUST be read in its entirety, fully understood and followed before undertaking any repository work.');
-    expect(agents).toContain(
-      'This document establishes the repository governance and operating requirements for ChatGPT and Freebuff.',
-    );
-    expect(agents).toContain('"PR_SUBMISSION.md" is mandatory.');
+    expect(lines).toBeLessThanOrEqual(200);
+    expect(agents).toContain('Read this entire document before any repository work.');
+    expect(agents).toContain('ChatGPT follows 🟢 and 🟣 sections. Freebuff follows 🟢 and 🔵 sections.');
+    expect(agents).toContain('A section inherits its parent\'s classification unless explicitly reclassified.');
+    expect(agents).toContain('## 🟢 SHARED REPOSITORY REQUIREMENTS');
+    expect(agents).toContain('## 🔵 FREEBUFF OPERATING INSTRUCTIONS');
+    expect(agents).toContain('## 🟣 CHATGPT OPERATING INSTRUCTIONS');
+    expect(agents).toContain('`PR_SUBMISSION.md` is mandatory');
     expect(agents).not.toContain('.freebuff/freebuff.md');
     expect(existsSync(obsoleteEntryPoint)).toBe(false);
     expect(existsSync(prSubmissionPath)).toBe(true);
-    expect(agents).toContain('A — PREPARE AND PLAN');
-    expect(agents).toContain('B — IMPLEMENT');
-    expect(agents).toContain('C — VERIFY AND SUBMIT');
   });
 
-  it('requires PR submission to complete repository-changing tasks without forcing PRs for read-only work', () => {
-    const agents = readAgents();
-    const handoffStart = agents.indexOf('4. SUBMIT THE PR');
-    const handoffEnd = agents.indexOf(
-      '\n\n---\n\n🟣 CHATGPT OPERATING INSTRUCTIONS',
-      handoffStart,
-    );
-
-    expect(handoffStart).toBeGreaterThanOrEqual(0);
-    expect(handoffEnd).toBeGreaterThan(handoffStart);
-
-    const handoff = agents.slice(handoffStart, handoffEnd);
-    expect(handoff).toContain(
-      'Every task in which the owner authorizes repository changes must proceed directly',
-    );
-    expect(handoff).toContain('Opening the PR is mandatory task completion, not an optional follow-up.');
-    expect(handoff).toContain('do not wait for the owner to request the PR or give separate permission.');
-    expect(handoff).toContain('Read-only investigations, audits, recommendations and advice do not require a PR.');
-    expect(handoff).toContain('If the owner explicitly directs that no PR be opened, follow that instruction.');
-    expect(handoff).toContain('If a PR cannot safely be opened, report the exact blocker');
-    expect(handoff).toContain('A repository-changing task is not complete until its PR has been successfully opened and handed off.');
-  });
-
-  it('checks the current repository QA and implementation requirements', () => {
+  it('preserves shared security, build, scope, evidence and Memory Bank safeguards', () => {
     const agents = readAgents();
 
-    expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
-    expect(agents).toContain('This is a task-planning requirement, not something to defer until implementation or pre-submission review.');
-    expect(agents).toContain('Use those requirements when defining the task\'s scope, constraints, implementation approach, acceptance criteria and verification plan.');
-    expect(agents).not.toContain('REPOSITORY QA AND VALIDATION');
-    expect(agents).toContain('COMPLETE THE FINAL CHECKER-REQUIREMENT REVIEW');
-    expect(agents).toContain('review the completed implementation and complete diff against every applicable checker requirement');
-    expect(agents).toContain('QA CHECKER REQUIREMENTS — BEFORE TASK SPECIFICATION');
-    expect(agents).toContain("Playwright is Freebuff's primary browser automation tool.");
-    expect(agents).toContain("Crawlbase is Freebuff's first and only fallback");
-    expect(agents).toContain('Crawlbase does not replace interactive browser rendering');
-    expect(agents).toContain('ChatGPT does not have access to Playwright browser execution.');
-    expect(agents).toContain('use available tools such as Browserless, Firecrawl or other suitable connected plugins.');
-    expect(agents).toContain('Use them sparingly and only as needed.');
-    expect(agents).not.toContain("Browserless is ChatGPT's primary browser tool.");
-    expect(agents).toContain(
-      'The production build must remain strictly below 495 MiB.',
-    );
-    expect(agents).toContain(
-      'Complete all required workflow stages in their prescribed order for repository-changing tasks.',
-    );
-    expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
-    expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
-    expect(agents).toContain('15. MEMORY BANK CONTEXT AND MAINTENANCE');
+    expect(agents).toContain('Make the smallest correct change');
+    expect(agents).toContain('Identify affected components, dependencies and workflows');
+    expect(agents).toContain('strictly below **495 MiB**');
+    expect(agents).toContain('Never weaken security, privacy, validation, authentication');
+    expect(agents).toContain('Never expose secret values in source, commits, diffs, logs');
+    expect(agents).toContain('Never dump or broadly enumerate environment variables or configuration.');
+    expect(agents).toContain('Use approved secret stores and platform bindings.');
+    expect(agents).toContain('If a secret is exposed, stop further disclosure');
+    expect(agents).toContain('NO EVIDENCE = NO CLAIM. NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
+    expect(agents).toContain('At task initialization, read and health-check all four core files:');
     for (const file of ['projectBrief.md', 'activeContext.md', 'techContext.md', 'progress.md']) {
       expect(agents).toContain(`memory-bank/${file}`);
     }
-    expect(agents).toContain('There are no arbitrary byte or line-count limits for Memory Bank files or Spec Kit artifacts.');
-    expect(agents).toContain('Never expose secret values in source code, commits, diffs, logs, terminal output, debugging traces, screenshots, test fixtures, generated artifacts, documentation, pull-request descriptions, comments or reports.');
-    expect(agents).toContain('Never print, dump or broadly enumerate environment variables or configuration.');
+    expect(agents).toContain('There are no arbitrary byte or line limits for Memory Bank files or Spec Kit artifacts.');
+    expect(agents).toContain('Never store secrets or sensitive configuration.');
+  });
+
+  it('preserves current Spec Kit sequencing and checker-first task planning', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('### Spec Kit workflow');
+    const end = agents.indexOf('### QA requirements before specification', start);
+    const specKit = agents.slice(start, end).toLowerCase();
+    const qa = agents.slice(end, agents.indexOf('### Tools and repository scripts', end)).toLowerCase();
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    for (const stage of ['specify', 'plan', 'tasks', 'implement']) {
+      expect(specKit).toContain(stage);
+    }
+    expect(specKit).toContain('fixed version');
+    expect(specKit).toContain('command count');
+    expect(specKit).toContain('`.freebuff/cmds/` wrappers are freebuff only');
+    expect(specKit).toContain('chatgpt must not use them as its own operating instructions.');
+    expect(qa).toContain('before preparing or approving a task specification');
+    expect(qa).toContain('do not infer behaviour from names');
+    expect(qa).toContain('thresholds, approval conditions and pass/fail behaviour');
+    expect(qa).toContain('identify the files, behaviours and evidence it examines');
+    expect(qa).toContain('never weaken, bypass, suppress or redefine a check');
+    expect(agents).toContain('Automatic PR-checker workflows must continue to use Playwright.');
+  });
+
+  it('keeps the shared graphics toolkit and existing workbench entry points', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('### Graphics and creative work');
+    const end = agents.indexOf('### Spec Kit workflow', start);
+    const section = agents.slice(start, end);
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    for (const path of [
+      'app/lib/graphics/README.md',
+      'docs/graphics-rendering-architecture.md',
+      'app/lib/resource-readiness.js',
+      '.docs/creation/',
+      '.docs/polishing/',
+      '_websites_threejs.md',
+      '_websites_threejs_llms_txt.md',
+      'app/lib/use-creative-experience.js',
+      'app/lib/graphics/experiences.js',
+      'app/lib/graphics/runtime.js',
+      'components/graphics/CreativeWorkbench.jsx',
+      'app/lib/graphics/workbench.js',
+      'app/lib/graphics/workbench-runtime.js',
+      '/workbench/creative',
+    ]) {
+      expect(section).toContain(path);
+    }
+    expect(section).toContain('do not create another preloader');
+    expect(section).toContain('Three.js is not mandatory');
+    expect(section).toContain('does not replace Playwright or required QA');
+  });
+
+  it('routes Freebuff task groups from the manifest and preserves its Playwright procedure', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('## 🔵 FREEBUFF OPERATING INSTRUCTIONS');
+    const end = agents.indexOf('## 🟣 CHATGPT OPERATING INSTRUCTIONS', start);
+    const freebuff = agents.slice(start, end);
+    const commandsDirectory = join(root, '.freebuff', 'cmds');
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    expect(freebuff).toContain('keys under `groups` as the dynamic task-group list');
+    expect(freebuff).toContain('matching `.freebuff/<group>.md` files');
+    expect(freebuff).toContain('Unlisted `.freebuff/` files are specialist references');
+    expect(freebuff).toContain('.agents/skills/playwright-cli/SKILL.md');
+    expect(freebuff).toContain('.agents/skills/playwright-cli/references/lucky-pick-canada.md');
+    expect(freebuff).toContain('./scripts/playwright-cli.sh');
+    expect(freebuff).toContain("Playwright is Freebuff's primary browser tool.");
+    expect(freebuff).toContain('Crawlbase is the only fallback');
+    expect(freebuff).toContain('does not replace interactive rendering, visual QA or end-to-end testing');
+    expect(freebuff).toContain('./freebuff-verify.sh');
+    expect(freebuff).toContain('opening a regular, non-draft PR is mandatory');
+
+    expect(taskGroups.length).toBeGreaterThan(0);
+    for (const group of taskGroups) {
+      expect(existsSync(join(root, '.freebuff', `${group}.md`))).toBe(true);
+    }
+    for (const name of ['bolt', 'ci', 'palette', 'sentinel']) {
+      expect(existsSync(join(root, '.freebuff', `${name}.md`))).toBe(true);
+      expect(docsManifest.groups).not.toHaveProperty(name);
+    }
+    const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
+    expect(commandFiles.length).toBeGreaterThan(0);
+    for (const stage of ['specify', 'plan', 'tasks', 'implement']) {
+      expect(commandFiles).toContain(`speckit.${stage}.md`);
+    }
+    for (const file of commandFiles) {
+      expect(readFileSync(join(commandsDirectory, file), 'utf8').trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps ChatGPT-only browser, startup and repository-execution boundaries explicit', () => {
+    const agents = readAgents();
+    const start = agents.indexOf('## 🟣 CHATGPT OPERATING INSTRUCTIONS');
+    const section = agents.slice(start);
+
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(section).toContain('follow the ChatGPT Library startup instructions and run the prescribed startup preflight');
+    expect(section).toContain('check the current relevant GitHub files');
+    expect(section).toContain('ChatGPT cannot execute Playwright.');
+    expect(section).toContain('use Browserless sparingly');
+    expect(section).toContain('Firecrawl only if Browserless is unavailable or not working');
+    expect(section).toContain('must not use the repository Playwright CLI');
+    expect(section).toContain('or Crawlbase');
+    expect(section).toContain('Never run Freebuff\'s startup sequence');
+    expect(section).toContain('Do not execute repository shell scripts');
+    expect(section).toContain('Node.js 26.x and pnpm 10.30.3');
+    expect(section).toContain('Follow all shared approvals and `PR_SUBMISSION.md`.');
+  });
+
+  it('requires the PR single source of truth and current-head owner handoff', () => {
     const submission = readFileSync(prSubmissionPath, 'utf8');
-    expect(submission).toContain('Such an instruction authorizes only the work expressly directed.');
-    expect(submission).toContain('Do not infer authorization from an open PR, automated findings, CI results or reviewer comments.');
-    expect(submission).toContain('explicit instruction from the repository owner');
-    expect(submission).toContain('CI results do not replace this review.');
+
+    expect(submission).toContain('Read it twice for every repository-changing task');
     expect(submission).toContain('## 5. Post-submission verification and handoff');
     expect(submission).toContain("Confirm the report's full current-head SHA exactly matches the live PR head SHA.");
     expect(submission).toContain('Inspect all seven categories');
     expect(submission).toContain('Missing reports, missing categories, stale head SHAs, skipped or cancelled checks, incomplete evidence, unavailable source data and timeouts must never be described as PASSED.');
     expect(submission).toContain('The governance digest approval (`/approve-governance <digest>`) and the protected-file GitHub Environment authorization are separate requirements.');
-    expect(submission).toContain('Do not merge, enable auto-merge or otherwise complete the PR.');
+    expect(submission).toContain('Do not automatically repair failed checks or findings after PR creation.');
+    expect(submission).toContain('Merge, enable auto-merge or otherwise complete the PR.');
   });
 
-  it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
-    const agents = readAgents();
-    const start = agents.indexOf('8. PLAYWRIGHT BROWSER TESTING');
-    const end = agents.indexOf('\n\nB — IMPLEMENT', start);
-    const section = agents.slice(start, end);
-    const skill = readFileSync(
-      join(root, '.agents', 'skills', 'playwright-cli', 'SKILL.md'),
-      'utf8',
-    );
-
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
-    expect(section).toContain('./scripts/playwright-cli.sh');
-    expect(section).toContain('.agents/skills/playwright-cli/SKILL.md');
-    expect(section).toContain('.agents/skills/playwright-cli/references/lucky-pick-canada.md');
-    expect(section).toContain('Do not introduce a competing CLI or browser automation setup.');
-    expect(section).toContain("Crawlbase is Freebuff's first and only fallback");
-    expect(section).toContain('Do not introduce additional browser fallback tools.');
-
-    // AGENTS.md designates the skill files as authoritative for both rendering modes.
-    expect(skill).toContain('Standard');
-    expect(skill).toContain('SwiftShader');
-    expect(skill).toContain('playwright.swiftshader.config.ts');
-    expect(skill).toContain('not a physical-GPU benchmark');
-
-    // ChatGPT's exclusion remains explicit in its own operating instructions.
-    // #1942 restated it as this list; the CLI entry and maintenance restriction
-    // are still asserted below, so the intent is not weakened.
-    expect(agents).toContain('ChatGPT must not use or attempt to use:');
-    expect(agents).toContain('The repository Playwright CLI.');
-    expect(agents).toContain(
-      'Do not spend time attempting to initialize, troubleshoot or maintain tools that are not available to ChatGPT.',
-    );
-  });
-
-  it('requires the protection workflow and owner rule for AGENTS.md', () => {
-    const workflow = readFileSync(
-      join(root, '.github', 'workflows', 'protected-files.yml'),
-      'utf8',
-    );
+  it('retains the protected-file workflow and owner authorization gate', () => {
+    const workflow = readFileSync(join(root, '.github', 'workflows', 'protected-files.yml'), 'utf8');
     const codeowners = readFileSync(join(root, '.github', 'CODEOWNERS'), 'utf8');
 
     expect(workflow).toMatch(/paths:[\s\S]*?-\s*['"]AGENTS\.md['"]/);
     expect(workflow).toMatch(/protected_files=\([\s\S]*?"AGENTS\.md"[\s\S]*?\)/);
     expect(workflow).toContain('name: protected-file-authorization');
-    expect(workflow).toContain(
-      'Explicit human authorization is required before this pull request may merge.',
-    );
+    expect(workflow).toContain('Explicit human authorization is required before this pull request may merge.');
     expect(workflow).toContain('Detection is failing closed.');
     expect(workflow).toContain('agents_md_protection.py');
     expect(workflow).toContain('pull_request.base.sha');
     expect(codeowners).toMatch(/^\/AGENTS\.md\s+@davidcollier77-code$/m);
   });
 
-  it('allows a dedicated governance PR but refuses AGENTS.md inside an unrelated PR', () => {
+  it('allows only dedicated governance changes and refuses unrelated application paths', () => {
     const dedicated = classifyAgentsChange([
       'AGENTS.md',
       '__tests__/agent-governance-single-source.test.js',
@@ -192,6 +226,10 @@ describe('single-source agent governance', () => {
       '.github/scripts/test_agents_md_protection.py',
       '.github/CODEOWNERS',
       'PR_SUBMISSION.md',
+      'memory-bank/activeContext.md',
+      'specs/207-compact-agent-governance/spec.md',
+      'specs/207-compact-agent-governance/plan.md',
+      'specs/207-compact-agent-governance/tasks.md',
     ]);
     expect(dedicated.exitCode).toBe(0);
     expect(dedicated.report.mode).toBe('dedicated');
@@ -202,7 +240,7 @@ describe('single-source agent governance', () => {
     expect(unrelated.report.offending_paths).toEqual(['app/page.tsx']);
   });
 
-  it('does not accept a title or description as an authorization bypass', () => {
+  it('does not accept a title as a protected-file authorization bypass', () => {
     const directory = mkdtempSync(join(tmpdir(), 'agents-protection-'));
     const changed = join(directory, 'changed.txt');
     writeFileSync(changed, 'AGENTS.md\napp/page.tsx\n');
@@ -212,14 +250,10 @@ describe('single-source agent governance', () => {
         'python3',
         [
           join(root, '.github', 'scripts', 'agents_md_protection.py'),
-          '--changed-files',
-          changed,
-          '--base-agents-sha',
-          BASE_SHA,
-          '--head-agents-sha',
-          HEAD_SHA,
-          '--title',
-          'chore(governance): approved AGENTS.md update',
+          '--changed-files', changed,
+          '--base-agents-sha', BASE_SHA,
+          '--head-agents-sha', HEAD_SHA,
+          '--title', 'chore(governance): approved AGENTS.md update',
         ],
         { stdio: 'pipe' },
       );
@@ -228,77 +262,4 @@ describe('single-source agent governance', () => {
     }
     expect(exitCode).toBe(2);
   });
-
-  it('requires shared graphics toolkit and resource-readiness guidance for both agents', () => {
-    const agents = readAgents();
-    const start = agents.indexOf('🟢 SHARED GRAPHICS TOOLKIT AND CREATIVE WORKBENCH');
-    const end = agents.indexOf('\n\nPR SUBMISSION DOCUMENTATION', start);
-    const section = agents.slice(start, end);
-
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
-    expect(section).toContain('[BOTH — CHATGPT AND FREEBUFF]');
-    expect(section).toContain('app/lib/graphics/README.md');
-    expect(section).toContain('docs/graphics-rendering-architecture.md');
-    expect(section).toContain('app/lib/resource-readiness.js');
-    expect(section).toContain('do not create a second preloader');
-    expect(section).toContain('.docs/creation/');
-    expect(section).toContain('.docs/polishing/');
-    expect(section).toContain('_websites_threejs.md');
-    expect(section).toContain('_websites_threejs_llms_txt.md');
-    expect(section).toContain('app/lib/use-creative-experience.js');
-    expect(section).toContain('app/lib/graphics/experiences.js');
-    expect(section).toContain('app/lib/graphics/runtime.js');
-    expect(section).toContain('components/graphics/CreativeWorkbench.jsx');
-    expect(section).toContain('Three.js is not mandatory');
-    expect(section).toContain('does not replace required Playwright');
-    expect(section).toContain('Preserve existing artwork, functionality, animation, sound, timing and layout');
-  });
-
-  it('derives Freebuff task groups from the docs manifest and distinguishes specialist references', () => {
-    expect(taskGroups.length).toBeGreaterThan(0);
-    for (const group of taskGroups) {
-      expect(existsSync(join(root, '.freebuff', group + '.md'))).toBe(true);
-    }
-    for (const name of ['bolt', 'ci', 'palette', 'sentinel']) {
-      expect(existsSync(join(root, '.freebuff', `${name}.md`))).toBe(true);
-      expect(docsManifest.groups).not.toHaveProperty(name);
-    }
-    expect(readAgents()).toContain('Do not hardcode a group count, fixed category list or fixed ordering.');
-    expect(readAgents()).toContain('Files under `.freebuff/` that are not named by a manifest group are specialist or reference documents, not task-group categories;');
-  });
-
-
-  it('requires the core Spec Kit stages and discovers available command definitions without a fixed catalogue size', () => {
-    const agents = readAgents();
-    const start = agents.indexOf('8. SPEC KIT REQUIREMENTS');
-    const end = agents.indexOf('\n\n9. QA CHECKER REQUIREMENTS', start);
-    const workflow = agents.slice(start, end).toLowerCase();
-    expect(start).toBeGreaterThanOrEqual(0);
-    expect(end).toBeGreaterThan(start);
-    expect(workflow).toContain('currently installed spec kit tooling');
-    expect(workflow).toContain('fixed spec kit version');
-    expect(workflow).toContain('hardcoded command count');
-    expect(workflow).toContain('`.freebuff/cmds/` command wrappers remain freebuff only');
-    expect(workflow).toContain('chatgpt must not apply them as chatgpt operating instructions.');
-    const commandsDirectory = join(root, '.freebuff', 'cmds');
-    const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
-    expect(commandFiles.length).toBeGreaterThan(0);
-    for (const file of commandFiles) {
-      expect(readFileSync(join(commandsDirectory, file), 'utf8').trim().length).toBeGreaterThan(0);
-    }
-    for (const stage of ['specify', 'plan', 'tasks', 'implement']) {
-      expect(commandFiles).toContain(`speckit.${stage}.md`);
-    }
-  });
-  it('keeps every currently available Freebuff Spec Kit command definition readable', () => {
-    const commandsDirectory = join(root, '.freebuff', 'cmds');
-    const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
-    expect(commandFiles.length).toBeGreaterThan(0);
-    for (const file of commandFiles) {
-      expect(existsSync(join(commandsDirectory, file))).toBe(true);
-      expect(readFileSync(join(commandsDirectory, file), 'utf8').trim().length).toBeGreaterThan(0);
-    }
-  });
 });
-

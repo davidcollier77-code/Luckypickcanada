@@ -1,11 +1,17 @@
-# Active Context — Agent governance and current project state
+# Active Context — Compact Agent Governance Instructions
 
-## Current Task — Agent governance and PR handoff (Spec 206)
+## Current Task — Compact Agent Governance (Spec 207)
 
-- **Goal:** Make `AGENTS.md` require full-document reading, preserve BOTH / FREEBUFF ONLY / CHATGPT ONLY applicability, derive Freebuff task groups dynamically from `.docs/manifest.json`, add shared Memory Bank health checks, and protect secrets for both agents.
-- **PR handoff:** Align `PR_SUBMISSION.md` with the existing consolidated seven-category current-head report. Agents inspect the report after PR creation and hand it to the owner; they do not self-approve, merge or independently repair post-submission findings.
-- **Preserved:** The seven report categories, current-head audit workflow, protected-file classifier and separate protected-file authorization environment. The ChatGPT startup Library file and Freebuff Playwright procedures are outside this task.
-- **Verification boundary:** This ChatGPT environment is not on the repository's required Node.js 26 / pnpm runtime, and ChatGPT startup restrictions prohibit repository-script execution. GitHub Actions provides repository test and checker evidence. No local tests, install, build, Playwright session or repository shell script is claimed.
+- **Goal:** Reduce `AGENTS.md` from 478 lines to a concise entry point while retaining every distinct requirement and all three agent-applicability classes.
+- **Approach:** Keep direct rules in `AGENTS.md`; refer detailed PR, startup, manifest and specialist procedures to their authoritative documents. Keep Freebuff-only and ChatGPT-only instructions separate.
+- **Scope:** `AGENTS.md`, its governance regression test, Spec 207 artifacts and this active-context header. No startup, manifest, PR procedure, QA workflow, protected script, application or dependency changes.
+- **Verification boundary:** ChatGPT startup preflight reports Node.js 22.16.0 and missing pnpm 10.30.3; the repository requires Node.js 26.x and pnpm 10.30.3. ChatGPT does not run repository scripts, tests or builds. GitHub Actions must provide test and checker evidence.
+- **PR status:** Prepare a dedicated, regular, non-draft PR; leave it open and unmerged. The owner must provide the governance digest comment and separate protected-file Environment authorization before merge.
+
+## Previous Task — Agent governance and PR handoff (Spec 206)
+
+- PR #2006 was merged into `main`. Its current-head report and protected-file authorizations belong to that completed PR.
+- The current task only condenses the governance entry point; it does not revise the seven-category report, `PR_SUBMISSION.md`, startup documentation or browser tooling.
 
 ## Current Project State — Lucky Meter approved Build (Spec 205)
 
