@@ -1028,6 +1028,51 @@ describe('capacity, ownership and disposal', () => {
     expect(hub.getResourcePoolStats().residentBytes).toBe(0);
   });
 
+  it('does not empty the pool for a request that cannot fit', async () => {
+    useConstrainedProfile();
+    const dispose = vi.fn();
+    hub.registerResourceAdapter('test', async () => ({ dispose }));
+
+    for (let index = 0; index < 16; index += 1) {
+      hub.registerExperienceResources({
+        id: `settled-${index}`,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `settled-resource-${index}`, kind: 'test', url: `/settled-${index}` }],
+      });
+      await hub.prepareExperience(`settled-${index}`);
+    }
+    expect(hub.getResourcePoolStats()).toMatchObject({
+      entries: 16,
+      residentBytes: 16 * 64 * 1024,
+    });
+
+    hub.registerExperienceResources({
+      id: 'oversized-pool',
+      version: 1,
+      dependsOn: [],
+      resources: [
+        {
+          id: 'oversized-pool-resource',
+          kind: 'test',
+          url: '/oversized-pool',
+          bytes: 9 * 1024 * 1024,
+        },
+      ],
+    });
+    const snapshot = await hub.prepareExperience('oversized-pool');
+
+    expect(snapshot.resources[0]).toMatchObject({
+      state: 'skipped',
+      reason: 'capacity-exhausted',
+    });
+    expect(hub.getResourcePoolStats()).toMatchObject({
+      entries: 16,
+      residentBytes: 16 * 64 * 1024,
+    });
+    expect(dispose).not.toHaveBeenCalled();
+  });
+
   it('evicts and disposes the least valuable settled record for committed work', async () => {
     useConstrainedProfile();
     const dispose = vi.fn();
@@ -1059,6 +1104,46 @@ describe('capacity, ownership and disposal', () => {
     expect(hub.getResourcePoolStats().entries).toBe(16);
   });
 
+  it('never evicts settled records to admit background work', async () => {
+    useConstrainedProfile();
+    const dispose = vi.fn();
+    hub.registerResourceAdapter('test', async () => ({ dispose }));
+
+    for (let index = 0; index < 16; index += 1) {
+      hub.registerExperienceResources({
+        id: `settled-background-${index}`,
+        version: 1,
+        dependsOn: [],
+        resources: [
+          {
+            id: `settled-background-resource-${index}`,
+            kind: 'test',
+            url: `/settled-background-${index}`,
+          },
+        ],
+      });
+      const prepared = await hub.prepareExperience(`settled-background-${index}`, {
+        priority: 'background',
+      });
+      expect(prepared.state).toBe('ready');
+    }
+    expect(hub.getResourcePoolStats().entries).toBe(16);
+
+    hub.registerExperienceResources({
+      id: 'background-overflow',
+      version: 1,
+      dependsOn: [],
+      resources: [
+        { id: 'background-overflow-resource', kind: 'test', url: '/background-overflow' },
+      ],
+    });
+    const snapshot = await hub.prepareExperience('background-overflow', { priority: 'background' });
+
+    expect(snapshot.resources[0]).toMatchObject({ state: 'skipped', reason: 'capacity-full' });
+    expect(hub.getResourcePoolStats().entries).toBe(16);
+    expect(dispose).not.toHaveBeenCalled();
+  });
+
   it('protects a leased record from release and disposes it only when the lease ends', async () => {
     useCapableProfile();
     const dispose = vi.fn();
@@ -1087,6 +1172,42 @@ describe('capacity, ownership and disposal', () => {
     expect(dispose).toHaveBeenCalledTimes(1);
     expect(hub.getResourcePoolStats().entries).toBe(0);
     expect(hub.getResourcePoolStats().pinnedEntries).toBe(0);
+  });
+
+  it('revives a released record when a new consumer requests it before the lease ends', async () => {
+    useCapableProfile();
+    const dispose = vi.fn();
+    hub.registerResourceAdapter('texture', async () => ({ dispose }));
+
+    for (const id of ['retired-owner', 'retired-newcomer']) {
+      hub.registerExperienceResources({
+        id,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `${id}-texture`, kind: 'texture', url: '/retired-shared.avif' }],
+      });
+    }
+
+    await hub.prepareExperience('retired-owner');
+    const endLease = hub.leaseExperienceResources('retired-owner');
+    expect(hub.releaseExperienceResources('retired-owner')).toBe(0);
+    expect(hub.getResourcePoolStats()).toMatchObject({ entries: 1, retiredEntries: 1 });
+
+    const newcomer = await hub.prepareExperience('retired-newcomer');
+
+    expect(newcomer.state).toBe('ready');
+    expect(dispose).not.toHaveBeenCalled();
+    expect(hub.getResourcePoolStats()).toMatchObject({ entries: 1, retiredEntries: 0 });
+
+    endLease();
+    endLease();
+
+    expect(dispose).not.toHaveBeenCalled();
+    expect(hub.getResourcePoolStats().entries).toBe(1);
+
+    hub.releaseExperienceResources('retired-newcomer');
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(hub.getResourcePoolStats().entries).toBe(0);
   });
 
   it('retires a leased record across a version change and disposes it at lease end', async () => {
@@ -1143,6 +1264,57 @@ describe('capacity, ownership and disposal', () => {
 
     expect(dispose).toHaveBeenCalledTimes(1);
     expect(hub.getResourcePoolStats().entries).toBe(0);
+  });
+
+  it('defers a replacement while the version-retired record is still leased', async () => {
+    useCapableProfile();
+    const dispose = vi.fn();
+    const adapter = vi.fn(async () => ({ dispose }));
+    hub.registerResourceAdapter('texture', adapter);
+    hub.registerExperienceResources({
+      id: 'version-wait',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'version-wait-texture', kind: 'texture', url: '/version-wait.avif' }],
+    });
+    await hub.prepareExperience('version-wait');
+    const endLease = hub.leaseExperienceResources('version-wait');
+
+    hub.registerExperienceResources({
+      id: 'version-wait',
+      version: 2,
+      dependsOn: [],
+      resources: [
+        {
+          id: 'version-wait-texture',
+          kind: 'texture',
+          url: '/version-wait.avif',
+          version: 1,
+        },
+      ],
+    });
+    expect(hub.getResourcePoolStats()).toMatchObject({ entries: 1, retiredEntries: 1 });
+
+    const deferred = await hub.prepareExperience('version-wait');
+
+    expect(deferred.resources[0]).toMatchObject({
+      state: 'skipped',
+      reason: 'version-change-in-progress',
+    });
+    expect(adapter).toHaveBeenCalledTimes(1);
+    expect(dispose).not.toHaveBeenCalled();
+    expect(hub.getResourcePoolStats()).toMatchObject({ entries: 1, retiredEntries: 1 });
+
+    endLease();
+    expect(dispose).toHaveBeenCalledTimes(1);
+    expect(hub.getResourcePoolStats().entries).toBe(0);
+
+    const replacement = await hub.prepareExperience('version-wait');
+    expect(replacement.state).toBe('ready');
+    expect(adapter).toHaveBeenCalledTimes(2);
+
+    hub.releaseExperienceResources('version-wait');
+    expect(dispose).toHaveBeenCalledTimes(2);
   });
 
   it('leases a registered experience automatically for the active period', async () => {

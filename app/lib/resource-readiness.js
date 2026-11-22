@@ -667,6 +667,11 @@ function evictForCapacity(weight, priority, definitionId) {
   };
   if (fits()) return true;
 
+  // Background work never evicts, and a request heavier than the whole pool can
+  // never fit, so neither path may destroy settled records.
+  if (priority === PREPARE_PRIORITY.BACKGROUND) return false;
+  if (weight > capacity.maxBytes) return false;
+
   const candidates = [...resourceEntries.values()]
     .filter((entry) => !isPinned(entry.key) && !entry.retired)
     .filter((entry) => entry.definitionId !== definitionId)
@@ -680,6 +685,20 @@ function evictForCapacity(weight, priority, definitionId) {
         PRIORITY_RANK[second.priority] - PRIORITY_RANK[first.priority] ||
         (first.lastAccessAt ?? first.updatedAt) - (second.lastAccessAt ?? second.updatedAt),
     );
+
+  // Prove that evicting every candidate can admit the request before touching
+  // any payload; an impossible request must not empty the pool for nothing.
+  const usage = poolUsage();
+  const evictableBytes = candidates.reduce(
+    (total, entry) => total + (entry.weightBytes ?? 0),
+    0,
+  );
+  if (
+    usage.entries - candidates.length >= capacity.maxEntries ||
+    usage.bytes - evictableBytes + weight > capacity.maxBytes
+  ) {
+    return false;
+  }
 
   for (const candidate of candidates) {
     deleteEntry(candidate.key, 'capacity-evicted');
@@ -971,11 +990,45 @@ function settleJob(job) {
   pump();
 }
 
+function skipResource(definition, resource, key, weight, priority, reason) {
+  const rejected = {
+    key,
+    kind: resource.kind,
+    label: resourceLabel(resource),
+    state: READINESS.SKIPPED,
+    reason,
+    attempts: 0,
+    weightBytes: weight,
+    priority,
+    definitionId: definition.id,
+    updatedAt: now(),
+  };
+  recordRejection(key, rejected);
+  return rejected;
+}
+
 function requestResource(definition, resource, priority) {
   const key = resourceKey(definition, resource);
   const weight = resourceWeight(resource);
   const cached = resourceEntries.get(key);
+  const retiredByVersion =
+    cached?.retired === true && cached.retiredReason === 'version-changed';
+  if (retiredByVersion) {
+    // The old version may still be leased or preparing. Defer the replacement
+    // until that record is gone instead of reusing or overwriting its payload.
+    return Promise.resolve(
+      skipResource(definition, resource, key, weight, priority, 'version-change-in-progress'),
+    );
+  }
   if (cached && cached.state === READINESS.READY) {
+    if (cached.retired) {
+      // A release or pressure retirement only marks the record for later
+      // disposal. The payload is still valid, so a new consumer revives it
+      // instead of letting the old lease sweep dispose it underneath them.
+      cached.retired = false;
+      delete cached.retiredReason;
+      delete cached.retiredAt;
+    }
     cached.lastAccessAt = now();
     if (PRIORITY_RANK[priority] < PRIORITY_RANK[cached.priority]) cached.priority = priority;
     return Promise.resolve(cached);
@@ -996,23 +1049,8 @@ function requestResource(definition, resource, priority) {
     // A stale skip or expired failure from an earlier attempt is not a retained
     // resource. Drop it unless a lease still protects it, so a refusal cannot
     // leave dead weight in the capacity accounting.
-    if (cached && cached === resourceEntries.get(key) && !isPinned(key)) {
-      resourceEntries.delete(key);
-    }
-    const rejected = {
-      key,
-      kind: resource.kind,
-      label: resourceLabel(resource),
-      state: READINESS.SKIPPED,
-      reason: refusal,
-      attempts: 0,
-      weightBytes: weight,
-      priority,
-      definitionId: definition.id,
-      updatedAt: now(),
-    };
-    recordRejection(key, rejected);
-    return Promise.resolve(rejected);
+    if (cached && !isPinned(key)) resourceEntries.delete(key);
+    return Promise.resolve(skipResource(definition, resource, key, weight, priority, refusal));
   }
   rejectedEntries.delete(key);
 
@@ -1058,7 +1096,14 @@ function requestResource(definition, resource, priority) {
 
 function snapshotResources(definition, keys) {
   return keys.map((key) => {
-    const entry = resourceEntries.get(key) ?? rejectedEntries.get(key);
+    const retained = resourceEntries.get(key);
+    const rejected = rejectedEntries.get(key);
+    // A retained record can outlive a newer rejection (for example while an old
+    // version is still leased), so report whichever decision is most recent.
+    const entry =
+      rejected && (!retained || (rejected.updatedAt ?? 0) >= (retained.updatedAt ?? 0))
+        ? rejected
+        : retained;
     return {
       key,
       kind: entry?.kind ?? 'unknown',

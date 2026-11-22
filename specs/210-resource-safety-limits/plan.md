@@ -89,7 +89,7 @@ Estimated weights when `bytes` is absent: image 96 KiB, texture 512 KiB, model 5
 3. Reuse an in-flight promise (existing behavior).
 4. Apply the per-experience speculative pending cap.
 5. Apply the queue cap: background is deferred; intent may shed one background job; critical may shed background then intent and, if nothing is shed, may exceed the soft queue cap by its own committed resources.
-6. Apply the retained entry and weight budget: critical may evict settled unleased records, least valuable then least recently used; intent may evict only background records; background never evicts.
+6. Apply the retained entry and weight budget: critical may evict settled unleased records, least valuable then least recently used; intent may evict only background records; background never evicts. Prove that evicting every eligible record can admit the request before disposing any record; a request that still cannot fit is refused without emptying the pool.
 7. Admit or record an honest `skipped` decision in a bounded rejection ledger so snapshots report the reason.
 
 ### Ownership model

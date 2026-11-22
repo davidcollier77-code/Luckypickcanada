@@ -68,6 +68,8 @@ When the preparation system drops a record because of release, pressure, evictio
 - The adaptive tier changes while work is queued: the next admission uses the new tier's budgets; already-retained records are not destroyed merely because the budget shrank, and new work is deferred until capacity is available.
 - A lease is acquired before its resources are prepared: the resources are pinned when their records are created, so a release between preparation and consumption cannot dispose them.
 - A leased resource is released while still preparing: it is not deleted mid-flight; it retires when it settles if the lease has ended, or when the lease ends if it is still owned.
+- A released or pressure-retired record is requested again before its last lease ends: the still-valid payload is revived for the new consumer instead of being swept and disposed underneath it.
+- A version change lands while the old record is still leased or preparing: a request for the replacement is deferred with an honest reason until the old record is released and disposed, so the old payload is never reused or overwritten.
 - No `window` exists (server rendering): leasing, statistics and preparation remain safe no-ops, and no disposal or adapter call occurs.
 
 ## Requirements *(mandatory)*
