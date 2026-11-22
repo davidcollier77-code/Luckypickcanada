@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -9,16 +9,8 @@ const agentsPath = join(root, 'AGENTS.md');
 const prSubmissionPath = join(root, 'PR_SUBMISSION.md');
 const obsoleteEntryPoint = join(root, '.freebuff', 'freebuff.md');
 const readAgents = () => readFileSync(agentsPath, 'utf8');
-const taskGroups = [
-  'creation',
-  'troubleshooting',
-  'polishing',
-  'testing',
-  'security',
-  'audio',
-  'deep-dive',
-  'seo',
-];
+const docsManifest = JSON.parse(readFileSync(join(root, '.docs', 'manifest.json'), 'utf8'));
+const taskGroups = Object.keys(docsManifest.groups);
 
 const BASE_SHA = '1'.repeat(40);
 const HEAD_SHA = '2'.repeat(40);
@@ -55,6 +47,8 @@ describe('single-source agent governance', () => {
   it('uses AGENTS.md as the current repository-governance entrypoint', () => {
     const agents = readAgents();
 
+    expect(agents).toContain('MANDATORY FULL-DOCUMENT READING');
+    expect(agents).toContain('This document MUST be read in its entirety, fully understood and followed before undertaking any repository work.');
     expect(agents).toContain(
       'This document establishes the repository governance and operating requirements for ChatGPT and Freebuff.',
     );
@@ -103,8 +97,10 @@ describe('single-source agent governance', () => {
     expect(agents).toContain("Playwright is Freebuff's primary browser automation tool.");
     expect(agents).toContain("Crawlbase is Freebuff's first and only fallback");
     expect(agents).toContain('Crawlbase does not replace interactive browser rendering');
-    expect(agents).toContain("Browserless is ChatGPT's primary browser tool.");
-    expect(agents).toContain('Firecrawl is the fallback for supported content-retrieval tasks.');
+    expect(agents).toContain('ChatGPT does not have access to Playwright browser execution.');
+    expect(agents).toContain('use available tools such as Browserless, Firecrawl or other suitable connected plugins.');
+    expect(agents).toContain('Use them sparingly and only as needed.');
+    expect(agents).not.toContain("Browserless is ChatGPT's primary browser tool.");
     expect(agents).toContain(
       'The production build must remain strictly below 495 MiB.',
     );
@@ -113,11 +109,24 @@ describe('single-source agent governance', () => {
     );
     expect(agents).toContain('NO EVIDENCE = NO CLAIM.');
     expect(agents).toContain('NO VERIFIED RESULT = NO VERIFIED COMPLETION.');
+    expect(agents).toContain('15. MEMORY BANK CONTEXT AND MAINTENANCE');
+    for (const file of ['projectBrief.md', 'activeContext.md', 'techContext.md', 'progress.md']) {
+      expect(agents).toContain(`memory-bank/${file}`);
+    }
+    expect(agents).toContain('There are no arbitrary byte or line-count limits for Memory Bank files or Spec Kit artifacts.');
+    expect(agents).toContain('Never expose secret values in source code, commits, diffs, logs, terminal output, debugging traces, screenshots, test fixtures, generated artifacts, documentation, pull-request descriptions, comments or reports.');
+    expect(agents).toContain('Never print, dump or broadly enumerate environment variables or configuration.');
     const submission = readFileSync(prSubmissionPath, 'utf8');
     expect(submission).toContain('Owner-directed exception:');
     expect(submission).toContain('must never infer permission');
     expect(submission).toContain('clear instruction from the repository owner');
     expect(submission).toContain('CI results do not replace this review.');
+    expect(submission).toContain('## 5. Post-submission verification and handoff');
+    expect(submission).toContain('Confirm the report\\'s full current-head SHA exactly matches the live PR head SHA.');
+    expect(submission).toContain('Inspect all seven categories');
+    expect(submission).toContain('Missing reports, missing categories, stale head SHAs, skipped or cancelled checks, incomplete evidence, unavailable source data and timeouts must never be described as PASSED.');
+    expect(submission).toContain('The governance digest approval (`/approve-governance <digest>`) and the protected-file GitHub Environment authorization are separate requirements.');
+    expect(submission).toContain('Do not merge, enable auto-merge or otherwise complete the PR.');
   });
 
   it('documents Freebuff Playwright modes and excludes ChatGPT from the CLI system', () => {
@@ -246,60 +255,48 @@ describe('single-source agent governance', () => {
     expect(section).toContain('Preserve existing artwork, functionality, animation, sound, timing and layout');
   });
 
-  it('retains every specialist task-group instruction', () => {
+  it('derives Freebuff task groups from the docs manifest and distinguishes specialist references', () => {
+    expect(taskGroups.length).toBeGreaterThan(0);
     for (const group of taskGroups) {
       expect(existsSync(join(root, '.freebuff', group + '.md'))).toBe(true);
     }
+    for (const name of ['bolt', 'ci', 'palette', 'sentinel']) {
+      expect(existsSync(join(root, '.freebuff', `${name}.md`))).toBe(true);
+      expect(docsManifest.groups).not.toHaveProperty(name);
+    }
+    expect(readAgents()).toContain('Do not hardcode a group count, fixed category list or fixed ordering.');
+    expect(readAgents()).toContain('Files under `.freebuff/` that are not named by a manifest group are specialist or reference documents, not task-group categories;');
   });
 
 
-  it('requires the current Spec Kit workflow and all nine command definitions', () => {
+  it('requires the core Spec Kit stages and discovers available command definitions without a fixed catalogue size', () => {
     const agents = readAgents();
     const start = agents.indexOf('8. SPEC KIT REQUIREMENTS');
     const end = agents.indexOf('\n\n9. QA CHECKER REQUIREMENTS', start);
-    const workflow = agents.slice(start, end);
-    const normalized = workflow.toLowerCase();
-
+    const workflow = agents.slice(start, end).toLowerCase();
     expect(start).toBeGreaterThanOrEqual(0);
     expect(end).toBeGreaterThan(start);
-    expect(normalized).toContain('current spec kit command definitions');
-    expect(normalized).toContain('current spec kit workflow');
-    expect(normalized).toContain(
-      'complete all required workflow stages in their prescribed order',
-    );
-    expect(normalized).toContain('mandatory template sections');
-    expect(normalized).toContain('notify the owner');
-    expect(normalized).toContain('limited strictly to affected wording');
-    expect(normalized).toContain('do not silently change the established project workflow');
-
-    for (const command of [
-      'specify',
-      'plan',
-      'tasks',
-      'implement',
-      'clarify',
-      'analyze',
-      'checklist',
-      'constitution',
-      'converge',
-    ]) {
-      expect(existsSync(join(root, '.freebuff', 'cmds', `speckit.${command}.md`))).toBe(true);
+    expect(workflow).toContain('currently installed spec kit tooling');
+    expect(workflow).toContain('no fixed spec kit version');
+    expect(workflow).toContain('no hardcoded command count');
+    const commandsDirectory = join(root, '.freebuff', 'cmds');
+    const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
+    expect(commandFiles.length).toBeGreaterThan(0);
+    for (const file of commandFiles) {
+      expect(readFileSync(join(commandsDirectory, file), 'utf8').trim().length).toBeGreaterThan(0);
+    }
+    for (const stage of ['specify', 'plan', 'tasks', 'implement']) {
+      expect(commandFiles).toContain(`speckit.${stage}.md`);
     }
   });
-
-  it('retains the Freebuff Spec Kit command directory', () => {
-    for (const command of [
-      'analyze',
-      'checklist',
-      'clarify',
-      'constitution',
-      'converge',
-      'implement',
-      'plan',
-      'specify',
-      'tasks',
-    ]) {
-      expect(existsSync(join(root, '.freebuff', 'cmds', `speckit.${command}.md`))).toBe(true);
+  it('keeps every currently available Freebuff Spec Kit command definition readable', () => {
+    const commandsDirectory = join(root, '.freebuff', 'cmds');
+    const commandFiles = readdirSync(commandsDirectory).filter((name) => /^speckit\..+\.md$/.test(name));
+    expect(commandFiles.length).toBeGreaterThan(0);
+    for (const file of commandFiles) {
+      expect(existsSync(join(commandsDirectory, file))).toBe(true);
+      expect(readFileSync(join(commandsDirectory, file), 'utf8').trim().length).toBeGreaterThan(0);
     }
   });
 });
+
