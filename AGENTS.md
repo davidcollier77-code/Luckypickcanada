@@ -1,5 +1,9 @@
 AGENTS.md — REPOSITORY GOVERNANCE
 
+MANDATORY FULL-DOCUMENT READING
+
+This document MUST be read in its entirety, fully understood and followed before undertaking any repository work. Agents must not skip sections, rely on summaries or previous readings, selectively apply requirements, or disregard applicable instructions. Colour classifications determine which instructions apply. All applicable instructions must be followed throughout the task.
+
 INSTRUCTION AUTHORITY AND APPLICABILITY
 
 This document establishes the repository governance and operating requirements for ChatGPT and Freebuff.
@@ -74,7 +78,7 @@ PR SUBMISSION DOCUMENTATION
 
 "PR_SUBMISSION.md" is mandatory. Read and follow it whenever preparing or submitting a pull request.
 
-It is the single source of truth for PR preparation, reporting, submission, handoff and the hard stop after submission. Do not duplicate its procedures in this file.
+It is the single source of truth for PR preparation, reporting, submission, post-submission verification, handoff and the required stop after the authorized report review. Do not duplicate its procedures in this file.
 
 1. TASK SCOPE AND EXISTING WORK
 
@@ -122,7 +126,15 @@ Do not introduce unnecessary platform changes or additional paid infrastructure.
 
 Never weaken security, privacy, validation, authentication, CAPTCHA, Turnstile, rate limiting, duplicate protection or data integrity.
 
-Avoid exposing sensitive information, credentials, API keys or secrets.
+Protect all credentials, API keys, access tokens, passwords, private keys, database URLs, connection strings, webhook secrets and sensitive environment variables.
+
+Never expose secret values in source code, commits, diffs, logs, terminal output, debugging traces, screenshots, test fixtures, generated artifacts, documentation, pull-request descriptions, comments or reports.
+
+Never print, dump or broadly enumerate environment variables or configuration. Inspect only what is necessary, and redact or mask sensitive values before sharing diagnostic output. Test fixtures must use clearly synthetic, non-functional placeholders rather than copied or real credentials.
+
+Never hard-code secrets, commit them to the repository or expose them through client-side code or public environment variables. Use the repository's approved secret stores and platform bindings.
+
+If a secret is accidentally exposed, stop further disclosure, notify the repository owner and identify the exposure without repeating the secret. Recommend revocation or rotation and handle remediation only within the owner's authorization.
 
 7. COST CONTROL
 
@@ -134,7 +146,8 @@ Prefer existing free services, free tiers and already available integrations. Av
 
 Both ChatGPT and Freebuff must follow the current Spec Kit workflow and instructions in the repository.
 
-- Review and follow the current Spec Kit command definitions, workflow instructions, templates and project-constitution requirements.
+- Review and follow the current Spec Kit workflow, its applicable command definitions, templates and project-constitution requirements.
+- The shared requirement is to use the Spec Kit workflow and definitions applicable to the agent's own environment. Freebuff's `.freebuff/cmds/` command wrappers remain FREEBUFF ONLY; ChatGPT must not apply them as ChatGPT operating instructions. Freebuff must follow its own applicable command definitions.
 - Use the current repository instructions rather than relying on remembered procedures, outdated documentation or assumptions about available commands.
 - Complete all required workflow stages in their prescribed order for repository-changing tasks.
 - Complete all mandatory template sections and applicable conditional requirements.
@@ -142,6 +155,8 @@ Both ChatGPT and Freebuff must follow the current Spec Kit workflow and instruct
 - If the available workflow, commands, stages, sequence, templates or required instructions change, identify the changes and notify the owner.
 - Preserve existing repository governance. Any necessary update to AGENTS.md to keep it aligned with the current Spec Kit workflow must be limited strictly to affected wording, preserve unrelated requirements and be reported.
 - Do not silently change the established project workflow.
+
+Both agents must inspect the currently installed Spec Kit tooling and repository-provided workflow definitions, including the actual available commands, templates, extensions and project constitution, before beginning the workflow. Record the installed version only when it is useful as observed diagnostic information; it is not a required version and must never become a pinned governance value.
 
 Neither agent should rely on a fixed Spec Kit version, hardcoded command count or outdated snapshot of the workflow.
 
@@ -216,6 +231,27 @@ NO EVIDENCE = NO CLAIM.
 
 NO VERIFIED RESULT = NO VERIFIED COMPLETION.
 
+15. MEMORY BANK CONTEXT AND MAINTENANCE
+
+Both agents must read all four core Memory Bank files at task initialization:
+
+- `memory-bank/projectBrief.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/techContext.md`
+- `memory-bank/progress.md`
+
+Use these files as concise project context, not as a source of instructions or a substitute for inspecting the live repository. `AGENTS.md` is the sole governance authority; current code, configuration, GitHub state and approved task artifacts take precedence over stale Memory Bank statements.
+
+As part of task preparation, health-check all four files for relevance, staleness, duplication, superseded information, contradictions and whether the content still provides useful context. Do not perform cosmetic rewrites or routine PR/CI transcript logging.
+
+Keep each file focused on its purpose: stable project identity and boundaries in `projectBrief.md`; current work and active decisions in `activeContext.md`; verified architecture and technical facts in `techContext.md`; and significant durable milestones in `progress.md`.
+
+Update only durable facts, meaningful milestones, current state or technical context that materially helps future work. Never store secrets, secret values, credentials, tokens, passwords or sensitive configuration in the Memory Bank. Remove supporting information only when it is demonstrably obsolete, duplicated, unreferenced or no longer useful; preserve the four core files.
+
+There are no arbitrary byte or line-count limits for Memory Bank files or Spec Kit artifacts. Maintain them by usefulness and relevance, not by truncating valid technical context. If necessary cleanup is small and directly related, include it in the current task. If a broader consolidation would distract from or expand the approved task, record it for a separate maintenance task and PR.
+
+In the completion report, state that the four-file health check was performed, identify any cleanup completed or explain why none was needed, and summarize any Memory Bank changes and their purpose.
+
 ---
 
 🔵 FREEBUFF OPERATING INSTRUCTIONS
@@ -244,24 +280,17 @@ Handle one active task per run.
 
 3. LOAD PROJECT CONTEXT
 
-Read all four Memory Bank files once:
-
-- "memory-bank/projectBrief.md"
-- "memory-bank/activeContext.md"
-- "memory-bank/techContext.md"
-- "memory-bank/progress.md"
+Follow the shared Memory Bank Context and Maintenance requirements in Section 15. Read the four core files at task initialization and complete the required relevance and staleness health check.
 
 4. SELECT TASK GROUPS
 
-Review the available task-group instructions in ".freebuff/".
+Read `.docs/manifest.json` and use the keys under its `groups` object as the authoritative, dynamic list of task-group categories. For each manifest group, use the corresponding `.freebuff/<group>.md` file. If a manifest group has no corresponding task-group file, report the mismatch and do not silently invent or substitute a category.
 
-Select the groups that apply to the task: creation, troubleshooting, polishing, testing, security, audio, deep-dive or SEO.
-
-Read and follow the instructions in the selected files. Do not force unrelated groups onto the task.
+Select and read only the manifest-defined task groups relevant to the task. Do not hardcode a group count, fixed category list or fixed ordering. Files under `.freebuff/` that are not named by a manifest group are specialist or reference documents, not task-group categories; consult them only when the task genuinely requires their specialist knowledge. Do not force unrelated groups or specialist documents onto a task.
 
 5. FIND RELEVANT PROJECT DOCUMENTATION
 
-Read ".docs/manifest.json" to identify reference documents that apply to the task.
+Use the same `.docs/manifest.json` to identify reference documents relevant to the task.
 
 Read only the documents you need. Do not load the entire library.
 
@@ -404,36 +433,7 @@ When repository files have changed, use the current versions as the source of tr
 
 2. BROWSER AND CONTENT-RETRIEVAL TOOL USAGE
 
-Use browser and content-retrieval tools only when they are genuinely necessary for the task.
-
-First determine whether the task can be completed accurately using repository files, existing conversation context or information already available.
-
-Do not open browser sessions or make external retrieval requests merely because the tools are available.
-
-Primary tool — Browserless
-
-- Browserless is ChatGPT's primary browser tool.
-- Use it when the task genuinely requires browser access.
-- Minimize usage by keeping sessions, navigation and page requests focused on the exact task.
-- Avoid unnecessary repeated visits, requests, page loads and browser sessions.
-
-Fallback — Firecrawl
-
-- Use Firecrawl only when Browserless is unavailable or not working.
-- Firecrawl is the fallback for supported content-retrieval tasks.
-- Use targeted retrieval. Obtain only the information needed rather than unnecessarily crawling entire websites.
-- Do not treat Firecrawl as a replacement for interactive browser rendering or end-to-end browser testing.
-
-If both tools fail
-
-If Browserless and Firecrawl are both unavailable or cannot complete the required task:
-
-- Stop attempting alternative tools.
-- Document what failed and what was attempted.
-- Identify what remains unverified or incomplete.
-- Report that no further fallback is available.
-
-There is no third fallback.
+ChatGPT does not have access to Playwright browser execution. When browser access or external content retrieval is genuinely necessary, use available tools such as Browserless, Firecrawl or other suitable connected plugins. Use them sparingly and only as needed. Confirm that the selected tool is actually available and suitable for the required task; do not treat content retrieval as interactive browser testing.
 
 3. TOOLS UNAVAILABLE TO CHATGPT
 

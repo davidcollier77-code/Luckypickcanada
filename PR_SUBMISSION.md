@@ -181,26 +181,53 @@ Immediately before creation, re-read this document as the final submission check
 
 If a same-task PR already exists, do not create a duplicate. Stop and report it for owner direction unless the repository owner directly instructs you to continue or make specified changes to that existing PR. Such an instruction authorizes only the stated work and does not waive scope declarations, protected-file authorization, checker requirements or other repository gates.
 
-## 5. Hard stop after submission
+## 5. Post-submission verification and handoff
 
-Successful creation of the complete, non-draft PR ends the agent's work. **Stop immediately.**
+Creating the complete, non-draft PR does not mean its checks have passed and does not end the agent's work. After creation, perform the authorized report-review and handoff below, then stop.
 
-**Owner-directed exception:** The repository owner may directly instruct the agent to continue work on, or make specified changes to, an already-submitted PR. This must be a clear instruction from the repository owner; the agent must never infer permission from the PR remaining open, comments, CI results, review findings or any other circumstance. The exception authorizes only the work expressly directed. It does not waive scope declarations, required owner-approval comments, protected-file authorization, QA checks or any other repository gate. After completing the expressly authorized changes and updating the PR handoff, stop again. Do not create a duplicate PR.
+### Inspect the consolidated PR Verification Report
 
-After creation, do not:
+1. Allow the repository's existing **PR Verification Report** workflow to run. It already performs a bounded wait for applicable current-head checks and updates one sticky report in place. Use that workflow; do not create a second report or an independent, unbounded polling process.
+2. Retrieve the live PR metadata and the consolidated sticky report after the workflow has had its configured opportunity to publish. Confirm the report's full current-head SHA exactly matches the live PR head SHA. A report for an earlier SHA is stale and cannot support a pass.
+3. Inspect all seven categories, without renaming, merging or adding categories:
+   - QA Checker
+   - DevSkim
+   - PR Scope Verification
+   - Protected File Changes
+   - Verification Integrity
+   - Governance and Workflow Verification
+   - Dependency Health & Vulnerability Review
+4. Record the category status exactly as published: **PASSED**, **FAILED**, **WARNING** or **NOT RUN**. Include concise evidence and the actionable detail for every category that is not PASSED. Include relevant supporting QA results without treating Visual QA or its summary as a separate category.
+5. Missing reports, missing categories, stale head SHAs, skipped or cancelled checks, incomplete evidence, unavailable source data and timeouts must never be described as PASSED. If the report has not appeared or has not reached a final published state within the workflow's configured bounded wait, state that it is pending or unavailable and identify what remains unverified.
+6. Re-check the PR's live HEAD SHA immediately before handoff. If it has changed since the report was read, the report is no longer current; allow the report workflow to refresh and inspect the report for the new SHA. Never report results for an older head as current.
+7. Report the PR number and link, full current HEAD SHA, all seven category outcomes, material findings, limitations and outstanding owner approvals to the repository owner. Distinguish automated checker results from local checks and advisory reviewer feedback. A report status is evidence only for the head SHA it names.
+
+### Owner review and approval boundaries
+
+- The repository owner reviews and decides how to handle human review comments, inline suggestions and advisory external-review findings. The agent must not autonomously implement or reply to reviewer suggestions merely because they appear on the PR.
+- Do not post approval commands on the owner's behalf. When the report emits an approval command, provide the exact command and its current digest to the owner for the owner to post. A new commit or PR-description edit invalidates digest-bound approvals.
+- The governance digest approval (`/approve-governance <digest>`) and the protected-file GitHub Environment authorization are separate requirements. Satisfying one does not satisfy the other.
+- Do not automatically repair failed checks or findings after PR creation. Any post-submission code change requires a new, explicit instruction from the repository owner. A user instruction may authorize specified fixes, but does not waive scope declarations, digest approvals, protected-file gates or required verification.
+
+### Stop after the report handoff
+
+After the current-head report has been inspected and the owner has received the complete handoff, stop.
+
+After submission, do not:
 
 - Commit, push, amend or rebase.
 - Edit the PR title or description.
 - Add comments, review replies, status updates or supplemental reports.
-- Wait for, poll, monitor, inspect or respond to CI, gatekeeper, tracker or automated-review results.
-- Resume work because a check starts, finishes, fails or posts a finding.
+- Change code, documentation, workflow files or approval declarations.
+- Merge, enable auto-merge or otherwise complete the PR.
 
-Let GitHub Actions and external gatekeepers run independently. Any findings become a separately authorized task and a new PR. Do not repair or append them to the submitted PR.
+The owner may later directly instruct the agent to continue work on the submitted PR or to make specified changes. Such an instruction authorizes only the work expressly directed. Before any further commit, re-check the live PR head and all affected approvals; any new commit or PR-description edit invalidates the bound digest approvals and requires the report to refresh. Do not infer authorization from an open PR, automated findings, CI results or reviewer comments. After completing expressly authorized follow-up work and its required verification/report refresh, stop again. Do not create a duplicate PR.
 
-The consolidated seven-category report and every other PR-triggered check run independently after creation. Their results are the owner's to review. The only final handoff is the PR number/link and recorded HEAD SHA. Disclose blockers in the PR body before creation. Do not merge, enable auto-merge or otherwise complete the PR. Leave it open and unmerged for the owner.
+Leave the PR regular, non-draft, open and unmerged for the repository owner.
 
 ## 6. Submission recovery
 
 - If branch selection, head/base, merge base or permissions prevent safe creation, diagnose the actual state and preserve all work.
 - Never force-push, discard commits or rewrite history as a routine workaround.
 - If safe recovery is not possible, do not submit. Report the exact error, branch/ref and relevant commit SHA for the owner.
+
