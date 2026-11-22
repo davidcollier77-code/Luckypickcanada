@@ -482,6 +482,9 @@ function sweepRetiredEntries(reason = 'lease-released') {
 }
 
 function recordRejection(key, entry) {
+  // Refresh insertion order so the bounded ledger evicts the least recently
+  // rejected decision, not the one that happened to be first seen.
+  rejectedEntries.delete(key);
   rejectedEntries.set(key, entry);
   while (rejectedEntries.size > MAX_REJECTED_RECORDS) {
     const oldest = rejectedEntries.keys().next().value;
@@ -721,6 +724,10 @@ function shedQueuedJob({ allowIntent = false } = {}) {
   job.entry.state = READINESS.SKIPPED;
   job.entry.reason = 'capacity-shed';
   job.entry.updatedAt = now();
+  // A shed job was never admitted as a retained resource. Drop its record and
+  // keep only the bounded rejection metadata so it cannot consume capacity.
+  if (resourceEntries.get(job.key) === job.entry) resourceEntries.delete(job.key);
+  recordRejection(job.key, job.entry);
   const inflight = resourceInflight.get(job.key);
   if (inflight && inflight.job === job) resourceInflight.delete(job.key);
   job.settle(job.entry);
@@ -986,6 +993,12 @@ function requestResource(definition, resource, priority) {
 
   const refusal = admissionRefusal(definition, priority, weight);
   if (refusal) {
+    // A stale skip or expired failure from an earlier attempt is not a retained
+    // resource. Drop it unless a lease still protects it, so a refusal cannot
+    // leave dead weight in the capacity accounting.
+    if (cached && cached === resourceEntries.get(key) && !isPinned(key)) {
+      resourceEntries.delete(key);
+    }
     const rejected = {
       key,
       kind: resource.kind,

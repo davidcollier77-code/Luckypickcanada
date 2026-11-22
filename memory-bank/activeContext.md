@@ -6,8 +6,9 @@
 - **Scope:** `app/lib/resource-readiness.js` and `__tests__/resource-readiness.test.js`, plus Spec 210 artifacts and this Memory Bank header. No new preloader, payload accessor, visual, audio, timing or layout change.
 - **Implemented:** per-tier entry/weight/queue/speculative budgets; declared-or-estimated weights; priority admission that defers speculative work, sheds queued speculative jobs for committed work and evicts settled unleased records; counted leases that retire rather than dispose on release, pressure, version change and eviction; best-effort disposal for hub-owned payloads only; `getResourcePoolStats()` diagnostics.
 - **Deferred:** the alternating two-container handover, reserve gates, overflow classes, replenishment and demand scaling remain future work until a current experience consumes a prepared payload.
-- **Verification:** focused readiness/adaptive suites 101 tests, `tsc --noEmit` exit 0, `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` exit 0, production build 418,234,187 bytes (398.86 MiB) below the 495 MiB cap. Full-suite and PR-triggered results are recorded on the PR.
-- **PR status:** regular, non-draft PR, open and unmerged for the owner; the consolidated seven-category report is PR-triggered.
+- **Verification:** focused readiness/adaptive suites 103 tests; full suite 108 files / 1,168 tests; `tsc --noEmit` exit 0; `SPEC_KIT_BASE_REF=dda472cd620ed60e8841cb73582fdfdd00168013 ./freebuff-verify.sh` exit 0; production build 461,330,293 bytes (439.96 MiB), below the 495 MiB cap.
+- **Review repairs (owner-directed, post-submission):** removed shed and refused stale records from retained capacity while keeping them in the bounded rejection ledger; refreshed ledger insertion order on re-rejection; added three regression tests. The remaining advisory findings were checked: the `allowIntent` claim is not a defect (intent still sheds background work first), the `disposeEntry` retired-flag note is harmless on detached entries, and explicit release intentionally leaves in-flight work alone under the documented policy.
+- **PR status:** regular, non-draft PR, open and unmerged for the owner; the consolidated seven-category report is refreshing for the review-repair head.
 
 ## Previous Task — Compact Agent Governance (Spec 207)
 

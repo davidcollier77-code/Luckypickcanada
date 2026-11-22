@@ -871,7 +871,9 @@ describe('capacity, ownership and disposal', () => {
   it('sheds queued speculative work to admit a committed experience', async () => {
     useConstrainedProfile();
     const releases = [];
+    let calls = 0;
     hub.registerResourceAdapter('test', (resource) => {
+      calls += 1;
       if (resource.url === '/critical') return Promise.resolve({});
       return new Promise((resolve) => {
         releases.push(resolve);
@@ -907,6 +909,100 @@ describe('capacity, ownership and disposal', () => {
     expect((await committed).state).toBe('ready');
     const snapshots = await Promise.all(speculative);
     expect(snapshots.some((snapshot) => snapshot.resources[0]?.reason === 'capacity-shed')).toBe(true);
+
+    // The shed job is a rejection decision, not a retained resource. It must not
+    // inflate the entry count after it has been discarded.
+    const stats = hub.getResourcePoolStats();
+    expect(stats.rejected).toBeGreaterThanOrEqual(1);
+    expect(stats.entries).toBe(calls);
+  });
+
+  it('drops a refused stale record instead of charging it to retained capacity', async () => {
+    useConstrainedProfile();
+    let staleCalls = 0;
+    hub.registerResourceAdapter('test', async (resource) => {
+      if (resource.url === '/stale-refusal') {
+        staleCalls += 1;
+        return { skipped: true, reason: 'policy-skip' };
+      }
+      return {};
+    });
+    hub.registerExperienceResources({
+      id: 'stale-refusal',
+      version: 1,
+      dependsOn: [],
+      resources: [{ id: 'stale-resource', kind: 'test', url: '/stale-refusal' }],
+    });
+    await hub.prepareExperience('stale-refusal');
+    expect(hub.getResourcePoolStats().entries).toBe(1);
+
+    for (let index = 0; index < 15; index += 1) {
+      hub.registerExperienceResources({
+        id: `pinned-${index}`,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `pinned-resource-${index}`, kind: 'test', url: `/pinned-${index}` }],
+      });
+      await hub.prepareExperience(`pinned-${index}`);
+      hub.leaseExperienceResources(`pinned-${index}`);
+    }
+    expect(hub.getResourcePoolStats()).toMatchObject({ entries: 16, pinnedEntries: 15 });
+
+    const snapshot = await hub.prepareExperience('stale-refusal');
+
+    expect(snapshot.resources[0]).toMatchObject({
+      state: 'skipped',
+      reason: 'capacity-exhausted',
+    });
+    expect(staleCalls).toBe(1);
+    expect(hub.getResourcePoolStats().entries).toBe(15);
+    expect(hub.getResourcePoolStats().rejected).toBeGreaterThanOrEqual(1);
+  });
+
+  it('keeps the most recently refused decision in the bounded rejection ledger', async () => {
+    useConstrainedProfile();
+    const releases = [];
+    hub.registerResourceAdapter('test', () =>
+      new Promise((resolve) => {
+        releases.push(resolve);
+      }),
+    );
+
+    for (let index = 0; index < 44; index += 1) {
+      hub.registerExperienceResources({
+        id: `ledger-${index}`,
+        version: 1,
+        dependsOn: [],
+        resources: [{ id: `ledger-resource-${index}`, kind: 'test', url: `/ledger-${index}` }],
+      });
+    }
+    for (let index = 0; index < 44; index += 1) {
+      void hub.prepareExperience(`ledger-${index}`, { priority: 'background' });
+    }
+    await flushMicrotasks();
+
+    // With the queue full, ledger-12 is the oldest refusal still retained.
+    expect(hub.getExperienceReadiness('ledger-12').resources[0]?.reason).toBe('queue-full');
+    const retried = await hub.retryExperience('ledger-12', { priority: 'background' });
+    expect(retried.resources[0]?.reason).toBe('queue-full');
+
+    for (let index = 0; index < 30; index += 1) {
+      hub.registerExperienceResources({
+        id: `ledger-extra-${index}`,
+        version: 1,
+        dependsOn: [],
+        resources: [
+          { id: `ledger-extra-resource-${index}`, kind: 'test', url: `/ledger-extra-${index}` },
+        ],
+      });
+      const snapshot = await hub.prepareExperience(`ledger-extra-${index}`, {
+        priority: 'background',
+      });
+      expect(snapshot.resources[0]?.reason).toBe('queue-full');
+    }
+
+    expect(hub.getExperienceReadiness('ledger-12').resources[0]?.reason).toBe('queue-full');
+    await drainPreparations(releases);
   });
 
   it('reports an honest skip instead of overfilling the resident weight budget', async () => {
