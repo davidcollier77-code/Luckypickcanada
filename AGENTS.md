@@ -146,7 +146,8 @@ Prefer existing free services, free tiers and already available integrations. Av
 
 Both ChatGPT and Freebuff must follow the current Spec Kit workflow and instructions in the repository.
 
-- Review and follow the current Spec Kit command definitions, workflow instructions, templates and project-constitution requirements.
+- Review and follow the current Spec Kit workflow, its applicable command definitions, templates and project-constitution requirements.
+- The shared requirement is to use the Spec Kit workflow and definitions applicable to the agent's own environment. Freebuff's `.freebuff/cmds/` command wrappers remain FREEBUFF ONLY; ChatGPT must not apply them as ChatGPT operating instructions. Freebuff must follow its own applicable command definitions.
 - Use the current repository instructions rather than relying on remembered procedures, outdated documentation or assumptions about available commands.
 - Complete all required workflow stages in their prescribed order for repository-changing tasks.
 - Complete all mandatory template sections and applicable conditional requirements.
