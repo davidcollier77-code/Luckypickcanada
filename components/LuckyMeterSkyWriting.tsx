@@ -77,9 +77,15 @@ export default function LuckyMeterSkyWriting({
     let timer = 0;
     setVisibleCount(0);
 
-    // Each character arrives on its cumulative storyboard beat. The final beat
-    // is exactly getSparkWritingMs(message), so the parent's own schedule and
-    // the visible writing can never drift apart.
+    // Every character is scheduled against one absolute start time instead of
+    // the previous timer's completion. A frame that arrives late can therefore
+    // only delay its own glyph: the remaining glyphs use their original
+    // deadlines and catch up immediately, so a busy main thread cannot push the
+    // line past the storyboard's 3,800–5,200 ms window. The final deadline is
+    // exactly getSparkWritingMs(message), so parent and writer never drift.
+    const startedAt = performance.now();
+    const delayUntil = (at: number) => Math.max(0, startedAt + at - performance.now());
+
     const tick = () => {
       if (cancelled) return;
       index += 1;
@@ -89,11 +95,10 @@ export default function LuckyMeterSkyWriting({
         return;
       }
       const at = schedule[index] ?? schedule[schedule.length - 1] ?? 0;
-      const previous = schedule[index - 1] ?? 0;
-      timer = window.setTimeout(tick, Math.max(16, at - previous));
+      timer = window.setTimeout(tick, delayUntil(at));
     };
 
-    timer = window.setTimeout(tick, Math.max(16, schedule[0] ?? 0));
+    timer = window.setTimeout(tick, delayUntil(schedule[0] ?? 0));
     return () => {
       cancelled = true;
       window.clearTimeout(timer);

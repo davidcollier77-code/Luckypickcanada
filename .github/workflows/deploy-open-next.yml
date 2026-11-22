@@ -23,6 +23,10 @@ jobs:
   deploy:
     name: Deploy OpenNext Worker
     runs-on: ubuntu-latest
+    # Bound the whole build and verification path. Every request in the served
+    # CSS check has its own timeout, and this keeps a stalled build or deploy
+    # from occupying the non-cancelling deployment concurrency group for hours.
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -43,19 +47,38 @@ jobs:
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
 
-      - name: Build Next.js app
+      # Build once. OpenNext runs the configured `next build --webpack` itself;
+      # a second build in this job used to run without GITHUB_SHA and could
+      # leave the uploaded stylesheets and the HTML from different builds.
+      - name: Build OpenNext for Cloudflare (single deterministic build)
         env:
           GITHUB_SHA: ${{ github.sha }}
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
-        run: NODE_ENV=production pnpm run build
-
-      - name: Build OpenNext for Cloudflare
-        env:
-          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
         run: pnpm exec opennextjs-cloudflare build
 
-      - name: Verify compiled Tailwind CSS
+      - name: Verify compiled CSS and build identity
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: |
+          # Next writes the build ID from `generateBuildId`, which returns
+          # GITHUB_SHA in next.config.mjs. The uploaded artifact must identify
+          # the commit being deployed, not a second build or a timestamp.
+          expected_build_id="${GITHUB_SHA:-}"
+          if [ -z "$expected_build_id" ]; then
+            echo "GITHUB_SHA IS NOT AVAILABLE; THE UPLOADED BUILD CANNOT BE IDENTIFIED";
+            exit 1
+          fi
+          if [ ! -f .open-next/assets/BUILD_ID ]; then
+            echo "BUILD ID FILE MISSING FROM .open-next/assets";
+            exit 1
+          fi
+          build_id="$(tr -d '\r\n' < .open-next/assets/BUILD_ID)"
+          if [ "$build_id" != "$expected_build_id" ]; then
+            echo "BUILD ID MISMATCH: expected $expected_build_id, got ${build_id:-<empty>}";
+            exit 1
+          fi
+          echo "BUILD ID MATCHES THE DEPLOYED COMMIT: $build_id"
+
           css_dir=".open-next/assets/_next/static/css"
           if [ ! -d "$css_dir" ]; then
             echo "COMPILED CSS DIR MISSING";
@@ -82,6 +105,22 @@ jobs:
           fi
 
           echo "TAILWIND CSS COMPILED"
+
+          # A deployment must never upload HTML that references a stylesheet
+          # set without the approved Lucky Meter vessel and dock rules. This
+          # catches a stale or partial build before wrangler uploads it.
+          missing=0
+          for selector in lucky-vessel-scene lucky-vessel-canvas-host lucky-results-dock; do
+            if ! grep -R -q -F ".$selector" "$css_dir"; then
+              echo "MISSING COMPILED CSS RULE: .$selector"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "The compiled CSS does not contain the approved Lucky Meter vessel/dock rules."
+            exit 1
+          fi
+          echo "LUCKY METER VESSEL AND DOCK RULES PRESENT"
 
       - name: Verify .open-next/worker.js exists
         run: |
@@ -141,6 +180,15 @@ jobs:
 
           echo "Cloudflare API remained rate-limited after bounded retries."
           exit 1
+
+      # The page can be served from Next's prerender cache and the stylesheets
+      # are content-addressed. Verify what visitors actually receive, not only
+      # the artifact that was uploaded: the cache-bypassed response, the bare
+      # URL a visitor requests, and the deployed build ID it identifies.
+      - name: Verify served Lucky Meter page and stylesheets
+        env:
+          LUCKY_METER_EXPECTED_BUILD_ID: ${{ github.sha }}
+        run: node scripts/verify-deployed-lucky-meter-css.mjs
 
   # 🔴 CLOUDFLARE OBSERVABILITY ISSUE RESOLUTION — AUTHORIZATION REQUIRED
   #
