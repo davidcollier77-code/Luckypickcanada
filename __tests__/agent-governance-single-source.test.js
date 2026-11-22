@@ -77,6 +77,22 @@ describe('compact single-source agent governance', () => {
     expect(agents).toContain('Never store secrets or sensitive configuration.');
   });
 
+  it('keeps scripts/verify-startup.sh in step with the AGENTS.md initialization instruction', () => {
+    const instruction = 'At task initialization, read and health-check all four core files:';
+    const script = readFileSync(join(root, 'scripts', 'verify-startup.sh'), 'utf8');
+
+    // The startup verification asserts this exact sentence. It once checked wording
+    // AGENTS.md no longer used, so step 1 of every startup failed before any work ran.
+    expect(readAgents()).toContain(instruction);
+    expect(script).toContain(instruction);
+    expect(() =>
+      execFileSync('bash', [join(root, 'scripts', 'verify-startup.sh')], {
+        cwd: root,
+        stdio: 'pipe',
+      })
+    ).not.toThrow();
+  });
+
   it('preserves current Spec Kit sequencing and checker-first task planning', () => {
     const agents = readAgents();
     const start = agents.indexOf('### Spec Kit workflow');

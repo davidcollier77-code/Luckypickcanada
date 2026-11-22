@@ -37,7 +37,7 @@ for file in \
 done
 
 grep -Fq '.docs/manifest.json' AGENTS.md || fail "AGENTS.md does not reference .docs/manifest.json"
-grep -Fq 'Read all four Memory Bank files once' AGENTS.md || fail "AGENTS.md is missing the four-file initialization instruction"
+grep -Fq 'At task initialization, read and health-check all four core files:' AGENTS.md || fail "AGENTS.md is missing the four-file initialization instruction"
 
 # AGENTS.md is the only file Freebuff injects into the agent context at chat start
 # (Freebuff Cloud reads it up to about 64 KiB). If it outgrows that budget the

@@ -88,7 +88,7 @@ The Freebuff project startup command is stored in Freebuff Project Settings, out
 exact value to paste there; the repository cannot read or change that setting:
 
 ```bash
-bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && (bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval "$(bash scripts/setup-chromium-libs.sh --env)" && bash scripts/setup-chromium-libs.sh --persist && bash scripts/setup-playwright-agent.sh --install-browser --probe-browser'
+bash -lc 'bash scripts/verify-startup.sh && source scripts/bootstrap-pnpm.sh && CI=true pnpm install --frozen-lockfile && pnpm exec playwright cli --help && bash scripts/setup-playwright-agent.sh --install-browser && (bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh) && eval "$(bash scripts/setup-chromium-libs.sh --env)" && bash scripts/setup-chromium-libs.sh --persist && bash scripts/setup-playwright-agent.sh --probe-browser'
 ```
 
 Each step is chained with `&&`, so it runs in this order and stops the rest of the command on failure:
@@ -106,26 +106,32 @@ Each step is chained with `&&`, so it runs in this order and stops the rest of t
    lockfile is out of date. `CI=true` keeps pnpm non-interactive during startup.
 4. `pnpm exec playwright cli --help` — proves the repository-local Playwright agent CLI used for browser QA is
    installed and runnable, without launching a browser.
-5. `bash scripts/setup-chromium-libs.sh --check || bash scripts/setup-chromium-libs.sh` — the check is a 0.06 s
+5. `bash scripts/setup-playwright-agent.sh --install-browser` — installs the project-pinned Chromium only when
+   `--browser-root` reports no browser at the pinned revision (an existing matching cache or an environment-provided
+   install costs no download, while a cache left behind by another Playwright version is repaired), then confirms the
+   pinned revision is installed afterwards — the log names the revision it reused or downloaded, and a download that
+   does not produce it fails here instead of surfacing later as a misleading library error. It runs before the strict
+   check because that check validates the browser binaries: on a workspace that has never had a browser it fails, the
+   provisioning branch below runs, and that branch ends by repeating the same check. Installing first keeps the check
+   as the assertion it is meant to be instead of a step that aborts a cold startup. The download does not launch the
+   browser, so it needs no `LD_LIBRARY_PATH`; `setup-playwright-agent.sh` applies the library environment to itself
+   when it is already provisioned.
+6. `bash scripts/setup-chromium-libs.sh --check || bash scripts/setup-chromium-libs.sh` — the check is a 0.06 s
    `ldd` against the Playwright Chromium binary, so provisioning only runs when the libraries are missing. The image
    ships none of them and refuses `sudo`, so the script downloads the official Ubuntu packages with `apt-get` as an
    unprivileged downloader and unpacks them into `~/.local/chromium-libs`; nothing is written system-wide. A
    provisioned workspace takes about 11 s once. A system-wide runtime — every required object, `/etc/fonts/fonts.conf`
    and a system font directory — satisfies the same check, so a machine or image that already installs the packages
    needs no download and no exports at all.
-6. `eval "$(bash scripts/setup-chromium-libs.sh --env)"` — applies the `LD_LIBRARY_PATH` and `FONTCONFIG_*` values in
+7. `eval "$(bash scripts/setup-chromium-libs.sh --env)"` — applies the `LD_LIBRARY_PATH` and `FONTCONFIG_*` values in
    the shell that runs the probe, because the provisioning step's environment does not outlive its own process.
-7. `bash scripts/setup-chromium-libs.sh --persist` — writes `~/.local/chromium-libs/env.sh` and sources it from a
+8. `bash scripts/setup-chromium-libs.sh --persist` — writes `~/.local/chromium-libs/env.sh` and sources it from a
    guarded block in `~/.profile` and `~/.bashrc`. The exports of a startup command die with that process, so without
    this step every later shell would start with no `LD_LIBRARY_PATH` and Chromium would fail on `libnspr4.so` again.
    Both files live under `$HOME`, so the wiring survives workspace restarts and is rewritten idempotently, never
    duplicated.
-8. `bash scripts/setup-playwright-agent.sh --install-browser --probe-browser` — applies the same Chromium
-   environment to its own shell, installs the project-pinned Chromium only when `--browser-root` reports no browser
-   at the pinned revision (an existing matching cache or an environment-provided install costs no download, while a
-   cache left behind by another Playwright version is repaired), confirms the pinned revision is installed afterwards
-   — the log names the revision it reused or downloaded, and a download that does not produce it fails here instead of
-   surfacing later as a misleading library error — and launches it headlessly, so startup ends with
+9. `bash scripts/setup-playwright-agent.sh --probe-browser` — re-applies the same Chromium environment to its own
+   shell and launches the pinned browser headlessly, so startup ends with
    `PASS: Chromium launched and rendered a probe page` instead of an unproven CLI.
 
 `pnpm exec playwright test` and `bash scripts/setup-playwright-agent.sh --probe-browser` need no manual setup: the
