@@ -575,7 +575,7 @@ describe('visual QA workflow wiring', () => {
   it('runs verification for every pull request and the browser job only after the classifier', () => {
     const verify = jobBlock('verify');
     expect(verify, 'the stable Visual QA verification job must exist').not.toBeNull();
-    expect(verify).toMatch(/name: Visual QA\n {4}needs: changes/);
+    expect(verify).toMatch(/name: Application Verification\n {4}needs: changes/);
     expect(verify).not.toContain('visual_required');
 
     const visual = jobBlock('visual');
@@ -653,7 +653,8 @@ describe('visual QA workflow wiring', () => {
     const visual = jobBlock('visual');
     expect(visual).toMatch(/strategy:\n {6}fail-fast: false/);
     expect(visual).toMatch(/shard: \[1, 2\]/);
-    expect(visual).toContain('--shard=${{ matrix.shard }}/2');
+    expect(visual).toContain('plan-playwright-shards.mjs');
+    expect(visual).toContain('--forbid-only');
     expect(visual).toContain('name: Visual QA (shard ${{ matrix.shard }}/2)');
   });
 

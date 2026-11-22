@@ -35,29 +35,13 @@ else
   fi
 fi
 
-echo -e "\n--- Testing Verification Status Integrity Checker ---"
-# Proves skipped or unrun checks are reported NOT RUN, that checks from an
-# earlier commit are never accepted as evidence for the current head, and that
-# the bounded wait the report relies on follows the current head.
-if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_verify_pr_verification_status.py'; then
-  echo "❌ Verification status integrity tests failed; remaining verification was not run." >&2
-  exit 1
-fi
-
-echo -e "\n--- Testing the Consolidated Report Contract ---"
-# Proves the report waits, bounded, for the current head's applicable checks
-# before reading evidence, and that the seven categories, declarations and
-# publication behaviour are unchanged.
-if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_pr_verification_report.py'; then
-  echo "❌ Consolidated report contract tests failed; remaining verification was not run." >&2
-  exit 1
-fi
-
-echo -e "\n--- Testing AGENTS.md Protection Classifier ---"
-# Proves a dedicated governance pull request is allowed, an AGENTS.md edit in
-# an unrelated pull request is refused, and a title or body cannot bypass it.
-if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_agents_md_protection.py'; then
-  echo "❌ AGENTS.md protection classifier tests failed; remaining verification was not run." >&2
+echo -e "\n--- Testing QA Infrastructure Checkers ---"
+# Every checker suite: current-head integrity, the consolidated report, the
+# AGENTS.md classifier, scope/protected files, DevSkim summarization, review
+# findings, install timings and change applicability. A skipped or earlier
+# commit's check is still proven NOT RUN, never a pass.
+if ! python3 -m unittest discover -s "$SCRIPT_DIR/.github/scripts" -p 'test_*.py'; then
+  echo "❌ QA infrastructure checker tests failed; remaining verification was not run." >&2
   exit 1
 fi
 
@@ -68,10 +52,34 @@ if ! pnpm exec tsc --noEmit; then
   exit 1
 fi
 
-# Build Check (Next.js)
+# Full unit suite: the same broad regression net CI runs. Selective execution
+# is deliberately not applied here or there; it is only used for the provably
+# path-dependent browser and build checks.
+echo -e "\n--- Running Full Unit Test Suite ---"
+if ! pnpm run test; then
+  echo "❌ Unit test suite failed; remaining verification was not run." >&2
+  exit 1
+fi
+
+# Build Check (Next.js; not the OpenNext artifact and never a deployment)
 echo -e "\n--- Running Build Check ---"
 if ! pnpm run build; then
   echo "❌ Build failed; remaining verification was not run." >&2
+  exit 1
+fi
+
+echo -e "\n--- Checking Production Build Size (under 495 MiB) ---"
+# POSIX `du -sk` keeps this portable; CI measures the exact byte total with
+# `du -sb` in the protected OpenNext workflow.
+if ! size_bytes="$(du -sk .next public | awk '{total += $1} END {printf "%.0f", total * 1024}')"; then
+  echo "❌ The production build size could not be measured." >&2
+  exit 1
+fi
+max_bytes=$((495 * 1024 * 1024))
+size_mib="$(awk -v bytes="$size_bytes" 'BEGIN {printf "%.2f", bytes / 1024 / 1024}')"
+printf 'Combined .next + public: %s bytes (%s MiB)\n' "$size_bytes" "$size_mib"
+if (( size_bytes >= max_bytes )); then
+  echo "❌ Combined .next + public reached or exceeded 495 MiB." >&2
   exit 1
 fi
 
@@ -83,4 +91,7 @@ fi
 
 echo -e "\n✅ All verification steps passed."
 echo "Before opening the pull request, re-read PR_SUBMISSION.md as the final submission checklist."
-echo "Automated Playwright/Visual QA runs after PR creation; submitters do not need to supply browser evidence."
+echo "Covered here: frozen install, Spec Kit gate, all Python checker suites, TypeScript, the full Vitest suite,"
+echo "the Next.js build and the 495 MiB size cap."
+echo "Not covered here: Playwright/Visual QA, the OpenNext artifact build, DevSkim and deployment."
+echo "Those run in GitHub Actions after PR creation; submitters do not need to supply browser evidence."

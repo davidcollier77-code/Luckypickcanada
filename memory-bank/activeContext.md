@@ -1,6 +1,14 @@
-# Active Context — Resource-readiness safety limits
+# Active Context — PR verification streamlining
 
-## Current Task — Resource-readiness safety limits (Spec 210)
+## Current Task — PR verification streamlining (Spec 211)
+
+- **Goal:** make every PR check earn its runtime through trusted applicability, honest `NOT RUN` reasons, smarter Playwright execution and a local gate that predicts CI, without removing coverage.
+- **Implemented:** fail-closed build classifier (`pr_applicability.py`) gating the protected OpenNext workflow; trusted-base recomputation in Verification Integrity and the consolidated report; the always-required job renamed `Application Verification`; a required-but-skipped check now blocks while a proven-inapplicable check is `NOT RUN — not applicable`; Playwright timing capture, whole-file duration-weighted shard planning with exact-coverage guards, shadow-mode affected-spec selection, and flake/imbalance warnings; `./freebuff-verify.sh` now runs all Python checker suites, the full Vitest suite, the type check, the Next.js build and the 495 MiB cap.
+- **Preserved:** all 16 Playwright specs, three projects, `playwright.config.ts`, every committed baseline, Crystal Ball/Oracle and adaptive-performance/resource-readiness coverage, DevSkim, CodeQL default setup, Dependabot and the `performance` checker mode.
+- **Excluded pending separate approval:** dead checker modes, obsolete root scripts, deployment-workflow narrowing, subset spec selection and a third shard.
+- **PR status:** open and unmerged for owner review.
+
+## Previous Task — Resource-readiness safety limits (Spec 210)
 
 - **Goal:** bound the existing readiness hub before any two-container handover: capacity accounting, queue caps, counted leases and real disposal, with tests.
 - **Scope:** `app/lib/resource-readiness.js` and `__tests__/resource-readiness.test.js`, plus Spec 210 artifacts and this Memory Bank header. No new preloader, payload accessor, visual, audio, timing or layout change.

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "always_run": [
+    "homepage.spec.ts",
+    "homepage-content-refresh.spec.ts",
+    "mobile-accessibility.spec.ts"
+  ],
+  "rules": [
+    {
+      "match": [
+        "app/crystal-ball/**",
+        "app/api/oracle/**",
+        "components/crystal-ball/**",
+        "components/CrystalBall*"
+      ],
+      "specs": [
+        "crystal-ball.spec.ts",
+        "crystal-ball-interactions.spec.ts",
+        "crystal-ball-greeting.spec.ts",
+        "crystal-ball-daily-limit.spec.ts",
+        "crystal-ball-follow-up-outage.spec.ts"
+      ]
+    },
+    {
+      "match": [
+        "app/lucky-meter/**",
+        "app/lib/lucky-meter/**",
+        "app/lib/adaptive-performance.js",
+        "components/lucky-meter/**",
+        "components/lucky-meter*",
+        "components/cosmic-event-engine.js"
+      ],
+      "specs": ["lucky-meter-daily-resonance.spec.ts", "lucky-reveal-selection.spec.ts"]
+    },
+    {
+      "match": [
+        "app/lucky-stories/**",
+        "components/lucky-stories/**",
+        "components/LuckyStories*"
+      ],
+      "specs": ["lucky-stories-pagination.spec.ts"]
+    },
+    {
+      "match": ["app/lucky-map/**", "components/lucky-map/**", "components/LuckyMap*"],
+      "specs": ["map-marker-interaction.spec.ts"]
+    },
+    {
+      "match": ["components/gold-cta*", "components/GoldCta*", "components/SitewideGoldCta*"],
+      "specs": ["gold-cta.spec.ts", "sitewide-gold-cta.spec.ts"]
+    },
+    {
+      "match": ["middleware.ts", "components/Turnstile*", "app/**/turnstile*"],
+      "specs": ["security-headers.spec.ts", "turnstile-loading.spec.ts"]
+    },
+    {
+      "match": [
+        "app/globals.css",
+        "app/layout.js",
+        "next.config.mjs",
+        "tailwind.config.js",
+        "themes/**",
+        "public/fonts/**",
+        "public/images/**"
+      ],
+      "specs": "all"
+    }
+  ]
+}

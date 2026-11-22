@@ -4,17 +4,19 @@ This is the single source of truth for PR preparation, submission and handoff.
 
 Read it twice for every repository-changing task:
 
-1. **Before implementation begins**, together with the applicable QA checker requirements in Section 9 of `AGENTS.md`. The declarations, protected-file rules and required code-quality review below must shape the task scope, plan and implementation instead of being discovered at submission time.
+1. **Before implementation begins**, together with the applicable QA checker requirements in the “QA requirements before specification” section of `AGENTS.md`. The declarations, protected-file rules and required code-quality review below must shape the task scope, plan and implementation instead of being discovered at submission time.
 2. **Immediately before creating the pull request**, as the final submission checklist. Re-read Section 2 and Section 4 and confirm the complete PR body contains every required declaration and result.
 
 The repository's automated PR verification has exactly seven checker categories: **QA Checker**, **DevSkim**, **PR Scope Verification**, **Protected File Changes**, **Verification Integrity**, **Governance and Workflow Verification** and **Dependency Health & Vulnerability Review**. One consolidated report publishes all seven on the pull request, with the statuses `PASSED`, `FAILED`, `WARNING` or `NOT RUN`. Visual QA, the full test suite, the type check, the build and both Playwright shards are supporting results inside the QA Checker category; they are never separate top-level categories.
+
+The always-required application check is named **Application Verification**; the conditional browser checks are **Visual QA (shard 1/2)** and **Visual QA (shard 2/2)**. Build validation and browser checks are conditional only when the trusted classifier proves the change set cannot affect them; an unknown, empty or unreadable change set keeps them required. A check that could not apply is reported as `NOT RUN — not applicable` with the classifier reason and is never counted as passed.
 
 Dependabot remains the scheduled weekly updater for npm/pnpm and GitHub Actions; its configuration is unchanged. Its status is reported as context inside the Dependency Health & Vulnerability Review category, which runs on every pull request and does not depend on a Dependabot update having run.
 
 ## 1. Complete the work before submission
 
 - Complete the authorized scope and required Spec Kit stages and artifacts.
-- **Follow Section 8 of `AGENTS.md`.** Inspect the applicable repository workflows, checkers, configurations and scripts. Identify their actual requirements and the issues they are designed to catch; do not rely on names or assumptions.
+- **Follow the “QA requirements before specification” section of `AGENTS.md`.** Inspect the applicable repository workflows, checkers, configurations and scripts. Identify their actual requirements and the issues they are designed to catch; do not rely on names or assumptions.
 - Check the planned changes against those requirements before implementation. Before submission, independently review the completed implementation and complete diff against every applicable checker requirement again. Resolve unmet in-scope requirements or record the exact blocker. CI results do not replace this review. Respect protected files and repository boundaries. Do not change `AGENTS.md` unless explicitly authorized.
 - Run `./freebuff-verify.sh` and applicable task-group tests or local checks when supported. These checks supplement, but do not replace, the checker-requirement review.
 - Fix in-scope failures and unmet requirements. Record any local check that cannot run and the exact reason. Do not treat an environment limitation as an approval loop.

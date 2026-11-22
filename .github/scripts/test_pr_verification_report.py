@@ -192,7 +192,10 @@ class CategoryContractTests(unittest.TestCase):
         self.assertNotIn("Visual QA Summary", names)
         self.assertNotIn("Visual QA", json.dumps(names))
         self.assertTrue(
-            any(row["name"] == "Visual QA" for row in result["supporting_checks"])
+            any(
+                row["name"] == "Application Verification"
+                for row in result["supporting_checks"]
+            )
         )
         self.assertTrue(
             any("shard 1/2" in row["name"] for row in result["supporting_checks"])

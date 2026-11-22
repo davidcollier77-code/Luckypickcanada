@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "shards": 2,
+  "generated_from": [],
+  "note": "Weights are refreshed by .github/scripts/update-playwright-shard-plan.mjs from committed Playwright timing artifacts. Until real durations are recorded the planner uses equal weights; file affinity and exact coverage still hold.",
+  "weights_ms": {}
+}

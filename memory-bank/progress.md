@@ -771,3 +771,11 @@ This file is a concise record of meaningful completed work, not a chronological 
   Readiness Hub prepares the new audio resource; the existing recordings supply every new cue.
 - Preserved the approved Milky Way artwork, distributions, history, daily limit, local-midnight reset,
   sharing, reduced motion, static WebGL fallback and compact mode. Build remains below the 495 MiB limit.
+
+## 2026-11-22 — PR verification streamlining (Spec 211)
+
+- Added a fail-closed build applicability classifier and gated the protected OpenNext validation on it; merge groups and manual dispatches always build.
+- Verification Integrity and the consolidated report now recompute build/visual applicability from the trusted base. A required-but-skipped check blocks; a proven-inapplicable check is `NOT RUN — not applicable` with its reason, never a pass.
+- Renamed the always-required job to Application Verification. Added Playwright per-spec timing capture, whole-file duration-weighted shard planning with exact-coverage guards, shadow-mode affected-spec selection, and flake/imbalance warnings.
+- `./freebuff-verify.sh` now runs every Python checker suite, the full Vitest suite, the type check, the Next.js build and a 495 MiB size check.
+- Preserved all 16 Playwright specs, three projects, the configuration and every committed baseline, plus Crystal Ball/Oracle, adaptive-performance, resource-readiness, DevSkim, CodeQL, Dependabot and the performance checker. Dead checker modes and obsolete root scripts remain pending separate owner approval.

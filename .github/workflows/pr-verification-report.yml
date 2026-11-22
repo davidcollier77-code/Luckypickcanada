@@ -186,6 +186,25 @@ jobs:
             cat "$RUNNER_TEMP/dependency-alerts.err" >&2 || true
           fi
 
+      # Build and browser applicability is recomputed from the trusted base
+      # classifier and this pull request's actual file list. The renderer and
+      # the audit receive the same decision, so a skipped check is distinguished
+      # from a check that could not apply.
+      - name: Compute change applicability from the trusted base
+        id: applicability
+        if: steps.pr.outputs.number != ''
+        # A missing classifier on the trusted base (rollout) or an API failure
+        # must not suppress the report; empty outputs fall back to "unknown".
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/scripts/compute-applicability.sh \
+            "$RUNNER_TEMP/pr.json" "$RUNNER_TEMP/files.json" >> "$GITHUB_OUTPUT"
+
       # The audit matches every check run to the current head SHA and reports
       # skipped, cancelled, stale and missing results as NOT RUN. It exits
       # non-zero when verification is not complete, which is a result this
@@ -202,6 +221,8 @@ jobs:
           python3 .github/scripts/verify_pr_verification_status.py \
             --repo "$REPOSITORY" \
             --pr "$PR_NUMBER" \
+            --build-required "${{ steps.applicability.outputs.build_required || 'unknown' }}" \
+            --visual-required "${{ steps.applicability.outputs.visual_required || 'unknown' }}" \
             --json "$RUNNER_TEMP/verification.json" \
             --summary "$RUNNER_TEMP/verification.md"
           status=$?

@@ -152,8 +152,10 @@ describe('preserved automated QA', () => {
     expect(visualQa).toContain('pnpm run test');
     expect(visualQa).toContain('pnpm exec tsc --noEmit');
     expect(visualQa).toContain('shard: [1, 2]');
-    expect(visualQa).toContain('--shard=${{ matrix.shard }}/2');
+    expect(visualQa).toContain('plan-playwright-shards.mjs');
+    expect(visualQa).toContain('--forbid-only');
     expect(visualQa).toContain('name: Visual QA (shard ${{ matrix.shard }}/2)');
+    expect(visualQa).toContain('name: Application Verification');
     expect(visualQa).toContain('Verify committed visual baselines');
     expect(visualQa).toContain('playwright install --with-deps chromium');
     expect(visualQa).toContain('Upload Playwright report');
