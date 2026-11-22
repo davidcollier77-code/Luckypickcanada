@@ -141,6 +141,41 @@ describe('Lucky Meter sky-writing', () => {
     expect(delays[1]).toBe(Math.max(0, SCHEDULE[1] - clock));
   });
 
+  it('still finishes at the final deadline after a late frame', () => {
+    const onComplete = vi.fn();
+    const epoch = Date.now();
+    let lateness = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => Date.now() - epoch + lateness);
+
+    render(
+      <LuckyMeterSkyWriting message={MESSAGE} state="writing" onComplete={onComplete} />,
+    );
+
+    const duration = getSparkWritingMs(MESSAGE);
+    expect(duration).toBeGreaterThanOrEqual(3_800);
+    expect(duration).toBeLessThanOrEqual(5_200);
+
+    // The first glyph's frame arrives 1,200 ms late. Every later glyph is on
+    // time, so the absolute deadlines must absorb the lateness instead of
+    // shifting the whole line by it.
+    lateness = 1_200;
+    act(() => {
+      vi.advanceTimersByTime(SCHEDULE[0]);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+    lateness = 0;
+
+    act(() => {
+      vi.advanceTimersByTime(duration - SCHEDULE[0] - 1);
+    });
+    expect(onComplete).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
   it('presents the whole message at once under reduced motion', () => {
     const onComplete = vi.fn();
     render(

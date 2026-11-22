@@ -27,23 +27,26 @@ artifact came from the OpenNext rebuild, not the `GITHUB_SHA` build.
 ## Approach
 
 1. **One deterministic build.** Remove the redundant `pnpm run build` step and pass `GITHUB_SHA`
-   to the OpenNext build, so the uploaded artifact is the single build the job performs and its
-   build ID identifies the deployed commit.
+   to the OpenNext build, so the uploaded artifact is the single build the job performs. The
+   compiled-artifact gate asserts `.open-next/assets/BUILD_ID` equals `GITHUB_SHA` before upload.
 2. **Artifact gate.** Extend the existing “Verify compiled Tailwind CSS” step to fail when the
    compiled CSS lacks `.lucky-vessel-scene`, `.lucky-vessel-canvas-host` or `.lucky-results-dock`.
 3. **Served gate.** Add `scripts/verify-deployed-lucky-meter-css.mjs`. After `wrangler deploy` it
-   fetches `/lucky-meter` with a cache-busting query, resolves every `<link rel=stylesheet>`,
-   fetches each stylesheet and fails with the missing selector names. It retries six times at
-   15 s intervals for Cloudflare/OpenNext propagation.
+   fetches both a cache-bypassed `/lucky-meter` and the bare visitor-facing URL, requires each
+   response to identify the deployed build ID, resolves every `<link rel=stylesheet>`, fetches each
+   stylesheet and fails with the failing page and missing selector names. It retries six times at
+   15 s intervals for Cloudflare/OpenNext propagation, and every request aborts after 10 s so a
+   stalled origin cannot hold the deploy concurrency group.
 4. **Absolute Spark clock.** Measure `startedAt = performance.now()` once; schedule each glyph at
    `startedAt + schedule[index]` using `Math.max(0, …)`. Late frames shrink the next delay
    instead of extending the line.
 5. **Tests.**
-   - `__tests__/deploy-css-check.test.js`: URL resolution, missing-selector reporting, retry and
-     failure paths with a fake fetch.
+   - `__tests__/deploy-css-check.test.js`: URL resolution, rules split across stylesheets,
+     build-identity assertion, visitor-facing cached HTML, request timeout, retry and failure
+     paths with a fake fetch.
    - `__tests__/lucky-meter-sky-writing.test.jsx`: a 1,200 ms late first frame reduces the next
-     delay by exactly that amount; the existing window test still proves completion at the final
-     deadline.
+     delay by exactly that amount; a late-frame run still completes at the final deadline; the
+     existing window test proves completion inside 3,800–5,200 ms.
 
 ## Files
 
@@ -69,8 +72,12 @@ artifact came from the OpenNext rebuild, not the `GITHUB_SHA` build.
 
 ## Risks and Mitigations
 
-- **Cached HTML at the edge.** The served check retries and fails loudly rather than reporting a
-  false success. A persistent failure identifies a cache purge as the remaining action.
+- **Cached HTML at the edge.** The visitor-facing request is checked separately from the
+  cache-bypassed request and must also identify the deployed build. The check retries and fails
+  loudly rather than reporting a false success; a persistent failure identifies a cache purge as
+  the remaining action.
+- **Request and job stalls.** Each fetch has a 10 s timeout and the deploy job is bounded at
+  30 minutes, so the non-cancelling deployment concurrency group cannot be occupied for hours.
 - **Removing the first build.** OpenNext already performs the production build with the same
   `next build --webpack` command, so the artifact is unchanged except that it now carries the
   commit SHA as its build ID.

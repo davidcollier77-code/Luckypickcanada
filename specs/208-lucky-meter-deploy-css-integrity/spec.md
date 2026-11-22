@@ -48,8 +48,10 @@ When Cloudflare or Next serves a prerendered page whose stylesheets predate the 
 the deploy job fails with the missing selector names instead of reporting success.
 
 **Independent Test**: Run `node scripts/verify-deployed-lucky-meter-css.mjs` against a page whose
-CSS omits the rules; it exits non-zero and names the missing selectors. Unit tests cover the
-success, retry and failure paths without network access.
+CSS omits the rules; it exits non-zero and names the missing selectors. A page whose bare
+visitor-facing response still carries an older stylesheet set must fail even when the
+cache-bypassed response is correct. Unit tests cover the success, retry, timeout, visitor-cache
+and failure paths without network access.
 
 ### User Story 3 - The Spark stays inside its window (Priority: P1)
 
@@ -66,15 +68,20 @@ storyboard deadline and assert completion.
 - **FR-001**: The deploy job MUST run exactly one Next.js build for the uploaded artifact.
 - **FR-002**: The compiled CSS MUST be checked for the three approved Lucky Meter selectors
   before upload.
-- **FR-003**: The deployed page MUST be fetched after `wrangler deploy`; every linked stylesheet
-  MUST be checked for the same selectors, with bounded retries for cache propagation.
-- **FR-004**: The deploy MUST fail with the missing selector names when the served CSS is stale.
+- **FR-003**: After `wrangler deploy`, both a cache-bypassed page and the bare visitor-facing
+  `/lucky-meter` URL MUST be fetched; every stylesheet each response links MUST be checked for the
+  same selectors, and both responses MUST identify the deployed commit as their build ID, with
+  bounded retries for cache propagation.
+- **FR-004**: The deploy MUST fail with the failing page and missing selector names when the
+  served CSS is stale, and MUST fail when the served HTML belongs to a different build.
 - **FR-005**: `LuckyMeterSkyWriting` MUST schedule each glyph against one absolute start time and
   MUST NOT add a late frame's lateness to subsequent glyphs.
 - **FR-006**: The visible writing MUST still complete at `getSparkWritingMs(message)` and remain
   within 3,800–5,200 ms.
 - **FR-007**: Selection, storage schema, tiers, palettes, artwork, audio, stage timings, reduced
   motion and fallbacks MUST remain unchanged.
+- **FR-008**: The uploaded OpenNext artifact's `BUILD_ID` MUST equal the deployed commit SHA, and
+  every request made by the served check MUST have a bounded timeout.
 
 ### Key Entities
 
@@ -84,8 +91,9 @@ storyboard deadline and assert completion.
 
 ## Success Criteria *(mandatory)*
 
-- A deploy of the corrected `main` either serves a stylesheet set containing the vessel and dock
-  rules or fails before the owner is told it succeeded.
+- A deploy of the corrected `main` either serves, from the deployed commit, a stylesheet set
+  containing the vessel and dock rules on both the origin and visitor-facing page, or fails before
+  the owner is told it succeeded.
 - The unit suite proves the absolute-deadline behaviour and the CSS-check parsing, retry and
   failure paths.
 - The measured production build remains strictly below 495 MiB.

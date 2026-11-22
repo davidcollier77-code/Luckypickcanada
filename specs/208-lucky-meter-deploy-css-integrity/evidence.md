@@ -60,10 +60,49 @@ The failing live check is the proof that the new gate detects the current stale
 deployment. It must pass after this change is merged and deployed; the PR
 workflow will run it with the full retry budget.
 
+## PR #2008 review resolution (22 November 2026)
+
+The PR reviews requested changes on `8c9c5f64`. Every valid finding was fixed:
+
+- **Visitor-facing coverage.** The served check now fetches the bare
+  `/lucky-meter` URL as a visitor does, in addition to the cache-bypassed
+  origin probe. Both responses must link a stylesheet set containing the three
+  approved selectors, so a cached page with old stylesheet hashes fails even
+  when the origin is fresh.
+- **Request and job timeouts.** Every fetch aborts after 10 s
+  (`LUCKY_METER_CSS_TIMEOUT_MS` overrides it) and the deploy job is bounded at
+  `timeout-minutes: 30`.
+- **Build identity.** The compiled gate fails unless
+  `.open-next/assets/BUILD_ID` equals `GITHUB_SHA`, and the served check fails
+  unless both page responses identify that same build ID.
+- **Test quality.** The pass test now splits the approved rules across both
+  linked stylesheets and asserts the union, the visitor-facing and timeout
+  paths, and the build-identity failure. The Spark suite adds a late-frame run
+  that still completes at the final absolute deadline.
+- **JSDoc.** `extractStylesheetUrls` documents `string | URL` for `pageUrl`.
+
+### Review-resolution verification
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Focused tests | `pnpm exec vitest run __tests__/deploy-css-check.test.js __tests__/lucky-meter-sky-writing.test.jsx` | PASS — 2 files, 14 tests |
+| Full unit suite | `pnpm exec vitest run` | PASS — 108 files, 1,151 tests |
+| Type check | `pnpm exec tsc --noEmit` | PASS — exit 0 |
+| Repository gate | `GITHUB_SHA=localreview20261122 SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` | PASS — exit 0, build ID `localreview20261122`, 436,623,980 bytes (416.40 MiB) with the verify build cache |
+| Single OpenNext build | `rm -rf .next .open-next && GITHUB_SHA=localreview20261122 pnpm exec opennextjs-cloudflare build` | PASS — exit 0; `BUILD_ID` matches the supplied SHA; 417,975,752 bytes (398.61 MiB) for `.next` + `public` |
+| Build-identity gate | compare `.open-next/assets/BUILD_ID` with the expected SHA, and with a wrong SHA | PASS — matches the real SHA; mismatch rejected |
+| Compiled selectors | grep `.lucky-vessel-scene`, `.lucky-vessel-canvas-host`, `.lucky-results-dock` in `.open-next/assets/_next/static/css` | PASS — all three present |
+| Local served check | `LUCKY_METER_CSS_URL=http://127.0.0.1:3000 LUCKY_METER_EXPECTED_BUILD_ID=localreview20261122 node scripts/verify-deployed-lucky-meter-css.mjs` | PASS — origin and visitor-facing page, 3 stylesheets |
+| Live production served check | `LUCKY_METER_CSS_ATTEMPTS=1 node scripts/verify-deployed-lucky-meter-css.mjs` | FAIL (expected) — both pages report `.lucky-vessel-scene, .lucky-vessel-canvas-host, .lucky-results-dock` missing |
+| Playwright — local production build | Chromium, `/lucky-meter`, start and fill to 0.445 | PASS — `.lucky-vessel-scene` 416×172.8, canvas 416×172.8, approved `367d4ff150c8194a.css`; screenshot `artifacts/pr2008-review/local-lucky-meter-fill.png` |
+| Playwright — live production | Chromium, `/lucky-meter`, start and fill to 0.371 | CONFIRMED STALE — `.lucky-vessel-scene` 896×1, canvas 1×1, old `f2db2156f7e0a2b2.css`; screenshot `artifacts/pr2008-review/production-lucky-meter-fill.png` |
+
 ## Limitations
 
 - The live site remains on the stale stylesheet set until the corrected build is
-  merged and deployed. No deployment was performed from this environment.
+  merged and deployed. No deployment was performed from this environment; the
+  deploy workflow runs only on a push to `main`, and the merge decision belongs
+  to the repository owner.
 - The GitHub Actions deploy itself was not executed locally (no Cloudflare
   credentials); its build steps were reproduced with the same commands, and the
   workflow YAML was parsed successfully.
