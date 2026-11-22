@@ -117,9 +117,9 @@ describe('single-source agent governance', () => {
     expect(agents).toContain('Never expose secret values in source code, commits, diffs, logs, terminal output, debugging traces, screenshots, test fixtures, generated artifacts, documentation, pull-request descriptions, comments or reports.');
     expect(agents).toContain('Never print, dump or broadly enumerate environment variables or configuration.');
     const submission = readFileSync(prSubmissionPath, 'utf8');
-    expect(submission).toContain('Owner-directed exception:');
-    expect(submission).toContain('must never infer permission');
-    expect(submission).toContain('clear instruction from the repository owner');
+    expect(submission).toContain('Such an instruction authorizes only the work expressly directed.');
+    expect(submission).toContain('Do not infer authorization from an open PR, automated findings, CI results or reviewer comments.');
+    expect(submission).toContain('explicit instruction from the repository owner');
     expect(submission).toContain('CI results do not replace this review.');
     expect(submission).toContain('## 5. Post-submission verification and handoff');
     expect(submission).toContain("Confirm the report's full current-head SHA exactly matches the live PR head SHA.");
