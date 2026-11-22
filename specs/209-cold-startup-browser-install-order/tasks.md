@@ -19,7 +19,7 @@
 
 ## Phase 2: Implementation (US1 — cold workspace startup)
 
-- [X] T004 Record the pre-existing `verify-startup.sh` / `AGENTS.md` drift that blocks step 1 at HEAD `859bec46`, and leave both protected files unchanged; report it for owner authorization.
+- [X] T004 Record the pre-existing `verify-startup.sh` / `AGENTS.md` drift that blocks step 1 at HEAD `859bec46`. After explicit owner authorization, correct only the outdated grep in `scripts/verify-startup.sh`; `AGENTS.md` stays unchanged.
 - [X] T005 Move `bash scripts/setup-playwright-agent.sh --install-browser` ahead of `(bash scripts/setup-chromium-libs.sh --check >/dev/null 2>&1 || bash scripts/setup-chromium-libs.sh)` in the documented command in `README.md`, keeping `eval "$(bash scripts/setup-chromium-libs.sh --env)"`, `bash scripts/setup-chromium-libs.sh --persist` and the trailing `--probe-browser` in place.
 - [X] T006 Rewrite the README numbered steps 5–9 to match the new order and to explain why the install precedes the strict check.
 
@@ -36,6 +36,7 @@
 - [X] T012 Run the reordered command a second time on the provisioned workspace and confirm the browser download and the library provisioning are skipped.
 - [X] T013 Run `./freebuff-verify.sh` and measure the production build against the 495 MiB limit.
 - [X] T014 Review the complete diff for unrelated changes, secrets, protected files and scope.
+- [X] T015 Add the governance drift guard and run `pnpm exec vitest run __tests__/agent-governance-single-source.test.js` alongside the startup-command suite.
 
 ---
 
@@ -50,4 +51,4 @@
 
 - No script changed. `setup-playwright-agent.sh` is simply called twice, which is safe because it applies `--env`
   to its own process and skips the download when `--browser-root` reports the pinned revision.
-- `AGENTS.md`, `scripts/verify-startup.sh` and `freebuff-verify.sh` are protected and were not modified.
+- `AGENTS.md` and `freebuff-verify.sh` were not modified. `scripts/verify-startup.sh` is a protected governance support file and changed only in the one authorized grep line.

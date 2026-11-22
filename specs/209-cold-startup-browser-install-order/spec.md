@@ -68,4 +68,4 @@ A Freebuff workspace that has no `node_modules`, no `~/.cache/ms-playwright` and
 ## Assumptions
 
 - Startup has network access for the pnpm bootstrap, the dependency install and the Chromium download.
-- Out of scope: the pre-existing `scripts/verify-startup.sh` / `AGENTS.md` wording drift recorded in `plan.md`. Both are protected governance files and need separate owner authorization.
+- The step 1 blocker found during this work — `scripts/verify-startup.sh` asserting `AGENTS.md` wording that governance had retired — is corrected in this change at the owner's explicit instruction. `AGENTS.md` is unchanged; only the outdated grep and a new governance regression test change.

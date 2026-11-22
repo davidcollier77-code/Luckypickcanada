@@ -85,19 +85,21 @@ Three remedies were considered:
 applies `--env` to its own process when the libraries are already provisioned. Splitting it from
 `--probe-browser` is therefore safe: the probe re-applies the same environment itself and still runs last.
 
-## Out of scope — pre-existing blocker found while proving the change
+## Step 1 blocker found while proving the change, and its fix
 
-`scripts/verify-startup.sh` (step 1) fails at `main` HEAD `859bec46` on **every** workspace, cold or warm:
+`scripts/verify-startup.sh` (step 1) failed at `main` HEAD `859bec46` on **every** workspace, cold or warm:
 
 ```text
 ❌ Startup verification failed: AGENTS.md is missing the four-file initialization instruction
 ```
 
-The script greps `AGENTS.md` for the literal sentence `Read all four Memory Bank files once`; the current
-`AGENTS.md` says "At task initialization, read and health-check all four core files" instead. Both
-`AGENTS.md` and `scripts/verify-startup.sh` are protected governance files, so this specification does not
-change either one. It is reported to the owner for authorization. The cold-workspace proof covers steps 2–9,
-which is the whole chain this change touches.
+The script grepped `AGENTS.md` for the literal sentence `Read all four Memory Bank files once`; the current
+`AGENTS.md` says "At task initialization, read and health-check all four core files:" instead.
+
+This was found while proving the reorder, not predicted by it. The owner authorized correcting only the outdated
+check, so this change updates that one grep line and leaves `AGENTS.md` untouched. A new assertion in
+`__tests__/agent-governance-single-source.test.js` pins the script to the sentence `AGENTS.md` actually contains
+and executes the script, so the two cannot drift apart again without a failing test.
 
 ## Complexity Tracking
 
