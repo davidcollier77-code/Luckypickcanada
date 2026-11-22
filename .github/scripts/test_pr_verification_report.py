@@ -248,6 +248,38 @@ class CategoryContractTests(unittest.TestCase):
         self.assertFalse(rows["Visual QA (shard 2/2)"]["applicable"])
         self.assertIn("not applicable", rows["Visual QA (shard 1/2)"]["reason"])
 
+    def test_unknown_visual_applicability_does_not_fail_the_report(self):
+        required = [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+        ]
+        conditional = [
+            {
+                "name": "Visual QA",
+                "status": "NOT RUN",
+                "detail": "applicability is unknown, so the browser check is conditional",
+                "applicable": True,
+                "blocking": False,
+                "head_sha": HEAD,
+            }
+        ]
+        runs = [
+            check("Application Verification", "success"),
+            check(report.DEVSKIM_CHECK, "success"),
+            check("PR Scope Verification", "success"),
+        ]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=required, conditional=conditional),
+            )
+        )
+
+        integrity = category(result, "verification-integrity")
+        self.assertEqual(integrity["status"], "PASSED")
+        self.assertFalse(any("Visual QA" in item for item in integrity["attention"]))
+
     def test_every_status_uses_the_four_allowed_values(self):
         result = report.build_report(evidence())
         for item in result["categories"]:

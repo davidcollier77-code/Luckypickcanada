@@ -1138,11 +1138,12 @@ def verification_integrity_category(evidence):
     ]
     observed = required_statuses + conditional_statuses
     no_runs = bool(observed) and all(status == NOT_RUN for status in observed)
-    # A conditional check the trusted classifier made applicable is a real
-    # requirement for this head. A skipped or missing run must fail the
-    # category instead of disappearing as a harmless conditional NOT RUN.
+    # A conditional check the trusted classifier made applicable and blocking
+    # is a real requirement for this head. Unknown applicability is reported
+    # as conditional but deliberately non-blocking by the audit, so the report
+    # must not turn its NOT RUN into a contradiction.
     conditional_required = [
-        record for record in conditional if record.get("applicable") is True
+        record for record in conditional if record.get("blocking") is True
     ]
 
     if directives:
