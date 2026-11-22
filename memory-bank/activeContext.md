@@ -1,6 +1,15 @@
-# Active Context — Compact Agent Governance Instructions
+# Active Context — Resource-readiness safety limits
 
-## Current Task — Compact Agent Governance (Spec 207)
+## Current Task — Resource-readiness safety limits (Spec 210)
+
+- **Goal:** bound the existing readiness hub before any two-container handover: capacity accounting, queue caps, counted leases and real disposal, with tests.
+- **Scope:** `app/lib/resource-readiness.js` and `__tests__/resource-readiness.test.js`, plus Spec 210 artifacts and this Memory Bank header. No new preloader, payload accessor, visual, audio, timing or layout change.
+- **Implemented:** per-tier entry/weight/queue/speculative budgets; declared-or-estimated weights; priority admission that defers speculative work, sheds queued speculative jobs for committed work and evicts settled unleased records; counted leases that retire rather than dispose on release, pressure, version change and eviction; best-effort disposal for hub-owned payloads only; `getResourcePoolStats()` diagnostics.
+- **Deferred:** the alternating two-container handover, reserve gates, overflow classes, replenishment and demand scaling remain future work until a current experience consumes a prepared payload.
+- **Verification:** focused readiness/adaptive suites 101 tests, `tsc --noEmit` exit 0, `SPEC_KIT_BASE_REF=HEAD ./freebuff-verify.sh` exit 0, production build 418,234,187 bytes (398.86 MiB) below the 495 MiB cap. Full-suite and PR-triggered results are recorded on the PR.
+- **PR status:** regular, non-draft PR, open and unmerged for the owner; the consolidated seven-category report is PR-triggered.
+
+## Previous Task — Compact Agent Governance (Spec 207)
 
 - **Goal:** Reduce `AGENTS.md` from 478 lines to a concise entry point while retaining every distinct requirement and all three agent-applicability classes.
 - **Approach:** Keep direct rules in `AGENTS.md`; refer detailed PR, startup, manifest and specialist procedures to their authoritative documents. Keep Freebuff-only and ChatGPT-only instructions separate.
