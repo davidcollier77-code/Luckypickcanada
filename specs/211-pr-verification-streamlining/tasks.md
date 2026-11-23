@@ -46,4 +46,7 @@
   (1800-second wait, 40-minute job).
 - [x] T020 Measure Playwright worker counts on the long Lucky Meter spec
   (587 s at two workers, 409 s at three; 45/45 seasonal repeats at three) and
-  run three workers per CI shard without changing any spec or baseline.
+  split the spec if needed. Three workers starved the four-CPU CI runner
+  (three hard mobile failures, seven retry-only passes), so CI keeps two
+  workers; splitting did not beat the shard floor and no spec or baseline
+  changed.

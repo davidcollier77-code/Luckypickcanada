@@ -9,10 +9,12 @@
 - **PR status:** open and unmerged for owner review.
 - **Owner-directed follow-up:** the verification audit's bounded wait now
   requires an applicable browser group to be created and to settle, and is
-  sized above a shard's own timeout (1800 s wait, 40-minute job). Each CI shard
-  runs three Playwright workers after the long Lucky Meter spec measured 587 s
-  at two workers and 409 s at three; splitting that spec further did not beat
-  the shard's three-worker floor, so every spec and baseline is unchanged.
+  sized above a shard's own timeout (1800 s wait, 40-minute job). Three CI
+  Playwright workers measured faster on the long Lucky Meter spec (587 s at two
+  workers, 409 s at three), but on the four-CPU CI runner the third worker
+  starved that spec (three hard mobile failures, seven retry-only passes), so
+  CI keeps two; splitting the spec further did not beat the shard floor either,
+  and every spec and baseline is unchanged.
 
 ## Previous Task — Resource-readiness safety limits (Spec 210)
 

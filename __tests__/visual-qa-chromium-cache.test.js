@@ -658,12 +658,13 @@ describe('visual QA workflow wiring', () => {
     expect(visual).toContain('name: Visual QA (shard ${{ matrix.shard }}/2)');
   });
 
-  it('runs independent spec files with three CI workers while keeping in-file tests ordered', () => {
-    // Three workers let all three projects of a long spec run at once; the
-    // (file, project) pair is the parallel unit, and in-file tests stay ordered.
+  it('keeps two CI workers because three oversubscribed the four-CPU runner', () => {
+    // A third worker ran all three projects of a long spec at once and measured
+    // faster locally, but on the four-CPU CI runner it starved the Lucky Meter
+    // spec; two workers stay, with in-file tests ordered.
     expect(playwrightConfig).toContain('fullyParallel: false');
-    expect(playwrightConfig).toContain('workers: process.env.CI ? 3 : undefined');
-    expect(playwrightConfig).not.toContain('workers: process.env.CI ? 2 : undefined');
+    expect(playwrightConfig).toContain('workers: process.env.CI ? 2 : undefined');
+    expect(playwrightConfig).not.toContain('workers: process.env.CI ? 3 : undefined');
   });
 
   it('restores the pnpm store before frozen-lockfile installation', () => {

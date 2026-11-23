@@ -59,10 +59,12 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{projectName}/{arg}{ext}',
   fullyParallel: false,
   // Run independent spec files concurrently; keep tests within each file ordered.
-  // A third worker lets all three projects of the long Lucky Meter spec run at
-  // once, because the parallel unit is a (file, project) pair. Measured on that
-  // spec: 587 s at two workers, 409 s at three. Local runs keep the default.
-  workers: process.env.CI ? 3 : undefined,
+  // The parallel unit is a (file, project) pair, so a third worker runs all
+  // three projects of the long Lucky Meter spec at once: measured 587 s at two
+  // workers and 409 s at three. On the four-CPU CI runner that oversubscribed
+  // the heavy spec (three hard mobile failures, seven retry-only passes), so CI
+  // keeps two workers. Local runs keep the default.
+  workers: process.env.CI ? 2 : undefined,
   retries: process.env.CI ? 1 : 0,
   // The `github` reporter turns failures into check-run annotations so CI
   // results stay readable without downloading job logs or artifacts.
