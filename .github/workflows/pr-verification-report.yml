@@ -42,6 +42,9 @@ permissions:
   issues: read
   checks: read
   security-events: read
+  # The seventh category reads Dependabot alerts. security-events covers code
+  # scanning only, so this separate read-only permission is required.
+  vulnerability-alerts: read
 
 # One report per branch or pull request, whatever event refreshed it, so a PR
 # event, an approval comment and a workflow_run completion cannot publish two
