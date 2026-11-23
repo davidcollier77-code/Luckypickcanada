@@ -724,8 +724,9 @@ test.describe('Daily Resonance visual evidence', () => {
 
   test('captures the arrival and each seasonal result', async ({ page }, testInfo) => {
     // Four complete seasonal rituals run in one capture; each is close to a
-    // minute, so the default timeout cannot cover the set.
-    test.setTimeout(330_000);
+    // minute, so the default timeout cannot cover the set. This is a fixed
+    // capture budget, not untrusted input.
+    /* DevSkim: ignore DS172411 */ test.setTimeout(330_000);
     const directory = 'artifacts/lucky-meter-dimensional-20261123/after';
     const prefix = testInfo.project.name;
 

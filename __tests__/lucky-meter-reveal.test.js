@@ -120,8 +120,15 @@ describe('corrected Spec 212 storyboard timing', () => {
     expect(generation.endMs).toBe(PERCENTAGE_END_MS);
     expect(generation.wheelEndMs).toBe(WHEEL_END_MS);
     expect(generation.endMs - generation.wheelEndMs).toBe(5000);
-    expect(stages.at(-1).id).toBe('dock');
-    expect(stages.at(-1).startMs).toBe(getDockMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE));
+    const dock = stages.at(-1);
+    expect(dock.id).toBe('dock');
+    // The dock is the approach window after the final hold, so the stage list
+    // stays contiguous and its end is the exact terminal time.
+    expect(dock.startMs).toBe(stages.at(-2).endMs);
+    expect(dock.endMs).toBe(getDockMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE));
+    expect(dock.durationMs).toBe(
+      STORYBOARD_TIMING.dockDelayMs - STORYBOARD_TIMING.finalHoldMs,
+    );
   });
 
   it('keeps the emergent total inside the acceptable shorter window', () => {

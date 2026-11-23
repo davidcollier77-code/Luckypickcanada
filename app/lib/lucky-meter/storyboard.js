@@ -364,8 +364,12 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
       endMs: holdEnd,
     },
     {
+      // The dock's approach: the last part of the dock window, from the end of
+      // the final hold to the moment Home and the countdown arrive. Keeping it
+      // as an interval makes the stage list contiguous and its final end the
+      // exact getDockMs() terminal time.
       id: 'dock',
-      startMs: dockStart,
+      startMs: holdEnd,
       endMs: dockStart,
     },
   ].map((stage) => ({

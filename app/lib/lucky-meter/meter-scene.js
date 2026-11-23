@@ -76,12 +76,6 @@ function clamp01(value) {
   return Math.max(0, Math.min(1, number));
 }
 
-function parseHex(hex) {
-  const value = String(hex || '').replace('#', '');
-  if (!/^[0-9a-f]{6}$/i.test(value)) return 0xf5c451;
-  return Number.parseInt(value, 16);
-}
-
 /** Screen angle (0° = 12 o'clock, clockwise) to a Three.js math angle. */
 function toMathAngle(screenDegrees) {
   return (90 - screenDegrees) * DEG2RAD;
@@ -233,6 +227,12 @@ export async function createLuckyMeterScene({
     return null;
   }
 
+  // A frame failure or a lost context must win over the delayed ready
+  // announcement; otherwise the stage can hand back to a canvas that has
+  // already been stopped.
+  let failed = false;
+  let readyTimer = 0;
+
   const surface = await createCreativeSurface({
     canvas,
     quality,
@@ -247,11 +247,22 @@ export async function createLuckyMeterScene({
       timeline: true,
     },
     onFrame: ({ elapsed }) => update(elapsed),
-    onContextLost,
-    onContextRestored,
+    onContextLost: () => {
+      failed = true;
+      if (readyTimer) window.clearTimeout(readyTimer);
+      readyTimer = 0;
+      onContextLost?.();
+    },
+    onContextRestored: () => {
+      failed = false;
+      onContextRestored?.();
+    },
     // A frame exception stops the shared loop. Never leave a blank canvas in
     // its place: hand the meter to its complete CSS fallback.
     onError: (error) => {
+      failed = true;
+      if (readyTimer) window.clearTimeout(readyTimer);
+      readyTimer = 0;
       console.warn('Lucky Meter scene frame failed; using the CSS meter.', error);
       onUnavailable?.();
     },
@@ -1046,7 +1057,7 @@ export async function createLuckyMeterScene({
   }
 
   function announceReady() {
-    if (announced) return;
+    if (announced || failed) return;
     announced = true;
     ready = true;
     mark('meter-ready');
@@ -1067,7 +1078,7 @@ export async function createLuckyMeterScene({
     window.addEventListener('pointermove', wake, { passive: true });
   }
 
-  const readyTimer = window.setTimeout(announceReady, 90);
+  readyTimer = window.setTimeout(announceReady, 90);
 
   update(0);
   surface.start();
@@ -1167,6 +1178,7 @@ export async function createLuckyMeterScene({
     },
     dispose() {
       window.clearTimeout(readyTimer);
+      failed = true;
       announced = true;
       window.removeEventListener('pointermove', wake);
       surface.dispose();

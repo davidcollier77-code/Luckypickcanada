@@ -107,6 +107,8 @@ export default function LuckyMeterStage({
   const hasWheelAngle = typeof wheelAngle === 'number' && Number.isFinite(wheelAngle);
   const rotation = hasWheelAngle ? wheelAngle : 0;
   const selected = selectedIndex >= 0 ? palette[selectedIndex] : null;
+  const chamberCount = palette.length > 0 ? palette.length : CHAMBER_COUNT;
+  const chamberStep = 360 / chamberCount;
   const shownNumber =
     Number.isInteger(number) && number >= LUCKY_NUMBER_MIN && number <= LUCKY_NUMBER_MAX
       ? number
@@ -228,8 +230,12 @@ export default function LuckyMeterStage({
     selectedIndex,
   ]);
 
+  // The fallback wheel is a conic gradient whose bands start at index × step.
+  // The landing rotation puts a band's start under the pointer, so subtract
+  // half a band to centre the selected chamber on the fixed 7:30 pointer.
+  const fallbackWheelAngle = rotation - chamberStep / 2;
   const drainOverlay = selected
-    ? `conic-gradient(from 210deg, rgba(2, 5, 9, 0.94) 0deg 30deg, rgba(2, 5, 9, 0) 30deg 360deg)`
+    ? `conic-gradient(from ${selectedIndex * chamberStep}deg, rgba(2, 5, 9, 0.94) 0deg ${chamberStep}deg, rgba(2, 5, 9, 0) ${chamberStep}deg 360deg)`
     : 'none';
 
   return (
@@ -282,7 +288,7 @@ export default function LuckyMeterStage({
                 left: '50%',
                 top: WHEEL_CENTRE_TOP,
                 background: chamberGradient(palette),
-                transform: `translate(-50%, -50%) rotate(${-rotation}deg)`,
+                transform: `translate(-50%, -50%) rotate(${fallbackWheelAngle}deg)`,
               }}
             >
               <span className="lucky-meter-fallback__well" />

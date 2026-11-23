@@ -138,12 +138,6 @@ function clampUnit(value: number) {
  */
 const REVEAL_PROTECTION_SLACK_MS = 20_000;
 
-/** Smooth acceleration and deceleration for the pour. */
-function pourEase(progress: number) {
-  const t = Math.max(0, Math.min(1, progress));
-  return t * t * (3 - 2 * t);
-}
-
 /**
  * The Daily Resonance Lucky Meter.
  *
@@ -833,8 +827,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       }
 
       // A revealed reading keeps its exact tier line visible for the rest of
-      // the day. Only an old payload that must replay the reveal stays empty.
-      if (loaded.revealCompleted === true) {
+      // the day. If the refresh interrupted the writing, the replay path below
+      // owns the message so the sentence never flashes complete before it is
+      // typed again.
+      if (loaded.revealCompleted === true && (messageDone || eventDone)) {
         setMessageState('holding');
         setMessageSettled(true);
       }
@@ -848,6 +844,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setEventCompleted(true);
         setSparkComplete(true);
         setDockReady(true);
+        // Reduced motion still shows the exact sentence, including for a
+        // legacy payload that predates the lifecycle flags.
+        setMessageState('holding');
+        setMessageSettled(true);
         auroraRef.current?.setPhase('settled', saved.event.name);
         saveMeterState({
           result: saved,

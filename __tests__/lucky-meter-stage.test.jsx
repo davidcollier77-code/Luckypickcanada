@@ -17,6 +17,7 @@ vi.mock('../app/lib/lucky-meter/meter-scene', () => ({
 }));
 
 import LuckyMeterStage from '../components/LuckyMeterStage';
+import { colourPointerRotation } from '../app/lib/lucky-meter/reveal';
 
 const NAMES = [
   'Spring Mint',
@@ -96,6 +97,9 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  // The meter-scene module mock is file-scoped; restoring spies keeps this
+  // suite's mocks from leaking into any later test in the same file.
+  vi.restoreAllMocks();
 });
 
 describe('Lucky Meter stage surface', () => {
@@ -194,7 +198,7 @@ describe('Lucky Meter stage surface', () => {
 
     const wheel = container.querySelector('.lucky-meter-fallback__wheel');
     expect(wheel.getAttribute('style')).toContain('conic-gradient');
-    expect(wheel.getAttribute('style')).toContain(`rotate(-225deg)`);
+    expect(wheel.getAttribute('style')).toContain(`rotate(210deg)`);
     expect(container.querySelector('.lucky-meter-fallback__drain')).toBeTruthy();
     expect(container.querySelector('.lucky-meter-fallback__pointer')).toBeTruthy();
     expect(container.querySelector('.lucky-meter-fallback__vessel')).toBeTruthy();
@@ -205,6 +209,38 @@ describe('Lucky Meter stage surface', () => {
     const liquid = container.querySelector('.lucky-meter-fallback__liquid');
     expect(liquid.getAttribute('style')).toContain('height: 40%');
     expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.400');
+  });
+
+  it('centres the selected fallback chamber on the pointer and drains that chamber', async () => {
+    const step = 360 / PALETTE.length;
+    for (const index of [0, 3, 6, 11]) {
+      const colour = PALETTE[index];
+      const rotation = colourPointerRotation(colour.id, PALETTE);
+      const view = render(
+        <LuckyMeterStage
+          {...stageProps({
+            colourId: colour.id,
+            colour,
+            wheelAngle: rotation,
+            chamberDrain: 0.4,
+          })}
+        />,
+      );
+
+      const wheel = view.container.querySelector('.lucky-meter-fallback__wheel');
+      const match = wheel.getAttribute('style').match(/rotate\((-?[\d.]+)deg\)/);
+      expect(match).not.toBeNull();
+      const cssRotation = Number(match[1]);
+      // A band centre is index × step + step / 2; after the landing rotation it
+      // must sit exactly on the fixed 225° (7:30) pointer.
+      const centre = ((index * step + step / 2 + cssRotation) % 360 + 360) % 360;
+      expect(centre).toBeCloseTo(225, 6);
+
+      const drain = view.container.querySelector('.lucky-meter-fallback__drain');
+      expect(drain.getAttribute('style')).toContain(`from ${index * step}deg`);
+
+      view.unmount();
+    }
   });
 
   it('shows the stored colour, number and vessel phase to readers', async () => {
