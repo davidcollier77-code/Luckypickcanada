@@ -1093,12 +1093,15 @@ body {
     inset 0 -12px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* The well is only a fraction of the stage; size every label to its width so
-   "Daily Resonance" and the tier plate never clip as the stage scales. */
+/* The well is only a fraction of the stage. Keep every reading label at the
+   12px accessibility floor and let the two idle labels wrap inside the circular
+   readout on narrow phones instead of shrinking below it. */
 .lucky-meter-stage__readout .lucky-meter-stage__label {
-  font-size: clamp(10px, 6.2cqw, 12px);
-  letter-spacing: 0.14em;
-  white-space: nowrap;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  white-space: normal;
+  text-wrap: balance;
 }
 
 /* The visible pointer is scene geometry (or the CSS leaf in the fallback).

@@ -34,7 +34,7 @@ One complete implementation and one regular, unmerged PR. There is no deferred p
 
 - [x] T018 `pnpm exec tsc --noEmit` exit 0. Focused Vitest 19 files / 238 tests pass; full repository suite 110 files / 1,204 tests pass.
 - [x] T019 Clean production build exit 0. Clean `.next + public` = 417,476,761 bytes (398.14 MiB); the verify gate measured 431.15 MiB after its incremental build. Both are strictly below the 495 MiB cap.
-- [x] T020 Playwright `lucky-meter-daily-resonance` 16/16 desktop and 32/32 mobile (390 and 412) pass, including WebGL-denied, reduced-motion, seasonal and restore paths. Four opt-in evidence captures pass. SwiftShader remains the local WebGL proxy; no hardware-GPU device was available.
+- [x] T020 Playwright `lucky-meter-daily-resonance` 16/16 desktop and 32/32 mobile (390 and 412) pass, including WebGL-denied, reduced-motion, seasonal and restore paths. Four opt-in evidence captures pass. The mobile-accessibility 12px audit passes at both phone widths after the readout labels were fixed at 12px with balanced wrapping. SwiftShader remains the local WebGL proxy; no hardware-GPU device was available.
 - [x] T021 `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0: frozen install, Spec Kit gate, Python checkers, TypeScript, full Vitest suite, Next build and size cap.
 - [x] T022 Commit, push and open one regular, non-draft PR with the `PR_SUBMISSION.md` body; leave unmerged.
 
