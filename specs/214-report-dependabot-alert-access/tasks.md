@@ -22,8 +22,9 @@ One implementation and one separate, regular, unmerged pull request.
 - [x] T008 Parse the workflow YAML and confirm the added permission is present.
 - [x] T009 Run the Spec Kit governance gate against base `4c6087cfa5a0b47f0ff9b1fdd7d7abec93be216f`.
 - [x] T010 Run the Python checker suites that read the report workflow.
-- [ ] T011 Commit, push and open one separate regular, non-draft PR with the complete `PR_SUBMISSION.md` body; leave it unmerged.
-- [ ] T012 Hand off the owner's governance and protected-file approvals and the post-merge verification of PR #2014's category 7.
+- [x] T011 Commit, push and open one separate regular, non-draft PR with the complete `PR_SUBMISSION.md` body; leave it unmerged.
+- [x] T012 Hand off the PR link, the observed report outcomes for this PR and PR #2014, and the fact that no governance digest or protected-file authorization applies.
+- [ ] T013 After this change reaches `main`, refresh PR #2014's report and confirm its seventh category reports `WARNING` rather than `NOT RUN`, then record the observed Dependabot alert state.
 
 ## Delivery notes
 
