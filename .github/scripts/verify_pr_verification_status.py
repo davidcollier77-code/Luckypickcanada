@@ -18,7 +18,10 @@ Rules enforced here (fail closed):
   happens to be green;
 * checks that legitimately do not apply to every pull request are audited and
   reported as ``NOT RUN`` but never counted as passed verification, and their
-  existing workflow behaviour is unchanged.
+  existing workflow behaviour is unchanged;
+* the bounded wait never returns while a blocking check is still missing or
+  running, including an applicable browser group whose shards have not been
+  created yet.
 
 Only read-only GitHub REST calls are made. The token is read from the
 environment and is never printed.
@@ -653,6 +656,34 @@ def expected_required_checks(build_required="unknown"):
     return REQUIRED_CHECKS
 
 
+def expected_blocking_checks(build_required="unknown", visual_required="unknown"):
+    """Checks that must be observed and settled before the wait may return.
+
+    The browser group is blocking only when the trusted classifier proves the
+    change set can affect rendered output. A shard that was never created is
+    indistinguishable from a shard that has not started, so an applicable group
+    is waited for even before GitHub reports its first run. ``unknown`` keeps
+    the historical behaviour: a missing group does not hold the wait, while any
+    run that does exist is still waited for.
+    """
+    names = list(expected_required_checks(build_required))
+    if applicability(visual_required) is True:
+        names.append(VISUAL_CHECK)
+    return tuple(names)
+
+
+def expected_check_observed(name, on_head):
+    """Whether the current head carries at least one run for an expected check.
+
+    The conditional browser check reports under per-shard names such as
+    ``Visual QA (shard 1/2)``, so it is matched by prefix exactly as the audit
+    groups it.
+    """
+    if is_conditional_check_name(name):
+        return any((run.get("name") or "").startswith(name) for run in on_head)
+    return any((run.get("name") or "") == name for run in on_head)
+
+
 def wait_for_current_head(
     repo,
     pr_number,
@@ -661,6 +692,7 @@ def wait_for_current_head(
     poll_seconds,
     *,
     build_required="unknown",
+    visual_required="unknown",
     loader=None,
     clock=None,
     sleep=None,
@@ -672,12 +704,19 @@ def wait_for_current_head(
     GitHub API errors are retried inside the same deadline; the final attempt's
     error is raised only once the deadline has passed. Sleeps are capped to the
     remaining time so the wait cannot overshoot its deadline.
+
+    A check that is expected but not yet reported counts as unsettled. That
+    covers the window before GitHub creates an applicable browser shard's check
+    run, when nothing is pending but the group has clearly not finished. The
+    caller's deadline must still outlast the longest expected job, because the
+    wait returns at the deadline with honest evidence rather than hanging.
     """
     loader = loader or load_live
     clock = clock or time.monotonic
     sleep = sleep or time.sleep
 
     deadline = clock() + max(0, timeout_seconds)
+    expected = expected_blocking_checks(build_required, visual_required)
     while True:
         try:
             pr, commits, check_runs = loader(repo, pr_number, token)
@@ -707,11 +746,11 @@ def wait_for_current_head(
             if is_audited_check_name(run.get("name") or "")
             and (run.get("status") or "").lower() != "completed"
         ]
-        all_required_observed = set(expected_required_checks(build_required)).issubset(
-            {run.get("name") for run in on_head}
-        )
+        missing = [
+            name for name in expected if not expected_check_observed(name, on_head)
+        ]
         remaining = deadline - clock()
-        if not unsettled and (all_required_observed or remaining <= 0):
+        if not unsettled and not missing:
             return
         if remaining <= 0:
             return
@@ -783,6 +822,7 @@ def main(argv=None):
                     args.wait_seconds,
                     args.poll_interval,
                     build_required=args.build_required,
+                    visual_required=args.visual_required,
                 )
             pr, commits, check_runs = load_live(args.repo, args.pr, token)
     except RuntimeError as error:

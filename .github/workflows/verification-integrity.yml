@@ -34,7 +34,11 @@ jobs:
        github.event.comment.user.login == github.repository_owner &&
        startsWith(github.event.comment.body, '/approve-'))
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # A Playwright shard has its own 25-minute timeout, plus the change
+    # classifier that gates it. The audit's wait must outlast that hard bound
+    # rather than expiring first and reporting still-running browser work as
+    # NOT RUN; this timeout leaves room for the wait, checkout and the audit.
+    timeout-minutes: 40
     steps:
       - name: Checkout base repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -75,7 +79,7 @@ jobs:
           python3 .github/scripts/verify_pr_verification_status.py \
             --repo "$REPOSITORY" \
             --pr "$PR_NUMBER" \
-            --wait-seconds 600 \
+            --wait-seconds 1800 \
             --build-required "${{ steps.applicability.outputs.build_required || 'unknown' }}" \
             --visual-required "${{ steps.applicability.outputs.visual_required || 'unknown' }}" \
             --summary "$SUMMARY_FILE"

@@ -9,6 +9,7 @@ commit's checks.
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -740,6 +741,70 @@ class SettlingWaitTests(unittest.TestCase):
             auditor.audit_verification(*new_head_settled)["pr"]["head_sha"], self.NEW
         )
 
+    def test_a_required_visual_group_is_waited_for_until_it_is_created(self):
+        # The audit starts before GitHub has created the matrix check runs. An
+        # applicable browser group must be waited for even though nothing is
+        # pending yet, or the audit reports a green application as NOT RUN.
+        green_required = green_checks()
+        with_shards = green_required + [
+            check_run("Visual QA (shard 1/2)", run_id=21),
+            check_run("Visual QA (shard 2/2)", run_id=22),
+        ]
+        snapshot = (pull_request(), [commit(HEAD, "test: visual")], green_required)
+        settled = (pull_request(), [commit(HEAD, "test: visual")], with_shards)
+
+        self.assertEqual(
+            auditor.audit_verification(*snapshot, visual_required="true")[
+                "overall_status"
+            ],
+            "NOT VERIFIED",
+        )
+
+        run = self._harness([snapshot, settled], visual_required="true")
+
+        self.assertEqual(len(run["polls"]), 2)
+        self.assertEqual(
+            auditor.audit_verification(*settled, visual_required="true")[
+                "overall_status"
+            ],
+            "VERIFIED",
+        )
+
+    def test_a_required_visual_group_holds_the_wait_until_its_deadline(self):
+        # A group that never appears must be reported honestly, not treated as
+        # settled because every always-required check is already green.
+        snapshot = (pull_request(), [commit(HEAD, "test: visual")], green_checks())
+
+        run = self._harness([snapshot], timeout=60, poll=15, visual_required="true")
+
+        self.assertLessEqual(run["now"], 60)
+        self.assertGreater(len(run["polls"]), 1)
+        report = auditor.audit_verification(*snapshot, visual_required="true")
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+        self.assertIn("Visual QA", " ".join(report["blocking_reasons"]))
+
+    def test_an_inapplicable_visual_group_does_not_hold_the_wait(self):
+        run = self._harness(
+            [(pull_request(), [commit(HEAD, "docs: readme")], green_checks())],
+            timeout=600,
+            visual_required="false",
+        )
+
+        self.assertEqual(len(run["polls"]), 1)
+        self.assertEqual(run["sleeps"], [])
+
+    def test_unknown_visual_applicability_does_not_hold_the_wait_for_a_missing_group(
+        self,
+    ):
+        # Rollout: a trusted base without the classifier must not turn every
+        # pull request into a thirty-minute wait for a conditional group.
+        run = self._harness(
+            [(pull_request(), [commit(HEAD, "fix: head")], green_checks())]
+        )
+
+        self.assertEqual(len(run["polls"]), 1)
+        self.assertEqual(run["sleeps"], [])
+
     def test_a_pending_visual_qa_shard_keeps_the_wait_alive(self):
         pending = green_checks() + [
             check_run(
@@ -885,6 +950,32 @@ class CommandLineTests(unittest.TestCase):
 
 
 class WorkflowGuardTests(unittest.TestCase):
+    def test_audit_wait_outlasts_the_visual_shard_timeout(self):
+        """The audit cannot expire while an applicable shard may still run.
+
+        A browser shard is bounded by its own job timeout. If the audit's wait
+        were shorter, a slow-but-healthy shard would be reported NOT RUN purely
+        because the audit stopped looking, which is the race this pins.
+        """
+        integrity = (
+            REPO_ROOT / ".github" / "workflows" / "verification-integrity.yml"
+        ).read_text(encoding="utf-8")
+        visual_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "visual-qa.yml"
+        ).read_text(encoding="utf-8")
+
+        wait_seconds = int(re.search(r"--wait-seconds\s+(\d+)", integrity).group(1))
+        visual_job = visual_workflow.split("\n  visual:\n", 1)[1]
+        shard_timeout_minutes = int(
+            re.search(r"timeout-minutes:\s*(\d+)", visual_job).group(1)
+        )
+        job_timeout_minutes = int(
+            re.search(r"timeout-minutes:\s*(\d+)", integrity).group(1)
+        )
+
+        self.assertGreaterEqual(wait_seconds, shard_timeout_minutes * 60)
+        self.assertGreater(job_timeout_minutes * 60, wait_seconds)
+
     def test_audit_workflow_cannot_be_silenced_by_skip_ci(self):
         workflow = (
             REPO_ROOT / ".github" / "workflows" / "verification-integrity.yml"
