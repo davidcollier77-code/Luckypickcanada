@@ -4,9 +4,15 @@
 
 - **Goal:** make every PR check earn its runtime through trusted applicability, honest `NOT RUN` reasons, smarter Playwright execution and a local gate that predicts CI, without removing coverage.
 - **Implemented:** fail-closed build classifier (`pr_applicability.py`) gating the protected OpenNext workflow; trusted-base recomputation in Verification Integrity and the consolidated report; the always-required job renamed `Application Verification`; a required-but-skipped check now blocks while a proven-inapplicable check is `NOT RUN — not applicable`; Playwright timing capture, whole-file duration-weighted shard planning seeded from a real run with exact-coverage guards and anchored file filters, shadow-mode affected-spec reporting that lists the affected specs, and flake/imbalance warnings; `./freebuff-verify.sh` now runs all Python checker suites, the full Vitest suite, the type check, the Next.js build and the 495 MiB cap.
-- **Preserved:** all 16 Playwright specs, three projects, `playwright.config.ts`, every committed baseline, Crystal Ball/Oracle and adaptive-performance/resource-readiness coverage, DevSkim, CodeQL default setup, Dependabot and the `performance` checker mode.
+- **Preserved:** all 16 Playwright specs, three projects, every committed baseline, Crystal Ball/Oracle and adaptive-performance/resource-readiness coverage, DevSkim, CodeQL default setup, Dependabot and the `performance` checker mode.
 - **Excluded pending separate approval:** dead checker modes, obsolete root scripts, deployment-workflow narrowing, subset spec selection and a third shard.
 - **PR status:** open and unmerged for owner review.
+- **Owner-directed follow-up:** the verification audit's bounded wait now
+  requires an applicable browser group to be created and to settle, and is
+  sized above a shard's own timeout (1800 s wait, 40-minute job). Each CI shard
+  runs three Playwright workers after the long Lucky Meter spec measured 587 s
+  at two workers and 409 s at three; splitting that spec further did not beat
+  the shard's three-worker floor, so every spec and baseline is unchanged.
 
 ## Previous Task — Resource-readiness safety limits (Spec 210)
 

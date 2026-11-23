@@ -38,3 +38,12 @@
   `README.md`.
 - [x] T017 Update the PR template, Memory Bank and Spec 211 artifacts.
 - [x] T018 Run the local matrix, review the diff and open one unmerged PR.
+
+## Owner-directed follow-up (post-audit)
+
+- [x] T019 Make the audit's bounded wait require an applicable browser group to
+  be created and settle, and size it above a shard's 25-minute timeout
+  (1800-second wait, 40-minute job).
+- [x] T020 Measure Playwright worker counts on the long Lucky Meter spec
+  (587 s at two workers, 409 s at three; 45/45 seasonal repeats at three) and
+  run three workers per CI shard without changing any spec or baseline.
