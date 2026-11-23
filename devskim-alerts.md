@@ -20,3 +20,22 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `components/DailyResonance.tsx:319` — Review setTimeout for untrusted data <!-- devskim-id:a643efb690d49bf9e4a4 -->
 - **NOTE — DS172411** — `components/DailyResonance.tsx:179` — Review setTimeout for untrusted data <!-- devskim-id:9f20e035c23e8f63cd3b -->
 - **NOTE — DS172411** — `components/DailyResonance.tsx:169` — Review setTimeout for untrusted data <!-- devskim-id:ccb892a7cfa5858a0a32 -->
+
+- **NOTE — DS172411** — `components/DailyResonance.tsx:322` — Review setTimeout for untrusted data <!-- devskim-id:de9f0bbbc48dbaf6cdc4 -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:178` — Review setTimeout for untrusted data <!-- devskim-id:753e02f9384b5a5fec6c -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:168` — Review setTimeout for untrusted data <!-- devskim-id:22bf5c56b0cd456208b9 -->
+
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:958` — Suspicious comment <!-- devskim-id:6ce67e02006a2b2dd831 -->
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:881` — Suspicious comment <!-- devskim-id:abe37735c2596d5a95bd -->
+
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:580` — Suspicious comment <!-- devskim-id:ec2c845d1ee5aef28792 -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:352` — Suspicious comment <!-- devskim-id:c26835f032f8f8f4623e -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:327` — Suspicious comment <!-- devskim-id:4f323238c35e0917c28a -->
+- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:262` — Suspicious comment <!-- devskim-id:ff1fffba0621271732e7 -->
+
+- **NOTE — DS172411** — `components/DailyResonance.tsx:334` — Review setTimeout for untrusted data <!-- devskim-id:4d65f2b1f749ea09be7b -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:190` — Review setTimeout for untrusted data <!-- devskim-id:946ee3b03e04a32d6167 -->
+- **NOTE — DS172411** — `components/DailyResonance.tsx:180` — Review setTimeout for untrusted data <!-- devskim-id:b2e684bd066b3d70edfe -->
+
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:1037` — Suspicious comment <!-- devskim-id:9b44416b8416b8a257b7 -->
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:960` — Suspicious comment <!-- devskim-id:aa76fab65941bd25c711 -->
