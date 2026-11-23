@@ -17,10 +17,10 @@ artifacts and Memory Bank updates.
 **Language/Version**: JavaScript/TypeScript on Node.js 26.x; Python 3 checker
 scripts; YAML workflows
 
-**Primary dependencies**: `pnpm@10.30.3`, `minimatch` (transitive through
-`glob@10`, itself through `@node-minify/core` and `@opennextjs/cloudflare`),
-the pinned `microsoft/DevSkim-Action`, `github/codeql-action/upload-sarif`,
-GitHub Dependabot and CodeQL default setup
+**Primary dependencies**: `pnpm@10.30.3`, `minimatch` 11.0.5 (resolved by
+upgrading `glob@10` to 14.0.4 for the `@node-minify/core` consumer in
+`@opennextjs/cloudflare`), the pinned `microsoft/DevSkim-Action`,
+`github/codeql-action/upload-sarif`, GitHub Dependabot and CodeQL default setup
 
 **Storage**: no application data change
 
@@ -59,11 +59,15 @@ scheduled workflows
    every assertion are unchanged. The placeholder marker in the two checker
    test suites becomes `PLACEHOLDER_TODO = "TO" + "DO"`, which tests the same
    rejected value without leaving unfinished-code-looking text in fixtures.
-3. **One dependency override.** `minimatch@9` is pinned to the patched
-   `11.0.1`, matching the existing `minimatch@10` override. The only consumer is
-   `glob@10.5.0` through the OpenNext build toolchain, which uses the stable
-   `Minimatch`, `escape` and `globSync` API. `pnpm install` refreshes the
-   lockfile; `pnpm why` must show no `9.0.9` resolution.
+3. **One dependency override, applied to the consumer.** The only `minimatch@9`
+   consumer is `glob@10.5.0` through `@node-minify/core` in the OpenNext build
+   toolchain. Forcing minimatch 11 into glob 10 was verified to break matching:
+   `globSync('*.txt')` returned an empty list instead of the matching files,
+   because minimatch 11 changed the `.set` entries glob 10 expects. The override
+   therefore pins `glob@10` to `14.0.4`, which resolves the patched
+   `minimatch@11.0.5`. `pnpm install` refreshes the lockfile; `pnpm why` must show
+   no `9.x` or `10.x` resolution, and `@node-minify/core`'s own `globSync` must
+   still return real matches.
 4. **Dependabot grouping without changing cadence.** Weekly remains the only
    schedule. Security updates are grouped per ecosystem, and routine minor/patch
    version updates are grouped; major version updates stay separate so breaking
@@ -84,7 +88,7 @@ scheduled workflows
 __tests__/qa-review-comment.test.js            # fixture SHA concatenation
 app/lib/graphics/assets.js                     # reviewed timer suppression
 components/DailyResonance.tsx                  # reviewed timer suppressions
-package.json                                   # patched minimatch override
+package.json                                   # patched glob/minimatch override
 pnpm-lock.yaml                                 # resolved dependency graph
 devskim-alerts.md                              # verified historical entries removed
 specs/213-security-audit-and-monitoring/       # spec, plan and tasks
@@ -97,8 +101,9 @@ memory-bank/progress.md                        # durable audit milestone
 
 - Run the affected Python checker suites and the QA review-comment Vitest file
   first, then the full repository gate.
-- Confirm `pnpm why minimatch` has no 9.x resolution and that `glob@10.5.0`
-  loads `Minimatch` from 11.0.1.
+- Confirm `pnpm why minimatch@9` and `pnpm why glob@10` are empty,
+  `@node-minify/core` resolves `glob@14.0.4` with `minimatch@11.0.5`, and its
+  `globSync` returns real matches rather than an empty list.
 - Confirm the Dependabot YAML parses, keeps `interval: weekly` and defines the
   security and minor/patch groups.
 - Re-read GitHub Security after dismissal and record the final counts.
@@ -110,9 +115,11 @@ memory-bank/progress.md                        # durable audit milestone
 - **Inline suppression might not apply**: it is the repository's established
   convention for this exact rule, used in production components; the PR-triggered
   DevSkim scan remains the authoritative confirmation.
-- **`minimatch` 11 changes an API used by `glob@10`**: verify its exported
-  `Minimatch`/`escape` surface and run the build and tests; the consumer only
-  calls `globSync`, which is unchanged.
+- **`minimatch` 11 breaks the `glob@10` consumer**: this was confirmed, not
+  hypothetical — `globSync` returned no matches when minimatch 11 was forced into
+  glob 10. The mitigation is to upgrade the consumer (`glob@10` → `14.0.4`)
+  instead of overriding minimatch beneath it, then verify a non-empty `globSync`
+  result through `@node-minify/core`'s own resolution.
 - **Grouped Dependabot updates hide a bad bump**: major updates stay individual,
   and security updates remain independently reviewable in one grouped PR.
 - **Dependabot alert stays open until the fix reaches `main`**: the lockfile is

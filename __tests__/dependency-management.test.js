@@ -212,8 +212,12 @@ describe('Dependency management policy', () => {
       qs: '>=6.16.0',
       'fast-uri': '>=3.1.8',
       '@vitest/mocker': '5.0.5',
-      'glob@10': '10.5.0',
+      // glob 10 consumes minimatch. Upgrade the consumer to a glob release
+      // built for minimatch 11; forcing minimatch 11 beneath glob 10 makes
+      // globSync return no matches.
+      'glob@10': '14.0.4',
     });
+    expect(pkg.pnpm.overrides['minimatch@9']).toBeUndefined();
   });
 
   it('configures weekly npm (pnpm) updates and keeps weekly GitHub Actions updates', () => {

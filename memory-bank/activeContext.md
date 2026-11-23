@@ -3,13 +3,13 @@
 ## Current Task — Complete GitHub security audit and monitoring (Spec 213)
 
 - **Initial GitHub Security:** 11 open code-scanning alerts (all DevSkim), 0 open secret-scanning alerts and 1 open Dependabot alert (`minimatch` 9.0.9, medium, development scope).
-- **Code-scanning disposition:** two `setTimeout` alerts are callable arrow callbacks with fixed delays and received reviewed inline `DevSkim: ignore DS172411` suppressions; nine alerts are synthetic test fixtures whose source no longer contains a 40-hex token or a literal placeholder marker.
-- **Dependency:** `minimatch@9` is overridden to patched `11.0.1`; the only consumer is `glob@10.5.0` in the OpenNext build toolchain. `pnpm-lock.yaml` has no 9.x resolution.
+- **Code-scanning disposition:** every callable timer finding, including the identifier-callback timers, received a reviewed inline `DevSkim: ignore DS172411` suppression; nine alerts are synthetic test fixtures whose source no longer contains a 40-hex token or a literal placeholder marker.
+- **Dependency:** `glob@10` is overridden to `14.0.4`, which resolves patched `minimatch@11.0.5` for the only 9.x consumer, `@node-minify/core` in the OpenNext build toolchain. Forcing minimatch 11 into glob 10 was verified to break `globSync` matching, so the consumer is upgraded instead. `pnpm-lock.yaml` has no 9.x or 10.x resolution.
 - **Monitoring:** Dependabot alerts are enabled; `.github/dependabot.yml` keeps the weekly schedule and now groups security updates plus routine minor/patch updates per ecosystem. DevSkim runs on pull requests, `main` pushes and weekly; CodeQL default setup is configured for JavaScript/TypeScript, Python and Actions with a weekly schedule.
-- **Ledger:** historical entries are removed only after the corresponding alerts are closed; the heading, explanation, marker and append workflow stay.
+- **Ledger:** historical entries are removed only after the corresponding alerts are closed and every surviving finding is suppressed at the source; the heading, explanation, marker and append workflow stay.
 - **Final GitHub Security:** 0 open code-scanning alerts, 0 open secret-scanning alerts and 1 Dependabot alert whose corrected lockfile is pending merge to `main`.
-- **Verification:** focused Python 136 tests, QA review-comment 3 tests and `tsc --noEmit` pass; `SPEC_KIT_BASE_REF=4c6087cf ./freebuff-verify.sh` exit 0 with 110 Vitest files, the Next.js build and 433,463,296 bytes (413.38 MiB), below the 495 MiB cap.
-- **PR status:** preparing one regular, non-draft, unmerged PR for owner review.
+- **Verification:** the focused checker, dependency-policy and QA review-comment suites pass; `SPEC_KIT_BASE_REF=4c6087cf ./freebuff-verify.sh` exits 0 with 471 Python tests, 110 Vitest files, 51 docs tests and the Next.js build below the 495 MiB cap. The PR body records the exact measured size for the final head.
+- **PR status:** one regular, non-draft, unmerged PR (#2014) for owner review; the review-driven dependency and ledger repairs are verified and pushed.
 
 # Active Context — Lucky Meter dimensional redesign (Spec 212)
 
