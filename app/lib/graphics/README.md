@@ -32,14 +32,16 @@ The rendering contract is [`docs/graphics-rendering-architecture.md`](../../../d
 | Reusable React surface | React | `components/graphics/CreativeSurface.jsx` |
 | Worked example (not mounted) | Everything above | `examples/golden-motes.js` |
 
-The existing cinematic family (`app/lib/gpu-*.js`, `cosmic-event-engine.js`,
-`lucky-meter-*-engine.js`) still owns the Lucky Meter medallion, the wheel and
-the tier celebrations; those are never rerouted through Three.js. A new
-commissioned surface sits beside them: the glass vessel and colour pour
-(`app/lib/lucky-meter/vessel-scene.js`) is built on `createCreativeSurface`, the
-material library, the light rig and the particle field, and falls back to the
-CSS vessel when WebGL is unavailable. It is registered as
-`lucky-meter-vessel` so the readiness hub derives its Three.js chunk.
+The Lucky Meter's whole physical meter — the struck medallion, the twelve
+seasonal chambers, the central leaf, the fixed 7:30 pointer with its curved arm
+and spout, the receiving vessel, the pour and the golden transfer beam — is one
+scene (`app/lib/lucky-meter/meter-scene.js`) built on `createCreativeSurface`,
+the material library, the light rig and the particle field. The tier
+celebrations stay on the existing cinematic family (`app/lib/gpu-*.js`,
+`cosmic-event-engine.js`). The meter is registered once as `lucky-meter` with
+the `three` chunk; the retired `lucky-meter-vessel` entry no longer exists. Its
+CSS composition is both the first paint and the permanent fallback when WebGL
+is unavailable or a context is lost.
 
 ## Automatic behaviour
 

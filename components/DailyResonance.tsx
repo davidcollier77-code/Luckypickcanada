@@ -10,8 +10,7 @@ import CosmicEventStage from './CosmicEventStage';
 import LuckyMeterArrivalLeaves from './LuckyMeterArrivalLeaves';
 import LuckyMeterMessage, { TierMessageState } from './LuckyMeterMessage';
 import LuckyMeterSkyWriting from './LuckyMeterSkyWriting';
-import LuckyMeterRing from './LuckyMeterRing';
-import LuckyMeterVessel from './LuckyMeterVessel';
+import LuckyMeterStage from './LuckyMeterStage';
 import { playButtonClick } from '../app/lib/audio';
 import { beginActiveExperience } from '../app/lib/resource-readiness';
 import { useCreativeExperience } from '../app/lib/use-creative-experience';
@@ -29,7 +28,13 @@ import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
   ARRIVAL_TOTAL_MS,
   CELEBRATION_MS,
+  NUMBER_PAUSE_END_MS,
+  PERCENTAGE_END_MS,
+  PERCENTAGE_START_MS,
+  POUR_END_MS,
+  REVEAL_COMPLETE_MS,
   STORYBOARD_TIMING,
+  WHEEL_END_MS,
   getDockMs,
   getMessageTypingMs,
 } from '../app/lib/lucky-meter/storyboard';
@@ -86,19 +91,25 @@ interface DailyResonanceProps {
 
 type ShareStatus = 'idle' | 'copied' | 'failed';
 type Stage = 'idle' | 'anticipating' | 'generating' | 'landed' | 'pouring' | 'revealed';
-type VesselPhase = 'idle' | 'opening' | 'filling' | 'holding' | 'draining' | 'empty';
+type VesselPhase = 'idle' | 'filling' | 'holding' | 'transferring' | 'settled';
+
+/** The result lands as its own readable beat before the pour phase begins. */
+const LANDED_BEAT_MS = 450;
 
 interface RevealMotion {
   wheelAngle: number;
   percentage: number;
   numberReveal: number;
-  /** The wheel's own drain: it empties as the vessel fills, then stays empty. */
-  pourProgress: number;
-  /** How full the vessel is: rises during the fill and falls during the drain. */
+  /** How empty the selected chamber is; every other chamber stays full. */
+  chamberDrain: number;
+  /** How full the receiving vessel is. It rises during the pour and stays full. */
   vesselFill: number;
   /** The falling stream: only present while colour is arriving. */
   pour: number;
-  vesselOpen: number;
+  /** The golden beam that carries the number to its display. */
+  beam: number;
+  /** The central decorative leaf's exit from the well. */
+  leafExit: number;
 }
 
 function initialMotion(): RevealMotion {
@@ -106,11 +117,18 @@ function initialMotion(): RevealMotion {
     wheelAngle: 0,
     percentage: 0,
     numberReveal: 0,
-    pourProgress: 0,
+    chamberDrain: 0,
     vesselFill: 0,
     pour: 0,
-    vesselOpen: 0,
+    beam: 0,
+    leafExit: 0,
   };
+}
+
+function clampUnit(value: number) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(0, Math.min(1, number));
 }
 
 /**
@@ -157,6 +175,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [stageDuration, setStageDuration] = useState(0);
   const [eventCompleted, setEventCompleted] = useState(false);
   const [messageState, setMessageState] = useState<TierMessageState>('hidden');
+  const [messageSettled, setMessageSettled] = useState(false);
   const [sparkWriting, setSparkWriting] = useState(false);
   const [sparkComplete, setSparkComplete] = useState(false);
   const [dockReady, setDockReady] = useState(false);
@@ -260,9 +279,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       const stored = getPaletteForSeasonKey(result.season);
       if (stored.length > 0) return stored as ColourRecord[];
     }
-    const season = result ? getSeasonForDateKey(result.dateKey) : null;
-    return (season?.colours ?? []) as ColourRecord[];
-  }, [result]);
+    if (result) {
+      return (getSeasonForDateKey(result.dateKey)?.colours ?? []) as ColourRecord[];
+    }
+    // Before Start the wheel still shows the current season's twelve chambers,
+    // so READY is the same object the reveal will use. This reads the local
+    // date only; it never selects a colour.
+    if (dateKey) {
+      return (getSeasonForDateKey(dateKey)?.colours ?? []) as ColourRecord[];
+    }
+    return [];
+  }, [result, dateKey]);
 
   const ringPhase =
     stage === 'generating' || stage === 'anticipating'
@@ -434,12 +461,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }, STORYBOARD_TIMING.dockDelayMs);
   }, [persistLifecycle, playEventCue, schedule]);
 
-  /** Starts the tier celebration after the message has fully faded. */
+  /** Starts the tier celebration after the message has settled. */
   const startCelebration = useCallback(
     (next: DailyResult, duration: number) => {
       if (!isMountedRef.current) return;
       messageCompletedRef.current = true;
-      setMessageState('hidden');
+      // The exact tier line stays visible at full opacity through the
+      // celebration and the finished state. It is never hidden or faded again.
+      setMessageState('holding');
+      setMessageSettled(true);
       setStageActive(true);
       eventCompletedRef.current = false;
       setEventCompleted(false);
@@ -464,28 +494,30 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   /**
    * Writes the exact tier message above the meter, holds it long enough to read
-   * and fades it before the celebration. Used both by a fresh run and by a
-   * refresh that landed after the pour but before the message finished.
+   * and settles it visibly. The 800 ms settle replaces the old fade: the line
+   * stays at full opacity from here on. Used by a fresh run and by a refresh
+   * that landed after the reveal but before the message finished.
    */
   const beginMessagePhase = useCallback(
     (next: DailyResult, duration: number) => {
       const typingMs = getMessageTypingMs(next.tier.message);
       const writingStart = STORYBOARD_TIMING.messageDelayMs;
       const holdStart = writingStart + typingMs;
-      const fadeStart = holdStart + STORYBOARD_TIMING.messageHoldMs;
-      const doneAt = fadeStart + STORYBOARD_TIMING.messageFadeMs;
+      const settleStart = holdStart + STORYBOARD_TIMING.messageHoldMs;
+      const doneAt = settleStart + STORYBOARD_TIMING.messageSettleMs;
 
       schedule(() => {
         if (!isMountedRef.current) return;
         setMessageState('writing');
+        setMessageSettled(false);
         playEventCue('message-write');
       }, writingStart);
       schedule(() => {
         if (isMountedRef.current) setMessageState('holding');
       }, holdStart);
       schedule(() => {
-        if (isMountedRef.current) setMessageState('fading');
-      }, fadeStart);
+        if (isMountedRef.current) setMessageSettled(true);
+      }, settleStart);
       schedule(
         () => startCelebration(next, duration),
         doneAt + STORYBOARD_TIMING.eventDelayMs,
@@ -495,60 +527,85 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   );
 
   /**
-   * Runs the approved vessel beat: open, fill, full hold, drain and empty
-   * highlight. The wheel's own segment empties as the vessel fills and stays
-   * empty; the vessel then drains while the Lucky Number is revealed from the
-   * top down, and the empty vessel is highlighted before the message.
+   * Runs the reveal on one clock: the leaf exit, the wheel's own five-turn
+   * 4,400 ms spin, the independent 9,400 ms percentage generation, the 2,000 ms
+   * pour, the 1,500 ms number pause and the 1,500 ms golden-beam transfer.
+   *
+   * The wheel stops at 6,300 ms on the already-selected colour while the
+   * percentage keeps its five-beat movement until 11,300 ms. The selected
+   * chamber drains; every other chamber stays full and the receiving vessel
+   * stays full after the pour. The stored values are only ever displayed.
    */
-  const startVesselSequence = useCallback(
+  const beginSequence = useCallback(
     (
       next: DailyResult,
+      _nextHistory: ReturnType<typeof emptyMeterHistory>,
       duration: number,
-      activePalette: ReadonlyArray<ColourRecord>,
+      options: { fresh: boolean },
     ) => {
-      if (!isMountedRef.current) return;
-      setStage('pouring');
-      setVesselPhase('opening');
-      setAnnouncement(
-        `Today's resonance is ${next.percentage} percent. ${next.tier.label}.`,
-      );
-      auroraRef.current?.setPhase('impact', next.event.name);
-      // The vessel opens first; the pour cue is timed to the exact frame the
-      // colour starts to flow, not to the start of the stage.
-      playEventCue('segment-open');
+      const activePalette =
+        getPaletteForSeasonKey(next.season || '').length > 0
+          ? getPaletteForSeasonKey(next.season || '')
+          : getSeasonForDateKey(next.dateKey)?.colours || [];
+      const spin = buildColourSpin(next.colour.id, Math.random, activePalette);
+      wheelSpinRef.current = spin;
 
-      const openMs = Math.max(1, STORYBOARD_TIMING.segmentOpenMs);
-      const fillMs = Math.max(1, STORYBOARD_TIMING.fillMs);
-      const holdMs = Math.max(0, STORYBOARD_TIMING.fullHoldMs);
-      const drainMs = Math.max(1, STORYBOARD_TIMING.drainMs);
-      const highlightMs = Math.max(0, STORYBOARD_TIMING.highlightMs);
-      const fillStart = openMs;
-      const holdStart = fillStart + fillMs;
-      const drainStart = holdStart + holdMs;
-      const drainEnd = drainStart + drainMs;
-      const total = drainEnd + highlightMs;
+      setStage('anticipating');
+      setVesselPhase('idle');
+      setMotion({
+        wheelAngle: spin.startRotation,
+        percentage: 0,
+        numberReveal: 0,
+        chamberDrain: 0,
+        vesselFill: 0,
+        pour: 0,
+        beam: 0,
+        leafExit: 0,
+      });
+      setNumberSettled(false);
+      setColourSettled(false);
+      setStageActive(false);
+      setMessageState('hidden');
+      setMessageSettled(false);
+      setEventCompleted(false);
+      eventCompletedRef.current = false;
+      messageCompletedRef.current = false;
+      sparkCompletedRef.current = false;
+      setSparkComplete(false);
+      setDockReady(false);
+      auroraRef.current?.setPhase('awaken');
+      schedule(() => auroraRef.current?.setPhase('gather'), 320);
+
+      if (!options.fresh) {
+        setAnnouncement('Preparing today’s resonance.');
+      }
+
       const startedAt = performance.now();
-      let revealed = false;
+      revealStartRef.current = startedAt;
       let finished = false;
 
-      schedule(() => playEventCue('colour-pour'), fillStart);
-      schedule(() => {
-        if (isMountedRef.current) setVesselPhase('filling');
-      }, fillStart);
-      schedule(() => {
-        if (isMountedRef.current) setVesselPhase('holding');
-      }, holdStart);
-      schedule(() => {
-        if (isMountedRef.current) setVesselPhase('draining');
-      }, drainStart);
-
-      // The drain has finished: the vessel is empty and the number is whole.
-      const revealNumber = () => {
-        if (revealed || !isMountedRef.current) return;
-        revealed = true;
-        setVesselPhase('empty');
+      const finish = () => {
+        if (finished || !isMountedRef.current) return;
+        finished = true;
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        setMotion({
+          wheelAngle: spin.endRotation,
+          percentage: next.percentage,
+          numberReveal: 1,
+          chamberDrain: 1,
+          vesselFill: 1,
+          pour: 0,
+          beam: 0,
+          leafExit: 1,
+        });
+        setStage('revealed');
+        setVesselPhase('settled');
         setNumberSettled(true);
         setNumberFlashing(!reducedMotion);
+        setColourSettled(true);
         playEventCue('number-reveal');
         if (!reducedMotion) {
           schedule(
@@ -572,209 +629,120 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setAnnouncement(
           `Today's resonance is ${next.percentage} percent. ${next.tier.label}. Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
         );
-      };
-
-      const finish = () => {
-        if (finished || !isMountedRef.current) return;
-        finished = true;
-        if (rafRef.current !== null) {
-          window.cancelAnimationFrame(rafRef.current);
-          rafRef.current = null;
-        }
-        revealNumber();
-        setMotion({
-          wheelAngle: colourPointerRotation(next.colour.id, activePalette),
-          percentage: next.percentage,
-          numberReveal: 1,
-          pourProgress: 1,
-          vesselFill: 0,
-          pour: 0,
-          vesselOpen: 1,
-        });
-        setStage('revealed');
-        setColourSettled(true);
-        setVesselPhase('empty');
-        // The empty vessel, the number and the colour have been held for the
-        // highlight beat; the tier message now begins above the meter.
         beginMessagePhase(next, duration);
       };
 
+      // Stage hand-offs and audio cues are timers, so a throttled frame clock
+      // can never skip a cue. The frame loop only samples the live values.
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        setStage('generating');
+        playEventCue('wheel-start');
+      }, PERCENTAGE_START_MS);
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        setIsFlashing(true);
+        playEventCue('wheel-stop');
+        schedule(() => setIsFlashing(false), STORYBOARD_TIMING.flashMs + 40);
+      }, WHEEL_END_MS);
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        // The stored result appears on the exact frame its own window closes,
+        // even if a throttled frame clock has not sampled the last value.
+        setMotion((previous) => ({
+          ...previous,
+          wheelAngle: spin.endRotation,
+          percentage: next.percentage,
+        }));
+        setStage('landed');
+        setVesselPhase('filling');
+        playEventCue('colour-pour');
+        setAnnouncement(`Today's resonance is ${next.percentage} percent. ${next.tier.label}.`);
+        auroraRef.current?.setPhase('impact', next.event.name);
+      }, PERCENTAGE_END_MS);
+      schedule(() => {
+        if (isMountedRef.current) setStage('pouring');
+      }, PERCENTAGE_END_MS + LANDED_BEAT_MS);
+      schedule(() => {
+        if (!isMountedRef.current) return;
+        // The pour ends full and drains only the selected chamber. A timer owns
+        // this hand-off so a paused frame loop can never leave the vessel short.
+        setMotion((previous) => ({
+          ...previous,
+          chamberDrain: 1,
+          vesselFill: 1,
+          pour: 0,
+        }));
+        setVesselPhase('holding');
+      }, POUR_END_MS);
+      schedule(() => {
+        if (isMountedRef.current) setVesselPhase('transferring');
+      }, NUMBER_PAUSE_END_MS);
+      schedule(finish, REVEAL_COMPLETE_MS + 20);
+
       const step = () => {
         if (!isMountedRef.current) return;
-        const elapsed = performance.now() - startedAt;
-        let vesselOpen = 1;
-        let vesselFill = 1;
-        let pour = 0;
-        let numberReveal = 0;
+        const elapsedMs = performance.now() - startedAt;
 
-        if (elapsed < fillStart) {
-          // Stage 5 completes before a single drop falls.
-          vesselOpen = pourEase(elapsed / openMs);
-          vesselFill = 0;
-        } else if (elapsed < holdStart) {
-          const progress = pourEase((elapsed - fillStart) / fillMs);
-          vesselFill = progress;
-          pour = progress;
-        } else if (elapsed < drainStart) {
-          vesselFill = 1;
-        } else if (elapsed < drainEnd) {
-          const progress = pourEase((elapsed - drainStart) / drainMs);
-          vesselFill = 1 - progress;
-          // The progressive top-down number reveal shares the drain clock.
-          numberReveal = progress;
-        } else {
-          vesselFill = 0;
-          numberReveal = 1;
-        }
-
-        // The wheel empties in step with the fill, then stays empty for the
-        // rest of the sequence so the stream and the segment cannot disagree.
-        const wheelDrain =
-          elapsed < fillStart
+        const leafExit = clampUnit(
+          (elapsedMs - STORYBOARD_TIMING.anticipationMs) / STORYBOARD_TIMING.leafExitMs,
+        );
+        const wheelElapsed = Math.max(
+          0,
+          Math.min(STORYBOARD_TIMING.wheelMs, elapsedMs - PERCENTAGE_START_MS),
+        );
+        const wheel = sampleColourSpin(
+          wheelElapsed,
+          spin,
+          next.colour.id,
+          STORYBOARD_TIMING.wheelMs,
+          activePalette,
+        );
+        const wheelAngle = elapsedMs >= WHEEL_END_MS ? spin.endRotation : wheel.rotation;
+        const percentageElapsed = Math.max(
+          0,
+          Math.min(STORYBOARD_TIMING.percentageMs, elapsedMs - PERCENTAGE_START_MS),
+        );
+        const percentage =
+          elapsedMs >= PERCENTAGE_END_MS
+            ? next.percentage
+            : sampleGenerationPercentage(
+                percentageElapsed,
+                STORYBOARD_TIMING.percentageMs,
+                next.percentage,
+              );
+        const drain = clampUnit(
+          (elapsedMs - PERCENTAGE_END_MS) / Math.max(1, STORYBOARD_TIMING.pourMs),
+        );
+        const pour =
+          elapsedMs < PERCENTAGE_END_MS || elapsedMs > POUR_END_MS
             ? 0
-            : elapsed < holdStart
-              ? pourEase((elapsed - fillStart) / fillMs)
-              : 1;
-        setMotion((current) => ({
-          ...current,
-          vesselOpen,
-          vesselFill,
-          pour,
-          pourProgress: wheelDrain,
-          numberReveal,
-        }));
+            : clampUnit(Math.min(1, drain < 0.14 ? drain / 0.14 : (1 - drain) / 0.14));
+        const transfer = clampUnit(
+          (elapsedMs - NUMBER_PAUSE_END_MS) / Math.max(1, STORYBOARD_TIMING.transferMs),
+        );
 
-        if (elapsed >= drainEnd) revealNumber();
-        if (elapsed >= total) {
+        setMotion({
+          wheelAngle,
+          percentage,
+          chamberDrain: drain,
+          vesselFill: drain,
+          pour,
+          beam: elapsedMs >= REVEAL_COMPLETE_MS ? 0 : transfer,
+          numberReveal: transfer,
+          leafExit,
+        });
+
+        if (elapsedMs >= REVEAL_COMPLETE_MS) {
           finish();
           return;
         }
         rafRef.current = window.requestAnimationFrame(step);
       };
+
       rafRef.current = window.requestAnimationFrame(step);
-      // Completion latches: a throttled frame clock can never strand the
-      // sequence between the drain and the highlight or the message.
-      schedule(revealNumber, drainEnd + 20);
-      schedule(finish, total + 20);
     },
     [beginMessagePhase, persistLifecycle, playEventCue, reducedMotion, schedule],
-  );
-
-  /** Runs the three part reveal: generation, stop, then open and pour. */
-  const beginSequence = useCallback(
-    (
-      next: DailyResult,
-      _nextHistory: ReturnType<typeof emptyMeterHistory>,
-      duration: number,
-      options: { fresh: boolean },
-    ) => {
-      const activePalette =
-        getPaletteForSeasonKey(next.season || '').length > 0
-          ? getPaletteForSeasonKey(next.season || '')
-          : getSeasonForDateKey(next.dateKey)?.colours || [];
-      const spin = buildColourSpin(next.colour.id, Math.random, activePalette);
-      wheelSpinRef.current = spin;
-
-      setStage('anticipating');
-      setVesselPhase('idle');
-      setMotion({
-        wheelAngle: spin.startRotation,
-        percentage: 0,
-        numberReveal: 0,
-        pourProgress: 0,
-        vesselFill: 0,
-        pour: 0,
-        vesselOpen: 0,
-      });
-      setNumberSettled(false);
-      setColourSettled(false);
-      setStageActive(false);
-      setMessageState('hidden');
-      setEventCompleted(false);
-      eventCompletedRef.current = false;
-      messageCompletedRef.current = false;
-      sparkCompletedRef.current = false;
-      setSparkComplete(false);
-      setDockReady(false);
-      auroraRef.current?.setPhase('awaken');
-      schedule(() => auroraRef.current?.setPhase('gather'), 320);
-
-      if (!options.fresh) {
-        setAnnouncement('Preparing today’s resonance.');
-      }
-
-      schedule(() => {
-        if (!isMountedRef.current) return;
-        setStage('generating');
-        playEventCue('wheel-start');
-        revealStartRef.current = performance.now();
-
-        let finished = false;
-        const finishGeneration = () => {
-          if (finished || !isMountedRef.current) return;
-          finished = true;
-          if (rafRef.current !== null) {
-            window.cancelAnimationFrame(rafRef.current);
-            rafRef.current = null;
-          }
-          // Both readings stop on this same frame: the wheel lands on the
-          // selected colour and the percentage lands on its result.
-          setMotion({
-            wheelAngle: spin.endRotation,
-            percentage: next.percentage,
-            numberReveal: 0,
-            pourProgress: 0,
-            vesselFill: 0,
-            pour: 0,
-            vesselOpen: 0,
-          });
-          setStage('landed');
-          setIsFlashing(true);
-          playEventCue('wheel-stop');
-          schedule(() => setIsFlashing(false), STORYBOARD_TIMING.flashMs + 40);
-          schedule(
-            () => startVesselSequence(next, duration, activePalette),
-            STORYBOARD_TIMING.settlePauseMs,
-          );
-        };
-
-        const step = () => {
-          if (!isMountedRef.current) return;
-          const elapsed = performance.now() - revealStartRef.current;
-          const wheel = sampleColourSpin(
-            elapsed,
-            spin,
-            next.colour.id,
-            STORYBOARD_TIMING.generationMs,
-            activePalette,
-          );
-          setMotion({
-            wheelAngle: wheel.rotation,
-            percentage: sampleGenerationPercentage(
-              elapsed,
-              STORYBOARD_TIMING.generationMs,
-              next.percentage,
-            ),
-            numberReveal: 0,
-            pourProgress: 0,
-            vesselFill: 0,
-            pour: 0,
-            vesselOpen: 0,
-          });
-
-          if (elapsed >= STORYBOARD_TIMING.generationMs) {
-            finishGeneration();
-            return;
-          }
-          rafRef.current = window.requestAnimationFrame(step);
-        };
-        rafRef.current = window.requestAnimationFrame(step);
-        // A completion latch: a throttled or paused animation frame clock can
-        // never strand the sequence half-finished.
-        schedule(finishGeneration, STORYBOARD_TIMING.generationMs + 20);
-      }, STORYBOARD_TIMING.anticipationMs);
-    },
-    [playEventCue, schedule, startVesselSequence],
   );
 
   beginSequenceRef.current = beginSequence;
@@ -843,14 +811,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         ),
         percentage: saved.percentage,
         numberReveal: 1,
-        pourProgress: 1,
-        vesselFill: 0,
+        chamberDrain: 1,
+        vesselFill: 1,
         pour: 0,
-        vesselOpen: 1,
+        beam: 0,
+        leafExit: 1,
       });
       setNumberSettled(true);
       setColourSettled(true);
-      setVesselPhase('empty');
+      setVesselPhase('settled');
       setStageDuration(duration);
       setEventCompleted(eventDone);
       setShareStatus('idle');
@@ -861,6 +830,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       if (loaded.sparkCompleted === true) {
         setSparkComplete(true);
         setDockReady(true);
+      }
+
+      // A revealed reading keeps its exact tier line visible for the rest of
+      // the day. Only an old payload that must replay the reveal stays empty.
+      if (loaded.revealCompleted === true) {
+        setMessageState('holding');
+        setMessageSettled(true);
       }
 
       if (prefersReducedMotion()) {
@@ -898,10 +874,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           setStage('revealed');
           beginMessagePhase(saved, duration);
         } else {
-          // Resume the unfinished cinematic from its first frame.
+          // Resume the unfinished cinematic from its first frame. The message
+          // has already been written and stays visible through it.
           protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
           setStage('revealed');
           setStageActive(true);
+          setMessageState('holding');
+          setMessageSettled(true);
         }
       } else if (loaded.sparkCompleted !== true) {
         setStage('revealed');
@@ -936,6 +915,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setStageActive(false);
       setEventCompleted(false);
       setMessageState('hidden');
+      setMessageSettled(false);
       setSparkWriting(false);
       setSparkComplete(false);
       setDockReady(false);
@@ -983,16 +963,20 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         wheelAngle: colourPointerRotation(next.colour.id, activePalette),
         percentage: next.percentage,
         numberReveal: 1,
-        pourProgress: 1,
-        vesselFill: 0,
+        chamberDrain: 1,
+        vesselFill: 1,
         pour: 0,
-        vesselOpen: 1,
+        beam: 0,
+        leafExit: 1,
       });
       setNumberSettled(true);
       setNumberFlashing(false);
       setColourSettled(true);
-      setVesselPhase('empty');
-      setMessageState('hidden');
+      setVesselPhase('settled');
+      // Reduced motion still shows the exact sentence; it appears whole and
+      // remains visible for the finished state.
+      setMessageState('holding');
+      setMessageSettled(true);
       setEventCompleted(true);
       setSparkComplete(true);
       setDockReady(true);
@@ -1295,8 +1279,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             </div>
           )}
 
-          {/* Frame 6: the exact tier message, written above the meter, held and
-              faded before the celebration. */}
+          {/* The exact tier message is written above the meter, held, then
+              settles visibly. It never fades: it stays at full opacity through
+              the celebration and the finished state. */}
           <div
             className={`flex w-full flex-col items-center justify-end ${
               isCompact ? 'min-h-[3.2rem]' : 'min-h-[5.5rem] sm:min-h-[6.5rem]'
@@ -1306,6 +1291,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               <LuckyMeterMessage
                 message={result.tier.message}
                 state={messageState}
+                settled={messageSettled}
                 reducedMotion={reducedMotion}
                 isCompact={isCompact}
               />
@@ -1324,7 +1310,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             )}
           </div>
 
-          <LuckyMeterRing
+          <LuckyMeterStage
             phase={ringPhase}
             compact={isCompact}
             wheelAngle={motion.wheelAngle}
@@ -1338,7 +1324,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             }
             numberSettled={numberSettled}
             numberReveal={motion.numberReveal}
-            pourProgress={motion.pourProgress}
+            chamberDrain={motion.chamberDrain}
+            // The landed beat is the result's first readable frame and the pour
+            // has already begun; only the detail panels wait for "pouring".
+            vesselFill={stage === 'landed' || hasDetails ? motion.vesselFill : 0}
+            pour={stage === 'landed' || hasDetails ? motion.pour : 0}
+            beam={motion.beam}
+            leafExit={motion.leafExit}
+            vesselPhase={vesselPhase}
+            colour={result?.colour ?? null}
+            showDetails={hasDetails}
+            seasonName={result ? getSeasonForDateKey(result.dateKey)?.name ?? '' : ''}
+            reducedMotion={reducedMotion}
             className={isCompact ? 'mt-2' : 'mt-3 sm:mt-4'}
           >
             {stage === 'anticipating' || stage === 'generating' ? (
@@ -1362,7 +1359,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ) : stage === 'landed' || hasDetails ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="mb-1 text-[12px] uppercase tracking-[0.16em] text-amber-200/65">
+                <p className="lucky-meter-stage__label mb-1 text-[12px] uppercase tracking-[0.16em] text-amber-200/65">
                   Daily Resonance
                 </p>
                 <div
@@ -1385,38 +1382,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ) : (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Daily Resonance Ritual</h1>
-                <p className="text-[12px] uppercase tracking-[0.2em] text-amber-200/60">
+                <p className="lucky-meter-stage__label text-[12px] uppercase tracking-[0.2em] text-amber-200/60">
                   Daily Resonance
                 </p>
                 <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
                   —
                 </span>
-                <p className="mt-1.5 text-[12px] uppercase tracking-[0.16em] text-slate-400">
+                <p className="lucky-meter-stage__label mt-1.5 text-[12px] uppercase tracking-[0.16em] text-slate-400">
                   Awaiting the reading
                 </p>
               </div>
             )}
-          </LuckyMeterRing>
-
-          {/* Stages 5–6: the transparent square vessel opens with real depth,
-              then the selected colour pours into it and fills it. The caption
-              stays flat and readable outside the three-dimensional scene. */}
-          {/* The vessel is mounted as soon as a reading exists so its Three.js
-              scene has the whole generation and landing beat to warm up. It
-              stays hidden until the vessel stage actually opens. */}
-          {result && (
-            <LuckyMeterVessel
-              colour={result.colour}
-              fill={hasDetails ? motion.vesselFill : 0}
-              pour={hasDetails ? motion.pour : 0}
-              open={hasDetails ? motion.vesselOpen : 0}
-              phase={vesselPhase}
-              hidden={!hasDetails}
-              isCompact={isCompact}
-              reducedMotion={reducedMotion}
-              seasonName={getSeasonForDateKey(result.dateKey)?.name ?? ''}
-            />
-          )}
+          </LuckyMeterStage>
 
           {hasDetails && result && (
             <div className={`w-full ${isCompact ? 'mt-2' : 'mt-2 sm:mt-3'}`}>

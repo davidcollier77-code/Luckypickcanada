@@ -77,22 +77,17 @@ export const VISUAL_EXPERIENCES = Object.freeze([
   Object.freeze({
     id: 'lucky-meter',
     label: 'Lucky Meter / Daily Resonance',
-    renderer: 'webgl',
-    dimension: '2d',
+    // The whole physical meter — wheel, pointer and arm, vessel, pour and beam —
+    // is one Three.js scene on the shared creative surface. No post-processing:
+    // the scene asks the runtime for none, so the hub must not prepare a bloom
+    // chain it will never render.
+    renderer: 'three',
+    dimension: '3d',
     particles: true,
+    chunks: ['three'],
     audio: Object.freeze([
       { id: 'lucky-meter-audio', prepare: lazyAudioPrepare(meterAudio, 'prepareLuckyMeterAudio'), background: false },
     ]),
-  }),
-  Object.freeze({
-    id: 'lucky-meter-vessel',
-    label: 'Lucky Meter glass vessel and colour pour',
-    renderer: 'three',
-    dimension: '3d',
-    // No post-processing: the scene asks the runtime for none, and the hub must
-    // not prepare a bloom chain it will never render.
-    particles: true,
-    chunks: ['three'],
   }),
   Object.freeze({
     id: 'crystal-ball',

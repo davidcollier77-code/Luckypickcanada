@@ -1,10 +1,12 @@
 /**
  * Reveal mathematics for the Lucky Meter's colour wheel.
  *
- * The wheel is the twelve-segment palette ring. It spins beneath a fixed
- * maple-leaf pointer at 6 o'clock and stops with the already-selected colour
- * under that pointer. The percentage readout counts up on the same clock and
- * stops on the same frame, so the two can never disagree.
+ * The wheel is the twelve-chamber seasonal ring. It spins beneath the fixed
+ * external golden maple-leaf pointer at 7:30 (225° in screen coordinates) and
+ * stops with the already-selected colour under that pointer. The wheel and the
+ * percentage readout use independent windows: the wheel stops first, and the
+ * percentage continues its approved five-beat generation before settling on the
+ * stored result. They can never select or change a value.
  *
  * Everything here is a pure function of elapsed time and a spin built from the
  * stored result. Nothing samples a random value during the animation, and no
@@ -23,15 +25,15 @@ export const REVEAL_TIMING = STORYBOARD_TIMING;
 /** A full circle is 100%, so one percentage point is 3.6 degrees. */
 export const DEGREES_PER_PERCENT = 360 / 100;
 
-/** The fixed maple-leaf pointer: 6 o'clock in screen coordinates. */
-export const POINTER_ANGLE_DEGREES = 180;
+/** The fixed external maple-leaf pointer: 7:30 in screen coordinates. */
+export const POINTER_ANGLE_DEGREES = 225;
 
 /** One segment per seasonal Lucky Colour. */
 export const COLOUR_STEPS = 12;
 export const DEGREES_PER_COLOUR = 360 / COLOUR_STEPS;
 
-/** Bounds for the wheel's spin distance, in full turns. */
-export const WHEEL_TURNS = Object.freeze({ min: 3, max: 4 });
+/** The approved wheel spin: exactly five full turns before the landing. */
+export const WHEEL_TURNS = 5;
 
 function clampPercentage(value) {
   return Math.max(PERCENTAGE_MIN, Math.min(PERCENTAGE_MAX, Math.round(value)));
@@ -199,10 +201,10 @@ export function getColourIdAt(index, palette = []) {
 }
 
 /**
- * The wheel rotation that brings a segment under the fixed 6 o'clock pointer.
+ * The wheel rotation that brings a chamber under the fixed 7:30 pointer.
  *
- * A segment's centre sits at `index × 30°` clockwise from 12 o'clock, so the
- * ring must turn by `180° − index × 30°` for the pointer to read it.
+ * A chamber's centre sits at `index × 30°` clockwise from 12 o'clock, so the
+ * ring must turn by `225° − index × 30°` for the pointer to read it.
  *
  * @param {string} colourId
  * @param {ReadonlyArray<object>} [palette]
@@ -214,7 +216,7 @@ export function colourPointerRotation(colourId, palette = []) {
 }
 
 /**
- * Builds the wheel spin: a random starting angle, three to four whole turns and
+ * Builds the wheel spin: a random starting angle, exactly five whole turns and
  * a final rotation that places the selected colour under the pointer.
  *
  * @param {string} colourId The already-selected Lucky Colour.
@@ -223,9 +225,7 @@ export function colourPointerRotation(colourId, palette = []) {
  */
 export function buildColourSpin(colourId, random = Math.random, palette = getPaletteForDate()) {
   const endRotation = colourPointerRotation(colourId, palette);
-  const turns =
-    WHEEL_TURNS.min +
-    Math.floor(clampRandom(random()) * (WHEEL_TURNS.max - WHEEL_TURNS.min + 1));
+  const turns = WHEEL_TURNS;
   const startRotation = clampRandom(random()) * 360;
   const residual = normalizeAngle(endRotation - startRotation);
   return {
@@ -237,7 +237,7 @@ export function buildColourSpin(colourId, random = Math.random, palette = getPal
 }
 
 /**
- * The colour segment currently under the fixed 6 o'clock pointer.
+ * The colour chamber currently under the fixed 7:30 pointer.
  *
  * @param {number} rotation Wheel rotation in degrees.
  * @param {number} [paletteLength]
@@ -256,14 +256,14 @@ export function rotationToColourIndex(rotation, paletteLength = COLOUR_STEPS) {
  * @param {number} elapsedMs
  * @param {{ startRotation: number, totalSweep: number }} spin
  * @param {string} finalColourId
- * @param {number} [durationMs]
+ * @param {number} [durationMs] The wheel's own window, not the percentage window.
  * @param {ReadonlyArray<object>} [palette]
  */
 export function sampleColourSpin(
   elapsedMs,
   spin,
   finalColourId,
-  durationMs = STORYBOARD_TIMING.generationMs,
+  durationMs = STORYBOARD_TIMING.wheelMs,
   palette = getPaletteForDate(),
 ) {
   const finalIndex = Math.max(0, getColourIndex(finalColourId, palette));
@@ -283,5 +283,19 @@ export function sampleColourSpin(
 /** Resolves a seasonal colour record by id. */
 export function getColourById(colourId) {
   return COLOURS_BY_ID.get(colourId) || null;
+}
+
+/**
+ * The chamber index the stored colour occupies in the active palette.
+ *
+ * A preservation-safe mapper: it reads the already-selected colour and never
+ * introduces randomness, a second colour draw or a new selection path.
+ *
+ * @param {string} colourId
+ * @param {ReadonlyArray<object>} [palette]
+ * @returns {number} 0–11, or -1 when the colour is not in the palette.
+ */
+export function chamberIndexForColour(colourId, palette = []) {
+  return getColourIndex(colourId, palette);
 }
 

@@ -5,12 +5,16 @@ import {
 } from '../../app/lib/lucky-meter/sparks-and-seasonal-colours';
 
 /**
- * Daily Resonance browser coverage.
+ * Daily Resonance browser coverage for the dimensional meter.
  *
  * Every stored-reading scenario is seeded into Local Storage before the page
  * loads, so the result is deterministic. One real run walks the complete
- * twelve-stage storyboard; the rest resume from a stored lifecycle point so the
- * browser suite stays fast without skipping the states it protects.
+ * storyboard; the rest resume from a stored lifecycle point so the browser
+ * suite stays fast without skipping the states it protects.
+ *
+ * The meter is one WebGL scene: a struck medallion, twelve seasonal chambers,
+ * a fixed 7:30 pointer with its curved arm and spout, and a receiving vessel
+ * that fills and stays full. There is no SVG artwork in the meter.
  */
 
 const STORAGE_KEY = 'lucky-pick-canada-lucky-meter-v1';
@@ -139,9 +143,6 @@ async function seed(page: Page, state: ReturnType<typeof buildState>) {
 
 async function waitForStart(page: Page) {
   const start = page.getByTestId('lucky-meter-start');
-  // The arrival runs for about 4.5 s before Start unlocks, and a cold dev
-  // server compiles the route on the first hit. 30 s keeps a parallel run from
-  // failing before the sequence has had a chance to begin.
   await expect(start).toHaveAttribute('data-ready', 'true', { timeout: 30_000 });
   return start.getByRole('button', { name: /Reveal My Resonance/i });
 }
@@ -158,13 +159,7 @@ async function startReveal(page: Page) {
   }).toPass({ timeout: 15_000 });
 }
 
-/**
- * A run that crosses local midnight correctly clears today's reading for the
- * new day, which aborts a storyboard mid-sequence and leaves the page back at
- * its arrival screen. Pin the wall clock at midday so a long cinematic can
- * never straddle the rollover. `setFixedTime` freezes only `Date`; timers and
- * `performance.now` keep running, so the sequence still animates normally.
- */
+/** Pin the wall clock at midday so a long cinematic can never cross midnight. */
 async function pinNoon(page: Page) {
   await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
 }
@@ -176,24 +171,20 @@ async function readStoredResult(page: Page) {
   }, STORAGE_KEY);
 }
 
+/** The wheel rotation that puts the stored colour under the 7:30 pointer. */
 function settledAngle(colourId: string, season: Season) {
   const palette = getPaletteForSeasonKey(season);
   const index = Math.max(
     0,
     palette.findIndex((colour: { id: string }) => colour.id === colourId),
   );
-  return ((180 - index * 30) % 360 + 360) % 360;
+  return (((225 - index * 30) % 360) + 360) % 360;
 }
 
 test.describe('Daily Resonance arrival and Start', () => {
   test('holds Start until the breeze has cleared, then starts the reading at 0', async ({
     page,
   }) => {
-    // The readout starts at 0 and only holds it for the anticipation beat, so
-    // polling the live attribute can miss it whenever the first frames after
-    // Start are slow (software WebGL, a cold route compile). Record the values
-    // React writes instead: the writes are ordered, so the first one is the
-    // reading the reveal actually started from.
     await page.addInitScript(() => {
       const reading: { value?: string; plaque?: string } = {};
       (window as Window & { __luckyMeterStartReading?: typeof reading }).__luckyMeterStartReading =
@@ -217,23 +208,21 @@ test.describe('Daily Resonance arrival and Start', () => {
 
     const start = page.getByTestId('lucky-meter-start');
     await expect(start).toHaveAttribute('data-ready', 'false');
-    // Home is in its usual top-right position from the first moment, but the
-    // countdown belongs to the finished reading and is not shown yet.
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
+    // The caption belongs to the reading, not the welcome state.
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveCount(0);
 
     const button = await waitForStart(page);
     await expect(button).toBeVisible();
     await button.click();
 
-    // Starting the reveal hides Home at once; it returns with the countdown
-    // only after the Spark and the final hold.
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     const ring = page.getByTestId('lucky-meter-ring');
     await expect(ring).toHaveAttribute('data-phase', 'spin');
-    // The five approved beats start at the bottom of the scale: 0 → 100 →
-    // fall → rise → erratic → settle on the stored reading.
+    await expect(ring).toHaveAttribute('data-pointer', '7.5');
+    await expect(ring).toHaveAttribute('data-chamber-count', '12');
     await expect
       .poll(
         async () =>
@@ -252,124 +241,111 @@ test.describe('Daily Resonance arrival and Start', () => {
     );
     expect(startReading.plaque).toBe('hidden');
     await expect(page.getByTestId('lucky-number-panel')).toHaveCount(0);
-    // The vessel surface warms up off-screen; it must not be presented yet.
-    await expect(page.getByTestId('lucky-colour-panel')).not.toBeVisible();
+
     const pointer = page.getByTestId('lucky-meter-pointer');
-    await expect(pointer).toHaveAttribute('data-position', '6');
-    // The fixed leaf must be gold before any reading exists, not only after
-    // the wheel (and its gradient definitions) mounts.
-    await expect(pointer.locator('#lucky-pointer-gold')).toHaveCount(1);
+    await expect(pointer).toHaveAttribute('data-position', '7.5');
+    // The meter contains no SVG artwork at all.
+    await expect(ring.locator('svg')).toHaveCount(0);
   });
 });
 
 test.describe('Daily Resonance storyboard', () => {
-  test('stops the wheel and percentage together, then pours the colour', async ({
+  test('stops the wheel at 6.3 s, lands the percentage at 11.3 s and fills the vessel once', async ({
     page,
   }) => {
-    // The storyboard alone holds this test for about 21 s before the twelve
-    // segment assertions run, so the default 30 s budget is short on the mobile
-    // projects under software WebGL. The assertions are unchanged; only the
-    // budget grows, as it already does for the full storyboard test below.
     test.slow();
     await pinNoon(page);
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
-    // `landed` is a deliberate 450 ms beat before the pour. Polling can miss it
-    // on a slow runner, so record the phase transitions from the first frame.
     await page.evaluate(() => {
       const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
       const phases: string[] = [];
-      const vesselBeats: Array<{
-        phase: string;
-        reveal: number;
-        fill: number;
-        clip: string;
-      }> = [];
+      const beats: Array<{ phase: string; reveal: number; fill: number }> = [];
       (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases = phases;
-      (
-        window as Window & { __luckyMeterVesselBeats?: typeof vesselBeats }
-      ).__luckyMeterVesselBeats = vesselBeats;
+      (window as Window & { __luckyMeterBeats?: typeof beats }).__luckyMeterBeats = beats;
       let last = '';
       let frame = 0;
-      const stop = () => {
-        window.removeEventListener('pagehide', stop);
-        if (frame) window.cancelAnimationFrame(frame);
-        frame = 0;
-      };
-      const sample = () => {
+      // "landed" is a short hand-off before the pour. A frame sampler can miss
+      // it on a loaded machine, so observe the attribute instead: React commits
+      // the DOM value even when the browser has no time to paint that frame.
+      const observer = new MutationObserver(() => {
         const phase = ring?.getAttribute('data-phase') ?? '';
         if (phase && phase !== last) {
           phases.push(phase);
           last = phase;
         }
-        // The vessel mounts only once a reading exists, so it must be looked up
-        // on every frame rather than captured before Start.
+      });
+      const stop = () => {
+        window.removeEventListener('pagehide', stop);
+        observer.disconnect();
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
+      };
+      const sample = () => {
+        const phase = ring?.getAttribute('data-phase') ?? '';
         const vessel = document.querySelector('[data-testid="lucky-colour-panel"]');
         const vesselPhase = vessel?.getAttribute('data-vessel-phase') ?? '';
-        if (vesselPhase) {
-          const revealedNumber = document.querySelector(
-            '[data-testid="lucky-meter-number-reveal"]',
-          );
-          vesselBeats.push({
+        if (vesselPhase && vesselPhase !== 'idle') {
+          beats.push({
             phase: vesselPhase,
             reveal: Number(ring?.getAttribute('data-number-reveal') ?? 0),
             fill: Number(vessel?.getAttribute('data-vessel-fill') ?? 0),
-            clip: revealedNumber instanceof HTMLElement ? revealedNumber.style.clipPath : '',
           });
         }
-        if (phase === 'revealed') {
+        // "revealed" and the vessel's "settled" arrive in the same commit; keep
+        // sampling until the settled beat has been seen so the final full
+        // vessel is recorded, then stop.
+        if (phase === 'revealed' && beats.some((beat) => beat.phase === 'settled')) {
           stop();
           return;
         }
         frame = window.requestAnimationFrame(sample);
       };
       window.addEventListener('pagehide', stop, { once: true });
+      if (ring) {
+        observer.observe(ring, { attributes: true, attributeFilter: ['data-phase'] });
+      }
       frame = window.requestAnimationFrame(sample);
     });
     await startReveal(page);
 
     const ring = page.getByTestId('lucky-meter-ring');
     const stored = (await readStoredResult(page)).result;
-    const palette = getPaletteForSeasonKey(stored.season);
 
     await expect(ring).toHaveAttribute('data-phase', 'revealed', { timeout: 35_000 });
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(
+            () =>
+              (
+                window as Window & {
+                  __luckyMeterBeats?: Array<{ phase: string }>;
+                }
+              ).__luckyMeterBeats?.some((beat) => beat.phase === 'settled') ?? false,
+          ),
+        { timeout: 5_000 },
+      )
+      .toBe(true);
     const phases = await page.evaluate(
       () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
     );
     expect(phases).toContain('landed');
+    expect(phases).toContain('pouring');
 
-    // The drain is the progressive reveal: at least one sampled frame had a
-    // partly-drained vessel and a partly-revealed number, and the empty vessel
-    // is reached only when the number is whole.
     const beats = await page.evaluate(
       () =>
         (window as Window & {
-          __luckyMeterVesselBeats?: Array<{
-            phase: string;
-            reveal: number;
-            fill: number;
-            clip: string;
-          }>;
-        }).__luckyMeterVesselBeats ?? [],
+          __luckyMeterBeats?: Array<{ phase: string; reveal: number; fill: number }>;
+        }).__luckyMeterBeats ?? [],
     );
-    expect(beats.some((beat) => beat.phase === 'draining')).toBe(true);
-    // The approved reveal moves downward from the top edge: while the number is
-    // partly shown, the clip's top inset stays zero and its bottom inset grows.
-    expect(
-      beats.some(
-        (beat) =>
-          beat.phase === 'draining' &&
-          beat.reveal > 0 &&
-          beat.reveal < 1 &&
-          /^inset\(0(px|%)?\s/.test(beat.clip),
-      ),
-    ).toBe(true);
-    expect(
-      beats.some((beat) => beat.phase === 'draining' && beat.reveal > 0 && beat.reveal < 1),
-    ).toBe(true);
-    expect(
-      beats.some((beat) => beat.phase === 'draining' && beat.fill > 0 && beat.fill < 1),
-    ).toBe(true);
-    expect(beats.some((beat) => beat.phase === 'empty' && beat.fill === 0)).toBe(true);
+    // The vessel fills, holds full, transfers the number and stays full.
+    expect(beats.some((beat) => beat.phase === 'filling' && beat.fill > 0)).toBe(true);
+    expect(beats.some((beat) => beat.phase === 'holding' && beat.fill === 1)).toBe(true);
+    expect(beats.some((beat) => beat.phase === 'transferring')).toBe(true);
+    expect(beats.some((beat) => beat.phase === 'settled' && beat.fill === 1)).toBe(true);
+    // It never drains to empty.
+    expect(beats.some((beat) => beat.phase === 'empty')).toBe(false);
+
     await expect(page.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(stored.percentage),
@@ -377,33 +353,26 @@ test.describe('Daily Resonance storyboard', () => {
     const angle = Number(await ring.getAttribute('data-wheel-angle'));
     expect(Math.abs(angle - settledAngle(stored.colour.id, stored.season))).toBeLessThan(0.03);
 
-    await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
-    await expect(page.getByTestId('lucky-number-value')).toHaveAttribute(
-      'data-value',
-      String(stored.luckyNumber),
-    );
-    await expect(page.getByTestId('lucky-colour-panel')).toBeVisible();
-    // The approved sequence ends on the empty vessel, not a full one.
-    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.000');
-    await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.name);
-    await expect(page.getByTestId('lucky-colour-panel')).toContainText(stored.colour.hex);
-    await expect(page.getByTestId('lucky-colour-panel')).toContainText(
-      stored.season.charAt(0).toUpperCase() + stored.season.slice(1),
-    );
+    // The number and the full vessel are presented together.
+    const panel = page.getByTestId('lucky-colour-panel');
+    await expect(panel).toBeVisible({ timeout: 25_000 });
+    await expect(panel).toHaveAttribute('data-vessel-fill', '1.000');
+    await expect(panel).toHaveAttribute('data-vessel-phase', /holding|transferring|settled/);
+    await expect(panel).toContainText(stored.colour.name);
+    await expect(panel).toContainText(stored.colour.hex);
     await expect(ring).toHaveAttribute('data-number-reveal', '1.00');
-    await expect(page.getByTestId('lucky-number-panel')).toHaveCount(1);
 
-    // The wheel is a real 12-segment seasonal wheel under the fixed pointer.
-    const segments = page.locator('[data-testid^="lucky-meter-colour-segment-"]');
-    await expect(segments).toHaveCount(12);
-    for (const colour of palette) {
-      await expect(
-        page.getByTestId(`lucky-meter-colour-segment-${colour.id}`),
-      ).toHaveCount(1);
+    // Twelve seasonal chambers are described by the stage's data contract, and
+    // the meter contains no SVG.
+    const ids = (await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? [];
+    expect(ids).toHaveLength(12);
+    for (const colour of getPaletteForSeasonKey(stored.season)) {
+      expect(ids).toContain(colour.id);
     }
+    await expect(ring.locator('svg')).toHaveCount(0);
   });
 
-  test('writes the exact tier message, celebrates, then docks Home and the countdown together', async ({
+  test('keeps the tier message visible through the celebration, then docks Home and the countdown', async ({
     page,
   }) => {
     test.slow();
@@ -424,35 +393,40 @@ test.describe('Daily Resonance storyboard', () => {
       'data-event',
       stored.event.id,
     );
+    // The exact sentence remains visible and settled for the whole cinematic.
+    const message = page.getByTestId('lucky-tier-message');
+    await expect(message).toHaveAttribute('data-state', 'holding');
+    await expect(message).toHaveAttribute('data-settled', 'true');
+    await expect(message).toContainText(stored.tier.message);
+    // The vessel is still full during the celebration.
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
+      'data-vessel-fill',
+      '1.000',
+    );
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
     await expect(page.getByTestId('lucky-meter-countdown')).toHaveCount(0);
 
-    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0, {
-      timeout: 45_000,
-    });
+    await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0, { timeout: 45_000 });
     await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 30_000 });
-    // The Spark is written glyph by glyph; under software WebGL the character
-    // clock runs slower, so the content assertion allows the writing to finish.
     await expect(page.getByTestId('lucky-spark-message')).toContainText(
       stored.spark.message.slice(0, 24),
       { timeout: 20_000 },
     );
-    // Home is still withheld while the maple-leaf cursor writes.
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
     const dock = page.getByTestId('lucky-meter-home').locator('..');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
+    // FINISHED keeps the same sentence: it never faded away.
+    await expect(message).toHaveAttribute('data-state', 'holding');
   });
 });
 
 test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
-  test('keeps the functional CSS vessel when WebGL is unavailable', async ({ page }) => {
+  test('keeps the complete CSS meter when WebGL is unavailable', async ({ page }) => {
     test.slow();
     await pinNoon(page);
-    // Deny every WebGL context before any application script runs. The vessel
-    // must still present its approved open, fill, drain and empty states.
     await page.addInitScript(() => {
       const original = HTMLCanvasElement.prototype.getContext;
       HTMLCanvasElement.prototype.getContext = function getContextWithoutWebGL(
@@ -469,36 +443,32 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
       } as typeof HTMLCanvasElement.prototype.getContext;
     });
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('lucky-meter-fallback')).toBeVisible();
     await startReveal(page);
 
-    const panel = page.getByTestId('lucky-colour-panel');
-    await expect(panel).toBeVisible({ timeout: 30_000 });
-    await expect(panel).toHaveAttribute('data-vessel-renderer', 'fallback', {
-      timeout: 30_000,
-    });
-    await expect(panel).toHaveAttribute('data-vessel-phase', /opening|filling|holding/);
+    const ring = page.getByTestId('lucky-meter-ring');
+    await expect(ring).toHaveAttribute('data-meter-renderer', 'fallback', { timeout: 20_000 });
+    await expect(ring).toHaveAttribute('data-pointer', '7.5');
+    await expect(ring.locator('svg')).toHaveCount(0);
+    // The fallback still draws the wheel, pointer, vessel and beam from CSS.
+    await expect(page.locator('.lucky-meter-fallback__wheel')).toBeVisible();
+    await expect(page.locator('.lucky-meter-fallback__pointer')).toBeVisible();
+    await expect(page.locator('.lucky-meter-fallback__vessel')).toBeVisible();
 
-    // The CSS liquid actually fills, not just the caption.
-    await expect(panel).toHaveAttribute('data-vessel-phase', 'filling', {
-      timeout: 20_000,
-    });
+    const panel = page.getByTestId('lucky-colour-panel');
+    await expect(panel).toHaveAttribute('data-vessel-phase', 'filling', { timeout: 25_000 });
     await expect
       .poll(async () => Number(await panel.getAttribute('data-vessel-fill')))
       .toBeGreaterThan(0);
 
-    // And it drains to the highlighted empty vessel when the number is whole.
-    await expect(panel).toHaveAttribute('data-vessel-phase', 'empty', {
-      timeout: 30_000,
-    });
-    await expect(panel).toHaveAttribute('data-vessel-fill', '0.000');
+    await expect(panel).toHaveAttribute('data-vessel-phase', 'settled', { timeout: 30_000 });
+    await expect(panel).toHaveAttribute('data-vessel-fill', '1.000');
     await expect(page.getByTestId('lucky-vessel-highlight')).toHaveClass(/is-active/);
     await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
   });
 
   test('restarts a refresh celebration at the full 12,000 ms (D12)', async ({ page }) => {
     await pinNoon(page);
-    // A stored legacy duration from the superseded per-tier clock must not
-    // re-time the celebration, and the saved reading must not be redrawn.
     await seed(
       page,
       buildState({
@@ -523,12 +493,15 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
       'data-value',
       String(stored.luckyNumber),
     );
+    // A restored reading keeps its full vessel.
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
+      'data-vessel-fill',
+      '1.000',
+    );
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
   });
 
-  test('presents the reading, Spark and dock at once under reduced motion', async ({
-    page,
-  }) => {
+  test('presents the reading, Spark and dock at once under reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await pinNoon(page);
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
@@ -550,46 +523,45 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
       'written',
     );
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
-    // Home and the countdown arrive together in the last row of the panel.
+    // The exact sentence is shown whole, with no typing and no fade.
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
+    await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
     const dock = page.getByTestId('lucky-meter-dock');
     await expect(dock.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
+      'data-vessel-fill',
+      '1.000',
+    );
   });
 });
 
 test.describe('Daily Resonance seasonal palettes', () => {
   for (const season of SEASONS) {
-    test(`${season} renders its own twelve exact colours and panel values`, async ({
-      page,
-    }) => {
+    test(`${season} renders its own twelve exact colours and panel values`, async ({ page }) => {
       const colour = seasonColour(season, 3);
       const dateKey = SEASON_DATES[season].slice(0, 10);
-      // The browser's local date decides the season, so move the clock to that
-      // season before the first script runs and store the matching date key.
       await page.clock.setFixedTime(new Date(SEASON_DATES[season]));
       await seed(
         page,
-        buildState({
-          tierId: 'medium',
-          season,
-          colour,
-          started: true,
-          dateKey,
-        }),
+        buildState({ tierId: 'medium', season, colour, started: true, dateKey }),
       );
 
       const palette = getPaletteForSeasonKey(season);
-      await expect(page.locator('[data-testid^="lucky-meter-colour-segment-"]')).toHaveCount(12);
-      await expect(page.getByTestId(`lucky-meter-colour-segment-${colour.id}`)).toHaveCount(1);
+      const ring = page.getByTestId('lucky-meter-ring');
+      // The stored reading hydrates after first paint; wait for its palette.
+      await expect
+        .poll(async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length)
+        .toBe(12);
+      const ids = (await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? [];
+      for (const entry of palette) expect(ids).toContain(entry.id);
+
       await expect(page.getByTestId('lucky-colour-panel')).toContainText(colour.name);
       await expect(page.getByTestId('lucky-colour-panel')).toContainText(colour.hex);
       await expect(page.getByTestId('lucky-colour-panel')).toContainText(
         season.charAt(0).toUpperCase() + season.slice(1),
       );
-
-      for (const entry of palette) {
-        await expect(page.getByTestId(`lucky-meter-colour-segment-${entry.id}`)).toHaveCount(1);
-      }
     });
   }
 
@@ -610,9 +582,7 @@ test.describe('Daily Resonance seasonal palettes', () => {
 });
 
 test.describe('Daily Resonance resume points', () => {
-  test('resumes the message and celebration after the pour', async ({ page }) => {
-    // The resumed message runs on the storyboard clock under software WebGL, so
-    // a loaded runner needs the slow budget rather than the default 30 s.
+  test('resumes the message and celebration after the reveal', async ({ page }) => {
     test.slow();
     await pinNoon(page);
     const state = buildState({
@@ -624,30 +594,33 @@ test.describe('Daily Resonance resume points', () => {
     });
     await seed(page, state);
 
-    // `fading` still shows the written line, so accepting it keeps the resume
-    // assertion honest without depending on catching the short hold window.
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
       'data-state',
-      /writing|holding|fading/,
+      /writing|holding/,
       { timeout: 25_000 },
     );
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
+    // The resumed message stays visible through the cinematic.
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
+      'data-state',
+      'holding',
+    );
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
-    // The glyph clock is a chained per-character timer, so a busy runner
-    // stretches the writing well past the ten seconds it needs unloaded.
     test.slow();
     await pinNoon(page);
-    const state = buildState({
-      tierId: 'low',
-      started: true,
-      messageCompleted: true,
-      eventCompleted: true,
-      sparkCompleted: false,
-    });
-    await seed(page, state);
+    await seed(
+      page,
+      buildState({
+        tierId: 'low',
+        started: true,
+        messageCompleted: true,
+        eventCompleted: true,
+        sparkCompleted: false,
+      }),
+    );
 
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     await expect(page.getByTestId('lucky-spark-cursor')).toBeVisible({ timeout: 20_000 });
@@ -671,6 +644,11 @@ test.describe('Daily Resonance resume points', () => {
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
+      'data-vessel-fill',
+      '1.000',
+    );
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
   });
 });
 
@@ -690,7 +668,8 @@ test.describe('Daily Resonance reduced motion', () => {
     );
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
-    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-value')).not.toHaveAttribute('data-value', '0');
@@ -704,7 +683,7 @@ test.describe('Daily Resonance reduced motion', () => {
 });
 
 test.describe('Daily Resonance WebGL fallback', () => {
-  test('settles on the static medallion when WebGL is unavailable', async ({ page }) => {
+  test('settles on the CSS meter when WebGL is unavailable', async ({ page }) => {
     const failures: string[] = [];
     page.on('pageerror', (error) => failures.push(String(error)));
 
@@ -722,12 +701,16 @@ test.describe('Daily Resonance WebGL fallback', () => {
 
     await pinNoon(page);
     await seed(page, buildState({ tierId: 'medium', started: true }));
-    await expect(page.getByTestId('lucky-meter-ring')).toHaveAttribute(
-      'data-medallion',
-      'fallback',
-    );
+    const ring = page.getByTestId('lucky-meter-ring');
+    await expect(ring).toHaveAttribute('data-meter-renderer', 'fallback');
+    await expect(ring.locator('svg')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-meter-fallback')).toBeVisible();
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible();
     await expect(page.getByTestId('lucky-number-panel')).toBeVisible();
+    await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
+      'data-vessel-fill',
+      '1.000',
+    );
     expect(failures).toEqual([]);
   });
 });
@@ -740,7 +723,10 @@ test.describe('Daily Resonance visual evidence', () => {
   );
 
   test('captures the arrival and each seasonal result', async ({ page }, testInfo) => {
-    const directory = 'artifacts/lucky-meter-seasonal-cinematic-20261119/after';
+    // Four complete seasonal rituals run in one capture; each is close to a
+    // minute, so the default timeout cannot cover the set.
+    test.setTimeout(330_000);
+    const directory = 'artifacts/lucky-meter-dimensional-20261123/after';
     const prefix = testInfo.project.name;
 
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
@@ -773,9 +759,9 @@ test.describe('Daily Resonance visual evidence', () => {
     }
   });
 
-  test('captures the approved vessel beats', async ({ page }, testInfo) => {
+  test('captures the dimensional meter beats', async ({ page }, testInfo) => {
     test.slow();
-    const directory = 'artifacts/lucky-meter-approved-build-20261121';
+    const directory = 'artifacts/lucky-meter-dimensional-20261123';
     const prefix = testInfo.project.name;
 
     await pinNoon(page);
@@ -806,15 +792,15 @@ test.describe('Daily Resonance visual evidence', () => {
         const ring = document.querySelector('[data-testid="lucky-meter-ring"]');
         const reveal = Number(ring?.getAttribute('data-number-reveal') ?? 0);
         return (
-          vessel?.getAttribute('data-vessel-phase') === 'draining' &&
-          reveal > 0.55 &&
-          reveal < 0.9
+          vessel?.getAttribute('data-vessel-phase') === 'transferring' &&
+          reveal > 0.25 &&
+          reveal < 0.95
         );
       },
       null,
       { timeout: 30_000 },
     );
-    await page.screenshot({ path: `${directory}/${prefix}-drain.png` });
+    await page.screenshot({ path: `${directory}/${prefix}-transfer.png` });
 
     await expect(page.getByTestId('lucky-meter-dock')).toBeVisible({ timeout: 90_000 });
     await expect(page.getByTestId('lucky-meter-countdown')).toBeVisible();

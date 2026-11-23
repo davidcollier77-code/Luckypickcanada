@@ -210,9 +210,10 @@ describe('resource derivation and automatic registration', () => {
     expect(meter.resources.find((resource) => resource.id === 'lucky-meter-audio').kind).toBe('audio');
   });
 
-  it('resolves the plan for an existing experience without forcing Three.js', () => {
+  it('resolves each existing experience to its registered renderer', () => {
     expect(getVisualExperience('lucky-meter')).not.toBeNull();
-    expect(resolveVisualPlan('lucky-meter').renderer).toBe(GRAPHICS_TECHNOLOGY.WEBGL);
+    // The dimensional meter is one Three.js scene; reveal stays Canvas 2D.
+    expect(resolveVisualPlan('lucky-meter').renderer).toBe(GRAPHICS_TECHNOLOGY.THREE);
     expect(resolveVisualPlan('reveal').renderer).toBe(GRAPHICS_TECHNOLOGY.CANVAS2D);
     expect(resolveVisualPlan('unknown')).toBeNull();
   });

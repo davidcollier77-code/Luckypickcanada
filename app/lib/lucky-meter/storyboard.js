@@ -1,34 +1,34 @@
 /**
- * The Lucky Meter's approved twelve-stage cinematic storyboard.
+ * The Lucky Meter's approved cinematic storyboard.
  *
- * Every stage length lives here so the component, the copy animator, the audio
- * cues and the tests all read one source. The approved sequence is:
+ * Every stage length lives here so the component, the WebGL meter, the message
+ * animator, the audio cues and the tests all read one source. The sequence is:
  *
- *   1. anticipation      the sky listens, the readout waits at 0
- *   2. generation        five beats: 0 → 100 → fall → rise → erratic → result
- *   3. landing           the wheel and the readout stop on the same frame
- *   4. colourSelect      the seasonal colour selection settles under the pointer
- *   5. vesselOpen        the cylindrical vessel opens with visible depth
- *   6. pour              the colour fills the vessel, then holds full
- *   7. numberReveal      the drain reveals the Lucky Number from the top down,
- *                        then the empty vessel is highlighted
- *   8. message           the tier line is written above the meter
- *   9. celebration       one 12,000 ms cinematic for every tier
- *  10. spark             the maple-leaf cursor writes the Little Spark
- *  11. hold              the finished scene is held so it can be taken in
- *  12. dock              Home and the countdown arrive together
+ *   1. anticipation      the sky listens, the central leaf waits
+ *   2. leafExit          the central leaf rotates back and clears the well
+ *   3. generation        the wheel turns for 4,400 ms and stops on the stored
+ *                        colour while the percentage keeps generating for its
+ *                        own independent 9,400 ms window
+ *   4. pour              the selected chamber drains and the vessel fills
+ *   5. numberPause       the full vessel rests
+ *   6. transfer          the golden beam carries the number to its display
+ *   7. message           the exact tier line is written, held and settles
+ *   8. celebration       one 12,000 ms cinematic for every tier
+ *   9. spark             the maple-leaf cursor writes the Little Spark
+ *  10. hold              the finished scene is held so it can be taken in
+ *  11. dock              Home and the countdown arrive together
  *
- * Before Start, the resting pile holds, the breeze carries the leaves away and
- * only then does Start appear. Those pre-Start values are here too so the
- * arrival and the button share the same clock.
+ * The wheel and the percentage are deliberately separate clocks. The wheel
+ * stops first, on the already-selected colour; the percentage continues its
+ * approved five-beat movement and only reaches the stored result at the end of
+ * its own window. Nothing here selects a value.
  *
- * The overall run is emergent: it is the sum of these beats (roughly 54–57
- * seconds from first paint to the dock). No stage is shortened or stretched to
- * force an identical clock.
+ * The overall run is emergent: it is the sum of these beats. No later stage is
+ * shortened or stretched to force an identical total.
  */
 
 export const STORYBOARD_TIMING = Object.freeze({
-  /** Stages 1–2: the pile of leaves rests long enough to register as an object. */
+  /** Stages 1–2: the resting pile holds long enough to register as an object. */
   leafHoldMs: 2400,
   /** Stage 2: the gust lifts the pile and carries every leaf out of frame. */
   leafBreezeMs: 2100,
@@ -36,70 +36,63 @@ export const STORYBOARD_TIMING = Object.freeze({
   startDelayMs: 800,
 
   /** Stage 1: a held breath after Start, before anything moves. */
-  anticipationMs: 1200,
+  anticipationMs: 1000,
+  /** Stage 2: the central decorative leaf rotates back and retracts. */
+  leafExitMs: 900,
   /**
-   * Stage 2: the five-beat percentage generation. 0 → 100 → fall → rise →
-   * erratic → settle on the stored 5–100 reading. The wheel turns on the same
-   * clock and stops on the same frame.
+   * Stage 3: the wheel turns exactly five revolutions and stops on the
+   * pre-selected colour. It is shorter than the percentage window on purpose.
    */
-  generationMs: 5600,
-
-  /** Stage 3: the stopped wheel and the reading rest, plaque-free, in the well. */
-  landingMs: 600,
-  /** Stage 4: the landing beat plus the seasonal colour selection unfolding. */
-  settlePauseMs: 1800,
-  /** Stage 5: the cylindrical vessel opens from a shallow plate. */
-  segmentOpenMs: 1400,
-  /** Stage 6: the colour drains from the segment and fills the vessel. */
-  fillMs: 5000,
-  /** Stage 6: the full vessel is held before the drain begins. */
-  fullHoldMs: 700,
+  wheelMs: 4400,
   /**
-   * Stage 7: the vessel drains through this window while the Lucky Number is
-   * revealed progressively from the top down. The number is fully visible on
-   * the first frame of the empty vessel.
+   * Stage 3: the independent percentage generation. The five approved beats
+   * (0 → 100 → fall → rise → erratic → settle) run here and the stored result
+   * appears only on the last frame.
    */
-  drainMs: 4000,
-  /** Stage 7: the empty vessel is highlighted and the number flashes. */
-  highlightMs: 1600,
-  /** One flash of the revealed Lucky Number. */
-  numberFlashMs: 420,
-  numberFlashCount: 2,
+  percentageMs: 9400,
+  /** Stage 4: the selected chamber drains and the receiving vessel fills. */
+  pourMs: 2000,
+  /** Stage 5: the full vessel rests before the number moves. */
+  numberPauseMs: 1500,
+  /** Stage 6: the golden beam carries the number to its display. */
+  transferMs: 1500,
 
-  /** Stage 8: lead-in before the tier message starts writing. */
+  /** Stage 7: lead-in before the tier message starts writing. */
   messageDelayMs: 800,
-  /** Stage 8: one character at a time. */
+  /** Stage 7: one character at a time. */
   messageCharMs: 34,
-  /** Stage 8: the longer beat after punctuation in the faster tier line. */
+  /** Stage 7: the longer beat after punctuation in the faster tier line. */
   messagePunctuationPauseMs: 240,
-  /** Stage 8: the finished sentence stays readable. */
+  /** Stage 7: the finished sentence stays readable. */
   messageHoldMs: 3000,
-  /** Stage 8: and fades away before the celebration. */
-  messageFadeMs: 800,
+  /**
+   * Stage 7: the finished sentence settles visibly. It never fades: the line
+   * stays at full opacity through the celebration and the finished state.
+   */
+  messageSettleMs: 800,
 
-  /** Stage 9: a last breath between the message and the cinematic. */
+  /** Stage 8: a last breath between the message and the cinematic. */
   eventDelayMs: 900,
   /**
-   * Stage 9: every tier celebrates for the same 12,000 ms. A celebration
+   * Stage 8: every tier celebrates for the same 12,000 ms. A celebration
    * restarted after a page refresh uses this full length again; an older stored
    * duration never re-times it.
    */
   celebrationMs: 12000,
 
-  /** Stage 10: the sky is still after the celebration. */
+  /** Stage 9: the sky is still after the celebration. */
   sparkStartDelayMs: 1300,
-  /** Stage 10: the maple-leaf cursor writes one character at a time. */
+  /** Stage 9: the maple-leaf cursor writes one character at a time. */
   sparkMsPerCharacter: 32,
   sparkPunctuationPauseMs: 240,
-  /** Stage 10: every Spark takes 3,800–5,200 ms to write. */
+  /** Stage 9: every Spark takes 3,800–5,200 ms to write. */
   sparkMinMs: 3800,
   sparkMaxMs: 5200,
 
   /**
-   * Stage 11 plus the dock settle: the completed scene is held first, and both
+   * Stage 10 plus the dock settle: the completed scene is held first, and both
    * controls arrive together at the end of this window. The gap between
-   * `finalHoldMs` and this value is the dock's own approach, so the stage list
-   * leaves it unrepresented on purpose instead of stretching the hold over it.
+   * `finalHoldMs` and this value is the dock's own approach.
    */
   dockDelayMs: 3600,
   /** The part of the dock window that is pure hold: `hold` ends here. */
@@ -108,6 +101,9 @@ export const STORYBOARD_TIMING = Object.freeze({
   /** The landing flash on the percentage. */
   flashMs: 700,
   flashCount: 2,
+  /** One flash of the revealed Lucky Number. */
+  numberFlashMs: 420,
+  numberFlashCount: 2,
 });
 
 /** Milliseconds from first paint until Start can appear without the arrival canvas. */
@@ -119,39 +115,33 @@ export const ARRIVAL_TOTAL_MS =
 /** The one celebration length used by every tier, including a refresh restart. */
 export const CELEBRATION_MS = STORYBOARD_TIMING.celebrationMs;
 
-/**
- * Milliseconds from Start until the percentage and the wheel stop. Both use the
- * same final frame, so they can never disagree.
- */
-export const REVEAL_MOTION_MS =
-  STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs;
+/** Milliseconds from Start until the percentage begins generating. */
+export const PERCENTAGE_START_MS =
+  STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.leafExitMs;
+
+/** Milliseconds from Start until the wheel stops on the stored colour. */
+export const WHEEL_END_MS = PERCENTAGE_START_MS + STORYBOARD_TIMING.wheelMs;
+
+/** Milliseconds from Start until the percentage reaches the stored result. */
+export const PERCENTAGE_END_MS = PERCENTAGE_START_MS + STORYBOARD_TIMING.percentageMs;
 
 /**
- * Milliseconds from Start until the colour selection has finished unfolding.
+ * Milliseconds from Start until both the wheel and the percentage have stopped.
  *
- * `settlePauseMs` is split: `landingMs` completes the wheel's arrival and the
- * remainder is the colour selection itself. Anyone deriving that beat must
- * subtract `COLOUR_SELECT_START_MS`, not `REVEAL_MOTION_MS`, from this value.
+ * The wheel stops at `WHEEL_END_MS`; this value is the end of the percentage
+ * window, when the reading is whole. The component keeps the wheel locked at
+ * its landing angle for the remainder.
  */
-export const COLOUR_SELECT_END_MS = REVEAL_MOTION_MS + STORYBOARD_TIMING.settlePauseMs;
+export const REVEAL_MOTION_MS = PERCENTAGE_END_MS;
 
-/** Milliseconds from Start until the colour selection begins after the landing. */
-export const COLOUR_SELECT_START_MS = REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs;
+/** Milliseconds from Start until the pour finishes and the vessel is full. */
+export const POUR_END_MS = PERCENTAGE_END_MS + STORYBOARD_TIMING.pourMs;
 
-/** Milliseconds from Start until the vessel has finished opening. */
-export const VESSEL_OPEN_END_MS = COLOUR_SELECT_END_MS + STORYBOARD_TIMING.segmentOpenMs;
+/** Milliseconds from Start until the full vessel has rested. */
+export const NUMBER_PAUSE_END_MS = POUR_END_MS + STORYBOARD_TIMING.numberPauseMs;
 
-/** Milliseconds from Start until the vessel is full. */
-export const FILL_END_MS = VESSEL_OPEN_END_MS + STORYBOARD_TIMING.fillMs;
-
-/** Milliseconds from Start until the full vessel has been held. */
-export const FULL_HOLD_END_MS = FILL_END_MS + STORYBOARD_TIMING.fullHoldMs;
-
-/** Milliseconds from Start until the vessel is empty and the number is whole. */
-export const DRAIN_END_MS = FULL_HOLD_END_MS + STORYBOARD_TIMING.drainMs;
-
-/** Milliseconds from Start until the empty highlight ends and the message starts. */
-export const REVEAL_COMPLETE_MS = DRAIN_END_MS + STORYBOARD_TIMING.highlightMs;
+/** Milliseconds from Start until the beam has transferred the number. */
+export const REVEAL_COMPLETE_MS = NUMBER_PAUSE_END_MS + STORYBOARD_TIMING.transferMs;
 
 /** Characters that earn a longer pause while writing. */
 const PUNCTUATION = /[.,!?:;—–]/;
@@ -165,7 +155,8 @@ function characterWeights(message) {
 }
 
 /**
- * The time the message needs to be typed, excluding its lead-in, hold and fade.
+ * The time the message needs to be typed, excluding its lead-in, hold and
+ * settle.
  *
  * @param {string} message
  * @returns {number} Milliseconds.
@@ -183,7 +174,8 @@ export function getMessageTypingMs(message) {
 }
 
 /**
- * The full time the message owns, including its lead-in, writing, hold and fade.
+ * The full time the message owns, including its lead-in, writing, hold and
+ * visible settle. The message never fades; the settle is its last beat.
  *
  * @param {string} message
  * @returns {number}
@@ -193,7 +185,7 @@ export function getMessageTotalMs(message) {
     STORYBOARD_TIMING.messageDelayMs +
     getMessageTypingMs(message) +
     STORYBOARD_TIMING.messageHoldMs +
-    STORYBOARD_TIMING.messageFadeMs
+    STORYBOARD_TIMING.messageSettleMs
   );
 }
 
@@ -310,7 +302,7 @@ export function getExperienceTotalMs(tierMessage, eventDurationMs, sparkMessage)
  * values so a stage can never start before the previous one has finished.
  *
  * @param {{ tierMessage: string, eventDurationMs: number, sparkMessage: string }} run
- * @returns {Array<{ id: string, startMs: number, endMs: number, durationMs: number, streamEndMs?: number }>}
+ * @returns {Array<{ id: string, startMs: number, endMs: number, durationMs: number, wheelEndMs?: number }>}
  */
 export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) {
   const eventStart = getEventStartMs(tierMessage);
@@ -326,38 +318,29 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
   return [
     { id: 'anticipation', startMs: 0, endMs: STORYBOARD_TIMING.anticipationMs },
     {
-      id: 'generation',
+      id: 'leafExit',
       startMs: STORYBOARD_TIMING.anticipationMs,
-      endMs: REVEAL_MOTION_MS,
+      endMs: PERCENTAGE_START_MS,
     },
     {
-      id: 'landing',
-      startMs: REVEAL_MOTION_MS,
-      endMs: REVEAL_MOTION_MS + STORYBOARD_TIMING.landingMs,
-    },
-    {
-      id: 'colourSelect',
-      startMs: COLOUR_SELECT_START_MS,
-      endMs: COLOUR_SELECT_END_MS,
-    },
-    {
-      id: 'vesselOpen',
-      startMs: COLOUR_SELECT_END_MS,
-      endMs: VESSEL_OPEN_END_MS,
+      id: 'generation',
+      startMs: PERCENTAGE_START_MS,
+      endMs: PERCENTAGE_END_MS,
+      wheelEndMs: WHEEL_END_MS,
     },
     {
       id: 'pour',
-      startMs: VESSEL_OPEN_END_MS,
-      // The stage owns the fill and the held-full beat, so its end is the full
-      // hold. The stream itself stops at FILL_END_MS; `streamEndMs` makes that
-      // distinction explicit for any consumer that needs the pour to end
-      // rather than the stage to close 700 ms later.
-      endMs: FULL_HOLD_END_MS,
-      streamEndMs: FILL_END_MS,
+      startMs: PERCENTAGE_END_MS,
+      endMs: POUR_END_MS,
     },
     {
-      id: 'numberReveal',
-      startMs: FULL_HOLD_END_MS,
+      id: 'numberPause',
+      startMs: POUR_END_MS,
+      endMs: NUMBER_PAUSE_END_MS,
+    },
+    {
+      id: 'transfer',
+      startMs: NUMBER_PAUSE_END_MS,
       endMs: REVEAL_COMPLETE_MS,
     },
     {

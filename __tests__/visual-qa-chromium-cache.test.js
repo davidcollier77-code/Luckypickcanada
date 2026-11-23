@@ -480,7 +480,7 @@ describe('visual QA gating matrix', () => {
   const visualJob = workflow.slice(workflow.indexOf('\n  visual:'));
 
   const matrix = [
-    { kind: 'visual', paths: ['components/lucky-meter-medallion-engine.js'], browser: true },
+    { kind: 'visual', paths: ['components/LuckyMeterStage.jsx'], browser: true },
     { kind: 'performance', paths: ['components/cosmic-event-engine.js'], browser: true },
     { kind: 'ordinary application code', paths: ['app/lib/credit-format.js'], browser: true },
     { kind: 'documentation', paths: ['docs/qa-checkers.md'], browser: false },

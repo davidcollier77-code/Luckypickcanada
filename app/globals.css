@@ -521,214 +521,6 @@ body {
   }
 }
 
-/* ==========================================================================
-   Lucky Meter circular energy ring.
-
-   The DOM ring is the readable structure: a dark glass disc, a gold rim and
-   the existing golden maple-leaf artwork. The conic-gradient arcs and the
-   small WebGL canvas only add light, so a browser without WebGL still shows a
-   complete meter. Movement is deliberately slow and fluid.
-   ========================================================================== */
-@keyframes resonanceRingSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes resonanceRingReverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
-}
-
-@keyframes resonanceHaloBreathe {
-  0%, 100% { opacity: 0.55; transform: scale(1); }
-  50% { opacity: 0.88; transform: scale(1.035); }
-}
-
-.resonance-ring-halo {
-  pointer-events: none;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 201, 92, 0.3) 0%,
-    rgba(255, 154, 48, 0.13) 52%,
-    rgba(255, 154, 48, 0) 76%
-  );
-  filter: blur(16px);
-  animation: resonanceHaloBreathe 6.5s ease-in-out infinite;
-}
-
-/* A real metallic rim: lit gold segments with darker engraved shadows. */
-.resonance-ring-rim {
-  pointer-events: none;
-  opacity: 0.94;
-  background: conic-gradient(
-    from 205deg,
-    #4b310b 0deg,
-    #d9ad5a 34deg,
-    #fff0b4 58deg,
-    #a9781f 88deg,
-    #5b3b0c 132deg,
-    #e8c470 188deg,
-    #fff6d0 214deg,
-    #b3822a 246deg,
-    #4a3009 292deg,
-    #f2d38a 332deg,
-    #5b3b0c 360deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 16px),
-    #000 calc(100% - 15px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 16px),
-    #000 calc(100% - 15px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  filter: drop-shadow(0 0 7px rgba(255, 196, 80, 0.45));
-}
-
-.resonance-ring-halo--inner {
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 201, 92, 0) 54%,
-    rgba(255, 226, 160, 0.17) 74%,
-    rgba(255, 201, 92, 0) 88%
-  );
-  filter: blur(6px);
-  animation-duration: 8.5s;
-  animation-direction: reverse;
-}
-
-.resonance-ring-etched {
-  pointer-events: none;
-  opacity: 0.32;
-  background: repeating-conic-gradient(
-    from 0deg,
-    rgba(255, 226, 160, 0.55) 0deg 0.55deg,
-    rgba(255, 226, 160, 0) 0.55deg 3.1deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 4px),
-    #000 calc(100% - 3px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 4px),
-    #000 calc(100% - 3px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-}
-
-.resonance-ring-arc {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 214, 130, 0) 0deg,
-    rgba(255, 214, 130, 0.06) 42deg,
-    rgba(255, 224, 158, 0.72) 92deg,
-    rgba(255, 246, 210, 1) 104deg,
-    rgba(255, 206, 112, 0.24) 132deg,
-    rgba(255, 206, 112, 0) 178deg,
-    rgba(255, 206, 112, 0) 360deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 15px),
-    #000 calc(100% - 14px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 15px),
-    #000 calc(100% - 14px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  filter: drop-shadow(0 0 7px rgba(255, 196, 80, 0.7));
-  animation: resonanceRingSpin 26s linear infinite;
-  will-change: transform;
-}
-
-.resonance-ring-arc--alt {
-  inset: 2.5%;
-  opacity: 0.78;
-  background: conic-gradient(
-    from 180deg,
-    rgba(255, 240, 190, 0) 0deg,
-    rgba(255, 233, 170, 0.7) 84deg,
-    rgba(255, 250, 226, 1) 96deg,
-    rgba(255, 210, 120, 0.16) 138deg,
-    rgba(255, 210, 120, 0) 200deg,
-    rgba(255, 210, 120, 0) 360deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 9px),
-    #000 calc(100% - 8px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 9px),
-    #000 calc(100% - 8px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  animation: resonanceRingReverse 37s linear infinite;
-}
-
-.resonance-ring-arc--spark {
-  inset: 4.5%;
-  opacity: 0.6;
-  background: conic-gradient(
-    from 300deg,
-    rgba(255, 250, 230, 0) 0deg,
-    rgba(255, 250, 230, 0.9) 28deg,
-    rgba(255, 210, 130, 0) 66deg,
-    rgba(255, 210, 130, 0) 360deg
-  );
-  -webkit-mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 3px),
-    #000 calc(100% - 2px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  mask: radial-gradient(
-    farthest-side,
-    transparent calc(100% - 3px),
-    #000 calc(100% - 2px),
-    #000 calc(100% - 1px),
-    transparent 100%
-  );
-  animation-duration: 17s;
-}
-
-.resonance-ring[data-phase='scrambling'] .resonance-ring-arc {
-  animation-duration: 14s;
-}
-
-.resonance-ring[data-phase='landed'] .resonance-ring-arc {
-  animation-duration: 19s;
-}
-
-.resonance-ring[data-phase='landed'] .resonance-ring-halo {
-  opacity: 1;
-}
-
 /* The Home control reuses the shared metallic gold CTA but sits compactly in
    the top-right corner of the scene. */
 .lucky-home-btn {
@@ -748,39 +540,7 @@ body {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .resonance-ring-arc,
-  .resonance-ring-halo,
-  .resonance-ring-etched {
-    animation: none !important;
-  }
-}
 
-
-/* ── Dimensional medallion ──────────────────────────────────────────────────
-   The lit WebGL medallion paints over these layers once it has produced a
-   frame. They stay in the document as the no-WebGL fallback so the meter is
-   never an empty hole; nothing here is load-bearing for the 3D path. */
-.resonance-medallion-fallback {
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-/* A single grazing highlight across the disc. It is what separates a polished
-   struck medal from a flat radial gradient, and it moves with the pointer
-   highlight on the WebGL path. */
-.resonance-medallion-fallback::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    linear-gradient(148deg, rgba(255, 249, 220, 0.16) 0%, rgba(255, 249, 220, 0.05) 26%, rgba(255, 249, 220, 0) 46%),
-    radial-gradient(140% 42% at 50% -8%, rgba(255, 236, 178, 0.22), rgba(255, 236, 178, 0) 62%);
-  mix-blend-mode: screen;
-}
 
 /* ── Tier plate ─────────────────────────────────────────────────────────────
    A framed title rather than loose text: hairlines either side, wide tracking
@@ -795,8 +555,8 @@ body {
 .lucky-tier-plate__rule {
   display: block;
   height: 1px;
-  flex: 0 1 1.15rem;
-  min-width: 0.3rem;
+  flex: 0 1 clamp(0.25rem, 3cqw, 0.9rem);
+  min-width: 0;
   background: linear-gradient(90deg, rgba(255, 222, 150, 0), rgba(255, 222, 150, 0.5));
 }
 .lucky-tier-plate__rule:last-child {
@@ -804,11 +564,14 @@ body {
 }
 .lucky-tier-plate__label {
   margin: 0;
-  font-size: 12px;
+  /* Sized to the well's lower chord, not its square width: the circular clip
+     is narrower where the plate sits. */
+  font-size: clamp(8.5px, 5.4cqw, 10.5px);
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.1em;
   line-height: 1.3;
   white-space: nowrap;
+  min-width: 0;
   text-indent: 0.2em;
   text-transform: uppercase;
   background: linear-gradient(180deg, #fffbe4 0%, #f8e3a4 38%, #e0b45c 70%, #b6822f 100%);
@@ -816,6 +579,14 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+}
+
+/* The well is narrow at every stage size; drop the decorative rules before
+   they force "Medium Resonance" to clip. */
+@container (max-width: 210px) {
+  .lucky-tier-plate__rule {
+    display: none;
+  }
 }
 
 /* ── Supporting panels ─────────────────────────────────────────────────────
@@ -892,20 +663,6 @@ body {
    Everything here is presentation only. The values are already selected before
    any of these elements animate, so no transition can change a result.
    ========================================================================== */
-
-/* The medallion is a raised object, so it casts a grounded contact shadow onto
-   the sky instead of floating on a glow. */
-.resonance-medallion-contact {
-  pointer-events: none;
-  z-index: 0;
-  background: radial-gradient(
-    closest-side,
-    rgba(0, 0, 0, 0.74) 0%,
-    rgba(0, 0, 0, 0.44) 54%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  filter: blur(7px);
-}
 
 /* Struck-gold numeral for the independent Lucky Number. */
 .lucky-number-value {
@@ -1209,10 +966,11 @@ body {
   }
 }
 
-/* ── Tier message above the meter ─────────────────────────────────────────
-   Frame 6 of the storyboard: the exact tier sentence is written in the sky
-   above the meter, held long enough to read and faded before the celebration.
-   It has no panel, so the celebration keeps the space it occupies. */
+/* ── Tier message at the meter's base ─────────────────────────────────────
+   The exact tier sentence is written, held long enough to read, then settles
+   visibly. It never fades: the line stays at full opacity through the
+   celebration and the finished state. It has no panel, so the celebration
+   keeps the space it occupies and is never obstructed. */
 .lucky-tier-message {
   position: relative;
   isolation: isolate;
@@ -1260,72 +1018,292 @@ body {
   56%, 100% { opacity: 0.15; }
 }
 
-/* ── Lucky Colour vessel ──────────────────────────────────────────────────
-   Stages 5–7: the functional CSS fallback for the cylindrical vessel. It is
-   built from real layers — a recessed curved back wall, side walls, a curved
-   glass front, a lit elliptical gold rim, a lid that tilts back as it opens
-   and a liquid body that rises on fill and falls on drain — so it reads as
-   the same tumbler the Three.js scene draws. It is the first paint and the
-   permanent fallback when WebGL is unavailable or its context is lost, and it
-   always uses the stored HEX value, so the vessel and the wheel can never
-   disagree. */
-.lucky-vessel-stage {
+/* ── Lucky Meter stage ────────────────────────────────────────────────────
+   One canvas draws the whole physical meter: the struck medallion, the twelve
+   seasonal chambers, the central decorative leaf, the fixed 7:30 pointer with
+   its curved arm and spout, the receiving vessel, the pour and the golden
+   transfer beam. These rules own the stage box, the DOM readout that sits over
+   the wheel's centre, and the complete CSS fallback used when WebGL is
+   unavailable or its context is lost.
+
+   The fallback is built from gradients, clip-paths and layers. It contains no
+   SVG artwork, and it keeps every essential object: wheel, pointer, leaf,
+   vessel, pour and beam. */
+.lucky-meter-stage {
   position: relative;
   isolation: isolate;
+  /* No aspect-ratio on the stage itself: the 1:1 scene sets the wheel box, and
+     the colour caption below it must add to the stage's height instead of
+     overflowing it and colliding with the detail panels. */
+  max-width: min(24rem, 84vw);
+  margin-inline: auto;
 }
 
-.lucky-vessel-scene {
+.lucky-meter-stage .lucky-vessel-scene {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: clamp(10.5rem, 24vh, 13.5rem);
-  margin-bottom: 0.15rem;
-  perspective: 780px;
-  perspective-origin: 50% 16%;
-  filter: drop-shadow(0 20px 22px rgba(0, 0, 0, 0.42));
+  display: block;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin-bottom: 0;
+  perspective: none;
+  filter: none;
 }
 
-/* The Three.js vessel: transparent until its first composed frame, so the CSS
-   fallback underneath is what the visitor sees while the engine loads. */
+.lucky-meter-stage__canvas-host,
 .lucky-vessel-canvas-host {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 10;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 700ms ease;
+  transition: opacity 600ms ease;
 }
 
+.lucky-meter-stage__canvas-host.is-ready,
 .lucky-vessel-canvas-host.is-ready {
   opacity: 1;
 }
 
-/* The scene's own alpha already composites onto the sky; the container's drop
-   shadow would rasterise the transparent canvas into a faint box. */
-.lucky-vessel-stage[data-vessel-renderer="three"] .lucky-vessel-scene {
-  filter: none;
-}
-
+.lucky-meter-stage__canvas-host canvas,
 .lucky-vessel-canvas-host canvas {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.lucky-vessel--hidden {
-  opacity: 0;
-  transition: opacity 600ms ease;
+/* The readout sits exactly over the wheel's centre in both renderers. */
+.lucky-meter-stage__readout {
+  position: absolute;
+  z-index: 20;
+  width: 42%;
+  container-type: inline-size;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.55),
+    inset 0 -12px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* The approved 1.6 s empty-vessel highlight. It is a separate layer above
-   either renderer, so the highlight is identical with and without WebGL. */
-.lucky-vessel__highlight {
+/* The well is only a fraction of the stage; size every label to its width so
+   "Daily Resonance" and the tier plate never clip as the stage scales. */
+.lucky-meter-stage__readout .lucky-meter-stage__label {
+  font-size: clamp(10px, 6.2cqw, 12px);
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+/* The visible pointer is scene geometry (or the CSS leaf in the fallback).
+   This tiny marker keeps the fixed 7:30 contract observable. */
+.lucky-meter-stage__pointer-hook {
   position: absolute;
-  inset: 6% 8%;
+  left: 28.3%;
+  top: 55.2%;
+  z-index: 21;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.lucky-meter-stage__vessel-highlight {
+  inset: auto;
+  left: 18.4%;
+  top: 73.6%;
+  width: 22%;
+  height: 17%;
+}
+
+/* ── No-WebGL fallback composition ─────────────────────────────────────── */
+.lucky-meter-fallback {
+  position: absolute;
+  inset: 0;
   z-index: 5;
   pointer-events: none;
-  border-radius: 50% 50% 46% 46% / 12% 12% 14% 14%;
+}
+
+.lucky-meter-fallback__halo {
+  position: absolute;
+  width: 76%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 201, 92, 0.32) 0%,
+    rgba(255, 154, 48, 0.12) 52%,
+    rgba(255, 154, 48, 0) 78%
+  );
+  filter: blur(14px);
+}
+
+.lucky-meter-fallback__wheel {
+  position: absolute;
+  width: 56%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  box-shadow:
+    0 18px 34px -18px rgba(0, 0, 0, 0.85),
+    0 0 40px rgba(255, 196, 80, 0.18);
+  will-change: transform;
+}
+
+.lucky-meter-fallback__wheel::before {
+  content: '';
+  position: absolute;
+  inset: 26.5%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 34%, rgba(30, 24, 12, 0.92), rgba(2, 5, 9, 0.98) 72%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 190, 0.16),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.7);
+}
+
+.lucky-meter-fallback__drain {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transition: opacity 120ms linear;
+}
+
+.lucky-meter-fallback__rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 232, 168, 0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(255, 206, 116, 0.35);
+}
+
+.lucky-meter-fallback__well {
+  position: absolute;
+  inset: 27.5%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 232, 176, 0.22);
+  background: radial-gradient(circle at 50% 32%, rgba(22, 17, 8, 0.72), rgba(1, 4, 8, 0.94) 74%);
+}
+
+.lucky-meter-fallback__leaf {
+  position: absolute;
+  z-index: 4;
+  width: 27%;
+  aspect-ratio: 0.9 / 1;
+  clip-path: polygon(50% 0%, 57% 24%, 72% 17%, 68% 33%, 100% 29%, 84% 47%, 98% 57%, 74% 59%, 80% 82%, 58% 70%, 50% 100%, 42% 70%, 20% 82%, 26% 59%, 2% 57%, 16% 47%, 0% 29%, 32% 33%, 28% 17%, 43% 24%);
+  background: linear-gradient(158deg, #fff8d8 0%, #f3d583 32%, #c9962f 68%, #7d5310 100%);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+}
+
+.lucky-meter-fallback__pointer-wrap {
+  position: absolute;
+  z-index: 6;
+  width: 8.5%;
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+}
+
+.lucky-meter-fallback__pointer {
+  display: block;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(50% 0%, 57% 24%, 72% 17%, 68% 33%, 100% 29%, 84% 47%, 98% 57%, 74% 59%, 80% 82%, 58% 70%, 50% 100%, 42% 70%, 20% 82%, 26% 59%, 2% 57%, 16% 47%, 0% 29%, 32% 33%, 28% 17%, 43% 24%);
+  background: linear-gradient(150deg, #fff8d8 0%, #f3d583 34%, #c9962f 70%, #7d5310 100%);
+  transform: rotate(45deg);
+  filter: drop-shadow(0 0 8px rgba(255, 206, 116, 0.65));
+}
+
+.lucky-meter-fallback__arm {
+  position: absolute;
+  z-index: 3;
+  width: 38%;
+  height: 14%;
+  transform: translate(-96%, 46%) rotate(-14deg);
+  border-bottom: 3px solid #d9ad5a;
+  border-radius: 0 0 100% 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.lucky-meter-fallback__stream {
+  position: absolute;
+  z-index: 2;
+  width: 3.5%;
+  height: 12%;
+  transform: translate(-50%, 4%);
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(255, 214, 140, 0.55);
+  transition: opacity 100ms linear;
+}
+
+.lucky-meter-fallback__vessel {
+  position: absolute;
+  z-index: 5;
+  width: 21%;
+  height: 19%;
+  transform: translate(-50%, -50%);
+}
+
+.lucky-meter-fallback__vessel-glass {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(210, 236, 255, 0.42);
+  border-radius: 42% 42% 46% 46% / 9% 9% 12% 12%;
+  background:
+    linear-gradient(112deg, rgba(255, 255, 255, 0.28) 0 7%, rgba(255, 255, 255, 0.02) 7% 24%, rgba(255, 255, 255, 0.14) 24% 27%, rgba(255, 255, 255, 0) 27%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0) 40%);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.16);
+}
+
+.lucky-meter-fallback__liquid {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 5%;
+  border-radius: 40% 40% 46% 46% / 8% 8% 14% 14%;
+  transition: height 140ms linear;
+}
+
+.lucky-meter-fallback__vessel-rim {
+  position: absolute;
+  top: -2%;
+  left: -3%;
+  right: -3%;
+  height: 7%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #8c5f18 0%, #f7e0a2 20%, #c9962f 48%, #fff3c8 64%, #8c5f18 100%);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(255, 214, 130, 0.35);
+}
+
+.lucky-meter-fallback__beam {
+  position: absolute;
+  z-index: 4;
+  left: 29.4%;
+  top: 81.7%;
+  width: 40%;
+  height: 3px;
+  transform-origin: left center;
+  transform: rotate(-18deg);
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(255, 246, 220, 0.95), rgba(255, 196, 92, 0));
+  box-shadow: 0 0 14px rgba(255, 214, 140, 0.8);
+  transition: opacity 120ms linear;
+}
+
+/* The receiving vessel is full at the end of the pour; the highlight marks the
+   completed transfer without ever emptying it. */
+.lucky-vessel__highlight {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+  border-radius: 46% 46% 48% 48% / 12% 12% 16% 16%;
   opacity: 0;
   background: radial-gradient(
     closest-side,
@@ -1347,201 +1325,12 @@ body {
   100% { opacity: 0; transform: scale(1); }
 }
 
-/* Reduced motion keeps the empty-vessel highlight static: the rim glow already
-   marks the completed vessel, so no 1.6 s scale or opacity animation runs on a
-   fresh reveal or on a restored result. */
 @media (prefers-reduced-motion: reduce) {
   .lucky-vessel__highlight.is-active {
     animation: none;
     opacity: 0;
     transform: none;
   }
-}
-
-.lucky-vessel-stage[data-vessel-phase="empty"] .lucky-vessel__rim {
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.5),
-    0 0 18px rgba(255, 220, 140, 0.7);
-}
-
-.lucky-vessel {
-  position: relative;
-  width: clamp(5.4rem, 22vw, 6.9rem);
-  aspect-ratio: 1 / 1;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* The object stands on the scene, so it casts a soft contact shadow. */
-.lucky-vessel__shadow {
-  position: absolute;
-  left: 50%;
-  bottom: -16%;
-  width: 130%;
-  height: 30%;
-  transform: translateX(-50%) translateZ(-26px) rotateX(84deg);
-  border-radius: 50%;
-  background: radial-gradient(
-    closest-side,
-    rgba(0, 0, 0, 0.72) 0%,
-    rgba(0, 0, 0, 0.3) 56%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  filter: blur(5px);
-}
-
-/* Recessed far wall of the tumbler. */
-.lucky-vessel__back {
-  position: absolute;
-  inset: 4%;
-  transform: translateZ(-16px);
-  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
-  background:
-    linear-gradient(165deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 46%, rgba(0, 0, 0, 0.3)),
-    rgba(8, 14, 20, 0.52);
-  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.6);
-}
-
-/* The hollow cylindrical interior that holds the liquid. */
-.lucky-vessel__body {
-  position: absolute;
-  inset: 5%;
-  overflow: hidden;
-  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-  box-shadow:
-    inset 0 0 20px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.26);
-}
-
-.lucky-vessel__liquid {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: block;
-  will-change: height;
-}
-
-/* The free surface of the poured colour, seen slightly from above. */
-.lucky-vessel__surface {
-  position: absolute;
-  top: -5px;
-  left: 0;
-  right: 0;
-  height: 10px;
-  border-radius: 50%;
-  opacity: 0.95;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-}
-
-.lucky-vessel__glow {
-  position: absolute;
-  inset: -30%;
-  pointer-events: none;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.18), transparent 70%);
-  mix-blend-mode: screen;
-}
-
-/* Side walls: narrow curved strips that give the tumbler its wall thickness. */
-.lucky-vessel__wall {
-  position: absolute;
-  top: 5%;
-  bottom: 5%;
-  width: 9%;
-  opacity: 0.72;
-  border-radius: 46% 46% 46% 46% / 8% 8% 8% 8%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.42),
-    rgba(255, 255, 255, 0.06) 60%,
-    rgba(0, 0, 0, 0.35)
-  );
-}
-
-.lucky-vessel__wall--left {
-  left: 0;
-  transform-origin: right center;
-  transform: skewY(-9deg) translateZ(6px);
-}
-
-.lucky-vessel__wall--right {
-  right: 0;
-  transform-origin: left center;
-  transform: skewY(9deg) translateZ(6px);
-}
-
-/* The front glass pane: a real transparent surface with an edge and a
-   diagonal specular streak. */
-.lucky-vessel__glass {
-  position: absolute;
-  inset: 0;
-  transform: translateZ(16px);
-  border: 1px solid rgba(210, 236, 255, 0.42);
-  border-radius: 44% 44% 46% 46% / 9% 9% 11% 11%;
-  background:
-    linear-gradient(
-      112deg,
-      rgba(255, 255, 255, 0.3) 0 6%,
-      rgba(255, 255, 255, 0.02) 6% 22%,
-      rgba(255, 255, 255, 0.16) 22% 25%,
-      rgba(255, 255, 255, 0) 25%
-    ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 34%);
-  box-shadow:
-    inset 0 0 12px rgba(255, 255, 255, 0.16),
-    0 0 0 1px rgba(0, 0, 0, 0.28);
-  -webkit-backdrop-filter: blur(1.5px);
-  backdrop-filter: blur(1.5px);
-}
-
-/* The lit gold rim, matching the medallion's metal. */
-.lucky-vessel__rim {
-  position: absolute;
-  top: -2.5%;
-  left: -1.5%;
-  right: -1.5%;
-  height: 5%;
-  transform: translateZ(18px);
-  border-radius: 50% / 50%;
-  background: linear-gradient(
-    90deg,
-    #8c5f18 0%,
-    #f7e0a2 18%,
-    #c9962f 46%,
-    #fff3c8 62%,
-    #8c5f18 100%
-  );
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.5),
-    0 0 12px rgba(255, 214, 130, 0.35);
-}
-
-/* The lid: closed at rest, tilting back and fading as the vessel opens. */
-.lucky-vessel__lid {
-  position: absolute;
-  top: -1%;
-  left: -2%;
-  right: -2%;
-  height: 8%;
-  transform-origin: 50% 0%;
-  border: 1px solid rgba(255, 236, 186, 0.5);
-  border-radius: 50% / 50%;
-  background: linear-gradient(180deg, rgba(255, 246, 214, 0.62), rgba(180, 138, 52, 0.28));
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-.lucky-vessel__specular {
-  position: absolute;
-  top: 8%;
-  left: 12%;
-  width: 34%;
-  height: 46%;
-  opacity: 0.75;
-  border-radius: 40% 50% 45% 40%;
-  transform: translateZ(19px) rotate(-8deg);
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 72%);
-  filter: blur(2px);
 }
 
 /* The caption stays flat, so the stored colour is always readable. */
@@ -1561,31 +1350,26 @@ body {
     0 12px 26px -18px rgba(0, 0, 0, 0.9);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .lucky-meter-fallback__wheel,
+  .lucky-meter-fallback__stream,
+  .lucky-meter-fallback__beam,
+  .lucky-meter-fallback__liquid {
+    transition: none;
+  }
+}
+
 /* Stage 7: the revealed number flashes twice, then settles into its placard. */
 .animate-lucky-number-flash {
   animation: luckyNumberFlash 0.42s ease-in-out 2;
 }
 
-/* Stage 4: the seasonal colour selection settles under the fixed pointer. */
-@keyframes luckyColourSelect {
-  0% { transform: scale(1.045); filter: brightness(1.35) saturate(1.12); }
-  60% { transform: scale(1.005); filter: brightness(1.08) saturate(1.02); }
-  100% { transform: scale(1); filter: none; }
-}
-
-.resonance-ring[data-phase='landed'] [data-testid='lucky-meter-wheel'] {
-  transform-origin: 50% 50%;
-  animation: luckyColourSelect 1.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .lucky-tier-message__cursor {
     animation: none !important;
   }
   .animate-lucky-number-flash {
-    animation: none !important;
-  }
-  .resonance-ring[data-phase='landed'] [data-testid='lucky-meter-wheel'] {
     animation: none !important;
   }
 }
