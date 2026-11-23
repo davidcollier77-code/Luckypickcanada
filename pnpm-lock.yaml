@@ -72,8 +72,8 @@ importers:
         specifier: ^6.37.0
         version: 6.37.0
       stripe:
-        specifier: ^22.5.0
-        version: 22.5.0(@types/node@26.2.0)
+        specifier: ^23.2.0
+        version: 23.2.0(@types/node@26.2.0)
       three:
         specifier: ^0.187.0
         version: 0.187.0
@@ -543,8 +543,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/runtime@7.29.14':
-    resolution: {integrity: sha512-Y5tqevQaUAZhhj82BpYMNC1ssvLQTVAfwKdm8iy8qwmhvC2/CpcAu8OC+QEtjM7pMk7knx83u1Qj8gzkicyelw==}
+  '@babel/runtime@7.29.15':
+    resolution: {integrity: sha512-304gsbbGVmQc+cNGHzwHBlqepYdWLKj3VXCQBGt/EGcV7PUPfKI7kAUNW1FZEOCwlQiLvQjg1JEaAlRQ616h+Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.29.7':
@@ -2618,6 +2618,11 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  baseline-browser-mapping@2.11.39:
+    resolution: {integrity: sha512-Q9buOYhr2ggrEZpImICecZTJHCCd8yXkRUokFlUEQ8uiD6oP82F4W4jWnhOHZYV+wlvrC51V7Wy0ULyWjil5Wg==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
 
@@ -2902,8 +2907,8 @@ packages:
   electron-to-chromium@1.5.472:
     resolution: {integrity: sha512-s4+nfT29b0FKpVKoaIxl2pWsoNcn7A/nMPSrxayw4T3BsmPeV2lF9Y06BsAQeMGhCTQ4nYJ5XST7jkqe4ZEqFw==}
 
-  electron-to-chromium@1.5.487:
-    resolution: {integrity: sha512-qWotOhQYeYEj+DK4+Y+cfPj44qiC6ETIiWtJLfmDJydED2BJJ7loPA4SfBbbrMI6X/X3tryJgxnY9nxsO545Zw==}
+  electron-to-chromium@1.5.492:
+    resolution: {integrity: sha512-4uMs7omhajKiud0GqALLTazS/zyvHLTLmDWVTR+e6BnyJo5bSNrph/JoRWEFJJmY75ct9hCiSGsbFF9fLe5gDw==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -3924,8 +3929,8 @@ packages:
   minimatch@3.1.5:
     resolution: {integrity: sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==}
 
-  minimizer-webpack-plugin@5.14.0:
-    resolution: {integrity: sha512-PnvQXCJxhgH2ZVVO7Lj0sM6q8L1XGxnUvd8wVQIRwi8khMCLq5wg0Ngxe44bcuZL2FSN81RdVE7YHEVzTKsQDQ==}
+  minimizer-webpack-plugin@5.14.1:
+    resolution: {integrity: sha512-qsfTb5Ao4nre9krFweqj8k5bVU7KxgsP4WkLO/ITTuiJkbitCzYBY+Aum5KTKRhY0wDr8VJ1RILsTCSUtPd1kQ==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
       '@minify-html/node': '*'
@@ -4405,8 +4410,8 @@ packages:
   scheduler@0.28.0:
     resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
-  schema-utils@4.8.3:
-    resolution: {integrity: sha512-qIfo3f+lRNqnMPgpXSKvUhsT3pY5U+ppmgGr4j8LanFP3W/Ze+xj8DY/dPb5qVu3m6qFIMyMWKVRLNKxrNhxWg==}
+  schema-utils@4.8.5:
+    resolution: {integrity: sha512-K1RRP7aTUAY2lGXNzPwjMK6AMMzbETdpF3pTPMEnH/RrpmPx6K1X47/gSebrV+1I9pRcgpwZwqpYBlyZAsliiw==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
     peerDependencies:
@@ -4597,11 +4602,11 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  stripe@22.5.0:
-    resolution: {integrity: sha512-QVwMwriC0bbySx6R4dpsvJ0W//GojC1kwWVS6rPSoVqDUIZX4Hy3TaUrd2AZeXEAaKbfWIjQjvo3vKAReHZ0vQ==}
-    engines: {node: '>=18'}
+  stripe@23.2.0:
+    resolution: {integrity: sha512-0W0J4yA9qFO2rnF61v8Y62OiO2SmAR+Cv04VJaFUMpCxiq8lG5bxEYbeSMSpMDR9ofFZGd+Z/iUIgSFbOolmUw==}
+    engines: {node: '>=20'}
     peerDependencies:
-      '@types/node': '>=18'
+      '@types/node': '>=20'
     peerDependenciesMeta:
       '@types/node':
         optional: true
@@ -4954,8 +4959,8 @@ packages:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
 
-  webpack-sources@3.7.0:
-    resolution: {integrity: sha512-PdUhbCycwEgiS1hB/FBDksWKg/ashAIuJKqwdbPn8/dFVgU5LxQiBvG0js6VRRIzPujMrStYCczywp82P0KWng==}
+  webpack-sources@3.7.1:
+    resolution: {integrity: sha512-mcxs7A2LsEdwsNqQburqS4QHPR2Ca3NGplUakn6J5GPQvnVZ4oD4IM4FJcT3f8AVN2e2EsjuIVxKj4rorHvyuQ==}
     engines: {node: '>=10.13.0'}
 
   webpack@5.110.3:
@@ -5790,7 +5795,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.8
 
-  '@babel/runtime@7.29.14': {}
+  '@babel/runtime@7.29.15': {}
 
   '@babel/runtime@7.29.7': {}
 
@@ -7039,7 +7044,7 @@ snapshots:
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.29.7
-      '@babel/runtime': 7.29.14
+      '@babel/runtime': 7.29.15
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -7454,6 +7459,9 @@ snapshots:
 
   baseline-browser-mapping@2.11.38: {}
 
+  baseline-browser-mapping@2.11.39:
+    optional: true
+
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
@@ -7499,9 +7507,9 @@ snapshots:
 
   browserslist@4.29.6:
     dependencies:
-      baseline-browser-mapping: 2.11.38
+      baseline-browser-mapping: 2.11.39
       caniuse-lite: 1.0.30001826
-      electron-to-chromium: 1.5.487
+      electron-to-chromium: 1.5.492
       node-releases: 2.0.65
       update-browserslist-db: 1.4.0(browserslist@4.29.6)
     optional: true
@@ -7742,7 +7750,7 @@ snapshots:
 
   electron-to-chromium@1.5.472: {}
 
-  electron-to-chromium@1.5.487:
+  electron-to-chromium@1.5.492:
     optional: true
 
   emoji-regex@10.6.0: {}
@@ -8896,10 +8904,10 @@ snapshots:
     dependencies:
       brace-expansion: 1.1.21
 
-  minimizer-webpack-plugin@5.14.0(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))):
+  minimizer-webpack-plugin@5.14.1(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))):
     dependencies:
       jest-worker: 27.5.1
-      schema-utils: 4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
+      schema-utils: 4.8.5(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
       terser: 5.51.2
       webpack: 5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))
     optionalDependencies:
@@ -9387,7 +9395,7 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  schema-utils@4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))):
+  schema-utils@4.8.5(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
@@ -9654,7 +9662,7 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  stripe@22.5.0(@types/node@26.2.0):
+  stripe@23.2.0(@types/node@26.2.0):
     optionalDependencies:
       '@types/node': 26.2.0
 
@@ -9974,7 +9982,7 @@ snapshots:
 
   webidl-conversions@8.0.1: {}
 
-  webpack-sources@3.7.0:
+  webpack-sources@3.7.1:
     optional: true
 
   webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)):
@@ -9992,12 +10000,12 @@ snapshots:
       events: 3.3.0
       graceful-fs: 4.2.12
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.14.0(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
+      minimizer-webpack-plugin: 5.14.1(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0))(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
       neo-async: 2.6.2
-      schema-utils: 4.8.3(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
+      schema-utils: 4.8.5(webpack@5.110.3(cssnano@9.9.0(postcss@8.5.33))(esbuild@0.28.2)(postcss@8.5.33)(sharp@0.35.5(@types/node@26.2.0)))
       tapable: 2.3.4
       watchpack: 2.6.4
-      webpack-sources: 3.7.0
+      webpack-sources: 3.7.1
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@napi-rs/image'
