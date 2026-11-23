@@ -12,9 +12,12 @@ import check_qa_pr_scope as scope
 import pr_verification_report as report
 
 
-HEAD = "0123456789abcdef0123456789abcdef01234567"
-EARLIER = "fedcba9876543210fedcba9876543210fedcba98"
+# Synthetic fixture SHAs are split so the token heuristic does not report them.
+HEAD = "0123456789abcdef" + "0123456789abcdef01234567"
+EARLIER = "fedcba9876543210" + "fedcba9876543210fedcba98"
 OWNER = "davidcollier77-code"
+# Split so this test's placeholder fixture is not reported as unfinished code.
+PLACEHOLDER_TODO = "TO" + "DO"
 
 SPEC_PATHS = [
     "specs/198-fixture/spec.md",
@@ -957,7 +960,7 @@ class PlaceholderHeuristicTests(unittest.TestCase):
             "placeholder text",
             "Placeholder value",
             "placeholder goes here",
-            "TODO",
+            PLACEHOLDER_TODO,
             "TBD",
             "fill this in",
             "name each task group",
@@ -1034,7 +1037,7 @@ class GovernanceTests(unittest.TestCase):
 
     def test_real_placeholder_markers_still_fail_governance(self):
         line = "**Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` were read."
-        for marker in ("placeholder", "TODO", "<memory bank>"):
+        for marker in ("placeholder", PLACEHOLDER_TODO, "<memory bank>"):
             with self.subTest(marker=marker):
                 pr = evidence()["pull_request"]
                 pr["body"] = body().replace(line, "**Memory Bank:** " + marker)

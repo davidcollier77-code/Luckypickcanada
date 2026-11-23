@@ -4,6 +4,22 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      # One pull request per weekly security batch instead of one per action.
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      # Routine minor and patch bumps are grouped; major bumps stay separate
+      # so breaking changes keep their own review.
+      github-actions-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
   # JavaScript dependencies are installed with pnpm (packageManager: pnpm@10.30.3)
   # from the committed pnpm-lock.yaml. Dependabot reads the npm ecosystem for
   # pnpm projects, so pnpm-lock.yaml stays the single authoritative lockfile.
@@ -11,3 +27,15 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      npm-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

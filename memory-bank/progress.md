@@ -1,3 +1,13 @@
+## 2026-11-23 — Repository security audit and monitoring (spec 213)
+
+- Audited the live GitHub Security tab: 11 open DevSkim code-scanning alerts, no open secret-scanning alerts and one open Dependabot advisory for `minimatch` 9.0.9.
+- Added reviewed inline DS172411 suppressions for every callable timer, including the identifier-callback timers, removed synthetic 40-hex fixture tokens and literal placeholder markers from checker tests, and overrode `glob@10` to 14.0.4 so patched minimatch 11.0.5 resolves without breaking glob matching.
+- Re-verified the review findings: forcing minimatch 11 into glob 10 returned an empty `globSync` result, and the cleared ledger would have re-appended the surviving timer findings. `@node-minify/core` now resolves glob 14.0.4 and matches real files.
+- Verified Dependabot alerts are enabled, weekly Dependabot scheduling is unchanged, security and minor/patch updates are grouped per ecosystem, DevSkim runs on pull requests plus a weekly schedule, and CodeQL default setup remains configured.
+- Cleared verified historical entries from `devskim-alerts.md` after dismissing every open code-scanning alert; the append workflow and marker remain.
+- Final GitHub Security: 0 open code-scanning alerts, 0 open secret-scanning alerts and 1 Dependabot alert pending the corrected lockfile reaching `main`.
+- The dependency-policy and focused checker suites pass; `SPEC_KIT_BASE_REF=4c6087cf ./freebuff-verify.sh` exits 0 with 471 Python tests, 110 Vitest files, 51 docs tests and the Next.js build below the 495 MiB cap.
+
 ## 2026-11-21 — Lucky Meter approved Build (spec 205)
 
 - Implemented the approved presentation on `freebuff/lucky-meter-build`: the

@@ -3,39 +3,3 @@
 This is the running list of distinct findings detected by DevSkim. New findings are appended once; entries are not removed automatically. Remove an entry only after its remediation has been verified.
 
 <!-- DevSkim findings are appended below this line. -->
-
-- **NOTE — DS172411** — `components/DailyResonance.tsx:317` — Review setTimeout for untrusted data <!-- devskim-id:6bfe08d32dd27c3e7d6d -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:177` — Review setTimeout for untrusted data <!-- devskim-id:c48369ce9c08edc7a88c -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:167` — Review setTimeout for untrusted data <!-- devskim-id:8231305cdc32154df9c8 -->
-- **NOTE — DS172411** — `app/lib/graphics/assets.js:72` — Review setTimeout for untrusted data <!-- devskim-id:5ce93f2f6d0d2dc37998 -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:415` — Suspicious comment <!-- devskim-id:0c57fc5038163e00fd51 -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:161` — Suspicious comment <!-- devskim-id:b727ec376b3c5c935678 -->
-
-- **ERROR — DS173237** — `__tests__/qa-review-comment.test.js:27` — Do not store tokens or keys in source code. <!-- devskim-id:3094763d3f03d718e4e6 -->
-- **ERROR — DS173237** — `.github/scripts/test_pr_verification_report.py:16` — Do not store tokens or keys in source code. <!-- devskim-id:c85cd75ae72c407e50ab -->
-- **ERROR — DS173237** — `.github/scripts/test_pr_verification_report.py:15` — Do not store tokens or keys in source code. <!-- devskim-id:de31f4bde00146ae4537 -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:427` — Suspicious comment <!-- devskim-id:19d0361a93f9b414dc5c -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:163` — Suspicious comment <!-- devskim-id:0bb65fb0f0c437c648dd -->
-
-- **NOTE — DS172411** — `components/DailyResonance.tsx:319` — Review setTimeout for untrusted data <!-- devskim-id:a643efb690d49bf9e4a4 -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:179` — Review setTimeout for untrusted data <!-- devskim-id:9f20e035c23e8f63cd3b -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:169` — Review setTimeout for untrusted data <!-- devskim-id:ccb892a7cfa5858a0a32 -->
-
-- **NOTE — DS172411** — `components/DailyResonance.tsx:322` — Review setTimeout for untrusted data <!-- devskim-id:de9f0bbbc48dbaf6cdc4 -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:178` — Review setTimeout for untrusted data <!-- devskim-id:753e02f9384b5a5fec6c -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:168` — Review setTimeout for untrusted data <!-- devskim-id:22bf5c56b0cd456208b9 -->
-
-- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:958` — Suspicious comment <!-- devskim-id:6ce67e02006a2b2dd831 -->
-- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:881` — Suspicious comment <!-- devskim-id:abe37735c2596d5a95bd -->
-
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:580` — Suspicious comment <!-- devskim-id:ec2c845d1ee5aef28792 -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:352` — Suspicious comment <!-- devskim-id:c26835f032f8f8f4623e -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:327` — Suspicious comment <!-- devskim-id:4f323238c35e0917c28a -->
-- **NOTE — DS176209** — `.github/scripts/test_check_qa_pr_scope.py:262` — Suspicious comment <!-- devskim-id:ff1fffba0621271732e7 -->
-
-- **NOTE — DS172411** — `components/DailyResonance.tsx:334` — Review setTimeout for untrusted data <!-- devskim-id:4d65f2b1f749ea09be7b -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:190` — Review setTimeout for untrusted data <!-- devskim-id:946ee3b03e04a32d6167 -->
-- **NOTE — DS172411** — `components/DailyResonance.tsx:180` — Review setTimeout for untrusted data <!-- devskim-id:b2e684bd066b3d70edfe -->
-
-- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:1037` — Suspicious comment <!-- devskim-id:9b44416b8416b8a257b7 -->
-- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:960` — Suspicious comment <!-- devskim-id:aa76fab65941bd25c711 -->

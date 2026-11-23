@@ -190,7 +190,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   /** The quiet beat between the last leaf leaving and Start arriving. */
   const handleArrivalCleared = useCallback(() => {
     if (startRevealTimerRef.current !== null) return;
-    startRevealTimerRef.current = window.setTimeout(() => {
+    startRevealTimerRef.current = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
       startRevealTimerRef.current = null;
       if (isMountedRef.current) setLeavesCleared(true);
     }, STORYBOARD_TIMING.startDelayMs);
@@ -200,7 +200,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // appears after the same total beat instead of being hidden forever.
   useEffect(() => {
     if (result || leavesCleared) return undefined;
-    const timer = window.setTimeout(() => {
+    const timer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
       if (isMountedRef.current) setLeavesCleared(true);
     }, ARRIVAL_TOTAL_MS);
     return () => window.clearTimeout(timer);
@@ -260,7 +260,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     (safetyMs: number) => {
       if (typeof window === 'undefined' || revealProtectionRef.current) return;
       revealProtectionRef.current = beginActiveExperience('lucky-meter-reveal');
-      revealSafetyTimerRef.current = window.setTimeout(
+      revealSafetyTimerRef.current = /* DevSkim: ignore DS172411 */ window.setTimeout(
         releaseRevealWindow,
         Math.max(1000, safetyMs) + REVEAL_PROTECTION_SLACK_MS,
       );
@@ -316,7 +316,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, []);
 
   const schedule = useCallback((callback: () => void, delayMs: number) => {
-    const timer = window.setTimeout(callback, Math.max(0, delayMs));
+    const timer = /* DevSkim: ignore DS172411 */ window.setTimeout(callback, Math.max(0, delayMs));
     timersRef.current.push(timer);
     return timer;
   }, []);
@@ -352,7 +352,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         }
 
         if (shouldScheduleStop) {
-          const timer = window.setTimeout(() => {
+          const timer = /* DevSkim: ignore DS172411 */ window.setTimeout(() => {
             try {
               sound.stop(id);
             } catch {

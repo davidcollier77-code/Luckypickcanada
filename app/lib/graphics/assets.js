@@ -69,7 +69,7 @@ export async function loadGLTF(url, { onProgress } = {}) {
 
     const watchForStall = () => {
       clearStallTimer();
-      stallTimer = setTimeout(() => finish(null), STALL_TIMEOUT_MS);
+      stallTimer = /* DevSkim: ignore DS172411 */ setTimeout(() => finish(null), STALL_TIMEOUT_MS);
     };
 
     try {
