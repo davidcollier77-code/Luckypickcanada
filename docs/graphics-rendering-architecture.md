@@ -12,7 +12,7 @@ The site uses the cheapest layer that can produce the effect, and every layer ha
 | --- | --- | --- | --- |
 | CSS / DOM | Layout, gradients, shadows, keyframes, transitions, hover and focus states, the page atmosphere | Browser compositor | Static styled state; `prefers-reduced-motion` removes animation |
 | Canvas 2D | Starfields, card reveal particles, maple-leaf confetti, share-card raster composition | CPU rasteriser, GPU-accelerated where available | The underlying artwork and content stay visible without the canvas |
-| WebGL 1/2 | Lucky Meter ring trails, Daily Resonance meteors, lightning and fireworks (shaders, additive blending, depth-ordered far/near surfaces) | GPU or software ANGLE (SwiftShader) | Static gradient stage plus the existing completion timer; the ring and meter remain usable |
+| WebGL 1/2 | Lucky Meter physical scene, Daily Resonance meteors, lightning and fireworks (shaders, additive blending, depth-ordered far/near surfaces) | GPU or software ANGLE (SwiftShader) | Complete CSS meter (wheel, pointer, leaf, vessel, beam) plus the existing completion timer; the reading remains fully usable |
 | WebGPU | Not used in production. Investigated as a future optional backend only | — | The WebGL or Canvas 2D path already covers every current effect |
 
 WebGPU is deliberately absent from the production render path. No feature may require it, detect it as
@@ -46,8 +46,7 @@ Renderers consume the resolved profile; they do not re-implement detection or ch
 | Surface | Layer | Fallback behaviour |
 | --- | --- | --- |
 | Homepage starfield | Canvas 2D | Static night-sky artwork remains |
-| Lucky Meter ring trails | WebGL (`lucky-meter-ring-engine.js`) | Meter and result stay fully usable; only the trails are lost |
-| Lucky Meter glass vessel and colour pour | Three.js, built through `createCreativeSurface` (`app/lib/lucky-meter/vessel-scene.js`) | The CSS vessel and the full result panel remain; the scene is never required for the reading |
+| Lucky Meter physical meter | Three.js, built through `createCreativeSurface` (`app/lib/lucky-meter/meter-scene.js`) | The complete CSS meter and the full result panel remain; the scene is never required for the reading |
 | Daily Resonance cinematic stage | WebGL, far surface plus optional near surface (`CosmicEventStage.jsx`, `cosmic-event-engine.js`) | Static gradient glow, existing safety timer still completes the sequence |
 | Lucky Card reveal | Canvas 2D | Card content and reveal remain |
 | Maple-leaf confetti | Canvas 2D with `Path2D` | Confetti is omitted |
@@ -129,9 +128,11 @@ features to GPU, no AVIF/WebP conversion change, no production WebGPU requiremen
 
 ## Lit meshes and the shared scene-light bus (spec 170)
 
-The Lucky Meter adds a second renderer family beside the additive point stage.
-Both are WebGL 1 / GLSL ES 1.00 and share the same capability detection, quality
-profile, visibility pausing and context-loss handling.
+The Lucky Meter's physical scene sits beside the additive point stage. Both
+share the same capability detection, quality profile, visibility pausing and
+context-loss handling. The meter adds a Three.js scene family through
+`createCreativeSurface`; the background ornament and the tier celebrations keep
+their hand-written lit-mesh engines.
 
 - `app/lib/gpu-math.js` — the one effect camera. Depth is authored as a
   multiplier; `depthScale()` turns it into a screen scale (`FOCAL / (BASE /
@@ -151,9 +152,14 @@ profile, visibility pausing and context-loss handling.
   publishes the strongest active lights each frame; the medallion, the leaves
   and the smoke read it. This is what makes an explosion light the gold beside
   it instead of sitting on top of it as a separate flat layer.
-- `components/lucky-meter-medallion-engine.js` and
-  `components/lucky-meter-ornament-engine.js` draw the meter and the leaf layers.
-  Both fall back to static CSS artwork when WebGL is unavailable.
+- `app/lib/lucky-meter/meter-scene.js` draws the whole meter — medallion,
+  chambers, central leaf, pointer/arm/spout, vessel, stream and beam — as one
+  Three.js scene on the shared creative surface. It owns no renderer: the
+  surface supplies the frame loop, quality tier, reduced motion and context-loss
+  handling. The retired medallion engine is gone; the CSS meter is both the
+  first paint and the permanent fallback.
+- `components/lucky-meter-ornament-engine.js` draws the background leaf layers
+  and falls back to static CSS artwork when WebGL is unavailable.
 - `components/cosmic-event-engine.js` keeps the pre-existing two-surface
   (far/near) additive stage and projects every effect through the shared camera.
   It also runs the sky-light pass and owns the timeline clock: the timeline
@@ -259,11 +265,10 @@ the selector resolves the render technology from the shared capability probes an
 the adaptive tier:
 
 - `renderer: 'webgl'` means an existing hand-written engine keeps its frames.
-  The Lucky Meter medallion, wheel and tier celebrations stay on their
-  hand-written WebGL engines. The one commissioned Three.js surface is the
-  glass vessel and pour, registered separately as `lucky-meter-vessel` with
+  The Lucky Meter's tier celebrations stay on their hand-written WebGL engine.
+  The physical meter is one Three.js scene registered as `lucky-meter` with
   `renderer: 'three'`, `dimension: '3d'`, particles and no post-processing.
-  Its CSS vessel is both the first paint and the permanent fallback.
+  Its complete CSS meter is both the first paint and the permanent fallback.
 - 3D or post-processing with WebGL available selects `three` (fallbacks Canvas 2D,
   then DOM). Without WebGL it resolves to Canvas 2D or DOM.
 - A 2D particle layer selects the managed Canvas 2D surface.
@@ -324,9 +329,9 @@ plays a sound, draws a frame or runs business logic.
 
 ### Integration of existing experiences
 
-The Lucky Meter, its new glass-vessel surface and the Lucky Card Reveal now
+The Lucky Meter, its dimensional meter surface and the Lucky Card Reveal now
 declare their renderer and cues in the registry. Their resources — including the
-Lucky Meter sound set, the vessel's Three.js chunk, the reveal sparkle, applause
+Lucky Meter sound set, the meter's Three.js chunk, the reveal sparkle, applause
 and confetti pop, and the confetti chunk — are derived and prepared by the hub;
 the components call `useCreativeExperience` and nothing about their artwork,
 timing, playback or fallback changed. The Crystal

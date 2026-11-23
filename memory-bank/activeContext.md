@@ -1,3 +1,14 @@
+# Active Context — Lucky Meter dimensional redesign (Spec 212)
+
+## Current Task — Complete Lucky Meter dimensional redesign (Spec 212)
+
+- **Scope:** one Three.js scene replaces the SVG wheel, 6 o'clock pointer, separate vessel surface and medallion engine: `app/lib/lucky-meter/meter-scene.js`, `meter-layout.js`, `components/LuckyMeterStage.jsx`, a permanent `LuckyMeterMessage`, and the corrected `storyboard.js`/`reveal.js` clocks. The retired `LuckyMeterRing`, `LuckyMeterVessel`, medallion engine and vessel scene are deleted; `experiences.js` registers the meter once as `lucky-meter` (three/3d, `three` chunk).
+- **Corrected timing:** wheel 4,400 ms / five turns / stops 6,300 ms; percentage 9,400 ms from 1,900 ms, stored result only at 11,300 ms; pour 2,000 ms; pause 1,500 ms; beam 1,500 ms; message 800 ms lead-in + typing + 3,000 ms hold + 800 ms visible settle (no fade); 12,000 ms celebration, 1,300 ms Spark delay, 3,800–5,200 ms writing, 2,800 ms hold, 3,600 ms dock. Reveal completes at 16,300 ms; total is emergent, with no later stage shortened.
+- **Vessel rule:** only the selected chamber drains; the other eleven stay full; the receiving vessel fills by 13,300 ms and stays full through FINISHED. The tier sentence remains visible at full opacity through the celebration and FINISHED.
+- **Fallback:** complete CSS meter (conic chambers, gold leaf pointer/arm, leaf, glass vessel, stream, beam), no SVG; context loss returns to it and restore returns to the scene.
+- **Verification:** `tsc --noEmit` and 244 focused Vitest tests pass. Build size, browser suite and `./freebuff-verify.sh` are recorded in `specs/212-lucky-meter-dimensional-redesign/tasks.md` and the PR.
+- **PR status:** one regular, non-draft, unmerged PR for owner review.
+
 # Active Context — PR verification streamlining
 
 ## Current Task — PR verification streamlining (Spec 211)

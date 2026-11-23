@@ -6,6 +6,7 @@ import {
   REVEAL_TIMING,
   WHEEL_TURNS,
   buildColourSpin,
+  chamberIndexForColour,
   colourPointerRotation,
   dialEase,
   getColourIdAt,
@@ -17,17 +18,20 @@ import {
 } from '../app/lib/lucky-meter/reveal';
 import {
   CELEBRATION_MS,
-  DRAIN_END_MS,
-  FILL_END_MS,
-  FULL_HOLD_END_MS,
+  NUMBER_PAUSE_END_MS,
+  PERCENTAGE_END_MS,
+  PERCENTAGE_START_MS,
+  POUR_END_MS,
   REVEAL_COMPLETE_MS,
   REVEAL_MOTION_MS,
   STORYBOARD_TIMING,
+  WHEEL_END_MS,
   buildStoryboard,
   getCelebrationEndMs,
   getDockMs,
   getEventStartMs,
   getExperienceTotalMs,
+  getMessageTotalMs,
   getMessageTypingMs,
   getSparkCharacterScheduleMs,
   getSparkWritingMs,
@@ -45,33 +49,50 @@ const angularGap = (left, right) => {
   return Math.min(difference, 360 - difference);
 };
 
-describe('twelve-stage storyboard timing', () => {
-  it('uses the approved stage lengths', () => {
-    expect(REVEAL_TIMING.anticipationMs).toBe(1200);
-    expect(REVEAL_TIMING.generationMs).toBe(5600);
-    expect(REVEAL_TIMING.landingMs).toBe(600);
-    expect(REVEAL_TIMING.settlePauseMs).toBe(1800);
-    expect(REVEAL_TIMING.segmentOpenMs).toBe(1400);
-    expect(REVEAL_TIMING.fillMs).toBe(5000);
-    expect(REVEAL_TIMING.fullHoldMs).toBe(700);
-    expect(REVEAL_TIMING.drainMs).toBe(4000);
-    expect(REVEAL_TIMING.highlightMs).toBe(1600);
-    expect(REVEAL_TIMING.celebrationMs).toBe(12000);
-    expect(REVEAL_TIMING.numberFlashCount).toBe(2);
+describe('corrected Spec 212 storyboard timing', () => {
+  it('uses the approved stage lengths exactly', () => {
+    // The wheel is its own 4,400 ms window inside the longer percentage clock.
+    expect(REVEAL_TIMING.anticipationMs).toBe(1000);
+    expect(REVEAL_TIMING.leafExitMs).toBe(900);
+    expect(REVEAL_TIMING.wheelMs).toBe(4400);
+    expect(REVEAL_TIMING.percentageMs).toBe(9400);
+    expect(REVEAL_TIMING.pourMs).toBe(2000);
+    expect(REVEAL_TIMING.numberPauseMs).toBe(1500);
+    expect(REVEAL_TIMING.transferMs).toBe(1500);
+
+    // The preserved later stages.
+    expect(REVEAL_TIMING.messageDelayMs).toBe(800);
+    expect(REVEAL_TIMING.messageHoldMs).toBe(3000);
+    expect(REVEAL_TIMING.messageSettleMs).toBe(800);
+    expect(REVEAL_TIMING.eventDelayMs).toBe(900);
+    expect(REVEAL_TIMING.celebrationMs).toBe(12_000);
+    expect(REVEAL_TIMING.sparkStartDelayMs).toBe(1300);
     expect(REVEAL_TIMING.sparkMinMs).toBe(3800);
     expect(REVEAL_TIMING.sparkMaxMs).toBe(5200);
-    // The final hold is a real hold, and the dock follows it.
-    expect(REVEAL_TIMING.finalHoldMs).toBeGreaterThanOrEqual(2600);
-    expect(REVEAL_TIMING.dockDelayMs).toBeGreaterThan(REVEAL_TIMING.finalHoldMs);
+    expect(REVEAL_TIMING.finalHoldMs).toBe(2800);
+    expect(REVEAL_TIMING.dockDelayMs).toBe(3600);
+    // The message settles visibly; it has no fade at all.
+    expect(REVEAL_TIMING.messageFadeMs).toBeUndefined();
   });
 
-  it('stops the percentage and the wheel on the same frame', () => {
-    expect(REVEAL_MOTION_MS).toBe(REVEAL_TIMING.anticipationMs + REVEAL_TIMING.generationMs);
-    expect(FILL_END_MS).toBeGreaterThan(REVEAL_MOTION_MS);
-    expect(REVEAL_COMPLETE_MS).toBe(DRAIN_END_MS + REVEAL_TIMING.highlightMs);
+  it('derives every boundary from those lengths', () => {
+    expect(PERCENTAGE_START_MS).toBe(1900);
+    expect(WHEEL_END_MS).toBe(6300);
+    expect(PERCENTAGE_END_MS).toBe(11_300);
+    expect(REVEAL_MOTION_MS).toBe(11_300);
+    expect(POUR_END_MS).toBe(13_300);
+    expect(NUMBER_PAUSE_END_MS).toBe(14_800);
+    expect(REVEAL_COMPLETE_MS).toBe(16_300);
+
+    expect(WHEEL_END_MS - PERCENTAGE_START_MS).toBe(4400);
+    expect(PERCENTAGE_END_MS - PERCENTAGE_START_MS).toBe(9400);
+    expect(REVEAL_MOTION_MS).toBeGreaterThan(WHEEL_END_MS);
+    expect(POUR_END_MS - PERCENTAGE_END_MS).toBe(2000);
+    expect(NUMBER_PAUSE_END_MS - POUR_END_MS).toBe(1500);
+    expect(REVEAL_COMPLETE_MS - NUMBER_PAUSE_END_MS).toBe(1500);
   });
 
-  it('builds twelve ordered stages whose ends meet cleanly', () => {
+  it('lists the eleven ordered stages with the wheel ending inside generation', () => {
     const stages = buildStoryboard({
       tierMessage: TIER_MESSAGE,
       eventDurationMs: CELEBRATION_MS,
@@ -79,12 +100,11 @@ describe('twelve-stage storyboard timing', () => {
     });
     expect(stages.map((stage) => stage.id)).toEqual([
       'anticipation',
+      'leafExit',
       'generation',
-      'landing',
-      'colourSelect',
-      'vesselOpen',
       'pour',
-      'numberReveal',
+      'numberPause',
+      'transfer',
       'message',
       'celebration',
       'spark',
@@ -95,14 +115,29 @@ describe('twelve-stage storyboard timing', () => {
       expect(stages[index].endMs).toBeLessThanOrEqual(stages[index + 1].startMs);
       expect(stages[index].durationMs).toBeGreaterThanOrEqual(0);
     }
-    expect(stages.at(-1).id).toBe('dock');
-    expect(stages.at(-1).startMs).toBe(getDockMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE));
+    const generation = stages.find((stage) => stage.id === 'generation');
+    expect(generation.startMs).toBe(PERCENTAGE_START_MS);
+    expect(generation.endMs).toBe(PERCENTAGE_END_MS);
+    expect(generation.wheelEndMs).toBe(WHEEL_END_MS);
+    expect(generation.endMs - generation.wheelEndMs).toBe(5000);
+    const dock = stages.at(-1);
+    expect(dock.id).toBe('dock');
+    // The dock is the approach window after the final hold, so the stage list
+    // stays contiguous and its end is the exact terminal time.
+    expect(dock.startMs).toBe(stages.at(-2).endMs);
+    expect(dock.endMs).toBe(getDockMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE));
+    expect(dock.durationMs).toBe(
+      STORYBOARD_TIMING.dockDelayMs - STORYBOARD_TIMING.finalHoldMs,
+    );
   });
 
-  it('takes the approved 54–57 seconds from first paint to the dock', () => {
+  it('keeps the emergent total inside the acceptable shorter window', () => {
     const total = getExperienceTotalMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE);
-    expect(total).toBeGreaterThanOrEqual(54_000);
-    expect(total).toBeLessThanOrEqual(57_000);
+    // The reveal is shorter by design; no later stage is shortened to force a
+    // particular total and nothing pads the runtime.
+    expect(total).toBeGreaterThanOrEqual(48_000);
+    expect(total).toBeLessThanOrEqual(52_500);
+    expect(REVEAL_COMPLETE_MS).toBeLessThan(17_000);
   });
 
   it('gives every tier the same 12,000 ms celebration', () => {
@@ -120,41 +155,41 @@ describe('twelve-stage storyboard timing', () => {
     );
   });
 
-  it('fills, holds and drains the vessel before the number is whole', () => {
+  it('pours for 2,000 ms, pauses 1,500 ms and transfers for 1,500 ms', () => {
     const stages = buildStoryboard({
       tierMessage: TIER_MESSAGE,
       eventDurationMs: CELEBRATION_MS,
       sparkMessage: SPARK_MESSAGE,
     });
     const pour = stages.find((stage) => stage.id === 'pour');
-    const number = stages.find((stage) => stage.id === 'numberReveal');
-    // The pour stage owns the fill and the full hold, while the stream itself
-    // stops at the fill boundary so a consumer never reads the stage end.
-    expect(pour.endMs).toBe(FULL_HOLD_END_MS);
-    expect(pour.streamEndMs).toBe(FILL_END_MS);
-    expect(pour.streamEndMs - pour.startMs).toBe(STORYBOARD_TIMING.fillMs);
-    expect(pour.endMs - pour.startMs).toBe(
-      STORYBOARD_TIMING.fillMs + STORYBOARD_TIMING.fullHoldMs,
-    );
-    // The number window opens with the drain; the number is whole when the
-    // drain ends, and the empty highlight closes the window.
-    expect(number.startMs).toBe(FULL_HOLD_END_MS);
-    expect(DRAIN_END_MS - number.startMs).toBe(STORYBOARD_TIMING.drainMs);
-    expect(number.endMs).toBe(REVEAL_COMPLETE_MS);
-    expect(REVEAL_COMPLETE_MS - DRAIN_END_MS).toBe(STORYBOARD_TIMING.highlightMs);
+    const pause = stages.find((stage) => stage.id === 'numberPause');
+    const transfer = stages.find((stage) => stage.id === 'transfer');
+
+    expect(pour.startMs).toBe(PERCENTAGE_END_MS);
+    expect(pour.endMs - pour.startMs).toBe(2000);
+    expect(pause.endMs - pause.startMs).toBe(1500);
+    expect(transfer.endMs - transfer.startMs).toBe(1500);
+    expect(transfer.endMs).toBe(REVEAL_COMPLETE_MS);
+
+    // The message starts on the same frame the transfer completes, so the
+    // number and its sentence hand off without a gap.
+    const message = stages.find((stage) => stage.id === 'message');
+    expect(message.startMs).toBe(REVEAL_COMPLETE_MS);
   });
 
-  it('starts the celebration only after the message has been held and faded', () => {
+  it('keeps the message at full visibility while the celebration runs', () => {
+    const typing = getMessageTypingMs(TIER_MESSAGE);
+    expect(getMessageTotalMs(TIER_MESSAGE)).toBe(800 + typing + 3000 + 800);
     const start = getEventStartMs(TIER_MESSAGE);
-    expect(start).toBeGreaterThan(REVEAL_COMPLETE_MS);
     expect(start).toBe(
       REVEAL_COMPLETE_MS +
         STORYBOARD_TIMING.messageDelayMs +
-        getMessageTypingMs(TIER_MESSAGE) +
+        typing +
         STORYBOARD_TIMING.messageHoldMs +
-        STORYBOARD_TIMING.messageFadeMs +
+        STORYBOARD_TIMING.messageSettleMs +
         STORYBOARD_TIMING.eventDelayMs,
     );
+    expect(start).toBeGreaterThan(REVEAL_COMPLETE_MS + 800 + typing + 3000);
     expect(getCelebrationEndMs(TIER_MESSAGE, CELEBRATION_MS)).toBe(start + CELEBRATION_MS);
   });
 
@@ -180,24 +215,20 @@ describe('twelve-stage storyboard timing', () => {
   });
 });
 
-describe('percentage generation', () => {
-  const DURATION = STORYBOARD_TIMING.generationMs;
+describe('independent percentage generation', () => {
+  const DURATION = STORYBOARD_TIMING.percentageMs;
 
-  it('runs the approved five beats: 0 → 100 → fall → rise → erratic → settle', () => {
+  it('runs the preserved five beats: 0 → 100 → fall → rise → erratic → settle', () => {
     const final = 73;
-    // Beat 1 starts at the bottom of the scale and peaks at 100.
     expect(sampleGenerationPercentage(0, DURATION, final)).toBe(0);
     expect(sampleGenerationPercentage(DURATION * 0.3, DURATION, final)).toBe(100);
 
-    // Beat 2 falls away from the peak.
     const trough = sampleGenerationPercentage(DURATION * 0.46, DURATION, final);
     expect(trough).toBeLessThan(30);
 
-    // Beat 3 rises again.
     const rise = sampleGenerationPercentage(DURATION * 0.62, DURATION, final);
     expect(rise).toBeGreaterThan(trough + 40);
 
-    // Beat 4 is genuinely erratic: it moves both up and down.
     const erratic = [];
     for (let progress = 0.63; progress < 0.86; progress += 0.01) {
       erratic.push(sampleGenerationPercentage(DURATION * progress, DURATION, final));
@@ -205,12 +236,11 @@ describe('percentage generation', () => {
     expect(erratic.some((value, index) => index > 0 && value > erratic[index - 1])).toBe(true);
     expect(erratic.some((value, index) => index > 0 && value < erratic[index - 1])).toBe(true);
 
-    // Beat 5 settles only on the final frame.
     expect(sampleGenerationPercentage(DURATION, DURATION, final)).toBe(final);
     expect(sampleGenerationPercentage(DURATION * 2, DURATION, final)).toBe(final);
   });
 
-  it('never reveals the stored result before the last frame', () => {
+  it('never reveals the stored result before the 9,400 ms window closes', () => {
     for (const final of [5, 30, 31, 65, 66, 100]) {
       for (let elapsed = 0; elapsed < DURATION; elapsed += 16) {
         const value = sampleGenerationPercentage(elapsed, DURATION, final);
@@ -218,6 +248,8 @@ describe('percentage generation', () => {
         expect(value).toBeLessThanOrEqual(100);
         expect(value).not.toBe(final);
       }
+      // The wheel has already stopped at 4,400 ms; the percentage has not.
+      expect(sampleGenerationPercentage(4400, DURATION, final)).not.toBe(final);
       expect(sampleGenerationPercentage(DURATION, DURATION, final)).toBe(final);
       expect(sampleGenerationPercentage(9999, DURATION, final)).toBe(final);
     }
@@ -238,33 +270,35 @@ describe('percentage generation', () => {
   });
 });
 
-describe('colour wheel landing', () => {
-  it('offers exactly twelve segments per palette', () => {
+describe('fixed 7:30 colour wheel', () => {
+  it('offers exactly twelve chambers per palette', () => {
     expect(COLOUR_STEPS).toBe(12);
     expect(autumn).toHaveLength(12);
     expect(DEGREES_PER_COLOUR).toBe(30);
-    expect(POINTER_ANGLE_DEGREES).toBe(180);
+    expect(POINTER_ANGLE_DEGREES).toBe(225);
   });
 
-  it('stops every seasonal colour under the fixed 6 o’clock pointer', () => {
+  it('stops every seasonal colour under the fixed 7:30 pointer', () => {
     for (const season of ['spring', 'summer', 'autumn', 'winter']) {
       const palette = getPaletteForSeasonKey(season);
       palette.forEach((colour, index) => {
         const rotation = colourPointerRotation(colour.id, palette);
-        // The segment's centre lands at 180° (6 o'clock).
-        expect(angularGap(index * DEGREES_PER_COLOUR + rotation, 180)).toBeLessThan(1e-9);
+        // The segment's centre lands at 225° (7:30 in screen coordinates).
+        expect(angularGap(index * DEGREES_PER_COLOUR + rotation, 225)).toBeLessThan(1e-9);
         expect(rotationToColourIndex(rotation, palette.length)).toBe(index);
+        expect(chamberIndexForColour(colour.id, palette)).toBe(index);
       });
     }
   });
 
-  it('spins three to four full turns from a random start and lands exactly', () => {
+  it('spins exactly five full turns from a random start and lands exactly', () => {
+    expect(WHEEL_TURNS).toBe(5);
     const colour = autumn[7];
     for (const value of [0, 0.24, 0.5, 0.87, 0.999]) {
       const spin = buildColourSpin(colour.id, () => value, autumn);
-      expect(spin.turns).toBeGreaterThanOrEqual(WHEEL_TURNS.min);
-      expect(spin.turns).toBeLessThanOrEqual(WHEEL_TURNS.max);
-      expect(spin.totalSweep).toBeGreaterThanOrEqual(WHEEL_TURNS.min * 360);
+      expect(spin.turns).toBe(5);
+      expect(spin.totalSweep).toBeGreaterThanOrEqual(5 * 360);
+      expect(spin.totalSweep).toBeLessThan(6 * 360);
       const droppedTurns = normalizeAngle(spin.startRotation + spin.totalSweep);
       expect(angularGap(droppedTurns, spin.endRotation)).toBeLessThan(1e-9);
       expect(angularGap(spin.endRotation, colourPointerRotation(colour.id, autumn))).toBeLessThan(
@@ -273,19 +307,27 @@ describe('colour wheel landing', () => {
     }
   });
 
-  it('never shows the final colour before the landing frame', () => {
+  it('never shows the final colour before the wheel landing frame', () => {
     const colour = autumn[4];
     const spin = buildColourSpin(colour.id, noJitter, autumn);
     const finalIndex = getColourIndex(colour.id, autumn);
-    for (let elapsed = 0; elapsed < 4200; elapsed += 20) {
-      const sample = sampleColourSpin(elapsed, spin, colour.id, 4200, autumn);
+    for (let elapsed = 0; elapsed < 4400; elapsed += 20) {
+      const sample = sampleColourSpin(elapsed, spin, colour.id, 4400, autumn);
       expect(sample.colourId).not.toBe(colour.id);
       expect(sample.colourIndex).not.toBe(finalIndex);
     }
-    const landed = sampleColourSpin(4200, spin, colour.id, 4200, autumn);
+    const landed = sampleColourSpin(4400, spin, colour.id, 4400, autumn);
     expect(landed.colourId).toBe(colour.id);
     expect(landed.colourIndex).toBe(finalIndex);
     expect(angularGap(landed.rotation, spin.endRotation)).toBeLessThan(1e-9);
+  });
+
+  it('defaults to the 4,400 ms wheel window, not the percentage window', () => {
+    const colour = autumn[2];
+    const spin = buildColourSpin(colour.id, noJitter, autumn);
+    expect(sampleColourSpin(4399, spin, colour.id, undefined, autumn).colourId).not.toBe(colour.id);
+    expect(sampleColourSpin(4400, spin, colour.id, undefined, autumn).colourId).toBe(colour.id);
+    expect(REVEAL_TIMING.wheelMs).toBe(4400);
   });
 
   it('wraps the palette by index without inventing a colour', () => {
@@ -296,8 +338,7 @@ describe('colour wheel landing', () => {
 
   it('cannot select: the wheel rotation is independent of the percentage', () => {
     const spin = buildColourSpin(autumn[2].id, noJitter, autumn);
-    const sample = sampleColourSpin(2100, spin, autumn[2].id, 4200, autumn);
-    // A quarter-turn offset changes the displayed segment only, never a result.
+    const sample = sampleColourSpin(2100, spin, autumn[2].id, 4400, autumn);
     expect(rotationToColourIndex(sample.rotation + 90, autumn.length)).not.toBe(
       rotationToColourIndex(sample.rotation, autumn.length),
     );

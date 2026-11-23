@@ -56,9 +56,15 @@ import DailyResonance from '../components/DailyResonance';
 import { METER_STORAGE_KEY } from '../app/lib/lucky-meter/config';
 import { createDailyResult } from '../app/lib/lucky-meter/selection';
 import {
+  NUMBER_PAUSE_END_MS,
+  PERCENTAGE_END_MS,
+  PERCENTAGE_START_MS,
+  POUR_END_MS,
+  REVEAL_COMPLETE_MS,
+  STORYBOARD_TIMING,
+  WHEEL_END_MS,
   getEventStartMs,
   getMessageTypingMs,
-  STORYBOARD_TIMING,
 } from '../app/lib/lucky-meter/storyboard';
 import {
   getPaletteForSeasonKey,
@@ -109,24 +115,17 @@ function advance(ms) {
 
 /** Advances from the first frame to the moment the celebration mounts. */
 function advanceToCelebration(message) {
-  advance(STORYBOARD_TIMING.anticipationMs);
-  advance(STORYBOARD_TIMING.generationMs + 30);
-  advance(STORYBOARD_TIMING.settlePauseMs);
-  advance(
-    STORYBOARD_TIMING.segmentOpenMs +
-      STORYBOARD_TIMING.fillMs +
-      STORYBOARD_TIMING.fullHoldMs +
-      STORYBOARD_TIMING.drainMs +
-      STORYBOARD_TIMING.highlightMs +
-      40,
-  );
+  // The wheel, the independent percentage, the pour, the number pause and the
+  // golden transfer, then the message's lead-in, writing, hold, settle and the
+  // final event delay.
+  advance(REVEAL_COMPLETE_MS + 60);
   advance(
     STORYBOARD_TIMING.messageDelayMs +
       getMessageTypingMs(message) +
       STORYBOARD_TIMING.messageHoldMs +
-      STORYBOARD_TIMING.messageFadeMs +
+      STORYBOARD_TIMING.messageSettleMs +
       STORYBOARD_TIMING.eventDelayMs +
-      80,
+      100,
   );
   expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
 }
@@ -190,92 +189,126 @@ describe('Daily Resonance daily experience', () => {
     expect(stored.eventCompleted).toBe(false);
     expect(stored.sparkCompleted).toBe(false);
 
-    // Stage 3: the plaque is gone and the readout starts at the scale minimum.
+    // The welcome state has no caption and no result panels.
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
-    // The vessel surface mounts early so its renderer can warm up, but it is
-    // hidden until its own stage opens.
-    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeVisible();
+    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
+    // The pointer is fixed at 7:30 and the wheel carries twelve chambers.
+    expect(screen.getByTestId('lucky-meter-pointer')).toHaveAttribute('data-position', '7.5');
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-chamber-count', '12');
 
     advance(STORYBOARD_TIMING.anticipationMs);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
     expect(screen.queryByText(String(result.percentage))).not.toBeInTheDocument();
 
-    // The wheel and the percentage stop on the same frame.
-    advance(STORYBOARD_TIMING.generationMs + 30);
+    advance(STORYBOARD_TIMING.leafExitMs + 30);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.getByTestId('lucky-meter-value').getAttribute('data-value')).not.toBe(
+      String(result.percentage),
+    );
+
+    // The wheel stops at 6,300 ms. The percentage keeps its own five beats and
+    // must not expose the stored result yet.
+    advance(STORYBOARD_TIMING.wheelMs + 30);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.getByTestId('lucky-meter-value').getAttribute('data-value')).not.toBe(
+      String(result.percentage),
+    );
+    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
+
+    // At 11,200 ms the percentage is still moving; at 11,300 ms it lands on the
+    // stored result and only then does the plaque return.
+    // The clock is at 6,360 ms; 4,800 ms more reaches 11,160 ms.
+    advance(4800);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
+    expect(screen.getByTestId('lucky-meter-value').getAttribute('data-value')).not.toBe(
+      String(result.percentage),
+    );
+    advance(140);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed');
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(result.percentage),
     );
     expect(screen.getByText(result.tier.label)).toBeInTheDocument();
+    // The caption belongs to the pour, not to the landing frame.
+    expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
 
-    // The segment opens and pours; the colour vessel fills first.
-    advance(STORYBOARD_TIMING.settlePauseMs);
+    // The landed beat stays readable before the pour phase label begins.
+    advance(40);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'landed');
+    advance(450);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'pouring');
-    expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '0.00');
+    const vessel = screen.getByTestId('lucky-colour-panel');
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'filling');
     expect(screen.getByText(result.colour.name)).toBeInTheDocument();
     expect(screen.getByText(result.colour.hex)).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
-    // The vessel is still closed, the fill is empty and the number stays hidden
-    // for the whole drain.
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '0.00');
-    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-open', '0.00');
-    expect(screen.getByTestId('lucky-colour-panel')).toHaveAttribute('data-vessel-fill', '0.000');
+
+    advance(STORYBOARD_TIMING.pourMs / 2);
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'filling');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
 
-    // The vessel fills to the top and is held full. The Lucky Number is still
-    // hidden while the colour is arriving.
-    advance(STORYBOARD_TIMING.segmentOpenMs + STORYBOARD_TIMING.fillMs + 30);
-    const vessel = screen.getByTestId('lucky-colour-panel');
+    // The pour ends with the vessel full and the selected chamber empty. The
+    // number is still hidden during its 1,500 ms pause.
+    advance(STORYBOARD_TIMING.pourMs / 2 + 40);
     expect(vessel).toHaveAttribute('data-vessel-phase', 'holding');
+    expect(vessel).toHaveAttribute('data-vessel-fill', '1.000');
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-pour', '1.000');
+    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+
+    advance(STORYBOARD_TIMING.numberPauseMs - 40);
+    expect(vessel).toHaveAttribute('data-vessel-fill', '1.000');
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '0.00');
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
 
-    // The drain begins. The number is not in its placard yet.
-    advance(STORYBOARD_TIMING.fullHoldMs + STORYBOARD_TIMING.drainMs / 2);
-    expect(vessel).toHaveAttribute('data-vessel-phase', 'draining');
-    expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
+    // The golden beam transfers the number; the vessel never empties.
+    advance(80);
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'transferring');
+    expect(vessel).toHaveAttribute('data-vessel-fill', '1.000');
 
-    // The drain completes: the vessel is empty and the number is whole. It
-    // flashes, and the empty vessel is highlighted before the message.
-    advance(STORYBOARD_TIMING.drainMs / 2 + 60);
-    expect(vessel).toHaveAttribute('data-vessel-phase', 'empty');
+    advance(REVEAL_COMPLETE_MS - NUMBER_PAUSE_END_MS + 40);
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
+    expect(vessel).toHaveAttribute('data-vessel-phase', 'settled');
+    expect(vessel).toHaveAttribute('data-vessel-fill', '1.000');
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '1.00');
     expect(screen.getByTestId('lucky-number-value')).toHaveAttribute(
       'data-value',
       String(result.luckyNumber),
     );
-    expect(screen.getByTestId('lucky-number-value')).toHaveAttribute('data-flashing', 'true');
-    expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-
-    // The highlight finishes and the vessel beat hands off to the message.
-    advance(STORYBOARD_TIMING.highlightMs + 60);
-    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'revealed');
-    expect(vessel).toHaveAttribute('data-vessel-open', '1.00');
-    expect(vessel).toHaveAttribute('data-vessel-fill', '0.000');
-    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-number-reveal', '1.00');
     expect(screen.getByText(result.event.name)).toBeInTheDocument();
+    // The message starts after its own lead-in.
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
 
-    // Frame 6: the exact tier message, written above the meter.
+    // The exact tier message is written below the meter.
     advance(STORYBOARD_TIMING.messageDelayMs + STORYBOARD_TIMING.messageCharMs);
     expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'writing');
 
+    advance(getMessageTypingMs(result.tier.message) - STORYBOARD_TIMING.messageCharMs);
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    // It then holds, settles visibly and stays on screen for the celebration.
     advance(
-      getMessageTypingMs(result.tier.message) -
-        STORYBOARD_TIMING.messageCharMs +
-        STORYBOARD_TIMING.messageHoldMs +
-        STORYBOARD_TIMING.messageFadeMs +
+      STORYBOARD_TIMING.messageHoldMs +
+        STORYBOARD_TIMING.messageSettleMs +
         STORYBOARD_TIMING.eventDelayMs +
-        80,
+        100,
     );
-    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
+    const message = screen.getByTestId('lucky-tier-message');
+    expect(message).toHaveAttribute('data-state', 'holding');
+    expect(message).toHaveAttribute('data-settled', 'true');
+    expect(screen.getByTestId('lucky-tier-message-visible')).toHaveTextContent(
+      result.tier.message,
+    );
     const stage = screen.getByTestId('cosmic-event-stage');
     expect(stage).toHaveAttribute('data-event', result.event.id);
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+    // The vessel is still full during the celebration and after it.
+    expect(vessel).toHaveAttribute('data-vessel-fill', '1.000');
 
     // The celebration ends, then the maple-leaf cursor writes the Spark.
     act(() => {
@@ -355,7 +388,7 @@ describe('Daily Resonance daily experience', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
     const before = readStored();
-    advance(STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs + 600);
+    advance(PERCENTAGE_START_MS + 600);
     expect(before.revealCompleted).toBe(false);
     first.unmount();
 
@@ -447,7 +480,7 @@ describe('Daily Resonance daily experience', () => {
   it('rolls over to the welcome state when the local date changes in an open tab', () => {
     const view = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
-    advance(STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs + 6000);
+    advance(REVEAL_COMPLETE_MS + 600);
     expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
 
     countdown.state = { ...countdown.state, dateKey: '2026-11-19', formatted: '23:59:59' };
@@ -520,8 +553,8 @@ describe('Daily Resonance daily experience', () => {
 
   it('sets the celebration start from the written tier message', () => {
     const result = expectedResult();
-    expect(getEventStartMs(result.tier.message)).toBeGreaterThan(
-      STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs,
-    );
+    expect(getEventStartMs(result.tier.message)).toBeGreaterThan(REVEAL_COMPLETE_MS);
+    expect(POUR_END_MS - PERCENTAGE_END_MS).toBe(2000);
+    expect(NUMBER_PAUSE_END_MS - POUR_END_MS).toBe(1500);
   });
 });

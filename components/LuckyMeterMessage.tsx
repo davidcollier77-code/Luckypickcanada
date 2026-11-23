@@ -3,28 +3,32 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { STORYBOARD_TIMING } from '../app/lib/lucky-meter/storyboard';
 
-export type TierMessageState = 'hidden' | 'writing' | 'holding' | 'fading';
+export type TierMessageState = 'hidden' | 'writing' | 'holding';
 
 interface LuckyMeterMessageProps {
   message: string;
   state: TierMessageState;
+  /** True once the 800 ms visible settle has run. The line never fades. */
+  settled?: boolean;
   reducedMotion?: boolean;
   isCompact?: boolean;
   onTyped?: () => void;
 }
 
 /**
- * The tier message above the meter.
+ * The tier message at the meter's base.
  *
  * It is written one character at a time by a small gold cursor, held long
- * enough to read and then faded out before the celebration. It has no panel:
- * the type sits directly in the sky, above the reserved celebration space.
+ * enough to read, and then settles visibly. It never fades: the exact sentence
+ * stays at full opacity through the celebration and the finished state, and it
+ * never occupies the celebration's space.
  *
  * Under reduced motion the complete sentence appears at once, without a cursor.
  */
 export default function LuckyMeterMessage({
   message,
   state,
+  settled = false,
   reducedMotion = false,
   isCompact = false,
   onTyped,
@@ -81,22 +85,21 @@ export default function LuckyMeterMessage({
   if (state === 'hidden') return null;
 
   const isWriting = state === 'writing' && !reducedMotion;
-  const isFading = state === 'fading';
 
   return (
     <section
       data-testid="lucky-tier-message"
       data-state={state}
+      data-settled={settled ? 'true' : 'false'}
       aria-live="polite"
       className={`lucky-tier-message pointer-events-none relative flex w-full flex-col items-center text-center ${
         isCompact ? 'mb-2 min-h-[3.2rem] px-2' : 'mb-3 min-h-[5.5rem] px-4 sm:mb-4 sm:min-h-[6.5rem]'
       }`}
       style={{
-        opacity: isFading ? 0 : 1,
-        transform: isFading ? 'translateY(-6px)' : 'translateY(0)',
-        transition: reducedMotion
-          ? 'none'
-          : `opacity ${STORYBOARD_TIMING.messageFadeMs}ms ease-in-out, transform ${STORYBOARD_TIMING.messageFadeMs}ms ease-in-out`,
+        // The line is always visible once it exists. The settle is a small,
+        // slow lift, never an opacity transition.
+        transform: settled ? 'translateY(-2px)' : 'translateY(0)',
+        transition: reducedMotion ? 'none' : `transform ${STORYBOARD_TIMING.messageSettleMs}ms ease-out`,
       }}
     >
       <div className="lucky-tier-message__rule" aria-hidden="true" />

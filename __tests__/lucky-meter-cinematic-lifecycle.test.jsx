@@ -56,6 +56,8 @@ import {
 } from '../app/lib/lucky-meter/storage';
 import {
   CELEBRATION_MS,
+  PERCENTAGE_START_MS,
+  REVEAL_COMPLETE_MS,
   getMessageTypingMs,
   getSparkWritingMs,
   STORYBOARD_TIMING,
@@ -89,33 +91,18 @@ function advance(ms) {
 }
 
 function advanceToRevealed() {
-  advance(
-    STORYBOARD_TIMING.anticipationMs +
-      STORYBOARD_TIMING.generationMs +
-      STORYBOARD_TIMING.settlePauseMs +
-      STORYBOARD_TIMING.segmentOpenMs +
-      STORYBOARD_TIMING.fillMs +
-      STORYBOARD_TIMING.fullHoldMs +
-      STORYBOARD_TIMING.drainMs +
-      STORYBOARD_TIMING.highlightMs +
-      4000,
-  );
+  // The wheel, the independent percentage, the pour, the number pause and the
+  // golden transfer have all completed; the message is being written or held.
+  advance(REVEAL_COMPLETE_MS + 4000);
 }
 
 function advanceToCelebration(message) {
   advance(
-    STORYBOARD_TIMING.anticipationMs +
-      STORYBOARD_TIMING.generationMs +
-      STORYBOARD_TIMING.settlePauseMs +
-      STORYBOARD_TIMING.segmentOpenMs +
-      STORYBOARD_TIMING.fillMs +
-      STORYBOARD_TIMING.fullHoldMs +
-      STORYBOARD_TIMING.drainMs +
-      STORYBOARD_TIMING.highlightMs +
+    REVEAL_COMPLETE_MS +
       STORYBOARD_TIMING.messageDelayMs +
       getMessageTypingMs(message) +
       STORYBOARD_TIMING.messageHoldMs +
-      STORYBOARD_TIMING.messageFadeMs +
+      STORYBOARD_TIMING.messageSettleMs +
       STORYBOARD_TIMING.eventDelayMs +
       120,
   );
@@ -222,6 +209,13 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
+    // The exact tier line stays visible and settled through the celebration.
+    const message = screen.getByTestId('lucky-tier-message');
+    expect(message).toHaveAttribute('data-state', 'holding');
+    expect(message).toHaveAttribute('data-settled', 'true');
+    expect(screen.getByTestId('lucky-tier-message-visible')).toHaveTextContent(
+      result.tier.message,
+    );
 
     act(() => {
       stageControl.onComplete?.();
@@ -245,6 +239,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(readStoredResult().sparkCompleted).toBe(true);
+    // FINISHED keeps the same sentence on screen; nothing faded it out.
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
   });
 
   it('resumes the stored cinematic after a refresh mid-cinematic', () => {
@@ -284,7 +281,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
   it('replays the reveal motions after a refresh mid-reveal instead of skipping them', () => {
     const first = render(<DailyResonance />);
     fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
-    advance(STORYBOARD_TIMING.anticipationMs + STORYBOARD_TIMING.generationMs + 500);
+    advance(PERCENTAGE_START_MS + 500);
     const before = readStoredResult();
     expect(before.revealCompleted).toBe(false);
     first.unmount();
@@ -332,6 +329,8 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
   });
 
   it('restarts a refresh celebration for the full 12,000 ms regardless of a stored duration (D12)', () => {
@@ -410,6 +409,65 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(readStoredResult().eventCompleted).toBe(true);
     expect(readStoredResult().sparkCompleted).toBe(true);
+  });
+
+  it('replays a refresh during the tier message from its first character', () => {
+    const result = createDailyResult({ dateKey: TODAY, random: () => 0.5 });
+    const history = appendResultToHistory(emptyMeterHistory(), result);
+    saveMeterState({
+      result,
+      history,
+      revealCompleted: true,
+      messageCompleted: false,
+      eventCompleted: false,
+      sparkCompleted: false,
+      stageDurationMs: 10_000,
+    });
+
+    render(<DailyResonance />);
+
+    // The interrupted sentence must not appear complete before it is retyped.
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
+
+    advance(STORYBOARD_TIMING.messageDelayMs + 100);
+    // The message mounts at the end of that timer batch; its first character
+    // tick is scheduled by the mount effect, so advance one more character.
+    advance(STORYBOARD_TIMING.messageCharMs + 10);
+
+    const message = screen.getByTestId('lucky-tier-message');
+    expect(message).toHaveAttribute('data-state', 'writing');
+    expect(message).toHaveAttribute('data-settled', 'false');
+    const visible = screen.getByTestId('lucky-tier-message-visible').textContent ?? '';
+    expect(visible.length).toBeGreaterThan(0);
+    expect(visible.length).toBeLessThan(Array.from(result.tier.message).length);
+    expect(result.tier.message.startsWith(visible)).toBe(true);
+  });
+
+  it('shows the tier line for a legacy reading restored under reduced motion', () => {
+    const result = seedToday();
+    const payload = JSON.parse(window.localStorage.getItem(METER_STORAGE_KEY));
+    delete payload.eventCompleted;
+    delete payload.revealCompleted;
+    delete payload.messageCompleted;
+    delete payload.sparkCompleted;
+    delete payload.stageDurationMs;
+    window.localStorage.setItem(METER_STORAGE_KEY, JSON.stringify(payload));
+
+    window.matchMedia = vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    }));
+
+    render(<DailyResonance />);
+
+    const message = screen.getByTestId('lucky-tier-message');
+    expect(message).toHaveAttribute('data-state', 'holding');
+    expect(message).toHaveAttribute('data-settled', 'true');
+    expect(screen.getByTestId('lucky-tier-message-visible')).toHaveTextContent(result.tier.message);
+    expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
   });
 
   it('returns to the welcome state after local midnight', () => {
