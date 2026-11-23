@@ -575,7 +575,7 @@ describe('visual QA workflow wiring', () => {
   it('runs verification for every pull request and the browser job only after the classifier', () => {
     const verify = jobBlock('verify');
     expect(verify, 'the stable Visual QA verification job must exist').not.toBeNull();
-    expect(verify).toMatch(/name: Visual QA\n {4}needs: changes/);
+    expect(verify).toMatch(/name: Application Verification\n {4}needs: changes/);
     expect(verify).not.toContain('visual_required');
 
     const visual = jobBlock('visual');
@@ -653,14 +653,18 @@ describe('visual QA workflow wiring', () => {
     const visual = jobBlock('visual');
     expect(visual).toMatch(/strategy:\n {6}fail-fast: false/);
     expect(visual).toMatch(/shard: \[1, 2\]/);
-    expect(visual).toContain('--shard=${{ matrix.shard }}/2');
+    expect(visual).toContain('plan-playwright-shards.mjs');
+    expect(visual).toContain('--forbid-only');
     expect(visual).toContain('name: Visual QA (shard ${{ matrix.shard }}/2)');
   });
 
-  it('runs independent spec files with two CI workers while keeping in-file tests ordered', () => {
+  it('keeps two CI workers because three oversubscribed the four-CPU runner', () => {
+    // A third worker ran all three projects of a long spec at once and measured
+    // faster locally, but on the four-CPU CI runner it starved the Lucky Meter
+    // spec; two workers stay, with in-file tests ordered.
     expect(playwrightConfig).toContain('fullyParallel: false');
     expect(playwrightConfig).toContain('workers: process.env.CI ? 2 : undefined');
-    expect(playwrightConfig).not.toContain('workers: process.env.CI ? 1 : undefined');
+    expect(playwrightConfig).not.toContain('workers: process.env.CI ? 3 : undefined');
   });
 
   it('restores the pnpm store before frozen-lockfile installation', () => {

@@ -172,9 +172,24 @@ verifies the pinned binaries too, so `ldd` never reports a launchable browser th
 
 **The four Memory Bank files are checked, not preloaded.** Freebuff injects only the project-root `AGENTS.md` (or
 `CLAUDE.md`) into the agent's context; terminal output from the startup command is not added to it. The supported
-approach is the one in `AGENTS.md` §1 step 4 — the agent reads all four Memory Bank files and
+approach is the one in the “Memory Bank context and maintenance” section of `AGENTS.md` — the agent reads all four Memory Bank files and
 `.docs/manifest.json` before task work. Keep that instruction in `AGENTS.md`.
 
 `__tests__/freebuff-startup-command.test.js` fails if this block is removed, duplicated, edited away from that
 tested form or reordered, and it executes the documented command with `pnpm` absent from `PATH` under both Bash
 and a POSIX `sh`.
+
+## Local verification
+
+`./freebuff-verify.sh` is the local gate. It runs the pinned/frozen install, the Spec Kit task gate, every Python
+checker suite, the standalone TypeScript check, the **full Vitest suite**, the documentation-refresh tests, the
+Next.js production build and a 495 MiB size check. It deliberately does **not** run Playwright, the OpenNext
+artifact build, DevSkim or any deployment command; those run in GitHub Actions after the pull request is opened.
+
+Build validation and the Playwright shards are conditional: the trusted classifier decides whether the change set
+can affect them, and any unknown, empty or unreadable change set keeps them required. Playwright is not part of this
+local gate and does not run for documentation, CI or backend-only pull requests; the browser shards run only when a
+change can affect rendered output or the visual tests. The always-required application job is named **Application
+Verification**; a check that could not apply is reported as `NOT RUN — not applicable` with its reason, never as a
+pass. Playwright remains two shards, assigned by whole spec file from recorded durations, and every spec, project
+and committed baseline still runs and is compared.

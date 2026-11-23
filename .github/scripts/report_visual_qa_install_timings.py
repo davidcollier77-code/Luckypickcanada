@@ -41,6 +41,9 @@ from datetime import datetime, timezone
 BASELINE_RUN_ID = 43730539554
 BASELINE_LABEL = "PR #1914"
 BASELINE_INSTALL_SECONDS = {
+    # The always-required job was renamed from "Visual QA" to "Application
+    # Verification"; the old name stays for historical runs.
+    "Application Verification": 8,
     "Visual QA": 8,
     "Visual QA (shard 1/2)": 7,
     "Visual QA (shard 2/2)": 7,
@@ -48,6 +51,7 @@ BASELINE_INSTALL_SECONDS = {
 
 INSTALL_STEP_NAME = "Install dependencies"
 VISUAL_JOB_PREFIX = "Visual QA"
+APPLICATION_VERIFICATION_JOB = "Application Verification"
 CHROMIUM_CACHE_PREFIX = "playwright-chromium-"
 PNPM_CACHE_PREFIX = "node-cache-"
 CHROMIUM_MISS_STEP = "Install Playwright Chromium (cache miss)"
@@ -120,13 +124,16 @@ def select_visual_jobs(jobs):
         job
         for job in jobs
         if isinstance(job, dict)
-        and str(job.get("name") or "").startswith(VISUAL_JOB_PREFIX)
+        and (
+            str(job.get("name") or "").startswith(VISUAL_JOB_PREFIX)
+            or str(job.get("name") or "") == APPLICATION_VERIFICATION_JOB
+        )
         and install_step(job) is not None
     ]
 
     def sort_key(job):
         name = str(job.get("name") or "")
-        if name == VISUAL_JOB_PREFIX:
+        if name in (VISUAL_JOB_PREFIX, APPLICATION_VERIFICATION_JOB):
             return (0, 0, name)
         match = re.search(r"\(shard (\d+)/(\d+)\)", name)
         if match:

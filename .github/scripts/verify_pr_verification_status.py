@@ -18,7 +18,10 @@ Rules enforced here (fail closed):
   happens to be green;
 * checks that legitimately do not apply to every pull request are audited and
   reported as ``NOT RUN`` but never counted as passed verification, and their
-  existing workflow behaviour is unchanged.
+  existing workflow behaviour is unchanged;
+* the bounded wait never returns while a blocking check is still missing or
+  running, including an applicable browser group whose shards have not been
+  created yet.
 
 Only read-only GitHub REST calls are made. The token is read from the
 environment and is never printed.
@@ -53,10 +56,16 @@ NOT_RUN_CONCLUSIONS = frozenset({"skipped", "neutral", "cancelled", "stale"})
 # Checks that must run and pass on the current head. These correspond to the
 # workflows that run for every pull request in this repository.
 REQUIRED_CHECKS = (
+    "Application Verification",
     "DevSkim scan and Security upload",
     "Validate OpenNext build artifacts",
     "PR Scope Verification",
 )
+
+# The build check is required unless the trusted classifier proves that no
+# changed path can affect the build. ``unknown`` keeps today's required result.
+BUILD_CHECK = "Validate OpenNext build artifacts"
+VISUAL_CHECK = "Visual QA"
 
 # Checks that legitimately do not run for every pull request (for example
 # Visual QA, whose own workflow classifies documentation-only changes). They are
@@ -148,6 +157,16 @@ def is_audited_check_name(name):
     return name in REQUIRED_CHECKS or is_conditional_check_name(name)
 
 
+def applicability(value):
+    """Read a tri-state applicability value; anything unrecognised is unknown."""
+    text = (value or "unknown").strip().lower()
+    if text == "true":
+        return True
+    if text == "false":
+        return False
+    return None
+
+
 def _audit_conditional(name, head_runs, stale_runs, head_directives):
     """Audit a conditional check and every shard that reports under its name.
 
@@ -235,12 +254,21 @@ def _audit_check(name, head_runs, stale_runs, head_directives):
     }
 
 
-def audit_verification(pr, commits, check_runs):
+def audit_verification(pr, commits, check_runs, build_required="unknown", visual_required="unknown"):
     """Build an evidence report for the pull request's current head.
 
     ``pr``, ``commits`` and ``check_runs`` use the GitHub REST response shapes.
     ``check_runs`` may be either a list or a ``{"check_runs": [...]}`` payload.
+
+    ``build_required`` and ``visual_required`` are the trusted applicability
+    decisions. ``false`` records the check as NOT RUN and not applicable, so it
+    neither counts as a pass nor blocks. ``true`` makes a conditional check
+    blocking. ``unknown`` preserves the documented default: the build is
+    required (fail-closed) and the conditional browser group is audited but not
+    blocking.
     """
+    build_applicable = applicability(build_required)
+    visual_applicable = applicability(visual_required)
     if isinstance(check_runs, dict):
         check_runs = check_runs.get("check_runs") or []
     if not isinstance(check_runs, list):
@@ -281,24 +309,62 @@ def audit_verification(pr, commits, check_runs):
 
     required = []
     for name in REQUIRED_CHECKS:
+        if name == BUILD_CHECK and build_applicable is False:
+            record = {
+                "name": name,
+                "status": "NOT RUN",
+                "conclusion": "",
+                "head_sha": "",
+                "detail": (
+                    "not applicable: the trusted classifier proved that no changed path "
+                    "can affect the production build"
+                ),
+            }
+            record["requirement"] = "conditional"
+            record["applicable"] = False
+            record["blocking"] = False
+            required.append(record)
+            continue
         record = _audit_check(
             name,
             runs_named(name, on_head),
             runs_named(name, stale),
             head_directives,
         )
+        record["requirement"] = "always" if name != BUILD_CHECK else "required"
+        record["applicable"] = True
         record["blocking"] = True
         required.append(record)
 
     conditional = []
     for name in CONDITIONAL_CHECKS:
+        if visual_applicable is False:
+            record = {
+                "name": name,
+                "status": "NOT RUN",
+                "conclusion": "",
+                "head_sha": "",
+                "detail": (
+                    "not applicable: the trusted classifier proved that no changed path "
+                    "can affect rendered output"
+                ),
+            }
+            record["requirement"] = "conditional"
+            record["applicable"] = False
+            record["blocking"] = False
+            conditional.append(record)
+            continue
         record = _audit_conditional(
             name,
             runs_in_group(name, on_head),
             runs_in_group(name, stale),
             head_directives,
         )
-        record["blocking"] = False
+        record["requirement"] = "conditional"
+        record["applicable"] = True
+        # A declared-required (or explicitly required) browser run is a real
+        # requirement: if it did not run, the audit must fail rather than warn.
+        record["blocking"] = visual_applicable is True
         conditional.append(record)
 
     other_checks = []
@@ -329,8 +395,8 @@ def audit_verification(pr, commits, check_runs):
             "the head commit %s contains %s, so CI did not run for the current head"
             % (head_sha[:12] or "unknown", ", ".join(head_directives))
         )
-    for record in required:
-        if record["status"] != "PASS":
+    for record in required + conditional:
+        if record.get("blocking") and record["status"] != "PASS":
             blocking_reasons.append(
                 "%s: %s — %s"
                 % (record["name"], record["status"], record["detail"])
@@ -394,15 +460,16 @@ def render_markdown(report):
 
     lines.append("| Check | Status | Evidence |")
     lines.append("| --- | --- | --- |")
-    for record in report["required_checks"]:
+    for record in report["required_checks"] + report["conditional_checks"]:
+        if record.get("applicable") is False:
+            label = "not applicable"
+        elif record.get("requirement") == "conditional":
+            label = "required when applicable" if record.get("blocking") else "conditional"
+        else:
+            label = "required"
         lines.append(
-            "| %s (required) | **%s** | %s |"
-            % (record["name"], record["status"], record["detail"])
-        )
-    for record in report["conditional_checks"]:
-        lines.append(
-            "| %s (conditional) | **%s** | %s |"
-            % (record["name"], record["status"], record["detail"])
+            "| %s (%s) | **%s** | %s |"
+            % (record["name"], label, record["status"], record["detail"])
         )
     lines.append("")
 
@@ -577,6 +644,46 @@ def load_fixture(directory):
     return read("pr.json"), read("commits.json"), read("check-runs.json")
 
 
+def expected_required_checks(build_required="unknown"):
+    """Required checks that must actually appear for this change set.
+
+    A build proven inapplicable never runs, so waiting for it would only burn
+    the whole deadline. ``unknown`` keeps the build expected, matching the
+    audit's fail-closed default.
+    """
+    if applicability(build_required) is False:
+        return tuple(name for name in REQUIRED_CHECKS if name != BUILD_CHECK)
+    return REQUIRED_CHECKS
+
+
+def expected_blocking_checks(build_required="unknown", visual_required="unknown"):
+    """Checks that must be observed and settled before the wait may return.
+
+    The browser group is blocking only when the trusted classifier proves the
+    change set can affect rendered output. A shard that was never created is
+    indistinguishable from a shard that has not started, so an applicable group
+    is waited for even before GitHub reports its first run. ``unknown`` keeps
+    the historical behaviour: a missing group does not hold the wait, while any
+    run that does exist is still waited for.
+    """
+    names = list(expected_required_checks(build_required))
+    if applicability(visual_required) is True:
+        names.append(VISUAL_CHECK)
+    return tuple(names)
+
+
+def expected_check_observed(name, on_head):
+    """Whether the current head carries at least one run for an expected check.
+
+    The conditional browser check reports under per-shard names such as
+    ``Visual QA (shard 1/2)``, so it is matched by prefix exactly as the audit
+    groups it.
+    """
+    if is_conditional_check_name(name):
+        return any((run.get("name") or "").startswith(name) for run in on_head)
+    return any((run.get("name") or "") == name for run in on_head)
+
+
 def wait_for_current_head(
     repo,
     pr_number,
@@ -584,6 +691,8 @@ def wait_for_current_head(
     timeout_seconds,
     poll_seconds,
     *,
+    build_required="unknown",
+    visual_required="unknown",
     loader=None,
     clock=None,
     sleep=None,
@@ -595,12 +704,19 @@ def wait_for_current_head(
     GitHub API errors are retried inside the same deadline; the final attempt's
     error is raised only once the deadline has passed. Sleeps are capped to the
     remaining time so the wait cannot overshoot its deadline.
+
+    A check that is expected but not yet reported counts as unsettled. That
+    covers the window before GitHub creates an applicable browser shard's check
+    run, when nothing is pending but the group has clearly not finished. The
+    caller's deadline must still outlast the longest expected job, because the
+    wait returns at the deadline with honest evidence rather than hanging.
     """
     loader = loader or load_live
     clock = clock or time.monotonic
     sleep = sleep or time.sleep
 
     deadline = clock() + max(0, timeout_seconds)
+    expected = expected_blocking_checks(build_required, visual_required)
     while True:
         try:
             pr, commits, check_runs = loader(repo, pr_number, token)
@@ -630,11 +746,11 @@ def wait_for_current_head(
             if is_audited_check_name(run.get("name") or "")
             and (run.get("status") or "").lower() != "completed"
         ]
-        all_required_observed = set(REQUIRED_CHECKS).issubset(
-            {run.get("name") for run in on_head}
-        )
+        missing = [
+            name for name in expected if not expected_check_observed(name, on_head)
+        ]
         remaining = deadline - clock()
-        if not unsettled and (all_required_observed or remaining <= 0):
+        if not unsettled and not missing:
             return
         if remaining <= 0:
             return
@@ -665,6 +781,18 @@ def build_parser():
     parser.add_argument(
         "--poll-interval", type=int, default=15, help="seconds between polls"
     )
+    parser.add_argument(
+        "--build-required",
+        choices=("true", "false", "unknown"),
+        default="unknown",
+        help="trusted build applicability; unknown keeps the build required",
+    )
+    parser.add_argument(
+        "--visual-required",
+        choices=("true", "false", "unknown"),
+        default="unknown",
+        help="trusted visual applicability; true makes the browser group blocking",
+    )
     return parser
 
 
@@ -693,13 +821,21 @@ def main(argv=None):
                     token,
                     args.wait_seconds,
                     args.poll_interval,
+                    build_required=args.build_required,
+                    visual_required=args.visual_required,
                 )
             pr, commits, check_runs = load_live(args.repo, args.pr, token)
     except RuntimeError as error:
         print("VERIFICATION AUDIT ERROR: %s" % error, file=sys.stderr)
         return 2
 
-    report = audit_verification(pr, commits, check_runs)
+    report = audit_verification(
+        pr,
+        commits,
+        check_runs,
+        build_required=args.build_required,
+        visual_required=args.visual_required,
+    )
     markdown = render_markdown(report)
     print(markdown)
 

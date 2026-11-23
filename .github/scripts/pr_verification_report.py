@@ -65,7 +65,7 @@ CATEGORY_NAMES = {key: name for key, name in CATEGORIES}
 # rendered, so a missing or skipped result is visible instead of disappearing.
 QA_SUPPORTING_CHECKS = (
     (
-        "Visual QA",
+        "Application Verification",
         "full unit test suite and standalone TypeScript check",
     ),
     (
@@ -246,20 +246,45 @@ def _head_sha(evidence):
     return head.get("sha") or ""
 
 
+def _audit_records(evidence):
+    """Index the current-head audit records by check name."""
+    verification = evidence.get("verification")
+    records = {}
+    if not isinstance(verification, dict):
+        return records
+    for key in ("required_checks", "conditional_checks"):
+        for record in verification.get(key) or []:
+            if isinstance(record, dict) and record.get("name"):
+                records[record["name"]] = record
+    return records
+
+
 def _supporting_rows(evidence):
     rows = []
+    audited = _audit_records(evidence)
     for name, purpose in QA_SUPPORTING_CHECKS:
         status, detail, run = _check_state(evidence, name)
-        rows.append(
-            {
-                "name": name,
-                "purpose": purpose,
-                "status": status,
-                "detail": detail,
-                "head_sha": (run or {}).get("head_sha") or "",
-                "url": (run or {}).get("html_url") or (run or {}).get("details_url") or "",
-            }
-        )
+        # The audit records the browser group once as "Visual QA"; its shard
+        # rows inherit that applicability so a docs-only change does not warn
+        # merely because both shards are absent.
+        record = audited.get(name) or (
+            audited.get("Visual QA") if name.startswith("Visual QA") else None
+        ) or {}
+        applicable = record.get("applicable") is not False
+        row = {
+            "name": name,
+            "purpose": purpose,
+            "status": status,
+            "detail": detail,
+            "applicable": applicable,
+            "requirement": record.get("requirement") or "",
+            "head_sha": (run or {}).get("head_sha") or "",
+            "url": (run or {}).get("html_url") or (run or {}).get("details_url") or "",
+        }
+        if not applicable:
+            row["reason"] = record.get("detail") or "not applicable for this change set"
+            row["status"] = NOT_RUN
+        rows.append(row)
     return rows
 
 
@@ -349,9 +374,15 @@ def qa_checker_category(evidence):
         % ", ".join("%s (%s)" % (row["name"], row["status"]) for row in supporting)
     )
     for row in supporting:
-        details.append(
-            "%s: %s — %s." % (row["name"], row["status"], row["detail"])
-        )
+        if row.get("applicable") is False:
+            details.append(
+                "%s: NOT RUN — not applicable: %s."
+                % (row["name"], row.get("reason") or "not required for this change set")
+            )
+        else:
+            details.append(
+                "%s: %s — %s." % (row["name"], row["status"], row["detail"])
+            )
 
     findings = []
     try:
@@ -409,7 +440,10 @@ def qa_checker_category(evidence):
         status = FAILED
     elif not declaration_present and is_bot:
         status = WARNING
-    elif any(row["status"] in {WARNING, NOT_RUN} for row in supporting):
+    elif any(
+        row["status"] in {WARNING, NOT_RUN} and row.get("applicable") is not False
+        for row in supporting
+    ):
         status = WARNING
     elif review.get("status") == "BLOCKED":
         status = WARNING
@@ -417,6 +451,8 @@ def qa_checker_category(evidence):
         status = PASSED
 
     for row in supporting:
+        if row.get("applicable") is False:
+            continue
         if row["status"] != PASSED:
             attention.append(
                 "%s is %s on the current head: %s." % (row["name"], row["status"], row["detail"])
@@ -1088,10 +1124,27 @@ def verification_integrity_category(evidence):
         )
 
     attention = []
-    required_statuses = [_audit_status(record) for record in required]
-    conditional_statuses = [_audit_status(record) for record in conditional]
+    # A proven-inapplicable check is reported as NOT RUN with its reason, but it
+    # is not incomplete verification and must not warn or fail the category.
+    required_statuses = [
+        _audit_status(record)
+        for record in required
+        if record.get("applicable") is not False
+    ]
+    conditional_statuses = [
+        _audit_status(record)
+        for record in conditional
+        if record.get("applicable") is not False
+    ]
     observed = required_statuses + conditional_statuses
     no_runs = bool(observed) and all(status == NOT_RUN for status in observed)
+    # A conditional check the trusted classifier made applicable and blocking
+    # is a real requirement for this head. Unknown applicability is reported
+    # as conditional but deliberately non-blocking by the audit, so the report
+    # must not turn its NOT RUN into a contradiction.
+    conditional_required = [
+        record for record in conditional if record.get("blocking") is True
+    ]
 
     if directives:
         status = FAILED
@@ -1103,6 +1156,15 @@ def verification_integrity_category(evidence):
         status = FAILED
         summary = "At least one required check failed on the current head."
         attention.append("Fix the failed checks and re-run verification on the new head.")
+    elif any(_audit_status(record) != PASSED for record in conditional_required):
+        status = FAILED
+        summary = "A check required for this change set did not pass on the current head."
+        for record in conditional_required:
+            if _audit_status(record) != PASSED:
+                attention.append(
+                    "%s is required for this change set but is %s: %s"
+                    % (record.get("name"), _audit_status(record), record.get("detail"))
+                )
     elif no_runs:
         status = NOT_RUN
         summary = "No verification result exists for the current head; that is not a pass."
@@ -1275,13 +1337,19 @@ def build_report(evidence):
     }
 
 
+def _supporting_status(row):
+    if row.get("applicable") is False:
+        return "NOT RUN — not applicable: %s" % (row.get("reason") or "not required for this change set")
+    return row["status"]
+
+
 def _render_supporting_table(rows):
     lines = ["| Check | Purpose | Status on current head | Evidence |", "| --- | --- | --- | --- |"]
     for row in rows:
         evidence = row.get("url") or row.get("detail") or "no run"
         lines.append(
             "| %s | %s | **%s** | %s |"
-            % (row["name"], row["purpose"], row["status"], evidence)
+            % (row["name"], row["purpose"], _supporting_status(row), evidence)
         )
     return lines
 

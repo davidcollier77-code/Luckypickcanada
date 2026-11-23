@@ -192,7 +192,10 @@ class CategoryContractTests(unittest.TestCase):
         self.assertNotIn("Visual QA Summary", names)
         self.assertNotIn("Visual QA", json.dumps(names))
         self.assertTrue(
-            any(row["name"] == "Visual QA" for row in result["supporting_checks"])
+            any(
+                row["name"] == "Application Verification"
+                for row in result["supporting_checks"]
+            )
         )
         self.assertTrue(
             any("shard 1/2" in row["name"] for row in result["supporting_checks"])
@@ -200,6 +203,82 @@ class CategoryContractTests(unittest.TestCase):
         self.assertTrue(
             any("shard 2/2" in row["name"] for row in result["supporting_checks"])
         )
+
+    def test_inapplicable_build_and_visual_rows_do_not_warn(self):
+        required = [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {
+                "name": "Validate OpenNext build artifacts",
+                "status": "NOT RUN",
+                "detail": "not applicable: no changed path can affect the production build",
+                "applicable": False,
+                "blocking": False,
+                "head_sha": "",
+            },
+        ]
+        conditional = [
+            {
+                "name": "Visual QA",
+                "status": "NOT RUN",
+                "detail": "not applicable: no changed path can affect rendered output",
+                "applicable": False,
+                "blocking": False,
+                "head_sha": "",
+            }
+        ]
+        runs = [
+            check("Application Verification", "success"),
+            check(report.DEVSKIM_CHECK, "success"),
+        ]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=required, conditional=conditional),
+            )
+        )
+
+        qa = category(result, "qa-checker")
+        self.assertEqual(qa["status"], "PASSED")
+        self.assertEqual(category(result, "verification-integrity")["status"], "PASSED")
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertFalse(rows["Validate OpenNext build artifacts"]["applicable"])
+        self.assertFalse(rows["Visual QA (shard 1/2)"]["applicable"])
+        self.assertFalse(rows["Visual QA (shard 2/2)"]["applicable"])
+        self.assertIn("not applicable", rows["Visual QA (shard 1/2)"]["reason"])
+
+    def test_unknown_visual_applicability_does_not_fail_the_report(self):
+        required = [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+        ]
+        conditional = [
+            {
+                "name": "Visual QA",
+                "status": "NOT RUN",
+                "detail": "applicability is unknown, so the browser check is conditional",
+                "applicable": True,
+                "blocking": False,
+                "head_sha": HEAD,
+            }
+        ]
+        runs = [
+            check("Application Verification", "success"),
+            check(report.DEVSKIM_CHECK, "success"),
+            check("PR Scope Verification", "success"),
+        ]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=required, conditional=conditional),
+            )
+        )
+
+        integrity = category(result, "verification-integrity")
+        self.assertEqual(integrity["status"], "PASSED")
+        self.assertFalse(any("Visual QA" in item for item in integrity["attention"]))
 
     def test_every_status_uses_the_four_allowed_values(self):
         result = report.build_report(evidence())
