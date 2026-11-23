@@ -36,3 +36,6 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS172411** — `components/DailyResonance.tsx:334` — Review setTimeout for untrusted data <!-- devskim-id:4d65f2b1f749ea09be7b -->
 - **NOTE — DS172411** — `components/DailyResonance.tsx:190` — Review setTimeout for untrusted data <!-- devskim-id:946ee3b03e04a32d6167 -->
 - **NOTE — DS172411** — `components/DailyResonance.tsx:180` — Review setTimeout for untrusted data <!-- devskim-id:b2e684bd066b3d70edfe -->
+
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:1037` — Suspicious comment <!-- devskim-id:9b44416b8416b8a257b7 -->
+- **NOTE — DS176209** — `.github/scripts/test_pr_verification_report.py:960` — Suspicious comment <!-- devskim-id:aa76fab65941bd25c711 -->
