@@ -29,17 +29,37 @@ these rules:
 - **No identity branching.** No user-agent, vendor, GPU-model or renderer-string checks. No
   `powerPreference` hint and no `failIfMajorPerformanceCaveat`, so the browser keeps its own renderer
   choice (including software rendering) instead of being forced onto a backend.
-- **Conservative device profile.** `saveData`, low `deviceMemory` or low `hardwareConcurrency` resolve
-  to the constrained tier; missing hints resolve to the safer default, never to the highest tier.
-- **Measured cost, not device class.** Cinematic quality steps down from the actual backing-store cost
-  (viewport × pixel ratio) as well as the profile, so a high-DPI phone is not assumed weak and a 4K
-  desktop is not assumed fast.
+- **One assessment, explicit refresh.** `getDeviceAssessment()` classifies the coarse hardware hints
+  and shares the result with the existing profile, quality and adaptive device-state readers. It is
+  cached between adaptive-plan reassessments, which are the one explicit refresh boundary.
+  `saveData` remains a live policy signal, not a hardware fact.
+- **Missing hints are not weakness.** A browser that hides `deviceMemory` and `hardwareConcurrency`
+  reports `balanced` capability with `confidence: none`; only known values at or below 2 produce
+  `constrained`.
+- **Two axes.** Device capability and display demand are reported separately. Backing-store cost is
+  derived from the live viewport × DPR and never rewrites the capability classification.
+- **Legacy gates are named, not hidden.** The 3 MP backing-store gate and the coarse-pointer DPR-3
+  gate remain in `resolveRenderQuality` for now. Diagnostics report `surface` or
+  `legacy-pointer-density` so a capable device is not mistaken for a weak one.
 - **Bounded work.** Pixel ratio is capped per tier, particle counts and point batches are bounded, and
   the frame governor lowers resolution and budgets before it drops an optional layer.
 - **Lifecycle-aware.** Reduced motion suppresses animation, hidden documents stop work, and WebGL
   context loss is observed (and cancelled where restoration is possible) with a safe teardown.
 
 Renderers consume the resolved profile; they do not re-implement detection or choose a vendor path.
+
+### Device capability, display demand and render budget (spec 215)
+
+`getDeviceAssessment()` is the one page-lifetime capability read. `getDisplayDemand()` is separate
+and live: it reports the CSS viewport, DPR, backing-pixel count and a `light`/`moderate`/`heavy`/
+`extreme` band. `describeRenderBudget()` combines the unchanged render profile with both retained
+gates and names the active limiter. The capability layer also exposes one lazy WebGL feature report
+with WebGL1, WebGL2 and scalar limits; it never requests vendor, renderer or unmasked identity
+strings.
+
+The boundary is deliberate. Capability is classified now; the actual render budget still uses the
+existing conservative gates. Removing them changes visual density and GPU work, so that remains
+adaptive-rendering work informed by the observational monitor.
 
 ## Renderer inventory
 
@@ -158,16 +178,33 @@ their hand-written lit-mesh engines.
   surface supplies the frame loop, quality tier, reduced motion and context-loss
   handling. The retired medallion engine is gone; the CSS meter is both the
   first paint and the permanent fallback.
-- `components/lucky-meter-ornament-engine.js` draws the background leaf layers
-  and falls back to static CSS artwork when WebGL is unavailable.
+- `components/lucky-meter-ornament-engine.js` is retained as a tested legacy
+  ornament renderer; it is not mounted by a production route. The meter's
+  background leaves are drawn by the CSS/DOM composition and the current meter
+  scene, so its `ornament` counts are diagnostics rather than live visuals.
 - `components/cosmic-event-engine.js` keeps the pre-existing two-surface
   (far/near) additive stage and projects every effect through the shared camera.
   It also runs the sky-light pass and owns the timeline clock: the timeline
   follows wall time so a slow frame cannot stretch the event, while the physics
   step is capped so a long frame cannot teleport particles.
 
-Quality budgets are resolved once per page (`resolveRenderQuality`) and add
-`meshSegments` and `ornament: { far, near }` to the existing tier profile.
+`resolveRenderQuality` supplies the tier, DPR cap, particle scale, near-layer
+availability, haze and spark budget, and adds `meshSegments` and
+`ornament: { far, near }` to the profile. Consumers resolve their budget when
+they create a surface; the hardware assessment is cached while display demand is
+live. The 3 MP backing-store gate and the coarse-pointer DPR-3 gate remain in
+place and are named by `describeRenderBudget()`.
+
+### Observational frame monitor (spec 215)
+
+`recordFrameSample(timestamp)` is called by the existing shared animation loop
+and by the cosmic engine's existing frame function. It uses rAF timestamps, so
+several loops painting one frame collapse into one sample. The monitor reports
+`warming`, `healthy`, `strained` or `critical` from a 1.5 s window after a 2 s
+warm-up, with a 1 s status hysteresis and resets for hidden pages, gaps, target
+changes and manual diagnostics. It adds no frame loop, timer or listener and
+never changes quality, cadence or loading. The cosmic engine's local 42/18 fps
+quality step remains independent.
 
 ## Adaptive performance layer
 

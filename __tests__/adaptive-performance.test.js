@@ -177,6 +177,16 @@ describe('device evaluation', () => {
     });
     expect(capabilities.renderQuality).toHaveProperty('tier');
     expect(capabilities.plan).toHaveProperty('frameRate');
+    expect(capabilities.device).toMatchObject({
+      capabilityTier: expect.stringMatching(/^(constrained|balanced|high)$/),
+      confidence: expect.stringMatching(/^(high|partial|none)$/),
+    });
+    expect(capabilities.display).toMatchObject({
+      demand: expect.stringMatching(/^(light|moderate|heavy|extreme)$/),
+    });
+    expect(capabilities.graphics).toHaveProperty('webgl2');
+    expect(capabilities.renderBudget.limitedBy).toBeInstanceOf(Array);
+    expect(capabilities.performance.status).toBe('warming');
   });
 });
 
