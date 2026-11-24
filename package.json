@@ -15,7 +15,7 @@
   "dependencies": {
     "@marsidev/react-turnstile": "1.6.3",
     "@neondatabase/serverless": "^1.2.1",
-    "@stripe/stripe-js": "^9.13.0",
+    "@stripe/stripe-js": "^10.3.0",
     "@upstash/redis": "^1.41.0",
     "canvas-confetti": "^1.9.4",
     "eslint": "^10.15.0",
@@ -28,7 +28,7 @@
     "react-dom": "19.3.1",
     "react-error-boundary": "^6.1.6",
     "resend": "^6.39.0",
-    "stripe": "^22.5.0",
+    "stripe": "^23.2.0",
     "three": "^0.187.0"
   },
   "engines": {

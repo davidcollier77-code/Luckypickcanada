@@ -34,6 +34,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from '../app/lib/graphics-capabilities';
+import { recordFrameSample } from '../app/lib/adaptive-performance';
 import {
   POINT_FRAGMENT_SHADER,
   POINT_VERTEX_SHADER,
@@ -1827,6 +1828,10 @@ export function createCosmicEventEngine({
 
   function frame(timestamp) {
     if (destroyed || contextLost) return;
+
+    // Observation only. The engine's own 42/18 fps quality step below remains
+    // independent; this timestamp never changes its cadence or artwork.
+    recordFrameSample(timestamp);
 
     if (!lastFrame) lastFrame = timestamp;
     // Two clocks. The timeline must follow real time so the reveal keeps its

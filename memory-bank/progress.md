@@ -1,3 +1,11 @@
+## 2026-11-24 — Device capability and observational frame monitoring (spec 215)
+
+- Kept the 3 MP backing-store gate and the coarse-pointer DPR-3 gate deferred and active. Recorded the exact matrix and the visual/GPU delta of removing only the surface gate (particle scale 0.85 → 1.2, spark budget 560 → 900, point budget 24,000 → 44,000, mesh 160 → 192, lights 2 → 4, plus a MacBook DPR cap 1.6 → 2 and +56.25% backing pixels) and of removing both gates (S23/iPhone DPR cap 1.6 → 2, meter dust 32 → 46, geometry +28.6%–71.4%).
+- Centralized the hardware read in one cached `getDeviceAssessment()` used by the graphics profile, render quality, adaptive device state and capability report; missing hints report `balanced` with `confidence: none`, not weakness. `refreshDeviceAssessment()` runs only at the adaptive plan's existing reassessment boundary.
+- Added live `getDisplayDemand()` and `describeRenderBudget()`, naming `surface`, `legacy-pointer-density`, `capability` or `policy` without changing any render profile. Added one lazy WebGL2-first feature report with scalar limits and context release.
+- Added an observational frame monitor fed by the existing shared loop and cosmic frame function: 1.5 s window, 2 s warm-up, 250 ms evaluation, 1 s hysteresis, hidden/gap/target resets and same-frame dedupe. It adds no loop, timer or listener and never changes quality, cadence or the 12-second celebration.
+- Verified the focused 88 graphics/adaptive/monitor tests, 45 resource-readiness tests, 111 files / 1,233 Vitest tests, `tsc --noEmit`, 471 Python checker tests, 51 docs tests and the production build at 434,126,848 bytes (414.02 MiB), below 495 MiB; `SPEC_KIT_BASE_REF=6afebdfa ./freebuff-verify.sh` exited 0.
+
 ## 2026-11-23 — Repository security audit and monitoring (spec 213)
 
 - Audited the live GitHub Security tab: 11 open DevSkim code-scanning alerts, no open secret-scanning alerts and one open Dependabot advisory for `minimatch` 9.0.9.

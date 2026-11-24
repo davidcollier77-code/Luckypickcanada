@@ -1,6 +1,17 @@
-# Active Context — Repository security audit and monitoring (Spec 213)
+# Active Context — Device capability and observability (Spec 215)
 
-## Current Task — Complete GitHub security audit and monitoring (Spec 213)
+## Current Task — Complete device capability and observability (Spec 215)
+
+- **Scope:** centralize the existing hardware-hint readers behind one cached `getDeviceAssessment()`, report display demand separately from capability, expose a lazy WebGL1/WebGL2/limits feature report, and add an observational frame monitor fed by the existing shared and cosmic frame loops. No visual, timing, loading or cadence change.
+- **Boundary:** the 3 MP backing-store gate and the coarse-pointer DPR-3 gate remain in `resolveRenderQuality`. `describeRenderBudget()` names `surface`, `legacy-pointer-density`, `capability` or `policy`; removing the gates is deferred to adaptive-rendering work. The exact option impacts are in `specs/215-device-capability-observability/research.md`.
+- **Monitor:** `warming`/`healthy`/`strained`/`critical` from a 1.5 s window after a 2 s warm-up and 1 s hysteresis, with hidden/gap/target resets. It never adapts quality or cadence. The cosmic engine's local 42/18 fps step is unchanged.
+- **Site-wide priming:** still the root `ResourceReadiness` → `useAdaptivePlan` → `getAdaptivePlan` → `readDeviceState` chain; `readDeviceState` now delegates to the assessment and display demand. No new provider or preloader.
+- **Verification:** focused graphics/adaptive/monitor suites (88 tests), 45 resource-readiness tests, 111 files / 1,233 Vitest tests, `tsc --noEmit`, 471 Python checker tests, 51 docs tests and `SPEC_KIT_BASE_REF=6afebdfa ./freebuff-verify.sh` all passed. The production build measured 434,126,848 bytes (414.02 MiB), below 495 MiB. Hardware GPU, Samsung Internet and Safari/Firefox mobile evidence are unavailable in this VM; thresholds remain provisional.
+- **PR status:** one regular, non-draft, unmerged PR is being submitted for owner review; no deployment.
+
+# Previous Context — Repository security audit and monitoring (Spec 213)
+
+## Previous Task — Complete GitHub security audit and monitoring (Spec 213)
 
 - **Initial GitHub Security:** 11 open code-scanning alerts (all DevSkim), 0 open secret-scanning alerts and 1 open Dependabot alert (`minimatch` 9.0.9, medium, development scope).
 - **Code-scanning disposition:** every callable timer finding, including the identifier-callback timers, received a reviewed inline `DevSkim: ignore DS172411` suppression; nine alerts are synthetic test fixtures whose source no longer contains a 40-hex token or a literal placeholder marker.

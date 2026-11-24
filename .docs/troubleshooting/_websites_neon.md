@@ -216,11 +216,11 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 160 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 159 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Connect a Next.js app to Lakebase Postgres on Neon, query it from a Server Component, a Server Action, and a Route Handler, develop on a branch, deploy, and add the rest of your backend
-- [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
-- [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Learn how to connect to Neon from Drizzle
+- [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Create a Neon project, link it with neon link, and query Lakebase Postgres through Prisma 7 with the Neon driver adapter
+- [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Create a Node.js project, link it with neon link, and query Lakebase Postgres through Drizzle ORM with node-postgres
 - [Neon integration guides](https://neon.com/docs/guides/integrations.md): Find setup instructions for connecting Neon to platforms and services.
 - [Integrating Neon with Vercel](https://neon.com/docs/guides/vercel-overview.md): Choose the right connection path
 - [Integrating with Neon](https://neon.com/docs/guides/platform-integration-overview.md): Choose the right integration path for your platform or application
