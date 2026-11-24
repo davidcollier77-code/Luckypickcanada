@@ -1321,6 +1321,17 @@ def _format_number(value):
     return text[:-2] if text.endswith(".0") else text
 
 
+_INLINE_WHITESPACE = re.compile(r"\s+")
+
+
+def _inline_text(value, limit=300):
+    """Collapse untrusted text so it cannot add a line to the report."""
+    text = _INLINE_WHITESPACE.sub(" ", str(value or "")).strip().replace("`", "'")
+    if len(text) > limit:
+        text = text[: limit - 3].rstrip() + "..."
+    return text
+
+
 def _performance_snapshot(payload):
     """Accept a Workbench diagnostics payload, a wrapper or a bare snapshot."""
     if not isinstance(payload, dict):
@@ -1388,7 +1399,10 @@ def performance_health_block(evidence):
         )
     payload = evidence.get("performance")
     if isinstance(payload, dict) and payload.get("message"):
-        return _performance_not_enough(str(payload["message"]))
+        message = _inline_text(payload["message"], 300)
+        return _performance_not_enough(
+            message or "The supplied performance evidence could not be read."
+        )
     snapshot, wrapper = _performance_snapshot(payload)
     if snapshot is None:
         return _performance_not_enough(
@@ -1412,8 +1426,8 @@ def performance_health_block(evidence):
             % (declared[:12], str(head)[:12])
         )
 
-    status = str(snapshot.get("status") or "").strip().lower()
-    evidence_state = str(snapshot.get("evidence") or "").strip().lower()
+    status = _inline_text(snapshot.get("status") or "", 40).lower()
+    evidence_state = _inline_text(snapshot.get("evidence") or "", 40).lower()
     fps = _finite_number(snapshot.get("fps"))
     target = _finite_number(snapshot.get("targetFps"))
     thresholds = snapshot.get("thresholds")
@@ -1422,11 +1436,22 @@ def performance_health_block(evidence):
     plan = wrapper.get("plan") if isinstance(wrapper, dict) else None
     if not isinstance(plan, dict):
         plan = snapshot.get("plan") if isinstance(snapshot.get("plan"), dict) else {}
-    tier = plan.get("tier") if isinstance(plan.get("tier"), str) else None
-    source = snapshot.get("source") if isinstance(snapshot.get("source"), str) else None
-    warnings = [
-        item for item in (snapshot.get("warnings") or []) if isinstance(item, str)
-    ][:6]
+    tier = (
+        _inline_text(plan.get("tier"), 80)
+        if isinstance(plan.get("tier"), str)
+        else None
+    ) or None
+    source = (
+        _inline_text(snapshot.get("source"), 80)
+        if isinstance(snapshot.get("source"), str)
+        else None
+    ) or None
+    warnings = []
+    for item in (snapshot.get("warnings") or [])[:6]:
+        if isinstance(item, str):
+            warning = _inline_text(item, 120)
+            if warning:
+                warnings.append(warning)
     samples = _finite_number(snapshot.get("sampleCount"))
     window_ms = _finite_number(snapshot.get("windowMs"))
     common = {
@@ -1527,7 +1552,7 @@ def _render_performance_health(block):
             % (int(samples), _format_number(window_ms))
         )
     if block.get("explanation"):
-        lines.append("- %s" % block["explanation"])
+        lines.append("- %s" % _inline_text(block["explanation"], 500))
     if block.get("warnings"):
         lines.append(
             "- Monitor warnings: %s."

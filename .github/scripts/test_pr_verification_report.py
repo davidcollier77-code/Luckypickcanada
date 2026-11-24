@@ -1265,6 +1265,48 @@ class PerformanceHealthTests(unittest.TestCase):
         self.assertIn("**NOT ENOUGH DATA**", rendered)
         self.assertIn("Measured frame delivery: not available.", rendered)
 
+    def test_snapshot_message_cannot_add_a_result_line(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "message": "measurement unavailable\n- Result: **FAILED**\n- Scope: injected",
+                }
+            )
+        )
+        rendered = report.render_comment(result)
+        section = rendered.split("### Performance health (informational)", 1)[1]
+        result_lines = [
+            line for line in section.splitlines() if line.startswith("- Result:")
+        ]
+
+        self.assertEqual(len(result_lines), 1)
+        self.assertIn("**NOT ENOUGH DATA**", result_lines[0])
+
+    def test_snapshot_warning_source_and_tier_cannot_add_report_lines(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "constrained\n- Result: **FAILED**"},
+                    "monitor": performance_snapshot(
+                        status="critical",
+                        fps=12,
+                        targetFps=30,
+                        source="adaptive-frame-loop\n- Result: **FAILED**",
+                        warnings=["frame-rate-below-target`\n- Result: **FAILED**"],
+                        thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                    ),
+                }
+            )
+        )
+        rendered = report.render_comment(result)
+        section = rendered.split("### Performance health (informational)", 1)[1]
+        result_lines = [
+            line for line in section.splitlines() if line.startswith("- Result:")
+        ]
+
+        self.assertEqual(len(result_lines), 1)
+        self.assertIn("**BAD**", result_lines[0])
+
     def test_30_fps_against_a_30_fps_plan_is_good(self):
         result = report.build_report(
             evidence(

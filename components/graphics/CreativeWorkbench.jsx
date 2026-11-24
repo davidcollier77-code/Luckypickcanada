@@ -80,7 +80,7 @@ export default function CreativeWorkbench() {
   statusRef.current = status;
 
   const [inspector, setInspector] = useState('{}');
-  const [performance, setPerformance] = useState(null);
+  const [performanceDiagnostics, setPerformanceDiagnostics] = useState(null);
 
   const applyState = useCallback((next) => {
     stateRef.current = next;
@@ -533,7 +533,7 @@ export default function CreativeWorkbench() {
     const update = () => {
       const next = getState();
       setInspector(JSON.stringify(next, null, 2));
-      setPerformance(next.diagnostics);
+      setPerformanceDiagnostics(next.diagnostics);
     };
     update();
     const interval = setInterval(update, 600);
@@ -717,38 +717,38 @@ await __creativeWorkbench.capture()`}
             <dl className="mt-2 space-y-1">
               <div className="flex justify-between gap-3">
                 <dt>Monitor</dt>
-                <dd className="text-slate-200">{performance?.monitor?.status ?? '—'}</dd>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.status ?? '—'}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Measured FPS</dt>
                 <dd className="text-slate-200">
-                  {performance?.monitor?.fps != null ? performance.monitor.fps : '—'}
+                  {performanceDiagnostics?.monitor?.fps != null ? performanceDiagnostics.monitor.fps : '—'}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Plan target</dt>
                 <dd className="text-slate-200">
-                  {performance?.monitor?.targetFps
-                    ? `${performance.monitor.targetFps} fps`
+                  {performanceDiagnostics?.monitor?.targetFps
+                    ? `${performanceDiagnostics.monitor.targetFps} fps`
                     : '—'}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Plan tier</dt>
-                <dd className="text-slate-200">{performance?.plan?.tier ?? '—'}</dd>
+                <dd className="text-slate-200">{performanceDiagnostics?.plan?.tier ?? '—'}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Evidence</dt>
-                <dd className="text-slate-200">{performance?.monitor?.evidence ?? '—'}</dd>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.evidence ?? '—'}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Source</dt>
-                <dd className="text-slate-200">{performance?.monitor?.source ?? '—'}</dd>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.source ?? '—'}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Warnings</dt>
                 <dd className="text-right text-slate-200">
-                  {performance?.monitor?.warnings?.join(', ') || 'none'}
+                  {performanceDiagnostics?.monitor?.warnings?.join(', ') || 'none'}
                 </dd>
               </div>
             </dl>
