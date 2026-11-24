@@ -1310,7 +1310,12 @@ def _finite_number(value):
     """Return a finite float, or None for anything the report cannot trust."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-    number = float(value)
+    try:
+        # An oversized int raises OverflowError instead of returning inf, so an
+        # untrusted snapshot must not be able to reach the formatter with it.
+        number = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
     if number != number or number in (float("inf"), float("-inf")):
         return None
     return number
@@ -1361,6 +1366,10 @@ def _performance_not_enough(explanation, **details):
         "commit_pinned": False,
     }
     block.update(details)
+    # This helper always means "not enough data"; optional fields may be filled
+    # in, but a caller can never turn it into a measured outcome.
+    block["outcome"] = PERFORMANCE_NOT_ENOUGH_DATA
+    block["explanation"] = explanation
     return block
 
 
@@ -1374,17 +1383,32 @@ def _performance_explanation(outcome, fps, target, thresholds):
             _format_number(target),
         )
     if outcome == PERFORMANCE_NEEDS_ATTENTION:
-        if healthy is not None:
+        if healthy is not None and fps < healthy:
             return (
                 "Measured delivery is %.1f fps, below the %s fps healthy floor for the %s fps plan."
                 % (fps, _format_number(healthy), _format_number(target))
             )
+        if target is not None:
+            # The monitor also strains on p95 frame time and long frames while
+            # the rate is still above the floor, so the sentence must not
+            # claim an fps shortfall that did not happen.
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were exceeded (see monitor warnings such as frame-time-p95-high or "
+                "long-frame-ratio-high)." % (fps, _format_number(target))
+            )
         return "Measured delivery is below the healthy band for the active plan."
     if outcome == PERFORMANCE_BAD:
-        if strained is not None:
+        if strained is not None and fps < strained:
             return (
                 "Measured delivery is %.1f fps, below the %s fps critical floor for the %s fps plan."
                 % (fps, _format_number(strained), _format_number(target))
+            )
+        if target is not None:
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were critically exceeded (see monitor warnings such as "
+                "frame-time-p95-high or long-frame-ratio-high)." % (fps, _format_number(target))
             )
         return "Measured delivery is below the critical band for the active plan."
     return ""
@@ -1447,7 +1471,12 @@ def performance_health_block(evidence):
         else None
     ) or None
     warnings = []
-    for item in (snapshot.get("warnings") or [])[:6]:
+    raw_warnings = snapshot.get("warnings")
+    if not isinstance(raw_warnings, (list, tuple)):
+        # A malformed warnings field is decoration, not a measurement; ignore it
+        # rather than failing the whole report.
+        raw_warnings = []
+    for item in raw_warnings[:6]:
         if isinstance(item, str):
             warning = _inline_text(item, 120)
             if warning:
@@ -1855,7 +1884,15 @@ def main(argv=None):
 
     try:
         report = build_report(evidence)
-    except (OSError, json.JSONDecodeError, ReportError, scope.ScopeError) as error:
+    except (
+        OSError,
+        json.JSONDecodeError,
+        ReportError,
+        scope.ScopeError,
+        OverflowError,
+        TypeError,
+        ValueError,
+    ) as error:
         print("PR verification report could not be built: %s" % error, file=sys.stderr)
         return 2
 

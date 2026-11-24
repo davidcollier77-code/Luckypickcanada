@@ -443,6 +443,17 @@ describe('monitor preservation guards', () => {
     expect(monitorSource).not.toMatch(/requestAnimationFrame|setInterval|setTimeout|addEventListener/);
   });
 
+  it('keeps the Workbench diagnostics state from shadowing the frame clock', async () => {
+    const workbenchSource = readSource('components/graphics/CreativeWorkbench.jsx');
+
+    // The frame callback reads the global performance clock, so a local binding
+    // of the same name shadows it and throws on every frame.
+    expect(workbenchSource).not.toMatch(/\b(?:const|let|var)\s+\[\s*performance\b/);
+    expect(workbenchSource).not.toMatch(/\bsetPerformance\b/);
+    expect(workbenchSource).toContain('performanceDiagnostics');
+    expect(workbenchSource).toContain("typeof performance !== 'undefined'");
+  });
+
   it('leaves the cosmic engine local quality step untouched', async () => {
     const engineSource = readSource('components/cosmic-event-engine.js');
 

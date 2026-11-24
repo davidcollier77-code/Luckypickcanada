@@ -1364,6 +1364,79 @@ class PerformanceHealthTests(unittest.TestCase):
         self.assertEqual(
             result["performance_health"]["outcome"], report.PERFORMANCE_NEEDS_ATTENTION
         )
+        self.assertIn(
+            "below the 25 fps healthy floor", result["performance_health"]["explanation"]
+        )
+
+    def test_a_strained_frame_time_verdict_does_not_claim_an_fps_floor(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="strained",
+                    fps=40,
+                    targetFps=30,
+                    warnings=["frame-time-p95-high"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NEEDS_ATTENTION)
+        self.assertNotIn("below the", block["explanation"])
+        self.assertIn("frame-time", block["explanation"])
+        self.assertIn("30 fps plan", block["explanation"])
+
+    def test_a_critical_frame_time_verdict_does_not_claim_an_fps_floor(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=40,
+                    targetFps=30,
+                    warnings=["frame-time-p95-high", "long-frame-ratio-high"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_BAD)
+        self.assertNotIn("below the", block["explanation"])
+        self.assertIn("critically exceeded", block["explanation"])
+
+    def test_a_malformed_snapshot_field_never_breaks_the_report(self):
+        cases = (
+            {"warnings": 7},
+            {"warnings": True},
+            {"warnings": {"first": "frame-rate-below-target"}},
+            {"fps": 10**400},
+            {"sampleCount": 10**400},
+            {"windowMs": -(10**400)},
+            {"thresholds": {"healthyFps": 10**400, "strainedFps": -(10**400)}},
+        )
+        for overrides in cases:
+            with self.subTest(overrides=overrides):
+                result = report.build_report(
+                    evidence(performance=performance_snapshot(**overrides))
+                )
+                self.assertEqual(len(result["categories"]), 7)
+                self.assertIn(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_OUTCOMES,
+                )
+                report.render_comment(result)
+
+    def test_the_not_enough_helper_cannot_report_a_measured_outcome(self):
+        block = report._performance_not_enough(
+            "no data",
+            outcome=report.PERFORMANCE_GOOD,
+            warnings=["frame-rate-below-target"],
+        )
+
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertEqual(block["explanation"], "no data")
+        self.assertEqual(block["warnings"], ["frame-rate-below-target"])
 
     def test_paused_idle_and_unmeasured_snapshots_are_not_judged(self):
         cases = (
@@ -1474,6 +1547,40 @@ class PerformanceHealthTests(unittest.TestCase):
 
         self.assertIn("**GOOD**", rendered)
         self.assertIn("58.4 fps against a 60 fps plan target", rendered)
+        self.assertIn("Commit binding: not supplied", rendered)
+
+    def test_cli_degrades_a_malformed_snapshot_instead_of_crashing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            pr = os.path.join(folder, "pr.json")
+            files = os.path.join(folder, "files.json")
+            performance = os.path.join(folder, "performance.json")
+            comment = os.path.join(folder, "comment.md")
+            with open(pr, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["pull_request"], handle)
+            with open(files, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["files"], handle)
+            with open(performance, "w", encoding="utf-8") as handle:
+                json.dump(performance_snapshot(fps=10**400, warnings=7), handle)
+
+            status = report.main(
+                [
+                    "--pull-request",
+                    pr,
+                    "--files",
+                    files,
+                    "--owner",
+                    OWNER,
+                    "--performance",
+                    performance,
+                    "--comment",
+                    comment,
+                ]
+            )
+            self.assertEqual(status, 0)
+            with open(comment, encoding="utf-8") as handle:
+                rendered = handle.read()
+
+        self.assertIn("**NOT ENOUGH DATA**", rendered)
 
 
 class WorkflowContractTests(unittest.TestCase):
