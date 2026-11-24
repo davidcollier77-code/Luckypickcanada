@@ -551,6 +551,11 @@ export function describeRenderBudget({
     if (resolvedAssessment.capabilityTier === CAPABILITY_TIER.CONSTRAINED) {
       limitedBy.push('capability');
     }
+    // `resolveRenderQuality` also honours a constrained graphics profile. If the
+    // cached assessment has not caught up with that profile, a constrained
+    // render would otherwise have no stated cause; report the capability path
+    // rather than an empty explanation.
+    if (limitedBy.length === 0) limitedBy.push('capability');
   } else {
     if (backingStore.active) limitedBy.push('surface');
     if (coarsePointerDensity.active) limitedBy.push('legacy-pointer-density');

@@ -130,6 +130,29 @@ describe('observational frame monitor', () => {
     });
   });
 
+  it('does not count a brief hidden suspension as delivered frame time', async () => {
+    const adaptive = await loadModule();
+    const harness = createHarness(adaptive);
+
+    harness.run(0, 4_200, 16.667);
+    expect(harness.monitor.snapshot().status).toBe('healthy');
+
+    // The tab is hidden for 600 ms. rAF is suspended, so no callback reports
+    // the hidden state; the first timestamp after the resume is 600 ms late.
+    harness.setClock(4_800);
+    harness.monitor.record(4_800);
+
+    const resumed = harness.monitor.snapshot();
+    expect(resumed).toMatchObject({
+      status: 'warming',
+      lastResetReason: 'gap',
+      sampleCount: 0,
+    });
+
+    harness.run(4_816.667, 8_400, 16.667);
+    expect(harness.monitor.snapshot().status).toBe('healthy');
+  });
+
   it('resets while hidden and again when the page becomes visible', async () => {
     const adaptive = await loadModule();
     const harness = createHarness(adaptive);
@@ -214,10 +237,16 @@ describe('monitor preservation guards', () => {
   it('samples existing loops and adds no scheduler or listener', async () => {
     const adaptiveSource = readSource('app/lib/adaptive-performance.js');
     const engineSource = readSource('components/cosmic-event-engine.js');
-    const monitorSource = adaptiveSource.slice(
-      adaptiveSource.indexOf('Observational frame-delivery monitor'),
-      adaptiveSource.indexOf('Animation frame governor'),
-    );
+    const startIndex = adaptiveSource.indexOf('Observational frame-delivery monitor');
+    const endIndex = adaptiveSource.indexOf('Animation frame governor');
+
+    // Fail loudly if a marker is renamed or reordered, so the scheduler guard
+    // below can never pass vacuously on an empty slice.
+    expect(startIndex).toBeGreaterThan(-1);
+    expect(endIndex).toBeGreaterThan(startIndex);
+
+    const monitorSource = adaptiveSource.slice(startIndex, endIndex);
+    expect(monitorSource.trim().length).toBeGreaterThan(0);
 
     expect(adaptiveSource).toContain('recordFrameSample(stamp)');
     expect(engineSource).toContain('recordFrameSample(timestamp)');

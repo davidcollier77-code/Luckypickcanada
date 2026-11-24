@@ -89,11 +89,17 @@ export const PERFORMANCE_STATUS = Object.freeze({
   CRITICAL: 'critical',
 });
 
+// A rAF suspension produces no callback while the document is hidden, so the
+// hidden/visible branches cannot observe it. On resume the elapsed delta would
+// otherwise enter the sample window as a very slow frame and could report a
+// healthy stream as strained or critical. An interval beyond 250 ms (more than
+// seven 30 fps frame periods) is therefore an interruption, not delivered
+// cadence, and resets the window instead of being measured as a frame.
 const FRAME_MONITOR = Object.freeze({
   windowMs: 1_500,
   warmupMs: 2_000,
   minimumSamples: 4,
-  gapResetMs: 1_000,
+  gapResetMs: 250,
   duplicateSampleMs: 1,
   evaluationIntervalMs: 250,
   hysteresisMs: 1_000,
@@ -250,19 +256,23 @@ export function classifyNetwork(network = DEFAULT_NETWORK) {
 /**
  * Reads device hints. `deviceMemory` and `hardwareConcurrency` are coarse
  * privacy-reduced values and are absent in several browsers, so absent values
- * stay `null` and are treated as capable.
+ * stay `null` and are treated as capable. An explicitly injected source
+ * bypasses the shared caches; omitting it uses them.
  *
  * @param {{ navigatorObject?: Navigator|null, windowObject?: Window|null }} [sources]
  * @returns {typeof DEFAULT_DEVICE}
  */
-export function readDeviceState({ navigatorObject = getNavigator(), windowObject = getWindow() } = {}) {
-  const defaultSources = navigatorObject === getNavigator() && windowObject === getWindow();
-  const assessment = defaultSources
-    ? getDeviceAssessment()
-    : getDeviceAssessment({ navigatorObject });
-  const display = defaultSources
-    ? getDisplayDemand()
-    : getDisplayDemand({ windowObject });
+export function readDeviceState({ navigatorObject, windowObject } = {}) {
+  // Presence of an argument, not object identity, decides whether to bypass the
+  // shared cache. Comparing against fresh `getNavigator()`/`getWindow()` calls
+  // would silently follow a reassigned global and pick the wrong branch.
+  const injectedNavigator = navigatorObject !== undefined;
+  const injectedWindow = windowObject !== undefined;
+  const assessment = injectedNavigator
+    ? getDeviceAssessment({ navigatorObject })
+    : getDeviceAssessment();
+  const display = injectedWindow ? getDisplayDemand({ windowObject }) : getDisplayDemand();
+  const resolvedWindow = injectedWindow ? windowObject : getWindow();
 
   return {
     memoryGb: assessment.memoryGb,
@@ -271,8 +281,8 @@ export function readDeviceState({ navigatorObject = getNavigator(), windowObject
     viewportWidth: display.width,
     viewportHeight: display.height,
     reducedMotion:
-      mediaQueryMatches(windowObject, MEDIA_QUERIES.reducedMotion) || prefersReducedMotion(),
-    coarsePointer: mediaQueryMatches(windowObject, MEDIA_QUERIES.coarsePointer),
+      mediaQueryMatches(resolvedWindow, MEDIA_QUERIES.reducedMotion) || prefersReducedMotion(),
+    coarsePointer: mediaQueryMatches(resolvedWindow, MEDIA_QUERIES.coarsePointer),
   };
 }
 

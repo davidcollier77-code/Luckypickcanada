@@ -201,8 +201,9 @@ place and are named by `describeRenderBudget()`.
 and by the cosmic engine's existing frame function. It uses rAF timestamps, so
 several loops painting one frame collapse into one sample. The monitor reports
 `warming`, `healthy`, `strained` or `critical` from a 1.5 s window after a 2 s
-warm-up, with a 1 s status hysteresis and resets for hidden pages, gaps, target
-changes and manual diagnostics. It adds no frame loop, timer or listener and
+warm-up, with a 1 s status hysteresis and resets for hidden pages, interrupted
+frame delivery (including sub-second background suspensions), target changes
+and manual diagnostics. It adds no frame loop, timer or listener and
 never changes quality, cadence or loading. The cosmic engine's local 42/18 fps
 quality step remains independent.
 

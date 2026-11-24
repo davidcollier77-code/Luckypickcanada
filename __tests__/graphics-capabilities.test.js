@@ -532,6 +532,37 @@ describe('render budget diagnostics', () => {
     expect(budget.limitedBy).toEqual(['policy']);
   });
 
+  it('names a cause when a stale assessment disagrees with the constrained profile', async () => {
+    const graphics = await loadModule();
+    const display = graphics.getDisplayDemand({
+      viewportWidth: 1920,
+      viewportHeight: 1080,
+      pixelRatio: 1,
+    });
+    const quality = graphics.resolveRenderQuality({
+      profileTier: 'constrained',
+      saveData: false,
+      deviceMemory: 8,
+      hardwareConcurrency: 8,
+      viewportWidth: 1920,
+      viewportHeight: 1080,
+      pixelRatio: 1,
+      coarsePointer: false,
+    });
+
+    const budget = graphics.describeRenderBudget({
+      quality,
+      assessment: graphics.assessDeviceCapabilities({ memoryGb: 8, cores: 8 }),
+      display,
+      saveData: false,
+      coarsePointer: false,
+    });
+
+    expect(budget.render.tier).toBe('constrained');
+    expect(budget.assessment.capabilityTier).toBe('high');
+    expect(budget.limitedBy).toEqual(['capability']);
+  });
+
   it('reports a genuinely moderate device as capability-limited', async () => {
     const budget = await budgetFor({
       width: 412,
