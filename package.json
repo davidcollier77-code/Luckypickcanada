@@ -15,7 +15,7 @@
   "dependencies": {
     "@marsidev/react-turnstile": "1.6.1",
     "@neondatabase/serverless": "^1.2.0",
-    "@stripe/stripe-js": "^9.13.0",
+    "@stripe/stripe-js": "^10.3.0",
     "@upstash/redis": "^1.38.3",
     "canvas-confetti": "^1.9.4",
     "eslint": "^10.14.0",
