@@ -166,6 +166,24 @@ describe('device evaluation', () => {
     expect(device.cores).toBeNull();
   });
 
+  it('honours explicitly injected sources instead of the shared globals', async () => {
+    stubDevice({ memory: 1, cores: 2 });
+    const adaptive = await loadModule();
+
+    const device = adaptive.readDeviceState({
+      navigatorObject: { deviceMemory: 8, hardwareConcurrency: 8 },
+      windowObject: { innerWidth: 1_024, innerHeight: 768, devicePixelRatio: 2 },
+    });
+
+    expect(device).toMatchObject({
+      memoryGb: 8,
+      cores: 8,
+      viewportWidth: 1_024,
+      viewportHeight: 768,
+      pixelRatio: 2,
+    });
+  });
+
   it('reports browser features through the existing lazy probes', async () => {
     const adaptive = await loadModule();
     const capabilities = adaptive.getAdaptiveCapabilities();
@@ -177,6 +195,16 @@ describe('device evaluation', () => {
     });
     expect(capabilities.renderQuality).toHaveProperty('tier');
     expect(capabilities.plan).toHaveProperty('frameRate');
+    expect(capabilities.device).toMatchObject({
+      capabilityTier: expect.stringMatching(/^(constrained|balanced|high)$/),
+      confidence: expect.stringMatching(/^(high|partial|none)$/),
+    });
+    expect(capabilities.display).toMatchObject({
+      demand: expect.stringMatching(/^(light|moderate|heavy|extreme)$/),
+    });
+    expect(capabilities.graphics).toHaveProperty('webgl2');
+    expect(capabilities.renderBudget.limitedBy).toBeInstanceOf(Array);
+    expect(capabilities.performance.status).toBe('warming');
   });
 });
 
