@@ -108,7 +108,7 @@ Agent Skills, MCP integrations, vector search, and tools for building AI-powered
 - [Set up other agents and MCP clients](https://neon.com/docs/ai/connect-mcp-clients-to-neon.md): Install Neon's agent skills and the Neon MCP Server in Devin Desktop, Cline, Zed, Gemini CLI, Kiro, Kimi Code, and other agents
 - [Agent Skills](https://neon.com/docs/ai/agent-skills.md): Teach your AI coding assistant how to work with Neon
 - [Set up your AI agent for Neon](https://neon.com/docs/ai/agent-setup.md): Connect Neon to your coding agent or chat app
-- [Lakebase Search](https://neon.com/docs/ai/lakebase-search.md): Scalable vector and full-text search for Postgres
+- [Lakebase Search](https://neon.com/docs/ai/lakebase-search.md): A search system built for agents, running inside your Postgres database
 - [Database versioning with snapshots](https://neon.com/docs/ai/ai-database-versioning.md): How AI agents and codegen platforms implement database version control using snapshots and preview branches
 
 ## Auth
@@ -292,7 +292,6 @@ Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701,
 - [HIPAA Compliance](https://neon.com/docs/security/hipaa.md)
 - [Security overview](https://neon.com/docs/security/security-overview.md)
 - [Security reporting](https://neon.com/docs/security/security-reporting.md)
-- [SOC 3 report](https://neon.com/docs/security/soc-3-report.md): Controls relevant to security, availability, and confidentiality
 
 ## Extensions
 
