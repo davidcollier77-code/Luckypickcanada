@@ -1,3 +1,9 @@
+## 2026-11-24 — ChatGPT browser-access priority (spec 216)
+
+- Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.
+- Updated the governance regression assertions and active Spec Kit feature pointer. The separate shared requirement for automatic PR-checker Playwright workflows remains unchanged; no application code, browser workflow, dependencies, visuals or deployment settings changed.
+- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. ChatGPT-only repository rules prohibit running project tests or scripts in this environment; current-head GitHub checks remain pending.
+
 ## 2026-11-24 — Device capability and observational frame monitoring (spec 215)
 
 - Kept the 3 MP backing-store gate and the coarse-pointer DPR-3 gate deferred and active. Recorded the exact matrix and the visual/GPU delta of removing only the surface gate (particle scale 0.85 → 1.2, spark budget 560 → 900, point budget 24,000 → 44,000, mesh 160 → 192, lights 2 → 4, plus a MacBook DPR cap 1.6 → 2 and +56.25% backing pixels) and of removing both gates (S23/iPhone DPR cap 1.6 → 2, meter dust 32 → 46, geometry +28.6%–71.4%).
