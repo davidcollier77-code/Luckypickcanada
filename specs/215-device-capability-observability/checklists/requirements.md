@@ -30,6 +30,16 @@
 - [x] Success criteria are measurable
 - [x] The render-gate boundary is explicit and deferred work is separated
 
+## Follow-up validation (2026-11-24)
+
+- [x] A 30 fps plan is compared with its own target, not a fixed 60 fps expectation
+- [x] Paused, hidden, idle, insufficient and unavailable states are distinguished from degradation
+- [x] Per-source sampling keeps one monitor and avoids duplicate loops, timers or listeners
+- [x] The Workbench exposes the diagnostics through its existing inspection state
+- [x] The report block is informational, uses the four required outcomes and never changes PR status
+- [x] No CI job, Playwright shard, browser session, screenshot or new dependency is added
+- [x] Visuals, animation timing, audio, navigation and the adaptive plan are unchanged
+
 ## Notes
 
 - The specification intentionally keeps render-quality output unchanged. The gate-removal impact is documented in `research.md`, not implemented.

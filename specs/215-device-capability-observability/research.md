@@ -59,6 +59,41 @@ Performance delta: the same cosmic +83.3% point budget and +56.5% live-particle 
 - `components/lucky-meter-ornament-engine.js` is not a production consumer. Its `ornament` counts are documented diagnostics, not a live visual change.
 - Homepage starfield, Aurora and other surfaces that call `getGraphicsProfile()` use the separate profile cap and are unaffected by these render-quality gates.
 
+## Follow-up research: plan-aware monitor thresholds and report evidence
+
+The original monitor compared every window with a fixed 60 fps policy. That
+contradicts the adaptive plan's own 30 fps target: 30 fps delivery produced a
+33 ms p95 and could never satisfy a 28 ms bound, so a constrained device stayed
+`strained` permanently. The correction scales the existing policy rather than
+inventing a second one.
+
+| Active plan target | Healthy at | Strained from | Critical below | Healthy p95 | Critical p95 | Long frame |
+| --- | --- | --- | --- | --- | --- | --- |
+| 60 fps | 50 fps | 50 fps | 28 fps | 28 ms | 70 ms | 50 ms |
+| 30 fps | 25 fps | 25 fps | 14 fps | 56 ms | 140 ms | 100 ms |
+| Paused (0 fps) | n/a | n/a | n/a | n/a | n/a | n/a |
+
+The scale factor is `targetFps / 60` for frame-rate floors and the inverse for
+time budgets. Long frames use the scaled budget, so ordinary 33 ms frames are
+not counted as long under a 30 fps plan. A delivered 12 fps remains below the
+14 fps critical floor and is reported as degradation, not as plan compliance.
+
+Evidence classes are `measured`, `insufficient`, `unavailable`, `paused` and
+`stale`. `paused` is a plan decision (hidden page, reduced motion or a zero frame
+rate); `idle` is a source that stopped delivering while the plan still expects
+frames. Neither is a health verdict, so the PR report maps them to `NOT ENOUGH
+DATA`. Samples are kept per source because the shared loop can be throttled to
+the plan cadence while the cosmic engine is not; one combined window would let a
+fast source hide a slow one.
+
+Runtime evidence in CI: the existing Application Verification and Playwright
+shards do not measure frame delivery, and adding a measurement would be new
+verification work whose result depends on the runner's software renderer. The
+report therefore has no runtime snapshot in CI and says `NOT ENOUGH DATA`. A
+future local or device capture can be supplied through the report's optional
+`--performance` input; that adds no workflow step. The block is informational
+and has no effect on the seven categories or the PR status.
+
 ## Evidence limits
 
 The VM has no hardware GPU, no Samsung Internet and no Safari/Firefox mobile hardware. The budget deltas above are exact from source; frame-time and thermal effects are not measured. The observational monitor is the instrument for collecting that evidence later.

@@ -70,6 +70,41 @@ Extend the two existing layers rather than adding a third. `app/lib/graphics-cap
 - Snapshot fields: `status`, `statusSince`, `fps`, `averageFrameMs`, `p95FrameMs`, `longFrameRatio`, `sampleCount`, `windowMs`, `warmupRemainingMs`, `lastResetReason`, `updatedAt` and `target`.
 - The cosmic engine's local 42/18 fps step stays exactly as it is and is not wired to the new status.
 
+### Priority 4 — plan-aware diagnostics and reporting (approved follow-up)
+
+The original monitor compared every source with a fixed 60 fps policy, so a
+30 fps plan could never report `healthy`, and a paused or stopped renderer kept
+a stale verdict. The follow-up corrects the reference instead of adding a new
+system.
+
+- Thresholds scale from `FRAME_MONITOR.referenceFps` to the plan's `frameRate`:
+  60 fps keeps 50/28 fps and 28/70 ms; 30 fps becomes 25/14 fps and 56/140 ms with
+  a 100 ms long-frame budget. Paused plans have no health thresholds.
+- Statuses gain `paused` (plan intentionally expects no frames) and `idle` (the
+  plan expects frames but the observed source stopped). `evidence` is
+  `measured`, `insufficient`, `unavailable`, `paused` or `stale`; only
+  `measured` can support a health claim.
+- One monitor keeps a window per existing source (`adaptive-frame-loop` and
+  `cosmic-engine`). The aggregate reports the weakest measured source, so a fast
+  loop cannot mask a slow one, and the snapshot lists every source separately.
+- A plan-target change resets the source window. Gap, hidden, target and manual
+  resets and the existing 1 s hysteresis are preserved.
+- `getPerformanceDiagnostics()` returns `{ plan, monitor, device }` for the
+  Creative Workbench; `getState()` becomes version 2 and keeps its existing
+  fields. A compact Performance health panel shows status, fps, target, tier,
+  evidence, source and warnings.
+- The PR report renders one informational block after the header and before the
+  category table. `performance_health_block()` accepts a bare snapshot, a
+  Workbench diagnostics payload or a `{ performance }` wrapper. `GOOD` requires
+  `evidence: measured`, a healthy classification, a numeric fps/target and
+  consistency with the reported healthy floor. `strained` maps to `NEEDS
+  ATTENTION` and `critical` to `BAD`; every other state, a malformed payload or a
+  snapshot pinned to another commit maps to `NOT ENOUGH DATA`. The block is not a
+  category and never influences `overall_status`.
+- An optional `--performance <json>` input lets a submitter supply the snapshot.
+  No workflow step is added: CI has no runtime frame sample, so the live report
+  truthfully shows `NOT ENOUGH DATA`.
+
 ### Preserved invariants
 
 - `resolveRenderQuality()` output is byte-for-byte identical.
@@ -100,7 +135,10 @@ app/lib/adaptive-performance.js           device-state delegation, capabilities,
 components/cosmic-event-engine.js         one frame-timestamp sample call
 __tests__/graphics-capabilities.test.js   characterization plus new probes
 __tests__/adaptive-performance.test.js    capability shape and frame-loop integration
-__tests__/performance-monitor.test.js     monitor windows, resets, hysteresis
+__tests__/performance-monitor.test.js     plan-aware thresholds, pauses, idle sources, per-source windows
+components/graphics/CreativeWorkbench.jsx  diagnostics payload and Performance health panel
+.github/scripts/pr_verification_report.py  informational performance-health block and --performance
+.github/scripts/test_pr_verification_report.py  report-block regression tests
 docs/graphics-rendering-architecture.md   capability and monitoring contract
 memory-bank/activeContext.md              current feature state
 memory-bank/techContext.md                remove stale renderer references

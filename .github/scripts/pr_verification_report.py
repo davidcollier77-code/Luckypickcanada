@@ -1290,6 +1290,317 @@ def governance_category(evidence):
 
 
 # ---------------------------------------------------------------------------
+# Informational performance health (outside the seven checker categories)
+# ---------------------------------------------------------------------------
+
+PERFORMANCE_GOOD = "GOOD"
+PERFORMANCE_NEEDS_ATTENTION = "NEEDS ATTENTION"
+PERFORMANCE_BAD = "BAD"
+PERFORMANCE_NOT_ENOUGH_DATA = "NOT ENOUGH DATA"
+PERFORMANCE_OUTCOMES = (
+    PERFORMANCE_GOOD,
+    PERFORMANCE_NEEDS_ATTENTION,
+    PERFORMANCE_BAD,
+    PERFORMANCE_NOT_ENOUGH_DATA,
+)
+PERFORMANCE_MEASURED_STATUSES = ("healthy", "strained", "critical")
+
+
+def _finite_number(value):
+    """Return a finite float, or None for anything the report cannot trust."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        # An oversized int raises OverflowError instead of returning inf, so an
+        # untrusted snapshot must not be able to reach the formatter with it.
+        number = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None
+    return number
+
+
+def _format_number(value):
+    text = "%.1f" % value
+    return text[:-2] if text.endswith(".0") else text
+
+
+_INLINE_WHITESPACE = re.compile(r"\s+")
+
+
+def _inline_text(value, limit=300):
+    """Collapse untrusted text so it cannot add a line to the report."""
+    text = _INLINE_WHITESPACE.sub(" ", str(value or "")).strip().replace("`", "'")
+    if len(text) > limit:
+        text = text[: limit - 3].rstrip() + "..."
+    return text
+
+
+def _performance_snapshot(payload):
+    """Accept a Workbench diagnostics payload, a wrapper or a bare snapshot."""
+    if not isinstance(payload, dict):
+        return None, None
+    for key in ("monitor", "performance"):
+        nested = payload.get(key)
+        if isinstance(nested, dict):
+            return nested, payload
+    if "status" in payload or "evidence" in payload:
+        return payload, payload
+    return None, payload
+
+
+def _performance_not_enough(explanation, **details):
+    block = {
+        "outcome": PERFORMANCE_NOT_ENOUGH_DATA,
+        "explanation": explanation,
+        "measured_fps": None,
+        "target_fps": None,
+        "tier": None,
+        "status": None,
+        "evidence": None,
+        "source": None,
+        "warnings": [],
+        "samples": None,
+        "window_ms": None,
+        "commit_pinned": False,
+    }
+    block.update(details)
+    # This helper always means "not enough data"; optional fields may be filled
+    # in, but a caller can never turn it into a measured outcome.
+    block["outcome"] = PERFORMANCE_NOT_ENOUGH_DATA
+    block["explanation"] = explanation
+    return block
+
+
+def _performance_explanation(outcome, fps, target, thresholds):
+    healthy = _finite_number(thresholds.get("healthyFps")) if isinstance(thresholds, dict) else None
+    strained = (
+        _finite_number(thresholds.get("strainedFps")) if isinstance(thresholds, dict) else None
+    )
+    if outcome == PERFORMANCE_GOOD:
+        return "Measured delivery is inside the healthy band for the active %s fps plan." % (
+            _format_number(target),
+        )
+    if outcome == PERFORMANCE_NEEDS_ATTENTION:
+        if healthy is not None and fps < healthy:
+            return (
+                "Measured delivery is %.1f fps, below the %s fps healthy floor for the %s fps plan."
+                % (fps, _format_number(healthy), _format_number(target))
+            )
+        if target is not None:
+            # The monitor also strains on p95 frame time and long frames while
+            # the rate is still above the floor, so the sentence must not
+            # claim an fps shortfall that did not happen.
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were exceeded (see monitor warnings such as frame-time-p95-high or "
+                "long-frame-ratio-high)." % (fps, _format_number(target))
+            )
+        return "Measured delivery is below the healthy band for the active plan."
+    if outcome == PERFORMANCE_BAD:
+        if strained is not None and fps < strained:
+            return (
+                "Measured delivery is %.1f fps, below the %s fps critical floor for the %s fps plan."
+                % (fps, _format_number(strained), _format_number(target))
+            )
+        if target is not None:
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were critically exceeded (see monitor warnings such as "
+                "frame-time-p95-high or long-frame-ratio-high)." % (fps, _format_number(target))
+            )
+        return "Measured delivery is below the critical band for the active plan."
+    return ""
+
+
+def performance_health_block(evidence):
+    """Build one informational snapshot; it never affects the seven categories."""
+    if "performance" not in evidence or evidence.get("performance") is None:
+        return _performance_not_enough(
+            "No runtime frame-delivery snapshot was supplied. CI does not measure frame "
+            "delivery, so no performance claim is made."
+        )
+    payload = evidence.get("performance")
+    if isinstance(payload, dict) and payload.get("message"):
+        message = _inline_text(payload["message"], 300)
+        return _performance_not_enough(
+            message or "The supplied performance evidence could not be read."
+        )
+    snapshot, wrapper = _performance_snapshot(payload)
+    if snapshot is None:
+        return _performance_not_enough(
+            "The supplied performance evidence does not contain a monitor snapshot."
+        )
+
+    head = _head_sha(evidence)
+    declared = None
+    for source in (snapshot, wrapper or {}):
+        if not isinstance(source, dict):
+            continue
+        for key in ("headSha", "head_sha", "commit"):
+            if source.get(key):
+                declared = str(source[key]).strip()
+                break
+        if declared:
+            break
+    if declared and head and declared.lower() != str(head).lower():
+        return _performance_not_enough(
+            "The snapshot was captured at %s, not at the current report head %s."
+            % (declared[:12], str(head)[:12])
+        )
+
+    status = _inline_text(snapshot.get("status") or "", 40).lower()
+    evidence_state = _inline_text(snapshot.get("evidence") or "", 40).lower()
+    fps = _finite_number(snapshot.get("fps"))
+    target = _finite_number(snapshot.get("targetFps"))
+    thresholds = snapshot.get("thresholds")
+    if not isinstance(thresholds, dict):
+        thresholds = {}
+    plan = wrapper.get("plan") if isinstance(wrapper, dict) else None
+    if not isinstance(plan, dict):
+        plan = snapshot.get("plan") if isinstance(snapshot.get("plan"), dict) else {}
+    tier = (
+        _inline_text(plan.get("tier"), 80)
+        if isinstance(plan.get("tier"), str)
+        else None
+    ) or None
+    source = (
+        _inline_text(snapshot.get("source"), 80)
+        if isinstance(snapshot.get("source"), str)
+        else None
+    ) or None
+    warnings = []
+    raw_warnings = snapshot.get("warnings")
+    if not isinstance(raw_warnings, (list, tuple)):
+        # A malformed warnings field is decoration, not a measurement; ignore it
+        # rather than failing the whole report.
+        raw_warnings = []
+    for item in raw_warnings[:6]:
+        if isinstance(item, str):
+            warning = _inline_text(item, 120)
+            if warning:
+                warnings.append(warning)
+    samples = _finite_number(snapshot.get("sampleCount"))
+    window_ms = _finite_number(snapshot.get("windowMs"))
+    common = {
+        "target_fps": target,
+        "tier": tier,
+        "status": status or None,
+        "evidence": evidence_state or None,
+        "source": source,
+        "warnings": warnings,
+        "samples": samples,
+        "window_ms": window_ms,
+        "commit_pinned": bool(declared),
+    }
+
+    if status == "paused":
+        return _performance_not_enough(
+            "The active plan intentionally pauses frame delivery (%s), so there is no "
+            "health measurement." % (", ".join(warnings) or "plan paused"),
+            **common
+        )
+    if status == "idle":
+        return _performance_not_enough(
+            "The plan expects frames but the observed renderer stopped delivering them, so "
+            "there is no current measurement.",
+            **common
+        )
+    if status == "warming":
+        return _performance_not_enough(
+            "The monitor has not completed a sufficient measurement window yet.",
+            **common
+        )
+    if status not in PERFORMANCE_MEASURED_STATUSES or evidence_state != "measured":
+        return _performance_not_enough(
+            "The snapshot does not contain a measured frame-delivery classification.",
+            **common
+        )
+    if fps is None or fps <= 0 or target is None or target <= 0:
+        return _performance_not_enough(
+            "The snapshot does not contain a usable measured frame rate and plan target.",
+            **common
+        )
+
+    healthy_floor = _finite_number(thresholds.get("healthyFps"))
+    if status == "healthy" and healthy_floor is not None and fps < healthy_floor - 0.05:
+        return _performance_not_enough(
+            "The snapshot is internally inconsistent: it reports healthy at %.1f fps, below "
+            "its own %s fps healthy floor." % (fps, _format_number(healthy_floor)),
+            **common
+        )
+    if status == "healthy" and healthy_floor is None and fps < target * 0.5:
+        return _performance_not_enough(
+            "The snapshot is internally inconsistent: it reports healthy at %.1f fps for a "
+            "%s fps plan." % (fps, _format_number(target)),
+            **common
+        )
+
+    outcome = {
+        "healthy": PERFORMANCE_GOOD,
+        "strained": PERFORMANCE_NEEDS_ATTENTION,
+        "critical": PERFORMANCE_BAD,
+    }[status]
+    block = dict(common)
+    block.update(
+        {
+            "outcome": outcome,
+            "measured_fps": fps,
+            "explanation": _performance_explanation(outcome, fps, target, thresholds),
+        }
+    )
+    return block
+
+
+def _render_performance_health(block):
+    lines = ["### Performance health (informational)", ""]
+    lines.append("- Result: **%s**" % block.get("outcome"))
+    fps = block.get("measured_fps")
+    target = block.get("target_fps")
+    if fps is not None and target:
+        measurement = "%.1f fps against a %s fps plan target" % (fps, _format_number(target))
+        if block.get("tier"):
+            measurement += " (tier `%s`)" % block["tier"]
+        lines.append("- Measured frame delivery: %s." % measurement)
+    else:
+        lines.append("- Measured frame delivery: not available.")
+    if block.get("status"):
+        monitor = "- Monitor state: `%s`; evidence `%s`" % (
+            block["status"],
+            block.get("evidence") or "unknown",
+        )
+        if block.get("source"):
+            monitor += "; source `%s`" % block["source"]
+        lines.append(monitor + ".")
+    samples = block.get("samples")
+    window_ms = block.get("window_ms")
+    if samples and window_ms:
+        lines.append(
+            "- Samples: %d across the %s ms measurement window."
+            % (int(samples), _format_number(window_ms))
+        )
+    if block.get("explanation"):
+        lines.append("- %s" % _inline_text(block["explanation"], 500))
+    if block.get("warnings"):
+        lines.append(
+            "- Monitor warnings: %s."
+            % ", ".join("`%s`" % warning for warning in block["warnings"])
+        )
+    if block.get("outcome") != PERFORMANCE_NOT_ENOUGH_DATA and not block.get("commit_pinned"):
+        lines.append(
+            "- Commit binding: not supplied; the snapshot is informational and is not "
+            "treated as current-head verification."
+        )
+    lines.append(
+        "- Scope: informational only. It does not change the seven checker categories, "
+        "their gates or the PR status, and CI does not measure frame delivery."
+    )
+    lines.append("")
+    return lines
+
+
+# ---------------------------------------------------------------------------
 # Report assembly and rendering
 # ---------------------------------------------------------------------------
 
@@ -1334,6 +1645,7 @@ def build_report(evidence):
         "overall_status": overall,
         "categories": categories,
         "supporting_checks": _supporting_rows(evidence),
+        "performance_health": performance_health_block(evidence),
     }
 
 
@@ -1365,12 +1677,22 @@ def render_comment(report, limit=LIMIT):
         "- Current PR head: `%s`" % head,
         "- Overall: **%s**" % report.get("overall_status"),
         "",
-        "The report is updated in place on every run and always describes the current head. "
-        "A result from an earlier commit is never accepted as proof that the latest commit passed.",
-        "",
-        "| # | Checker category | Status | Summary |",
-        "| --- | --- | --- | --- |",
     ]
+    lines.extend(
+        _render_performance_health(
+            report.get("performance_health")
+            or _performance_not_enough("No performance snapshot was available.")
+        )
+    )
+    lines.extend(
+        [
+            "The report is updated in place on every run and always describes the current head. "
+            "A result from an earlier commit is never accepted as proof that the latest commit passed.",
+            "",
+            "| # | Checker category | Status | Summary |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
     for index, item in enumerate(report["categories"], start=1):
         lines.append(
             "| %d | %s | **%s** | %s |"
@@ -1442,9 +1764,19 @@ def render_comment(report, limit=LIMIT):
             "- Pull request: #%s" % report.get("pr_number"),
             "- Current PR head: `%s`" % head,
             "",
-            "| # | Checker category | Status | Summary |",
-            "| --- | --- | --- | --- |",
         ]
+        lines.extend(
+            _render_performance_health(
+                report.get("performance_health")
+                or _performance_not_enough("No performance snapshot was available.")
+            )
+        )
+        lines.extend(
+            [
+                "| # | Checker category | Status | Summary |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
         for index, item in enumerate(trimmed, start=1):
             lines.append(
                 "| %d | %s | **%s** | %s |"
@@ -1499,6 +1831,10 @@ def build_parser():
     parser.add_argument(
         "--dependency-alerts", help="open Dependabot dependency advisory records JSON"
     )
+    parser.add_argument(
+        "--performance",
+        help="optional runtime frame-delivery snapshot JSON (informational)",
+    )
     parser.add_argument("--comment", help="write the sticky pull request comment here")
     parser.add_argument("--summary", help="append the report to this Markdown file")
     parser.add_argument("--json", help="write the machine-readable report here")
@@ -1537,10 +1873,26 @@ def main(argv=None):
         evidence["dependabot_alerts"] = {
             "message": "the Dependabot alerts could not be read"
         }
+    if args.performance:
+        performance = _read_optional(args.performance)
+        if performance is None:
+            evidence["performance"] = {
+                "message": "the supplied performance snapshot could not be read"
+            }
+        else:
+            evidence["performance"] = performance
 
     try:
         report = build_report(evidence)
-    except (OSError, json.JSONDecodeError, ReportError, scope.ScopeError) as error:
+    except (
+        OSError,
+        json.JSONDecodeError,
+        ReportError,
+        scope.ScopeError,
+        OverflowError,
+        TypeError,
+        ValueError,
+    ) as error:
         print("PR verification report could not be built: %s" % error, file=sys.stderr)
         return 2
 

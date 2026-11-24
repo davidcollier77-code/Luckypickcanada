@@ -8,8 +8,9 @@
  * runtime a production feature uses, then exposes everything an AI coding agent
  * needs for visual QA before a pull request is approved:
  *
- *   - `window.__creativeWorkbench.getState()` — plan, surface kind, audio
- *     envelope, fps, canvas size, capture and error state as plain JSON;
+ *   - `window.__creativeWorkbench.getState()` — plan, adaptive performance
+ *     diagnostics, surface kind, audio envelope, fps, canvas size, capture and
+ *     error state as plain JSON;
  *   - `selectScene`, `setTier`, `setSeed`, `setReducedMotion` — deterministic
  *     harness state, independent of the machine's OS preferences;
  *   - `setTime(seconds)` — freeze the scene clock and repaint one composed frame,
@@ -27,6 +28,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getPerformanceDiagnostics } from '../../app/lib/adaptive-performance.js';
 import { getHtml5AnalyserCount } from '../../app/lib/graphics/audio-reactivity.js';
 import { createCreativeSurface } from '../../app/lib/graphics/runtime.js';
 import { buildWorkbenchScene } from '../../app/lib/graphics/workbench-runtime.js';
@@ -78,6 +80,7 @@ export default function CreativeWorkbench() {
   statusRef.current = status;
 
   const [inspector, setInspector] = useState('{}');
+  const [performanceDiagnostics, setPerformanceDiagnostics] = useState(null);
 
   const applyState = useCallback((next) => {
     stateRef.current = next;
@@ -436,7 +439,7 @@ export default function CreativeWorkbench() {
     }
 
     return {
-      version: 1,
+      version: 2,
       ready: readyRef.current,
       sceneId: current.sceneId,
       label: activeScene?.label ?? null,
@@ -449,6 +452,7 @@ export default function CreativeWorkbench() {
       surface: currentStatus.surface,
       surfaceKind: currentStatus.kind,
       plan: resolveWorkbenchPlan(current.sceneId, current),
+      diagnostics: getPerformanceDiagnostics(),
       envelope: envelope
         ? {
             available: envelope.available === true,
@@ -481,7 +485,7 @@ export default function CreativeWorkbench() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const api = {
-      version: 1,
+      version: 2,
       get ready() {
         return readyRef.current;
       },
@@ -526,7 +530,11 @@ export default function CreativeWorkbench() {
   ]);
 
   useEffect(() => {
-    const update = () => setInspector(JSON.stringify(getState(), null, 2));
+    const update = () => {
+      const next = getState();
+      setInspector(JSON.stringify(next, null, 2));
+      setPerformanceDiagnostics(next.diagnostics);
+    };
     update();
     const interval = setInterval(update, 600);
     return () => clearInterval(interval);
@@ -702,6 +710,48 @@ await __creativeWorkbench.capture()`}
             <pre className="mt-2 max-h-[420px] overflow-auto rounded-lg bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-300">
               {inspector}
             </pre>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
+            <h2 className="text-sm font-semibold text-white">Performance health</h2>
+            <dl className="mt-2 space-y-1">
+              <div className="flex justify-between gap-3">
+                <dt>Monitor</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.status ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Measured FPS</dt>
+                <dd className="text-slate-200">
+                  {performanceDiagnostics?.monitor?.fps != null ? performanceDiagnostics.monitor.fps : '—'}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Plan target</dt>
+                <dd className="text-slate-200">
+                  {performanceDiagnostics?.monitor?.targetFps != null
+                    ? `${performanceDiagnostics.monitor.targetFps} fps`
+                    : '—'}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Plan tier</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.plan?.tier ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Evidence</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.evidence ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Source</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.source ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Warnings</dt>
+                <dd className="text-right text-slate-200">
+                  {performanceDiagnostics?.monitor?.warnings?.join(', ') || 'none'}
+                </dd>
+              </div>
+            </dl>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
