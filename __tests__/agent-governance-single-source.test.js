@@ -195,9 +195,13 @@ describe('compact single-source agent governance', () => {
     expect(start).toBeGreaterThanOrEqual(0);
     expect(section).toContain('follow the ChatGPT Library startup instructions and run the prescribed startup preflight');
     expect(section).toContain('check the current relevant GitHub files');
-    expect(section).toContain('ChatGPT cannot execute Playwright.');
-    expect(section).toContain('use Browserless sparingly');
+    expect(section).toContain('For browser testing, ChatGPT must first use its Python Playwright setup');
+    expect(section).toContain('configured through the ChatGPT startup script in the ChatGPT Library');
+    expect(section).toContain('existing Python Playwright async API and installed Chromium');
+    expect(section).toContain('use Browserless as the fallback');
     expect(section).toContain('Firecrawl only if Browserless is unavailable or not working');
+    expect(section).toContain('Do not treat retrieval as interactive browser testing.');
+    expect(section).not.toContain('ChatGPT cannot execute Playwright.');
     expect(section).toContain('must not use the repository Playwright CLI');
     expect(section).toContain('or Crawlbase');
     expect(section).toContain('Never run Freebuff\'s startup sequence');
