@@ -74,14 +74,13 @@ describe('observational frame monitor', () => {
 
     harness.run(0, 1_200, 16.667);
 
-    expect(harness.monitor.snapshot()).toMatchObject({
-      status: 'warming',
-      evidence: 'unavailable',
-      lastResetReason: 'startup',
-      fps: null,
-      source: 'adaptive-frame-loop',
-      version: 2,
-    });
+    const snapshot = harness.monitor.snapshot();
+    expect(snapshot.status).toBe('warming');
+    expect(snapshot.evidence).toBe('unavailable');
+    expect(snapshot.lastResetReason).toBe('startup');
+    expect(snapshot.fps).toBeNull();
+    expect(snapshot.source).toBe('adaptive-frame-loop');
+    expect(snapshot.version).toBe(2);
   });
 
   it('reports insufficient samples until a full window is measured', async () => {
