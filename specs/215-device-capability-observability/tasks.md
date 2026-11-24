@@ -65,6 +65,19 @@
 - [X] T023 Review the complete diff against the QA checker requirements, `PR_SUBMISSION.md` and the 495 MiB cap.
 - [X] T024 Commit and open one regular, non-draft, unmerged PR with the exact declarations and QA scope JSON.
 
+## Phase 6: Plan-Aware Diagnostics Follow-up
+
+- [X] T025 [US3] Scale monitor thresholds from the active plan's frame rate and keep the 60 fps policy as the reference.
+- [X] T026 [US3] Add `paused`/`idle` statuses, evidence classes, per-source windows and plan-target resets without adding a loop, timer or listener.
+- [X] T027 [US4] Tag the cosmic engine samples as `cosmic-engine` and keep its local 42/18 fps step unchanged.
+- [X] T028 [US4] Add `getPerformanceDiagnostics()`, expose it as `getState().diagnostics` (version 2) and add the Workbench Performance health panel.
+- [X] T029 [US4] Add the informational report block, outcome mapping, consistency guards and optional `--performance` input.
+- [X] T030 [P] Add monitor tests for 30 fps plan health, 12 fps degradation, pauses, idleness, insufficient evidence, plan changes, per-source aggregation and snapshot shape.
+- [X] T031 [P] Add report tests for GOOD/NEEDS ATTENTION/BAD/NOT ENOUGH DATA, consistency guards, commit pinning, the seven-category contract and the CLI input.
+- [X] T032 [P] Update the rendering architecture, Workbench README, PR_SUBMISSION report note, specs and Memory Bank.
+- [X] T033 Run the focused monitor/report suites, `tsc --noEmit`, the full Vitest suite and `./freebuff-verify.sh`; record the build size.
+- [X] T034 Open the follow-up as a new PR from current `main` (the predecessor PR #2023 was already merged), with the complete QA scope, and inspect the refreshed current-head report.
+
 ## Verification Record
 
 - Focused suites: `__tests__/graphics-capabilities.test.js` 35 tests, `__tests__/adaptive-performance.test.js` 41 tests, `__tests__/performance-monitor.test.js` 12 tests and `__tests__/resource-readiness.test.js` 45 tests passed.
@@ -73,6 +86,14 @@
 - `SPEC_KIT_BASE_REF=6afebdfa ./freebuff-verify.sh`: exit 0; 471 Python checker tests and 51 docs tests passed.
 - Production build: 434,126,848 bytes (414.02 MiB), strictly below the 495 MiB cap.
 - Hardware GPU, Samsung Internet and Safari/Firefox mobile evidence are unavailable in this VM; the monitor thresholds remain provisional. Visual output is unchanged by design and no manual browser pass is claimed.
+
+### Follow-up verification (2026-11-24, rebased onto main 28f74865)
+
+- `__tests__/performance-monitor.test.js`: 21 tests passed, including 30 fps plan health, 12 fps critical delivery, paused/hidden, idle/stale, insufficient samples, plan changes and per-source aggregation.
+- `test_pr_verification_report.py`: the full report suite passed with the new performance-health tests (GOOD, NEEDS ATTENTION, BAD, NOT ENOUGH DATA, consistency and commit-pin guards, seven-category contract and CLI input).
+- `SPEC_KIT_BASE_REF=28f74865 ./freebuff-verify.sh` passed the Spec Kit gate and all 483 Python checker tests, then stopped at the full unit suite: 1,243 of 1,244 Vitest tests passed. The single failure is `__tests__/lucky-meter-stage.test.jsx` ("centres the selected fallback chamber on the pointer and drains that chamber"), which asserts `from 0deg` in a serialized inline gradient. It reproduces on untouched `main` at 28f74865 and is caused by the jsdom 31.0.1 bump (`9a2ab166`) normalizing the default `from 0deg` out of the CSS text; it is unrelated to this change and the test was not modified.
+- Remaining gate steps run directly on the same tree: `pnpm exec tsc --noEmit` exit 0; `pnpm run build` exit 0; combined `.next + public` 497,774,592 bytes (474.71 MiB), strictly below 495 MiB; `node scripts/test-refresh-docs.js` 51 passed.
+- The report block remains `NOT ENOUGH DATA` in CI because the workflow supplies no runtime frame sample; a local or device snapshot can be supplied with `--performance`. Playwright/Visual QA, the OpenNext artifact build, DevSkim and deployment remain CI-owned.
 
 ## Dependencies
 

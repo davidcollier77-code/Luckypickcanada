@@ -60,6 +60,34 @@ The site reports whether recent frame delivery is warming up, healthy, strained 
 5. **Given** a hidden document or a long gap, **When** recording resumes, **Then** the window resets to `warming` instead of reporting the gap as sustained poor performance.
 6. **Given** the viewport or DPR changes, **When** the next sample arrives, **Then** the monitor resets its window because the rendering target changed.
 
+---
+
+### User Story 4 - Plan-Aware Performance Health (Priority: P3)
+
+A maintainer needs to know whether recent frame delivery is genuinely degraded
+or merely following the active adaptive plan. The monitor compares each
+rendering source with the plan's own target and exposes the same facts in the
+Creative Workbench and, when runtime evidence exists, in the PR verification
+report.
+
+**Why this priority**: A fixed 60 fps expectation reports a healthy 30 fps plan
+as permanent strain, which makes the diagnostics unusable and would hide real
+degradation.
+
+**Independent Test**: Drive the monitor with a 30 fps plan at 30, 20 and 12 fps,
+then with paused, hidden and stopped renderers. Healthy, strained, critical and
+non-degradation states follow the plan-aware thresholds; the Workbench state
+reports the same source-level facts.
+
+**Acceptance Scenarios**:
+
+1. **Given** a 30 fps plan, **When** delivery is 30 fps, **Then** status is `healthy` and no warning is raised.
+2. **Given** a 30 fps plan, **When** delivery is 12 fps, **Then** status is `critical` because it is below the plan's critical floor.
+3. **Given** a hidden page or reduced motion, **When** no frames are expected, **Then** status is `paused`, never `critical`.
+4. **Given** the plan expects frames but a source stops painting, **When** the snapshot is read after the stale interval, **Then** status is `idle` with `stale` evidence.
+5. **Given** two rendering sources with different delivery rates, **When** one is slow, **Then** the aggregate reports the slower source instead of masking it.
+6. **Given** no runtime evidence, **When** the PR report is built, **Then** its performance-health block says `NOT ENOUGH DATA` and the seven categories are unchanged.
+
 ### Edge Cases
 
 - `navigator.deviceMemory` and `navigator.hardwareConcurrency` may be absent, zero, non-numeric or privacy-reduced. Absence stays `null`.
@@ -91,6 +119,13 @@ The site reports whether recent frame delivery is warming up, healthy, strained 
 - **FR-013**: Site-wide priming MUST continue through the existing root `ResourceReadiness` → adaptive plan → device-state chain. No new provider, preloader, renderer or tier vocabulary may be introduced.
 - **FR-014**: All new readers MUST be safe on the server and with partial browser APIs; unsupported APIs return permissive defaults instead of throwing.
 - **FR-015**: Rare fallback cases (no WebGL2, no hardware hints, hidden page, long gap, multiple frame loops) MUST have automated coverage.
+- **FR-016**: Monitor thresholds MUST scale from the active plan's frame rate (`60`, `30` or paused) instead of a fixed 60 fps expectation.
+- **FR-017**: The monitor MUST report `paused` when the plan intentionally expects no frames and `idle` when an expected source stops delivering, and MUST expose `measured`, `insufficient`, `unavailable`, `paused` and `stale` evidence.
+- **FR-018**: Monitor samples MUST be attributed to their existing rendering source within the one shared monitor; the aggregate MUST NOT let a fast source mask a slower one.
+- **FR-019**: `getPerformanceDiagnostics()` MUST expose the active plan, the monitor snapshot including sources and warnings, and the device assessment, and the Creative Workbench MUST expose it through the existing inspection state.
+- **FR-020**: The PR verification report MUST carry one informational performance-health block outside the seven categories, using exactly `GOOD`, `NEEDS ATTENTION`, `BAD` or `NOT ENOUGH DATA`, and MUST NOT change category statuses or the overall PR status.
+- **FR-021**: The report MUST require measured evidence for `GOOD` and MUST report `NOT ENOUGH DATA` for pauses, idle sources, insufficient samples, unavailable or inconsistent evidence, and snapshots pinned to another commit.
+- **FR-022**: The report MUST NOT add CI jobs, Playwright shards, browser sessions, screenshots or new measurement infrastructure.
 
 ### Key Entities
 
@@ -110,6 +145,10 @@ The site reports whether recent frame delivery is warming up, healthy, strained 
 - **SC-005**: The monitor reports `warming` during the warm-up window and reaches the expected status for synthetic 60 fps, 30 fps and below-critical delivery.
 - **SC-006**: No new animation frame loop, timer or event listener is present in the observational monitor.
 - **SC-007**: Existing graphics, adaptive-performance and meter tests continue to pass, and the production build remains strictly below 495 MiB.
+- **SC-008**: A 30 fps plan reporting 30 fps is `healthy`, 20 fps is `strained` and 12 fps is `critical` in the focused monitor tests.
+- **SC-009**: Hidden, reduced-motion, stopped and insufficient-sample sources never produce `strained` or `critical`.
+- **SC-010**: The Creative Workbench `getState()` exposes `version: 2` and a `diagnostics` object with the plan, monitor and device assessment.
+- **SC-011**: The report's seven category identifiers, statuses and overall-status derivation are unchanged by the presence or absence of performance evidence.
 
 ## Assumptions
 

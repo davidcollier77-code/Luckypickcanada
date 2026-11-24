@@ -34,7 +34,7 @@ import {
   prefersReducedMotion,
   watchContextLoss,
 } from '../app/lib/graphics-capabilities';
-import { recordFrameSample } from '../app/lib/adaptive-performance';
+import { FRAME_SOURCES, recordFrameSample } from '../app/lib/adaptive-performance';
 import {
   POINT_FRAGMENT_SHADER,
   POINT_VERTEX_SHADER,
@@ -1830,8 +1830,10 @@ export function createCosmicEventEngine({
     if (destroyed || contextLost) return;
 
     // Observation only. The engine's own 42/18 fps quality step below remains
-    // independent; this timestamp never changes its cadence or artwork.
-    recordFrameSample(timestamp);
+    // independent; this timestamp never changes its cadence or artwork. The
+    // source tag keeps this cinematic series separate from the shared loop so
+    // one fast renderer cannot mask a slow one in the combined diagnostics.
+    recordFrameSample(timestamp, FRAME_SOURCES.COSMIC);
 
     if (!lastFrame) lastFrame = timestamp;
     // Two clocks. The timeline must follow real time so the reveal keeps its

@@ -197,15 +197,31 @@ place and are named by `describeRenderBudget()`.
 
 ### Observational frame monitor (spec 215)
 
-`recordFrameSample(timestamp)` is called by the existing shared animation loop
-and by the cosmic engine's existing frame function. It uses rAF timestamps, so
-several loops painting one frame collapse into one sample. The monitor reports
-`warming`, `healthy`, `strained` or `critical` from a 1.5 s window after a 2 s
-warm-up, with a 1 s status hysteresis and resets for hidden pages, interrupted
-frame delivery (including sub-second background suspensions), target changes
-and manual diagnostics. It adds no frame loop, timer or listener and
-never changes quality, cadence or loading. The cosmic engine's local 42/18 fps
-quality step remains independent.
+`recordFrameSample(timestamp, source)` is called by the existing shared animation
+loop (`adaptive-frame-loop`) and by the cosmic engine's existing frame function
+(`cosmic-engine`). It uses rAF timestamps, so several loops painting one frame
+collapse into one sample, and samples are kept per rendering source inside the
+one monitor so a fast renderer cannot hide a slower one. The monitor compares
+delivery with the active adaptive plan: a 60 fps target keeps the 50/28 fps and
+28/70 ms policy, while a 30 fps plan is healthy at 25 fps or better, strained
+below 25 fps and critical below 14 fps, with 56/140 ms p95 and 100 ms long-frame
+budgets. Status is `warming`, `healthy`, `strained`, `critical`, `paused` (the
+plan intentionally asks for no frames, for example a hidden page or reduced
+motion) or `idle` (the plan expects frames but the observed source stopped
+delivering them). `evidence` distinguishes `measured`, `insufficient`,
+`unavailable`, `paused` and `stale`, so no evidence is reported as degradation.
+The monitor uses a 1.5 s window after a 2 s warm-up, 250 ms evaluation, 1 s
+status hysteresis and resets for hidden pages, interrupted delivery, target
+changes, plan-target changes and manual diagnostics.
+
+It adds no frame loop, timer or listener and never changes quality, cadence or
+loading. The cosmic engine's local 42/18 fps quality step remains independent.
+`getPerformanceDiagnostics()` returns the active plan, the monitor snapshot and
+the device assessment together; the Creative Workbench exposes it through
+`window.__creativeWorkbench.getState().diagnostics`. The PR verification
+report's informational performance-health block reads the same snapshot only
+when runtime evidence is supplied and reports `NOT ENOUGH DATA` otherwise; it is
+outside the seven checker categories and never changes the PR status.
 
 ## Adaptive performance layer
 

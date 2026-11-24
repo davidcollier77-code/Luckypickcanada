@@ -1188,6 +1188,252 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("Statuses are exactly **PASSED**, **FAILED**, **WARNING** and **NOT RUN**", submission)
 
 
+def performance_snapshot(**overrides):
+    value = {
+        "version": 2,
+        "status": "healthy",
+        "evidence": "measured",
+        "fps": 58.4,
+        "targetFps": 60,
+        "sampleCount": 91,
+        "windowMs": 1500,
+        "source": "adaptive-frame-loop",
+        "warnings": [],
+        "thresholds": {
+            "targetFps": 60,
+            "healthyFps": 50,
+            "strainedFps": 28,
+            "healthyP95Ms": 28,
+            "criticalP95Ms": 70,
+            "longFrameMs": 50,
+        },
+        "plan": {"tier": "high", "frameRate": 60},
+    }
+    value.update(overrides)
+    return value
+
+
+def performance_thresholds(target, healthy, strained, p95, critical, long_frame):
+    return {
+        "targetFps": target,
+        "healthyFps": healthy,
+        "strainedFps": strained,
+        "healthyP95Ms": p95,
+        "criticalP95Ms": critical,
+        "longFrameMs": long_frame,
+    }
+
+
+class PerformanceHealthTests(unittest.TestCase):
+    def test_the_snapshot_is_informational_and_never_adds_a_category(self):
+        baseline = report.build_report(evidence())
+        result = report.build_report(evidence(performance=performance_snapshot()))
+
+        self.assertEqual(len(result["categories"]), 7)
+        self.assertEqual(
+            [item["id"] for item in result["categories"]],
+            [item["id"] for item in baseline["categories"]],
+        )
+        self.assertEqual(result["overall_status"], baseline["overall_status"])
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+
+    def test_a_bad_runtime_snapshot_does_not_change_the_pr_status(self):
+        baseline = report.build_report(evidence())
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=12,
+                    targetFps=30,
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_BAD)
+        self.assertEqual(result["overall_status"], baseline["overall_status"])
+
+    def test_missing_evidence_reports_not_enough_data(self):
+        result = report.build_report(evidence())
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertIsNone(block["measured_fps"])
+        self.assertIn("CI does not measure frame delivery", block["explanation"])
+        rendered = report.render_comment(result)
+        self.assertIn("### Performance health (informational)", rendered)
+        self.assertIn("**NOT ENOUGH DATA**", rendered)
+        self.assertIn("Measured frame delivery: not available.", rendered)
+
+    def test_30_fps_against_a_30_fps_plan_is_good(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "constrained", "frameRate": 30},
+                    "monitor": performance_snapshot(
+                        fps=29.8,
+                        targetFps=30,
+                        thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                    ),
+                }
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_GOOD)
+        self.assertEqual(block["measured_fps"], 29.8)
+        self.assertEqual(block["target_fps"], 30)
+        self.assertEqual(block["tier"], "constrained")
+        rendered = report.render_comment(result)
+        self.assertIn("29.8 fps against a 30 fps plan target", rendered)
+
+    def test_12_fps_against_a_30_fps_plan_is_bad(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=12,
+                    targetFps=30,
+                    warnings=["frame-rate-below-target"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_BAD)
+        self.assertIn("below the 14 fps critical floor", block["explanation"])
+        rendered = report.render_comment(result)
+        self.assertIn("**BAD**", rendered)
+        self.assertIn("`frame-rate-below-target`", rendered)
+
+    def test_20_fps_against_a_30_fps_plan_needs_attention(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="strained",
+                    fps=20,
+                    targetFps=30,
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        self.assertEqual(
+            result["performance_health"]["outcome"], report.PERFORMANCE_NEEDS_ATTENTION
+        )
+
+    def test_paused_idle_and_unmeasured_snapshots_are_not_judged(self):
+        cases = (
+            ("paused", "paused"),
+            ("idle", "stale"),
+            ("warming", "insufficient"),
+        )
+        for status, evidence_state in cases:
+            with self.subTest(status=status):
+                result = report.build_report(
+                    evidence(
+                        performance=performance_snapshot(
+                            status=status,
+                            evidence=evidence_state,
+                            fps=None,
+                        )
+                    )
+                )
+                self.assertEqual(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_NOT_ENOUGH_DATA,
+                )
+
+    def test_malformed_or_inconsistent_evidence_is_not_judged(self):
+        payloads = (
+            "not-an-object",
+            42,
+            {},
+            {"monitor": "not-an-object"},
+            {"status": "healthy", "evidence": "measured", "fps": "fast"},
+            {
+                "status": "healthy",
+                "evidence": "measured",
+                "fps": 10,
+                "targetFps": 30,
+                "thresholds": performance_thresholds(30, 25, 14, 56, 140, 100),
+            },
+            {"status": "healthy", "evidence": "insufficient", "fps": 60, "targetFps": 60},
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                result = report.build_report(evidence(performance=payload))
+                self.assertEqual(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_NOT_ENOUGH_DATA,
+                )
+
+    def test_a_snapshot_from_another_commit_is_not_used(self):
+        result = report.build_report(
+            evidence(performance=performance_snapshot(headSha=EARLIER))
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertIn("not at the current report head", block["explanation"])
+
+    def test_a_snapshot_pinned_to_the_current_head_is_accepted(self):
+        result = report.build_report(
+            evidence(performance=performance_snapshot(headSha=HEAD))
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+        self.assertTrue(result["performance_health"]["commit_pinned"])
+
+    def test_the_workbench_diagnostics_payload_is_accepted(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "high", "frameRate": 60},
+                    "monitor": performance_snapshot(),
+                    "device": {"capabilityTier": "high", "confidence": "high"},
+                }
+            )
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+
+    def test_cli_accepts_an_optional_performance_snapshot(self):
+        with tempfile.TemporaryDirectory() as folder:
+            pr = os.path.join(folder, "pr.json")
+            files = os.path.join(folder, "files.json")
+            performance = os.path.join(folder, "performance.json")
+            comment = os.path.join(folder, "comment.md")
+            with open(pr, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["pull_request"], handle)
+            with open(files, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["files"], handle)
+            with open(performance, "w", encoding="utf-8") as handle:
+                json.dump(performance_snapshot(), handle)
+
+            status = report.main(
+                [
+                    "--pull-request",
+                    pr,
+                    "--files",
+                    files,
+                    "--owner",
+                    OWNER,
+                    "--performance",
+                    performance,
+                    "--comment",
+                    comment,
+                ]
+            )
+            self.assertEqual(status, 0)
+            with open(comment, encoding="utf-8") as handle:
+                rendered = handle.read()
+
+        self.assertIn("**GOOD**", rendered)
+        self.assertIn("58.4 fps against a 60 fps plan target", rendered)
+
+
 class WorkflowContractTests(unittest.TestCase):
     def test_report_refreshes_after_owner_approval_comments(self):
         path = os.path.join(

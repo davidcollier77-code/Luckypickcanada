@@ -256,7 +256,7 @@ still measured instead of leaving the visual silently neutral.
 Agents drive the same controls through `window.__creativeWorkbench`:
 
 ```js
-__creativeWorkbench.getState();            // plan, surface, envelope, fps, errors
+__creativeWorkbench.getState();            // plan, diagnostics, surface, envelope, fps, errors
 __creativeWorkbench.listScenes();
 __creativeWorkbench.selectScene('reactive-aurora');
 __creativeWorkbench.setTier('constrained');
@@ -265,6 +265,14 @@ __creativeWorkbench.setTime(2.5);          // deterministic, paused frame
 await __creativeWorkbench.capture();       // { ok, filename, width, height, bytes }
 __creativeWorkbench.readCapture();         // PNG data URL, or null
 ```
+
+`getState()` is version 2. Its `diagnostics` object is the shared adaptive
+payload: `plan` (tier, frame rate, animation budget, reduced-motion/visibility
+and reasons), `monitor` (the plan-aware status, evidence, measured fps, target,
+thresholds, warnings and per-source samples) and `device` (capability tier,
+confidence, unknown signals, memory and cores). The Performance health panel
+shows the same monitor, and a 30 fps adaptive plan is expected to report 30 fps
+as healthy rather than strained.
 
 The route is `/workbench/creative`. It is development only: production answers
 404 unless the deployment sets `CREATIVE_WORKBENCH=1` for a deliberate review
