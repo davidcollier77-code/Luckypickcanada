@@ -1,0 +1,1241 @@
+{
+  "url": "http://127.0.0.1:3100/lucky-meter",
+  "label": "local-production-build",
+  "measuredAt": "2026-11-24T22:37:57.895Z",
+  "method": "runtime-only CSS transition-duration override injected at document start",
+  "profile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "deviceScaleFactor": 3,
+    "isMobile": true,
+    "hasTouch": true,
+    "userAgent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
+  },
+  "simulate": null,
+  "runsPerDuration": 1,
+  "durations": {
+    "150": [
+      {
+        "ok": true,
+        "requested": 150,
+        "simulatedRetain": false,
+        "readyAt": 881,
+        "fallbackRemovedAt": 881,
+        "firstPartialAt": 3185,
+        "opaqueAt": 3289,
+        "transitionEvents": {
+          "transitionrun": 3046,
+          "transitionstart": 3046,
+          "transitionend": 3289
+        },
+        "transitionFrames": 1,
+        "fadeWindowMs": 104,
+        "readyWindowMs": 2407,
+        "emptyStageMs": 2304,
+        "retainedFallbackRemovedAt": null,
+        "fadeLoafCount": 0,
+        "fadeLoafMs": 0,
+        "fadeBlockingMs": 0,
+        "revealLoafs": 0,
+        "revealLoafMs": 0,
+        "revealBlockingMs": 0,
+        "biggestLoafMs": 0,
+        "opacity": "830:0.00 859:0.00 881:0.00 3046:0.00 3185:0.99 3289:1.00 3426:1.00 3549:1.00",
+        "samples": [
+          {
+            "t": 83,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 91,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 192,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 199,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 216,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 233,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 275,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 308,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 355,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 520,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 830,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 859,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 881,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3046,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3185,
+            "opacity": 0.993,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3289,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3426,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3549,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          }
+        ],
+        "loaf": [
+          {
+            "start": 132.5,
+            "duration": 59.30000001192093,
+            "blockingDuration": 0
+          },
+          {
+            "start": 382.30000001192093,
+            "duration": 416.5,
+            "blockingDuration": 365.4
+          }
+        ],
+        "wallClockMs": 3900,
+        "console": [
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x38f4009ea600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x38f4009ea600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x38f4009ea600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x38f4009ea600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+          }
+        ],
+        "pageErrors": [],
+        "captures": [
+          {
+            "target": 0.25,
+            "captured": true,
+            "opacityBefore": 0.971021,
+            "opacityAfter": 1,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/150ms-025.png"
+          },
+          {
+            "target": 0.65,
+            "captured": false
+          }
+        ],
+        "captureSlowmo": 0.05
+      }
+    ],
+    "225": [
+      {
+        "ok": true,
+        "requested": 225,
+        "simulatedRetain": false,
+        "readyAt": 868,
+        "fallbackRemovedAt": 868,
+        "firstPartialAt": 3059,
+        "opaqueAt": 3164,
+        "transitionEvents": {
+          "transitionrun": 2950,
+          "transitionstart": 2950,
+          "transitionend": 3300
+        },
+        "transitionFrames": 1,
+        "fadeWindowMs": 105,
+        "readyWindowMs": 2296,
+        "emptyStageMs": 2191,
+        "retainedFallbackRemovedAt": null,
+        "fadeLoafCount": 0,
+        "fadeLoafMs": 0,
+        "fadeBlockingMs": 0,
+        "revealLoafs": 0,
+        "revealLoafMs": 0,
+        "revealBlockingMs": 0,
+        "biggestLoafMs": 0,
+        "opacity": "811:0.00 834:0.00 868:0.00 2950:0.00 3059:0.82 3164:1.00 3300:1.00 3436:1.00",
+        "samples": [
+          {
+            "t": 87,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 97,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 200,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 207,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 233,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 241,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 280,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 314,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 495,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 811,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 834,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 868,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 2950,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3059,
+            "opacity": 0.82,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3164,
+            "opacity": 0.999,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3300,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3436,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          }
+        ],
+        "loaf": [
+          {
+            "start": 140.5,
+            "duration": 60,
+            "blockingDuration": 0
+          },
+          {
+            "start": 352.69999998807907,
+            "duration": 423,
+            "blockingDuration": 369.8
+          }
+        ],
+        "wallClockMs": 3771,
+        "console": [
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x2dd4009dfe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x2dd4009dfe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x2dd4009dfe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x2dd4009dfe00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+          }
+        ],
+        "pageErrors": [],
+        "captures": [
+          {
+            "target": 0.25,
+            "captured": true,
+            "opacityBefore": 0.816742,
+            "opacityAfter": 1,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/225ms-025.png"
+          },
+          {
+            "target": 0.65,
+            "captured": false
+          }
+        ],
+        "captureSlowmo": 0.05
+      }
+    ],
+    "300": [
+      {
+        "ok": true,
+        "requested": 300,
+        "simulatedRetain": false,
+        "readyAt": 820,
+        "fallbackRemovedAt": 820,
+        "firstPartialAt": 2982,
+        "opaqueAt": 3241,
+        "transitionEvents": {
+          "transitionrun": 820,
+          "transitionstart": 820,
+          "transitionend": 3241
+        },
+        "transitionFrames": 2,
+        "fadeWindowMs": 258,
+        "readyWindowMs": 2421,
+        "emptyStageMs": 2162,
+        "retainedFallbackRemovedAt": null,
+        "fadeLoafCount": 0,
+        "fadeLoafMs": 0,
+        "fadeBlockingMs": 0,
+        "revealLoafs": 0,
+        "revealLoafMs": 0,
+        "revealBlockingMs": 0,
+        "biggestLoafMs": 0,
+        "opacity": "820:0.00 2864:0.00 2982:0.67 3092:0.97 3241:1.00 3370:1.00 3521:1.00",
+        "samples": [
+          {
+            "t": 83,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 94,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 195,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 202,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 218,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 232,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 269,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 304,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 510,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 820,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 2864,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 2982,
+            "opacity": 0.666,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3092,
+            "opacity": 0.969,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3241,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3370,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3521,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          }
+        ],
+        "loaf": [
+          {
+            "start": 136.40000000596046,
+            "duration": 58.69999998807907,
+            "blockingDuration": 0
+          },
+          {
+            "start": 353.2999999821186,
+            "duration": 432.5,
+            "blockingDuration": 378.7
+          }
+        ],
+        "wallClockMs": 3938,
+        "console": [
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x39d4009e3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x39d4009e3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x39d4009e3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x39d4009e3a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+          }
+        ],
+        "pageErrors": [],
+        "captures": [
+          {
+            "target": 0.25,
+            "captured": true,
+            "opacityBefore": 0.682517,
+            "opacityAfter": 0.998294,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/300ms-025.png"
+          },
+          {
+            "target": 0.65,
+            "captured": true,
+            "opacityBefore": 0.998774,
+            "opacityAfter": 1,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/300ms-065.png"
+          }
+        ],
+        "captureSlowmo": 0.05
+      }
+    ],
+    "450": [
+      {
+        "ok": true,
+        "requested": 450,
+        "simulatedRetain": false,
+        "readyAt": 847,
+        "fallbackRemovedAt": 847,
+        "firstPartialAt": 3050,
+        "opaqueAt": 3424,
+        "transitionEvents": {
+          "transitionrun": 2939,
+          "transitionstart": 2939,
+          "transitionend": 3424
+        },
+        "transitionFrames": 3,
+        "fadeWindowMs": 374,
+        "readyWindowMs": 2577,
+        "emptyStageMs": 2202,
+        "retainedFallbackRemovedAt": null,
+        "fadeLoafCount": 0,
+        "fadeLoafMs": 0,
+        "fadeBlockingMs": 0,
+        "revealLoafs": 0,
+        "revealLoafMs": 0,
+        "revealBlockingMs": 0,
+        "biggestLoafMs": 0,
+        "opacity": "802:0.00 824:0.00 847:0.00 2939:0.00 3050:0.43 3157:0.78 3291:0.96 3424:1.00 3567:1.00 3667:1.00 3771:1.00",
+        "samples": [
+          {
+            "t": 99,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 109,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 208,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 215,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 240,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 247,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 286,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 320,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 493,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 802,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 824,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 847,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 2939,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3050,
+            "opacity": 0.429,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3157,
+            "opacity": 0.783,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3291,
+            "opacity": 0.957,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3424,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3567,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3667,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3771,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          }
+        ],
+        "loaf": [
+          {
+            "start": 43.5,
+            "duration": 56.5,
+            "blockingDuration": 0
+          },
+          {
+            "start": 153.30000001192093,
+            "duration": 54.79999998211861,
+            "blockingDuration": 0
+          },
+          {
+            "start": 357,
+            "duration": 411.40000000596046,
+            "blockingDuration": 358.2
+          }
+        ],
+        "wallClockMs": 4187,
+        "console": [
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x170c003d8800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x170c003d8800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x170c003d8800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x170c003d8800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+          }
+        ],
+        "pageErrors": [],
+        "captures": [
+          {
+            "target": 0.25,
+            "captured": true,
+            "opacityBefore": 0.428781,
+            "opacityAfter": 0.897321,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/450ms-025.png"
+          },
+          {
+            "target": 0.65,
+            "captured": true,
+            "opacityBefore": 0.900787,
+            "opacityAfter": 0.991377,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/450ms-065.png"
+          }
+        ],
+        "captureSlowmo": 0.05
+      }
+    ],
+    "600": [
+      {
+        "ok": true,
+        "requested": 600,
+        "simulatedRetain": false,
+        "readyAt": 891,
+        "fallbackRemovedAt": 891,
+        "firstPartialAt": 3178,
+        "opaqueAt": 3719,
+        "transitionEvents": {
+          "transitionrun": 3067,
+          "transitionstart": 3067,
+          "transitionend": 3718
+        },
+        "transitionFrames": 4,
+        "fadeWindowMs": 540,
+        "readyWindowMs": 2827,
+        "emptyStageMs": 2287,
+        "retainedFallbackRemovedAt": null,
+        "fadeLoafCount": 0,
+        "fadeLoafMs": 0,
+        "fadeBlockingMs": 0,
+        "revealLoafs": 0,
+        "revealLoafMs": 0,
+        "revealBlockingMs": 0,
+        "biggestLoafMs": 0,
+        "opacity": "846:0.00 868:0.00 891:0.00 3067:0.00 3178:0.28 3285:0.62 3430:0.85 3574:0.98 3719:1.00 3829:1.00 3933:1.00 4041:1.00",
+        "samples": [
+          {
+            "t": 91,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 102,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 202,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 209,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 229,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 252,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 297,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 334,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 522,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 846,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 868,
+            "opacity": 0,
+            "ready": false,
+            "fallback": true,
+            "retained": false
+          },
+          {
+            "t": 891,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3067,
+            "opacity": 0,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3178,
+            "opacity": 0.283,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3285,
+            "opacity": 0.623,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3430,
+            "opacity": 0.852,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3574,
+            "opacity": 0.977,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3719,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3829,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 3933,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          },
+          {
+            "t": 4041,
+            "opacity": 1,
+            "ready": true,
+            "fallback": false,
+            "retained": false
+          }
+        ],
+        "loaf": [
+          {
+            "start": 139.7999999821186,
+            "duration": 62,
+            "blockingDuration": 2
+          },
+          {
+            "start": 377.19999998807907,
+            "duration": 437.2000000178814,
+            "blockingDuration": 384
+          }
+        ],
+        "wallClockMs": 4380,
+        "console": [
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x36ac009e8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x36ac009e8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x36ac009e8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+          },
+          {
+            "type": "warning",
+            "text": "[.WebGL-0x36ac009e8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+          }
+        ],
+        "pageErrors": [],
+        "captures": [
+          {
+            "target": 0.25,
+            "captured": true,
+            "opacityBefore": 0.314273,
+            "opacityAfter": 0.771778,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/600ms-025.png"
+          },
+          {
+            "target": 0.65,
+            "captured": true,
+            "opacityBefore": 0.776344,
+            "opacityAfter": 0.921912,
+            "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/600ms-065.png"
+          }
+        ],
+        "captureSlowmo": 0.05
+      }
+    ]
+  },
+  "captures": [
+    {
+      "duration": 600,
+      "slowmo": 0.05,
+      "shots": [
+        {
+          "target": 0.25,
+          "captured": true,
+          "opacityBefore": 0.314273,
+          "opacityAfter": 0.771778,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/600ms-025.png"
+        },
+        {
+          "target": 0.65,
+          "captured": true,
+          "opacityBefore": 0.776344,
+          "opacityAfter": 0.921912,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/600ms-065.png"
+        }
+      ]
+    },
+    {
+      "duration": 450,
+      "slowmo": 0.05,
+      "shots": [
+        {
+          "target": 0.25,
+          "captured": true,
+          "opacityBefore": 0.428781,
+          "opacityAfter": 0.897321,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/450ms-025.png"
+        },
+        {
+          "target": 0.65,
+          "captured": true,
+          "opacityBefore": 0.900787,
+          "opacityAfter": 0.991377,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/450ms-065.png"
+        }
+      ]
+    },
+    {
+      "duration": 300,
+      "slowmo": 0.05,
+      "shots": [
+        {
+          "target": 0.25,
+          "captured": true,
+          "opacityBefore": 0.682517,
+          "opacityAfter": 0.998294,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/300ms-025.png"
+        },
+        {
+          "target": 0.65,
+          "captured": true,
+          "opacityBefore": 0.998774,
+          "opacityAfter": 1,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/300ms-065.png"
+        }
+      ]
+    },
+    {
+      "duration": 225,
+      "slowmo": 0.05,
+      "shots": [
+        {
+          "target": 0.25,
+          "captured": true,
+          "opacityBefore": 0.816742,
+          "opacityAfter": 1,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/225ms-025.png"
+        },
+        {
+          "target": 0.65,
+          "captured": false
+        }
+      ]
+    },
+    {
+      "duration": 150,
+      "slowmo": 0.05,
+      "shots": [
+        {
+          "target": 0.25,
+          "captured": true,
+          "opacityBefore": 0.971021,
+          "opacityAfter": 1,
+          "file": "/workspace/chats/850e4bcb82d2f913ce03d90b/specs/217-lucky-meter-reveal-delivery/evidence/fade-visual/150ms-025.png"
+        },
+        {
+          "target": 0.65,
+          "captured": false
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "150": {
+      "runs": 1,
+      "okRuns": 1,
+      "transitionFramesMedian": 1,
+      "transitionFramesRange": [
+        1,
+        1
+      ],
+      "fadeWindowMsMedian": 104,
+      "readyWindowMsMedian": 2407,
+      "emptyStageMsMedian": 2304,
+      "revealBlockingMsMedian": 0,
+      "biggestLoafMsMedian": 0,
+      "fallbackRemovedAtMedian": 881,
+      "firstPartialAtMedian": 3185
+    },
+    "225": {
+      "runs": 1,
+      "okRuns": 1,
+      "transitionFramesMedian": 1,
+      "transitionFramesRange": [
+        1,
+        1
+      ],
+      "fadeWindowMsMedian": 105,
+      "readyWindowMsMedian": 2296,
+      "emptyStageMsMedian": 2191,
+      "revealBlockingMsMedian": 0,
+      "biggestLoafMsMedian": 0,
+      "fallbackRemovedAtMedian": 868,
+      "firstPartialAtMedian": 3059
+    },
+    "300": {
+      "runs": 1,
+      "okRuns": 1,
+      "transitionFramesMedian": 2,
+      "transitionFramesRange": [
+        2,
+        2
+      ],
+      "fadeWindowMsMedian": 258,
+      "readyWindowMsMedian": 2421,
+      "emptyStageMsMedian": 2162,
+      "revealBlockingMsMedian": 0,
+      "biggestLoafMsMedian": 0,
+      "fallbackRemovedAtMedian": 820,
+      "firstPartialAtMedian": 2982
+    },
+    "450": {
+      "runs": 1,
+      "okRuns": 1,
+      "transitionFramesMedian": 3,
+      "transitionFramesRange": [
+        3,
+        3
+      ],
+      "fadeWindowMsMedian": 374,
+      "readyWindowMsMedian": 2577,
+      "emptyStageMsMedian": 2202,
+      "revealBlockingMsMedian": 0,
+      "biggestLoafMsMedian": 0,
+      "fallbackRemovedAtMedian": 847,
+      "firstPartialAtMedian": 3050
+    },
+    "600": {
+      "runs": 1,
+      "okRuns": 1,
+      "transitionFramesMedian": 4,
+      "transitionFramesRange": [
+        4,
+        4
+      ],
+      "fadeWindowMsMedian": 540,
+      "readyWindowMsMedian": 2827,
+      "emptyStageMsMedian": 2287,
+      "revealBlockingMsMedian": 0,
+      "biggestLoafMsMedian": 0,
+      "fallbackRemovedAtMedian": 891,
+      "firstPartialAtMedian": 3178
+    }
+  }
+}

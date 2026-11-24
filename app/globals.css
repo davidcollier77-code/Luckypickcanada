@@ -1056,7 +1056,7 @@ body {
   z-index: 10;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 600ms ease;
+  transition: opacity 300ms ease;
 }
 
 .lucky-meter-stage__canvas-host.is-ready,

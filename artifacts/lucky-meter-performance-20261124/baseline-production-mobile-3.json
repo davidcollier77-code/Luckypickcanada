@@ -1,0 +1,1334 @@
+{
+  "url": "https://luckypickcanada.ca/lucky-meter",
+  "label": "production-mobile-3",
+  "measuredAt": "2026-11-24T19:33:14.279Z",
+  "wallClockMs": 8924,
+  "settleMs": 8000,
+  "cacheState": "cold-context (fresh browser context, empty HTTP cache)",
+  "networkCondition": "unthrottled, no CPU throttling (lab baseline)",
+  "profile": {
+    "devicePixelRatio": 3,
+    "hardwareConcurrency": 8,
+    "deviceMemory": 16,
+    "userAgent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "rendererInfo": {
+      "available": true,
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "Google Inc. (Google)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "maxTextureSize": 8192
+    },
+    "userTimingSupport": true
+  },
+  "navigation": {
+    "ttfb": 494.59999999403954,
+    "responseEnd": 496.7000000178814,
+    "domContentLoaded": 676.8000000119209,
+    "load": 742.7000000178814,
+    "transferSize": 7605,
+    "encodedBodySize": 7305,
+    "decodedBodySize": 29912
+  },
+  "paints": {
+    "first-paint": 676,
+    "first-contentful-paint": 676
+  },
+  "metrics": {
+    "fcpMs": 676,
+    "lcpMs": 676,
+    "lcpElement": {
+      "tag": "H1",
+      "id": null,
+      "className": "font-light text-white text-balance text-2xl sm:text-3xl md:text-4xl mb-3",
+      "src": null,
+      "size": 10830
+    },
+    "cls": 0,
+    "ttfbMs": 495,
+    "domContentLoadedMs": 677,
+    "loadMs": 743,
+    "longTaskCount": 16,
+    "totalBlockingTimeMs": 3246,
+    "longTasks": [
+      {
+        "start": 676.9000000059605,
+        "duration": 51,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 934.8000000119209,
+        "duration": 137,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 1072.9000000059605,
+        "duration": 328,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 1458.5999999940395,
+        "duration": 2219,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3680.2000000178814,
+        "duration": 121,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3810.7000000178814,
+        "duration": 116,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3928.5,
+        "duration": 106,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4084,
+        "duration": 112,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4234.800000011921,
+        "duration": 121,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4378.300000011921,
+        "duration": 101,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4480.200000017881,
+        "duration": 112,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4594.5,
+        "duration": 105,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4699.800000011921,
+        "duration": 107,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4807.300000011921,
+        "duration": 101,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4910.5,
+        "duration": 107,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 5018.800000011921,
+        "duration": 102,
+        "name": "self",
+        "container": "window"
+      }
+    ]
+  },
+  "rendererTimeline": [
+    {
+      "t": 676.5999999940395,
+      "mode": "pending",
+      "phase": "idle",
+      "canvasCount": 0
+    },
+    {
+      "t": 1458.5999999940395,
+      "mode": "three",
+      "phase": "idle",
+      "canvasCount": 1
+    }
+  ],
+  "canvasAppends": [
+    {
+      "t": 833.3000000119209,
+      "canvasCount": 1
+    },
+    {
+      "t": 1458.5999999940395,
+      "canvasCount": 1
+    }
+  ],
+  "marks": [
+    {
+      "name": "meter-surface",
+      "startTime": 986.0999999940395
+    },
+    {
+      "name": "meter-started",
+      "startTime": 1071.7000000178814
+    },
+    {
+      "name": "meter-ready",
+      "startTime": 1431.5999999940395
+    }
+  ],
+  "markDeltas": {
+    "meter-surface->meter-ready": 445.5,
+    "meter-ready->meter-started": -359.9,
+    "navigationStart->meter-surface": 986.0999999940395,
+    "navigationStart->meter-ready": 1431.5999999940395,
+    "navigationStart->meter-started": 1071.7000000178814
+  },
+  "measures": [],
+  "loaf": [
+    {
+      "start": 539.7000000178814,
+      "duration": 87.59999999403954,
+      "renderStart": 627.2000000178814,
+      "styleAndLayoutStart": 627.3000000119209,
+      "blockingDuration": 0,
+      "firstUIEventTimestamp": 0,
+      "scripts": []
+    },
+    {
+      "start": 671.7000000178814,
+      "duration": 63.29999998211861,
+      "renderStart": 734.9000000059605,
+      "styleAndLayoutStart": 734.9000000059605,
+      "blockingDuration": 1.7,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "invokerType": "classic-script",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "sourceFunctionName": "",
+          "duration": 50.900000005960464,
+          "executionStart": 676.9000000059605,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        }
+      ]
+    },
+    {
+      "start": 735.5,
+      "duration": 101.80000001192093,
+      "renderStart": 834.5999999940395,
+      "styleAndLayoutStart": 837.2000000178814,
+      "blockingDuration": 0,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "MessagePort.onmessage",
+          "invokerType": "event-listener",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "sourceFunctionName": "A",
+          "duration": 5.5999999940395355,
+          "executionStart": 736.9000000059605,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "MessagePort.onmessage",
+          "invokerType": "event-listener",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "sourceFunctionName": "A",
+          "duration": 17.900000005960464,
+          "executionStart": 743.5999999940395,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "MessagePort.onmessage",
+          "invokerType": "event-listener",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "sourceFunctionName": "A",
+          "duration": 6.5999999940395355,
+          "executionStart": 765.4000000059605,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "MessagePort.onmessage",
+          "invokerType": "event-listener",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+          "sourceFunctionName": "A",
+          "duration": 28.200000017881393,
+          "executionStart": 772.0999999940395,
+          "forcedStyleAndLayoutDuration": 0.5,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "TimerHandler:setTimeout",
+          "invokerType": "user-callback",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/5105-4747b00b315769cd.js",
+          "sourceFunctionName": "",
+          "duration": 5.300000011920929,
+          "executionStart": 828,
+          "forcedStyleAndLayoutDuration": 0.5,
+          "pauseDuration": 0
+        }
+      ]
+    },
+    {
+      "start": 933.9000000059605,
+      "duration": 442.69999998807907,
+      "renderStart": 1072.9000000059605,
+      "styleAndLayoutStart": 1376.0999999940395,
+      "blockingDuration": 391.2,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "https://luckypickcanada.ca/_next/static/chunks/c23c07e0.03f755df33144189.js",
+          "invokerType": "classic-script",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/c23c07e0.03f755df33144189.js",
+          "sourceFunctionName": "",
+          "duration": 137.2999999821186,
+          "executionStart": 934.8000000119209,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "FrameRequestCallback",
+          "invokerType": "user-callback",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/6607-82ce7a18ded596ee.js",
+          "sourceFunctionName": "u",
+          "duration": 301.5,
+          "executionStart": 1074.5,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        }
+      ]
+    },
+    {
+      "start": 4035.4000000059605,
+      "duration": 51.400000005960464,
+      "renderStart": 4084,
+      "styleAndLayoutStart": 4086.5999999940395,
+      "blockingDuration": 0.7,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "https://luckypickcanada.ca/_next/static/chunks/9638-e4cfb5132af586c0.js",
+          "invokerType": "classic-script",
+          "sourceURL": "https://luckypickcanada.ca/_next/static/chunks/9638-e4cfb5132af586c0.js",
+          "sourceFunctionName": "",
+          "duration": 47.80000001192093,
+          "executionStart": 4035.7000000178814,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "requestCount": 12,
+    "transferBytes": 2958085,
+    "firstRequestStartMs": 4081,
+    "files": [
+      {
+        "file": "mixkit-firework-crackle.mp3",
+        "transferSize": 707898,
+        "decodedBodySize": 707598,
+        "startTime": 4082,
+        "responseEnd": 4154,
+        "transferDuration": 72
+      },
+      {
+        "file": "lucky-meter-thunder-rumble.wav",
+        "transferSize": 705944,
+        "decodedBodySize": 705644,
+        "startTime": 4083,
+        "responseEnd": 4159,
+        "transferDuration": 76
+      },
+      {
+        "file": "mixkit-magic-sparkles.mp3",
+        "transferSize": 375234,
+        "decodedBodySize": 374934,
+        "startTime": 4081,
+        "responseEnd": 4140,
+        "transferDuration": 59
+      },
+      {
+        "file": "mixkit-cinematic-impact.mp3",
+        "transferSize": 279488,
+        "decodedBodySize": 279188,
+        "startTime": 4082,
+        "responseEnd": 4122,
+        "transferDuration": 40
+      },
+      {
+        "file": "freesound_community-fireworks-1-94483.mp3",
+        "transferSize": 223020,
+        "decodedBodySize": 222720,
+        "startTime": 4082,
+        "responseEnd": 4154,
+        "transferDuration": 73
+      },
+      {
+        "file": "lucky-meter-finale-boom.wav",
+        "transferSize": 201586,
+        "decodedBodySize": 201286,
+        "startTime": 4083,
+        "responseEnd": 4127,
+        "transferDuration": 44
+      },
+      {
+        "file": "freesound_community-starship-rail-gun-charge-35904.mp3",
+        "transferSize": 191340,
+        "decodedBodySize": 191040,
+        "startTime": 4081,
+        "responseEnd": 4106,
+        "transferDuration": 25
+      },
+      {
+        "file": "mixkit-magical-impact.mp3",
+        "transferSize": 144043,
+        "decodedBodySize": 143743,
+        "startTime": 4082,
+        "responseEnd": 4124,
+        "transferDuration": 42
+      },
+      {
+        "file": "dragon-studio-whoosh-cinematic-376875.mp3",
+        "transferSize": 68009,
+        "decodedBodySize": 67709,
+        "startTime": 4081,
+        "responseEnd": 4114,
+        "transferDuration": 32
+      },
+      {
+        "file": "mixkit-firework-whistle.mp3",
+        "transferSize": 23518,
+        "decodedBodySize": 23218,
+        "startTime": 4083,
+        "responseEnd": 4110,
+        "transferDuration": 28
+      },
+      {
+        "file": "chime-sound.mp3",
+        "transferSize": 20735,
+        "decodedBodySize": 20435,
+        "startTime": 4081,
+        "responseEnd": 4108,
+        "transferDuration": 27
+      },
+      {
+        "file": "crystal-ball-leaf.mp3",
+        "transferSize": 17270,
+        "decodedBodySize": 16970,
+        "startTime": 4081,
+        "responseEnd": 4106,
+        "transferDuration": 25
+      }
+    ]
+  },
+  "network": {
+    "requestCount": 42,
+    "totalTransferBytes": 3908832,
+    "byType": {
+      "other": {
+        "count": 1,
+        "bytes": 451
+      },
+      "link": {
+        "count": 6,
+        "bytes": 81582
+      },
+      "script": {
+        "count": 21,
+        "bytes": 477780
+      },
+      "img": {
+        "count": 1,
+        "bytes": 390634
+      },
+      "xmlhttprequest": {
+        "count": 13,
+        "bytes": 2958385
+      }
+    },
+    "heaviest": [
+      {
+        "transferSize": 707898,
+        "type": "xmlhttprequest",
+        "startTime": 4082,
+        "responseEnd": 4154,
+        "url": "https://luckypickcanada.ca/sounds/mixkit-firework-crackle.mp3"
+      },
+      {
+        "transferSize": 705944,
+        "type": "xmlhttprequest",
+        "startTime": 4083,
+        "responseEnd": 4159,
+        "url": "https://luckypickcanada.ca/sounds/lucky-meter-thunder-rumble.wav"
+      },
+      {
+        "transferSize": 390634,
+        "type": "img",
+        "startTime": 538,
+        "responseEnd": 609,
+        "url": "https://luckypickcanada.ca/images/lucky-meter-night-sky.avif"
+      },
+      {
+        "transferSize": 375234,
+        "type": "xmlhttprequest",
+        "startTime": 4081,
+        "responseEnd": 4140,
+        "url": "https://luckypickcanada.ca/sounds/mixkit-magic-sparkles.mp3"
+      },
+      {
+        "transferSize": 279488,
+        "type": "xmlhttprequest",
+        "startTime": 4082,
+        "responseEnd": 4122,
+        "url": "https://luckypickcanada.ca/sounds/mixkit-cinematic-impact.mp3"
+      },
+      {
+        "transferSize": 223020,
+        "type": "xmlhttprequest",
+        "startTime": 4082,
+        "responseEnd": 4154,
+        "url": "https://luckypickcanada.ca/freesound_community-fireworks-1-94483.mp3"
+      },
+      {
+        "transferSize": 201586,
+        "type": "xmlhttprequest",
+        "startTime": 4083,
+        "responseEnd": 4127,
+        "url": "https://luckypickcanada.ca/sounds/lucky-meter-finale-boom.wav"
+      },
+      {
+        "transferSize": 191340,
+        "type": "xmlhttprequest",
+        "startTime": 4081,
+        "responseEnd": 4106,
+        "url": "https://luckypickcanada.ca/freesound_community-starship-rail-gun-charge-35904.mp3"
+      },
+      {
+        "transferSize": 144043,
+        "type": "xmlhttprequest",
+        "startTime": 4082,
+        "responseEnd": 4124,
+        "url": "https://luckypickcanada.ca/sounds/mixkit-magical-impact.mp3"
+      },
+      {
+        "transferSize": 105956,
+        "type": "script",
+        "startTime": 833,
+        "responseEnd": 861,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/c23c07e0.03f755df33144189.js"
+      },
+      {
+        "transferSize": 92652,
+        "type": "script",
+        "startTime": 833,
+        "responseEnd": 864,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/d02cf09b.d0dbcf54162f077d.js"
+      },
+      {
+        "transferSize": 68009,
+        "type": "xmlhttprequest",
+        "startTime": 4081,
+        "responseEnd": 4114,
+        "url": "https://luckypickcanada.ca/dragon-studio-whoosh-cinematic-376875.mp3"
+      },
+      {
+        "transferSize": 66762,
+        "type": "script",
+        "startTime": 537,
+        "responseEnd": 624,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js"
+      },
+      {
+        "transferSize": 65987,
+        "type": "script",
+        "startTime": 537,
+        "responseEnd": 581,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js"
+      },
+      {
+        "transferSize": 43728,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 588,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/5105-4747b00b315769cd.js"
+      },
+      {
+        "transferSize": 31853,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 619,
+        "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092"
+      },
+      {
+        "transferSize": 26188,
+        "type": "link",
+        "startTime": 537,
+        "responseEnd": 582,
+        "url": "https://luckypickcanada.ca/_next/static/media/a273567b21a7c318-s.p.woff2"
+      },
+      {
+        "transferSize": 24736,
+        "type": "link",
+        "startTime": 536,
+        "responseEnd": 569,
+        "url": "https://luckypickcanada.ca/_next/static/media/8760c4774489e4ba-s.p.woff2"
+      },
+      {
+        "transferSize": 23518,
+        "type": "xmlhttprequest",
+        "startTime": 4083,
+        "responseEnd": 4110,
+        "url": "https://luckypickcanada.ca/sounds/mixkit-firework-whistle.mp3"
+      },
+      {
+        "transferSize": 20735,
+        "type": "xmlhttprequest",
+        "startTime": 4081,
+        "responseEnd": 4108,
+        "url": "https://luckypickcanada.ca/sounds/chime-sound.mp3"
+      },
+      {
+        "transferSize": 18794,
+        "type": "link",
+        "startTime": 537,
+        "responseEnd": 575,
+        "url": "https://luckypickcanada.ca/_next/static/css/d9811eb77f9095e8.css"
+      },
+      {
+        "transferSize": 17270,
+        "type": "xmlhttprequest",
+        "startTime": 4081,
+        "responseEnd": 4106,
+        "url": "https://luckypickcanada.ca/sounds/crystal-ball-leaf.mp3"
+      },
+      {
+        "transferSize": 11410,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 602,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/app/page-c3572fc9a7c39b82.js"
+      },
+      {
+        "transferSize": 10744,
+        "type": "script",
+        "startTime": 3808,
+        "responseEnd": 3832,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/9638-e4cfb5132af586c0.js"
+      },
+      {
+        "transferSize": 8595,
+        "type": "script",
+        "startTime": 537,
+        "responseEnd": 586,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/6607-82ce7a18ded596ee.js"
+      },
+      {
+        "transferSize": 7528,
+        "type": "link",
+        "startTime": 537,
+        "responseEnd": 601,
+        "url": "https://luckypickcanada.ca/_next/static/css/327cedb80f9293ec.css"
+      },
+      {
+        "transferSize": 6635,
+        "type": "script",
+        "startTime": 537,
+        "responseEnd": 606,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/4367-0323b910051511e3.js"
+      },
+      {
+        "transferSize": 5589,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 615,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/8075-ade23aaeedbfed11.js"
+      },
+      {
+        "transferSize": 4239,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 594,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/5736-6f8d7af5e2200626.js"
+      },
+      {
+        "transferSize": 4158,
+        "type": "script",
+        "startTime": 538,
+        "responseEnd": 613,
+        "url": "https://luckypickcanada.ca/_next/static/chunks/app/layout-70c87170216cfe02.js"
+      }
+    ]
+  },
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x19400a38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x19400a38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x19400a38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x19400a38c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ],
+  "pageErrors": [],
+  "resources": [
+    {
+      "name": "https://luckypickcanada.ca/cdn-cgi/speculation",
+      "initiatorType": "other",
+      "startTime": 530.4000000059605,
+      "responseEnd": 546.2000000178814,
+      "duration": 15.800000011920929,
+      "transferSize": 451,
+      "encodedBodySize": 151,
+      "decodedBodySize": 151,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "speculation",
+      "isAudio": false,
+      "contentTypeGroup": "other"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/media/8760c4774489e4ba-s.p.woff2",
+      "initiatorType": "link",
+      "startTime": 536.2000000178814,
+      "responseEnd": 568.9000000059605,
+      "duration": 32.69999998807907,
+      "transferSize": 24736,
+      "encodedBodySize": 24436,
+      "decodedBodySize": 24436,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8760c4774489e4ba-s.p.woff2",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/media/a273567b21a7c318-s.p.woff2",
+      "initiatorType": "link",
+      "startTime": 536.5999999940395,
+      "responseEnd": 582,
+      "duration": 45.400000005960464,
+      "transferSize": 26188,
+      "encodedBodySize": 25888,
+      "decodedBodySize": 25888,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "a273567b21a7c318-s.p.woff2",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/css/008e26072c923d16.css",
+      "initiatorType": "link",
+      "startTime": 536.7000000178814,
+      "responseEnd": 569.9000000059605,
+      "duration": 33.19999998807907,
+      "transferSize": 1785,
+      "encodedBodySize": 1485,
+      "decodedBodySize": 35783,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "008e26072c923d16.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/css/327cedb80f9293ec.css",
+      "initiatorType": "link",
+      "startTime": 536.8000000119209,
+      "responseEnd": 601.2000000178814,
+      "duration": 64.40000000596046,
+      "transferSize": 7528,
+      "encodedBodySize": 7228,
+      "decodedBodySize": 24244,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "327cedb80f9293ec.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/css/d9811eb77f9095e8.css",
+      "initiatorType": "link",
+      "startTime": 536.9000000059605,
+      "responseEnd": 575.4000000059605,
+      "duration": 38.5,
+      "transferSize": 18794,
+      "encodedBodySize": 18494,
+      "decodedBodySize": 95188,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "d9811eb77f9095e8.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/webpack-26e91cce87823880.js",
+      "initiatorType": "link",
+      "startTime": 537.0999999940395,
+      "responseEnd": 614,
+      "duration": 76.90000000596046,
+      "transferSize": 2551,
+      "encodedBodySize": 2251,
+      "decodedBodySize": 4066,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "webpack-26e91cce87823880.js",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js",
+      "initiatorType": "script",
+      "startTime": 537.2000000178814,
+      "responseEnd": 581.0999999940395,
+      "duration": 43.89999997615814,
+      "transferSize": 65987,
+      "encodedBodySize": 65687,
+      "decodedBodySize": 203721,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "7a3aeed1-208a6de3f20899a1.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/3834-11354a5842dba802.js",
+      "initiatorType": "script",
+      "startTime": 537.2000000178814,
+      "responseEnd": 623.5,
+      "duration": 86.2999999821186,
+      "transferSize": 66762,
+      "encodedBodySize": 66462,
+      "decodedBodySize": 241758,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "3834-11354a5842dba802.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/6607-82ce7a18ded596ee.js",
+      "initiatorType": "script",
+      "startTime": 537.3000000119209,
+      "responseEnd": 586.4000000059605,
+      "duration": 49.099999994039536,
+      "transferSize": 8595,
+      "encodedBodySize": 8295,
+      "decodedBodySize": 22955,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "6607-82ce7a18ded596ee.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/main-app-605d0abe12ee49c9.js",
+      "initiatorType": "script",
+      "startTime": 537.3000000119209,
+      "responseEnd": 607.2000000178814,
+      "duration": 69.90000000596046,
+      "transferSize": 515,
+      "encodedBodySize": 215,
+      "decodedBodySize": 514,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "main-app-605d0abe12ee49c9.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/1598-651f91480e6e1da3.js",
+      "initiatorType": "script",
+      "startTime": 537.3000000119209,
+      "responseEnd": 615.8000000119209,
+      "duration": 78.5,
+      "transferSize": 3706,
+      "encodedBodySize": 3406,
+      "decodedBodySize": 7645,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1598-651f91480e6e1da3.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/4367-0323b910051511e3.js",
+      "initiatorType": "script",
+      "startTime": 537.4000000059605,
+      "responseEnd": 605.7000000178814,
+      "duration": 68.30000001192093,
+      "transferSize": 6635,
+      "encodedBodySize": 6335,
+      "decodedBodySize": 16277,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "4367-0323b910051511e3.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/2530-4da0544d2c208157.js",
+      "initiatorType": "script",
+      "startTime": 537.5,
+      "responseEnd": 577.0999999940395,
+      "duration": 39.599999994039536,
+      "transferSize": 4076,
+      "encodedBodySize": 3776,
+      "decodedBodySize": 8685,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "2530-4da0544d2c208157.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/1037-196e2a43ff24dbf2.js",
+      "initiatorType": "script",
+      "startTime": 537.5999999940395,
+      "responseEnd": 575.0999999940395,
+      "duration": 37.5,
+      "transferSize": 2196,
+      "encodedBodySize": 1896,
+      "decodedBodySize": 5770,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1037-196e2a43ff24dbf2.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/app/layout-70c87170216cfe02.js",
+      "initiatorType": "script",
+      "startTime": 537.5999999940395,
+      "responseEnd": 613.4000000059605,
+      "duration": 75.80000001192093,
+      "transferSize": 4158,
+      "encodedBodySize": 3858,
+      "decodedBodySize": 10539,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "layout-70c87170216cfe02.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/9171-d674f1f88c7524ce.js",
+      "initiatorType": "script",
+      "startTime": 537.5999999940395,
+      "responseEnd": 618.5999999940395,
+      "duration": 81,
+      "transferSize": 2871,
+      "encodedBodySize": 2571,
+      "decodedBodySize": 6396,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "9171-d674f1f88c7524ce.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/5736-6f8d7af5e2200626.js",
+      "initiatorType": "script",
+      "startTime": 537.7000000178814,
+      "responseEnd": 594.0999999940395,
+      "duration": 56.39999997615814,
+      "transferSize": 4239,
+      "encodedBodySize": 3939,
+      "decodedBodySize": 10311,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "5736-6f8d7af5e2200626.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/app/page-c3572fc9a7c39b82.js",
+      "initiatorType": "script",
+      "startTime": 537.8000000119209,
+      "responseEnd": 602.4000000059605,
+      "duration": 64.59999999403954,
+      "transferSize": 11410,
+      "encodedBodySize": 11110,
+      "decodedBodySize": 33044,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "page-c3572fc9a7c39b82.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/8859-04cee245a49ece8e.js",
+      "initiatorType": "script",
+      "startTime": 537.8000000119209,
+      "responseEnd": 608,
+      "duration": 70.19999998807907,
+      "transferSize": 2199,
+      "encodedBodySize": 1899,
+      "decodedBodySize": 5544,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8859-04cee245a49ece8e.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/1634-6bd70109bdb6e9c0.js",
+      "initiatorType": "script",
+      "startTime": 537.9000000059605,
+      "responseEnd": 604.9000000059605,
+      "duration": 67,
+      "transferSize": 2995,
+      "encodedBodySize": 2695,
+      "decodedBodySize": 7689,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1634-6bd70109bdb6e9c0.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/5105-4747b00b315769cd.js",
+      "initiatorType": "script",
+      "startTime": 538,
+      "responseEnd": 588.3000000119209,
+      "duration": 50.30000001192093,
+      "transferSize": 43728,
+      "encodedBodySize": 43428,
+      "decodedBodySize": 122621,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "5105-4747b00b315769cd.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/8075-ade23aaeedbfed11.js",
+      "initiatorType": "script",
+      "startTime": 538,
+      "responseEnd": 615.2000000178814,
+      "duration": 77.2000000178814,
+      "transferSize": 5589,
+      "encodedBodySize": 5289,
+      "decodedBodySize": 14333,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8075-ade23aaeedbfed11.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/app/lucky-meter/page-4f8d91d69e8dfcbf.js",
+      "initiatorType": "script",
+      "startTime": 538.0999999940395,
+      "responseEnd": 603.3000000119209,
+      "duration": 65.2000000178814,
+      "transferSize": 914,
+      "encodedBodySize": 614,
+      "decodedBodySize": 933,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "page-4f8d91d69e8dfcbf.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/images/lucky-meter-night-sky.avif",
+      "initiatorType": "img",
+      "startTime": 538.2000000178814,
+      "responseEnd": 609.3000000119209,
+      "duration": 71.09999999403954,
+      "transferSize": 390634,
+      "encodedBodySize": 390334,
+      "decodedBodySize": 390334,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "lucky-meter-night-sky.avif",
+      "isAudio": false,
+      "contentTypeGroup": "img"
+    },
+    {
+      "name": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "initiatorType": "script",
+      "startTime": 538.3000000119209,
+      "responseEnd": 619.2000000178814,
+      "duration": 80.90000000596046,
+      "transferSize": 31853,
+      "encodedBodySize": 0,
+      "decodedBodySize": 0,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "vce701823e78c4301a35b7e07294d87301792088814092",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/cdn-cgi/rum?",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 763.7000000178814,
+      "responseEnd": 799.5,
+      "duration": 35.79999998211861,
+      "transferSize": 300,
+      "encodedBodySize": 0,
+      "decodedBodySize": 0,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "rum",
+      "isAudio": false,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/c23c07e0.03f755df33144189.js",
+      "initiatorType": "script",
+      "startTime": 832.8000000119209,
+      "responseEnd": 861.4000000059605,
+      "duration": 28.599999994039536,
+      "transferSize": 105956,
+      "encodedBodySize": 105656,
+      "decodedBodySize": 385860,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "c23c07e0.03f755df33144189.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/d02cf09b.d0dbcf54162f077d.js",
+      "initiatorType": "script",
+      "startTime": 833.2000000178814,
+      "responseEnd": 864.0999999940395,
+      "duration": 30.899999976158142,
+      "transferSize": 92652,
+      "encodedBodySize": 92352,
+      "decodedBodySize": 368084,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "d02cf09b.d0dbcf54162f077d.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/_next/static/chunks/9638-e4cfb5132af586c0.js",
+      "initiatorType": "script",
+      "startTime": 3808.4000000059605,
+      "responseEnd": 3832.4000000059605,
+      "duration": 24,
+      "transferSize": 10744,
+      "encodedBodySize": 10444,
+      "decodedBodySize": 36396,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "9638-e4cfb5132af586c0.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "https://luckypickcanada.ca/freesound_community-starship-rail-gun-charge-35904.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4080.800000011921,
+      "responseEnd": 4105.800000011921,
+      "duration": 25,
+      "transferSize": 191340,
+      "encodedBodySize": 191040,
+      "decodedBodySize": 191040,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "freesound_community-starship-rail-gun-charge-35904.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/crystal-ball-leaf.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081,
+      "responseEnd": 4106.300000011921,
+      "duration": 25.30000001192093,
+      "transferSize": 17270,
+      "encodedBodySize": 16970,
+      "decodedBodySize": 16970,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "crystal-ball-leaf.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/mixkit-magic-sparkles.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081.0999999940395,
+      "responseEnd": 4140.0999999940395,
+      "duration": 59,
+      "transferSize": 375234,
+      "encodedBodySize": 374934,
+      "decodedBodySize": 374934,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-magic-sparkles.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/chime-sound.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081.300000011921,
+      "responseEnd": 4108.4000000059605,
+      "duration": 27.099999994039536,
+      "transferSize": 20735,
+      "encodedBodySize": 20435,
+      "decodedBodySize": 20435,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "chime-sound.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/dragon-studio-whoosh-cinematic-376875.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081.4000000059605,
+      "responseEnd": 4113.800000011921,
+      "duration": 32.400000005960464,
+      "transferSize": 68009,
+      "encodedBodySize": 67709,
+      "decodedBodySize": 67709,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "dragon-studio-whoosh-cinematic-376875.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/mixkit-cinematic-impact.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081.5999999940395,
+      "responseEnd": 4121.5,
+      "duration": 39.900000005960464,
+      "transferSize": 279488,
+      "encodedBodySize": 279188,
+      "decodedBodySize": 279188,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-cinematic-impact.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/freesound_community-fireworks-1-94483.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4081.800000011921,
+      "responseEnd": 4154.4000000059605,
+      "duration": 72.59999999403954,
+      "transferSize": 223020,
+      "encodedBodySize": 222720,
+      "decodedBodySize": 222720,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "freesound_community-fireworks-1-94483.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/mixkit-magical-impact.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4082,
+      "responseEnd": 4123.800000011921,
+      "duration": 41.80000001192093,
+      "transferSize": 144043,
+      "encodedBodySize": 143743,
+      "decodedBodySize": 143743,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-magical-impact.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/mixkit-firework-crackle.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4082.2000000178814,
+      "responseEnd": 4154,
+      "duration": 71.7999999821186,
+      "transferSize": 707898,
+      "encodedBodySize": 707598,
+      "decodedBodySize": 707598,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-firework-crackle.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/mixkit-firework-whistle.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4082.5,
+      "responseEnd": 4110,
+      "duration": 27.5,
+      "transferSize": 23518,
+      "encodedBodySize": 23218,
+      "decodedBodySize": 23218,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-firework-whistle.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/lucky-meter-finale-boom.wav",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4082.800000011921,
+      "responseEnd": 4127.200000017881,
+      "duration": 44.400000005960464,
+      "transferSize": 201586,
+      "encodedBodySize": 201286,
+      "decodedBodySize": 201286,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "lucky-meter-finale-boom.wav",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "https://luckypickcanada.ca/sounds/lucky-meter-thunder-rumble.wav",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 4082.9000000059605,
+      "responseEnd": 4158.800000011921,
+      "duration": 75.90000000596046,
+      "transferSize": 705944,
+      "encodedBodySize": 705644,
+      "decodedBodySize": 705644,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "lucky-meter-thunder-rumble.wav",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    }
+  ]
+}

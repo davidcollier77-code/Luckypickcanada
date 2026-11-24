@@ -1,0 +1,692 @@
+{
+  "url": "http://127.0.0.1:3000/lucky-meter",
+  "label": "local-instrumented-trace-mobile",
+  "measuredAt": "2026-11-24T19:40:19.199Z",
+  "traceEventCount": 125591,
+  "clockOffsetMs": 136357853.8,
+  "longTasks": [
+    {
+      "start": 359.7999999821186,
+      "duration": 141
+    },
+    {
+      "start": 501.7999999821186,
+      "duration": 311
+    },
+    {
+      "start": 862.0999999940395,
+      "duration": 2142
+    },
+    {
+      "start": 3006.5999999940395,
+      "duration": 105
+    },
+    {
+      "start": 3117.4000000059605,
+      "duration": 102
+    },
+    {
+      "start": 3220.9000000059605,
+      "duration": 101
+    },
+    {
+      "start": 3357.199999988079,
+      "duration": 107
+    },
+    {
+      "start": 3491.0999999940395,
+      "duration": 113
+    },
+    {
+      "start": 3625.5,
+      "duration": 103
+    },
+    {
+      "start": 3729.9000000059605,
+      "duration": 105
+    },
+    {
+      "start": 3835.5,
+      "duration": 102
+    },
+    {
+      "start": 3938.2999999821186,
+      "duration": 103
+    },
+    {
+      "start": 4042.5,
+      "duration": 104
+    },
+    {
+      "start": 4147.299999982119,
+      "duration": 117
+    },
+    {
+      "start": 4265.5,
+      "duration": 106
+    },
+    {
+      "start": 4373.4000000059605,
+      "duration": 102
+    },
+    {
+      "start": 4476.699999988079,
+      "duration": 107
+    }
+  ],
+  "marks": [
+    {
+      "name": "meter-commit:pending",
+      "startTime": 254
+    },
+    {
+      "name": "meter-scene-request",
+      "startTime": 305.7999999821186
+    },
+    {
+      "name": "meter-canvas-appended",
+      "startTime": 305.90000000596046
+    },
+    {
+      "name": "meter-surface",
+      "startTime": 415.5
+    },
+    {
+      "name": "meter-environment",
+      "startTime": 472.09999999403954
+    },
+    {
+      "name": "meter-lights",
+      "startTime": 473.40000000596046
+    },
+    {
+      "name": "meter-geometry",
+      "startTime": 499.90000000596046
+    },
+    {
+      "name": "meter-started",
+      "startTime": 500.59999999403954
+    },
+    {
+      "name": "meter-scene-resolved",
+      "startTime": 500.69999998807907
+    },
+    {
+      "name": "meter-draw-start",
+      "startTime": 503.7999999821186
+    },
+    {
+      "name": "meter-draw-update-end",
+      "startTime": 503.90000000596046
+    },
+    {
+      "name": "meter-first-frame",
+      "startTime": 782.4000000059605
+    },
+    {
+      "name": "meter-second-frame",
+      "startTime": 819.2999999821186
+    },
+    {
+      "name": "meter-ready",
+      "startTime": 837.7999999821186
+    },
+    {
+      "name": "meter-on-ready",
+      "startTime": 837.7999999821186
+    },
+    {
+      "name": "meter-commit:three",
+      "startTime": 3005.5
+    },
+    {
+      "name": "lucky-audio-prepare-start",
+      "startTime": 3115.199999988079
+    },
+    {
+      "name": "lucky-audio-module-loaded",
+      "startTime": 3324.5
+    },
+    {
+      "name": "lucky-audio-howls-created",
+      "startTime": 3356.5
+    },
+    {
+      "name": "lucky-audio-load:segmentOpen",
+      "startTime": 3729.5
+    },
+    {
+      "name": "lucky-audio-load:dockChime",
+      "startTime": 3729.5
+    },
+    {
+      "name": "lucky-audio-load:impactMeteor",
+      "startTime": 3729.5
+    },
+    {
+      "name": "lucky-audio-load:fireworkLaunch",
+      "startTime": 3729.699999988079
+    },
+    {
+      "name": "lucky-audio-load:fireworkBurstAlt",
+      "startTime": 3729.699999988079
+    },
+    {
+      "name": "lucky-audio-load:finaleBoom",
+      "startTime": 3729.699999988079
+    },
+    {
+      "name": "lucky-audio-load:buildup",
+      "startTime": 3729.699999988079
+    },
+    {
+      "name": "lucky-audio-load:impactLightning",
+      "startTime": 3729.7999999821186
+    },
+    {
+      "name": "lucky-audio-load:thunderRumble",
+      "startTime": 3729.7999999821186
+    },
+    {
+      "name": "lucky-audio-load:colourPour",
+      "startTime": 3729.7999999821186
+    },
+    {
+      "name": "lucky-audio-load:willowCrackle",
+      "startTime": 3729.9000000059605
+    },
+    {
+      "name": "lucky-audio-load:fireworkBurst",
+      "startTime": 3729.9000000059605
+    }
+  ],
+  "navigation": {
+    "ttfb": 6.299999982118607,
+    "load": 209.5
+  },
+  "windows": [
+    {
+      "name": "largest-long-task",
+      "window": {
+        "from": 862.1,
+        "to": 3004.1,
+        "ms": 2142
+      },
+      "eventsInWindow": 18390,
+      "topByName": [
+        {
+          "name": "RunTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 1600,
+          "ms": 4769.7
+        },
+        {
+          "name": "ThreadControllerImpl::RunTask",
+          "category": "toplevel",
+          "count": 1600,
+          "ms": 4762.9
+        },
+        {
+          "name": "ProxyMain::BeginMainFrame",
+          "category": "cc,benchmark",
+          "count": 2,
+          "ms": 2140.3
+        },
+        {
+          "name": "Commit",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 2,
+          "ms": 2136.2
+        },
+        {
+          "name": "LayerTreeHost::DoUpdateLayers",
+          "category": "cc,benchmark",
+          "count": 2,
+          "ms": 2118.8
+        },
+        {
+          "name": "GLES2::ReadPixels",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2118.4
+        },
+        {
+          "name": "Scheduler::RunTask",
+          "category": "gpu,toplevel.flow",
+          "count": 6,
+          "ms": 2117.4
+        },
+        {
+          "name": "GpuChannel::ExecuteDeferredRequest",
+          "category": "gpu",
+          "count": 6,
+          "ms": 2117.4
+        },
+        {
+          "name": "ImplementationBase::WaitForCmd",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2117.2
+        },
+        {
+          "name": "CommandBufferHelper::Finish",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2117.2
+        },
+        {
+          "name": "GPUTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 4,
+          "ms": 2117.2
+        },
+        {
+          "name": "CommandBufferProxyImpl::WaitForGetOffset",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2117.1
+        },
+        {
+          "name": "WebGL",
+          "category": "gpu",
+          "count": 4,
+          "ms": 2117.1
+        },
+        {
+          "name": "CommandBuffer::Flush",
+          "category": "gpu,toplevel.flow",
+          "count": 4,
+          "ms": 2117.1
+        },
+        {
+          "name": "CommandBufferStub::OnAsyncFlush",
+          "category": "gpu",
+          "count": 4,
+          "ms": 2117.1
+        },
+        {
+          "name": "CommandBufferService:PutChanged",
+          "category": "gpu",
+          "count": 4,
+          "ms": 2117
+        },
+        {
+          "name": "Graphics.Pipeline",
+          "category": "viz,benchmark,graphics.pipeline",
+          "count": 1408,
+          "ms": 494.3
+        },
+        {
+          "name": "DisplayScheduler::OnBeginFrameDeadline",
+          "category": "viz,input.scrolling",
+          "count": 129,
+          "ms": 416.8
+        },
+        {
+          "name": "DisplayScheduler::DrawAndSwap",
+          "category": "viz",
+          "count": 128,
+          "ms": 416.4
+        },
+        {
+          "name": "Display::DrawAndSwap",
+          "category": "viz",
+          "count": 128,
+          "ms": 416.1
+        },
+        {
+          "name": "DirectRenderer::DrawFrame",
+          "category": "viz,benchmark",
+          "count": 128,
+          "ms": 403.4
+        },
+        {
+          "name": "DirectRenderer::DrawRenderPass",
+          "category": "viz",
+          "count": 512,
+          "ms": 399.5
+        },
+        {
+          "name": "SoftwareRenderer::DoDrawQuad",
+          "category": "viz",
+          "count": 2314,
+          "ms": 387.5
+        },
+        {
+          "name": "ProxyImpl::ScheduledActionDraw",
+          "category": "cc",
+          "count": 128,
+          "ms": 37.9
+        },
+        {
+          "name": "MainFrame.Draw",
+          "category": "cc,benchmark",
+          "count": 128,
+          "ms": 37.5
+        }
+      ]
+    },
+    {
+      "name": "renderer-swap",
+      "window": {
+        "from": 837.8,
+        "to": 3005.5,
+        "ms": 2167.7
+      },
+      "eventsInWindow": 19003,
+      "topByName": [
+        {
+          "name": "RunTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 1651,
+          "ms": 4828.4
+        },
+        {
+          "name": "ThreadControllerImpl::RunTask",
+          "category": "toplevel",
+          "count": 1651,
+          "ms": 4821.3
+        },
+        {
+          "name": "ProxyMain::BeginMainFrame",
+          "category": "cc,benchmark",
+          "count": 3,
+          "ms": 2164.4
+        },
+        {
+          "name": "Commit",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 3,
+          "ms": 2155.6
+        },
+        {
+          "name": "Scheduler::RunTask",
+          "category": "gpu,toplevel.flow",
+          "count": 11,
+          "ms": 2131.4
+        },
+        {
+          "name": "LayerTreeHost::DoUpdateLayers",
+          "category": "cc,benchmark",
+          "count": 2,
+          "ms": 2131.3
+        },
+        {
+          "name": "GpuChannel::ExecuteDeferredRequest",
+          "category": "gpu",
+          "count": 10,
+          "ms": 2131.2
+        },
+        {
+          "name": "GPUTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 10,
+          "ms": 2131.1
+        },
+        {
+          "name": "WebGL",
+          "category": "gpu",
+          "count": 8,
+          "ms": 2130.8
+        },
+        {
+          "name": "CommandBuffer::Flush",
+          "category": "gpu,toplevel.flow",
+          "count": 7,
+          "ms": 2130.8
+        },
+        {
+          "name": "GLES2::ReadPixels",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2130.8
+        },
+        {
+          "name": "CommandBufferStub::OnAsyncFlush",
+          "category": "gpu",
+          "count": 7,
+          "ms": 2130.7
+        },
+        {
+          "name": "CommandBufferService:PutChanged",
+          "category": "gpu",
+          "count": 7,
+          "ms": 2130.6
+        },
+        {
+          "name": "ImplementationBase::WaitForCmd",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2129.5
+        },
+        {
+          "name": "CommandBufferHelper::Finish",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2129.5
+        },
+        {
+          "name": "CommandBufferProxyImpl::WaitForGetOffset",
+          "category": "gpu",
+          "count": 2,
+          "ms": 2129.4
+        },
+        {
+          "name": "Graphics.Pipeline",
+          "category": "viz,benchmark,graphics.pipeline",
+          "count": 1430,
+          "ms": 512.5
+        },
+        {
+          "name": "DisplayScheduler::OnBeginFrameDeadline",
+          "category": "viz,input.scrolling",
+          "count": 131,
+          "ms": 433.1
+        },
+        {
+          "name": "DisplayScheduler::DrawAndSwap",
+          "category": "viz",
+          "count": 130,
+          "ms": 432.8
+        },
+        {
+          "name": "Display::DrawAndSwap",
+          "category": "viz",
+          "count": 130,
+          "ms": 432.4
+        },
+        {
+          "name": "DirectRenderer::DrawFrame",
+          "category": "viz,benchmark",
+          "count": 130,
+          "ms": 419.4
+        },
+        {
+          "name": "DirectRenderer::DrawRenderPass",
+          "category": "viz",
+          "count": 520,
+          "ms": 415.4
+        },
+        {
+          "name": "SoftwareRenderer::DoDrawQuad",
+          "category": "viz",
+          "count": 2363,
+          "ms": 402.9
+        },
+        {
+          "name": "ProxyImpl::ScheduledActionDraw",
+          "category": "cc",
+          "count": 130,
+          "ms": 38.7
+        },
+        {
+          "name": "MainFrame.Draw",
+          "category": "cc,benchmark",
+          "count": 130,
+          "ms": 38.3
+        }
+      ]
+    },
+    {
+      "name": "audio-prepare",
+      "window": {
+        "from": 3115.2,
+        "to": 3729.9,
+        "ms": 614.7
+      },
+      "eventsInWindow": 9572,
+      "topByName": [
+        {
+          "name": "RunTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 1335,
+          "ms": 1259.1
+        },
+        {
+          "name": "ThreadControllerImpl::RunTask",
+          "category": "toplevel",
+          "count": 1335,
+          "ms": 1251.1
+        },
+        {
+          "name": "ProxyMain::BeginMainFrame",
+          "category": "cc,benchmark",
+          "count": 6,
+          "ms": 530.2
+        },
+        {
+          "name": "Commit",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 6,
+          "ms": 512.3
+        },
+        {
+          "name": "LayerTreeHost::DoUpdateLayers",
+          "category": "cc,benchmark",
+          "count": 6,
+          "ms": 424.9
+        },
+        {
+          "name": "GLES2::ReadPixels",
+          "category": "gpu",
+          "count": 6,
+          "ms": 423.3
+        },
+        {
+          "name": "ImplementationBase::WaitForCmd",
+          "category": "gpu",
+          "count": 6,
+          "ms": 421.8
+        },
+        {
+          "name": "CommandBufferHelper::Finish",
+          "category": "gpu",
+          "count": 6,
+          "ms": 421.8
+        },
+        {
+          "name": "CommandBufferProxyImpl::WaitForGetOffset",
+          "category": "gpu",
+          "count": 6,
+          "ms": 421.5
+        },
+        {
+          "name": "Scheduler::RunTask",
+          "category": "gpu,toplevel.flow",
+          "count": 16,
+          "ms": 420.7
+        },
+        {
+          "name": "GpuChannel::ExecuteDeferredRequest",
+          "category": "gpu",
+          "count": 16,
+          "ms": 420.6
+        },
+        {
+          "name": "GPUTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 20,
+          "ms": 420.5
+        },
+        {
+          "name": "WebGL",
+          "category": "gpu",
+          "count": 15,
+          "ms": 420.1
+        },
+        {
+          "name": "CommandBuffer::Flush",
+          "category": "gpu,toplevel.flow",
+          "count": 15,
+          "ms": 420
+        },
+        {
+          "name": "CommandBufferStub::OnAsyncFlush",
+          "category": "gpu",
+          "count": 15,
+          "ms": 420
+        },
+        {
+          "name": "CommandBufferService:PutChanged",
+          "category": "gpu",
+          "count": 15,
+          "ms": 419.8
+        },
+        {
+          "name": "ThreadPool_RunTask",
+          "category": "toplevel",
+          "count": 235,
+          "ms": 391
+        },
+        {
+          "name": "Graphics.Pipeline",
+          "category": "viz,benchmark,graphics.pipeline",
+          "count": 408,
+          "ms": 205.5
+        },
+        {
+          "name": "DisplayScheduler::OnBeginFrameDeadline",
+          "category": "viz,input.scrolling",
+          "count": 38,
+          "ms": 183.2
+        },
+        {
+          "name": "DisplayScheduler::DrawAndSwap",
+          "category": "viz",
+          "count": 38,
+          "ms": 183.1
+        },
+        {
+          "name": "Display::DrawAndSwap",
+          "category": "viz",
+          "count": 38,
+          "ms": 183
+        },
+        {
+          "name": "DirectRenderer::DrawFrame",
+          "category": "viz,benchmark",
+          "count": 38,
+          "ms": 179
+        },
+        {
+          "name": "DirectRenderer::DrawRenderPass",
+          "category": "viz",
+          "count": 148,
+          "ms": 178
+        },
+        {
+          "name": "SoftwareRenderer::DoDrawQuad",
+          "category": "viz",
+          "count": 841,
+          "ms": 170.8
+        },
+        {
+          "name": "RunMicrotasks",
+          "category": "v8.execute",
+          "count": 16,
+          "ms": 35.5
+        }
+      ]
+    }
+  ]
+}

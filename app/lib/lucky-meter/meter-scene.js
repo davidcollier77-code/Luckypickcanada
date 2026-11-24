@@ -61,6 +61,9 @@ const VESSEL_PROFILE = Object.freeze([
 const IDLE_STOP_SECONDS = 4;
 const FINISHED_STOP_SECONDS = 1.25;
 
+/** The longest wait for a produced frame before the complete CSS meter wins. */
+export const READY_WATCHDOG_MS = 3000;
+
 /** A no-op when the Performance API is unavailable; never throws. */
 function mark(name) {
   try {
@@ -231,7 +234,12 @@ export async function createLuckyMeterScene({
   // announcement; otherwise the stage can hand back to a canvas that has
   // already been stopped.
   let failed = false;
-  let readyTimer = 0;
+  let ready = false;
+  let announced = false;
+  let readyFrame = 0;
+  let readyHandoffFrame = 0;
+  let readyWatchdog = 0;
+  let stopSurface = () => {};
 
   const surface = await createCreativeSurface({
     canvas,
@@ -246,23 +254,25 @@ export async function createLuckyMeterScene({
       particles: true,
       timeline: true,
     },
-    onFrame: ({ elapsed }) => update(elapsed),
+    onFrame: ({ elapsed }) => {
+      update(elapsed);
+      noteProducedFrame();
+    },
     onContextLost: () => {
+      clearReadyWatch();
       failed = true;
-      if (readyTimer) window.clearTimeout(readyTimer);
-      readyTimer = 0;
       onContextLost?.();
     },
     onContextRestored: () => {
       failed = false;
+      if (!announced) armReadyWatchdog();
       onContextRestored?.();
     },
     // A frame exception stops the shared loop. Never leave a blank canvas in
     // its place: hand the meter to its complete CSS fallback.
     onError: (error) => {
+      clearReadyWatch();
       failed = true;
-      if (readyTimer) window.clearTimeout(readyTimer);
-      readyTimer = 0;
       console.warn('Lucky Meter scene frame failed; using the CSS meter.', error);
       onUnavailable?.();
     },
@@ -273,6 +283,8 @@ export async function createLuckyMeterScene({
     onUnavailable?.();
     return null;
   }
+
+  stopSurface = () => surface.stop();
 
   const { stage } = surface;
   const THREE = stage.three;
@@ -885,8 +897,6 @@ export async function createLuckyMeterScene({
   let settleStart = null;
   let idleStopped = false;
   let pointerWakeAt = 0;
-  let ready = false;
-  let announced = false;
 
   function setChamberPalette(palette) {
     const colours = Array.isArray(palette) ? palette : [];
@@ -1056,8 +1066,54 @@ export async function createLuckyMeterScene({
     }
   }
 
+  function clearReadyWatch() {
+    if (readyWatchdog) {
+      window.clearTimeout(readyWatchdog);
+      readyWatchdog = 0;
+    }
+    if (readyFrame) {
+      window.cancelAnimationFrame(readyFrame);
+      readyFrame = 0;
+    }
+    if (readyHandoffFrame) {
+      window.cancelAnimationFrame(readyHandoffFrame);
+      readyHandoffFrame = 0;
+    }
+  }
+
+  /**
+   * The surface calls `onFrame` before it renders, so the first callback only
+   * means a render was submitted. Two animation frames after it the canvas has
+   * been presented; only then may the stage hand over.
+   */
+  function noteProducedFrame() {
+    if (announced || failed || readyFrame || readyHandoffFrame) return;
+    readyFrame = window.requestAnimationFrame(() => {
+      readyFrame = 0;
+      if (announced || failed) return;
+      readyHandoffFrame = window.requestAnimationFrame(() => {
+        readyHandoffFrame = 0;
+        announceReady();
+      });
+    });
+  }
+
+  function armReadyWatchdog() {
+    if (announced || failed || readyWatchdog) return;
+    readyWatchdog = window.setTimeout(() => {
+      readyWatchdog = 0;
+      if (announced || failed) return;
+      // No frame was produced. Keep the complete CSS meter instead of
+      // revealing an empty canvas, and stop paying for the surface.
+      failed = true;
+      stopSurface();
+      onUnavailable?.();
+    }, READY_WATCHDOG_MS);
+  }
+
   function announceReady() {
     if (announced || failed) return;
+    clearReadyWatch();
     announced = true;
     ready = true;
     mark('meter-ready');
@@ -1078,10 +1134,9 @@ export async function createLuckyMeterScene({
     window.addEventListener('pointermove', wake, { passive: true });
   }
 
-  readyTimer = window.setTimeout(announceReady, 90);
-
   update(0);
   surface.start();
+  armReadyWatchdog();
   mark('meter-started');
 
   return {
@@ -1177,7 +1232,7 @@ export async function createLuckyMeterScene({
       surface.stop();
     },
     dispose() {
-      window.clearTimeout(readyTimer);
+      clearReadyWatch();
       failed = true;
       announced = true;
       window.removeEventListener('pointermove', wake);

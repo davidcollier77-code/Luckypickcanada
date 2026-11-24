@@ -1,0 +1,262 @@
+{
+  "url": "https://luckypickcanada.ca/lucky-meter",
+  "label": "production-trace-mobile",
+  "measuredAt": "2026-11-24T19:43:57.558Z",
+  "traceEventCount": 126595,
+  "clockOffsetMs": 136575506.8,
+  "longTasks": [
+    {
+      "start": 1269.8999999761581,
+      "duration": 137
+    },
+    {
+      "start": 1408.199999988079,
+      "duration": 298
+    },
+    {
+      "start": 1756.2999999821186,
+      "duration": 2001
+    },
+    {
+      "start": 3760,
+      "duration": 113
+    },
+    {
+      "start": 3879.199999988079,
+      "duration": 106
+    },
+    {
+      "start": 3987.0999999940395,
+      "duration": 100
+    },
+    {
+      "start": 4126.5999999940395,
+      "duration": 119
+    },
+    {
+      "start": 4275.5999999940395,
+      "duration": 124
+    },
+    {
+      "start": 4424.0999999940395,
+      "duration": 102
+    },
+    {
+      "start": 4527.899999976158,
+      "duration": 103
+    },
+    {
+      "start": 4631.5,
+      "duration": 106
+    },
+    {
+      "start": 4738.0999999940395,
+      "duration": 103
+    },
+    {
+      "start": 4841.299999982119,
+      "duration": 103
+    },
+    {
+      "start": 4945.5,
+      "duration": 100
+    },
+    {
+      "start": 5046,
+      "duration": 100
+    },
+    {
+      "start": 5147.199999988079,
+      "duration": 100
+    },
+    {
+      "start": 5249,
+      "duration": 100
+    },
+    {
+      "start": 5350.199999988079,
+      "duration": 106
+    }
+  ],
+  "marks": [
+    {
+      "name": "meter-surface",
+      "startTime": 1322.699999988079
+    },
+    {
+      "name": "meter-started",
+      "startTime": 1406.8999999761581
+    },
+    {
+      "name": "meter-ready",
+      "startTime": 1733
+    }
+  ],
+  "navigation": {
+    "ttfb": 841.8999999761581,
+    "load": 1078.0999999940395
+  },
+  "windows": [
+    {
+      "name": "largest-long-task",
+      "window": {
+        "from": 1756.3,
+        "to": 3757.3,
+        "ms": 2001
+      },
+      "eventsInWindow": 17081,
+      "topByName": [
+        {
+          "name": "RunTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 1509,
+          "ms": 4401.4
+        },
+        {
+          "name": "ThreadControllerImpl::RunTask",
+          "category": "toplevel",
+          "count": 1509,
+          "ms": 4394.3
+        },
+        {
+          "name": "ProxyMain::BeginMainFrame",
+          "category": "cc,benchmark",
+          "count": 2,
+          "ms": 1999.2
+        },
+        {
+          "name": "Commit",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 2,
+          "ms": 1994.9
+        },
+        {
+          "name": "LayerTreeHost::DoUpdateLayers",
+          "category": "cc,benchmark",
+          "count": 2,
+          "ms": 1976.1
+        },
+        {
+          "name": "GLES2::ReadPixels",
+          "category": "gpu",
+          "count": 2,
+          "ms": 1975.7
+        },
+        {
+          "name": "ImplementationBase::WaitForCmd",
+          "category": "gpu",
+          "count": 2,
+          "ms": 1974.6
+        },
+        {
+          "name": "CommandBufferHelper::Finish",
+          "category": "gpu",
+          "count": 2,
+          "ms": 1974.6
+        },
+        {
+          "name": "Scheduler::RunTask",
+          "category": "gpu,toplevel.flow",
+          "count": 6,
+          "ms": 1974.6
+        },
+        {
+          "name": "CommandBufferProxyImpl::WaitForGetOffset",
+          "category": "gpu",
+          "count": 2,
+          "ms": 1974.5
+        },
+        {
+          "name": "GpuChannel::ExecuteDeferredRequest",
+          "category": "gpu",
+          "count": 6,
+          "ms": 1974.5
+        },
+        {
+          "name": "GPUTask",
+          "category": "disabled-by-default-devtools.timeline",
+          "count": 4,
+          "ms": 1974.4
+        },
+        {
+          "name": "WebGL",
+          "category": "gpu",
+          "count": 4,
+          "ms": 1974.3
+        },
+        {
+          "name": "CommandBuffer::Flush",
+          "category": "gpu,toplevel.flow",
+          "count": 4,
+          "ms": 1974.3
+        },
+        {
+          "name": "CommandBufferStub::OnAsyncFlush",
+          "category": "gpu",
+          "count": 4,
+          "ms": 1974.3
+        },
+        {
+          "name": "CommandBufferService:PutChanged",
+          "category": "gpu",
+          "count": 4,
+          "ms": 1974.2
+        },
+        {
+          "name": "Graphics.Pipeline",
+          "category": "viz,benchmark,graphics.pipeline",
+          "count": 1320,
+          "ms": 411.5
+        },
+        {
+          "name": "DisplayScheduler::OnBeginFrameDeadline",
+          "category": "viz,input.scrolling",
+          "count": 121,
+          "ms": 346.4
+        },
+        {
+          "name": "DisplayScheduler::DrawAndSwap",
+          "category": "viz",
+          "count": 120,
+          "ms": 346.1
+        },
+        {
+          "name": "Display::DrawAndSwap",
+          "category": "viz",
+          "count": 120,
+          "ms": 345.8
+        },
+        {
+          "name": "DirectRenderer::DrawFrame",
+          "category": "viz,benchmark",
+          "count": 120,
+          "ms": 335.1
+        },
+        {
+          "name": "DirectRenderer::DrawRenderPass",
+          "category": "viz",
+          "count": 480,
+          "ms": 332
+        },
+        {
+          "name": "SoftwareRenderer::DoDrawQuad",
+          "category": "viz",
+          "count": 2170,
+          "ms": 322.5
+        },
+        {
+          "name": "ProxyImpl::ScheduledActionDraw",
+          "category": "cc",
+          "count": 120,
+          "ms": 31.4
+        },
+        {
+          "name": "MainFrame.Draw",
+          "category": "cc,benchmark",
+          "count": 120,
+          "ms": 31
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,10 @@
+## 2026-11-24 — Lucky Meter reveal hand-off and mobile delivery (spec 217)
+
+- Replaced the fixed 90 ms readiness timer with a produced-frame gate: the first `onFrame` is followed by two animation frames before `meter-ready`, and a 3,000 ms watchdog stops the surface and keeps the CSS fallback when no frame is produced. Context loss and disposal cancel the pending announcement.
+- Adopted the measured 300 ms fade (4 → 2 median transition frames, 0 ms blocking) and retained the complete CSS fallback until the canvas host's computed opacity leaves 0 or `transitionend` fires; a 6 s guard stops polling but never removes it while the canvas is transparent. This removes the measured 1,976–2,304 ms empty stage without touching the scene.
+- Kept celebration audio activation-gated: the four opening cues stay eager, the eight celebration cues use `preload: false`, and activation explicitly loads them through the same shared set (Howler queues an unloaded cue but does not fetch it on `play()`).
+- Verified: 219 focused Vitest, full suite 1,255/1,255 across 112 files, `tsc --noEmit` exit 0, full Lucky Meter Playwright 54 passed / 6 opt-in captures skipped on desktop and both mobile projects, final transfer 1,473 KiB total / 590 KiB audio, final build 456,519,680 bytes (435.37 MiB), and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 with 490 Python and 51 docs tests. SC-006 and physical-device smoothness remain outstanding.
+
 ## 2026-11-24 — ChatGPT browser-access priority (spec 216)
 
 - Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.
