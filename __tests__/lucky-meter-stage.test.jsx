@@ -237,7 +237,13 @@ describe('Lucky Meter stage surface', () => {
       expect(centre).toBeCloseTo(225, 6);
 
       const drain = view.container.querySelector('.lucky-meter-fallback__drain');
-      expect(drain.getAttribute('style')).toContain(`from ${index * step}deg`);
+      const drainStyle = drain.getAttribute('style');
+      expect(drainStyle).toContain('conic-gradient');
+      // jsdom omits a default `from 0deg` when it serializes the gradient, so a
+      // missing `from` angle means the gradient starts at 0deg.
+      const fromMatch = drainStyle.match(/from\s+(-?[\d.]+)deg/);
+      const drainFrom = fromMatch ? Number(fromMatch[1]) : 0;
+      expect(drainFrom).toBeCloseTo((index * step) % 360, 6);
 
       view.unmount();
     }
