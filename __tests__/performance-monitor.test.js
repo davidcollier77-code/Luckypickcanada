@@ -81,6 +81,7 @@ describe('observational frame monitor', () => {
     expect(snapshot.fps).toBeNull();
     expect(snapshot.source).toBe('adaptive-frame-loop');
     expect(snapshot.version).toBe(2);
+    expect(snapshot.warnings).toEqual(['no-samples']);
   });
 
   it('reports insufficient samples until a full window is measured', async () => {
@@ -94,6 +95,9 @@ describe('observational frame monitor', () => {
     expect(snapshot.status).toBe('warming');
     expect(snapshot.evidence).toBe('insufficient');
     expect(snapshot.sampleCount).toBeGreaterThan(0);
+    // Samples exist, so the warning must describe incomplete metrics rather
+    // than claim there is no data.
+    expect(snapshot.warnings).toEqual(['insufficient-samples']);
   });
 
   it('reaches healthy after a full 60 fps window', async () => {
@@ -441,6 +445,13 @@ describe('monitor preservation guards', () => {
     expect(adaptiveSource).toContain('recordFrameSample(stamp)');
     expect(engineSource).toContain('recordFrameSample(timestamp, FRAME_SOURCES.COSMIC)');
     expect(monitorSource).not.toMatch(/requestAnimationFrame|setInterval|setTimeout|addEventListener/);
+  });
+
+  it('renders a zero plan target instead of an unknown placeholder', async () => {
+    const workbenchSource = readSource('components/graphics/CreativeWorkbench.jsx');
+
+    // A paused plan targets 0 fps, so a truthy check would hide it behind '—'.
+    expect(workbenchSource).toContain('performanceDiagnostics?.monitor?.targetFps != null');
   });
 
   it('keeps the Workbench diagnostics state from shadowing the frame clock', async () => {

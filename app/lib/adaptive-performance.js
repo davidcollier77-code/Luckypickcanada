@@ -982,11 +982,13 @@ export function createPerformanceMonitor({
     return PERFORMANCE_STATUS.HEALTHY;
   }
 
-  function sourceWarnings(status, frameMetrics, thresholds, pauseReason) {
+  function sourceWarnings(status, frameMetrics, thresholds, pauseReason, hasSamples) {
     if (pauseReason) return [`paused-${pauseReason}`];
     if (status === PERFORMANCE_STATUS.IDLE) return ['no-recent-samples'];
     if (status === PERFORMANCE_STATUS.WARMING) {
-      return [frameMetrics ? 'insufficient-samples' : 'no-samples'];
+      // Warm-up can already hold samples without computed metrics yet; the
+      // warning must not claim there are none.
+      return [frameMetrics || hasSamples ? 'insufficient-samples' : 'no-samples'];
     }
     const warnings = [];
     if (frameMetrics && frameMetrics.fps < thresholds.healthyFps) {
@@ -1064,7 +1066,9 @@ export function createPerformanceMonitor({
       lastResetReason: entry.lastResetReason,
       stale,
       target: entry.target ? Object.freeze({ ...entry.target }) : null,
-      warnings: Object.freeze(sourceWarnings(status, frameMetrics, thresholds, pauseReason)),
+      warnings: Object.freeze(
+        sourceWarnings(status, frameMetrics, thresholds, pauseReason, entry.samples.length > 0),
+      ),
     });
   }
 

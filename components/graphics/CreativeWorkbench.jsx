@@ -728,7 +728,7 @@ await __creativeWorkbench.capture()`}
               <div className="flex justify-between gap-3">
                 <dt>Plan target</dt>
                 <dd className="text-slate-200">
-                  {performanceDiagnostics?.monitor?.targetFps
+                  {performanceDiagnostics?.monitor?.targetFps != null
                     ? `${performanceDiagnostics.monitor.targetFps} fps`
                     : '—'}
                 </dd>
