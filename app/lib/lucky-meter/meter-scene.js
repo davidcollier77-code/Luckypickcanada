@@ -239,7 +239,11 @@ export async function createLuckyMeterScene({
   let readyFrame = 0;
   let readyHandoffFrame = 0;
   let readyWatchdog = 0;
+  let startSurface = () => {};
   let stopSurface = () => {};
+  // A watchdog stop is recoverable when the context returns; an explicit stop
+  // is not. Track the cause so restore only wakes the surface it stopped.
+  let watchdogStopped = false;
 
   const surface = await createCreativeSurface({
     canvas,
@@ -265,6 +269,13 @@ export async function createLuckyMeterScene({
     },
     onContextRestored: () => {
       failed = false;
+      // A context restore redraws once, but a surface stopped by the watchdog
+      // still has wantsAnimation=false. Wake it before the one-frame restore
+      // can announce ready and retire the fallback behind a static canvas.
+      if (watchdogStopped && !announced) {
+        watchdogStopped = false;
+        startSurface();
+      }
       if (!announced) armReadyWatchdog();
       onContextRestored?.();
     },
@@ -273,6 +284,7 @@ export async function createLuckyMeterScene({
     onError: (error) => {
       clearReadyWatch();
       failed = true;
+      watchdogStopped = false;
       console.warn('Lucky Meter scene frame failed; using the CSS meter.', error);
       onUnavailable?.();
     },
@@ -284,6 +296,7 @@ export async function createLuckyMeterScene({
     return null;
   }
 
+  startSurface = () => surface.start();
   stopSurface = () => surface.stop();
 
   const { stage } = surface;
@@ -1106,6 +1119,7 @@ export async function createLuckyMeterScene({
       // No frame was produced. Keep the complete CSS meter instead of
       // revealing an empty canvas, and stop paying for the surface.
       failed = true;
+      watchdogStopped = true;
       stopSurface();
       onUnavailable?.();
     }, READY_WATCHDOG_MS);
@@ -1126,6 +1140,7 @@ export async function createLuckyMeterScene({
     settleStart = null;
     if (idleStopped) {
       idleStopped = false;
+      watchdogStopped = false;
       surface.start();
     }
   };
@@ -1198,6 +1213,7 @@ export async function createLuckyMeterScene({
         settleStart = null;
         if (idleStopped) {
           idleStopped = false;
+          watchdogStopped = false;
           surface.start();
         }
       }
@@ -1225,9 +1241,11 @@ export async function createLuckyMeterScene({
       }
     },
     start() {
+      watchdogStopped = false;
       surface.start();
     },
     stop() {
+      watchdogStopped = false;
       idleStopped = true;
       surface.stop();
     },
@@ -1235,6 +1253,7 @@ export async function createLuckyMeterScene({
       clearReadyWatch();
       failed = true;
       announced = true;
+      watchdogStopped = false;
       window.removeEventListener('pointermove', wake);
       surface.dispose();
       materials.dispose();

@@ -114,6 +114,38 @@ describe('Lucky Meter audio delivery', () => {
     }
   });
 
+  it('does not reload the deferred cues on a second activation', async () => {
+    const audio = await loadAudioModule();
+    await audio.prepareLuckyMeterAudio();
+    await audio.prepareLuckyMeterAudio({ loadEventCues: true });
+
+    const byKey = Object.fromEntries(
+      audio.LUCKY_METER_SOUND_KEYS.map((key, index) => [key, howls[index]])
+    );
+    await audio.prepareLuckyMeterAudio({ loadEventCues: true });
+
+    expect(howls).toHaveLength(12);
+    for (const key of EVENT_KEYS) {
+      expect(byKey[key].load, `${key} should load once`).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('loads the deferred cues again after the shared set is released', async () => {
+    const audio = await loadAudioModule();
+    await audio.prepareLuckyMeterAudio();
+    await audio.prepareLuckyMeterAudio({ loadEventCues: true });
+    audio.releaseLuckyMeterAudio();
+
+    const before = howls.length;
+    await audio.prepareLuckyMeterAudio({ loadEventCues: true });
+    const recreated = howls.slice(before);
+
+    expect(recreated).toHaveLength(12);
+    const deferred = recreated.filter((howl) => howl.options.preload === false);
+    expect(deferred).toHaveLength(EVENT_KEYS.length);
+    expect(deferred.every((howl) => howl.load.mock.calls.length === 1)).toBe(true);
+  });
+
   it('loads the deferred cues even when activation races route-time preparation', async () => {
     const audio = await loadAudioModule();
     // Two calls before the dynamic import settles exercise the shared promise.

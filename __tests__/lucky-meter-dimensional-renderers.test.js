@@ -412,6 +412,39 @@ describe('Lucky Meter produced-frame reveal gate', () => {
     expect(onReady).not.toHaveBeenCalled();
   });
 
+  it('restarts a watchdog-stopped surface after the context is restored', async () => {
+    const scene = await createScene();
+
+    vi.advanceTimersByTime(READY_WATCHDOG_MS);
+    expect(surface.stop).toHaveBeenCalledTimes(1);
+    expect(onUnavailable).toHaveBeenCalledTimes(1);
+    expect(onReady).not.toHaveBeenCalled();
+
+    // The restore used to redraw once without restarting the animation loop.
+    // That single frame could then announce ready and retire the CSS fallback.
+    surface.start.mockClear();
+    callbacks.onContextRestored();
+    expect(onContextRestored).toHaveBeenCalledTimes(1);
+    expect(surface.start).toHaveBeenCalledTimes(1);
+
+    callbacks.onFrame({ elapsed: 0.016 });
+    flushFrames();
+    flushFrames();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(scene.ready).toBe(true);
+  });
+
+  it('does not restart a surface that was explicitly stopped before restore', async () => {
+    const scene = await createScene();
+    scene.stop();
+    surface.start.mockClear();
+
+    callbacks.onContextRestored();
+
+    expect(surface.start).not.toHaveBeenCalled();
+    expect(onReady).not.toHaveBeenCalled();
+  });
+
   it('cancels a pending announcement when the context is lost first', async () => {
     await createScene();
 

@@ -206,6 +206,9 @@ test.describe('Daily Resonance arrival and Start', () => {
   test('holds Start until the breeze has cleared, then starts the reading at 0', async ({
     page,
   }) => {
+    // This test can spend 15 s waiting for Start and another 20 s waiting for
+    // the first value; the default 30 s budget is shorter than both waits.
+    test.slow();
     await page.addInitScript(() => {
       const reading: { value?: string; plaque?: string } = {};
       (window as Window & { __luckyMeterStartReading?: typeof reading }).__luckyMeterStartReading =

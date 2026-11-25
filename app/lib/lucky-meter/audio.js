@@ -43,10 +43,14 @@ export const LUCKY_METER_CORE_SOUND_KEYS = CORE_SOUND_KEYS;
 
 let soundSet = null;
 let loadPromise = null;
+// Howler's load() has no loaded-state guard, so a second activation must not
+// restart the eight celebration fetches on the same shared set.
+let eventCuesLoaded = false;
 
 function reset() {
   soundSet = null;
   loadPromise = null;
+  eventCuesLoaded = false;
 }
 
 /**
@@ -65,7 +69,8 @@ export function prepareLuckyMeterAudio({ loadEventCues = false } = {}) {
   if (typeof window === 'undefined') return Promise.resolve(null);
 
   const finish = (set) => {
-    if (!loadEventCues || !set) return set;
+    if (!loadEventCues || !set || eventCuesLoaded) return set;
+    eventCuesLoaded = true;
     for (const [key, sound] of Object.entries(set)) {
       if (CORE_SOUND_KEY_SET.has(key)) continue;
       try {

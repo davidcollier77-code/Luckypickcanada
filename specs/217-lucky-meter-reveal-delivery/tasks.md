@@ -113,7 +113,7 @@ Single Next.js project at the repository root: `app/`, `components/`, `tests/`, 
 - [x] T021 Measure the production build and record the size in `specs/217-lucky-meter-reveal-delivery/tasks.md`; it must be strictly below 495 MiB.
 - [x] T022 Run `./freebuff-verify.sh` with the current Spec Kit base reference and record the result.
 - [x] T023 Update `memory-bank/activeContext.md` (current feature state, chosen fade duration) and `memory-bank/progress.md` (durable milestone) after implementation.
-- [ ] T024 Prepare one regular, non-draft, unmerged PR following `PR_SUBMISSION.md` with the required declarations after owner approval of the implementation results; no deployment.
+- [x] T024 Prepare one regular, non-draft, unmerged PR following `PR_SUBMISSION.md` with the required declarations after owner approval of the implementation results; no deployment.
 
 ---
 
@@ -210,7 +210,15 @@ Task: "T014 per-cue preload in app/lib/lucky-meter/audio.js"
 - **T022 complete.** `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0: 490 Python checker tests, **1,255 Vitest tests across 112 files**, TypeScript, Next.js build and the size cap, plus 51 documentation tests. The earlier attempt with `origin/main` was correctly rejected because it spans Specs 213–217; the task base is `a05be055`.
 - **T017 refreshed for the final build.** `evidence/reveal-transfer-final-local.json`: 1,473 KiB total / 590 KiB audio (unchanged), ready 791–948 ms, longest task 2,410–2,458 ms, TBT 3,449–3,540 ms. The first-composite task remains the dominant cost and is reported separately.
 - **T019 remains complete.** Limitations updated: software compositing only, no phone, SC-006 outstanding, fade blocking 0 ms separate from the first-composite stall.
-- **T024 pending.** Commit, push and open one regular, non-draft, unmerged PR after this record is committed.
+- **T024 complete.** One regular, non-draft, unmerged PR (#2033) was opened from `spec-217-lucky-meter-reveal-delivery` against `main` with the complete QA declaration.
+
+## Execution record — Post-submission review repairs (2026-11-25)
+
+- **Pullfrog P2 repaired.** The produced-frame gate now distinguishes a watchdog stop from an explicit stop. When a context is restored after the watchdog stopped the surface, the scene calls `surface.start()` before re-arming the gate; an explicit `stop()` still suppresses the restart. New tests cover watchdog → restore (surface restarted, ready only after a produced frame) and explicit stop → restore (no restart).
+- **Pullfrog P3 repaired.** Deferred celebration loading is now idempotent. `prepareLuckyMeterAudio({ loadEventCues: true })` sets a module flag after the first load; repeat activation on the same shared set cannot call Howler `load()` again. `reset()`/`releaseLuckyMeterAudio()` clear the flag so a newly created set loads normally. New tests cover double activation and release-then-reactivate.
+- **Visual QA shard 1 timeout repaired.** `holds Start until the breeze has cleared, then starts the reading at 0` can spend 15 s waiting for Start and another 20 s waiting for the first value, exceeding Playwright's 30 s default. It now calls `test.slow()`; assertions are unchanged.
+- **Protected-file declaration.** The PR description now carries the exact `Human Authorization: APPROVED` line required for the owner-authorized `app/globals.css` fade.
+- **Verification after repair.** Focused unit files 24/24; repo gate `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 with **1,259 Vitest tests across 112 files**, 490 Python checker tests, 51 docs tests, and a clean production build of **437,895,168 bytes (417.61 MiB)**. Affected Playwright cases passed **9/9** across desktop, mobile-390 and mobile-412.
 
 ## Notes
 

@@ -1,3 +1,10 @@
+## 2026-11-25 — Spec 217 review repairs and merge readiness
+
+- Repaired Pullfrog P2: a surface stopped by the no-frame watchdog is restarted when the WebGL context is restored, so the one-frame restore cannot announce ready behind a stopped animation loop. An explicit stop still prevents restart, and both paths have regression tests.
+- Repaired Pullfrog P3: celebration-cue loading is idempotent across repeated activations on the shared Howl set and resets when the set is released; tests cover double activation and release-then-reactivate.
+- Repaired Visual QA shard 1's hard timeout by giving the sequential 15 s + 20 s Start test its required budget with `test.slow()`; assertions are unchanged. The PR description now carries the exact protected-file authorization declaration for the owner-approved `app/globals.css` fade.
+- Verified: 24 focused unit tests, full suite **1,259/1,259** across 112 files, **9/9** affected Playwright cases on desktop/mobile-390/mobile-412, `tsc --noEmit` exit 0, 490 Python and 51 docs tests, clean production build **437,895,168 bytes (417.61 MiB)**, and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0. PR #2033 remains open, non-draft and unmerged for the owner.
+
 ## 2026-11-24 — Lucky Meter reveal hand-off and mobile delivery (spec 217)
 
 - Replaced the fixed 90 ms readiness timer with a produced-frame gate: the first `onFrame` is followed by two animation frames before `meter-ready`, and a 3,000 ms watchdog stops the surface and keeps the CSS fallback when no frame is produced. Context loss and disposal cancel the pending announcement.

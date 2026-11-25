@@ -48,6 +48,16 @@ never a candidate duration.
 
 **Transfer (T017, final build).** Three cold mobile runs on the final combined build: 1,473 KiB total and 590 KiB audio, against the Phase 0 local reference of 3,771 KiB total and 2,889 KiB audio. Both SC-002 targets pass. The 2,410–2,458 ms first-composite task and 3,449–3,540 ms TBT are unchanged; this work does not claim to remove them. Final evidence: `reveal-transfer-final-local.json` and the three source runs.
 
+## Post-submission review repairs (2026-11-25)
+
+Two reviewer findings were validated and repaired in the application code, with a third test-budget repair for CI:
+
+- **P2 — watchdog stop and context restore.** A surface stopped by the 3,000 ms no-frame watchdog previously stayed stopped after a context restore. The restore path redrew one frame, which could announce ready and remove the CSS fallback while the animation loop was still off. `meter-scene.js` now tracks the watchdog cause and calls `surface.start()` on restore before re-arming the gate; an explicit `stop()` clears the flag and is still honored. Tests cover watchdog → restore and explicit stop → restore.
+- **P3 — repeated deferred-cue loads.** `prepareLuckyMeterAudio({ loadEventCues: true })` called Howler `load()` on all eight celebration cues on every activation. A module-level flag now makes the first load idempotent for the shared set; `reset()`/`releaseLuckyMeterAudio()` clear it so a new set loads normally. Tests cover double activation and release-then-reactivate.
+- **Visual QA timeout.** The older `holds Start` test can wait 15 s for Start and 20 s for the first value, exceeding the default 30 s test budget. It now uses `test.slow()`; no assertion changed.
+
+Post-repair verification: focused unit files **24/24**, full suite **1,259/1,259** across 112 files, affected Playwright **9/9** on desktop/mobile-390/mobile-412, 490 Python and 51 docs tests, and a clean build of **437,895,168 bytes (417.61 MiB)** below the 495 MiB cap.
+
 ## Host limitation
 
 This workspace has no hardware GPU and no physical phone. Chromium reports
