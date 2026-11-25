@@ -210,7 +210,7 @@ Task: "T014 per-cue preload in app/lib/lucky-meter/audio.js"
 - **T022 complete.** `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0: 490 Python checker tests, **1,255 Vitest tests across 112 files**, TypeScript, Next.js build and the size cap, plus 51 documentation tests. The earlier attempt with `origin/main` was correctly rejected because it spans Specs 213–217; the task base is `a05be055`.
 - **T017 refreshed for the final build.** `evidence/reveal-transfer-final-local.json`: 1,473 KiB total / 590 KiB audio (unchanged), ready 791–948 ms, longest task 2,410–2,458 ms, TBT 3,449–3,540 ms. The first-composite task remains the dominant cost and is reported separately.
 - **T019 remains complete.** Limitations updated: software compositing only, no phone, SC-006 outstanding, fade blocking 0 ms separate from the first-composite stall.
-- **T024 complete.** One regular, non-draft, unmerged PR (#2033) was opened from `spec-217-lucky-meter-reveal-delivery` against `main` with the complete QA declaration.
+- **T024 complete.** One regular, non-draft PR (#2033) was opened from `spec-217-lucky-meter-reveal-delivery` against `main` with the complete QA declaration.
 
 ## Execution record — Post-submission review repairs (2026-11-25)
 
@@ -219,10 +219,11 @@ Task: "T014 per-cue preload in app/lib/lucky-meter/audio.js"
 - **Visual QA shard 1 timeout repaired.** `holds Start until the breeze has cleared, then starts the reading at 0` can spend 15 s waiting for Start and another 20 s waiting for the first value, exceeding Playwright's 30 s default. It now calls `test.slow()`; assertions are unchanged.
 - **Protected-file declaration.** The PR description now carries the exact `Human Authorization: APPROVED` line required for the owner-authorized `app/globals.css` fade.
 - **Verification after repair.** Focused unit files 24/24; repo gate `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 with **1,259 Vitest tests across 112 files**, 490 Python checker tests, 51 docs tests, and a clean production build of **437,895,168 bytes (417.61 MiB)**. Affected Playwright cases passed **9/9** across desktop, mobile-390 and mobile-412.
+- **Merge outcome.** PR #2033 merged into `main` at `2026-11-25T00:38:11Z` (2026-11-24 20:38:11 Atlantic), merge commit `ae844b4902a387cde508a4d1a312c9a535ad29ff`. The current `main` ref was verified at the same SHA. SC-006 physical-device GPU verification remains outstanding.
 
 ## Notes
 
 - The fade is retained by default; 600 ms is kept unless the rule is satisfied.
 - The 2.2–2.6 s first-composite stall is measured separately and is not attributed to the fade.
 - No new dependency, service, route, preloader or audio system.
-- No deployment, no force-push, no protected configuration.
+- No manual deployment command, force-push or protected-configuration change was performed. A push to `main` invokes the existing Cloudflare deployment workflow; its run result is separate from this task record.

@@ -28,7 +28,7 @@ No new dependency, preloader, renderer, audio system or service. Render density,
 
 **Performance Goals**: Pre-activation audio ≤650 KiB and total transfer ≤1,650 KiB cold mobile; the fade keeps its transition while shedding avoidable composited frames; the gate removes premature reveals.
 
-**Constraints**: Preserve composition, palette, storyboard timings, celebration, audio mix, fallback design, render tiers, 495 MiB cap. No deployment, dependency or protected configuration.
+**Constraints**: Preserve composition, palette, storyboard timings, celebration, audio mix, fallback design, render tiers and the 495 MiB cap. No manual deployment step, dependency change or protected configuration change is part of this feature.
 
 **Scale/Scope**: `app/globals.css` (duration only, if supported), `app/lib/lucky-meter/meter-scene.js` (gate), `app/lib/lucky-meter/audio.js` (preload policy), focused tests, one Playwright file, feature evidence.
 
@@ -36,7 +36,7 @@ No new dependency, preloader, renderer, audio system or service. Render density,
 
 - **Single Source of Truth**: `AGENTS.md` remains authoritative.
 - **Verify Before Acting**: canvas, timer, CSS rule, cue sizes and history were inspected; the 3 MP assumption was measured and corrected; the fade benchmark was run before choosing a duration.
-- **Implementation Sequence**: specify → plan → tasks → implementation completed under owner approval; PR pending owner review.
+- **Implementation Sequence**: specify → plan → tasks → implementation completed under owner approval. The PR was submitted for owner review; the final merge outcome is recorded below.
 - **Protect Core Systems**: no payment, auth, database, deployment or secret configuration.
 - **Resource Conservation**: no new dependency or service; audio bytes fall.
 
@@ -164,7 +164,7 @@ memory-bank/progress.md                          durable milestone after merge
 - Three cold mobile probe runs on the local production build; compare with Phase 0; label deployed runs separately.
 - `./freebuff-verify.sh`; production build strictly below 495 MiB.
 - Full diff review against the preserved invariants.
-- One regular, non-draft, unmerged PR after approval; no deployment.
+- Submit one regular, non-draft PR after approval and leave it open for owner review; no manual deployment step is part of implementation.
 
 ## Deferred
 
@@ -172,3 +172,11 @@ memory-bank/progress.md                          durable milestone after merge
 - Reducing GPU first-frame work (program count, materials, instancing, precompile).
 - Any pixel-ratio, tier or density change; `alpha: false`; removing the idle animation.
 - Physical-device and PSI verification of the mobile frame claim.
+
+
+## Final outcome (2026-11-25 UTC)
+
+- PR [#2033](https://github.com/davidcollier77-code/Luckypickcanada/pull/2033) merged into `main` at `2026-11-25T00:38:11Z` (2026-11-24 20:38:11 Atlantic).
+- Merge commit: `ae844b4902a387cde508a4d1a312c9a535ad29ff`; the current `main` ref was checked and points to this same commit.
+- The implementation and the post-submission watchdog, audio-loading and Playwright-timeout repairs are complete. SC-006 remains outstanding because this work had software-rendering evidence only, not physical-device GPU verification.
+- The feature did not run a manual deployment command. The existing `.github/workflows/deploy-open-next.yml` is triggered by pushes to `main`; deployment success must be taken from that workflow's result, not inferred from the merge record.
