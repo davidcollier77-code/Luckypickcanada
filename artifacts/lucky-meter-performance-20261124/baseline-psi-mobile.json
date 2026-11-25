@@ -1,0 +1,50 @@
+{
+  "source": "PageSpeed Insights web UI (API quota exhausted: HTTP 429, queries per day)",
+  "url": "https://pagespeed.web.dev/analysis/https-luckypickcanada-ca-lucky-meter/q1nf43ejwr6uyefr7m5s33?form_factor=mobile",
+  "measuredPage": "https://luckypickcanada.ca/lucky-meter",
+  "reportTimestamp": "Report from Nov 24, 2026, 2:46:55 PM",
+  "capturedAt": "Captured at Nov 24, 2026, 2:46 PM EST",
+  "strategy": "mobile",
+  "environment": {
+    "device": "Emulated Moto G Power with Lighthouse 13.6.0",
+    "throttling": "Slow 4G throttling",
+    "browser": "HeadlessChromium 157.0.8103.38",
+    "session": "Single page session, initial page load"
+  },
+  "scores": {
+    "performance": 68,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "agenticBrowsing": "2/2"
+  },
+  "metrics": {
+    "firstContentfulPaint": "0.9 s",
+    "largestContentfulPaint": "0.9 s",
+    "totalBlockingTime": "15,500 ms",
+    "cumulativeLayoutShift": "0",
+    "speedIndex": "4.2 s"
+  },
+  "diagnostics": {
+    "minimizeMainThreadWork": "40.7 s",
+    "reduceJavaScriptExecutionTime": "1.4 s",
+    "reduceUnusedJavaScript": "Est savings of 128 KiB",
+    "avoidEnormousNetworkPayloads": "Total size was 3,589 KiB",
+    "avoidLongMainThreadTasks": "20 long tasks found",
+    "userTimingMarksAndMeasures": "3 user timings"
+  },
+  "insights": {
+    "renderBlockingRequests": "Est savings of 620 ms",
+    "useEfficientCacheLifetimes": "Est savings of 4 KiB",
+    "improveImageDelivery": "Est savings of 57 KiB",
+    "legacyJavaScript": "Est savings of 22 KiB",
+    "networkDependencyTree": "reported",
+    "lcpBreakdown": "reported",
+    "thirdParties": "reported"
+  },
+  "notes": [
+    "The PSI API returned HTTP 429 (daily quota exhausted), so this result was read from the PageSpeed Insights web report.",
+    "PSI runs Lighthouse in a headless browser; on datacenter hardware without a GPU the WebGL scene is software-rendered, so TBT and main-thread-work figures include software compositing cost. Treat this as the PSI score of record, not as a physical-phone frame budget.",
+    "Diagnostics are quoted verbatim from the report; no opportunity detail was opened."
+  ]
+}

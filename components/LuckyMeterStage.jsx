@@ -11,6 +11,9 @@ import { LUCKY_COLOUR_LABEL, LUCKY_NUMBER_MAX, LUCKY_NUMBER_MIN } from '../app/l
 
 /** The stage's camera maps the wheel centre to this point in its square box. */
 const WHEEL_CENTRE_TOP = '33.5%';
+// Only a stuck-state guard: the measured first composite can exceed 3 s on a
+// loaded software host, and the canvas is already above the fallback by then.
+const FALLBACK_RETIRE_MS = 6000;
 const POINTER_LEFT = '28.3%';
 const POINTER_TOP = '55.2%';
 const VESSEL_LEFT = '29.4%';
@@ -95,6 +98,7 @@ export default function LuckyMeterStage({
   const hostRef = useRef(null);
   const sceneRef = useRef(null);
   const [renderMode, setRenderMode] = useState('pending');
+  const [fallbackRetired, setFallbackRetired] = useState(false);
 
   const palette = Array.isArray(colours) ? colours : [];
   const selectedIndex = selectedChamberIndex(palette, colourId);
@@ -113,7 +117,7 @@ export default function LuckyMeterStage({
     Number.isInteger(number) && number >= LUCKY_NUMBER_MIN && number <= LUCKY_NUMBER_MAX
       ? number
       : null;
-  const showFallback = renderMode !== 'three';
+  const showFallback = renderMode !== 'three' || !fallbackRetired;
   const grain = Math.max(0, Math.min(1, colour?.texture?.grain ?? 0.1));
   const sheen = Math.max(0, Math.min(1, colour?.texture?.sheen ?? 0.3));
 
@@ -199,6 +203,103 @@ export default function LuckyMeterStage({
       canvas = null;
     };
   }, []);
+
+  /**
+   * The canvas starts at opacity 0 and fades in. Removing the complete CSS meter
+   * in the same render as `is-ready` left the stage empty until the first
+   * canvas composite (~2 s on the measured software host). Keep the fallback
+   * beneath the incoming canvas until the canvas is actually visible, with a
+   * bound so a missing transition cannot leave it mounted. Context loss resets
+   * the hold so the CSS meter returns as it does today.
+   */
+  useEffect(() => {
+    if (renderMode !== 'three') {
+      setFallbackRetired(false);
+      return undefined;
+    }
+    const host = hostRef.current;
+    if (!host) {
+      setFallbackRetired(true);
+      return undefined;
+    }
+
+    let cancelled = false;
+    let frame = 0;
+    let bound = 0;
+    let retired = false;
+
+    const retire = () => {
+      if (cancelled || retired) return;
+      retired = true;
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+      if (bound) {
+        window.clearTimeout(bound);
+        bound = 0;
+      }
+      setFallbackRetired(true);
+    };
+
+    const sample = () => {
+      frame = 0;
+      if (cancelled || retired) return;
+      const raw = window.getComputedStyle(host).opacity;
+      const opacity = raw === '' ? Number.NaN : Number(raw);
+      if (!Number.isFinite(opacity) || opacity > 0) {
+        retire();
+        return;
+      }
+      frame = window.requestAnimationFrame(sample);
+    };
+
+    const onTransitionEnd = (event) => {
+      if (event.target === host && (!event.propertyName || event.propertyName === 'opacity')) {
+        retire();
+      }
+    };
+    host.addEventListener('transitionend', onTransitionEnd);
+
+    const retireUnlessStillTransparent = () => {
+      bound = 0;
+      if (cancelled || retired) return;
+      const current = window.getComputedStyle(host).opacity;
+      const value = current === '' ? Number.NaN : Number(current);
+      if (!Number.isFinite(value) || value > 0) {
+        retire();
+        return;
+      }
+      // The canvas is still invisible, so the complete CSS meter is the
+      // correct art. Stop polling; the transition-end listener can still
+      // retire it if the browser eventually runs the transition.
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    };
+
+    const raw = window.getComputedStyle(host).opacity;
+    const opacity = raw === '' ? Number.NaN : Number(raw);
+    if (!Number.isFinite(opacity) || opacity > 0) {
+      // No opacity signal (for example jsdom) or already visible: there is
+      // nothing to retain. A browser starts this at 0 and waits.
+      retire();
+    } else {
+      frame = window.requestAnimationFrame(sample);
+      // The measured first-composite stall runs to ~2.2 s after ready and can
+      // be longer under load; this stops polling, it never removes a fallback
+      // while the canvas is still transparent.
+      bound = window.setTimeout(retireUnlessStillTransparent, FALLBACK_RETIRE_MS);
+    }
+
+    return () => {
+      cancelled = true;
+      if (frame) window.cancelAnimationFrame(frame);
+      if (bound) window.clearTimeout(bound);
+      host.removeEventListener('transitionend', onTransitionEnd);
+    };
+  }, [renderMode]);
 
   useEffect(() => {
     sceneRef.current?.setState({

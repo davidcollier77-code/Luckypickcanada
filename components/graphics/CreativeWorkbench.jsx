@@ -293,7 +293,8 @@ export default function CreativeWorkbench() {
     const cue = isWorkbenchCue(name) ? name : activeScene.cue;
     try {
       const audio = await import('../../app/lib/lucky-meter/audio.js');
-      const sounds = await audio.prepareLuckyMeterAudio();
+      // Dev-only cue auditioning: load the deferred celebration cues too.
+      const sounds = await audio.prepareLuckyMeterAudio({ loadEventCues: true });
       const sound = sounds?.[cue] ?? audio.getLuckyMeterAudio()?.[cue];
       if (!sound || typeof sound.play !== 'function') {
         return { ok: false, cue, reason: 'cue-unavailable' };

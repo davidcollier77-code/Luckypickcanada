@@ -1,0 +1,71 @@
+{
+  "measuredAt": "2026-11-24T22:49:32.835Z",
+  "url": "http://127.0.0.1:3100/lucky-meter",
+  "cacheState": "cold context",
+  "clickAt": 8540,
+  "stageVisibleAt": 33246,
+  "preActivation": {
+    "files": [
+      "freesound_community-starship-rail-gun-charge-35904.mp3",
+      "crystal-ball-leaf.mp3",
+      "mixkit-magic-sparkles.mp3",
+      "chime-sound.mp3"
+    ],
+    "audioBytes": 604579,
+    "onlyOpeningCues": true,
+    "celebrationRequested": []
+  },
+  "postActivation": {
+    "files": [
+      "freesound_community-starship-rail-gun-charge-35904.mp3",
+      "crystal-ball-leaf.mp3",
+      "mixkit-magic-sparkles.mp3",
+      "chime-sound.mp3",
+      "dragon-studio-whoosh-cinematic-376875.mp3",
+      "mixkit-cinematic-impact.mp3",
+      "freesound_community-fireworks-1-94483.mp3",
+      "mixkit-magical-impact.mp3",
+      "mixkit-firework-crackle.mp3",
+      "mixkit-firework-whistle.mp3",
+      "lucky-meter-finale-boom.wav",
+      "lucky-meter-thunder-rumble.wav",
+      "button-click.wav"
+    ],
+    "allCelebrationRequested": true,
+    "requestedAfterClick": {
+      "dragon-studio-whoosh-cinematic-376875.mp3": true,
+      "mixkit-cinematic-impact.mp3": true,
+      "freesound_community-fireworks-1-94483.mp3": true,
+      "mixkit-magical-impact.mp3": true,
+      "mixkit-firework-crackle.mp3": true,
+      "mixkit-firework-whistle.mp3": true,
+      "lucky-meter-finale-boom.wav": true,
+      "lucky-meter-thunder-rumble.wav": true
+    },
+    "lastCelebrationResponseEnd": 8773,
+    "celebrationBytes": 2353506,
+    "allLoadedBeforeStage": true,
+    "marginMs": 24473
+  },
+  "cueMap": {
+    "opening": [
+      "freesound_community-starship-rail-gun-charge-35904.mp3",
+      "crystal-ball-leaf.mp3",
+      "mixkit-magic-sparkles.mp3",
+      "chime-sound.mp3"
+    ],
+    "celebration": [
+      "dragon-studio-whoosh-cinematic-376875.mp3",
+      "mixkit-cinematic-impact.mp3",
+      "freesound_community-fireworks-1-94483.mp3",
+      "mixkit-magical-impact.mp3",
+      "mixkit-firework-crackle.mp3",
+      "mixkit-firework-whistle.mp3",
+      "lucky-meter-finale-boom.wav",
+      "lucky-meter-thunder-rumble.wav"
+    ]
+  },
+  "console": [],
+  "pageErrors": [],
+  "wallClockMs": 33414
+}

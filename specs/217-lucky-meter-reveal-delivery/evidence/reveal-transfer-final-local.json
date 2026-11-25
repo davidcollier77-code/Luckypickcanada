@@ -1,0 +1,52 @@
+{
+  "measuredAt": "2026-11-24T23:39:06.085305+00:00",
+  "url": "http://127.0.0.1:3100/lucky-meter",
+  "label": "final combined build (US1+US2), production build, cold mobile context, 8 s settle, no Start press",
+  "runs": 3,
+  "phase0LocalReference": {
+    "totalTransferKiB": 3771,
+    "audioKiB": 2889,
+    "longestTaskMs": 2080,
+    "totalBlockingTimeMs": 3200
+  },
+  "after": {
+    "totalTransferKiB": [
+      1473
+    ],
+    "audioTransferKiB": [
+      590
+    ],
+    "audioRequestCount": [
+      4
+    ],
+    "meterReadyMs": [
+      892.2,
+      947.7,
+      791.1
+    ],
+    "longestTaskMs": [
+      2410,
+      2458,
+      2453
+    ],
+    "totalBlockingTimeMs": [
+      3449,
+      3540,
+      3479
+    ],
+    "audioFirstStartMs": [
+      3746,
+      3866,
+      3710
+    ]
+  },
+  "successCriteria": {
+    "SC-002": "PASS \u2014 1,473 KiB total and 590 KiB audio, under the 1,650 / 650 KiB targets on this cold mobile profile",
+    "SC-006": "OUTSTANDING \u2014 no hardware GPU in this workspace"
+  },
+  "notes": [
+    "This is the final combined build: 300 ms fade, produced-frame gate, retained fallback and activation-gated audio.",
+    "The 2.4 s first-composite task is unchanged and remains the dominant cost; it is reported separately from the 0 ms fade blocking.",
+    "Software compositing (SwiftShader); not a phone measurement."
+  ]
+}

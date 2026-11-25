@@ -1,3 +1,17 @@
+## 2026-11-25 — Spec 217 review repairs and merge readiness
+
+- Repaired Pullfrog P2: a surface stopped by the no-frame watchdog is restarted when the WebGL context is restored, so the one-frame restore cannot announce ready behind a stopped animation loop. An explicit stop still prevents restart, and both paths have regression tests.
+- Repaired Pullfrog P3: celebration-cue loading is idempotent across repeated activations on the shared Howl set and resets when the set is released; tests cover double activation and release-then-reactivate.
+- Repaired Visual QA shard 1's hard timeout by giving the sequential 15 s + 20 s Start test its required budget with `test.slow()`; assertions are unchanged. The PR description now carries the exact protected-file authorization declaration for the owner-approved `app/globals.css` fade.
+- Verified: 24 focused unit tests, full suite **1,259/1,259** across 112 files, **9/9** affected Playwright cases on desktop/mobile-390/mobile-412, `tsc --noEmit` exit 0, 490 Python and 51 docs tests, clean production build **437,895,168 bytes (417.61 MiB)**, and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0. PR #2033 remains open, non-draft and unmerged for the owner.
+
+## 2026-11-24 — Lucky Meter reveal hand-off and mobile delivery (spec 217)
+
+- Replaced the fixed 90 ms readiness timer with a produced-frame gate: the first `onFrame` is followed by two animation frames before `meter-ready`, and a 3,000 ms watchdog stops the surface and keeps the CSS fallback when no frame is produced. Context loss and disposal cancel the pending announcement.
+- Adopted the measured 300 ms fade (4 → 2 median transition frames, 0 ms blocking) and retained the complete CSS fallback until the canvas host's computed opacity leaves 0 or `transitionend` fires; a 6 s guard stops polling but never removes it while the canvas is transparent. This removes the measured 1,976–2,304 ms empty stage without touching the scene.
+- Kept celebration audio activation-gated: the four opening cues stay eager, the eight celebration cues use `preload: false`, and activation explicitly loads them through the same shared set (Howler queues an unloaded cue but does not fetch it on `play()`).
+- Verified: 219 focused Vitest, full suite 1,255/1,255 across 112 files, `tsc --noEmit` exit 0, full Lucky Meter Playwright 54 passed / 6 opt-in captures skipped on desktop and both mobile projects, final transfer 1,473 KiB total / 590 KiB audio, final build 456,519,680 bytes (435.37 MiB), and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 with 490 Python and 51 docs tests. SC-006 and physical-device smoothness remain outstanding.
+
 ## 2026-11-24 — ChatGPT browser-access priority (spec 216)
 
 - Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.

@@ -940,11 +940,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
   }, [clearSequence]);
 
-  /** Loads the shared Lucky Meter sound set on first activation. */
+  /** Loads the shared set and starts the deferred celebration cues on activation. */
   const ensureRevealAudio = useCallback(async () => {
-    if (getLuckyMeterAudio()) return;
     try {
-      await prepareLuckyMeterAudio();
+      await prepareLuckyMeterAudio({ loadEventCues: true });
     } catch (error) {
       // Audio is optional; a blocked or missing sound must never stop the reveal.
       console.warn('Lucky Meter audio unavailable; continuing without sound.', error);

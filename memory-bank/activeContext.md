@@ -1,4 +1,16 @@
-# Active Context — Device capability and observability (Spec 215)
+# Active Context — Lucky Meter reveal hand-off (Spec 217)
+
+## Current Task — Implement Spec 217 and prepare one unmerged PR
+
+- **Scope:** the owner-approved 300 ms canvas fade, a produced-frame gate with a 3,000 ms no-frame watchdog in `app/lib/lucky-meter/meter-scene.js`, the retained CSS fallback in `components/LuckyMeterStage.jsx` until the canvas opacity leaves 0, and activation-gated celebration audio in `app/lib/lucky-meter/audio.js`. No scene, composition, storyboard, cue-map, render-tier or dependency change.
+- **Gate:** the owner approved 300 ms and the retained-fallback hand-off on 2026-11-24. The gate tests drive the real `createLuckyMeterScene` with only the shared surface stubbed: no 90 ms announcement, frame + two animation frames, watchdog stops the surface and calls `onUnavailable`, context loss and disposal cancel pending work.
+- **Retained fallback:** the CSS meter stays beneath the canvas until computed opacity leaves 0 or `transitionend` fires. The 6 s guard stops polling but never removes the fallback while the canvas is transparent, so a long first composite cannot recreate the empty stage. Playwright observed ready + fallback + opacity 0, then removal only at positive opacity, on desktop and both mobile projects.
+- **Post-submission review repairs:** the gate now restarts a watchdog-stopped surface after context restore (an explicit stop still suppresses it); deferred celebration loading is idempotent and resets with the shared set; the sequential-wait Playwright test uses `test.slow()` to cover its 15 s + 20 s waits. Both Pullfrog findings have regression tests.
+- **Verification:** focused unit files **24/24**; full suite **1,259/1,259** across 112 files; `tsc --noEmit` exit 0; affected Playwright cases **9/9** on desktop and both mobile projects; full Lucky Meter Playwright **54 passed / 6 opt-in captures skipped** before the review repairs; final cold transfer **1,473 KiB total / 590 KiB audio**; clean production build **437,895,168 bytes (417.61 MiB)**, below 495 MiB; `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 (490 Python checker tests, 51 docs tests).
+- **Limits:** software compositing only; SC-006 remains outstanding; the 2.4 s first-composite task is unchanged and reported separately from the 0 ms fade blocking.
+- **PR status:** PR #2033 is open, non-draft and unmerged against `main`; review repairs are being pushed for a refreshed current-head report. No deployment.
+
+# Previous Context — Device capability and observability (Spec 215)
 
 ## Current Task — Complete device capability and observability (Spec 215)
 

@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
 import {
   MEDALLION_PROFILE,
   buildMapleLeafGeometry,
@@ -23,6 +24,17 @@ import {
   sampleSceneLightLift,
 } from '../app/lib/gpu-scene-light';
 import { resolveRenderQuality } from '../app/lib/graphics-capabilities';
+import { READY_WATCHDOG_MS, createLuckyMeterScene } from '../app/lib/lucky-meter/meter-scene';
+
+/**
+ * The reveal gate runs inside the real meter scene. The shared surface is the
+ * only stubbed boundary: it gives the test control over when a frame arrives,
+ * while the scene and its readiness ordering run as they do in production.
+ */
+const surfaceFactory = vi.hoisted(() => ({ create: vi.fn() }));
+vi.mock('../app/lib/graphics/runtime.js', () => ({
+  createCreativeSurface: surfaceFactory.create,
+}));
 
 /**
  * Focused guards for the dimensional renderers added in this pass.
@@ -275,5 +287,190 @@ describe('ornament and mesh quality budgets', () => {
     expect(constrained.ornament.near).toBe(0);
     expect(constrained.foreground).toBe(false);
     expect(constrained.haze).toBe(false);
+  });
+});
+
+function makeStage() {
+  const renderer = {
+    capabilities: { getMaxAnisotropy: () => 8, isWebGL2: true },
+    setPixelRatio() {},
+    setSize() {},
+    getPixelRatio: () => 1,
+    getSize: () => ({ width: 1, height: 1 }),
+  };
+  return {
+    three: THREE,
+    scene: new THREE.Scene(),
+    camera: new THREE.PerspectiveCamera(32, 1, 0.1, 60),
+    renderer,
+    quality: { tier: 'balanced', sparkBudget: 560, particleScale: 1, maxPixelRatio: 1.6 },
+    budget: { lights: 2, maxPixelRatio: 1.6 },
+    size: { width: 1, height: 1, pixelRatio: 1 },
+  };
+}
+
+describe('Lucky Meter produced-frame reveal gate', () => {
+  let callbacks;
+  let surface;
+  let onReady;
+  let onUnavailable;
+  let onContextLost;
+  let onContextRestored;
+  let frames;
+  let nextFrameId;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    vi.stubGlobal('WebGLRenderingContext', function WebGLRenderingContext() {});
+    callbacks = null;
+    frames = new Map();
+    nextFrameId = 0;
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+      nextFrameId += 1;
+      frames.set(nextFrameId, callback);
+      return nextFrameId;
+    });
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((handle) => {
+      frames.delete(handle);
+    });
+    onReady = vi.fn();
+    onUnavailable = vi.fn();
+    onContextLost = vi.fn();
+    onContextRestored = vi.fn();
+    surface = {
+      kind: 'three',
+      stage: makeStage(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      render: vi.fn(),
+      dispose: vi.fn(),
+    };
+    surfaceFactory.create.mockReset();
+    surfaceFactory.create.mockImplementation(async (options) => {
+      callbacks = options;
+      return surface;
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function flushFrames(time = 16) {
+    const pending = [...frames.values()];
+    frames.clear();
+    for (const callback of pending) callback(time);
+  }
+
+  async function createScene() {
+    const scene = await createLuckyMeterScene({
+      canvas: document.createElement('canvas'),
+      onReady,
+      onUnavailable,
+      onContextLost,
+      onContextRestored,
+    });
+    expect(scene).not.toBeNull();
+    expect(callbacks).not.toBeNull();
+    return scene;
+  }
+
+  it('does not announce before a frame and announces only after two animation frames', async () => {
+    const scene = await createScene();
+
+    // The old fixed 90 ms timer must no longer hand over an unpainted canvas.
+    vi.advanceTimersByTime(90);
+    expect(onReady).not.toHaveBeenCalled();
+
+    callbacks.onFrame({ elapsed: 0.016 });
+    flushFrames();
+    expect(onReady).not.toHaveBeenCalled();
+
+    flushFrames();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(scene.ready).toBe(true);
+  });
+
+  it('stopped the surface and kept the fallback when no frame arrives within the watchdog', async () => {
+    const scene = await createScene();
+
+    vi.advanceTimersByTime(READY_WATCHDOG_MS - 1);
+    expect(onUnavailable).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1);
+    expect(surface.stop).toHaveBeenCalledTimes(1);
+    expect(onUnavailable).toHaveBeenCalledTimes(1);
+    expect(onReady).not.toHaveBeenCalled();
+    expect(scene.ready).toBe(false);
+
+    // A late frame must never turn the failed wait into a hand-off.
+    callbacks.onFrame({ elapsed: 0.1 });
+    flushFrames();
+    flushFrames();
+    expect(onReady).not.toHaveBeenCalled();
+  });
+
+  it('restarts a watchdog-stopped surface after the context is restored', async () => {
+    const scene = await createScene();
+
+    vi.advanceTimersByTime(READY_WATCHDOG_MS);
+    expect(surface.stop).toHaveBeenCalledTimes(1);
+    expect(onUnavailable).toHaveBeenCalledTimes(1);
+    expect(onReady).not.toHaveBeenCalled();
+
+    // The restore used to redraw once without restarting the animation loop.
+    // That single frame could then announce ready and retire the CSS fallback.
+    surface.start.mockClear();
+    callbacks.onContextRestored();
+    expect(onContextRestored).toHaveBeenCalledTimes(1);
+    expect(surface.start).toHaveBeenCalledTimes(1);
+
+    callbacks.onFrame({ elapsed: 0.016 });
+    flushFrames();
+    flushFrames();
+    expect(onReady).toHaveBeenCalledTimes(1);
+    expect(scene.ready).toBe(true);
+  });
+
+  it('does not restart a surface that was explicitly stopped before restore', async () => {
+    const scene = await createScene();
+    scene.stop();
+    surface.start.mockClear();
+
+    callbacks.onContextRestored();
+
+    expect(surface.start).not.toHaveBeenCalled();
+    expect(onReady).not.toHaveBeenCalled();
+  });
+
+  it('cancels a pending announcement when the context is lost first', async () => {
+    await createScene();
+
+    callbacks.onFrame({ elapsed: 0.016 });
+    flushFrames();
+    callbacks.onContextLost();
+    flushFrames();
+    flushFrames();
+    vi.advanceTimersByTime(READY_WATCHDOG_MS);
+
+    expect(onContextLost).toHaveBeenCalledTimes(1);
+    expect(onReady).not.toHaveBeenCalled();
+    expect(onUnavailable).not.toHaveBeenCalled();
+  });
+
+  it('cancels a pending announcement when the scene is disposed', async () => {
+    const scene = await createScene();
+
+    callbacks.onFrame({ elapsed: 0.016 });
+    flushFrames();
+    scene.dispose();
+    flushFrames();
+    flushFrames();
+    vi.advanceTimersByTime(READY_WATCHDOG_MS);
+
+    expect(onReady).not.toHaveBeenCalled();
+    expect(surface.stop).not.toHaveBeenCalled();
   });
 });

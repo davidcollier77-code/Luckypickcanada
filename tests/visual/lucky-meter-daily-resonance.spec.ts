@@ -47,6 +47,27 @@ const TIERS = {
 
 type TierId = keyof typeof TIERS;
 
+/** The four cues needed to begin the ritual; these may load before Start. */
+const OPENING_AUDIO = [
+  '/freesound_community-starship-rail-gun-charge-35904.mp3',
+  '/sounds/crystal-ball-leaf.mp3',
+  '/sounds/crystal-ball-leaf.wav',
+  '/sounds/mixkit-magic-sparkles.mp3',
+  '/sounds/chime-sound.mp3',
+];
+
+/** The eight celebration cues; none may be requested before activation. */
+const CELEBRATION_AUDIO = [
+  '/dragon-studio-whoosh-cinematic-376875.mp3',
+  '/sounds/mixkit-cinematic-impact.mp3',
+  '/freesound_community-fireworks-1-94483.mp3',
+  '/sounds/mixkit-magical-impact.mp3',
+  '/sounds/mixkit-firework-crackle.mp3',
+  '/sounds/mixkit-firework-whistle.mp3',
+  '/sounds/lucky-meter-finale-boom.wav',
+  '/sounds/lucky-meter-thunder-rumble.wav',
+];
+
 function localDateKey() {
   const now = new Date();
   const month = `${now.getMonth() + 1}`.padStart(2, '0');
@@ -185,6 +206,9 @@ test.describe('Daily Resonance arrival and Start', () => {
   test('holds Start until the breeze has cleared, then starts the reading at 0', async ({
     page,
   }) => {
+    // This test can spend 15 s waiting for Start and another 20 s waiting for
+    // the first value; the default 30 s budget is shorter than both waits.
+    test.slow();
     await page.addInitScript(() => {
       const reading: { value?: string; plaque?: string } = {};
       (window as Window & { __luckyMeterStartReading?: typeof reading }).__luckyMeterStartReading =
@@ -246,6 +270,142 @@ test.describe('Daily Resonance arrival and Start', () => {
     await expect(pointer).toHaveAttribute('data-position', '7.5');
     // The meter contains no SVG artwork at all.
     await expect(ring.locator('svg')).toHaveCount(0);
+  });
+});
+
+test.describe('Daily Resonance reveal hand-off', () => {
+  test('uses one approved fade and keeps the CSS meter until the canvas is visible', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.addInitScript(() => {
+      type Handoff = {
+        removedAtOpacity: number | null;
+        transitions: number;
+        sawFallback: boolean;
+        heldWhileTransparent: boolean;
+      };
+      const state: Handoff = {
+        removedAtOpacity: null,
+        transitions: 0,
+        sawFallback: false,
+        heldWhileTransparent: false,
+      };
+      (window as Window & { __spec217Handoff?: Handoff }).__spec217Handoff = state;
+
+      const hostSelector = '[data-testid="lucky-vessel-canvas-host"]';
+      const fallbackSelector = '[data-testid="lucky-meter-fallback"]';
+      const readOpacity = () => {
+        const host = document.querySelector(hostSelector);
+        if (!host) return null;
+        const raw = getComputedStyle(host).opacity;
+        return raw === '' ? null : Number(raw);
+      };
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector(fallbackSelector)) {
+          state.sawFallback = true;
+          return;
+        }
+        if (state.sawFallback && state.removedAtOpacity === null) {
+          // The removal is the behaviour under test: the old hand-off removed
+          // the complete CSS meter while the canvas was still transparent.
+          state.removedAtOpacity = readOpacity();
+        }
+      });
+      // `documentElement` can still be null when an init script runs.
+      observer.observe(document, { childList: true, subtree: true });
+
+      const tick = () => {
+        const host = document.querySelector(hostSelector) as HTMLElement | null;
+        if (host) {
+          const opacity = readOpacity();
+          if (
+            host.classList.contains('is-ready') &&
+            document.querySelector(fallbackSelector) &&
+            opacity === 0
+          ) {
+            state.heldWhileTransparent = true;
+          }
+        }
+        if (performance.now() < 15_000) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+
+      document.addEventListener(
+        'transitionrun',
+        (event) => {
+          const target = event.target as Element | null;
+          if (
+            target?.getAttribute('data-testid') === 'lucky-vessel-canvas-host' &&
+            (event as TransitionEvent).propertyName === 'opacity'
+          ) {
+            state.transitions += 1;
+          }
+        },
+        true,
+      );
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    const host = page.getByTestId('lucky-vessel-canvas-host');
+    await expect(host).toHaveCSS('transition-duration', '0.3s');
+    await expect(host).toHaveCSS('transition-property', 'opacity');
+
+    const ring = page.getByTestId('lucky-meter-ring');
+    await expect(ring).toHaveAttribute('data-meter-renderer', 'three', { timeout: 30_000 });
+    await expect(page.getByTestId('lucky-meter-fallback')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+
+    const handoff = await page.evaluate(
+      () =>
+        (window as Window & {
+          __spec217Handoff?: {
+            removedAtOpacity: number | null;
+            transitions: number;
+            heldWhileTransparent: boolean;
+          };
+        }).__spec217Handoff,
+    );
+    expect(handoff?.transitions).toBe(1);
+    expect(handoff?.heldWhileTransparent).toBe(true);
+    expect(handoff?.removedAtOpacity).not.toBeNull();
+    expect(handoff?.removedAtOpacity ?? 0).toBeGreaterThan(0);
+    // One reveal only: the welcome stage stays idle and no second hand-off runs.
+    await expect(ring).toHaveAttribute('data-phase', 'idle');
+  });
+});
+
+test.describe('Daily Resonance activation-gated audio', () => {
+  test('requests no celebration cue before Start and the full set after', async ({ page }) => {
+    test.slow();
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      const pathname = new URL(request.url()).pathname;
+      if (/\.(mp3|wav)$/i.test(pathname)) requests.push(pathname);
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await waitForStart(page);
+    await expect
+      .poll(() => requests.filter((path) => OPENING_AUDIO.includes(path)).length, {
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(0);
+
+    // Route-time preparation may finish after the Start button settles.
+    await page.waitForTimeout(750);
+    expect(requests.filter((path) => CELEBRATION_AUDIO.includes(path))).toEqual([]);
+    expect(requests.every((path) => OPENING_AUDIO.includes(path))).toBe(true);
+
+    await startReveal(page);
+    await expect
+      .poll(
+        () => CELEBRATION_AUDIO.filter((path) => requests.includes(path)).length,
+        { timeout: 15_000 },
+      )
+      .toBe(CELEBRATION_AUDIO.length);
   });
 });
 
