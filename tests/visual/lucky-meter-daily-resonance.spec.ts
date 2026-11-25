@@ -578,8 +578,8 @@ test.describe('Daily Resonance storyboard', () => {
     const dock = page.getByTestId('lucky-meter-home').locator('..');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
-    // FINISHED keeps the same sentence: it never faded away.
-    await expect(message).toHaveAttribute('data-state', 'holding');
+    // FINISHED keeps the Spark, not the temporary tier sentence.
+    await expect(message).toHaveCount(0);
   });
 });
 
@@ -684,7 +684,7 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     // The exact sentence is shown whole, with no typing and no fade.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
     const dock = page.getByTestId('lucky-meter-dock');
@@ -808,7 +808,7 @@ test.describe('Daily Resonance resume points', () => {
       'data-vessel-fill',
       '1.000',
     );
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 });
 
@@ -873,6 +873,117 @@ test.describe('Daily Resonance WebGL fallback', () => {
     );
     expect(failures).toEqual([]);
   });
+});
+
+test.describe('production responsive composition', () => {
+  test('desktop finished state uses the width and keeps every reading visible', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    const content = page.locator('.lucky-meter-content');
+    await expect(content).toHaveCSS('flex-direction', 'row');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // The result column sits beside the instrument, not under it.
+    expect(number!.x).toBeGreaterThan(stage!.x + stage!.width - 1);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(900);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);
+  });
+
+  test('tablet finished state keeps one readable column without overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(stage!.width).toBeGreaterThanOrEqual(400);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(1180);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(820);
+  });
+
+  test('landscape phone shows the colour and number without scrolling across', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'row');
+
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // Both readings stay inside the 390 px viewport, side by side.
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(390);
+    expect(number!.y + number!.height).toBeLessThanOrEqual(390);
+    expect(number!.x).toBeGreaterThan(colour!.x + colour!.width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(844);
+  });
+
+  test('320 px phone stacks the readings without clipping or overlap', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    const dock = await page.getByTestId('lucky-meter-dock').boundingBox();
+    const spark = await page.getByTestId('lucky-spark-finale').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(number!.y).toBeGreaterThan(colour!.y);
+    expect(stage!.x).toBeGreaterThanOrEqual(0);
+    expect(stage!.x + stage!.width).toBeLessThanOrEqual(320);
+    // The corner controls stop above the Spark, and the Spark above the meter.
+    expect(spark!.y).toBeGreaterThanOrEqual(dock!.y + dock!.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  });
+
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 390, height: 844 },
+    { width: 412, height: 915 },
+    { width: 430, height: 932 },
+  ]) {
+    test(`${viewport.width} px phone keeps the reading inside the viewport`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await pinNoon(page);
+      await seed(page, buildState({ tierId: 'high', started: true }));
+
+      await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+      const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+      const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+      const number = await page.getByTestId('lucky-number-panel').boundingBox();
+      expect(stage).not.toBeNull();
+      expect(number!.y).toBeGreaterThan(colour!.y);
+      expect(stage!.x).toBeGreaterThanOrEqual(0);
+      expect(stage!.x + stage!.width).toBeLessThanOrEqual(viewport.width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+        viewport.width,
+      );
+    });
+  }
 });
 
 test.describe('Daily Resonance visual evidence', () => {

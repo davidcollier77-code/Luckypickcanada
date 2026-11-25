@@ -6,18 +6,19 @@ import {
   CHAMBER_COUNT,
   chamberGradient,
   selectedChamberIndex,
+  stageFraming,
 } from '../app/lib/lucky-meter/meter-layout';
 import { LUCKY_COLOUR_LABEL, LUCKY_NUMBER_MAX, LUCKY_NUMBER_MIN } from '../app/lib/lucky-meter/config';
 
 /** The stage's camera maps the wheel centre to this point in its square box. */
-const WHEEL_CENTRE_TOP = '33.5%';
+const WHEEL_CENTRE_TOP = 'var(--meter-wheel-top, 33.5%)';
 // Only a stuck-state guard: the measured first composite can exceed 3 s on a
 // loaded software host, and the canvas is already above the fallback by then.
 const FALLBACK_RETIRE_MS = 6000;
-const POINTER_LEFT = '28.3%';
-const POINTER_TOP = '55.2%';
-const VESSEL_LEFT = '29.4%';
-const VESSEL_TOP = '81.7%';
+const POINTER_LEFT = '26.4%';
+const POINTER_TOP = '55.1%';
+const VESSEL_LEFT = '30%';
+const VESSEL_TOP = '79%';
 
 /**
  * The CSS maple silhouette used only when WebGL is unavailable. It is a
@@ -96,9 +97,11 @@ export default function LuckyMeterStage({
   className = '',
 }) {
   const hostRef = useRef(null);
+  const stageRef = useRef(null);
   const sceneRef = useRef(null);
   const [renderMode, setRenderMode] = useState('pending');
   const [fallbackRetired, setFallbackRetired] = useState(false);
+  const [wheelTop, setWheelTop] = useState(33.5);
 
   const palette = Array.isArray(colours) ? colours : [];
   const selectedIndex = selectedChamberIndex(palette, colourId);
@@ -129,6 +132,7 @@ export default function LuckyMeterStage({
     colourId,
     colourIndex: selectedIndex,
     colour: colour?.hex ?? null,
+    number: shownNumber,
     chamberDrain: drain,
     vesselFill: fillRatio,
     pour: pourRatio,
@@ -137,6 +141,24 @@ export default function LuckyMeterStage({
     numberReveal: reveal,
     reducedMotion,
   };
+
+  // The DOM readout and the CSS fallback must sit on the same projected wheel
+  // centre as the canvas at every stage size. The framing function is the same
+  // one the scene uses, so the overlay can never drift from the geometry.
+  useEffect(() => {
+    const element = stageRef.current;
+    if (!element || typeof ResizeObserver === 'undefined') return undefined;
+    const measure = () => {
+      const width = element.clientWidth || 390;
+      const height = element.clientHeight || width;
+      const framing = stageFraming(width, height);
+      setWheelTop(Number((framing.wheelTop * 100).toFixed(2)));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,6 +330,7 @@ export default function LuckyMeterStage({
       palette,
       colour: colour?.hex ?? null,
       colourIndex: selectedIndex,
+      number: shownNumber,
       chamberDrain: drain,
       vesselFill: fillRatio,
       pour: pourRatio,
@@ -329,6 +352,7 @@ export default function LuckyMeterStage({
     reveal,
     rotation,
     selectedIndex,
+    shownNumber,
   ]);
 
   // The fallback wheel is a conic gradient whose bands start at index × step.
@@ -341,6 +365,7 @@ export default function LuckyMeterStage({
 
   return (
     <div
+      ref={stageRef}
       data-testid="lucky-meter-ring"
       data-phase={phase}
       data-medallion={renderMode}
@@ -359,8 +384,9 @@ export default function LuckyMeterStage({
       data-chamber-ids={palette.map((entry) => entry.id).join(' ')}
       data-leaf-exit={leaf.toFixed(2)}
       data-beam={beamRatio.toFixed(2)}
+      style={{ '--meter-wheel-top': `${wheelTop}%` }}
       className={`lucky-meter-stage resonance-ring relative isolate mx-auto w-full shrink-0 ${
-        compact ? 'max-w-[280px]' : 'max-w-[24rem] sm:max-w-[27rem]'
+        compact ? 'is-compact' : ''
       } ${className}`}
     >
       <div className="lucky-meter-stage__scene lucky-vessel-scene">

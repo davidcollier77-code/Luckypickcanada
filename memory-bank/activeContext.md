@@ -1,3 +1,29 @@
+# Active Context — Spec 218 production Lucky Meter implementation (2026-11-25)
+
+- **Current state:** production implementation and local verification are complete; changes are uncommitted in the `freebuff/a6f41f9dba4b0caa2d6a69b8` worktree and no PR has been created yet.
+- **Visitor route:** `components/DailyResonance.tsx` now runs the corrected message lifecycle and the corner countdown/Home/Share overlay; `components/LuckyMeterStage.jsx`, `app/lib/lucky-meter/meter-scene.js`, `meter-layout.js` and `storyboard.js` carry the approved instrument, timing, bowl, transfer and responsive framing.
+- **Responsive composition:** phone 320–430 px stacks the meter/results; tablet 820×1180 stays one column; desktop ≥1024 px uses a Spark/instrument/results row; landscape ≤560 px height uses a compact row with the season label dropped, the colour name preserved and the disclaimer in the results column. `data-finished` and `.lucky-meter-content` drive the two row compositions.
+- **Number label:** `LUCKY_NUMBER_LABEL` is now **Your Lucky Number**; the dock Share control shows **Share** with the full accessible name.
+- **Verification:** full Vitest **1,268 / 1,268**; `tsc --noEmit` exit 0; production responsive Playwright **8 / 8** plus the finished-resume case on the desktop project; clean production build **423,959,610 bytes (404.32 MiB exact; 419.54 MiB by `du -sk`)**, below 495 MiB; no new dependency. Production captures are in `specs/218-lucky-meter-complete-experience/evidence/production/`.
+- **Limitations:** software Chromium at DSF 1; no physical devices, high-DPR, touch, cross-browser or hardware-GPU evidence. 320×568 scrolls vertically to the result panels; the fixed site compass is a sitewide overlay. Full three-project Playwright, `pnpm lint` (no ESLint config) and `./freebuff-verify.sh` were not completed in the cloud command window.
+- **Deferred:** T046 prototype removal (development-only reference retained) and T049/T051 full browser coverage.
+
+# Historical — Spec 218 focused prototype gate (owner-approved)
+
+
+## Current Task — Focused responsive 3D prototype, awaiting owner comparison
+
+- **Scope:** Spec 218 artifacts are in `specs/218-lucky-meter-complete-experience/`. The development-only prototype mounts as the `lucky-meter-instrument` scene in the Creative Workbench with selectable 390 × 844 mobile, 820 × 1180 tablet portrait and 1440 × 900 desktop stages. It validates the gold 12-chamber instrument, fixed 7:30 maple pointer/spout, upright percentage well, physical medallion flip, clear faceted crystal bowl and teal fill across all three sizes.
+- **Responsive implementation:** `WORKBENCH_STAGES`/`resolveWorkbenchStage()` and the workbench stage selector/`setStage()` API drive exact stage sizes. Pure `instrumentFraming(width, height)` keeps one perspective and changes only camera distance/look-at: phone extent 6.6, tablet portrait 4.5 (safe bowl/pointer margins), desktop 4.2. The wheel remains circular and no non-uniform scaling is used.
+- **State:** READY has the medallion closed, all chambers full and the clear bowl empty. FINISHED has the medallion flipped, `78% / HIGH RESONANCE` upright, only the 7:30 chamber empty on its gold floor with `27` fully visible, and the bowl full of autumn Deep Teal. The illustrative reading is not generated or stored.
+- **Refinement (owner review):** the empty bowl now uses a custom Fresnel crystal shader with per-triangle facet normals and white edge/rim highlights; the pointer uses a broad five-lobed veined maple blade outside the rim; the chamber enamel has a two-lobe specular/Fresnel sheen while keeping the seasonal palette saturated. The three fixes hold at all three stages.
+- **Evidence:** six exact-size captures in `specs/218-lucky-meter-complete-experience/evidence/`: READY/FINISHED at mobile 390×844, tablet 820×1180 and desktop 1440×900. Responsive observations and limitations are in `research.md` §12; the visual comparison is in §11.
+- **Verification:** focused workbench **18/18**; responsive framing **4/4**; full Vitest **1,265/1,265 across 113 files**; `tsc --noEmit` exit 0; clean production build **394,624 KB (385.38 MiB)**, below the 495 MiB cap; all captures report `surface: ready`, `error: null`, `errors: []`, with only the expected stage-remount WebGL context-loss and font-preload warnings. No visitor route, `meter-scene.js`, `storyboard.js` or `DailyResonance.tsx` change has been made.
+- **Boundary:** stop for the owner's READY/FINISHED comparison at all three sizes. Phase 3+ (the full visitor experience and production responsive layout) must not start until the owner approves the prototype.
+- **Limitations:** software-rendered Chromium at device scale factor 1 (no physical GPU or devices); high-DPR, touch, cross-browser and physical-device performance remain unverified; the prototype deliberately omits the ribbon, plaques, controls, Spark and route chrome; the medallion still uses the shared stamped silhouette; the enamel sheen is satin rather than a full clearcoat reflection.
+
+---
+
 # Active Context — Lucky Meter delivery and adaptive performance
 
 ## Current Project State — Spec 217 merged

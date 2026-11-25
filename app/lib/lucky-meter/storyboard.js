@@ -55,7 +55,9 @@ export const STORYBOARD_TIMING = Object.freeze({
   /** Stage 5: the full vessel rests before the number moves. */
   numberPauseMs: 1500,
   /** Stage 6: the golden beam carries the number to its display. */
-  transferMs: 1500,
+  transferMs: 2200,
+  /** Stage 6: the arrived number settles in its own display. */
+  transferSettleMs: 700,
 
   /** Stage 7: lead-in before the tier message starts writing. */
   messageDelayMs: 800,
@@ -140,8 +142,9 @@ export const POUR_END_MS = PERCENTAGE_END_MS + STORYBOARD_TIMING.pourMs;
 /** Milliseconds from Start until the full vessel has rested. */
 export const NUMBER_PAUSE_END_MS = POUR_END_MS + STORYBOARD_TIMING.numberPauseMs;
 
-/** Milliseconds from Start until the beam has transferred the number. */
-export const REVEAL_COMPLETE_MS = NUMBER_PAUSE_END_MS + STORYBOARD_TIMING.transferMs;
+/** Milliseconds from Start until the beam has transferred and settled the number. */
+export const REVEAL_COMPLETE_MS =
+  NUMBER_PAUSE_END_MS + STORYBOARD_TIMING.transferMs + STORYBOARD_TIMING.transferSettleMs;
 
 /** Characters that earn a longer pause while writing. */
 const PUNCTUATION = /[.,!?:;—–]/;
@@ -239,11 +242,16 @@ export function getSparkCharacterScheduleMs(message) {
 /**
  * Milliseconds from Start until the tier celebration begins.
  *
+ * The message starts on the lock frame, while the pour and transfer run, and
+ * is removed before this time. The celebration never begins before both the
+ * transfer and the message have finished, plus the approved quiet beat.
+ *
  * @param {string} message The tier message that is written first.
  * @returns {number}
  */
 export function getEventStartMs(message) {
-  return REVEAL_COMPLETE_MS + getMessageTotalMs(message) + STORYBOARD_TIMING.eventDelayMs;
+  const messageEnd = REVEAL_MOTION_MS + getMessageTotalMs(message);
+  return Math.max(REVEAL_COMPLETE_MS, messageEnd) + STORYBOARD_TIMING.eventDelayMs;
 }
 
 /**
@@ -313,7 +321,9 @@ export function buildStoryboard({ tierMessage, eventDurationMs, sparkMessage }) 
   const sparkEnd = sparkStart + sparkDuration;
   const dockStart = sparkEnd + STORYBOARD_TIMING.dockDelayMs;
   const holdEnd = sparkEnd + STORYBOARD_TIMING.finalHoldMs;
-  const messageStart = REVEAL_COMPLETE_MS;
+  // The sentence appears on the lock frame, while the colour pours and the
+  // number travels, and is gone before the celebration's first frame.
+  const messageStart = REVEAL_MOTION_MS;
 
   return [
     { id: 'anticipation', startMs: 0, endMs: STORYBOARD_TIMING.anticipationMs },

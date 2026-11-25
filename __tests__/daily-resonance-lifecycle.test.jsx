@@ -97,8 +97,9 @@ describe('DailyResonance Lifecycle & Audio', () => {
     // Wait for the asynchronous import rejection as well as the visible reading.
     await waitFor(
       () => {
-        // The five-beat generation starts at the bottom of the scale.
-        expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
+        // The medallion is opening and the reveal has started; a failed audio
+        // import must not cancel or block it.
+        expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
         expect(audioWarning).toHaveBeenCalledWith(
           'Lucky Meter audio unavailable; continuing without sound.',
           expect.any(Error),

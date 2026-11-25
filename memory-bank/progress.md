@@ -1,3 +1,18 @@
+## 2026-11-25 — Spec 218 production Lucky Meter experience
+
+- Implemented the complete visitor route: corrected message timing (starts at lock, removed before the celebration), physical medallion flip, crystal bowl, selected-chamber drain, in-chamber number, golden transfer to the separate **Your Lucky Number** panel, Spark/celebration sequence and corner countdown/Home/Share controls.
+- Added the production responsive composition: phone stack 320–430 px, tablet portrait column, desktop Spark/instrument/results row and compact landscape row. Added a bottom safe area for the site compass and preserved the legal disclaimer. No new dependency; storage/palette/audio behavior unchanged.
+- Verified full Vitest **1,268 / 1,268** across 113 files, `tsc --noEmit` exit 0, production responsive Playwright **8 / 8** plus finished-resume, READY/FINISHED captures at five viewports, and a clean production build of **423,959,610 bytes (404.32 MiB exact; 419.54 MiB by `du -sk`)**, below the 495 MiB cap.
+- Outstanding: full three-project Playwright, `pnpm lint` (no ESLint config), `./freebuff-verify.sh`, physical-device/high-DPR/touch/cross-browser/hardware-GPU evidence, and PR submission.
+
+## 2026-11-25 (UTC) — Spec 218 responsive prototype gate
+
+- Added the development-only `lucky-meter-instrument` Creative Workbench scene: gold 12-chamber wheel, upright percentage well, physical medallion flip, fixed 7:30 maple pointer/spout, faceted crystal bowl and seasonal fill. After owner review, refined the empty bowl to a clear Fresnel crystal shader with flat facet normals and white edge/rim highlights, replaced the pointer with a broad five-lobed veined maple blade outside the rim, and added a two-lobe specular/Fresnel sheen to the chamber enamel while preserving the palette.
+- Made the prototype responsive without duplicating it: `WORKBENCH_STAGES` and `resolveWorkbenchStage()` expose mobile 390×844, tablet 820×1180 and desktop 1440×900; the workbench has a stage selector and `setStage()` capture API; pure `instrumentFraming()` keeps one perspective and changes only camera distance/look-at (phone 6.6, tablet portrait 4.5, desktop 4.2). The wheel stays circular and all result elements stay clear of stage edges.
+- Captured READY and FINISHED at all three sizes (six exact-size images in `specs/218-lucky-meter-complete-experience/evidence/`). The first tablet capture exposed a bowl edge crop; the tablet extent was widened and the set recaptured. Responsive observations and limitations are in `research.md` §12; visual comparison is in §11.
+- Verified: focused workbench 18/18; responsive framing 4/4; full Vitest 1,265/1,265 across 113 files; `tsc --noEmit` exit 0; clean production build 394,624 KB (385.38 MiB), below 495 MiB; all capture states `surface: ready`, `error: null`, `errors: []`; `git diff --check` clean. No visitor route, `meter-scene.js`, `storyboard.js` or `DailyResonance.tsx` change.
+- Gate: awaiting owner comparison of the refined READY/FINISHED captures at all three sizes before Phase 3. Production responsive layout, physical-device/high-DPR/cross-browser verification and production implementation remain outstanding.
+
 ## 2026-11-25 (UTC) — Spec 217 merged after review repairs
 
 - Repaired Pullfrog P2: a surface stopped by the no-frame watchdog is restarted when the WebGL context is restored, so the one-frame restore cannot announce ready behind a stopped animation loop. An explicit stop still prevents restart, and both paths have regression tests.

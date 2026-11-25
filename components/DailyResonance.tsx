@@ -305,6 +305,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   // The countdown is never present at the beginning.
   const showHome = !isCompact && (dockReady || !result);
   const showCountdown = !isCompact && dockReady && !stageActive;
+  const showShare = !isCompact && dockReady && isRevealed && Boolean(result);
 
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
@@ -460,10 +461,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     (next: DailyResult, duration: number) => {
       if (!isMountedRef.current) return;
       messageCompletedRef.current = true;
-      // The exact tier line stays visible at full opacity through the
-      // celebration and the finished state. It is never hidden or faded again.
-      setMessageState('holding');
-      setMessageSettled(true);
+      // The temporary tier sentence is gone before the celebration's first
+      // frame; it is never left over the open sky during the cinematic.
+      setMessageState('hidden');
+      setMessageSettled(false);
       setStageActive(true);
       eventCompletedRef.current = false;
       setEventCompleted(false);
@@ -493,12 +494,16 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
    * that landed after the reveal but before the message finished.
    */
   const beginMessagePhase = useCallback(
-    (next: DailyResult, duration: number) => {
+    (next: DailyResult, duration: number, revealRemainingMs = REVEAL_COMPLETE_MS - PERCENTAGE_END_MS) => {
       const typingMs = getMessageTypingMs(next.tier.message);
       const writingStart = STORYBOARD_TIMING.messageDelayMs;
       const holdStart = writingStart + typingMs;
       const settleStart = holdStart + STORYBOARD_TIMING.messageHoldMs;
       const doneAt = settleStart + STORYBOARD_TIMING.messageSettleMs;
+      // The sentence may finish writing before the transfer does. It stays
+      // readable until both are complete, then unmounts; the celebration keeps
+      // its own quiet beat after that, so the sky is always clear first.
+      const removeAt = Math.max(doneAt, Math.max(0, revealRemainingMs));
 
       schedule(() => {
         if (!isMountedRef.current) return;
@@ -512,9 +517,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       schedule(() => {
         if (isMountedRef.current) setMessageSettled(true);
       }, settleStart);
+      schedule(() => {
+        if (isMountedRef.current) {
+          setMessageState('hidden');
+          setMessageSettled(false);
+        }
+      }, removeAt);
       schedule(
         () => startCelebration(next, duration),
-        doneAt + STORYBOARD_TIMING.eventDelayMs,
+        removeAt + STORYBOARD_TIMING.eventDelayMs,
       );
     },
     [playEventCue, schedule, startCelebration],
@@ -623,7 +634,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setAnnouncement(
           `Today's resonance is ${next.percentage} percent. ${next.tier.label}. Lucky Number ${next.luckyNumber}. Lucky Colour ${next.colour.name}, ${next.colour.hex}.`,
         );
-        beginMessagePhase(next, duration);
       };
 
       // Stage hand-offs and audio cues are timers, so a throttled frame clock
@@ -653,6 +663,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         playEventCue('colour-pour');
         setAnnouncement(`Today's resonance is ${next.percentage} percent. ${next.tier.label}.`);
         auroraRef.current?.setPhase('impact', next.event.name);
+        // The exact tier sentence appears on the lock frame, while the colour
+        // pours and the number travels. It is removed before the celebration.
+        beginMessagePhase(next, duration);
       }, PERCENTAGE_END_MS);
       schedule(() => {
         if (isMountedRef.current) setStage('pouring');
@@ -831,8 +844,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       // owns the message so the sentence never flashes complete before it is
       // typed again.
       if (loaded.revealCompleted === true && (messageDone || eventDone)) {
-        setMessageState('holding');
-        setMessageSettled(true);
+        // A resumed finished or celebrating reading never re-shows the
+        // temporary sentence: it belongs before the cinematic, not over it.
+        setMessageState('hidden');
+        setMessageSettled(false);
       }
 
       if (prefersReducedMotion()) {
@@ -872,15 +887,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           // the celebration instead of skipping either.
           protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
           setStage('revealed');
-          beginMessagePhase(saved, duration);
+          // The reveal is already complete, so the sentence starts now and the
+          // celebration waits only for the sentence itself.
+          beginMessagePhase(saved, duration, 0);
         } else {
           // Resume the unfinished cinematic from its first frame. The message
           // has already been written and stays visible through it.
           protectRevealWindow(getDockMs(saved.tier.message, duration, saved.spark.message));
           setStage('revealed');
           setStageActive(true);
-          setMessageState('holding');
-          setMessageSettled(true);
+          setMessageState('hidden');
+          setMessageSettled(false);
         }
       } else if (loaded.sparkCompleted !== true) {
         setStage('revealed');
@@ -1147,6 +1164,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       : shareStatus === 'failed'
         ? 'Sharing unavailable'
         : 'Share My Resonance';
+  // The corner control is deliberately small; its accessible name stays the
+  // full action so the visible label can be one short word.
+  const dockShareLabel =
+    shareStatus === 'copied'
+      ? 'Copied ✓'
+      : shareStatus === 'failed'
+        ? 'Unavailable'
+        : 'Share';
 
   const panelClass = 'lucky-panel rounded-2xl';
   const showSparkWriting = (sparkWriting || sparkComplete) && Boolean(result);
@@ -1167,8 +1192,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   return (
     <div
-      className={`relative flex w-full flex-1 flex-col items-center overflow-x-hidden z-0 ${
-        isCompact ? 'min-h-[200px]' : 'min-h-[100svh]'
+      data-finished={result ? 'true' : 'false'}
+      className={`lucky-meter-experience relative flex w-full flex-1 flex-col items-center overflow-x-clip z-0 ${
+        isCompact ? 'is-compact' : ''
       }`}
     >
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -1203,6 +1229,57 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       </picture>
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
 
+      {/* Finished navigation lives in the corners: the countdown upper-left,
+          Home upper-right and the small secondary Share directly beneath it.
+          Home is already present at arrival, disappears on Start and returns
+          with the countdown and Share only when the reading is complete. */}
+      {!isCompact && (
+        <div data-testid="lucky-meter-dock" className="lucky-finish-controls">
+          <div className="lucky-finish-controls__left">
+            {showCountdown && countdownBlock}
+          </div>
+          <div className="lucky-finish-controls__right">
+            {showHome && (
+              <IntentPrefetchLink
+                href="/"
+                data-testid="lucky-meter-home"
+                aria-label="Return to Home"
+                className="gold-3d-btn lucky-home-btn rounded-full font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M3 10.6 12 3l9 7.6" />
+                  <path d="M5.6 9.6V21h12.8V9.6" />
+                </svg>
+                <span>Home</span>
+              </IntentPrefetchLink>
+            )}
+            {showShare && (
+              <button
+                type="button"
+                onClick={handleShare}
+                data-testid="lucky-meter-share"
+                aria-label="Share My Resonance"
+                className="gold-3d-btn lucky-share-btn lucky-share-btn--dock rounded-full px-4 py-2 text-[12px] font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+              >
+                <span className="gold-cta-emoji" aria-hidden="true">
+                  ✦
+                </span>
+                {dockShareLabel}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* The resting scene: a few leaves sit at the edges, then the breeze
           carries them away and Start appears after a quiet beat. */}
       {!result && (
@@ -1228,9 +1305,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               } sm:justify-center sm:px-6 sm:pb-8 sm:pt-24`
         }`}
       >
-        <div className={`flex w-full flex-col items-center ${isCompact ? '' : 'max-w-4xl'}`}>
+        <div
+          className={`lucky-meter-content flex w-full flex-col items-center ${
+            isCompact ? '' : 'max-w-4xl'
+          }`}
+        >
           {totalVisits !== null && !isCompact && (
-            <div className="mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[12px] tracking-widest uppercase">
+            <div className="lucky-meter-visits mb-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-[12px] tracking-widest uppercase">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
@@ -1245,7 +1326,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           )}
 
           {!result && stage === 'idle' && (
-            <div className="flex w-full flex-col items-center text-center">
+            <div className="lucky-meter-intro flex w-full flex-col items-center text-center">
               <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
               <h1
                 className={`font-light text-white text-balance ${
@@ -1282,7 +1363,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               settles visibly. It never fades: it stays at full opacity through
               the celebration and the finished state. */}
           <div
-            className={`flex w-full flex-col items-center justify-end ${
+            className={`lucky-meter-message-slot flex w-full flex-col items-center justify-end ${
               isCompact ? 'min-h-[3.2rem]' : 'min-h-[5.5rem] sm:min-h-[6.5rem]'
             }`}
           >
@@ -1309,6 +1390,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             )}
           </div>
 
+          {/* The number belongs to the selected chamber as soon as the pour
+              starts; the 3D plane reveals it with the falling liquid and then
+              carries it to the separate display. The DOM panel still waits
+              for the transfer to settle. */}
           <LuckyMeterStage
             phase={ringPhase}
             compact={isCompact}
@@ -1316,11 +1401,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             colours={palette}
             colourId={result?.colour?.id ?? null}
             colourSettled={colourSettled}
-            number={
-              hasDetails && (motion.numberReveal > 0 || numberSettled)
-                ? result?.luckyNumber ?? null
-                : null
-            }
+            number={hasDetails ? result?.luckyNumber ?? null : null}
             numberSettled={numberSettled}
             numberReveal={motion.numberReveal}
             chamberDrain={motion.chamberDrain}
@@ -1337,12 +1418,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             reducedMotion={reducedMotion}
             className={isCompact ? 'mt-2' : 'mt-3 sm:mt-4'}
           >
-            {stage === 'anticipating' || stage === 'generating' ? (
+            {stage === 'anticipating' ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                {/* Stage 3: the plaque and its labels step aside, so the
-                    percentage that generates from 5 to 100 sits alone in the
-                    exact centre of the meter. */}
+              </div>
+            ) : stage === 'generating' ? (
+              <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
+                <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
+                {/* The medallion has turned; the generating percentage now
+                    sits alone in the exact centre of the meter. */}
                 <div
                   data-testid="lucky-meter-value"
                   data-value={motion.percentage}
@@ -1358,9 +1442,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ) : stage === 'landed' || hasDetails ? (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Today&apos;s Daily Resonance</h1>
-                <p className="lucky-meter-stage__label mb-1 text-[12px] uppercase tracking-[0.16em] text-amber-200/65">
-                  Daily Resonance
-                </p>
                 <div
                   data-testid="lucky-meter-value"
                   data-value={motion.percentage}
@@ -1381,21 +1462,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             ) : (
               <div className="flex flex-col items-center justify-center" data-testid="lucky-meter-center">
                 <h1 className="sr-only">Daily Resonance Ritual</h1>
-                <p className="lucky-meter-stage__label text-[12px] uppercase tracking-[0.2em] text-amber-200/60">
-                  Daily Resonance
-                </p>
-                <span className="text-gold-gradient mt-1 text-4xl font-light leading-none tracking-[0.18em] sm:text-5xl">
-                  —
-                </span>
-                <p className="lucky-meter-stage__label mt-1.5 text-[12px] uppercase tracking-[0.16em] text-slate-400">
-                  Awaiting the reading
-                </p>
+                {/* The closed medallion is the READY reading. Nothing is
+                    printed over it until it has physically turned. */}
               </div>
             )}
           </LuckyMeterStage>
 
           {hasDetails && result && (
-            <div className={`w-full ${isCompact ? 'mt-2' : 'mt-2 sm:mt-3'}`}>
+            <div className={`lucky-meter-results w-full ${isCompact ? 'mt-2' : 'mt-2 sm:mt-3'}`}>
               <div
                 className={`mx-auto grid w-full grid-cols-2 gap-2 sm:gap-3 ${
                   isCompact ? 'max-w-[320px]' : 'max-w-2xl'
@@ -1454,16 +1528,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
               {isRevealed && (
                 <div className="mt-2.5 flex w-full flex-col items-center">
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="gold-3d-btn lucky-share-btn w-full rounded-full px-6 py-2.5 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
-                  >
-                    <span className="gold-cta-emoji" aria-hidden="true">
-                      ✦
-                    </span>
-                    {shareLabel}
-                  </button>
+                  {isCompact && (
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="gold-3d-btn lucky-share-btn w-full rounded-full px-6 py-2.5 font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 sm:w-auto"
+                    >
+                      <span className="gold-cta-emoji" aria-hidden="true">
+                        ✦
+                      </span>
+                      {shareLabel}
+                    </button>
+                  )}
 
                   {isCompact && sparkComplete && (
                     <div className="mt-2">{countdownBlock}</div>
@@ -1475,40 +1551,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                   )}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* The last row of the results panel. Home is here from the first
-              paint, hides the moment the reveal starts, and returns with the
-              daily countdown only after the Spark and the final hold. The row
-              never carries one without the other at the end of the reading. */}
-          {showHome && (
-            <div
-              data-testid="lucky-meter-dock"
-              className="lucky-results-dock mt-3 flex w-full flex-col items-center justify-center gap-2 sm:mt-4 sm:flex-row sm:gap-3"
-            >
-              <IntentPrefetchLink
-                href="/"
-                data-testid="lucky-meter-home"
-                aria-label="Return to Home"
-                className="gold-3d-btn lucky-home-btn rounded-full font-bold transition-all duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4 shrink-0"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M3 10.6 12 3l9 7.6" />
-                  <path d="M5.6 9.6V21h12.8V9.6" />
-                </svg>
-                <span>Home</span>
-              </IntentPrefetchLink>
-              {showCountdown && countdownBlock}
             </div>
           )}
 
