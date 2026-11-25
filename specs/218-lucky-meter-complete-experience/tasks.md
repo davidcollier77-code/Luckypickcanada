@@ -213,7 +213,7 @@
 - T037 and T038 were satisfied through responsive `max-width`/`max-height`, flex/grid safe zones and `overflow-x-clip` rather than the literal fixed 660–1500 px shell and token names in the task text; the required outcome (no fixed `100svh` stage and no horizontal overflow) is met.
 - T039/T039a use the shared `stageFraming()` production camera and a deliberate row composition at desktop (≥1024 px) and landscape (≤560 px height), with the phone stack retained at 320–430 px.
 - T046 is deferred: the development-only prototype remains available for reference and is not mounted on any visitor route. It has no production effect.
-- T049 is partial: the focused production responsive Playwright cases and the finished-resume case pass; the complete three-project Playwright spec was not run in this environment.
+- T049: the complete `lucky-meter-daily-resonance` spec now runs on desktop, mobile-390 and mobile-412; results are in "Verification actually run" below. The separate READY/ACTIVE/REVEAL/FINISHED captures at every size remain limited to the recorded production evidence viewports.
 - T051 is partial: the existing accessibility unit coverage and the browser control/position checks pass; a separate keyboard/focus and no-WebGL browser pass was not re-run.
 - T047: `tsc --noEmit` and the full unit suite pass; `pnpm lint` remains unavailable because the repository has no ESLint configuration.
 
@@ -221,13 +221,20 @@
 
 - Full Vitest: **1,268 / 1,268** across 113 files.
 - `pnpm exec tsc --noEmit`: exit 0.
-- Production responsive Playwright cases: **8 / 8**, plus the finished-resume case, on the desktop project against Playwright's own `127.0.0.1:3000` web server (the manually started `0.0.0.0` server blocks Next dev resources for `127.0.0.1`).
+- Full `lucky-meter-daily-resonance` spec after the review repair: **78 passed / 6 opt-in captures skipped / 0 failed** across desktop, mobile-390 and mobile-412 at the CI concurrency of two workers, against Playwright's own `127.0.0.1:3000` web server (a manually started `0.0.0.0` server blocks Next dev resources for `127.0.0.1`).
+- Targeted post-repair run of the arrival, celebration and resume cases: **9 / 9** across the three projects.
 - READY/FINISHED visual inspection at 390×844, 820×1180, 1440×900, 844×390 and 320×568; captures in `evidence/production/`.
-- Clean production build: **423,959,610 bytes (404.32 MiB exact; 419.54 MiB by the repository `du -sk` gate)**, below the 495 MiB cap.
+- Clean production build after the review repair: **423,980,206 bytes (404.34 MiB exact; 419.56 MiB by the repository `du -sk` gate)**, below the 495 MiB cap.
 - No new dependency; `pnpm-lock.yaml` unchanged.
 
 ### Remaining limitations
 
 - Software-rendered Chromium at device scale factor 1. No physical phones/tablets, high-DPR display, touch hardware, cross-browser run or hardware GPU is available.
 - The 320×568 finished layout scrolls vertically to the two result panels; there is no horizontal overflow. The fixed site compass is a sitewide overlay, not a meter control.
-- Full three-project Playwright and `./freebuff-verify.sh` were not completed within the cloud command window.
+- `./freebuff-verify.sh` was not completed within the cloud command window.
+
+### Post-submission review repair (2026-11-25)
+
+- Repaired the Amazon Q finding: the reduced-motion case in `tests/visual/lucky-meter-daily-resonance.spec.ts` asserted the tier message was absent and then queried the same element. It now asserts `data-state="holding"`, matching `completeCalmly()` and the dedicated reduced-motion test.
+- Repaired two further stale assertions found while verifying that finding: the celebration case and the resumed-cinematic case still expected the temporary sentence during the celebration. Spec 218 acceptance scenario 1 and `__tests__/lucky-meter-cinematic-lifecycle.test.jsx` require it to unmount before the celebration's first frame, so both now assert absence.
+- Confirmed Playwright needs no upgrade: `1.65.1` is both the locked and the current stable version; `1.66` is alpha-only. The remaining arrival-case flake is software-WebGL commit timing under concurrent workers, covered by CI retries and by the unit-level sampling tests.

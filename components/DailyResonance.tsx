@@ -222,6 +222,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const shareTimerRef = useRef<number | null>(null);
   const wheelSpinRef = useRef<ReturnType<typeof buildColourSpin> | null>(null);
   const revealStartRef = useRef(0);
+  // True once the generating stage has painted, so its first visible frame is
+  // the curve's zero rather than a sample taken before the commit.
+  const generationPaintedRef = useRef(false);
   const isMountedRef = useRef(true);
   const visitsAbortRef = useRef<AbortController | null>(null);
   const resultRef = useRef<DailyResult | null>(null);
@@ -245,6 +248,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const revealProtectionRef = useRef<(() => void) | null>(null);
   const startRevealTimerRef = useRef<number | null>(null);
   const revealSafetyTimerRef = useRef<number | null>(null);
+
+  // Sampling waits for the generating stage to commit, so the percentage never
+  // appears part-way up its curve. Effects run after the commit that paints it.
+  useEffect(() => {
+    if (stage === 'generating') generationPaintedRef.current = true;
+  }, [stage]);
 
   const releaseRevealWindow = useCallback(() => {
     if (revealSafetyTimerRef.current !== null) {
@@ -310,6 +319,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const clearSequence = useCallback(() => {
     timersRef.current.forEach((timer) => window.clearTimeout(timer));
     timersRef.current = [];
+    generationPaintedRef.current = false;
     if (rafRef.current !== null) {
       window.cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -554,6 +564,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           : getSeasonForDateKey(next.dateKey)?.colours || [];
       const spin = buildColourSpin(next.colour.id, Math.random, activePalette);
       wheelSpinRef.current = spin;
+      generationPaintedRef.current = false;
 
       setStage('anticipating');
       setVesselPhase('idle');
@@ -710,8 +721,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           0,
           Math.min(STORYBOARD_TIMING.percentageMs, elapsedMs - PERCENTAGE_START_MS),
         );
-        const percentage =
-          elapsedMs >= PERCENTAGE_END_MS
+        const percentage = !generationPaintedRef.current
+          ? 0
+          : elapsedMs >= PERCENTAGE_END_MS
             ? next.percentage
             : sampleGenerationPercentage(
                 percentageElapsed,

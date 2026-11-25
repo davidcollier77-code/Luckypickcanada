@@ -3,7 +3,15 @@
 - Implemented the complete visitor route: corrected message timing (starts at lock, removed before the celebration), physical medallion flip, crystal bowl, selected-chamber drain, in-chamber number, golden transfer to the separate **Your Lucky Number** panel, Spark/celebration sequence and corner countdown/Home/Share controls.
 - Added the production responsive composition: phone stack 320–430 px, tablet portrait column, desktop Spark/instrument/results row and compact landscape row. Added a bottom safe area for the site compass and preserved the legal disclaimer. No new dependency; storage/palette/audio behavior unchanged.
 - Verified full Vitest **1,268 / 1,268** across 113 files, `tsc --noEmit` exit 0, production responsive Playwright **8 / 8** plus finished-resume, READY/FINISHED captures at five viewports, and a clean production build of **423,959,610 bytes (404.32 MiB exact; 419.54 MiB by `du -sk`)**, below the 495 MiB cap.
-- Outstanding: full three-project Playwright, `pnpm lint` (no ESLint config), `./freebuff-verify.sh`, physical-device/high-DPR/touch/cross-browser/hardware-GPU evidence, and PR submission.
+- Submitted as PR [#2035](https://github.com/davidcollier77-code/Luckypickcanada/pull/2035) (regular, non-draft, open, unmerged). Outstanding: `pnpm lint` (no ESLint config), `./freebuff-verify.sh`, and physical-device/high-DPR/touch/cross-browser/hardware-GPU evidence.
+
+## 2026-11-25 — Spec 218 post-submission review repair
+
+- Repaired the Amazon Q finding in `tests/visual/lucky-meter-daily-resonance.spec.ts`: the reduced-motion case asserted the tier message was absent and then queried it; it now asserts `data-state="holding"`, matching `completeCalmly()` and the separate reduced-motion test.
+- Found and repaired two further stale assertions: the celebration and resumed-cinematic cases still expected the temporary sentence during the celebration, while Spec 218 acceptance scenario 1 and the unit tests require it to unmount before the celebration's first frame. Both now assert absence.
+- Confirmed the Playwright dependency needs no change: `1.65.1` is the current stable release and the locked version; `1.66` is alpha-only. The earlier failures were stale assertions and software-WebGL commit timing under concurrent workers, not a Playwright defect.
+- Also repaired the percentage's first visible frame: the sampler could run before the generating stage committed, so the reading could appear part-way up its curve. Sampling now waits for that stage to paint.
+- Verified after the repair: full Vitest **1,268 / 1,268**, `tsc --noEmit` exit 0, targeted Playwright **9 / 9**, full Lucky Meter spec **78 passed / 6 opt-in captures skipped / 0 failed** across desktop, mobile-390 and mobile-412 at two workers, and a clean build at **423,980,206 bytes (404.34 MiB)**, below the 495 MiB cap. The PR head and consolidated report were refreshed for the new commit.
 
 ## 2026-11-25 (UTC) — Spec 218 responsive prototype gate
 

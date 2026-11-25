@@ -532,7 +532,7 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(ring.locator('svg')).toHaveCount(0);
   });
 
-  test('keeps the tier message visible through the celebration, then docks Home and the countdown', async ({
+  test('clears the tier message before the celebration, then docks Home and the countdown', async ({
     page,
   }) => {
     test.slow();
@@ -553,11 +553,10 @@ test.describe('Daily Resonance storyboard', () => {
       'data-event',
       stored.event.id,
     );
-    // The exact sentence remains visible and settled for the whole cinematic.
+    // The temporary sentence settles and unmounts before the cinematic's
+    // first frame, so the sky is clear for the celebration.
     const message = page.getByTestId('lucky-tier-message');
-    await expect(message).toHaveAttribute('data-state', 'holding');
-    await expect(message).toHaveAttribute('data-settled', 'true');
-    await expect(message).toContainText(stored.tier.message);
+    await expect(message).toHaveCount(0);
     // The vessel is still full during the celebration.
     await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
       'data-vessel-fill',
@@ -575,7 +574,9 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
-    const dock = page.getByTestId('lucky-meter-home').locator('..');
+    // The finished controls are a corner overlay: the countdown sits in the
+    // left column and Home in the right column of the same dock.
+    const dock = page.getByTestId('lucky-meter-dock');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
     // FINISHED keeps the Spark, not the temporary tier sentence.
@@ -684,7 +685,10 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     // The exact sentence is shown whole, with no typing and no fade.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
+      'data-state',
+      'holding',
+    );
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
     const dock = page.getByTestId('lucky-meter-dock');
@@ -761,11 +765,8 @@ test.describe('Daily Resonance resume points', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
-    // The resumed message stays visible through the cinematic.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
-      'data-state',
-      'holding',
-    );
+    // The message is written now and cleared before the resumed cinematic.
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
