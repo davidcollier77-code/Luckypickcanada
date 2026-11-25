@@ -715,8 +715,13 @@ test.describe('Daily Resonance seasonal palettes', () => {
       const palette = getPaletteForSeasonKey(season);
       const ring = page.getByTestId('lucky-meter-ring');
       // The stored reading hydrates after first paint; wait for its palette.
+      // The stage shows a single placeholder chamber until then, so allow the
+      // same generous hydration budget the other stored-state waits use.
       await expect
-        .poll(async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length)
+        .poll(
+          async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length,
+          { timeout: 25_000 },
+        )
         .toBe(12);
       const ids = (await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? [];
       for (const entry of palette) expect(ids).toContain(entry.id);
