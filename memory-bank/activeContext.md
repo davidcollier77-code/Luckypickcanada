@@ -1,3 +1,13 @@
+# Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
+
+- **Scope:** Clarify only ChatGPT Operating Instructions §6 in `AGENTS.md`; preserve the ChatGPT Library startup procedure and all shared governance.
+- **Mandatory runtime distinction:** ChatGPT operates on Node.js 22.x and cannot switch to Node.js 26.x. The repository declares Node.js 26.x, so only project operations that require Node 26 are blocked in ChatGPT; independent compatible scripts and checks remain allowed.
+- **Playwright boundary:** the repository Playwright CLI and its setup/installation are unavailable to ChatGPT. The ChatGPT Python Playwright setup remains the documented browser path.
+- **Script permission:** all other applicable repository and Freebuff QA/PR-support scripts remain permitted after inspecting their prerequisites and side effects. Do not run Freebuff's startup/environment-provisioning sequence; use only the ChatGPT Library startup script.
+- **Status:** Section 6 wording and its governance regression test are updated. No application code, dependency, deployment configuration, Cloudflare setting or production resource is changed.
+
+---
+
 # Active Context — Playwright alignment and authorized QA skips (Spec 221, 2026-11-26)
 
 ## Current Task — One installed Playwright, and honest inapplicable skips
