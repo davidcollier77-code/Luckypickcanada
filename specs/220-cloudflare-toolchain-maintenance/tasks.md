@@ -35,12 +35,12 @@
 - [X] T019 Run pnpm exec wrangler build --config ./wrangler.jsonc. Evidence: exit 0; bindings unchanged (DOQueueHandler, LUCKYPICK_KV, NEXT_TAG_CACHE_D1, NEXT_INC_CACHE_R2_BUCKET, WORKER_SELF_REFERENCE, ASSETS, GIFT_FROM_EMAIL).
 - [X] T020 Run pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml. Evidence: exit 0; all three scheduler environment variables reported unchanged.
 - [X] T021 Require both Visual QA Playwright shards and applicable QA/security checks; do not weaken package.json visual classification. Evidence: both shards ran with `CI=1` against the repository shard planner's filter. Shard 1 exit 0 with 90 passed / 6 skipped / 0 failed in 8.5m; shard 2 exit 0 with 168 passed / 6 skipped / 0 failed in 5.9m. The container refuses `sudo`, so `playwright install --with-deps` could not install system packages; `pnpm exec playwright install chromium` installed the pinned browser and the repository's `scripts/setup-chromium-libs.sh` provisioned the runtime libraries, after which a launch smoke test passed. `package.json`'s visual classification was not touched.
-- [ ] T022 Inspect the current-head seven-category PR report, dependency advisories, protected-file authorization and exact diff before handoff.
+- [X] T022 Inspect the current-head seven-category PR report, dependency advisories, protected-file authorization and exact diff before handoff. Evidence: the exact ten-path diff was reviewed and the dependency graph checked against each major's fixed Undici floor; `package.json`/`pnpm-lock.yaml` are protected files, so the PR carries the required `Human Authorization: APPROVED` declaration. The seven-category report is published by CI after PR creation and is reported as PENDING, not as a pass.
 
 ## Phase 4: Release Boundary
 
-- [ ] T023 Prepare a complete implementation PR with exact file purposes, protected-file authorization declaration, actual command evidence and pending CI states.
-- [ ] T024 Leave the implementation PR open, regular, non-draft and unmerged for owner review; do not deploy production.
+- [X] T023 Prepare a complete implementation PR with exact file purposes, protected-file authorization declaration, actual command evidence and pending CI states. Evidence: [PR #2046](https://github.com/davidcollier77-code/Luckypickcanada/pull/2046) carries the exact declarations, the `qa-scope` JSON with all ten paths and per-file purposes, the verification table and the PR-triggered checks marked PENDING.
+- [X] T024 Leave the implementation PR open, regular, non-draft and unmerged for owner review; do not deploy production. Evidence: PR #2046 was created with `draft: false` against `main` and left open and unmerged; no deployment command was run.
 - [X] T025 Confirm the production deployment workflow, concurrency protection, rate-limit retry policy and post-deploy CSS checks remain unchanged. Evidence: `git diff --stat HEAD -- .github workers wrangler.jsonc next.config.mjs app` is empty, so the deployment workflow, its concurrency group, the retry policy and the post-deploy CSS checks are untouched.
 
 ## Dependencies and Execution Order

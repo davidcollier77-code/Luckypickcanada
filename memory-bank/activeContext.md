@@ -2,7 +2,7 @@
 
 ## Current Repository State — Spec 220 implemented and verified locally
 
-- **Spec 220:** The authorized OpenNext/Wrangler update is implemented on `freebuff/3839e793b7f69e70f2a64fc3` from `main` at `8a18c44583192e2f32e801c81c44c6f1311e71d7`. The PR is left regular, non-draft, open and unmerged for owner review; nothing was deployed or merged.
+- **Spec 220:** The authorized OpenNext/Wrangler update is implemented on `freebuff/3839e793b7f69e70f2a64fc3` from `main` at `8a18c44583192e2f32e801c81c44c6f1311e71d7` and submitted as [PR #2046](https://github.com/davidcollier77-code/Luckypickcanada/pull/2046). The PR is left regular, non-draft, open and unmerged for owner review; nothing was deployed or merged.
 - **Pins:** `@opennextjs/cloudflare` **1.20.19** and `wrangler` **4.168.0**, both rechecked against the registry `latest` tag immediately before editing.
 - **Undici:** the global `undici: 8.12.2` override is removed. The natural graph satisfies every edge — 6.29.1 for `@dotenvx/dotenvx` (`^6.28.1`), 7.30.2 for `@cloudflare/workers-utils`, `miniflare` and `wrangler` (each exact), 8.13.1 for `jsdom` (`^8.12.3`) — so no scoped selector was needed, and Wrangler is no longer forced across its own declared major.
 - **Minimatch/glob:** removed the obsolete `minimatch@10.2.6>brace-expansion` selector; kept `minimatch@10 -> 11.0.1` because `@typescript-eslint/typescript-estree` still declares `^10.2.2`, and kept `glob@10 -> 14.0.4` plus every unrelated security override.
