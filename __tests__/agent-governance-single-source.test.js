@@ -191,6 +191,9 @@ describe('compact single-source agent governance', () => {
     const agents = readAgents();
     const start = agents.indexOf('## 🟣 CHATGPT OPERATING INSTRUCTIONS');
     const section = agents.slice(start);
+    const executionStart = section.indexOf('6. **ChatGPT environment and repository execution.**');
+    const executionEnd = section.indexOf('\n7. **Changes and PRs.**', executionStart);
+    const execution = section.slice(executionStart, executionEnd);
 
     expect(start).toBeGreaterThanOrEqual(0);
     expect(section).toContain('follow the ChatGPT Library startup instructions and run the prescribed startup preflight');
@@ -204,9 +207,28 @@ describe('compact single-source agent governance', () => {
     expect(section).not.toContain('ChatGPT cannot execute Playwright.');
     expect(section).toContain('must not use the repository Playwright CLI');
     expect(section).toContain('or Crawlbase');
-    expect(section).toContain('Never run Freebuff\'s startup sequence');
-    expect(section).toContain('Do not execute repository shell scripts');
-    expect(section).toContain('Node.js 26.x and pnpm 10.30.3');
+    expect(section).toContain("Never run Freebuff's startup sequence");
+    expect(executionStart).toBeGreaterThanOrEqual(0);
+    expect(executionEnd).toBeGreaterThan(executionStart);
+    expect(execution).toContain('**ChatGPT Setup** in ChatGPT memory in full');
+    expect(execution).toContain('`/ChatGPT startup script/`');
+    expect(execution).toContain('Read the entire `README.md`');
+    expect(execution).toContain("ChatGPT's own `startup.sh`");
+    expect(execution).toContain('`--install-pnpm`');
+    expect(execution).toContain('`pnpm@10.30.3`');
+    expect(execution).toContain('`--playwright-check`');
+    expect(execution).toContain('Node.js 22.x');
+    expect(execution).toContain('Node.js 26.x');
+    expect(execution).toContain('Do not install or switch to Node.js 26.x');
+    expect(execution).toContain("The repository Playwright CLI does not work in ChatGPT's environment");
+    expect(execution).toContain("ChatGPT's Python Playwright async API");
+    expect(execution).toContain('Other relevant repository scripts, tests, builds, verification utilities and PR-support scripts are permitted');
+    expect(execution).toContain('Inspect each script and its invoked commands');
+    expect(execution).toContain('Do not reject a utility because its filename contains `freebuff`');
+    expect(execution).toContain('`freebuff-verify.sh`');
+    expect(execution).toContain('PR-summary scripts');
+    expect(execution).not.toContain('Do not execute repository shell scripts');
+    expect(execution).not.toContain('Do not run project builds, tests or dependency installs unless');
     expect(section).toContain('Follow all shared approvals and `PR_SUBMISSION.md`.');
   });
 
