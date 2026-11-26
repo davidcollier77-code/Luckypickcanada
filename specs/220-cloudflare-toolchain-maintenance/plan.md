@@ -120,7 +120,7 @@ No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache st
 
 ## Phase 3 — Verification Plan
 
-All commands run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3. The present ChatGPT session cannot execute this phase: it has Node.js 22.16.0, no pnpm 10.30.3, no repository checkout, and AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests here.
+All Node-26-dependent commands in this phase must run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3. The ChatGPT startup preflight for this session reports Node.js 22.16.0 and no pnpm executable; therefore dependency installation, lockfile generation, Node-26-dependent builds and tests are blocked here. Current `AGENTS.md` ChatGPT-only §6 does not impose a blanket repository-script prohibition: compatible scripts may be run after their prerequisites, runtime, permissions and side effects are checked. The repository Playwright CLI/setup remains unavailable to ChatGPT. No repository checkout is available in this session.
 
 1. Frozen package installation with pnpm install --frozen-lockfile.
 2. Dependency graph inspection using `pnpm why undici`, `pnpm why glob` and `pnpm why minimatch`; inspect every Undici lockfile version and consumer edge, enforce the fixed floors per major, and verify Wrangler 4.168.0 resolves exactly to Undici 7.30.2. Validate every chosen override selector with the pinned pnpm 10.30.3 binary and the regenerated lockfile.
