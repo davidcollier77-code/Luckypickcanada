@@ -2,7 +2,7 @@
 
 **Feature Branch**: chore/220-cloudflare-toolchain-maintenance  
 **Created**: 2026-11-26  
-**Status**: Proposed — implementation not started
+**Status**: Proposed — implementation authorized; execution blocked by the ChatGPT repository environment
 
 ## User Scenarios & Testing
 
@@ -85,6 +85,6 @@ As the site owner, I need current CI checks and Cloudflare deployment safeguards
 
 - Node.js 26.x and pnpm 10.30.3 remain the required runtime/package-manager pins and are not changed by this task.
 - Next.js 16.4.6 and React 19.3.1 remain unchanged.
-- The user has authorized preparation of this specification, plan and tasks. Dependency implementation and production deployment are not authorized by this planning stage.
+- The owner explicitly authorized dependency implementation on 2026-11-26. Implementation is in scope, but has not started because this ChatGPT environment does not meet the required Node.js 26.x / pnpm 10.30.3 runtime and the ChatGPT-only AGENTS.md rule prohibits repository shell scripts, dependency installs, builds and tests here. Production deployment and merging remain unauthorized.
 - The current Cloudflare cache architecture, bindings and production workflow remain the intended model.
 - GitHub Actions provides the pinned Node.js and pnpm versions for CI verification.

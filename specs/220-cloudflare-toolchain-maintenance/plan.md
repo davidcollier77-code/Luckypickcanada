@@ -6,7 +6,7 @@
 
 Update the root-pinned OpenNext Cloudflare adapter from 1.20.18 to the investigated stable 1.20.19 release and Wrangler from 4.166.0 to 4.168.0, subject to a fresh npm/peer/changelog check immediately before implementation. Regenerate the pnpm lockfile with Node 26.x and pnpm 10.30.3. Correct the global Undici override so it no longer forces Wrangler's declared patched v7 dependency into v8, and remove minimatch 10 overrides only when the final graph proves they are obsolete. Preserve all existing Cloudflare configuration and release safeguards.
 
-This PR contains only the Spec 220 planning artifacts. Dependency implementation is a separate next step and has not started.
+The owner explicitly authorized the dependency implementation on 2026-11-26. The current PR branch still contains only planning artifacts because implementation is blocked in this ChatGPT environment: Node.js 26.x and pnpm 10.30.3 are unavailable, and the ChatGPT-only AGENTS.md rule prohibits repository shell scripts, dependency installation, builds and tests here. Do not treat the planned dependency changes or verification as completed.
 
 ## Technical Context
 
@@ -26,7 +26,7 @@ This PR contains only the Spec 220 planning artifacts. Dependency implementation
 
 **Constraints**: Use only Node.js 26.x and pnpm 10.30.3 for package installation, lockfile generation and verification. Do not hand-edit the lockfile. Do not change application source, open-next.config.ts, wrangler.jsonc, compatibility date/flags, bindings, routes, migrations, secrets, environment settings, Cloudflare dashboard settings, deployment workflows or Dependabot schedule. No production deployment or merge.
 
-**Scale/Scope**: Root package.json, pnpm-lock.yaml, directly relevant dependency-policy tests, Spec 220 artifacts and minimal Memory Bank corrections. The later implementation PR must include the protected-file authorization declaration and pass the existing authorization environment.
+**Scale/Scope**: Root package.json, pnpm-lock.yaml, directly relevant dependency-policy tests, Spec 220 artifacts and minimal Memory Bank corrections. The implementation change must include the protected-file authorization declaration and pass the existing authorization environment before merge.
 
 ## Constitution Check
 
@@ -36,7 +36,7 @@ This PR contains only the Spec 220 planning artifacts. Dependency implementation
 | --- | --- | --- |
 | I. Single Source of Truth | AGENTS.md remains authoritative; the feature artifacts define only this task's behavior and verification. | PASS |
 | II. Verify Before Acting | Current root manifest/lockfile, adapter and Wrangler metadata, OpenNext config, Worker config, QA workflows and related tests were inspected before preparing this plan. | PASS |
-| III. Implementation Sequence | Specify → Plan → Tasks → Implement. Specify, Plan and Tasks are prepared before implementation; implementation and tests remain unstarted pending the owner's next direction. | PASS |
+| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement, but implementation and tests remain blocked until the required Node.js 26.x / pnpm 10.30.3 environment is available and permitted. | BLOCKED |
 | IV. Protect Core Systems | No payment, authentication, database, secret, Cloudflare setting, binding or deployment workflow change is included. The implementation PR will only alter the authorized dependency manifest/lockfile and relevant tests. | PASS |
 | V. Resource Conservation | No new service or dependency is proposed; .docs remains read-only; build output remains below the 495 MiB hard cap. | PASS |
 
@@ -111,8 +111,8 @@ No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache st
 
 ## Phase 2 — Implementation Sequence
 
-1. Obtain the owner's direction to begin dependency implementation.
-2. In a Node.js 26.x / pnpm 10.30.3 environment, update only the approved package pins and pnpm override policy.
+1. Owner authorization to begin dependency implementation was received on 2026-11-26. No further approval is required for the dependency scope defined here.
+2. In a compliant Node.js 26.x / pnpm 10.30.3 environment, update only the approved package pins and pnpm override policy.
 3. Regenerate pnpm-lock.yaml with pnpm 10.30.3. Do not hand-write or manually patch package snapshots, integrity values or references.
 4. Inspect pnpm why output and lockfile snapshots for OpenNext, OpenNext AWS, Wrangler, Workerd, Miniflare, glob, minimatch and Undici. Reconcile every edge and integrity record.
 5. Update the targeted dependency-policy regression tests.
@@ -120,7 +120,7 @@ No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache st
 
 ## Phase 3 — Verification Plan
 
-All commands run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3.
+All commands run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3. The present ChatGPT session cannot execute this phase: it has Node.js 22.16.0, no pnpm 10.30.3, no repository checkout, and AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests here.
 
 1. Frozen package installation with pnpm install --frozen-lockfile.
 2. Dependency graph inspection using pnpm why for undici, glob and minimatch; confirm lockfile package entries, integrity and consumer paths.
