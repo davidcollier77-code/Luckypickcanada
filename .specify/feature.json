@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/223-stale-runtime-context-repair"
+  "feature_directory": "specs/224-undici-major-scoped-security-fix"
 }

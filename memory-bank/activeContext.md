@@ -1,4 +1,18 @@
-# Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
+# Active Context — Spec 224 undici major-scoped security fix (2026-11-26)
+
+## Current Task — Remove the vulnerable global Undici pin
+
+- **Branch:** `freebuff/b7618803c1c98fa008653cb9-undici`, based on `main` at `8a18c44583192e2f32e801c81c44c6f1311e71d7`.
+- **Scope:** `specs/224-undici-major-scoped-security-fix/`; 12 exact paths covering `package.json`, `pnpm-lock.yaml`, two dependency guards, four Spec 224 artifacts, `.specify/feature.json` and three Memory Bank files.
+- **Change:** replaced `undici: 8.12.2` with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`.
+- **Resolved graph:** `@dotenvx/dotenvx` 6.29.1; Wrangler, Miniflare and `@cloudflare/workers-utils` 7.30.2; jsdom 8.13.1. No 8.12.2 remains.
+- **Verification:** focused guards 50/50; full `./freebuff-verify.sh` passed with 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build; production build 485,572,608 bytes (463.08 MiB), below 495 MiB; OpenNext build on `@opennextjs/cloudflare` 1.20.18 passed; Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17.
+- **OpenNext boundary:** `main` still has `@opennextjs/cloudflare` 1.20.18. PR #2047's 1.20.19 update is separate and unmerged. The major-scoped Undici policy applies to both graphs; this branch does not claim 1.20.19 is installed.
+- **Delivery:** one regular, non-draft PR against `main`, open and unmerged. PR creation is the remaining step; no merge or deployment.
+
+---
+
+# Previous Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
 
 ## Current Repository State — Runtime documentation correction merged
 
