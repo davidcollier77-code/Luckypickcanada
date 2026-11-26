@@ -12,7 +12,7 @@
 
 ---
 
-# Active Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
+# Previous Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
 
 ## Current Task — Resolve the 422 open DevSkim alerts without weakening detection
 
