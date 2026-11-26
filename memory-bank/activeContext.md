@@ -163,7 +163,7 @@
 - **Goal:** Reduce `AGENTS.md` from 478 lines to a concise entry point while retaining every distinct requirement and all three agent-applicability classes.
 - **Approach:** Keep direct rules in `AGENTS.md`; refer detailed PR, startup, manifest and specialist procedures to their authoritative documents. Keep Freebuff-only and ChatGPT-only instructions separate.
 - **Scope:** `AGENTS.md`, its governance regression test, Spec 207 artifacts and this active-context header. No startup, manifest, PR procedure, QA workflow, protected script, application or dependency changes.
-- **Verification boundary:** ChatGPT startup preflight reports Node.js 22.16.0 and missing pnpm 10.30.3; the repository requires Node.js 26.x and pnpm 10.30.3. ChatGPT does not run repository scripts, tests or builds. GitHub Actions must provide test and checker evidence.
+- **Verification boundary:** The historical startup preflight reported Node.js 22.16.0 and missing pnpm 10.30.3; the repository requires Node.js 26.x and pnpm 10.30.3. Node-26-dependent project tests, builds and pnpm operations were not run in that task. Current `AGENTS.md` §6 permits compatible repository scripts and QA/PR-support utilities when their prerequisites, runtime, permissions and side effects are acceptable. GitHub Actions must provide current-head CI evidence.
 - **PR status:** Prepare a dedicated, regular, non-draft PR; leave it open and unmerged. The owner must provide the governance digest comment and separate protected-file Environment authorization before merge.
 
 ## Previous Task — Agent governance and PR handoff (Spec 206)
@@ -236,7 +236,7 @@ The earlier documentation-only reconciliation for Specs 199/200 is complete and 
 - **Scope:** Add a 🟢 [BOTH — CHATGPT AND FREEBUFF] rule to `AGENTS.md` for future visual creation and polishing.
 - **Required integration:** Use `app/lib/use-creative-experience.js`, `app/lib/graphics/experiences.js` and `app/lib/graphics/runtime.js` with the existing `app/lib/resource-readiness.js` hub wherever applicable. Do not create a competing preloader.
 - **Development sandbox:** Existing Workbench at `/workbench/creative`; this does not replace Playwright or repository QA.
-- **Verification limitation:** ChatGPT's startup preflight reports Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. ChatGPT's repository instructions prohibit running repository scripts, so local tests, builds and verification scripts were not executed. GitHub workflow checks and protected-file approvals remain outstanding.
+- **Verification limitation:** The historical startup preflight reported Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. The Node-26-dependent tests, builds and pnpm verification were not executed in that task. The earlier statement that repository instructions prohibited all repository scripts was an incorrect blanket interpretation; current `AGENTS.md` §6 permits compatible scripts after their prerequisites and safety conditions are checked. GitHub workflow checks and protected-file approvals remained outstanding for that historical PR.
 
 ## HTML5 audio reactivity and Gemini retirement QA (spec 195, current)
 
