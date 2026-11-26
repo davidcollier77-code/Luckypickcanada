@@ -9,7 +9,6 @@
 - **Next separately authorized work:** Spec 220's Wrangler/OpenNext dependency implementation remains authorized but unstarted. Its implementation and verification tasks remain unchecked pending a compliant Node.js 26.x / pnpm 10.30.3 environment. No dependency or production change was part of Spec 223.
 
 ---
----
 
 # Previous Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
 
