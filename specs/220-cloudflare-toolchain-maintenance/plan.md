@@ -86,9 +86,10 @@ Research findings and source links are recorded in research.md:
 ### 2. Undici compatibility/security policy
 
 - Inspect consumers and requested ranges in the actual dependency graph, not only the current lockfile (the existing global override has already rewritten original requests).
-- Replace the unqualified global Undici 8.12.2 override with a pnpm 10.30.3-supported version-aware strategy.
-- Prefer the pnpm convergence override form for 8.12.2 only if it demonstrably rewrites declared ranges that admit that release and leaves Wrangler's 7.30.2 untouched. If a v8 range fails to converge or a v7 path is below 7.30.1, use explicit major-scoped fixed releases after validating selector semantics in pnpm 10.30.3.
-- The final graph must contain no Undici below 6.29.1 on v6, 7.30.1 on v7, or 8.12.2 on v8. Prefer Wrangler's declared 7.30.2 for its v7 consumer.
+- Replace the unqualified global Undici 8.12.2 override with ordinary version-range selectors and/or parent-specific selectors supported by pnpm 10.30.3.
+- Do not use the empty-range convergence selector (`undici@`): pnpm added that syntax in v11.13.0, while this repository is pinned to v10.30.3. Do not upgrade pnpm as part of this task.
+- First inspect the original Undici dependency requests after removing the global override. Use explicit major-scoped selectors only for vulnerable resolved lines where the fixed target is compatible with the consumer's declared range. Use a parent-specific selector where a specific consumer requires a controlled version. Wrangler's declared v7.30.2 is already patched and must remain on v7.
+- The final graph must contain no Undici below 6.29.1 on v6, 7.30.1 on v7, or 8.12.2 on v8. If any consumer cannot accept its major's patched release, stop and resolve the parent dependency instead of forcing a breaking version.
 - If another major line or an incompatible consumer appears, stop and resolve it before merging; do not globally force a different major.
 
 ### 3. Glob/minimatch policy

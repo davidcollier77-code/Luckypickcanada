@@ -19,7 +19,7 @@
 
 - [ ] T007 Recheck npm stable tags, package provenance metadata, peer dependencies, engines and release notes immediately before editing.
 - [ ] T008 Update only the approved OpenNext Cloudflare and Wrangler exact pins in package.json, provided they remain compatible and current.
-- [ ] T009 Replace the global Undici override with a pnpm 10.30.3-supported version-aware rule that preserves patched consumer-major compatibility; inspect every Undici dependency path.
+- [ ] T009 Replace the global Undici override with pnpm 10.30.3-supported version-range and/or parent-specific selectors. Do not use the pnpm 11.13.0 empty-range convergence syntax; inspect every original Undici request and preserve patched consumer-major compatibility.
 - [ ] T010 Regenerate pnpm-lock.yaml with Node.js 26.x and pnpm 10.30.3; do not hand-edit the lockfile.
 - [ ] T011 Inspect pnpm why and the resolved graph for OpenNext, OpenNext AWS, Wrangler, Workerd, Miniflare, glob, minimatch and Undici; remove minimatch 10-specific overrides only if proven unused.
 - [ ] T012 Update __tests__/dependency-management.test.js to preserve unrelated security overrides and assert the intended scoped override policy.

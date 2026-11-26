@@ -77,7 +77,7 @@ Wrangler 4.168.0 declares Undici 7.30.2, already above the fixed v7 floor. The r
 
 Undici's v7-to-v8 migration guide describes dispatcher/handler API changes. Node 26 meets the documented v8 runtime minimum, but Node engine support alone does not prove that Wrangler and Miniflare's v7-facing code is compatible with v8 APIs. Preserve consumer major compatibility while enforcing a patched version within each major actually present.
 
-pnpm supports version-selective override keys and a convergence override form such as undici@, which applies an exact version only when it satisfies the dependency's declared semver range. The implementation must verify exact syntax and behavior with pnpm 10.30.3, inspect all Undici consumers, and test the resulting lockfile. Do not assume a package-manager feature without proving it exists in the pinned version.
+pnpm 10.30.3 supports ordinary version-range selectors and parent>child selectors. The empty-range convergence override form such as undici@ was added in pnpm 11.13.0; it is not available to this repository's pinned pnpm 10.30.3 and must not be used. Do not upgrade the package manager as part of this task. After removing the unqualified global override, inspect the true original Undici request ranges from the regenerated graph. Use only selectors supported by pnpm 10.30.3, scoped per major and/or consumer parent, and only when the fixed target is compatible with the consumer's declared range. Wrangler's declared Undici 7.30.2 is already patched and must remain on v7. If a consumer cannot accept its major's fixed version, stop and resolve the parent dependency rather than forcing a breaking version.
 
 ## 6. Minimatch and glob override disposition
 
@@ -117,6 +117,7 @@ These precedents reinforce the need to validate the complete lock graph, all pac
 - Undici security advisory: https://github.com/advisories/GHSA-xjj6-f33q-929c
 - Undici v7-to-v8 migration guide: https://undici.nodejs.org/best-practices/migrating-from-v7-to-v8
 - pnpm dependency-resolution and override documentation: https://pnpm.io/settings#overrides
+- pnpm convergence override introduction (v11.13.0): https://pnpm.io/blog/releases/11.13.0
 - Repository Node.js 26 migration plan: specs/135-nodejs-26-migration/plan.md
 
 ## 10. Investigation limitations
