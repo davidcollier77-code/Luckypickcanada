@@ -279,3 +279,7 @@ Are you having problems setting up the SDK?
 - [Special Use Cases](https://docs.sentry.io/platforms/javascript/guides/nextjs/best-practices.md)
 - [Migration Guide](https://docs.sentry.io/platforms/javascript/guides/nextjs/migration.md)
 - [Troubleshooting](https://docs.sentry.io/platforms/javascript/guides/nextjs/troubleshooting.md)
+
+---
+
+Find other pages: [Sitemap](https://docs.sentry.io/sitemap.md) lists every page with a one-line summary, and [llms.txt](https://docs.sentry.io/llms.txt) gives an overview with guidance for agents.
