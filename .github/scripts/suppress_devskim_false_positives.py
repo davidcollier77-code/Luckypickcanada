@@ -1092,11 +1092,9 @@ def should_suppress_local_probe_origin(
                 return True
         return False
 
-    if (
-        not is_local_probe_artifact_path(relative_path)
-        and not is_local_specs_benchmark_path(relative_path)
-        and not is_local_specs_evidence_path(relative_path)
-    ):
+    # Reuse the same path set the caller used so the two definitions cannot
+    # drift apart as more reviewed local-origin paths are added.
+    if not is_local_probe_origin_path(relative_path):
         return False
     # The file must still be valid JSON data, so a renamed script cannot qualify.
     if not context.is_json():

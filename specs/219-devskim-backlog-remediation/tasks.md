@@ -40,3 +40,4 @@
 - [x] T023 Confirm no dependency, scanner rule, scan glob, trigger, protected file or application source changed.
 - [x] T024 Record the build applicability decision and any measured build result.
 - [x] T025 Prepare the PR body with the exact QA scope declaration, file purposes, local results and limitations.
+- [x] T026 Fresh-eyes simplification review: reuse the shared local-origin path predicate and replace the magic-offset workflow assertion with an anchored regex; re-ran the suites and proved the assertion fails when pagination is removed.

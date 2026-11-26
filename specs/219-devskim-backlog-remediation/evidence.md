@@ -52,6 +52,15 @@ replay_status=0
 | Report contract | `PYTHONPATH=.github/scripts python3 -m unittest test_pr_verification_report` | **102 tests OK** |
 | Workflow contract (Vitest) | `pnpm exec vitest run __tests__/checker-suite-workflows.test.js` | **14 tests passed** |
 
+## Fresh-eyes simplification review
+
+The remediation diff was re-read end to end for unnecessary complexity. Two simplifications were applied; both preserve behaviour and every existing assertion:
+
+- `should_suppress_local_probe_origin` now reuses `is_local_probe_origin_path()` instead of repeating the same three path predicates, so the caller and the validator cannot drift apart as reviewed local-origin paths are added.
+- The workflow Vitest assertion now binds `--paginate --slurp` to the alert command with one anchored regex instead of slicing the workflow text at hard-coded character offsets (`-160`/`+320`).
+
+Negative control: temporarily removing `--paginate --slurp` from the alert fetch makes `__tests__/checker-suite-workflows.test.js` fail (exit 1) on the pagination assertion; the workflow file was restored afterwards and `git diff` against the commit is empty. Re-run results are unchanged: 115 suppression tests, 102 report tests, 14 workflow tests.
+
 ## Negative controls proven by the suite
 
 - A loopback origin in production application code is retained.

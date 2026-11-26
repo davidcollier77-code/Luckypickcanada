@@ -92,13 +92,10 @@ describe('consolidated PR verification report', () => {
     expect(reportWorkflow).toContain('[.[].check_runs[]]');
     // The alert backlog must be read in full: one page silently capped the
     // reported open count at 100 and hid every alert beyond it.
-    expect(reportWorkflow).toContain('code-scanning/alerts?pr=');
-    const alertFetch = reportWorkflow.slice(
-      reportWorkflow.indexOf('code-scanning/alerts?pr=') - 160,
-      reportWorkflow.indexOf('code-scanning/alerts?pr=') + 320,
+    expect(reportWorkflow).toMatch(
+      /gh api --paginate --slurp \\\n\s*"repos\/\$\{REPOSITORY\}\/code-scanning\/alerts\?pr=/,
     );
-    expect(alertFetch).toContain('--paginate --slurp');
-    expect(alertFetch).toContain("| jq 'add // []' > \"$RUNNER_TEMP/alerts.json\"");
+    expect(reportWorkflow).toContain("| jq 'add // []' > \"$RUNNER_TEMP/alerts.json\"");
     expect(reportWorkflow).toContain('NOT RUN placeholder');
     expect(reportWorkflow).toContain('RENDER_STATUS');
     // Exit 1 is a FAILED category with a rendered report, not a render error.
