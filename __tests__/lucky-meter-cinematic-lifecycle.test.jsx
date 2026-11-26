@@ -92,7 +92,8 @@ function advance(ms) {
 
 function advanceToRevealed() {
   // The wheel, the independent percentage, the pour, the number pause and the
-  // golden transfer have all completed; the message is being written or held.
+  // golden transfer have all completed; the sentence has been written and the
+  // celebration has started.
   advance(REVEAL_COMPLETE_MS + 4000);
 }
 
@@ -203,19 +204,15 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-number-panel')).toBeInTheDocument();
     expect(screen.getByText(result.colour.name)).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
-    expect(readStoredResult().messageCompleted).toBe(false);
+    // The sentence finished and was removed before the cinematic.
+    expect(readStoredResult().messageCompleted).toBe(true);
 
     advanceToCelebration(result.tier.message);
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    // The exact tier line stays visible and settled through the celebration.
-    const message = screen.getByTestId('lucky-tier-message');
-    expect(message).toHaveAttribute('data-state', 'holding');
-    expect(message).toHaveAttribute('data-settled', 'true');
-    expect(screen.getByTestId('lucky-tier-message-visible')).toHaveTextContent(
-      result.tier.message,
-    );
+    // The temporary tier line is gone before the celebration's first frame.
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
 
     act(() => {
       stageControl.onComplete?.();
@@ -239,9 +236,9 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(readStoredResult().sparkCompleted).toBe(true);
-    // FINISHED keeps the same sentence on screen; nothing faded it out.
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
+    // FINISHED does not bring the temporary sentence back; the Spark and the
+    // results own the sky.
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
   });
 
   it('resumes the stored cinematic after a refresh mid-cinematic', () => {
@@ -298,19 +295,15 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(readStoredResult().history).toEqual(before.history);
   });
 
-  it('keeps Home in the last row of the results panel, not in a fixed dock', () => {
+  it('keeps Home in the upper-right corner controls, not in the results row', () => {
     render(<DailyResonance />);
 
     const dock = screen.getByTestId('lucky-meter-dock');
-    expect(dock).toHaveClass('lucky-results-dock');
+    expect(dock).toHaveClass('lucky-finish-controls');
     expect(dock).toContainElement(screen.getByTestId('lucky-meter-home'));
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
-    // The last row belongs to the same results column as the meter itself.
-    const resultsPanel = dock.parentElement;
-    expect(resultsPanel).toContainElement(screen.getByTestId('lucky-meter-ring'));
-    // Only the assistive live region follows it: the dock is the last visible
-    // row of the results panel.
-    expect(dock.nextElementSibling).toHaveClass('sr-only');
+    // The corner overlay is independent of the results column.
+    expect(dock).not.toContainElement(screen.getByTestId('lucky-meter-ring'));
   });
 
   it('shows Home and the countdown immediately for a fully completed restored result', () => {
@@ -329,8 +322,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     expect(screen.getByTestId('lucky-meter-home')).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-countdown')).toBeInTheDocument();
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
   });
 
   it('restarts a refresh celebration for the full 12,000 ms regardless of a stored duration (D12)', () => {

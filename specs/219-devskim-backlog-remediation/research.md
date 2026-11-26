@@ -37,7 +37,7 @@ The timeline (Atlantic time is UTC−4 on these dates):
 The 422 are:
 
 - **421 × DS162092** (`DoNotLeaveDebugCodeInProduction`) across 13 JSON files under `specs/217-lucky-meter-reveal-delivery/evidence/`; 11 files contain loopback URLs.
-- **1 × DS172411** (`Review setTimeout for untrusted data`) at `app/lib/lucky-meter/meter-scene.js:1116`.
+- **1 × DS172411** (`Review setTimeout for untrusted data`) at `app/lib/lucky-meter/meter-scene.js:1575`.
 
 The two JSON files with no loopback findings are `fade-benchmark.json` and the nested `fade-visual/captures.json` contributes one; the rest are repeated measurement records, for example the same local URL recorded once per captured phase.
 
@@ -94,4 +94,4 @@ The 422 alerts are default-branch alerts. The filter changes the SARIF that the 
 
 ## 9. Verification caveat discovered during local replay
 
-The downloaded default-branch SARIF was generated from commit `aeb087f`. Running the updated filter against the working tree while the filter's own source file was edited caused 11 of its self-test findings to lose their exact span, because the file grew and their line numbers moved. Replaying against the matching `aeb087f` source produced 3,545 suppressed and **0 remaining**. In CI the scan and the checked-out source always belong to the same commit, so this is a local verification artifact, not a filter defect.
+The downloaded default-branch SARIF was generated from commit `aeb087f`. Running the updated filter against the working tree while the filter's own source file was edited caused 11 of its self-test findings to lose their exact span, because the file grew and their line numbers moved. Replaying against the matching scanned source produced 3,545 suppressed and **0 remaining**. The same result was reproduced after the owner merged PR #2035: the fresh `da8f104c` SARIF has the same 3,545 results and 422 open findings, the watchdog moved to line 1575, and the updated filter left **0 remaining**. In CI the scan and the checked-out source always belong to the same commit, so the 11 self-test findings are a local verification artifact, not a filter defect.

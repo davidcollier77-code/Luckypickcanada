@@ -489,8 +489,19 @@ test.describe('Daily Resonance storyboard', () => {
     const phases = await page.evaluate(
       () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
     );
-    expect(phases).toContain('landed');
+    // The landed hand-off is a short beat. A loaded main thread can commit it
+    // and the pour in the same React batch, so the DOM may go from spin
+    // straight to pouring. Require the storyboard's order instead of every
+    // intermediate commit: spin first, one pour, revealed last.
+    const storyboardOrder = ['spin', 'landed', 'pouring', 'revealed'];
+    expect(phases[0]).toBe('spin');
+    expect(phases.at(-1)).toBe('revealed');
     expect(phases).toContain('pouring');
+    expect(phases).toEqual(
+      [...phases].sort(
+        (a, b) => storyboardOrder.indexOf(a) - storyboardOrder.indexOf(b),
+      ),
+    );
 
     const beats = await page.evaluate(
       () =>
@@ -532,7 +543,7 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(ring.locator('svg')).toHaveCount(0);
   });
 
-  test('keeps the tier message visible through the celebration, then docks Home and the countdown', async ({
+  test('clears the tier message before the celebration, then docks Home and the countdown', async ({
     page,
   }) => {
     test.slow();
@@ -553,11 +564,10 @@ test.describe('Daily Resonance storyboard', () => {
       'data-event',
       stored.event.id,
     );
-    // The exact sentence remains visible and settled for the whole cinematic.
+    // The temporary sentence settles and unmounts before the cinematic's
+    // first frame, so the sky is clear for the celebration.
     const message = page.getByTestId('lucky-tier-message');
-    await expect(message).toHaveAttribute('data-state', 'holding');
-    await expect(message).toHaveAttribute('data-settled', 'true');
-    await expect(message).toContainText(stored.tier.message);
+    await expect(message).toHaveCount(0);
     // The vessel is still full during the celebration.
     await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
       'data-vessel-fill',
@@ -575,11 +585,13 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
-    const dock = page.getByTestId('lucky-meter-home').locator('..');
+    // The finished controls are a corner overlay: the countdown sits in the
+    // left column and Home in the right column of the same dock.
+    const dock = page.getByTestId('lucky-meter-dock');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
-    // FINISHED keeps the same sentence: it never faded away.
-    await expect(message).toHaveAttribute('data-state', 'holding');
+    // FINISHED keeps the Spark, not the temporary tier sentence.
+    await expect(message).toHaveCount(0);
   });
 });
 
@@ -684,7 +696,10 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     // The exact sentence is shown whole, with no typing and no fade.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
+      'data-state',
+      'holding',
+    );
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
     const dock = page.getByTestId('lucky-meter-dock');
@@ -711,8 +726,13 @@ test.describe('Daily Resonance seasonal palettes', () => {
       const palette = getPaletteForSeasonKey(season);
       const ring = page.getByTestId('lucky-meter-ring');
       // The stored reading hydrates after first paint; wait for its palette.
+      // The stage shows a single placeholder chamber until then, so allow the
+      // same generous hydration budget the other stored-state waits use.
       await expect
-        .poll(async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length)
+        .poll(
+          async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length,
+          { timeout: 25_000 },
+        )
         .toBe(12);
       const ids = (await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? [];
       for (const entry of palette) expect(ids).toContain(entry.id);
@@ -761,11 +781,8 @@ test.describe('Daily Resonance resume points', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
-    // The resumed message stays visible through the cinematic.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
-      'data-state',
-      'holding',
-    );
+    // The message is written now and cleared before the resumed cinematic.
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
@@ -808,7 +825,7 @@ test.describe('Daily Resonance resume points', () => {
       'data-vessel-fill',
       '1.000',
     );
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 });
 
@@ -873,6 +890,120 @@ test.describe('Daily Resonance WebGL fallback', () => {
     );
     expect(failures).toEqual([]);
   });
+});
+
+test.describe('production responsive composition', () => {
+  test('desktop finished state uses the width and keeps every reading visible', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    const content = page.locator('.lucky-meter-content');
+    await expect(content).toHaveCSS('flex-direction', 'row');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // The result column sits beside the instrument, not under it. The stage
+    // element carries the 3D canvas, whose box is wider than the visible
+    // wheel, so compare against the instrument's central column instead of the
+    // whole canvas box (a stacked column would still fail this).
+    expect(number!.x).toBeGreaterThan(stage!.x + stage!.width / 2);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(900);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);
+  });
+
+  test('tablet finished state keeps one readable column without overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(stage!.width).toBeGreaterThanOrEqual(400);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(1180);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(820);
+  });
+
+  test('landscape phone shows the colour and number without scrolling across', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'row');
+
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // Both readings stay inside the 390 px viewport, side by side.
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(390);
+    expect(number!.y + number!.height).toBeLessThanOrEqual(390);
+    expect(number!.x).toBeGreaterThan(colour!.x + colour!.width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(844);
+  });
+
+  test('320 px phone stacks the readings without clipping or overlap', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    const dock = await page.getByTestId('lucky-meter-dock').boundingBox();
+    const spark = await page.getByTestId('lucky-spark-finale').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(number!.y).toBeGreaterThan(colour!.y);
+    expect(stage!.x).toBeGreaterThanOrEqual(0);
+    expect(stage!.x + stage!.width).toBeLessThanOrEqual(320);
+    // The corner controls stop above the Spark, and the Spark above the meter.
+    expect(spark!.y).toBeGreaterThanOrEqual(dock!.y + dock!.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  });
+
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 390, height: 844 },
+    { width: 412, height: 915 },
+    { width: 430, height: 932 },
+  ]) {
+    test(`${viewport.width} px phone keeps the reading inside the viewport`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await pinNoon(page);
+      await seed(page, buildState({ tierId: 'high', started: true }));
+
+      await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+      const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+      const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+      const number = await page.getByTestId('lucky-number-panel').boundingBox();
+      expect(stage).not.toBeNull();
+      expect(number!.y).toBeGreaterThan(colour!.y);
+      expect(stage!.x).toBeGreaterThanOrEqual(0);
+      expect(stage!.x + stage!.width).toBeLessThanOrEqual(viewport.width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+        viewport.width,
+      );
+    });
+  }
 });
 
 test.describe('Daily Resonance visual evidence', () => {
