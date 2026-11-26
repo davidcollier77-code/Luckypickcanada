@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -272,66 +272,16 @@ describe('visual QA change classification', () => {
   });
 });
 
-describe('Playwright cache validation', () => {
-  function runCacheCheck(root) {
-    return execFileSync(
-      'bash',
-      [join(process.cwd(), '.github/scripts/verify-playwright-cache.sh'), root],
-      { encoding: 'utf8' },
-    ).trim();
-  }
-
-  function temporaryRoot() {
-    return mkdtempSync(join(tmpdir(), 'lqa-playwright-cache-'));
-  }
-
-  it('reports a cached Chromium executable as ready', () => {
-    const root = temporaryRoot();
-    try {
-      const browser = join(root, 'chromium-1234', 'chrome-linux', 'chrome');
-      mkdirSync(join(root, 'chromium-1234', 'chrome-linux'), { recursive: true });
-      writeFileSync(browser, '#!/bin/sh\n');
-      chmodSync(browser, 0o755);
-      expect(runCacheCheck(root)).toBe('ready=true');
-    } finally {
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
-
-  it('rejects an empty, missing or non-executable cache', () => {
-    const empty = temporaryRoot();
-    try {
-      expect(runCacheCheck(empty)).toBe('ready=false');
-
-      const stale = join(empty, 'chromium-1234', 'chrome-linux', 'chrome');
-      mkdirSync(join(empty, 'chromium-1234', 'chrome-linux'), { recursive: true });
-      writeFileSync(stale, 'not executable');
-      expect(runCacheCheck(empty)).toBe('ready=false');
-
-      // A directory named like the browser is not an executable either.
-      mkdirSync(join(empty, 'chromium-5678', 'chrome-linux', 'chrome'), { recursive: true });
-      expect(runCacheCheck(empty)).toBe('ready=false');
-
-      expect(runCacheCheck(join(empty, 'absent'))).toBe('ready=false');
-    } finally {
-      rmSync(empty, { recursive: true, force: true });
-    }
-  });
-
-  it('gates the download on the validated cache, not the cache-hit flag', () => {
-    const validation = stepBlock('Validate restored Playwright Chromium');
-    expect(validation).not.toBeNull();
-    expect(validation).toContain('id: playwright-browser');
-    expect(validation).toContain('.github/scripts/verify-playwright-cache.sh');
-    expect(validation).toContain('no usable Chromium executable');
-    // The install still runs on an incomplete cache and still provisions system
-    // dependencies when the browser is usable.
-    expect(stepBlock('Install Playwright Chromium (browser unavailable)')).toContain(
-      "steps.playwright-browser.outputs.ready != 'true'",
-    );
-    expect(
-      stepBlock('Install Playwright system dependencies (browser cached)'),
-    ).toContain("steps.playwright-browser.outputs.ready == 'true'");
+describe('Playwright browser provisioning', () => {
+  it('installs Chromium unconditionally instead of validating a cached revision', () => {
+    const install = stepBlock('Install Chromium with its system dependencies');
+    expect(install).not.toBeNull();
+    expect(install).toContain('pnpm exec playwright install --with-deps chromium');
+    // No custom validator, conditional install or revision-specific gate remains.
+    expect(workflow).not.toContain('verify-playwright-cache.sh');
+    expect(workflow).not.toContain('Validate restored Playwright Chromium');
+    expect(workflow).not.toContain('Install Playwright system dependencies');
+    expect(workflow).not.toMatch(/playwright install-deps chromium/);
   });
 });
 
@@ -502,7 +452,6 @@ describe('visual QA gating matrix', () => {
       /^    if: needs\.changes\.outputs\.visual_required == 'true'/m,
     );
     expect(visualJob).toContain('playwright install --with-deps chromium');
-    expect(visualJob).toContain('playwright install-deps chromium');
     expect(visualJob).toContain('Verify committed visual baselines');
     expect(visualJob).toContain('Run visual regression tests');
   });
@@ -548,12 +497,9 @@ describe('visual QA workflow wiring', () => {
       expect(block).toContain("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'");
     }
 
-    // Explicit Chromium provisioning is unchanged and never carries the skip.
-    expect(stepBlock('Install Playwright Chromium (browser unavailable)')).toContain(
+    // Explicit Chromium provisioning is unconditional and never carries the skip.
+    expect(stepBlock('Install Chromium with its system dependencies')).toContain(
       'pnpm exec playwright install --with-deps chromium',
-    );
-    expect(stepBlock('Install Playwright system dependencies (browser cached)')).toContain(
-      'pnpm exec playwright install-deps chromium',
     );
   });
 
@@ -625,15 +571,13 @@ describe('visual QA workflow wiring', () => {
       "if: needs.changes.outputs.visual_required == 'true'",
     );
 
-    const missInstall = stepBlock('Install Playwright Chromium (browser unavailable)');
-    expect(missInstall).not.toBeNull();
-    expect(missInstall).toContain("steps.playwright-browser.outputs.ready != 'true'");
-    expect(missInstall).toContain('pnpm exec playwright install --with-deps chromium');
-
-    const hitDeps = stepBlock('Install Playwright system dependencies (browser cached)');
-    expect(hitDeps).not.toBeNull();
-    expect(hitDeps).toContain("steps.playwright-browser.outputs.ready == 'true'");
-    expect(hitDeps).toContain('pnpm exec playwright install-deps chromium');
+    const install = stepBlock('Install Chromium with its system dependencies');
+    expect(install).not.toBeNull();
+    expect(install).toContain('pnpm exec playwright install --with-deps chromium');
+    // The install is unconditional: Playwright itself skips a download when the
+    // pinned revision is already present and provisions deps either way.
+    expect(install).not.toContain('if:');
+    expect(workflow).not.toContain('playwright-browser.outputs');
 
     // No workflow step may pull in Firefox or WebKit.
     expect(workflow).not.toMatch(/playwright install[^\n]*\b(firefox|webkit)\b/);

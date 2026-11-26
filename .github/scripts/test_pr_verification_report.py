@@ -107,6 +107,10 @@ def all_supporting(conclusion="success", sha=HEAD):
     return [check(name, conclusion, sha) for name, _purpose in report.QA_SUPPORTING_CHECKS]
 
 
+def row_status(row):
+    return report._supporting_status(row)
+
+
 def verification(head=HEAD, required=None, conditional=None, stale=None, directives=None, head_present=True):
     return {
         "pr": {"number": 42, "head_sha": head, "head_ref": "fixture"},
@@ -215,20 +219,28 @@ class CategoryContractTests(unittest.TestCase):
             {
                 "name": "Validate OpenNext build artifacts",
                 "status": "NOT RUN",
-                "detail": "not applicable: no changed path can affect the production build",
+                "detail": "the trusted classifier proved that no changed path can affect the production build",
                 "applicable": False,
                 "blocking": False,
                 "head_sha": "",
+                "skip": {
+                    "authority": "trusted-applicability-classifier",
+                    "reason": "no changed path can affect the production build",
+                },
             },
         ]
         conditional = [
             {
                 "name": "Visual QA",
                 "status": "NOT RUN",
-                "detail": "not applicable: no changed path can affect rendered output",
+                "detail": "the trusted classifier proved that no changed path can affect rendered output",
                 "applicable": False,
                 "blocking": False,
                 "head_sha": "",
+                "skip": {
+                    "authority": "trusted-applicability-classifier",
+                    "reason": "no changed path can affect rendered output",
+                },
             }
         ]
         runs = [
@@ -249,9 +261,17 @@ class CategoryContractTests(unittest.TestCase):
         self.assertFalse(rows["Validate OpenNext build artifacts"]["applicable"])
         self.assertFalse(rows["Visual QA (shard 1/2)"]["applicable"])
         self.assertFalse(rows["Visual QA (shard 2/2)"]["applicable"])
-        self.assertIn("not applicable", rows["Visual QA (shard 1/2)"]["reason"])
+        self.assertIn("rendered output", rows["Visual QA (shard 1/2)"]["reason"])
+        # An authorized skip keeps its own label and never becomes a pass.
+        self.assertEqual(
+            rows["Visual QA (shard 1/2)"]["status"], report.qa_skip.LABEL
+        )
+        self.assertEqual(
+            rows["Validate OpenNext build artifacts"]["status"], report.qa_skip.LABEL
+        )
+        self.assertEqual(row_status(rows["Visual QA (shard 1/2)"]), report.qa_skip.LABEL)
 
-    def test_unknown_visual_applicability_does_not_fail_the_report(self):
+    def test_unknown_visual_applicability_warns_instead_of_passing(self):
         required = [
             {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
             {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
@@ -280,8 +300,10 @@ class CategoryContractTests(unittest.TestCase):
         )
 
         integrity = category(result, "verification-integrity")
-        self.assertEqual(integrity["status"], "PASSED")
-        self.assertFalse(any("Visual QA" in item for item in integrity["attention"]))
+        # Unknown applicability is not a skip and not a pass: it is a warning
+        # that someone must confirm the browser check really does not apply.
+        self.assertEqual(integrity["status"], "WARNING")
+        self.assertTrue(any("Visual QA" in item for item in integrity["attention"]))
 
     def test_every_status_uses_the_four_allowed_values(self):
         result = report.build_report(evidence())
@@ -356,13 +378,19 @@ class QaDeclarationTests(unittest.TestCase):
         result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
         self.assertEqual(result["status"], "FAILED")
 
-    def test_bot_authored_pull_request_reports_the_attestation_as_not_run(self):
+    def test_bot_authored_pull_request_skips_the_human_attestation(self):
         pr = evidence()["pull_request"]
-        pr["user"] = {"login": "dependabot[bot]"}
+        pr["user"] = {"login": "dependabot[bot]", "type": "Bot"}
         pr["body"] = pr["body"].replace(report.QA_DECLARATION, "")
         result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
-        self.assertEqual(result["status"], "WARNING")
-        self.assertIn("NOT RUN", json.dumps(result["details"]))
+        # The human attestation is an authorized actor-inapplicable skip: the
+        # item is not a pass, but the passing supporting checks keep the
+        # category, and therefore the PR check, green.
+        self.assertEqual(result["status"], "PASSED")
+        self.assertTrue(result["skipped"])
+        details = "\n".join(result["details"])
+        self.assertIn(report.qa_skip.LABEL, details)
+        self.assertNotIn("NOT RUN", details)
 
     def test_changed_code_finding_renders_the_matched_excerpt(self):
         files = file_records(
@@ -1581,6 +1609,139 @@ class PerformanceHealthTests(unittest.TestCase):
                 rendered = handle.read()
 
         self.assertIn("**NOT ENOUGH DATA**", rendered)
+
+
+class AuthorizedSkipTests(unittest.TestCase):
+    def build_skip(self):
+        return {
+            "name": "Validate OpenNext build artifacts",
+            "status": "NOT RUN",
+            "detail": "the trusted classifier proved that no changed path can affect the production build",
+            "applicable": False,
+            "blocking": False,
+            "head_sha": "",
+            "skip": {
+                "authority": "trusted-applicability-classifier",
+                "reason": "no changed path can affect the production build",
+            },
+        }
+
+    def required_with_skip(self):
+        return [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            self.build_skip(),
+        ]
+
+    def test_an_authorized_skip_is_labelled_and_keeps_the_report_green(self):
+        result = report.build_report(
+            evidence(verification=verification(required=self.required_with_skip()))
+        )
+        self.assertEqual(result["overall_status"], "PASSED")
+        self.assertEqual(category(result, "qa-checker")["status"], "PASSED")
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertEqual(
+            report._supporting_status(rows["Validate OpenNext build artifacts"]),
+            report.qa_skip.LABEL,
+        )
+        self.assertIn(report.qa_skip.LABEL, report.render_comment(result))
+
+    def test_an_observed_failure_outranks_the_skip(self):
+        runs = [
+            check(name, "failure" if name == "Validate OpenNext build artifacts" else "success")
+            for name, _purpose in report.QA_SUPPORTING_CHECKS
+        ] + [check(report.DEVSKIM_CHECK, "success")]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=self.required_with_skip()),
+            )
+        )
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertEqual(rows["Validate OpenNext build artifacts"]["status"], "FAILED")
+        self.assertEqual(category(result, "qa-checker")["status"], "FAILED")
+        self.assertEqual(result["overall_status"], "FAILED")
+
+    def test_an_unauthorized_inapplicability_never_passes(self):
+        record = self.build_skip()
+        del record["skip"]
+        result = report.build_report(
+            evidence(verification=verification(required=self.required_with_skip()[:-1] + [record]))
+        )
+        self.assertEqual(category(result, "verification-integrity")["status"], "FAILED")
+        self.assertEqual(result["overall_status"], "FAILED")
+
+
+def dependabot_commit():
+    return {
+        "sha": HEAD,
+        "author": {"login": "dependabot[bot]", "type": "Bot"},
+        "commit": {
+            "message": "bump the playwright group",
+            "author": {
+                "name": "dependabot[bot]",
+                "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            },
+            "committer": {"name": "GitHub", "email": "noreply@github.com"},
+        },
+    }
+
+
+def dependabot_files():
+    return [
+        {"filename": "package.json", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
+        {"filename": "pnpm-lock.yaml", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
+    ]
+
+
+class DependabotMaintenanceTests(unittest.TestCase):
+    def maintenance_evidence(self, files=None):
+        pr = evidence()["pull_request"]
+        pr["user"] = {"login": "dependabot[bot]", "type": "Bot"}
+        pr["body"] = "Automated dependency update."
+        runs = all_supporting() + [
+            check(report.DEVSKIM_CHECK, "success"),
+            check(report.PROTECTED_AUTHORIZATION_CHECK, "success"),
+        ]
+        return evidence(
+            pull_request=pr,
+            files=dependabot_files() if files is None else files,
+            check_runs=runs,
+            commits=[dependabot_commit()],
+        )
+
+    def test_protected_and_governance_declarations_are_skipped_not_failed(self):
+        result = report.build_report(self.maintenance_evidence())
+        protected = category(result, "protected-files")
+        governance = category(result, "governance")
+        self.assertEqual(protected["status"], "PASSED")
+        self.assertTrue(protected["skipped"])
+        self.assertEqual(governance["status"], "PASSED")
+        self.assertTrue(governance["skipped"])
+        self.assertIn(report.qa_skip.LABEL, report.render_comment(result))
+
+    def test_scope_declaration_is_skipped_for_a_verified_update(self):
+        result = report.build_report(self.maintenance_evidence())
+        scope_category = category(result, "pr-scope")
+        self.assertEqual(scope_category["status"], "PASSED")
+        self.assertTrue(scope_category["skipped"])
+
+    def test_a_mixed_update_does_not_get_the_governance_exemption(self):
+        files = dependabot_files() + [
+            {"filename": "app/page.js", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"}
+        ]
+        result = report.build_report(self.maintenance_evidence(files=files))
+        self.assertEqual(category(result, "governance")["status"], "FAILED")
+        self.assertFalse(category(result, "governance")["skipped"])
+
+    def test_a_human_pull_request_keeps_the_declarations_required(self):
+        pr = evidence()["pull_request"]
+        pr["body"] = body(governance=False)
+        result = report.build_report(
+            evidence(pull_request=pr, commits=[dependabot_commit()])
+        )
+        self.assertEqual(category(result, "governance")["status"], "FAILED")
 
 
 class WorkflowContractTests(unittest.TestCase):

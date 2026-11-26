@@ -43,6 +43,10 @@ describe('consolidated PR verification report', () => {
     expect(statusBlock).toContain('WARNING = "WARNING"');
     expect(statusBlock).toContain('NOT_RUN = "NOT RUN"');
     expect(reportScript).not.toContain('BLOCKED =');
+    // An authorized skip is a per-item label, not a fifth category status and
+    // not a pass; the category statuses stay exactly the four above.
+    expect(reportScript).toContain('qa_skip.is_authorized_record');
+    expect(read('.github/scripts/qa_skip.py')).toContain('SKIPPED — NOT APPLICABLE');
     // The renderer's tables and sections use the report vocabulary only.
     expect(reportScript).toContain('"| # | Checker category | Status | Summary |"');
     expect(reportScript).toContain('"### %d. %s — %s"');

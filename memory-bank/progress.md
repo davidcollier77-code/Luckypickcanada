@@ -1,3 +1,10 @@
+## 2026-11-26 — Playwright alignment and authorized QA skips (Spec 221)
+
+- Made the installed lockfile the only Playwright version source: deleted the custom cache validator, replaced the conditional browser installs with one unconditional `pnpm exec playwright install --with-deps chromium`, and added lockfile-sync guards to the CLI wrapper and agent setup (the setup also rejects split installed versions of the three packages). No version or Chromium revision is hardcoded in operational files.
+- Added the shared `qa_skip.py` contract: exact per-item label `SKIPPED — NOT APPLICABLE`, three trusted authorities, a required specific reason, and a narrow verified-Dependabot verifier. The audit, consolidated report and scope checker now label an authorized skip without turning it into a pass; the category and PR check stay green only when every other applicable requirement passes, an observed failure wins, and an unauthorized or unexplained skip fails.
+- Split the scope checker's missing-declaration case from a malformed one, and passed pull request commit evidence to it and to the report with `--commits`.
+- Verified the Python checker suites and the focused Vitest contracts; full results are in the PR handoff. No dependency version, protected file, scanner configuration, deployment or secret changed.
+
 ## 2026-11-26 — DevSkim backlog investigation and remediation (Spec 219)
 
 - Established that the repository never held "about 100" open alerts: the consolidated report fetched one `per_page=100` page and never followed pagination, so any backlog of 100 or more rendered as exactly 100. The true count is **422**, all severity `note`: 421 DS162092 and 1 DS172411.

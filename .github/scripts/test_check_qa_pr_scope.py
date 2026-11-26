@@ -4,10 +4,12 @@ import unittest
 from check_qa_pr_scope import (
     END_MARKER,
     START_MARKER,
+    MissingDeclaration,
     ScopeError,
     _digest,
     _is_visual_path,
     changed_paths,
+    render_markdown,
     validate,
 )
 
@@ -710,6 +712,96 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         approved = run_check([".freebuff/testing.md"], value, comments)
         self.assertEqual(approved["status"], "PASS")
         self.assertIn("protected-file", approved["note"])
+
+
+class MaintenanceExemptionTests(unittest.TestCase):
+    def dependabot_pr(self, body="Automated dependency update."):
+        return {
+            "number": 42,
+            "body": body,
+            "head": {"sha": HEAD_SHA},
+            "user": {"login": "dependabot[bot]", "type": "Bot"},
+            "changed_files": 2,
+        }
+
+    def dependabot_commits(self):
+        return [
+            {
+                "sha": HEAD_SHA,
+                "author": {"login": "dependabot[bot]", "type": "Bot"},
+                "commit": {
+                    "message": "bump the playwright group",
+                    "author": {
+                        "name": "dependabot[bot]",
+                        "email": "49699333+dependabot[bot]@users.noreply.github.com",
+                    },
+                    "committer": {"name": "GitHub", "email": "noreply@github.com"},
+                },
+            }
+        ]
+
+    def maintenance_files(self):
+        return [
+            {"filename": "package.json", "status": "modified"},
+            {"filename": "pnpm-lock.yaml", "status": "modified"},
+        ]
+
+    def test_a_verified_update_skips_the_declaration_and_reports_pass(self):
+        result = validate(
+            self.dependabot_pr(),
+            self.maintenance_files(),
+            [],
+            OWNER,
+            self.dependabot_commits(),
+        )
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(
+            result["skip"]["authority"], "verified-dependabot-maintenance"
+        )
+        rendered = render_markdown(result)
+        self.assertIn("SKIPPED — NOT APPLICABLE", rendered)
+
+    def test_a_human_pull_request_still_fails_without_a_declaration(self):
+        pr = self.dependabot_pr()
+        pr["user"] = {"login": "freebuff-agent", "type": "User"}
+        with self.assertRaises(MissingDeclaration):
+            validate(pr, self.maintenance_files(), [], OWNER, self.dependabot_commits())
+
+    def test_a_malformed_declaration_is_never_exempted(self):
+        body = START_MARKER + "\n{ not json\n" + END_MARKER
+        with self.assertRaises(ScopeError):
+            validate(
+                self.dependabot_pr(body),
+                self.maintenance_files(),
+                [],
+                OWNER,
+                self.dependabot_commits(),
+            )
+
+    def test_a_duplicate_declaration_is_not_a_missing_one(self):
+        body = pr_body(declaration()) + "\n" + pr_body(declaration())
+        with self.assertRaises(ScopeError) as caught:
+            validate(
+                self.dependabot_pr(body),
+                self.maintenance_files(),
+                [],
+                OWNER,
+                self.dependabot_commits(),
+            )
+        self.assertNotIsInstance(caught.exception, MissingDeclaration)
+
+    def test_missing_commit_evidence_keeps_the_declaration_required(self):
+        with self.assertRaises(MissingDeclaration):
+            validate(self.dependabot_pr(), self.maintenance_files(), [], OWNER, None)
+
+    def test_an_update_touching_application_code_keeps_the_declaration_required(self):
+        files = self.maintenance_files() + [
+            {"filename": "app/page.js", "status": "modified"}
+        ]
+        pr = self.dependabot_pr()
+        pr["changed_files"] = len(files)
+        with self.assertRaises(MissingDeclaration):
+            validate(pr, files, [], OWNER, self.dependabot_commits())
 
 
 if __name__ == "__main__":

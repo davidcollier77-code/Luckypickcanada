@@ -242,8 +242,10 @@ describe('Playwright workflow wiring', () => {
     expect(workflow).toContain('name: Application Verification');
     expect(workflow).toContain('Verify committed visual baselines');
     expect(workflow).toContain('playwright install --with-deps chromium');
-    expect(workflow).toContain('playwright install-deps chromium');
-    expect(workflow).toContain('Validate restored Playwright Chromium');
+    // Chromium is provisioned unconditionally from the installed Playwright;
+    // there is no custom cache validator or separate install-deps step.
+    expect(workflow).not.toContain('playwright install-deps chromium');
+    expect(workflow).not.toContain('Validate restored Playwright Chromium');
     expect(workflow).toContain('pnpm run test');
     expect(workflow).toContain('pnpm exec tsc --noEmit');
     expect(workflow).not.toContain('--update-snapshots');

@@ -92,4 +92,27 @@ describe('Playwright version alignment', () => {
     expect(versions).toHaveLength(1);
     expect(versions[0]).toBe(importerDependency('playwright').version);
   });
+
+  it('keeps operational instructions free of a hardcoded version or revision', () => {
+    // The installed lockfile is the single source of truth. Documentation and
+    // scripts that drive the tool must not pin a version, so a Dependabot or
+    // owner update is picked up without editing them. Dated Spec Kit evidence
+    // and measurement records are historical and intentionally excluded.
+    const operational = [
+      'README.md',
+      '.agents/skills/playwright-cli/references/lucky-pick-canada.md',
+      'scripts/playwright-cli.sh',
+      'scripts/setup-playwright-agent.sh',
+      '.github/workflows/visual-qa.yml',
+    ];
+    for (const path of operational) {
+      const text = read(path);
+      expect(text, `${path} must not hardcode a Chromium revision`).not.toMatch(
+        /\bchromium-\d{3,}\b/,
+      );
+      expect(text, `${path} must not hardcode a Playwright range`).not.toMatch(
+        /\^1\.\d+\.\d+/,
+      );
+    }
+  });
 });
