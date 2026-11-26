@@ -1,4 +1,4 @@
-## 2026-11-26 — Playwright alignment and authorized QA skips (Spec 220)
+## 2026-11-26 — Playwright alignment and authorized QA skips (Spec 221)
 
 - Made the installed lockfile the only Playwright version source: deleted the custom cache validator, replaced the conditional browser installs with one unconditional `pnpm exec playwright install --with-deps chromium`, and added lockfile-sync guards to the CLI wrapper and agent setup (the setup also rejects split installed versions of the three packages). No version or Chromium revision is hardcoded in operational files.
 - Added the shared `qa_skip.py` contract: exact per-item label `SKIPPED — NOT APPLICABLE`, three trusted authorities, a required specific reason, and a narrow verified-Dependabot verifier. The audit, consolidated report and scope checker now label an authorized skip without turning it into a pass; the category and PR check stay green only when every other applicable requirement passes, an observed failure wins, and an unauthorized or unexplained skip fails.

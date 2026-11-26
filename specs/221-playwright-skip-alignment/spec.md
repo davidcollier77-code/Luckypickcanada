@@ -1,6 +1,6 @@
 # Feature Specification: Playwright Alignment and Authorized QA Skips
 
-**Feature Branch**: `220-playwright-skip-alignment`
+**Feature Branch**: `221-playwright-skip-alignment`
 
 **Created**: 2026-11-26
 

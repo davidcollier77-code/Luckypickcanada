@@ -1,8 +1,8 @@
 # Implementation Plan: Playwright Alignment and Authorized QA Skips
 
-**Branch**: `220-playwright-skip-alignment` | **Date**: 2026-11-26 | **Spec**: `specs/220-playwright-skip-alignment/spec.md`
+**Branch**: `221-playwright-skip-alignment` | **Date**: 2026-11-26 | **Spec**: `specs/221-playwright-skip-alignment/spec.md`
 
-**Input**: Feature specification from `/specs/220-playwright-skip-alignment/spec.md`
+**Input**: Feature specification from `/specs/221-playwright-skip-alignment/spec.md`
 
 ## Summary
 
@@ -58,7 +58,7 @@ their tests, and operational documentation.
 ### Documentation (this feature)
 
 ```text
-specs/220-playwright-skip-alignment/
+specs/221-playwright-skip-alignment/
 ├── spec.md
 ├── plan.md
 └── tasks.md

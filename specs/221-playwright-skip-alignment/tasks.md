@@ -1,6 +1,6 @@
 # Tasks: Playwright Alignment and Authorized QA Skips
 
-**Input**: Design documents from `specs/220-playwright-skip-alignment/`
+**Input**: Design documents from `specs/221-playwright-skip-alignment/`
 
 **Prerequisites**: `spec.md`, `plan.md`
 
