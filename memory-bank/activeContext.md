@@ -1,3 +1,13 @@
+# Active Context — Playwright alignment and authorized QA skips (Spec 220, 2026-11-26)
+
+## Current Task — One installed Playwright, and honest inapplicable skips
+
+- **Scope:** `specs/220-playwright-skip-alignment/`. Remove the custom Playwright cache validator and conditional browser installs so the lockfile is the only version source; add one shared authorized-skip contract so a proven-inapplicable item is labelled `SKIPPED — NOT APPLICABLE` while its category and the PR check stay green when every other applicable requirement passes.
+- **Playwright:** `scripts/playwright-cli.sh` reinstalls when `node_modules/.pnpm/lock.yaml` is missing or differs from `pnpm-lock.yaml`; `scripts/setup-playwright-agent.sh` fails closed on the same mismatch and on split installed versions of `playwright`, `@playwright/test` and `playwright-chromium`. Visual QA runs one unconditional `pnpm exec playwright install --with-deps chromium` under the installed-version cache key; `.github/scripts/verify-playwright-cache.sh` is deleted. No version or Chromium revision is hardcoded in operational files.
+- **Skip contract:** `.github/scripts/qa_skip.py` defines the exact label, the three authorities (`trusted-applicability-classifier`, `actor-inapplicable`, `verified-dependabot-maintenance`), a required specific reason and the Dependabot verifier. The audit, report and scope checker consume it. A failed run outranks a skip; an unauthorized or unexplained skip fails; an unknown conditional non-run warns.
+- **Dependabot:** the exemption covers only the QA scope declaration, Spec Kit/Library/Memory Bank reporting and the submitter protected-file declaration. It requires the bot author, every commit authored by Dependabot and committed by `noreply@github.com`, and a path allowlist. The environment-protected human authorization gate is never skipped.
+- **Status:** implementation is on `freebuff/d0375600d411086135405b5e`; local verification is recorded in the tasks and PR handoff. No protected file, dependency version, deployment or secret changed.
+
 # Active Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
 
 ## Current Task — Resolve the 422 open DevSkim alerts without weakening detection
@@ -7,7 +17,7 @@
 - **Remediation:** the existing exact-span filter now admits `specs/<NNN-feature>/evidence/**/*.json` for DS162092 with the same valid-JSON/loopback-value validation, and suppresses only the exact meter watchdog statement for DS172411. The report now paginates code-scanning alerts with `gh api --paginate --slurp` and `jq 'add // []'`.
 - **Fresh-eyes review:** the diff was re-read for unnecessary complexity; `should_suppress_local_probe_origin` now reuses `is_local_probe_origin_path()` and the workflow Vitest assertion binds `--paginate --slurp` to the alert command with an anchored regex instead of hard-coded slice offsets. A negative control proved the assertion fails when pagination is removed.
 - **Verification:** the fresh default-branch SARIF from `da8f104c` is **3,545 raw → 3,123 existing suppressions → 422 remaining**, reproducing the live count; the updated filter with matching source leaves **0**; the real-SARIF replay gate exits 0; the suppression suite passes **115 tests**, the report contract suite **102 tests**, and the workflow Vitest file **14 tests**. Exact evidence is in `specs/219-devskim-backlog-remediation/evidence.md`.
-- **Limitations:** the 422 existing alerts remain open until this branch merges and the next default-branch scan uploads the filtered SARIF; post-merge closure cannot be verified from the branch. No application code, dependency, scanner rule, scan glob or trigger changed. The change set is build-exempt, so the production build is expected to be `NOT RUN — not applicable`.
+- **Limitations:** the 422 existing alerts remain open until this branch merges and the next default-branch scan uploads the filtered SARIF; post-merge closure cannot be verified from the branch. No application code, dependency, scanner rule, scan glob or trigger changed. The change set is build-exempt, so the production build is expected to be `SKIPPED — NOT APPLICABLE` (earlier recorded as `NOT RUN — not applicable`).
 - **PR #2035:** merged by the owner as `da8f104c` at `2026-11-25T21:47:06 -0400`; this task did not merge it, reuse its branch or change its scope.
 
 # Active Context — Spec 218 production Lucky Meter implementation (2026-11-25)

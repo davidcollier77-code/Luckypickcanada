@@ -38,6 +38,8 @@ import time
 import urllib.error
 import urllib.request
 
+import qa_skip
+
 # Directives GitHub documents as skipping push/pull_request workflow runs.
 SKIP_CI_DIRECTIVES = (
     "[skip ci]",
@@ -310,14 +312,27 @@ def audit_verification(pr, commits, check_runs, build_required="unknown", visual
     required = []
     for name in REQUIRED_CHECKS:
         if name == BUILD_CHECK and build_applicable is False:
+            observed = runs_named(name, on_head)
+            if any(check_status(run)[0] == "FAIL" for run in observed):
+                # An observed failure outranks the inapplicability proof.
+                record = _audit_check(name, observed, [], head_directives)
+                record["requirement"] = "conditional"
+                record["applicable"] = True
+                record["blocking"] = True
+                required.append(record)
+                continue
             record = {
                 "name": name,
                 "status": "NOT RUN",
                 "conclusion": "",
                 "head_sha": "",
                 "detail": (
-                    "not applicable: the trusted classifier proved that no changed path "
-                    "can affect the production build"
+                    "the trusted classifier proved that no changed path can affect "
+                    "the production build"
+                ),
+                "skip": qa_skip.record(
+                    qa_skip.TRUSTED_CLASSIFIER,
+                    "no changed path can affect the production build",
                 ),
             }
             record["requirement"] = "conditional"
@@ -339,14 +354,29 @@ def audit_verification(pr, commits, check_runs, build_required="unknown", visual
     conditional = []
     for name in CONDITIONAL_CHECKS:
         if visual_applicable is False:
+            # A trusted inapplicability proof is an authorized skip of the
+            # individual check. It is never recorded as a pass, but a run that
+            # did execute and fail still wins.
+            observed = runs_in_group(name, on_head)
+            if any(check_status(run)[0] == "FAIL" for run in observed):
+                record = _audit_conditional(name, observed, [], head_directives)
+                record["requirement"] = "conditional"
+                record["applicable"] = True
+                record["blocking"] = True
+                conditional.append(record)
+                continue
             record = {
                 "name": name,
                 "status": "NOT RUN",
                 "conclusion": "",
                 "head_sha": "",
                 "detail": (
-                    "not applicable: the trusted classifier proved that no changed path "
-                    "can affect rendered output"
+                    "the trusted classifier proved that no changed path can affect "
+                    "rendered output"
+                ),
+                "skip": qa_skip.record(
+                    qa_skip.TRUSTED_CLASSIFIER,
+                    "no changed path can affect rendered output",
                 ),
             }
             record["requirement"] = "conditional"
@@ -354,9 +384,10 @@ def audit_verification(pr, commits, check_runs, build_required="unknown", visual
             record["blocking"] = False
             conditional.append(record)
             continue
+        group_on_head = runs_in_group(name, on_head)
         record = _audit_conditional(
             name,
-            runs_in_group(name, on_head),
+            group_on_head,
             runs_in_group(name, stale),
             head_directives,
         )
@@ -364,7 +395,11 @@ def audit_verification(pr, commits, check_runs, build_required="unknown", visual
         record["applicable"] = True
         # A declared-required (or explicitly required) browser run is a real
         # requirement: if it did not run, the audit must fail rather than warn.
-        record["blocking"] = visual_applicable is True
+        # A run that did exist and was skipped, cancelled or neutral is also a
+        # real unexplained skip: without a trusted inapplicability proof it can
+        # never make the current head verified.
+        unexplained_skip = bool(group_on_head) and record["status"] == "NOT RUN"
+        record["blocking"] = visual_applicable is True or unexplained_skip
         conditional.append(record)
 
     other_checks = []
@@ -461,15 +496,21 @@ def render_markdown(report):
     lines.append("| Check | Status | Evidence |")
     lines.append("| --- | --- | --- |")
     for record in report["required_checks"] + report["conditional_checks"]:
-        if record.get("applicable") is False:
-            label = "not applicable"
+        if qa_skip.is_authorized_record(record.get("skip")):
+            label = "authorized skip"
+            shown = qa_skip.LABEL
+        elif record.get("applicable") is False:
+            label = "unverified applicability"
+            shown = record["status"]
         elif record.get("requirement") == "conditional":
             label = "required when applicable" if record.get("blocking") else "conditional"
+            shown = record["status"]
         else:
             label = "required"
+            shown = record["status"]
         lines.append(
             "| %s (%s) | **%s** | %s |"
-            % (record["name"], label, record["status"], record["detail"])
+            % (record["name"], label, shown, record["detail"])
         )
     lines.append("")
 
@@ -516,7 +557,10 @@ def render_markdown(report):
     lines.append(
         "A check is only `PASS` when GitHub reports a completed `success` run "
         "attached to the current head SHA. `NOT RUN` means the check did not "
-        "run for the current head and must not be read as a pass."
+        "run for the current head and must not be read as a pass. "
+        "`SKIPPED — NOT APPLICABLE` is shown only for a trusted, reasoned "
+        "inapplicability proof; it is never a pass, and the overall result stays "
+        "verified when every other applicable check passed."
     )
     return "\n".join(lines) + "\n"
 

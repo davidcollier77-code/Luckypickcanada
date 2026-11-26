@@ -53,6 +53,8 @@ def job(job_id, name, steps, conclusion="success"):
 def install_steps(started, completed, chromium="hit"):
     steps = [step("Install dependencies", started, completed)]
     if chromium is not None:
+        # The workflow installs Chromium unconditionally, so only the restore
+        # step exists; the hit/miss outcome comes from the job log.
         steps.append(
             step(
                 "Restore cached Playwright Chromium",
@@ -61,47 +63,7 @@ def install_steps(started, completed, chromium="hit"):
                 number=2,
             )
         )
-        steps.append(
-            step(
-                "Install Playwright Chromium (cache miss)",
-                "2026-11-15T16:05:45Z",
-                "2026-11-15T16:05:45Z",
-                conclusion="skipped" if chromium == "hit" else "success",
-                number=3,
-            )
-        )
     return steps
-
-
-def restore_step(conclusion="success", status="completed"):
-    completed = status == "completed"
-    return {
-        "name": "Restore cached Playwright Chromium",
-        "number": 2,
-        "status": status,
-        "conclusion": conclusion if completed else None,
-        "started_at": "2026-11-15T16:05:40Z",
-        "completed_at": "2026-11-15T16:05:45Z" if completed else None,
-    }
-
-
-def chromium_job(restore=None, miss="missing", job_id="10"):
-    steps = [step("Install dependencies", "2026-11-15T16:05:32Z", "2026-11-15T16:05:39Z")]
-    if restore is not None:
-        steps.append(restore)
-    if miss != "missing":
-        steps.append(miss)
-    return job(job_id, "Visual QA (shard 1/2)", steps)
-
-
-def miss_step(conclusion="skipped"):
-    return step(
-        "Install Playwright Chromium (cache miss)",
-        "2026-11-15T16:05:45Z",
-        "2026-11-15T16:05:45Z",
-        conclusion=conclusion,
-        number=3,
-    )
 
 
 def page_of_jobs(count, start=0):
@@ -262,63 +224,27 @@ class StepAndJobTests(unittest.TestCase):
             ["Visual QA", "Visual QA (shard 1/2)", "Visual QA (shard 2/2)"],
         )
 
-    def test_chromium_state_comes_from_the_cache_miss_step(self):
-        self.assertEqual(timings.chromium_state_from_steps(SHARD_ONE), "hit")
-        self.assertEqual(timings.chromium_state_from_steps(SHARD_TWO_MISS), "miss")
+    def test_chromium_state_is_n_a_without_a_restore_step(self):
         self.assertEqual(timings.chromium_state_from_steps(VERIFY_JOB), "n/a")
 
-    def test_chromium_state_is_unknown_when_the_step_did_not_complete(self):
-        broken = job(
-            "9",
-            "Visual QA (shard 1/2)",
-            [
-                step("Install dependencies", "2026-11-15T16:05:32Z", "2026-11-15T16:05:39Z"),
-                step(
-                    "Restore cached Playwright Chromium",
-                    "2026-11-15T16:05:40Z",
-                    None,
-                ),
-                step(
-                    "Install Playwright Chromium (cache miss)",
-                    "2026-11-15T16:05:45Z",
-                    None,
-                ),
-            ],
-        )
-        broken["steps"][2]["status"] = "in_progress"
-        broken["steps"][2]["conclusion"] = None
-        self.assertEqual(timings.chromium_state_from_steps(broken), "unknown")
+    def test_chromium_state_is_unknown_with_a_restore_step_and_no_log(self):
+        # No step conclusion encodes a hit or a miss: the workflow installs
+        # Chromium unconditionally, so the log is the only evidence.
+        self.assertEqual(timings.chromium_state_from_steps(SHARD_ONE), "unknown")
+        self.assertEqual(timings.chromium_state_from_steps(SHARD_TWO_MISS), "unknown")
 
-    def test_skipped_miss_after_a_successful_restore_is_a_hit(self):
-        candidate = chromium_job(restore=restore_step(), miss=miss_step("skipped"))
-        self.assertEqual(timings.chromium_state_from_steps(candidate), "hit")
-
-    def test_executed_miss_after_a_successful_restore_stays_a_miss(self):
-        candidate = chromium_job(restore=restore_step(), miss=miss_step("success"))
-        self.assertEqual(timings.chromium_state_from_steps(candidate), "miss")
-
-    def test_skipped_miss_cannot_be_a_hit_without_a_successful_restore(self):
-        cases = {
-            "failed": restore_step(conclusion="failure"),
-            "cancelled": restore_step(conclusion="cancelled"),
-            "skipped": restore_step(conclusion="skipped"),
-            "no conclusion": restore_step(conclusion=None),
-            "incomplete": restore_step(status="in_progress"),
-        }
-        for label, restore in cases.items():
-            with self.subTest(restore=label):
-                candidate = chromium_job(restore=restore, miss=miss_step("skipped"))
-                self.assertEqual(timings.chromium_state_from_steps(candidate), "unknown")
-
-    def test_missing_miss_only_step_is_unknown_and_the_log_supplies_the_key(self):
-        candidate = chromium_job(restore=restore_step(), miss="missing")
-        self.assertEqual(timings.chromium_state_from_steps(candidate), "unknown")
-        row = timings.build_row(
-            candidate, "Cache restored from key: playwright-chromium-Linux-1.64.1"
-        )
+    def test_the_log_supplies_the_hit_state_and_key(self):
+        row = timings.build_row(SHARD_ONE, SHARD_ONE_LOG)
         self.assertEqual(
             row["chromium_cache"],
             {"state": "hit", "key": "playwright-chromium-Linux-1.64.1"},
+        )
+
+    def test_the_log_supplies_the_miss_state_and_key(self):
+        row = timings.build_row(SHARD_TWO_MISS, SHARD_TWO_LOG)
+        self.assertEqual(
+            row["chromium_cache"],
+            {"state": "miss", "key": "playwright-chromium-Linux-1.64.1"},
         )
 
 
@@ -396,7 +322,7 @@ class LiveLoadingTests(unittest.TestCase):
         self.assertEqual(requested, [1])
         self.assertEqual(len(jobs), 2)
 
-    def _single_visual_payload(self, chromium=None):
+    def _single_visual_payload(self, chromium="hit"):
         visual = job(
             "2",
             "Visual QA (shard 1/2)",
@@ -405,7 +331,7 @@ class LiveLoadingTests(unittest.TestCase):
         return {"jobs": [visual], "total_count": 1}
 
     def test_unavailable_log_leaves_cache_details_unknown(self):
-        payloads = [self._single_visual_payload(chromium=None)]
+        payloads = [self._single_visual_payload()]
 
         def unavailable(_url, _token):
             raise timings.ReportError("GitHub API request failed with HTTP 404 for /logs")
@@ -416,7 +342,7 @@ class LiveLoadingTests(unittest.TestCase):
         self.assertEqual(logs, {})
         row = timings.build_rows(jobs, logs)[0]
         self.assertEqual(row["pnpm_cache"]["state"], "unknown")
-        self.assertEqual(row["chromium_cache"]["state"], "n/a")
+        self.assertEqual(row["chromium_cache"]["state"], "unknown")
 
     def test_corrupt_zip_log_raises_a_clear_report_error(self):
         payloads = [self._single_visual_payload()]

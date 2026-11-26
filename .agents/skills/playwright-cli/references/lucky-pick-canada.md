@@ -15,7 +15,7 @@ The documentation task that produced this guide had no installed dependencies an
 
 ## Local CLI and first-time setup
 
-The repository declares `playwright`, `@playwright/test` and `playwright-chromium` at `^1.64.1`; the lockfile pins the exact version. It uses pnpm 10.30.3 and Node.js 26.x. Use this local CLI; do not install a global CLI or a separate `@playwright/cli` dependency.
+The repository declares `playwright`, `@playwright/test` and `playwright-chromium` with one shared range in `package.json`, and `pnpm-lock.yaml` pins the exact version that all three resolve to. Read the installed version with `pnpm exec playwright --version`; do not assume a number, and do not pin one in your own commands. The Chromium revision follows the installed `playwright-core` automatically. It uses pnpm 10.30.3 and Node.js 26.x. Use this local CLI; do not install a global CLI or a separate `@playwright/cli` dependency.
 
 ```bash
 source scripts/bootstrap-pnpm.sh

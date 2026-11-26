@@ -70,7 +70,16 @@ fi
 # It is a no-op once the pinned version is reachable.
 # shellcheck source=scripts/bootstrap-pnpm.sh
 source "$ROOT/scripts/bootstrap-pnpm.sh"
-if [[ ! -x "$ROOT/node_modules/.bin/playwright" ]]; then
+
+# A dependency tree that predates the current lockfile is stale even when its
+# playwright binary exists: pnpm keeps the resolved lockfile at
+# node_modules/.pnpm/lock.yaml. Compare it rather than pinning any version, so a
+# lockfile bump (Dependabot or the owner) reinstalls automatically and the CLI
+# always runs the repository-approved Playwright and its matching browser.
+installed_lockfile="$ROOT/node_modules/.pnpm/lock.yaml"
+if [[ ! -x "$ROOT/node_modules/.bin/playwright" ]] \
+  || [[ ! -f "$installed_lockfile" ]] \
+  || ! cmp -s "$installed_lockfile" "$ROOT/pnpm-lock.yaml"; then
   CI=true pnpm install --frozen-lockfile
 fi
 

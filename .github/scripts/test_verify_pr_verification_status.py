@@ -260,7 +260,7 @@ class CurrentHeadAuditTests(unittest.TestCase):
         )
         self.assertEqual(statuses(report)[auditor.REQUIRED_CHECKS[0]], "FAIL")
 
-    def test_conditionally_skipped_check_is_not_run_and_not_a_pass(self):
+    def test_conditionally_skipped_check_blocks_an_unexplained_head(self):
         runs = green_checks() + [
             check_run(auditor.CONDITIONAL_CHECKS[0], conclusion="skipped", run_id=9)
         ]
@@ -268,10 +268,27 @@ class CurrentHeadAuditTests(unittest.TestCase):
             pull_request(), [commit(HEAD, "docs: non-visual change")], runs
         )
 
+        # Without a trusted inapplicability proof, an actually skipped
+        # conditional run is an unexplained skip and cannot verify the head.
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
+        conditional = report["conditional_checks"][0]
+        self.assertEqual(conditional["status"], "NOT RUN")
+        self.assertTrue(conditional["blocking"])
+        self.assertIn("NOT RUN", auditor.render_markdown(report))
+
+    def test_trusted_inapplicability_is_a_labelled_skip_not_a_failure(self):
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "ci: adjust the visual workflow")],
+            green_checks(),
+            visual_required="false",
+        )
+
         self.assertEqual(report["overall_status"], "VERIFIED")
         conditional = report["conditional_checks"][0]
         self.assertEqual(conditional["status"], "NOT RUN")
-        self.assertIn("NOT RUN", auditor.render_markdown(report))
+        self.assertEqual(conditional["skip"]["authority"], "trusted-applicability-classifier")
+        self.assertIn("SKIPPED — NOT APPLICABLE", auditor.render_markdown(report))
 
     def test_parallel_visual_qa_shards_must_all_pass(self):
         runs = green_checks() + [
@@ -368,6 +385,34 @@ class ApplicabilityAuditTests(unittest.TestCase):
         self.assertFalse(build["blocking"])
         self.assertEqual(report["conditional_checks"][0]["status"], "NOT RUN")
         self.assertEqual(report["overall_status"], "VERIFIED")
+
+    def test_an_observed_failure_outranks_the_inapplicability_proof(self):
+        runs = [
+            check_run(
+                name,
+                conclusion="failure" if name == auditor.BUILD_CHECK else "success",
+                run_id=index,
+            )
+            for index, name in enumerate(auditor.REQUIRED_CHECKS, start=1)
+        ]
+        runs.append(check_run("Visual QA (shard 1/2)", conclusion="failure", run_id=20))
+        report = auditor.audit_verification(
+            pull_request(),
+            [commit(HEAD, "docs: readme")],
+            runs,
+            build_required="false",
+            visual_required="false",
+        )
+
+        build = next(
+            record
+            for record in report["required_checks"]
+            if record["name"] == auditor.BUILD_CHECK
+        )
+        self.assertEqual(build["status"], "FAIL")
+        self.assertNotIn("skip", build)
+        self.assertEqual(report["conditional_checks"][0]["status"], "FAIL")
+        self.assertEqual(report["overall_status"], "NOT VERIFIED")
 
     def test_required_build_that_did_not_run_still_blocks(self):
         report = auditor.audit_verification(

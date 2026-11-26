@@ -164,6 +164,11 @@ jobs:
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
             | jq 'add // []' > "$RUNNER_TEMP/comments.json"
+          # Commit records prove the narrow Dependabot maintenance exemption; a
+          # missing list leaves the exemption unverified (fail closed).
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/commits?per_page=100" \
+            | jq 'add // []' > "$RUNNER_TEMP/commits.json"
           head_sha="$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
           # Paginate: a busy head can carry more than 100 check runs, and a
           # missing page would be reported as NOT RUN instead of its real result.
@@ -252,6 +257,7 @@ jobs:
             --pull-request "$RUNNER_TEMP/pr.json" \
             --files "$RUNNER_TEMP/files.json" \
             --comments "$RUNNER_TEMP/comments.json" \
+            --commits "$RUNNER_TEMP/commits.json" \
             --checks "$RUNNER_TEMP/checks.json" \
             --verification "$RUNNER_TEMP/verification.json" \
             --alerts "$RUNNER_TEMP/alerts.json" \
