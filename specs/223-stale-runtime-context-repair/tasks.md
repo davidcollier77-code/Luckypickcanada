@@ -22,18 +22,19 @@
 
 ## Phase 3 — Review and Verification
 
-- [X] T011 Re-fetch every intended changed path from the repair branch and confirm the content, exact path inventory and latest blob state.
+- [X] T011 Confirm every intended changed path, exact path inventory and latest blob state through GitHub API file-content reads and PR changed-file inventory plus diff inspection; no local checkout or local script execution.
 - [X] T012 Search the affected documentation again for blanket script-prohibition wording; inspect every remaining match in context.
 - [X] T013 Review the complete consolidated diff for unrelated changes, lost historical facts, contradictory Node.js/pnpm requirements and inaccurate verification claims.
 - [X] T014 Confirm Spec 220 remains unimplemented, all dependency tasks remain unchecked, and no package/configuration/production change entered this PR.
 - [X] T015 Complete the PR-body self-review, exact QA-scope declaration, task-group/reference/Memory Bank reporting and truthful local/CI verification statuses.
-- [ ] T016 Submit one regular, non-draft PR targeting `main`; leave it open and unmerged for owner review.
+- [X] T016 Submit one regular, non-draft PR targeting `main`; leave it open and unmerged for owner review.
 - [ ] T017 Inspect the current-head consolidated seven-category report after its configured bounded wait and hand off its actual statuses and outstanding approvals.
 
 ## Verification Boundary
 
 - Startup preflight: executed with the exact Library `startup.sh --check-only`; result was Node.js 22.16.0 and pnpm unavailable.
 - Repository checkout: unavailable in the ChatGPT working container; no repository script or checker suite was executed.
+- Source inspection method: T011–T013 used GitHub API file-content reads and PR changed-file inventory plus diff inspection; no local checkout, local script execution or local tests were involved.
 - Node.js 26.x / pnpm 10.30.3 project verification: BLOCKED in this session by the missing required runtime/package manager.
 - Compatible repository scripts: permitted by current `AGENTS.md` §6 when prerequisites and safety conditions are met; none were run because no local repository checkout is available.
 - Application Verification and other PR-triggered checks: PENDING until their results are observed for the submitted PR's exact head.
