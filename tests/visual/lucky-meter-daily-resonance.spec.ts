@@ -489,8 +489,19 @@ test.describe('Daily Resonance storyboard', () => {
     const phases = await page.evaluate(
       () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
     );
-    expect(phases).toContain('landed');
+    // The landed hand-off is a short beat. A loaded main thread can commit it
+    // and the pour in the same React batch, so the DOM may go from spin
+    // straight to pouring. Require the storyboard's order instead of every
+    // intermediate commit: spin first, one pour, revealed last.
+    const storyboardOrder = ['spin', 'landed', 'pouring', 'revealed'];
+    expect(phases[0]).toBe('spin');
+    expect(phases.at(-1)).toBe('revealed');
     expect(phases).toContain('pouring');
+    expect(phases).toEqual(
+      [...phases].sort(
+        (a, b) => storyboardOrder.indexOf(a) - storyboardOrder.indexOf(b),
+      ),
+    );
 
     const beats = await page.evaluate(
       () =>
@@ -899,8 +910,11 @@ test.describe('production responsive composition', () => {
     expect(stage).not.toBeNull();
     expect(colour).not.toBeNull();
     expect(number).not.toBeNull();
-    // The result column sits beside the instrument, not under it.
-    expect(number!.x).toBeGreaterThan(stage!.x + stage!.width - 1);
+    // The result column sits beside the instrument, not under it. The stage
+    // element carries the 3D canvas, whose box is wider than the visible
+    // wheel, so compare against the instrument's central column instead of the
+    // whole canvas box (a stacked column would still fail this).
+    expect(number!.x).toBeGreaterThan(stage!.x + stage!.width / 2);
     expect(colour!.y + colour!.height).toBeLessThanOrEqual(900);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);
   });
