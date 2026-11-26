@@ -66,7 +66,12 @@ Spec 220's dependency implementation remains owner-authorized but unimplemented.
 
 ## Environment and Local Verification
 
-The exact Library startup preflight was executed in check-only mode. It reported Node.js 22.16.0, repository requirement Node.js 26.x, and pnpm unavailable. No repository checkout is present in the ChatGPT working container. Therefore no repository script, Python checker suite, project test, type check, build, build-size measurement or Playwright run was executed in this session. This is not because current `AGENTS.md` §6 prohibits compatible scripts; it is because the current container lacks the repository checkout, and the Node-26/pnpm-dependent project gate is unavailable. PR-triggered checks remain pending until observed on the exact PR head.
+The exact Library startup preflight was executed in check-only mode. It reported Node.js 22.16.0, repository requirement Node.js 26.x, and pnpm unavailable. No repository checkout is present in the ChatGPT working container. Therefore no repository script, Python checker suite, project test, type check, build, build-size measurement or Playwright run was executed in this session. This is not because current `AGENTS.md` §6 prohibits compatible scripts; it is because the current container lacks the repository checkout, and the Node-26/pnpm-dependent project gate is unavailable. The final PR-triggered report was observed and is recorded in the Final PR Handoff section below.
+
+## Final PR Handoff
+
+PR #2043 merged to `main` as `17135708adc7b3e96e71e2bab7397723553a5852`. The last published report matched PR head `7ce7c3678d157dabce99bfe5cec609474787e22e`. Six categories passed; Governance and Workflow Verification failed because three required exact PR-body labels were absent or non-canonical. The checker and regression tests confirm the exact-label contract. Application Verification passed; Visual QA and OpenNext build validation were skipped as not applicable for the documentation-only diff. The report was not refreshed after merge. See the Spec and Tasks handoff records for the category-by-category result and exact cause.
+
 
 ## Project Structure
 

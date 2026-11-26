@@ -27,17 +27,16 @@
 - [X] T013 Review the complete consolidated diff for unrelated changes, lost historical facts, contradictory Node.js/pnpm requirements and inaccurate verification claims.
 - [X] T014 Confirm Spec 220 remains unimplemented, all dependency tasks remain unchecked, and no package/configuration/production change entered this PR.
 - [X] T015 Complete the PR-body self-review, exact QA-scope declaration, task-group/reference/Memory Bank reporting and truthful local/CI verification statuses.
-- [X] T016 Submit one regular, non-draft PR targeting `main`; leave it open and unmerged for owner review.
-- [ ] T017 Inspect the current-head consolidated seven-category report after its configured bounded wait and hand off its actual statuses and outstanding approvals.
+- [X] T016 Submit one regular, non-draft PR targeting `main`; leave it open and unmerged for owner review. The owner subsequently merged PR #2043.
+- [X] T017 Inspect the current-head consolidated seven-category report and hand off its actual seven category statuses, supporting checks and outstanding governance finding.
 
 ## Verification Boundary
 
-- Startup preflight: executed with the exact Library `startup.sh --check-only`; result was Node.js 22.16.0 and pnpm unavailable.
-- Repository checkout: unavailable in the ChatGPT working container; no repository script or checker suite was executed.
-- Source inspection method: T011–T013 used GitHub API file-content reads and PR changed-file inventory plus diff inspection; no local checkout, local script execution or local tests were involved.
-- Node.js 26.x / pnpm 10.30.3 project verification: BLOCKED in this session by the missing required runtime/package manager.
+- Startup preflight: the original pre-submission record used the Library `startup.sh --check-only` invocation. For this closeout, the exact current Library script was re-read and executed as `bash startup.sh`; it completed without installing anything and reported Node.js 22.16.0 and pnpm unavailable.
+- Repository checkout: unavailable in the ChatGPT working container. Source inspection and the final report review used read-only GitHub API file, PR, workflow and check-run evidence. No repository script or local checker suite was executed.
+- Node.js 26.x / pnpm 10.30.3 project verification: BLOCKED in this session by the missing required runtime/package manager; no project commands were run under Node.js 22.
 - Compatible repository scripts: permitted by current `AGENTS.md` §6 when prerequisites and safety conditions are met; none were run because no local repository checkout is available.
-- Application Verification and other PR-triggered checks: PENDING until their results are observed for the submitted PR's exact head.
+- PR #2043 final report: last published report matched head `7ce7c3678d157dabce99bfe5cec609474787e22e`. QA Checker, DevSkim, PR Scope Verification, Protected File Changes, Verification Integrity and Dependency Health & Vulnerability Review were **PASSED**; Governance and Workflow Verification was **FAILED** because the PR body omitted the exact required labels for Spec Kit stages, Spec Kit artifact paths and Memory Bank. The report's Application Verification result was **PASSED**; Visual QA and OpenNext build validation were **SKIPPED — NOT APPLICABLE**. No report refresh after merge is claimed.
 - Production build size: NOT MEASURED; this documentation-only change does not alter build inputs.
 
 ## Definition of Done
@@ -46,4 +45,4 @@
 - Spec 220's dependency work and all its implementation/verification tasks remain pending for the required Node.js 26.x / pnpm 10.30.3 environment.
 - The feature pointer targets Spec 223 and all three Spec 223 artifacts appear in the PR diff.
 - The exact PR changed-file inventory matches the QA scope declaration.
-- The PR is regular, non-draft, open and unmerged; post-submission report outcomes are handed to the owner without inventing passes.
+- PR #2043 was regular, non-draft, open and unmerged at owner handoff, then merged by the owner; the final published report outcomes and the governance-label failure are recorded above.

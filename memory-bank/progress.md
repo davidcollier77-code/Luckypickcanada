@@ -1,3 +1,11 @@
+## 2026-11-26 — Spec 223 merged and PR handoff closed out
+
+- PR [#2043](https://github.com/davidcollier77-code/Luckypickcanada/pull/2043) merged to `main` as `17135708adc7b3e96e71e2bab7397723553a5852`; the 16-path documentation reconciliation is present on the default branch.
+- The last published seven-category report was current for PR head `7ce7c3678d157dabce99bfe5cec609474787e22e` and recorded: QA Checker **PASSED**; DevSkim **PASSED**; PR Scope Verification **PASSED**; Protected File Changes **PASSED**; Verification Integrity **PASSED**; Governance and Workflow Verification **FAILED**; Dependency Health & Vulnerability Review **PASSED**. Application Verification passed; Visual QA and OpenNext build validation were marked `SKIPPED — NOT APPLICABLE` for the documentation-only diff.
+- Governance failed because the PR body used non-canonical labels: it said `Spec Kit stages declared` instead of `Spec Kit stages completed`, omitted a separate `Spec Kit artifact paths` label, and used `Memory Bank files read` instead of `Memory Bank`. The report checker and its tests require those exact labels. Task-group and Library-document labels were present. The report was not refreshed after merge; no later passing result is claimed.
+- Spec 223 task T017 is closed with the actual report outcome recorded. PR #2044 remains closed and unmerged because its duplicate Spec 223 path and feature-pointer change are unnecessary.
+- Spec 220 remains a separate authorized but unstarted dependency task. Its implementation/verification tasks remain pending; no dependency, application, workflow, deployment or production configuration was changed by this closeout.
+
 ## 2026-11-26 — Stale ChatGPT runtime documentation reconciliation (Spec 223)
 
 - Corrected the false blanket repository-script prohibition across Spec 220 and the affected historical Spec Kit/Memory Bank records while preserving accurate statements that Node-26-dependent tests, builds and pnpm operations were not run.

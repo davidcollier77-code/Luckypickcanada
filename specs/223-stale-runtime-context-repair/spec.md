@@ -2,7 +2,7 @@
 
 **Feature Branch**: `docs/2042-runtime-context-repair`
 **Created**: 2026-11-26
-**Status**: Implemented — pending pull-request verification
+**Status**: Implemented — merged; final PR handoff recorded
 
 ## User Scenarios & Testing
 
@@ -73,6 +73,27 @@ The exact intended changed paths are:
 - **SC-006**: Spec 223 specification, plan and task list are all present in the PR diff and `.specify/feature.json` points to Spec 223.
 - **SC-007**: The complete changed-file inventory matches this specification and the PR QA-scope declaration.
 - **SC-008**: No application, dependency, build input, QA workflow, deployment or production configuration changes occur.
+
+## Final PR Handoff — 2026-11-26
+
+PR [#2043](https://github.com/davidcollier77-code/Luckypickcanada/pull/2043) merged to `main` as `17135708adc7b3e96e71e2bab7397723553a5852`. The last published seven-category report was for the exact PR head `7ce7c3678d157dabce99bfe5cec609474787e22e`:
+
+| Category | Published result |
+| --- | --- |
+| QA Checker | PASSED |
+| DevSkim | PASSED |
+| PR Scope Verification | PASSED |
+| Protected File Changes | PASSED |
+| Verification Integrity | PASSED |
+| Governance and Workflow Verification | FAILED |
+| Dependency Health & Vulnerability Review | PASSED |
+
+Application Verification passed. Visual QA shards and OpenNext build validation were labelled `SKIPPED — NOT APPLICABLE` for the documentation-only change. No local project tests or build were claimed.
+
+The governance failure was caused by PR-description labels not matching the report checker's exact contract: the body used `Spec Kit stages declared` rather than `Spec Kit stages completed`, did not provide a standalone `Spec Kit artifact paths` label, and used `Memory Bank files read` rather than `Memory Bank`. The checker implementation and regression tests confirm those exact labels are required. The task-group and Library-document labels were present. The report was not refreshed after the PR merged, so this historical FAILED result is retained rather than represented as a later pass.
+
+PR #2044 remains closed and unmerged. Its changes are redundant with the merged correction and its second Spec 223 directory would create a competing active feature pointer.
+
 
 ## Assumptions
 
