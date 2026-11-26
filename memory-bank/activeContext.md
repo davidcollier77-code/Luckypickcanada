@@ -1,4 +1,19 @@
-# Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
+# Active Context — Spec 220 Cloudflare toolchain dependency implementation (2026-11-26)
+
+## Current Repository State — Spec 220 implemented and verified locally
+
+- **Spec 220:** The authorized OpenNext/Wrangler update is implemented on `freebuff/3839e793b7f69e70f2a64fc3` from `main` at `8a18c44583192e2f32e801c81c44c6f1311e71d7`. The PR is left regular, non-draft, open and unmerged for owner review; nothing was deployed or merged.
+- **Pins:** `@opennextjs/cloudflare` **1.20.19** and `wrangler` **4.168.0**, both rechecked against the registry `latest` tag immediately before editing.
+- **Undici:** the global `undici: 8.12.2` override is removed. The natural graph satisfies every edge — 6.29.1 for `@dotenvx/dotenvx` (`^6.28.1`), 7.30.2 for `@cloudflare/workers-utils`, `miniflare` and `wrangler` (each exact), 8.13.1 for `jsdom` (`^8.12.3`) — so no scoped selector was needed, and Wrangler is no longer forced across its own declared major.
+- **Minimatch/glob:** removed the obsolete `minimatch@10.2.6>brace-expansion` selector; kept `minimatch@10 -> 11.0.1` because `@typescript-eslint/typescript-estree` still declares `^10.2.2`, and kept `glob@10 -> 14.0.4` plus every unrelated security override.
+- **Tests:** `__tests__/dependency-management.test.js` (12 tests) and `__tests__/undici-security-override.test.js` (4 tests) now assert the no-override policy, the per-major undici floors and the exact Wrangler 4.168.0 → undici 7.30.2 edge.
+- **Verification (Node.js v26.13.0 / pnpm 10.30.3):** `./freebuff-verify.sh` passed every step — frozen install, Spec Kit gate, Python checker suites, `tsc --noEmit`, Vitest 1,273/1,273 across 113 files, Next.js build, and 439,926,784 bytes (419.55 MiB) against the 495 MiB cap. The OpenNext build, `wrangler build` and the scheduler `wrangler deploy --dry-run` exited 0 with bindings unchanged. Both Visual QA shards exited 0 (shard 1: 90 passed / 6 skipped in 8.5m; shard 2: 168 passed / 6 skipped in 5.9m).
+- **Environment limitation:** this container refuses `sudo`, so Playwright's `--with-deps` cannot install system packages. The pinned browser was installed without it and the repository's `scripts/setup-chromium-libs.sh` provisioned the runtime libraries before the shards ran; CI installs with root and is unaffected. `next dev` rewrites `next-env.d.ts` to the dev type paths — that generated change was reverted.
+- **Boundary:** no Worker setting, binding, `wrangler.jsonc`, deployment workflow, application source or production deployment changed. The PR-triggered seven-category report remains PENDING until CI runs.
+
+---
+
+# Previous Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
 
 ## Current Repository State — Runtime documentation correction merged
 

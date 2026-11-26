@@ -206,7 +206,6 @@ describe('Dependency management policy', () => {
 
   it('keeps the pre-existing security overrides that must not be dropped', () => {
     expect(pkg.pnpm.overrides).toMatchObject({
-      undici: '8.12.2',
       sharp: '0.35.5',
       'source-map-js': '1.2.2',
       qs: '>=6.16.0',
@@ -218,6 +217,23 @@ describe('Dependency management policy', () => {
       'glob@10': '14.0.4',
     });
     expect(pkg.pnpm.overrides['minimatch@9']).toBeUndefined();
+  });
+
+  it('does not reintroduce a version-blind Undici override', () => {
+    // Spec 220: a global `undici` pin rewrote Wrangler's declared v7 dependency
+    // onto Undici 8. Each major line must resolve at its own patched release.
+    expect(pkg.pnpm.overrides).not.toHaveProperty('undici');
+    expect(Object.keys(pkg.pnpm.overrides).filter((key) => key.startsWith('undici'))).toEqual(
+      []
+    );
+  });
+
+  it('retains only the minimatch 10 override that still has a consumer', () => {
+    // @typescript-eslint/typescript-estree@8.69.0 still declares minimatch ^10.2.2.
+    expect(pkg.pnpm.overrides['minimatch@10']).toBe('11.0.1');
+    // No package can resolve minimatch 10.2.6 after that override, so its
+    // parent-specific brace-expansion override was obsolete and was removed.
+    expect(pkg.pnpm.overrides['minimatch@10.2.6>brace-expansion']).toBeUndefined();
   });
 
   it('configures weekly npm (pnpm) updates and keeps weekly GitHub Actions updates', () => {
