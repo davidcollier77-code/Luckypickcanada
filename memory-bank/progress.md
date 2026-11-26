@@ -1,3 +1,10 @@
+## 2026-11-26 — ChatGPT runtime governance clarification (Spec 222)
+
+- Clarified AGENTS.md §6 without changing the surrounding governance: ChatGPT uses Node.js 22.x; the repository requires Node.js 26.x; only operations requiring Node 26 are blocked in ChatGPT.
+- Explicitly preserved permission to run other compatible repository and Freebuff QA/PR-support scripts, including `freebuff-verify.sh`; the Freebuff startup/environment-provisioning sequence remains excluded because it provisions the separate Node 26/Playwright environment.
+- Explicitly identified the repository Playwright CLI/setup as unavailable to ChatGPT and retained the ChatGPT Library startup procedure and Python Playwright browser path.
+- Updated the governance regression test to assert these exact boundaries. No application, dependency, deployment or Cloudflare configuration changed.
+
 ## 2026-11-26 — Playwright alignment and authorized QA skips (Spec 221)
 
 - Made the installed lockfile the only Playwright version source: deleted the custom cache validator, replaced the conditional browser installs with one unconditional `pnpm exec playwright install --with-deps chromium`, and added lockfile-sync guards to the CLI wrapper and agent setup (the setup also rejects split installed versions of the three packages). No version or Chromium revision is hardcoded in operational files.
