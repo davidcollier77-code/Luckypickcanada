@@ -1,3 +1,9 @@
+## 2026-11-26 — Spec 223 stale runtime-boundary correction
+
+- Corrected the Spec 220 Verification environment sentence in `memory-bank/activeContext.md` after Amazon Q and Pullfrog independently identified it as contradicting the clarified ChatGPT-only `AGENTS.md` §6 merged in PR #2042.
+- The corrected statement limits blocked work to Node.js 26.x-dependent operations and the unavailable repository Playwright CLI/setup; compatible repository and Freebuff verification/PR-support scripts remain permitted after prerequisite and side-effect inspection.
+- Preserved all other Spec 220 context. No application, governance, dependency, workflow, deployment or production configuration changed.
+
 ## 2026-11-26 — ChatGPT runtime governance clarification (Spec 222)
 
 - Clarified AGENTS.md §6 without changing the surrounding governance: ChatGPT uses Node.js 22.x; the repository requires Node.js 26.x; only operations requiring Node 26 are blocked in ChatGPT.
