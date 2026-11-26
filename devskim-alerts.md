@@ -466,3 +466,5 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `specs/217-lucky-meter-reveal-delivery/evidence/reveal-transfer-local-2.json:2` — Do not leave debug code in production <!-- devskim-id:a873f472c31df57241e6 -->
 - **NOTE — DS162092** — `specs/217-lucky-meter-reveal-delivery/evidence/fade-local-benchmark.json:2` — Do not leave debug code in production <!-- devskim-id:f62e27985e16b34fdab6 -->
 - **NOTE — DS162092** — `specs/217-lucky-meter-reveal-delivery/evidence/reveal-transfer-final-local.json:3` — Do not leave debug code in production <!-- devskim-id:3d6d10d06476554f1ac5 -->
+
+- **NOTE — DS172411** — `app/lib/lucky-meter/meter-scene.js:1575` — Review setTimeout for untrusted data <!-- devskim-id:4bac9786dd709fca702f -->
