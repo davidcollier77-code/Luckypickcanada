@@ -36,7 +36,7 @@ The owner explicitly authorized the dependency implementation on 2026-11-26. The
 | --- | --- | --- |
 | I. Single Source of Truth | AGENTS.md remains authoritative; the feature artifacts define only this task's behavior and verification. | PASS |
 | II. Verify Before Acting | Current root manifest/lockfile, adapter and Wrangler metadata, OpenNext config, Worker config, QA workflows and related tests were inspected before preparing this plan. | PASS |
-| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement, but implementation and tests remain blocked until the required Node.js 26.x / pnpm 10.30.3 environment is available and permitted. | BLOCKED |
+| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement. Dependency installation, lockfile generation and project verification requiring the repository runtime remain blocked until Node.js 26.x / pnpm 10.30.3 are available; compatible independent QA and PR-support scripts remain permitted under `AGENTS.md` §6 when their prerequisites and safety conditions are met. | BLOCKED |
 | IV. Protect Core Systems | No payment, authentication, database, secret, Cloudflare setting, binding or deployment workflow change is included. The implementation PR will only alter the authorized dependency manifest/lockfile and relevant tests. | PASS |
 | V. Resource Conservation | No new service or dependency is proposed; .docs remains read-only; build output remains below the 495 MiB hard cap. | PASS |
 
