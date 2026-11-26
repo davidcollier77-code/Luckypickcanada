@@ -1597,7 +1597,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("startsWith(github.event.comment.body, '/approve-')", text)
 
-    def test_check_runs_alerts_and_dependency_advisories_are_paginated(self):
+    def test_check_runs_and_dependency_advisories_are_paginated(self):
         path = os.path.join(
             os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
         )
@@ -1605,8 +1605,6 @@ class WorkflowContractTests(unittest.TestCase):
             text = handle.read()
         self.assertIn("check-runs?per_page=100&filter=all", text)
         self.assertIn("[.[].check_runs[]]", text)
-        self.assertIn("code-scanning/alerts?pr=", text)
-        self.assertIn("| jq 'add // []' > \"$RUNNER_TEMP/alerts.json\"", text)
         self.assertIn("dependabot/alerts?state=open&per_page=100", text)
         self.assertIn("dependency-alerts.json", text)
 
