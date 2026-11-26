@@ -22,11 +22,11 @@
 
 ## Phase 3 — Review and Verification
 
-- [ ] T011 Re-fetch every intended changed path from the repair branch and confirm the content, exact path inventory and latest blob state.
-- [ ] T012 Search the affected documentation again for blanket script-prohibition wording; inspect every remaining match in context.
-- [ ] T013 Review the complete consolidated diff for unrelated changes, lost historical facts, contradictory Node.js/pnpm requirements and inaccurate verification claims.
-- [ ] T014 Confirm Spec 220 remains unimplemented, all dependency tasks remain unchecked, and no package/configuration/production change entered this PR.
-- [ ] T015 Complete the PR-body self-review, exact QA-scope declaration, task-group/reference/Memory Bank reporting and truthful local/CI verification statuses.
+- [X] T011 Re-fetch every intended changed path from the repair branch and confirm the content, exact path inventory and latest blob state.
+- [X] T012 Search the affected documentation again for blanket script-prohibition wording; inspect every remaining match in context.
+- [X] T013 Review the complete consolidated diff for unrelated changes, lost historical facts, contradictory Node.js/pnpm requirements and inaccurate verification claims.
+- [X] T014 Confirm Spec 220 remains unimplemented, all dependency tasks remain unchecked, and no package/configuration/production change entered this PR.
+- [X] T015 Complete the PR-body self-review, exact QA-scope declaration, task-group/reference/Memory Bank reporting and truthful local/CI verification statuses.
 - [ ] T016 Submit one regular, non-draft PR targeting `main`; leave it open and unmerged for owner review.
 - [ ] T017 Inspect the current-head consolidated seven-category report after its configured bounded wait and hand off its actual statuses and outstanding approvals.
 
