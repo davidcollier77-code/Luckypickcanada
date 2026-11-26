@@ -1,3 +1,14 @@
+# Active Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
+
+## Current Task — Resolve the 422 open DevSkim alerts without weakening detection
+
+- **Current state:** the work is committed on `freebuff/devskim-backlog-remediation-219`, created from `main` at `aeb087f` and deliberately separate from PR #2035. A regular, non-draft PR is opened from that branch and left open and unmerged for owner review.
+- **Investigation:** all 422 open DevSkim alerts were created by the Spec 217 pull-request scan at `2026-11-24T23:48:05Z` and confirmed on `main` after the merge; 421 are DS162092 loopback findings in 13 Spec 217 evidence JSON files and one is DS172411 in `app/lib/lucky-meter/meter-scene.js`. Dependabot is not the cause: its only DevSkim-file change was the `upload-sarif` uploader pin (v4.39.3 → v4.39.4). The report's "100" was a single-page `per_page=100` cap, not a measured backlog.
+- **Remediation:** the existing exact-span filter now admits `specs/<NNN-feature>/evidence/**/*.json` for DS162092 with the same valid-JSON/loopback-value validation, and suppresses only the exact meter watchdog statement for DS172411. The report now paginates code-scanning alerts with `gh api --paginate --slurp` and `jq 'add // []'`.
+- **Verification:** real default-branch SARIF **3,545 raw → 3,123 existing suppressions → 422 remaining** reproduced the live count; the updated filter with matching source leaves **0**; the real-SARIF replay gate exits 0; the suppression suite passes **115 tests**, the report contract suite **102 tests**, and the workflow Vitest file **14 tests**. Exact evidence is in `specs/219-devskim-backlog-remediation/evidence.md`.
+- **Limitations:** the 422 existing alerts remain open until this branch merges and the next default-branch scan uploads the filtered SARIF; post-merge closure cannot be verified from the branch. No application code, dependency, scanner rule, scan glob or trigger changed. The change set is build-exempt, so the production build is expected to be `NOT RUN — not applicable`.
+- **PR #2035:** remains open, non-draft and unmerged at `3df86450` with its existing scope unchanged; this task did not reuse or modify that branch.
+
 # Active Context — Lucky Meter delivery and adaptive performance
 
 ## Current Project State — Spec 217 merged
