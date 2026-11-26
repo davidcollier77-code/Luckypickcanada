@@ -32,7 +32,7 @@ Replace the single incorrect web.dev Images course-index URL with the verified c
 
 - **Single source of truth**: PASS — `.docs/manifest.json` remains the authoritative documentation source registry.
 - **Verify before acting**: PASS — the old URL, candidate URLs, live canonical lesson, and existing snapshot were compared.
-- **Implementation sequence**: PASS — the specify, plan, tasks, and implementation records are prepared in order. Repository shell scripts were not executed because ChatGPT is prohibited from executing repository shell scripts.
+- **Implementation sequence**: PASS — the specify, plan, tasks, and implementation records are prepared in order. Repository shell scripts were not executed in this documentation-only task. Current `AGENTS.md` §6 permits compatible repository scripts when their prerequisites, runtime, permissions and side effects are acceptable; Node-26-dependent project operations still require Node.js 26.x.
 - **Protected systems**: PASS — no protected application, deployment, payment, database, authentication, secret, or workflow file is changed.
 - **Resource conservation**: PASS — no dependency, infrastructure, or additional service is introduced.
 - **Documentation boundary**: PASS — only the approved manifest source value is changed; the generated `.docs` snapshot is left for the normal updater.
@@ -58,7 +58,7 @@ Completed. The configured `/learn/images` URL is the course index. The live `/le
 - `.github/workflows/protected-files.yml`: this change touches none of its protected paths and does not require protected-file authorization.
 - `.github/workflows/refresh-docs.yml`: runs on its configured schedule or manual dispatch, not on pull-request creation. The next normal refresh after merge is the required end-to-end source verification.
 
-Local repository verification scripts were not executed. ChatGPT is prohibited from executing repository shell scripts, and this environment has Node.js 22.16.0 rather than the required Node.js 26.x.
+Local repository verification scripts were not executed in this task. The startup preflight reported Node.js 22.16.0 rather than the required Node.js 26.x; any verification command requiring the repository runtime must run under Node.js 26.x. This does not create a blanket prohibition on compatible scripts under current `AGENTS.md` §6.
 
 ## Project Structure
 
