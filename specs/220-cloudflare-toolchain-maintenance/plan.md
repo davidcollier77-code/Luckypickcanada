@@ -6,7 +6,7 @@
 
 Update the root-pinned OpenNext Cloudflare adapter from 1.20.18 to the investigated stable 1.20.19 release and Wrangler from 4.166.0 to 4.168.0, subject to a fresh npm/peer/changelog check immediately before implementation. Regenerate the pnpm lockfile with Node 26.x and pnpm 10.30.3. Correct the global Undici override so it no longer forces Wrangler's declared patched v7 dependency into v8, and remove minimatch 10 overrides only when the final graph proves they are obsolete. Preserve all existing Cloudflare configuration and release safeguards.
 
-The owner explicitly authorized the dependency implementation on 2026-11-26. The current PR branch still contains only planning artifacts because implementation is blocked in this ChatGPT environment: Node.js 26.x and pnpm 10.30.3 are unavailable, and the ChatGPT-only AGENTS.md rule prohibits repository shell scripts, dependency installation, builds and tests here. Do not treat the planned dependency changes or verification as completed.
+`AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. The Spec 220 implementation has not started: dependency installation, lockfile generation and Node-26-dependent project verification cannot be performed in this session. Do not treat planned dependency changes or verification as completed; perform them in a compliant Node.js 26.x / pnpm 10.30.3 environment.
 
 ## Technical Context
 
@@ -36,7 +36,7 @@ The owner explicitly authorized the dependency implementation on 2026-11-26. The
 | --- | --- | --- |
 | I. Single Source of Truth | AGENTS.md remains authoritative; the feature artifacts define only this task's behavior and verification. | PASS |
 | II. Verify Before Acting | Current root manifest/lockfile, adapter and Wrangler metadata, OpenNext config, Worker config, QA workflows and related tests were inspected before preparing this plan. | PASS |
-| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement, but implementation and tests remain blocked until the required Node.js 26.x / pnpm 10.30.3 environment is available and permitted. | BLOCKED |
+| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement. Dependency installation, lockfile generation and project verification requiring the repository runtime remain blocked until Node.js 26.x / pnpm 10.30.3 are available; script exclusions and permission for other compatible scripts are as stated in `AGENTS.md` §6. | BLOCKED |
 | IV. Protect Core Systems | No payment, authentication, database, secret, Cloudflare setting, binding or deployment workflow change is included. The implementation PR will only alter the authorized dependency manifest/lockfile and relevant tests. | PASS |
 | V. Resource Conservation | No new service or dependency is proposed; .docs remains read-only; build output remains below the 495 MiB hard cap. | PASS |
 
@@ -120,7 +120,7 @@ No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache st
 
 ## Phase 3 — Verification Plan
 
-All commands run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3. The present ChatGPT session cannot execute this phase: it has Node.js 22.16.0, no pnpm 10.30.3, no repository checkout, and AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests here.
+`AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. Dependency installation, lockfile generation and Node-26-dependent builds and tests cannot be performed in this session. No repository checkout is available in this session.
 
 1. Frozen package installation with pnpm install --frozen-lockfile.
 2. Dependency graph inspection using `pnpm why undici`, `pnpm why glob` and `pnpm why minimatch`; inspect every Undici lockfile version and consumer edge, enforce the fixed floors per major, and verify Wrangler 4.168.0 resolves exactly to Undici 7.30.2. Validate every chosen override selector with the pinned pnpm 10.30.3 binary and the regenerated lockfile.

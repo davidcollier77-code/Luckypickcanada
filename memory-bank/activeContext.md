@@ -1,9 +1,21 @@
-# Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
+# Active Context — Stale ChatGPT runtime documentation reconciliation (Spec 223, 2026-11-26)
+
+## Current Task — Reconcile all stale runtime and script-permission records
+
+- **Scope:** Correct Spec 220's specification, plan and tasks; reconcile the stale execution statements in Specs 164, 175, 176, 177, 197 and 216; update the affected Memory Bank context/progress records; add complete Spec 223 artifacts and point `.specify/feature.json` to Spec 223.
+- **Execution boundary:** `AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable.
+- **Observed environment:** The exact Library startup preflight reports Node.js 22.16.0 and pnpm unavailable. This session has no local repository checkout. No repository scripts, project tests, builds or local checker suites have been run.
+- **Spec 220 boundary:** The owner-authorized Wrangler/OpenNext dependency implementation remains a separate, unstarted task requiring Node.js 26.x and pnpm 10.30.3. This documentation PR does not change dependencies or production configuration.
+- **Delivery:** One regular, non-draft PR containing the full 16-path documentation reconciliation; leave open and unmerged for owner review.
+
+---
+
+# Previous Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
 
 - **Scope:** Clarify only ChatGPT Operating Instructions §6 in `AGENTS.md`; preserve the ChatGPT Library startup procedure and all shared governance.
-- **Mandatory runtime distinction:** ChatGPT operates on Node.js 22.x and cannot switch to Node.js 26.x. The repository declares Node.js 26.x, so only project operations that require Node 26 are blocked in ChatGPT; independent compatible scripts and checks remain allowed.
+- **Mandatory runtime distinction:** `AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable.
 - **Playwright boundary:** the repository Playwright CLI and its setup/installation are unavailable to ChatGPT. The ChatGPT Python Playwright setup remains the documented browser path.
-- **Script permission:** all other applicable repository and Freebuff QA/PR-support scripts remain permitted after inspecting their prerequisites and side effects. Do not run Freebuff's startup/environment-provisioning sequence; use only the ChatGPT Library startup script.
+- **Script permission:** `AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. Use only the ChatGPT Library startup script for ChatGPT startup.
 - **Status:** Section 6 wording and its governance regression test are updated. No application code, dependency, deployment configuration, Cloudflare setting or production resource is changed.
 
 ---
@@ -22,14 +34,14 @@
 
 ## Current Task — Prepare a safe OpenNext and Wrangler dependency update
 
-- **State:** Spec 220 specification, research, plan and task list are complete. The owner authorized dependency implementation on 2026-11-26; implementation remains unstarted and is blocked in this ChatGPT session by the repository's ChatGPT-only execution rule and unavailable Node.js 26.x / pnpm 10.30.3. The current PR is therefore not an implementation-complete or merge-ready dependency upgrade.
+- **State:** Spec 220 specification, research, plan and task list are complete. The owner authorized dependency implementation on 2026-11-26; implementation remains unstarted because this ChatGPT session has Node.js 22.16.0 and no pnpm executable, while the dependency install, lockfile generation and Node-26-dependent verification require Node.js 26.x / pnpm 10.30.3. This is a runtime/toolchain limitation, not a blanket prohibition on repository scripts under current `AGENTS.md` §6. Spec 220 remains a separate dependency task and is not the subject of this documentation PR.
 - **Current pins:** package.json currently declares @opennextjs/cloudflare 1.20.18 and Wrangler 4.166.0; Next.js is 16.4.6; Node is 26.x; pnpm is 10.30.3.
 - **Investigated stable targets (2026-11-26):** OpenNext Cloudflare 1.20.19 and Wrangler 4.168.0 satisfy inspected peer/engine ranges. Recheck latest stable metadata and release notes before implementation.
 - **Primary dependency risk:** the root undici: 8.12.2 override crosses Wrangler's declared Undici 7.30.2 dependency boundary. pnpm 10.30.3 predates empty-range convergence overrides (added in pnpm 11.13.0), so implementation must use pnpm 10-compatible version-range and/or parent-specific selectors, verified against original consumer ranges.
 - **Other dependency risk:** OpenNext 1.20.19 moves from glob 13 to glob 14, removing its minimatch 10 path. Remove minimatch 10-specific overrides only after the full updated graph proves them unused; retain the glob@10 compatibility override and unrelated security overrides.
 - **Reviewer hardening:** Graphite's valid plan findings are incorporated: pnpm 10 selector syntax is illustrated from the versioned documentation, all Undici resolutions must be checked against exact per-major floors, and Wrangler 4.168.0 must resolve its exact published Undici request of 7.30.2. Pullfrog's incremental review found no new issues.
 - **Preserved boundary:** no application code, open-next.config.ts, wrangler.jsonc, compatibility date/flags, bindings, deployment workflows, Cloudflare dashboard settings, secrets or production resources are in scope. No production deploy.
-- **Verification environment:** the ChatGPT startup check found Node.js 22.16.0 and no pnpm 10.30.3; the container has no repository checkout. AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests in this session. The approved implementation must be performed in an environment that has the repository-pinned Node.js 26.x / pnpm 10.30.3 and must provide CI evidence.
+- **Verification environment:** The startup preflight found Node.js 22.16.0 and no pnpm 10.30.3; the container has no repository checkout. `AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. The approved dependency implementation requires a compliant Node.js 26.x / pnpm 10.30.3 environment and current-head CI evidence.
 
 ---
 
@@ -163,7 +175,7 @@
 - **Goal:** Reduce `AGENTS.md` from 478 lines to a concise entry point while retaining every distinct requirement and all three agent-applicability classes.
 - **Approach:** Keep direct rules in `AGENTS.md`; refer detailed PR, startup, manifest and specialist procedures to their authoritative documents. Keep Freebuff-only and ChatGPT-only instructions separate.
 - **Scope:** `AGENTS.md`, its governance regression test, Spec 207 artifacts and this active-context header. No startup, manifest, PR procedure, QA workflow, protected script, application or dependency changes.
-- **Verification boundary:** ChatGPT startup preflight reports Node.js 22.16.0 and missing pnpm 10.30.3; the repository requires Node.js 26.x and pnpm 10.30.3. ChatGPT does not run repository scripts, tests or builds. GitHub Actions must provide test and checker evidence.
+- **Verification boundary:** The historical startup preflight reported Node.js 22.16.0 and missing pnpm 10.30.3; the repository requires Node.js 26.x and pnpm 10.30.3. Node-26-dependent project tests, builds and pnpm operations were not run in that task. Current `AGENTS.md` §6 permits compatible repository scripts and QA/PR-support utilities when their prerequisites, runtime, permissions and side effects are acceptable. GitHub Actions must provide current-head CI evidence.
 - **PR status:** Prepare a dedicated, regular, non-draft PR; leave it open and unmerged. The owner must provide the governance digest comment and separate protected-file Environment authorization before merge.
 
 ## Previous Task — Agent governance and PR handoff (Spec 206)
@@ -236,7 +248,7 @@ The earlier documentation-only reconciliation for Specs 199/200 is complete and 
 - **Scope:** Add a 🟢 [BOTH — CHATGPT AND FREEBUFF] rule to `AGENTS.md` for future visual creation and polishing.
 - **Required integration:** Use `app/lib/use-creative-experience.js`, `app/lib/graphics/experiences.js` and `app/lib/graphics/runtime.js` with the existing `app/lib/resource-readiness.js` hub wherever applicable. Do not create a competing preloader.
 - **Development sandbox:** Existing Workbench at `/workbench/creative`; this does not replace Playwright or repository QA.
-- **Verification limitation:** ChatGPT's startup preflight reports Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. ChatGPT's repository instructions prohibit running repository scripts, so local tests, builds and verification scripts were not executed. GitHub workflow checks and protected-file approvals remain outstanding.
+- **Verification limitation:** The historical startup preflight reported Node.js 22.16.0 (repository requires 26.x) and missing pnpm 10.30.3. The Node-26-dependent tests, builds and pnpm verification were not executed in that task. The earlier statement that repository instructions prohibited all repository scripts was an incorrect blanket interpretation; current `AGENTS.md` §6 permits compatible scripts after their prerequisites and safety conditions are checked. GitHub workflow checks and protected-file approvals remained outstanding for that historical PR.
 
 ## HTML5 audio reactivity and Gemini retirement QA (spec 195, current)
 

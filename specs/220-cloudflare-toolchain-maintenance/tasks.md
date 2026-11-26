@@ -13,9 +13,9 @@
 - [X] T005 Record release investigation, lockfile/Undici risks, historical upgrade lessons, QA requirements and environment limitations in research.md.
 - [X] T006 Prepare the feature specification, implementation plan and executable task list. Set .specify/feature.json to this feature.
 
-## Phase 2: Dependency Implementation (Owner-Authorized — Blocked by ChatGPT Environment)
+## Phase 2: Dependency Implementation (Owner-Authorized — Node.js 26.x / pnpm 10.30.3 Required)
 
-**Purpose**: Implement only the approved dependency pins, lockfile and dependency-policy tests. The owner authorized this phase on 2026-11-26. It is blocked in the current ChatGPT session because Node.js 26.x / pnpm 10.30.3 are unavailable and AGENTS.md ChatGPT-only §6 prohibits repository scripts, installs, builds and tests here. Keep every implementation task unchecked until it is executed and verified in a compliant environment.
+**Purpose**: Implement only the approved dependency pins, lockfile and dependency-policy tests. The owner authorized this phase on 2026-11-26. The dependency work is blocked in this ChatGPT session because Node.js 26.x and pnpm 10.30.3 are unavailable; the task requires those exact tools for installation, lockfile generation and Node-26-dependent verification. Current `AGENTS.md` ChatGPT-only §6 does not prohibit compatible repository scripts or QA/PR-support utilities. Such independent checks may run when their own runtime, prerequisites, permissions and side effects are acceptable. Keep every dependency implementation task unchecked until it is executed and verified in a compliant Node.js 26.x / pnpm 10.30.3 environment.
 
 - [ ] T007 Recheck npm stable tags, package provenance metadata, peer dependencies, engines and release notes immediately before editing.
 - [ ] T008 Update only the approved OpenNext Cloudflare and Wrangler exact pins in package.json, provided they remain compatible and current.
@@ -47,7 +47,7 @@
 
 - Phase 1 is complete and records the approved implementation boundary.
 - Owner authorization for Phase 2 was received on 2026-11-26; no further approval is required for the specified dependency scope.
-- Phase 2 is currently blocked by the ChatGPT execution constraints and must run in a compliant Node.js 26.x / pnpm 10.30.3 environment.
+- Phase 2 dependency installation, lockfile generation and Node-26-dependent implementation checks remain blocked in this session until a compliant Node.js 26.x / pnpm 10.30.3 environment is available. This is a runtime/toolchain limitation, not a blanket prohibition on compatible repository scripts.
 - Phase 3 depends on Phase 2 and must run only in the Node.js 26.x / pnpm 10.30.3 environment.
 - Phase 4 depends on successful implementation and required verification; production deployment is excluded.
 

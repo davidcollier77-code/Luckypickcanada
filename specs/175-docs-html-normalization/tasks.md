@@ -47,8 +47,8 @@
 ## Final Phase: Verification and Handoff
 
 - [X] T014 Keep the manifest, generated `.docs/` snapshots, package manifests, workflow schedule, timezone, Cloudflare scheduler and application code unchanged; review the changed paths against the approved scope.
-- [ ] T015 Run `node scripts/test-refresh-docs.js` and `node scripts/test-refresh-docs-e2e.js` under the repository's Node.js 26 environment. **BLOCKED in ChatGPT**: only Node.js 22.16.0 is available, and ChatGPT is prohibited from executing repository scripts.
-- [ ] T016 Run the applicable Vitest suite, TypeScript check, repository gate and production build-size measurement using `package.json`, `pnpm-lock.yaml`, `freebuff-verify.sh` and the `.next/` plus `public/` build output in an authorized Node.js 26/pnpm 10.30.3 environment. **NOT RUN in ChatGPT**: project runtime mismatch and repository-script execution restriction.
+- [ ] T015 Run `node scripts/test-refresh-docs.js` and `node scripts/test-refresh-docs-e2e.js` under the repository's Node.js 26 environment. **BLOCKED in ChatGPT**: this command is a repository Node.js project operation and requires Node.js 26.x; the startup check reports Node.js 22.16.0.
+- [ ] T016 Run the applicable Vitest suite, TypeScript check, repository gate and production build-size measurement using `package.json`, `pnpm-lock.yaml`, `freebuff-verify.sh` and the `.next/` plus `public/` build output in an authorized Node.js 26/pnpm 10.30.3 environment. **NOT RUN in ChatGPT**: the frozen install, pnpm-based test/type-check gate and build require the repository-pinned Node.js 26.x / pnpm 10.30.3 toolchain, which is unavailable in this session.
 - [X] T017 Prepare the complete PR handoff using `PR_SUBMISSION.md`, including changed files, source-audit limitations, checker self-review and every unexecuted verification status in the PR description.
 - [ ] T018 After the implementation PR is merged, have the owner manually trigger the existing `Refresh Documentation` workflow and review its report and generated snapshots. This is intentionally not run in this implementation task.
 
@@ -68,7 +68,7 @@
 
 - Source normalization and URL-safety tests touch the updater/test pair and must be integrated sequentially.
 - The isolated end-to-end test in `scripts/test-refresh-docs-e2e.js` is a separate file and was developed independently of the unit test file.
-- Repository CI checks can run independently after PR creation; ChatGPT cannot execute the restricted local scripts.
+- Repository CI checks can run independently after PR creation. The local Node.js scripts and pnpm-based verification gate were not run in this task because Node.js 26.x and pnpm 10.30.3 were unavailable; current `AGENTS.md` §6 permits compatible scripts when their own prerequisites and safety conditions are met.
 
 ## Implementation Strategy
 
@@ -76,4 +76,4 @@ All three user stories were implemented as one focused updater change because th
 
 ## Verification Notes
 
-The implementation and regression fixtures are committed on the feature branch. Test execution, TypeScript, full repository verification and build measurement remain unverified because the ChatGPT environment has Node.js 22.16.0 rather than the project's Node.js 26 and is prohibited from executing repository scripts. No test or build result is claimed as passing.
+The implementation and regression fixtures are committed on the feature branch. Test execution, TypeScript, full repository verification and build measurement remain unverified because the ChatGPT environment had Node.js 22.16.0 rather than the project's Node.js 26.x, and pnpm 10.30.3 was unavailable. These project operations were not run; this does not imply a blanket prohibition on compatible repository scripts under current `AGENTS.md` §6. No test or build result is claimed as passing.

@@ -1,3 +1,10 @@
+## 2026-11-26 — Stale ChatGPT runtime documentation reconciliation (Spec 223)
+
+- Corrected the false blanket repository-script prohibition across Spec 220 and the affected historical Spec Kit/Memory Bank records while preserving accurate statements that Node-26-dependent tests, builds and pnpm operations were not run.
+- Reaffirmed the live `AGENTS.md` §6 boundary: Node.js 26.x-dependent project operations and the repository Playwright CLI/setup are unavailable in this ChatGPT environment; compatible repository QA and PR-support scripts remain permitted when their individual prerequisites and safety conditions are satisfied.
+- Added the complete Spec 223 specification, plan and task list and moved `.specify/feature.json` to this documentation reconciliation. Spec 220's separately authorized Wrangler/OpenNext dependency implementation remains unstarted and outside this PR.
+- No application, dependency, workflow, Cloudflare or production configuration changed. Local repository verification remains unrun because the ChatGPT container has no repository checkout and lacks the required Node.js 26.x / pnpm 10.30.3 toolchain; PR-triggered checks remain pending.
+
 ## 2026-11-26 — ChatGPT runtime governance clarification (Spec 222)
 
 - Clarified AGENTS.md §6 without changing the surrounding governance: ChatGPT uses Node.js 22.x; the repository requires Node.js 26.x; only operations requiring Node 26 are blocked in ChatGPT.
@@ -62,7 +69,7 @@
 
 - Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.
 - Updated the governance regression assertions and active Spec Kit feature pointer. The separate shared requirement for automatic PR-checker Playwright workflows remains unchanged; no application code, browser workflow, dependencies, visuals or deployment settings changed.
-- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. ChatGPT-only repository rules prohibit running project tests or scripts in this environment; current-head GitHub checks remain pending.
+- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. Node-26-dependent project tests and pnpm commands therefore remained unverified. The earlier blanket statement that ChatGPT-only rules prohibited project scripts was incorrect; current `AGENTS.md` §6 permits compatible repository scripts when their prerequisites and safety conditions are met. Current-head GitHub checks remained pending.
 
 ## 2026-11-24 — Plan-aware monitoring and PR performance health (spec 215 follow-up)
 

@@ -32,7 +32,7 @@ Replace the failed Gemini source URL with Google's current official full documen
 
 - **Single source of truth**: PASS — repository manifest remains the source registry.
 - **Verify before acting**: PASS — old URL failure and official new documentation index were checked.
-- **Implementation sequence**: PASS — specify, plan, tasks, and implementation records are completed directly from the repository's command definitions; setup shell scripts were not executed because ChatGPT is prohibited from running repository shell scripts.
+- **Implementation sequence**: PASS — specify, plan, tasks, and implementation records are completed directly from the repository's command definitions; setup shell scripts were not executed in this documentation task. Current `AGENTS.md` §6 permits compatible repository scripts when their prerequisites, runtime, permissions and side effects are acceptable; Node-26-dependent project operations remain subject to the Node.js 26.x requirement.
 - **Protected systems**: PASS — no protected application, deployment, payment, database, secret, or workflow files are changed.
 - **Resource conservation**: PASS — no new dependency, production code, infrastructure, or additional service.
 - **Documentation boundary**: PASS — only the approved manifest source value is changed; existing generated snapshots are left for the normal updater.

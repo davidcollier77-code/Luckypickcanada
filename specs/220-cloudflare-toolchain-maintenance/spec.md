@@ -2,7 +2,7 @@
 
 **Feature Branch**: chore/220-cloudflare-toolchain-maintenance  
 **Created**: 2026-11-26  
-**Status**: Proposed — implementation authorized; execution blocked by the ChatGPT repository environment
+**Status**: Proposed — implementation authorized; Node.js 26.x / pnpm 10.30.3 execution pending
 
 ## User Scenarios & Testing
 
@@ -85,6 +85,6 @@ As the site owner, I need current CI checks and Cloudflare deployment safeguards
 
 - Node.js 26.x and pnpm 10.30.3 remain the required runtime/package-manager pins and are not changed by this task.
 - Next.js 16.4.6 and React 19.3.1 remain unchanged.
-- The owner explicitly authorized dependency implementation on 2026-11-26. Implementation is in scope, but has not started because this ChatGPT environment does not meet the required Node.js 26.x / pnpm 10.30.3 runtime and the ChatGPT-only AGENTS.md rule prohibits repository shell scripts, dependency installs, builds and tests here. Production deployment and merging remain unauthorized.
+- The owner explicitly authorized dependency implementation on 2026-11-26. Implementation is in scope but has not started because this session has Node.js 22.16.0 and no pnpm executable, while the repository requires Node.js 26.x and pnpm 10.30.3 for the dependency installation, lockfile generation and project verification required by this task. Those Node-26-dependent operations are blocked here. Current `AGENTS.md` ChatGPT-only §6 does not impose a blanket repository-script prohibition: compatible QA, verification and PR-support scripts remain permitted when their own runtime, prerequisites, permissions and side effects are acceptable. The repository Playwright CLI/setup is unavailable to ChatGPT. Production deployment and merging remain unauthorized.
 - The current Cloudflare cache architecture, bindings and production workflow remain the intended model.
 - GitHub Actions provides the pinned Node.js and pnpm versions for CI verification.
