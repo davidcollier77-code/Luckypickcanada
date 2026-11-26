@@ -73,11 +73,11 @@ GitHub Advisory GHSA-xjj6-f33q-929c (CVE-2026-109869) identifies affected Undici
 | 7.x | 7.18.0 through versions below 7.30.1 | 7.30.1 |
 | 8.x | 8.0.0 through versions below 8.12.2 | 8.12.2 |
 
-Wrangler 4.168.0 declares Undici 7.30.2, already above the fixed v7 floor. The repository's global undici: 8.12.2 override rewrites that declared v7 dependency to v8.12.2.
+Wrangler 4.168.0's published npm manifest declares the exact dependency `undici: 7.30.2`, already above the fixed v7 floor. The repository's global `undici: 8.12.2` override rewrites that declared v7 dependency to v8.12.2. The regenerated lockfile must restore the Wrangler edge to exactly 7.30.2, not merely any v7 release.
 
 Undici's v7-to-v8 migration guide describes dispatcher/handler API changes. Node 26 meets the documented v8 runtime minimum, but Node engine support alone does not prove that Wrangler and Miniflare's v7-facing code is compatible with v8 APIs. Preserve consumer major compatibility while enforcing a patched version within each major actually present.
 
-pnpm 10.30.3 supports ordinary version-range selectors and parent>child selectors. The empty-range convergence override form such as undici@ was added in pnpm 11.13.0; it is not available to this repository's pinned pnpm 10.30.3 and must not be used. Do not upgrade the package manager as part of this task. After removing the unqualified global override, inspect the true original Undici request ranges from the regenerated graph. Use only selectors supported by pnpm 10.30.3, scoped per major and/or consumer parent, and only when the fixed target is compatible with the consumer's declared range. Wrangler's declared Undici 7.30.2 is already patched and must remain on v7. If a consumer cannot accept its major's fixed version, stop and resolve the parent dependency rather than forcing a breaking version.
+pnpm 10 documentation explicitly supports package-version selectors such as `"bar@^2.1.0": "3.0.0"` and parent-specific selectors such as `"qar@1>zoo": "2"`. For this task, the corresponding syntax patterns are `"undici@<version selector>": "<patched version>"` and `"<parent>@<parent version selector>>undici": "<patched version>"`. A package-version selector matches Undici package versions; it does not establish that the replacement satisfies every parent's declared request, so inspect the original consumer ranges and verify compatibility separately. An illustrative Wrangler-only selector is `"wrangler@4.168.0>undici": "7.30.2"`, but do not add it if removing the global override already restores Wrangler's exact declared request. The empty-range convergence override form such as `undici@` is not documented for pnpm 10 and was added in pnpm 11.13.0; it must not be used. Do not upgrade the package manager. Verify any selected selector using the exact pnpm 10.30.3 binary, `pnpm install --lockfile-only`, `pnpm why undici` and direct inspection of each lockfile entry. Every v6 resolution must be >=6.29.1, every v7 >=7.30.1, every v8 >=8.12.2, and the Wrangler 4.168.0 edge must resolve exactly to 7.30.2. If a consumer's original range cannot accept the patched target, stop and resolve its parent rather than forcing a breaking version.
 
 ## 6. Minimatch and glob override disposition
 
@@ -114,9 +114,11 @@ These precedents reinforce the need to validate the complete lock graph, all pac
 - Wrangler 4.168.0 release: https://github.com/cloudflare/workers-sdk/releases/tag/wrangler%404.168.0
 - npm OpenNext metadata: https://registry.npmjs.org/%40opennextjs%2Fcloudflare/latest
 - npm Wrangler metadata: https://registry.npmjs.org/wrangler/latest
+- npm Wrangler 4.168.0 published manifest: https://registry.npmjs.org/wrangler/4.168.0
 - Undici security advisory: https://github.com/advisories/GHSA-xjj6-f33q-929c
 - Undici v7-to-v8 migration guide: https://undici.nodejs.org/best-practices/migrating-from-v7-to-v8
-- pnpm dependency-resolution and override documentation: https://pnpm.io/settings#overrides
+- pnpm 10.x override and selector documentation: https://github.com/pnpm/pnpm.io/blob/main/versioned_docs/version-10.x/settings.md#overrides
+- pnpm current dependency-resolution documentation (convergence syntax history): https://pnpm.io/settings#overrides
 - pnpm convergence override introduction (v11.13.0): https://pnpm.io/blog/releases/11.13.0
 - Repository Node.js 26 migration plan: specs/135-nodejs-26-migration/plan.md
 

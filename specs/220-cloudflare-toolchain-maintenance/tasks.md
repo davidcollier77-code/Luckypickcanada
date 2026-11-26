@@ -19,11 +19,11 @@
 
 - [ ] T007 Recheck npm stable tags, package provenance metadata, peer dependencies, engines and release notes immediately before editing.
 - [ ] T008 Update only the approved OpenNext Cloudflare and Wrangler exact pins in package.json, provided they remain compatible and current.
-- [ ] T009 Replace the global Undici override with pnpm 10.30.3-supported version-range and/or parent-specific selectors. Do not use the pnpm 11.13.0 empty-range convergence syntax; inspect every original Undici request and preserve patched consumer-major compatibility.
+- [ ] T009 Replace the global Undici override using pnpm 10.30.3-documented package-version selector syntax (for example, `"undici@^7.0.0": "7.30.2"`) and/or parent-specific syntax (for example, `"wrangler@4.168.0>undici": "7.30.2"`). Treat these as syntax examples only; inspect the original consumer requests and choose selectors whose replacement is accepted by each affected edge. Verify the selected syntax with `pnpm install --lockfile-only` using the exact pinned pnpm 10.30.3 binary, then inspect `pnpm why undici` and `pnpm-lock.yaml`. Do not use the pnpm 11.13.0 empty-range convergence syntax.
 - [ ] T010 Regenerate pnpm-lock.yaml with Node.js 26.x and pnpm 10.30.3; do not hand-edit the lockfile.
-- [ ] T011 Inspect pnpm why and the resolved graph for OpenNext, OpenNext AWS, Wrangler, Workerd, Miniflare, glob, minimatch and Undici; remove minimatch 10-specific overrides only if proven unused.
+- [ ] T011 Inspect `pnpm why` and every resolved graph path for OpenNext, OpenNext AWS, Wrangler, Workerd, Miniflare, glob, minimatch and Undici. Verify every Undici lockfile entry against the exact fixed floor for its major, and verify Wrangler 4.168.0 resolves Undici to exactly 7.30.2 as declared by its registry manifest. Remove minimatch 10-specific overrides only if proven unused.
 - [ ] T012 Update __tests__/dependency-management.test.js to preserve unrelated security overrides and assert the intended scoped override policy.
-- [ ] T013 Update __tests__/undici-security-override.test.js to enforce patched release floors per major and the correct Wrangler Undici v7 path.
+- [ ] T013 Update __tests__/undici-security-override.test.js to enforce the patched release floor for every resolved Undici major and the exact Wrangler 4.168.0 -> Undici 7.30.2 dependency edge.
 - [ ] T014 Review the complete diff for stale references, integrity changes, unsupported overrides, unrelated dependency churn and application/configuration edits.
 
 ## Phase 3: Verification (Required Before Implementation PR Readiness)

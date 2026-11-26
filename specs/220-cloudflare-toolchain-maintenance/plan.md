@@ -86,10 +86,10 @@ Research findings and source links are recorded in research.md:
 ### 2. Undici compatibility/security policy
 
 - Inspect consumers and requested ranges in the actual dependency graph, not only the current lockfile (the existing global override has already rewritten original requests).
-- Replace the unqualified global Undici 8.12.2 override with ordinary version-range selectors and/or parent-specific selectors supported by pnpm 10.30.3.
+- Replace the unqualified global Undici 8.12.2 override with pnpm 10.30.3-supported selectors. The documented v10 key forms are a package-version selector such as `"undici@^7.0.0": "7.30.2"` and a parent-specific selector such as `"wrangler@4.168.0>undici": "7.30.2"`. The former selects Undici package versions in the stated semver range; it does not prove that 7.30.2 satisfies every consumer's declared request. The latter targets only the named parent's edge. These are syntax examples, not pre-approved overrides: choose the actual selector only after examining every original consumer range and proving the replacement fits that edge.
 - Do not use the empty-range convergence selector (`undici@`): pnpm added that syntax in v11.13.0, while this repository is pinned to v10.30.3. Do not upgrade pnpm as part of this task.
-- First inspect the original Undici dependency requests after removing the global override. Use explicit major-scoped selectors only for vulnerable resolved lines where the fixed target is compatible with the consumer's declared range. Use a parent-specific selector where a specific consumer requires a controlled version. Wrangler's declared v7.30.2 is already patched and must remain on v7.
-- The final graph must contain no Undici below 6.29.1 on v6, 7.30.1 on v7, or 8.12.2 on v8. If any consumer cannot accept its major's patched release, stop and resolve the parent dependency instead of forcing a breaking version.
+- First inspect the original Undici dependency requests after removing the global override. Use explicit package-version selectors only for vulnerable resolved lines where the fixed target is compatible with every affected consumer's declared range. Use a parent-specific selector where one consumer needs a distinct compatible target. Wrangler 4.168.0's published manifest requests Undici exactly `7.30.2`; its lockfile edge must resolve to exactly `7.30.2`. Prefer no Wrangler-specific override if removing the global override naturally restores that exact request.
+- Inspect every exact Undici version resolved in the regenerated lockfile, not only the major line: no v6 below 6.29.1, v7 below 7.30.1, or v8 below 8.12.2. Confirm separately that the Wrangler 4.168.0 edge resolves exactly to 7.30.2. If any consumer cannot accept its major's patched release, stop and resolve the parent dependency instead of forcing a breaking version.
 - If another major line or an incompatible consumer appears, stop and resolve it before merging; do not globally force a different major.
 
 ### 3. Glob/minimatch policy
@@ -101,7 +101,7 @@ Research findings and source links are recorded in research.md:
 
 ### 4. Dependency regression coverage
 
-- Update __tests__/undici-security-override.test.js so it verifies the version-aware override policy, resolved lockfile versions and Wrangler consumer path. It must fail if a vulnerable version returns or Wrangler is forced onto the wrong Undici major.
+- Update __tests__/undici-security-override.test.js so it verifies the version-aware override policy, every resolved lockfile version against the per-major fixed floor, and the exact Wrangler 4.168.0 -> Undici 7.30.2 edge. It must fail if a vulnerable version returns, Wrangler is forced onto another major, or its exact declared request changes.
 - Update __tests__/dependency-management.test.js only where current exact override assertions need to represent the approved new rule. Keep unrelated override checks.
 - Keep assertions semantic and path-aware; do not weaken existing lockfile or package-manager protections.
 
@@ -123,7 +123,7 @@ No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache st
 All commands run only in the compliant CI environment or another approved environment with Node.js 26.x and pnpm 10.30.3. The present ChatGPT session cannot execute this phase: it has Node.js 22.16.0, no pnpm 10.30.3, no repository checkout, and AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests here.
 
 1. Frozen package installation with pnpm install --frozen-lockfile.
-2. Dependency graph inspection using pnpm why for undici, glob and minimatch; confirm lockfile package entries, integrity and consumer paths.
+2. Dependency graph inspection using `pnpm why undici`, `pnpm why glob` and `pnpm why minimatch`; inspect every Undici lockfile version and consumer edge, enforce the fixed floors per major, and verify Wrangler 4.168.0 resolves exactly to Undici 7.30.2. Validate every chosen override selector with the pinned pnpm 10.30.3 binary and the regenerated lockfile.
 3. Focused dependency-management and Undici regression tests.
 4. Full Vitest suite and pnpm exec tsc --noEmit.
 5. Next.js production build and combined .next + public size check, strictly below 495 MiB.
