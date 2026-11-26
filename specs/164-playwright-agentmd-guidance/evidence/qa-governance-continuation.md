@@ -19,7 +19,7 @@
 - **PASS — source review:** Existing launcher and both Playwright mode commands were confirmed from repository files.
 - **PASS — scope review:** Changed implementation scope is limited to AGENTS.md and its existing governance test; supporting Spec Kit and Memory Bank records are task documentation.
 - **NOT RUN — focused Vitest:** No shell-capable repository checkout is available through the connected GitHub editing interface.
-- **NOT RUN — freebuff-verify.sh:** ChatGPT is explicitly prohibited from loading or executing this script.
+- **NOT RUN — freebuff-verify.sh:** It was not run in that GitHub editing session. The current `AGENTS.md` §6 permits this verification script when its prerequisites and safety conditions are met; its frozen install and project checks require the repository-pinned Node.js 26.x / pnpm 10.30.3 toolchain.
 - **PENDING — PR workflows:** Run independently after PR creation; no result is claimed here.
 
 ## Owner-Authorized QA Governance Continuation — PR #1908
@@ -37,7 +37,7 @@
 - **PASS — source review:** Applicable checker requirements were inspected from their definitions and relevant tests, not inferred from workflow names.
 - **PASS — diff/scope review:** PR changed-file inventory reconciled to the exact manifest recorded in the PR body after documentation updates.
 - **NOT RUN — focused Vitest:** No shell-capable repository checkout is available in this GitHub editing session.
-- **NOT RUN — `freebuff-verify.sh`:** ChatGPT is prohibited from loading or executing this script.
+- **NOT RUN — `freebuff-verify.sh`:** It was not run in that GitHub editing session. Current `AGENTS.md` §6 does not prohibit ChatGPT from inspecting or running the script when prerequisites are met; the script's project install, tests and build require Node.js 26.x / pnpm 10.30.3.
 - **PENDING — PR-triggered checks:** No current-head CI result is represented as passing.
 - **PENDING — owner governance approval:** Requires the exact current-head `/approve-governance` comment.
 - **PENDING — protected-file authorization:** Requires the configured human environment approval before merge.
