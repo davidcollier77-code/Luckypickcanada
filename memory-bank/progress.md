@@ -62,7 +62,7 @@
 
 - Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.
 - Updated the governance regression assertions and active Spec Kit feature pointer. The separate shared requirement for automatic PR-checker Playwright workflows remains unchanged; no application code, browser workflow, dependencies, visuals or deployment settings changed.
-- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. ChatGPT-only repository rules prohibit running project tests or scripts in this environment; current-head GitHub checks remain pending.
+- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. Node-26-dependent project tests and pnpm commands therefore remained unverified. The earlier blanket statement that ChatGPT-only rules prohibited project scripts was incorrect; current `AGENTS.md` §6 permits compatible repository scripts when their prerequisites and safety conditions are met. Current-head GitHub checks remained pending.
 
 ## 2026-11-24 — Plan-aware monitoring and PR performance health (spec 215 follow-up)
 
