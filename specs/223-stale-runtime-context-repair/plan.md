@@ -16,7 +16,7 @@ Spec 220's dependency implementation remains owner-authorized but unimplemented.
 
 **Storage**: Git-tracked Spec Kit and Memory Bank documentation only.
 
-**Testing**: Read-only GitHub source inspection, exact-path and phrase review, Spec Kit artifact completeness review, and the PR's existing governance/QA workflows. No application test or build is required by the documentation-only scope.
+**Testing**: Read-only GitHub source inspection, exact-path and phrase review, and Spec Kit artifact completeness review. The always-required Application Verification still runs in CI; no application-behavior-specific test or production build is part of the local documentation scope.
 
 **Target Platform**: GitHub repository governance and task documentation.
 
