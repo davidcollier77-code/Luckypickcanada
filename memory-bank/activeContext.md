@@ -1,12 +1,12 @@
-# Active Context — Stale ChatGPT runtime documentation reconciliation (Spec 223, 2026-11-26)
+# Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
 
-## Current Task — Reconcile all stale runtime and script-permission records
+## Current Repository State — Runtime documentation correction merged
 
-- **Scope:** Correct Spec 220's specification, plan and tasks; reconcile the stale execution statements in Specs 164, 175, 176, 177, 197 and 216; update the affected Memory Bank context/progress records; add complete Spec 223 artifacts and point `.specify/feature.json` to Spec 223.
-- **Execution boundary:** `AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable.
-- **Observed environment:** The exact Library startup preflight reports Node.js 22.16.0 and pnpm unavailable. This session has no local repository checkout. No repository scripts, project tests, builds or local checker suites have been run.
-- **Spec 220 boundary:** The owner-authorized Wrangler/OpenNext dependency implementation remains a separate, unstarted task requiring Node.js 26.x and pnpm 10.30.3. This documentation PR does not change dependencies or production configuration.
-- **Delivery:** One regular, non-draft PR containing the full 16-path documentation reconciliation; leave open and unmerged for owner review.
+- **Spec 223:** The 16-path runtime/script-permission documentation reconciliation is merged through [PR #2043](https://github.com/davidcollier77-code/Luckypickcanada/pull/2043), merge commit `17135708adc7b3e96e71e2bab7397723553a5852`. The current `AGENTS.md` §6 boundary is reflected in the Memory Bank and affected Spec Kit records.
+- **PR #2044:** Closed unmerged; its proposed correction overlaps the merged work and adds a competing Spec 223 directory/feature pointer. It is not needed and should remain closed.
+- **Final PR report:** The last published seven-category report for #2043 matched PR head `7ce7c3678d157dabce99bfe5cec609474787e22e`. Six categories passed; Governance and Workflow Verification failed because the PR body did not use all required exact declaration labels. The failure and its cause are recorded in Spec 223; the PR was merged before a corrected report could be published.
+- **Runtime boundary:** Compatible repository scripts remain permitted under their own prerequisites and safety conditions. Node-26-dependent project operations and the repository Playwright CLI/setup retain the limits in current `AGENTS.md` §6.
+- **Next separately authorized work:** Spec 220's Wrangler/OpenNext dependency implementation remains authorized but unstarted. Its implementation and verification tasks remain unchecked pending a compliant Node.js 26.x / pnpm 10.30.3 environment. No dependency or production change was part of Spec 223.
 
 ---
 
