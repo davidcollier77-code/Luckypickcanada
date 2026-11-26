@@ -230,7 +230,7 @@ describe('compact single-source agent governance', () => {
     expect(execution).not.toContain('Do not execute repository shell scripts');
     expect(execution).not.toContain('Do not run project builds, tests or dependency installs unless');
     expect(section).toContain('Follow all shared approvals and `PR_SUBMISSION.md`.');
-  })
+  });
 
   it('requires the PR single source of truth and current-head owner handoff', () => {
     const submission = readFileSync(prSubmissionPath, 'utf8');
