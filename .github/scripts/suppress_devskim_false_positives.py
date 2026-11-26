@@ -215,6 +215,19 @@ SAFE_SHARE_TIMER_CALLBACK_PATTERNS = {
         ),
     ),
 }
+# The production Lucky Meter arms one readiness watchdog. Its first argument is
+# an inline arrow function and its delay is a fixed constant, so no string is
+# evaluated. Keep the pattern exact so another timer in this file stays visible.
+SAFE_METER_TIMER_CALLBACK_FILES = frozenset({
+    "app/lib/lucky-meter/meter-scene.js",
+})
+SAFE_METER_TIMER_CALLBACK_PATTERNS = {
+    "app/lib/lucky-meter/meter-scene.js": (
+        re.compile(
+            r"^ *readyWatchdog = window\.(?P<call>setTimeout)\(\(\) => \{ *$"
+        ),
+    ),
+}
 # Playwright specs whose only DS172411 findings are test-runner timeout
 # configuration (`test.setTimeout(<milliseconds>)`). Reviewed 2026-11-10.
 SAFE_PLAYWRIGHT_TIMEOUT_FILES = frozenset({
@@ -331,6 +344,11 @@ PLAYWRIGHT_LOCAL_SERVER_LINE_PATTERNS = (
 LOCAL_PROBE_ARTIFACT_DIRECTORY = "artifacts/"
 LOCAL_PROBE_ARTIFACT_SUFFIX = ".json"
 LOCAL_SPECS_BENCHMARK_FILENAMES = frozenset({"perf-baseline.json", "perf-after.json"})
+# Spec Kit evidence reports are captured browser/performance measurements kept
+# beside their specification. They are documentation data as well: the build
+# classifier excludes specs/ from the production bundle, and the same validated
+# JSON/loopback checks still apply to every finding.
+SPECS_EVIDENCE_DIRECTORY = "evidence"
 SPECS_FEATURE_DIRECTORY_PATTERN = re.compile(r"[0-9]{3,}-[a-z0-9]+(?:-[a-z0-9]+)*")
 JSON_STRING_VALUE_PATTERN = re.compile(r'"(?P<value>(?:\\.|[^"\\])*)"')
 LOOPBACK_HOSTNAMES = frozenset({LOOPBACK_TEST_ADDRESS, "local" + "host", "::1"})
@@ -365,6 +383,7 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized in SAFE_REVEAL_TIMER_CALLBACK_FILES
         or normalized in SAFE_REVEAL_TIMER_ASSERTION_FILES
         or normalized in SAFE_SHARE_TIMER_CALLBACK_FILES
+        or normalized in SAFE_METER_TIMER_CALLBACK_FILES
         or normalized in SAFE_PLAYWRIGHT_TIMEOUT_FILES
         or normalized in SAFE_TEST_SUPPORT_TIMER_FILES
         or normalized in SAFE_SECURITY_TOOLING_LOOPBACK_FILES
@@ -373,6 +392,7 @@ def is_allowed_relative_path(path: Path) -> bool:
         or normalized == PLAYWRIGHT_LOCAL_SERVER_FILE
         or is_local_probe_artifact_path(normalized)
         or is_local_specs_benchmark_path(normalized)
+        or is_local_specs_evidence_path(normalized)
         or (len(path.parts) >= 2 and path.parts[0] == ".specify")
     )
 
@@ -396,12 +416,25 @@ def is_local_specs_benchmark_path(relative_path: str) -> bool:
     )
 
 
+def is_local_specs_evidence_path(relative_path: str) -> bool:
+    """Return whether a path is a JSON evidence report under a Spec Kit feature."""
+    parts = relative_path.split("/")
+    return (
+        len(parts) >= 4
+        and parts[0] == "specs"
+        and SPECS_FEATURE_DIRECTORY_PATTERN.fullmatch(parts[1]) is not None
+        and parts[2] == SPECS_EVIDENCE_DIRECTORY
+        and parts[-1].endswith(".json")
+    )
+
+
 def is_local_probe_origin_path(relative_path: str) -> bool:
     """Return whether a path is reviewed local-only server/probe configuration."""
     return (
         relative_path == PLAYWRIGHT_LOCAL_SERVER_FILE
         or is_local_probe_artifact_path(relative_path)
         or is_local_specs_benchmark_path(relative_path)
+        or is_local_specs_evidence_path(relative_path)
     )
 
 
@@ -1059,7 +1092,11 @@ def should_suppress_local_probe_origin(
                 return True
         return False
 
-    if not is_local_probe_artifact_path(relative_path) and not is_local_specs_benchmark_path(relative_path):
+    if (
+        not is_local_probe_artifact_path(relative_path)
+        and not is_local_specs_benchmark_path(relative_path)
+        and not is_local_specs_evidence_path(relative_path)
+    ):
         return False
     # The file must still be valid JSON data, so a renamed script cannot qualify.
     if not context.is_json():
@@ -1108,6 +1145,7 @@ def should_suppress_safe_contextual_finding(
         reviewed_callback_patterns = (
             SAFE_REVEAL_TIMER_CALLBACK_PATTERNS.get(relative_path)
             or SAFE_SHARE_TIMER_CALLBACK_PATTERNS.get(relative_path)
+            or SAFE_METER_TIMER_CALLBACK_PATTERNS.get(relative_path)
         )
         if reviewed_callback_patterns is not None:
             return any(
@@ -1277,6 +1315,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                         | SAFE_REVEAL_TIMER_CALLBACK_FILES
                         | SAFE_REVEAL_TIMER_ASSERTION_FILES
                         | SAFE_SHARE_TIMER_CALLBACK_FILES
+                        | SAFE_METER_TIMER_CALLBACK_FILES
                         | SAFE_PLAYWRIGHT_TIMEOUT_FILES
                         | SAFE_TEST_SUPPORT_TIMER_FILES
                     )

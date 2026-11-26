@@ -170,9 +170,12 @@ jobs:
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/commits/${head_sha}/check-runs?per_page=100&filter=all" \
             | jq '[.[].check_runs[]]' > "$RUNNER_TEMP/checks.json"
-          if ! gh api \
+          # Paginate: a single page silently reported any backlog above 100
+          # alerts as exactly 100, so the real count was never visible.
+          if ! gh api --paginate --slurp \
             "repos/${REPOSITORY}/code-scanning/alerts?pr=${PR_NUMBER}&state=open&per_page=100" \
-            > "$RUNNER_TEMP/alerts.json" 2> "$RUNNER_TEMP/alerts.err"; then
+            2> "$RUNNER_TEMP/alerts.err" \
+            | jq 'add // []' > "$RUNNER_TEMP/alerts.json"; then
             printf '{"message": "the code-scanning alerts could not be read"}\n' \
               > "$RUNNER_TEMP/alerts.json"
             cat "$RUNNER_TEMP/alerts.err" >&2 || true

@@ -1,3 +1,11 @@
+## 2026-11-26 — DevSkim backlog investigation and remediation (Spec 219)
+
+- Established that the repository never held "about 100" open alerts: the consolidated report fetched one `per_page=100` page and never followed pagination, so any backlog of 100 or more rendered as exactly 100. The true count is **422**, all severity `note`: 421 DS162092 and 1 DS172411.
+- Established the cause: all 422 alerts were created by the Spec 217 pull-request scan at `2026-11-24T23:48:05Z` from 13 newly added evidence JSON files (421 loopback findings) plus the meter readiness watchdog (1). The November 24 npm Dependabot updates touched no DevSkim file; the November 25 Actions update changed only the `upload-sarif` uploader pin. The DevSkim action has been pinned at v1.0.16 since 2026-10-24 and there is no scan-glob or DevSkim configuration to expand coverage.
+- Remediated with the existing exact-span filter rather than a directory-wide exclusion: `specs/<NNN-feature>/evidence/**/*.json` is admitted for DS162092 only, and the meter watchdog is matched by its exact statement for DS172411 only. The report now paginates code-scanning alerts. No scanner rule, scan glob, trigger, dependency or application source changed.
+- Verified against the real default-branch SARIF from `da8f104c`: 3,545 raw → 422 remaining before the change (exactly the live count), → **0 remaining** with matching source; replay gate exit 0; 115 suppression tests, 102 report contract tests and 14 workflow Vitest tests pass. The 422 alerts remain open until the next default-branch scan after merge.
+- `main` advanced to `da8f104c` when the owner merged PR #2035 (Spec 218); the end-to-end count was re-run against that head's fresh SARIF (still 3,545 raw / 422 open, watchdog now line 1575, **0 remaining**). An accidental push then auto-merged the first submission (PR #2036); PR #2037 reverts it, and this fresh PR is stacked on the revert for review.
+
 ## 2026-11-25 — Spec 218 production Lucky Meter experience
 
 - Implemented the complete visitor route: corrected message timing (starts at lock, removed before the celebration), physical medallion flip, crystal bowl, selected-chamber drain, in-chamber number, golden transfer to the separate **Your Lucky Number** panel, Spark/celebration sequence and corner countdown/Home/Share controls.
