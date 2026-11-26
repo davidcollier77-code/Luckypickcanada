@@ -1,3 +1,11 @@
+# Active Context — Spec 223 stale runtime-boundary correction (2026-11-26)
+
+- **Scope:** Correct the single stale Spec 220 Verification environment sentence identified independently by Amazon Q and Pullfrog on merged PR #2042.
+- **Correction:** Section 6 does not impose a blanket ban on repository scripts. Only Node.js 26.x-dependent operations and the unavailable repository Playwright CLI/setup are blocked in this ChatGPT environment; compatible repository and Freebuff verification/PR-support scripts remain permitted after inspection.
+- **Boundary:** Preserve the remaining Spec 220 research, dependency facts, implementation status and environment limitations. No governance, application, dependency, workflow, deployment or production configuration changes.
+
+---
+
 # Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
 
 - **Scope:** Clarify only ChatGPT Operating Instructions §6 in `AGENTS.md`; preserve the ChatGPT Library startup procedure and all shared governance.
@@ -29,7 +37,7 @@
 - **Other dependency risk:** OpenNext 1.20.19 moves from glob 13 to glob 14, removing its minimatch 10 path. Remove minimatch 10-specific overrides only after the full updated graph proves them unused; retain the glob@10 compatibility override and unrelated security overrides.
 - **Reviewer hardening:** Graphite's valid plan findings are incorporated: pnpm 10 selector syntax is illustrated from the versioned documentation, all Undici resolutions must be checked against exact per-major floors, and Wrangler 4.168.0 must resolve its exact published Undici request of 7.30.2. Pullfrog's incremental review found no new issues.
 - **Preserved boundary:** no application code, open-next.config.ts, wrangler.jsonc, compatibility date/flags, bindings, deployment workflows, Cloudflare dashboard settings, secrets or production resources are in scope. No production deploy.
-- **Verification environment:** the ChatGPT startup check found Node.js 22.16.0 and no pnpm 10.30.3; the container has no repository checkout. AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests in this session. The approved implementation must be performed in an environment that has the repository-pinned Node.js 26.x / pnpm 10.30.3 and must provide CI evidence.
+- **Verification environment:** the ChatGPT startup check found Node.js 22.16.0 and no pnpm 10.30.3; the container has no repository checkout. AGENTS.md ChatGPT-only §6 blocks only Node.js 26.x-dependent operations and the repository Playwright CLI setup in this session; other compatible repository and Freebuff verification scripts remain permitted. The approved implementation must be performed in an environment that has the repository-pinned Node.js 26.x / pnpm 10.30.3 and must provide CI evidence.
 
 ---
 
