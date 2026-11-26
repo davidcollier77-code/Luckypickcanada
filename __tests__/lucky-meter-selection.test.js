@@ -444,7 +444,7 @@ describe('complete daily result', () => {
   });
 
   it('carries the entertainment-only single Lucky Number wording', () => {
-    expect(LUCKY_NUMBER_LABEL).toBe('Lucky Number');
+    expect(LUCKY_NUMBER_LABEL).toBe('Your Lucky Number');
     expect(LUCKY_COLOUR_LABEL).toBe('Lucky Colour');
     expect(ENTERTAINMENT_DISCLAIMER).toMatch(/not lottery predictions or promises of winning/i);
   });

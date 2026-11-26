@@ -24,12 +24,14 @@ vi.mock('../app/lib/graphics-capabilities.js', () => ({
 import {
   DEFAULT_WORKBENCH_STATE,
   WORKBENCH_SCENES,
+  WORKBENCH_STAGES,
   WORKBENCH_TIERS,
   getWorkbenchScene,
   isWorkbenchCue,
   isWorkbenchEnabled,
   normalizeWorkbenchState,
   resolveWorkbenchPlan,
+  resolveWorkbenchStage,
   workbenchCaptureName,
 } from '../app/lib/graphics/workbench.js';
 import { buildWorkbenchScene } from '../app/lib/graphics/workbench-runtime.js';
@@ -57,6 +59,25 @@ describe('workbench catalogue', () => {
     }
 
     expect(WORKBENCH_TIERS.map((tier) => tier.id)).toEqual(['high', 'balanced', 'constrained']);
+  });
+});
+
+describe('responsive stage presets', () => {
+  it('exposes the three representative stages only on the Lucky Meter prototype', () => {
+    const scene = getWorkbenchScene('lucky-meter-instrument');
+    expect(scene.stages).toEqual(['mobile', 'tablet', 'desktop']);
+    expect(resolveWorkbenchStage(scene, 'mobile')).toMatchObject({ width: 390, height: 844 });
+    expect(resolveWorkbenchStage(scene, 'tablet')).toMatchObject({ width: 820, height: 1180 });
+    expect(resolveWorkbenchStage(scene, 'desktop')).toMatchObject({ width: 1440, height: 900 });
+    expect(WORKBENCH_STAGES.desktop.label).toBe('Desktop');
+  });
+
+  it('falls back to the scene default for an unknown stage and leaves other scenes alone', () => {
+    const scene = getWorkbenchScene('lucky-meter-instrument');
+    expect(resolveWorkbenchStage(scene, 'ultrawide')).toMatchObject({ id: 'mobile' });
+    expect(resolveWorkbenchStage(scene, null)).toMatchObject({ id: 'mobile' });
+    expect(resolveWorkbenchStage(getWorkbenchScene('golden-motes'), 'mobile')).toBeNull();
+    expect(resolveWorkbenchStage(null, 'mobile')).toBeNull();
   });
 });
 
