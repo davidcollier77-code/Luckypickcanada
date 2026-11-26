@@ -1,4 +1,16 @@
-# Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
+# Active Context — Stale ChatGPT runtime documentation reconciliation (Spec 223, 2026-11-26)
+
+## Current Task — Reconcile all stale runtime and script-permission records
+
+- **Scope:** Correct Spec 220's specification, plan and tasks; reconcile the stale execution statements in Specs 164, 175, 176, 177, 197 and 216; update the affected Memory Bank context/progress records; add complete Spec 223 artifacts and point `.specify/feature.json` to Spec 223.
+- **Execution boundary:** Current `AGENTS.md` §6 blocks only project operations requiring Node.js 26.x and the unavailable repository Playwright CLI/setup. It does not impose a blanket prohibition on compatible repository scripts, QA checkers or PR-support utilities. Each script still requires an individual runtime, prerequisite, permission, side-effect, network and cost review.
+- **Observed environment:** The exact Library startup preflight reports Node.js 22.16.0 and pnpm unavailable. This session has no local repository checkout. No repository scripts, project tests, builds or local checker suites have been run.
+- **Spec 220 boundary:** The owner-authorized Wrangler/OpenNext dependency implementation remains a separate, unstarted task requiring Node.js 26.x and pnpm 10.30.3. This documentation PR does not change dependencies or production configuration.
+- **Delivery:** One regular, non-draft PR containing the full 16-path documentation reconciliation; leave open and unmerged for owner review.
+
+---
+
+# Previous Active Context — ChatGPT runtime governance clarification (Spec 222, 2026-11-26)
 
 - **Scope:** Clarify only ChatGPT Operating Instructions §6 in `AGENTS.md`; preserve the ChatGPT Library startup procedure and all shared governance.
 - **Mandatory runtime distinction:** ChatGPT operates on Node.js 22.x and cannot switch to Node.js 26.x. The repository declares Node.js 26.x, so only project operations that require Node 26 are blocked in ChatGPT; independent compatible scripts and checks remain allowed.
@@ -22,7 +34,7 @@
 
 ## Current Task — Prepare a safe OpenNext and Wrangler dependency update
 
-- **State:** Spec 220 specification, research, plan and task list are complete. The owner authorized dependency implementation on 2026-11-26; implementation remains unstarted and is blocked in this ChatGPT session by the repository's ChatGPT-only execution rule and unavailable Node.js 26.x / pnpm 10.30.3. The current PR is therefore not an implementation-complete or merge-ready dependency upgrade.
+- **State:** Spec 220 specification, research, plan and task list are complete. The owner authorized dependency implementation on 2026-11-26; implementation remains unstarted because this ChatGPT session has Node.js 22.16.0 and no pnpm executable, while the dependency install, lockfile generation and Node-26-dependent verification require Node.js 26.x / pnpm 10.30.3. This is a runtime/toolchain limitation, not a blanket prohibition on repository scripts under current `AGENTS.md` §6. The current PR is not an implementation-complete or merge-ready dependency upgrade.
 - **Current pins:** package.json currently declares @opennextjs/cloudflare 1.20.18 and Wrangler 4.166.0; Next.js is 16.4.6; Node is 26.x; pnpm is 10.30.3.
 - **Investigated stable targets (2026-11-26):** OpenNext Cloudflare 1.20.19 and Wrangler 4.168.0 satisfy inspected peer/engine ranges. Recheck latest stable metadata and release notes before implementation.
 - **Primary dependency risk:** the root undici: 8.12.2 override crosses Wrangler's declared Undici 7.30.2 dependency boundary. pnpm 10.30.3 predates empty-range convergence overrides (added in pnpm 11.13.0), so implementation must use pnpm 10-compatible version-range and/or parent-specific selectors, verified against original consumer ranges.
