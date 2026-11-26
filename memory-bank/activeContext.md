@@ -1,8 +1,23 @@
-# Active Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
+# Active Context — Cloudflare toolchain dependency maintenance planning (Spec 220, 2026-11-26)
+
+## Current Task — Prepare a safe OpenNext and Wrangler dependency update
+
+- **State:** Spec 220 specification, research, plan and task list are complete. The owner authorized dependency implementation on 2026-11-26; implementation remains unstarted and is blocked in this ChatGPT session by the repository's ChatGPT-only execution rule and unavailable Node.js 26.x / pnpm 10.30.3. The current PR is therefore not an implementation-complete or merge-ready dependency upgrade.
+- **Current pins:** package.json currently declares @opennextjs/cloudflare 1.20.18 and Wrangler 4.166.0; Next.js is 16.4.6; Node is 26.x; pnpm is 10.30.3.
+- **Investigated stable targets (2026-11-26):** OpenNext Cloudflare 1.20.19 and Wrangler 4.168.0 satisfy inspected peer/engine ranges. Recheck latest stable metadata and release notes before implementation.
+- **Primary dependency risk:** the root undici: 8.12.2 override crosses Wrangler's declared Undici 7.30.2 dependency boundary. pnpm 10.30.3 predates empty-range convergence overrides (added in pnpm 11.13.0), so implementation must use pnpm 10-compatible version-range and/or parent-specific selectors, verified against original consumer ranges.
+- **Other dependency risk:** OpenNext 1.20.19 moves from glob 13 to glob 14, removing its minimatch 10 path. Remove minimatch 10-specific overrides only after the full updated graph proves them unused; retain the glob@10 compatibility override and unrelated security overrides.
+- **Reviewer hardening:** Graphite's valid plan findings are incorporated: pnpm 10 selector syntax is illustrated from the versioned documentation, all Undici resolutions must be checked against exact per-major floors, and Wrangler 4.168.0 must resolve its exact published Undici request of 7.30.2. Pullfrog's incremental review found no new issues.
+- **Preserved boundary:** no application code, open-next.config.ts, wrangler.jsonc, compatibility date/flags, bindings, deployment workflows, Cloudflare dashboard settings, secrets or production resources are in scope. No production deploy.
+- **Verification environment:** the ChatGPT startup check found Node.js 22.16.0 and no pnpm 10.30.3; the container has no repository checkout. AGENTS.md ChatGPT-only §6 prohibits repository shell scripts, dependency installs, builds and tests in this session. The approved implementation must be performed in an environment that has the repository-pinned Node.js 26.x / pnpm 10.30.3 and must provide CI evidence.
+
+---
+
+# Previous Context — DevSkim backlog remediation (Spec 219, 2026-11-26)
 
 ## Current Task — Resolve the 422 open DevSkim alerts without weakening detection
 
-- **Current state:** the work is committed on `freebuff/devskim-backlog-remediation-219-review`, and PR #2038 now targets `main`. PR #2037, the revert of the accidental Spec 219 push, merged as `0c9e1596` and restored `main`'s tree byte-for-byte to `da8f104c` (the owner's Spec 218 merge of PR #2035); this branch was stacked on that revert and is deliberately separate from PR #2035. This PR is regular, non-draft, open and unmerged.
+- **Current state:** PR #2038 merged into main as bbc04ad1b0c2ced26f18fa367ce2c7488ad6df1f at 2026-11-26T07:14:56Z. PR #2037 is the preceding revert that restored main before the reviewed remediation; the final remediation PR is complete.
 - **Investigation:** all 422 open DevSkim alerts were created by the Spec 217 pull-request scan at `2026-11-24T23:48:05Z`; 421 are DS162092 loopback findings in 13 Spec 217 evidence JSON files and one is DS172411 in `app/lib/lucky-meter/meter-scene.js` (line 1575 after Spec 218). Dependabot is not the cause: its only DevSkim-file change was the `upload-sarif` uploader pin (v4.39.3 → v4.39.4). The report's "100" was a single-page `per_page=100` cap, not a measured backlog.
 - **Remediation:** the existing exact-span filter now admits `specs/<NNN-feature>/evidence/**/*.json` for DS162092 with the same valid-JSON/loopback-value validation, and suppresses only the exact meter watchdog statement for DS172411. The report now paginates code-scanning alerts with `gh api --paginate --slurp` and `jq 'add // []'`.
 - **Fresh-eyes review:** the diff was re-read for unnecessary complexity; `should_suppress_local_probe_origin` now reuses `is_local_probe_origin_path()` and the workflow Vitest assertion binds `--paginate --slurp` to the alert command with an anchored regex instead of hard-coded slice offsets. A negative control proved the assertion fails when pagination is removed.
