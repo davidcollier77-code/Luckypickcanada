@@ -77,6 +77,31 @@ function lockfileOverrides(source = lockfile) {
   return entries;
 }
 
+/**
+ * Every resolved snapshot version of one exact package name in the lockfile.
+ *
+ * pnpm writes scoped snapshot keys with surrounding single quotes and appends a
+ * peer suffix, for example `'@vitest/mocker@5.1.1(vite@8.3.8(...))':`. Both forms
+ * must match, otherwise a scoped package silently yields an empty list and any
+ * assertion over it passes without checking anything.
+ */
+function lockfilePackageVersions(name, source = lockfile) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`^ {2}'?${escaped}@(\\d+\\.\\d+\\.\\d+)(?:\\(.*\\))?'?:$`, 'gm');
+  return [...source.matchAll(pattern)].map((match) => match[1]);
+}
+
+/** Numeric dot-separated version comparison; no pre-release versions are expected. */
+function compareVersions(left, right) {
+  const leftParts = left.split('.').map(Number);
+  const rightParts = right.split('.').map(Number);
+  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
+    const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  return 0;
+}
+
 /** Read one exact direct-dependency key from the root lockfile importer. */
 function lockfileDependency(name, source = lockfile) {
   const lines = source.split(/\r?\n/);
@@ -193,10 +218,6 @@ describe('Dependency management policy', () => {
     expect(Object.keys(pkg.pnpm.overrides).length).toBeGreaterThan(0);
   });
 
-  it('preserves the postcss override that the top-level list used to hold', () => {
-    expect(pkg.pnpm.overrides.postcss).toBe('^8.5.10');
-  });
-
   it('keeps the lockfile overrides identical to pnpm.overrides', () => {
     const fromLockfile = lockfileOverrides();
 
@@ -226,23 +247,83 @@ describe('Dependency management policy', () => {
     );
   });
 
-  it('keeps the pre-existing security overrides that must not be dropped', () => {
+  it('keeps only the overrides that a verified requirement still justifies', () => {
+    // The Undici majors each have a patched security floor that no consumer
+    // range selects on its own (GHSA-scoped per major). Every other historical
+    // workaround was removed because normal upstream resolution now selects a
+    // supported, patched, within-range version: no bare global pin, no cross-
+    // major force, and no override that merely restates a direct dependency.
+    expect(Object.keys(pkg.pnpm.overrides).sort()).toEqual([
+      'undici@6',
+      'undici@7',
+      'undici@8',
+    ]);
     expect(pkg.pnpm.overrides).toMatchObject({
       'undici@6': '6.29.1',
       'undici@7': '7.30.2',
       'undici@8': '8.13.1',
-      sharp: '0.35.5',
-      'source-map-js': '1.2.2',
-      qs: '>=6.16.0',
-      'fast-uri': '>=3.1.8',
-      '@vitest/mocker': '5.0.5',
-      // glob 10 consumes minimatch. Upgrade the consumer to a glob release
-      // built for minimatch 11; forcing minimatch 11 beneath glob 10 makes
-      // globSync return no matches.
-      'glob@10': '14.0.4',
     });
     expect(pkg.pnpm.overrides.undici).toBeUndefined();
-    expect(pkg.pnpm.overrides['minimatch@9']).toBeUndefined();
+    expect(pkg.pnpm.overrides['minimatch@10']).toBeUndefined();
+    expect(pkg.pnpm.overrides['glob@10']).toBeUndefined();
+    expect(pkg.pnpm.overrides['brace-expansion@1']).toBeUndefined();
+  });
+
+  it('resolves glob, minimatch and brace-expansion to patched releases without overrides', () => {
+    // glob 14 is the only glob line in the graph, and 14.0.6 is the first
+    // release whose minimatch edge is ^11. A later 14.x patch or minor is a
+    // legitimate upgrade, so the guard uses the floor rather than exact equality.
+    const globVersions = [...new Set(lockfilePackageVersions('glob'))];
+    expect(globVersions.length).toBeGreaterThan(0);
+    for (const version of globVersions) {
+      expect(version.split('.')[0], `unexpected glob major in ${version}`).toBe('14');
+      expect(compareVersions(version, '14.0.6'), `glob ${version} predates minimatch 11`).toBeGreaterThanOrEqual(0);
+    }
+    expect(lockfile).not.toMatch(/^ {2}'?glob@(?:10|13)\.\d+\.\d+/m);
+
+    // GHSA-g3hv-75wg-m249 (CVE-2026-118764) affects minimatch >=7.0.0 <11.0.1.
+    // The remaining 3.x copy is outside the affected range.
+    const minimatchVersions = lockfilePackageVersions('minimatch');
+    expect(minimatchVersions.length).toBeGreaterThan(0);
+    for (const version of minimatchVersions) {
+      const major = Number(version.split('.')[0]);
+      if (major >= 7) {
+        expect(compareVersions(version, '11.0.1'), `vulnerable minimatch ${version}`).toBeGreaterThanOrEqual(0);
+      } else {
+        expect(major, `unexpected minimatch major in ${version}`).toBeLessThanOrEqual(6);
+      }
+    }
+
+    // GHSA-v6h2-p8h4-qcjw (CVE-2025-5889) patched floors per major. The
+    // advisory's affected lines stop at 4, so 5.x and later are not affected —
+    // but that must be an explicit decision per resolved major. A silent skip
+    // would pass for any unrecognised major, which is the failure mode this
+    // whole guard exists to catch.
+    const braceFloors = { 1: '1.1.12', 2: '2.0.2', 3: '3.0.1', 4: '4.0.1' };
+    const braceUnaffectedFrom = 5;
+    const braceVersions = lockfilePackageVersions('brace-expansion');
+    expect(braceVersions.length).toBeGreaterThan(0);
+    for (const version of braceVersions) {
+      const major = Number(version.split('.')[0]);
+      const floor = braceFloors[major];
+      if (floor) {
+        expect(compareVersions(version, floor), `vulnerable brace-expansion ${version}`).toBeGreaterThanOrEqual(0);
+      } else {
+        expect(
+          major,
+          `unexpected brace-expansion major in ${version}; add its patched floor to braceFloors`
+        ).toBeGreaterThanOrEqual(braceUnaffectedFrom);
+      }
+    }
+  });
+
+  it('keeps the Vitest internals on the installed Vitest release', () => {
+    // A downgraded @vitest/mocker mixed Vitest 5.1.x with 5.0.x internals.
+    expect(pkg.pnpm.overrides['@vitest/mocker']).toBeUndefined();
+    const mockerVersions = lockfilePackageVersions('@vitest/mocker');
+    // An unmatchable lockfile format must fail loudly instead of passing vacuously.
+    expect(mockerVersions.length).toBeGreaterThan(0);
+    expect(mockerVersions).not.toContain('5.0.5');
   });
 
   it('configures weekly npm (pnpm) updates and keeps weekly GitHub Actions updates', () => {
