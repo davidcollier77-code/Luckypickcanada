@@ -1,32 +1,30 @@
-# Implementation Plan: Cloudflare Toolchain Patch Maintenance
+# Implementation Plan: Cloudflare Toolchain Re-Audit and OpenNext Patch
 
-**Branch**: chore/220-cloudflare-toolchain-maintenance | **Date**: 2026-11-26 | **Spec**: spec.md
+**Branch**: `freebuff/b7618803c1c98fa008653cb9` | **Date**: 2026-11-26 | **Spec**: [spec.md](./spec.md)
 
 ## Summary
 
-Update the root-pinned OpenNext Cloudflare adapter from 1.20.18 to the investigated stable 1.20.19 release and Wrangler from 4.166.0 to 4.168.0, subject to a fresh npm/peer/changelog check immediately before implementation. Regenerate the pnpm lockfile with Node 26.x and pnpm 10.30.3. Correct the global Undici override so it no longer forces Wrangler's declared patched v7 dependency into v8, and remove minimatch 10 overrides only when the final graph proves they are obsolete. Preserve all existing Cloudflare configuration and release safeguards.
-
-`AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. The Spec 220 implementation has not started: dependency installation, lockfile generation and Node-26-dependent project verification cannot be performed in this session. Do not treat planned dependency changes or verification as completed; perform them in a compliant Node.js 26.x / pnpm 10.30.3 environment.
+A fresh audit of the current stable Cloudflare toolchain selected **one** dependency change: upgrade `@opennextjs/cloudflare` from 1.20.18 to **1.20.19**, which replaces the advisory-affected `glob 13 → minimatch 10` path with `glob 14 → minimatch 11` and leaves behind a cookie/middleware 500 regression introduced in 1.20.18. **Wrangler 4.166.0 is retained** because neither 4.167.0 nor 4.168.0 contains an applicable security or compatibility fix for this deployment, while both adopt a newer Miniflare beta/workerd pair and new deploy-time behaviour. Existing overrides, including the undici security override, are unchanged. The lockfile is regenerated with Node.js 26.x and pnpm 10.30.3, a dependency-policy regression test guards the new graph, and the existing build, Worker and release safeguards are preserved.
 
 ## Technical Context
 
-**Language/Version**: Node.js 26.x; pnpm 10.30.3; TypeScript / JavaScript.
+**Language/Version**: Node.js 26.x (observed 26.13.0); pnpm 10.30.3; TypeScript / JavaScript.
 
-**Primary Dependencies**: Next.js 16.4.6; React 19.3.1; current @opennextjs/cloudflare 1.20.18; current Wrangler 4.166.0; candidate OpenNext 1.20.19 and Wrangler 4.168.0; @opennextjs/aws is transitive and expected to move from 4.2.0 to 4.2.1. Undici and glob/minimatch are the transitive compatibility/security focus.
+**Primary Dependencies**: Next.js 16.4.6; React 19.3.1; `@opennextjs/cloudflare` 1.20.19 (from 1.20.18); `@opennextjs/aws` 4.2.1 (transitive, from 4.2.0); Wrangler 4.166.0 (retained); `workerd` 1.20261119.1 and Miniflare 5.20261119.0-beta (unchanged with retained Wrangler).
 
-**Storage**: No storage schema or production data change. Existing R2, D1, KV and Durable Object resources remain unchanged.
+**Storage**: No schema or production-data change. Existing R2 incremental cache, D1 tag cache, KV namespace and Durable Object queue remain unchanged.
 
-**Testing**: pnpm frozen install; targeted dependency-management and Undici lockfile tests; full Vitest suite; TypeScript check; Next.js build and size gate; OpenNext Cloudflare build/artifact checks; Wrangler build validation for wrangler.jsonc; updater-scheduler Wrangler dry-run; both Visual QA shards; consolidated PR verification.
+**Testing**: Focused dependency tests; full Vitest suite; TypeScript check; Next.js production build with the 495 MiB gate; OpenNext Cloudflare build and artifact checks; `wrangler build`; updater-scheduler Wrangler dry-run. Playwright, DevSkim and deployment remain CI responsibilities.
 
-**Target Platform**: Existing Cloudflare Workers/OpenNext application and updater-scheduler Worker.
+**Target Platform**: Existing Cloudflare Worker built through OpenNext, plus the separate `workers/updater-scheduler` Worker.
 
 **Project Type**: Next.js App Router web application with a separate Cloudflare updater-scheduler Worker.
 
-**Performance Goals**: No runtime behavior, cache policy, UI, or render-path change. Combined .next and public production build output remains strictly below 495 MiB.
+**Performance Goals**: No runtime, rendering, cache-policy or UI change. Combined `.next` + `public` output remains strictly below 495 MiB.
 
-**Constraints**: Use only Node.js 26.x and pnpm 10.30.3 for package installation, lockfile generation and verification. Do not hand-edit the lockfile. Do not change application source, open-next.config.ts, wrangler.jsonc, compatibility date/flags, bindings, routes, migrations, secrets, environment settings, Cloudflare dashboard settings, deployment workflows or Dependabot schedule. No production deployment or merge.
+**Constraints**: Use only Node.js 26.x and pnpm 10.30.3 for installation and lockfile generation; do not hand-edit the lockfile; do not change application source, `open-next.config.ts`, `wrangler.jsonc`, compatibility date/flags, bindings, routes, migrations, secrets, environment configuration, deployment workflows or the Dependabot schedule; do not deploy or merge.
 
-**Scale/Scope**: Root package.json, pnpm-lock.yaml, directly relevant dependency-policy tests, Spec 220 artifacts and minimal Memory Bank corrections. The implementation change must include the protected-file authorization declaration and pass the existing authorization environment before merge.
+**Scale/Scope**: `package.json`, `pnpm-lock.yaml`, `__tests__/dependency-management.test.js`, the Spec 220 artifacts, `.specify/feature.json` and the Memory Bank. No new package, script, service, configuration layer or runtime module.
 
 ## Constitution Check
 
@@ -34,129 +32,108 @@ Update the root-pinned OpenNext Cloudflare adapter from 1.20.18 to the investiga
 
 | Principle | Assessment | Result |
 | --- | --- | --- |
-| I. Single Source of Truth | AGENTS.md remains authoritative; the feature artifacts define only this task's behavior and verification. | PASS |
-| II. Verify Before Acting | Current root manifest/lockfile, adapter and Wrangler metadata, OpenNext config, Worker config, QA workflows and related tests were inspected before preparing this plan. | PASS |
-| III. Implementation Sequence | Specify → Plan → Tasks are complete. The owner has authorized Implement. Dependency installation, lockfile generation and project verification requiring the repository runtime remain blocked until Node.js 26.x / pnpm 10.30.3 are available; script exclusions and permission for other compatible scripts are as stated in `AGENTS.md` §6. | BLOCKED |
-| IV. Protect Core Systems | No payment, authentication, database, secret, Cloudflare setting, binding or deployment workflow change is included. The implementation PR will only alter the authorized dependency manifest/lockfile and relevant tests. | PASS |
-| V. Resource Conservation | No new service or dependency is proposed; .docs remains read-only; build output remains below the 495 MiB hard cap. | PASS |
+| I. Single Source of Truth | `AGENTS.md` remains authoritative; these artifacts define only this task and link to the live configuration instead of duplicating it. | PASS |
+| II. Verify Before Acting | Live manifest, lockfile, registry manifests, release notes, advisories, Worker configuration, workflows and dependency tests were inspected before planning; all conclusions are re-derived, not inherited. | PASS |
+| III. Implementation Sequence | Specify → Plan → Tasks → Implement followed in order. The owner explicitly authorized autonomous implementation and the pull request. | PASS |
+| IV. Protect Core Systems | No payment, authentication, database, secret, Cloudflare setting, binding, compatibility date or deployment-workflow change. The protected files (`package.json`, `pnpm-lock.yaml`) carry the required declaration and environment authorization gate. | PASS |
+| V. Resource Conservation | No new service, dependency or paid usage; `.docs/` read-only; build remains below the 495 MiB cap. | PASS |
 
-**Post-design re-check**: PASS. The plan does not change the Worker runtime compatibility date or configuration. Package-level security work stays within dependency resolution and its tests. The later implementation PR must pass protected-file authorization for package.json and pnpm-lock.yaml.
+**Post-design re-check**: PASS. The design changes one existing dependency pin and its lockfile resolution, adds one regression test, and updates task artifacts only.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
-- specs/220-cloudflare-toolchain-maintenance/spec.md
-- specs/220-cloudflare-toolchain-maintenance/research.md
-- specs/220-cloudflare-toolchain-maintenance/plan.md
-- specs/220-cloudflare-toolchain-maintenance/tasks.md
+- `specs/220-cloudflare-toolchain-maintenance/spec.md`
+- `specs/220-cloudflare-toolchain-maintenance/research.md`
+- `specs/220-cloudflare-toolchain-maintenance/plan.md`
+- `specs/220-cloudflare-toolchain-maintenance/tasks.md`
 
-### Source Code and configuration (future implementation only)
+### Source code and configuration
 
-- package.json — exact OpenNext/Wrangler pins and narrowly scoped overrides.
-- pnpm-lock.yaml — pnpm 10.30.3-generated dependency graph.
-- __tests__/dependency-management.test.js — preserve override/package-manager policies.
-- __tests__/undici-security-override.test.js — assert patched Undici versions per major.
+- `package.json` — `@opennextjs/cloudflare` exact pin 1.20.19; Wrangler 4.166.0 and every other pin unchanged.
+- `pnpm-lock.yaml` — pnpm 10.30.3-generated graph.
+- `__tests__/dependency-management.test.js` — exact-pin/lockfile-consistency and glob 13/minimatch 10 regression guard.
+- `.specify/feature.json` — points at this feature.
+- `memory-bank/activeContext.md`, `memory-bank/techContext.md`, `memory-bank/progress.md` — verified state and milestone.
 
-**Preserved files**: open-next.config.ts, wrangler.jsonc, .github/workflows/deploy-open-next.yml, .github/workflows/validate-open-next-repair.yml, .github/workflows/deploy-updater-scheduler.yml, .github/workflows/visual-qa.yml and .github/workflows/protected-files.yml remain unchanged.
+**Preserved unchanged**: `open-next.config.ts`, `wrangler.jsonc`, all application source, `workers/updater-scheduler/**`, every `.github/workflows/**` file, `.github/dependabot.yml`, `.docs/**` and all Cloudflare resources.
 
-**Structure Decision**: Keep the implementation in the existing root package manifest and single pnpm lockfile. Add no package, new script, config layer, service or runtime module. The only source/test files planned are the existing dependency-policy tests.
+**Structure Decision**: Keep the change in the existing root manifest and single pnpm lockfile. No new package, script, configuration or runtime module is introduced; the only source edit is an existing dependency-policy test.
 
 ## Phase 0 — Research
 
-Research findings and source links are recorded in research.md:
+Recorded in [research.md](./research.md). Key decisions:
 
-1. OpenNext 1.20.19 is the investigated current stable adapter and accepts the repository's Next.js 16.4.6 plus Wrangler 4.168.0 peer versions. It moves the adapter's glob requirement to v14 and OpenNext AWS to 4.2.1.
-2. Wrangler 4.168.0 is the investigated current stable CLI; its Node engine supports the repository's Node 26.x runtime. Its Miniflare prerelease dependency and the separate updater-scheduler usage require CI validation.
-3. The current global Undici 8.12.2 override crosses Wrangler's declared Undici 7.30.2 major boundary. The advisory's fixed releases are major-specific. Use pnpm 10.30.3-supported version-aware resolution so each consumer stays on a compatible patched major. A convergence override is preferred only if frozen resolution proves that every affected declared range admits the fixed target; otherwise use an explicit version-scoped override.
-4. Remove minimatch 10-specific overrides only after proving that no package in the new dependency graph requires them. Retain glob@10 -> 14.0.4 and unrelated security overrides unless independently disproven.
-5. The app uses queueCache with a five-second queue-cache TTL, R2 incremental cache and D1 tag cache. It does not configure withRegionalCache and its story submission uses revalidatePath, not revalidateTag. The release notes' regional-cache fix is not a confirmed correction for this app.
-6. The app has no root proxy.ts or middleware.ts. The OpenNext cookie-middleware fix is a regression-test consideration, not a claim about an existing site defect.
-7. Wrangler's explicit compatibility_date and nodejs_compat remain unchanged. The 4.168.0 images.url_transformations feature is not configured.
+1. Adapter 1.20.19 is the newest stable release and the only change with a demonstrated security/compatibility benefit: its `glob ^14.0.6` removes the `minimatch@10` advisory path and its `@opennextjs/aws 4.2.1` fixes several runtime edge cases and the 1.20.18 cookie/middleware regression. Its Next peer (`>=15.5.29 <16 || >=16.4.5`) accepts 16.4.6 and its Wrangler peer (`^4.148.0`) accepts the retained 4.166.0.
+2. Wrangler 4.167.0 and 4.168.0 were evaluated and rejected for this task: no advisory fix, no compatibility requirement, and the applicable-looking changes concern first deploys, unused commands, unconfigured Images settings and interactive OAuth.
+3. The undici override is unchanged. The graph resolves only patched `undici@8.12.2`; altering which major each consumer receives is a separate security-resolution decision with no observed defect.
+4. Inert `minimatch@10` overrides are retained rather than removed, avoiding unrequested policy cleanup and keeping a floor if the path ever returns.
 
 ## Phase 1 — Design
 
-### 1. Dependency pins
+### 1. Dependency pin
 
-- Recheck npm latest stable tags, release notes, peer dependencies and engine metadata at implementation time.
-- If still current and compatible, pin @opennextjs/cloudflare to 1.20.19 and wrangler to 4.168.0.
-- Confirm the adapter resolves @opennextjs/aws 4.2.1 and the matching glob 14 package.
-- Do not change Next.js, React, Node, pnpm, Playwright, Miniflare, Workerd, application dependencies or unrelated tool pins.
+- `package.json`: only `"@opennextjs/cloudflare": "1.20.19"` changes.
+- `wrangler` stays `"4.166.0"`; all other dependencies, devDependencies and `pnpm.overrides` stay byte-identical.
 
-### 2. Undici compatibility/security policy
+### 2. Lockfile
 
-- Inspect consumers and requested ranges in the actual dependency graph, not only the current lockfile (the existing global override has already rewritten original requests).
-- Replace the unqualified global Undici 8.12.2 override with pnpm 10.30.3-supported selectors. The documented v10 key forms are a package-version selector such as `"undici@^7.0.0": "7.30.2"` and a parent-specific selector such as `"wrangler@4.168.0>undici": "7.30.2"`. The former selects Undici package versions in the stated semver range; it does not prove that 7.30.2 satisfies every consumer's declared request. The latter targets only the named parent's edge. These are syntax examples, not pre-approved overrides: choose the actual selector only after examining every original consumer range and proving the replacement fits that edge.
-- Do not use the empty-range convergence selector (`undici@`): pnpm added that syntax in v11.13.0, while this repository is pinned to v10.30.3. Do not upgrade pnpm as part of this task.
-- First inspect the original Undici dependency requests after removing the global override. Use explicit package-version selectors only for vulnerable resolved lines where the fixed target is compatible with every affected consumer's declared range. Use a parent-specific selector where one consumer needs a distinct compatible target. Wrangler 4.168.0's published manifest requests Undici exactly `7.30.2`; its lockfile edge must resolve to exactly `7.30.2`. Prefer no Wrangler-specific override if removing the global override naturally restores that exact request.
-- Inspect every exact Undici version resolved in the regenerated lockfile, not only the major line: no v6 below 6.29.1, v7 below 7.30.1, or v8 below 8.12.2. Confirm separately that the Wrangler 4.168.0 edge resolves exactly to 7.30.2. If any consumer cannot accept its major's patched release, stop and resolve the parent dependency instead of forcing a breaking version.
-- If another major line or an incompatible consumer appears, stop and resolve it before merging; do not globally force a different major.
+- Regenerate with the repository's pinned pnpm 10.30.3 under Node 26.x (`pnpm install --lockfile-only`), then prove it with `pnpm install --frozen-lockfile`.
+- Expected and observed changes: adapter and `@opennextjs/aws` snapshots, `glob 13.0.7` and `path-scurry 2.0.2` removed, adapter `glob` edge moved to 14.0.6. No other package version changes.
 
-### 3. Glob/minimatch policy
+### 3. Regression coverage
 
-- Regenerate the lockfile after the OpenNext adapter bump.
-- Run pnpm why for glob and minimatch; inspect all remaining consumers.
-- Remove minimatch@10 and minimatch@10.2.6>brace-expansion only if no package graph path requires those selectors.
-- Retain glob@10 -> 14.0.4 because the existing dependency-management regression documents a compatibility issue when minimatch 11 is forced under glob 10. Preserve unrelated security overrides.
+- Extend `__tests__/dependency-management.test.js` to require exact semver pins for both Cloudflare build tools, require their lockfile importer version to match the manifest, and fail if a `glob@13.x` or `minimatch@10.x` package snapshot returns.
 
-### 4. Dependency regression coverage
+### 4. Preserved configuration
 
-- Update __tests__/undici-security-override.test.js so it verifies the version-aware override policy, every resolved lockfile version against the per-major fixed floor, and the exact Wrangler 4.168.0 -> Undici 7.30.2 edge. It must fail if a vulnerable version returns, Wrangler is forced onto another major, or its exact declared request changes.
-- Update __tests__/dependency-management.test.js only where current exact override assertions need to represent the approved new rule. Keep unrelated override checks.
-- Keep assertions semantic and path-aware; do not weaken existing lockfile or package-manager protections.
-
-### 5. Preserved deployment configuration
-
-No changes to open-next.config.ts, wrangler.jsonc, workflows, bindings, cache strategy or compatibility date. Wrangler validation and the updater-scheduler dry-run use existing configurations. Production deployment continues only through the unchanged main-branch workflow.
+No change to `open-next.config.ts` (R2 incremental cache, `queueCache(doQueue, { regionalCacheTtlSec: 5, waitForQueueAck: true })`, D1 tag cache), `wrangler.jsonc` (name, routes, bindings, migrations, compatibility date 2026-08-04, `nodejs_compat`, observability) or the deployment workflows.
 
 ## Phase 2 — Implementation Sequence
 
-1. Owner authorization to begin dependency implementation was received on 2026-11-26. No further approval is required for the dependency scope defined here.
-2. In a compliant Node.js 26.x / pnpm 10.30.3 environment, update only the approved package pins and pnpm override policy.
-3. Regenerate pnpm-lock.yaml with pnpm 10.30.3. Do not hand-write or manually patch package snapshots, integrity values or references.
-4. Inspect pnpm why output and lockfile snapshots for OpenNext, OpenNext AWS, Wrangler, Workerd, Miniflare, glob, minimatch and Undici. Reconcile every edge and integrity record.
-5. Update the targeted dependency-policy regression tests.
-6. Review the complete diff for unrequested transitive or configuration changes before submitting the implementation PR.
+1. Recheck npm dist-tags and release metadata immediately before editing.
+2. Update the single adapter pin in `package.json`.
+3. Regenerate `pnpm-lock.yaml` with pnpm 10.30.3 under Node 26.x; never hand-edit it.
+4. Inspect `pnpm why` for the adapter, glob, minimatch and undici; reconcile every edge and integrity record.
+5. Add the dependency-policy regression test.
+6. Review the complete diff for unrelated churn, stale references or configuration edits.
 
 ## Phase 3 — Verification Plan
 
-`AGENTS.md` §6 separates script exclusions from the Node.js runtime boundary: do not run Freebuff's startup script/sequence or the repository Playwright CLI/setup scripts. Node.js 26.x-dependent project operations are separately unavailable in this ChatGPT environment. All other relevant repository scripts—including Freebuff QA and PR-support utilities—remain permitted when their own runtime, prerequisites, permissions, side effects, network access and costs are acceptable. Dependency installation, lockfile generation and Node-26-dependent builds and tests cannot be performed in this session. No repository checkout is available in this session.
+Executed locally on Node 26.13.0 with pnpm 10.30.3; results are recorded in `tasks.md` and the PR.
 
-1. Frozen package installation with pnpm install --frozen-lockfile.
-2. Dependency graph inspection using `pnpm why undici`, `pnpm why glob` and `pnpm why minimatch`; inspect every Undici lockfile version and consumer edge, enforce the fixed floors per major, and verify Wrangler 4.168.0 resolves exactly to Undici 7.30.2. Validate every chosen override selector with the pinned pnpm 10.30.3 binary and the regenerated lockfile.
-3. Focused dependency-management and Undici regression tests.
-4. Full Vitest suite and pnpm exec tsc --noEmit.
-5. Next.js production build and combined .next + public size check, strictly below 495 MiB.
-6. OpenNext Cloudflare build; verify .open-next/worker.js, assets, compiled CSS and existing Lucky Meter stylesheet contracts.
-7. Wrangler build validation against ./wrangler.jsonc.
-8. Wrangler dry-run against workers/updater-scheduler/wrangler.toml.
-9. Both Visual QA Playwright shards. A package.json dependency change is not classifiable as scripts-only and must not bypass visual QA.
-10. Review current-head PR Verification Report across all seven categories; confirm protected-file authorization and dependency-health results. Do not treat stale, missing, skipped or pending checks as passed.
+1. `pnpm install --frozen-lockfile`.
+2. `pnpm why` inspection for the adapter, glob, minimatch and undici; every undici entry checked against its advisory floor.
+3. Focused dependency tests (`dependency-management`, `undici-security-override`).
+4. `./freebuff-verify.sh` — Spec Kit gate, all Python checker suites, TypeScript, full Vitest, Next.js build, 495 MiB measurement and refresh-docs tests.
+5. `pnpm exec opennextjs-cloudflare build`; verify `.open-next/worker.js`, `.open-next/assets`, compiled Tailwind CSS and the Lucky Meter vessel/dock rules.
+6. `pnpm exec wrangler build --config ./wrangler.jsonc`.
+7. `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml` (no credentials, no deployment).
+8. CI-only and explicitly not claimed locally: the two Playwright shards, DevSkim, the OpenNext CI job, the seven-category report and deployment.
 
 No production deployment is part of this sequence.
 
 ## CI and Release Safeguards
 
-- Keep the cloudflare-deploy concurrency group and cancel-in-progress: false.
-- Keep the existing bounded Cloudflare API rate-limit retry conditions and post-deploy CSS verification.
-- Keep the updater-scheduler's separate dry-run and main-only deploy.
-- Keep the protected-file human authorization environment for package.json and pnpm-lock.yaml.
+- Keep the `cloudflare-deploy` concurrency group, `cancel-in-progress: false`, bounded rate-limit retry and post-deploy CSS verification.
+- Keep the updater-scheduler dry-run and main-only deployment.
+- Keep the protected-file human authorization environment for `package.json` and `pnpm-lock.yaml`.
 - Keep Dependency Health & Vulnerability Review and DevSkim reporting enabled.
-- Do not edit QA classifiers, workflow conditions, branch protection, secrets or Dependabot schedules to reduce required checks.
+- Do not edit classifiers, workflow conditions, branch protection, secrets or Dependabot schedules.
 
 ## Complexity Tracking
 
-No constitution violations. The task updates existing exact dependency pins and override rules; it introduces no new package, service, build tool, runtime path or hosting configuration.
+No constitution violations. The task changes one existing exact pin and its lockfile resolution; it introduces no package, service, build tool, runtime path or hosting configuration.
 
 ## Known Risks and Mitigations
 
 | Risk | Mitigation |
 | --- | --- |
-| OpenNext and Wrangler lock snapshots retain stale references after direct pins change. | Regenerate with pinned pnpm, run frozen install, inspect every package snapshot and consumer edge. |
-| npm package integrity is inconsistent with the committed lockfile. | Let pnpm generate lock metadata and require frozen-install and CI verification. |
-| Global Undici override forces a consumer onto another major. | Use pnpm 10.30.3-compatible version-aware override resolution and test Wrangler's v7 path. |
-| Minimatch 10 override is removed while another consumer still needs it. | Inspect pnpm why and the full post-update graph; remove only when unused. |
-| Wrangler's new Miniflare/Workerd dependency pair exposes runtime or build incompatibility. | Run main-app Wrangler validation and updater-scheduler dry-run in CI. |
-| Updated toolchain changes Worker output or bundle size. | Verify Worker/assets/CSS and measure the 495 MiB gate. |
-| PR workflows are skipped or stale. | Require both Visual QA shards, protected-file authorization and the seven-category current-head report. |
-| Production is deployed unintentionally. | PR changes do not deploy; deployment workflow remains main-only and unchanged. |
+| Adapter 1.20.19 is recently published and moves `glob` to a new major. | `glob 14.0.6` is already installed in this repository through the root devDependency; peers are unchanged; the Next.js and OpenNext builds plus compiled-CSS/Worker checks validate the result. |
+| Lockfile regeneration churns unrelated packages. | Inspect the full lockfile diff; the expected changes are limited to the adapter, `@opennextjs/aws`, the removed glob 13 line and its `path-scurry`. |
+| Inert `minimatch@10` overrides confuse future readers. | Documented in `research.md`; removal is deferred as out-of-scope policy cleanup. |
+| The global undici override crosses consumer major ranges (Wrangler/Miniflare/workers-utils declare 7.30.2; jsdom declares ^8.12.3). | Pre-existing and unchanged; the graph resolves only patched 8.12.2. Recorded as residual risk and proposed as a separate task. |
+| Protected-file gate blocks merge. | The PR carries the exact authorization declaration and is left for the owner's environment approval. |
+| A newer release appears during review. | The pin is exact; any bump requires a new audit and is not applied silently. |
+| CI checks are skipped or stale. | The PR reports them as PENDING and the owner reviews the current-head seven-category report. |
