@@ -48,7 +48,7 @@ const ERROR_PAGE_PATTERNS = [
     reason: 'download is an HTTP error page'
   },
   { pattern: /\bjust a moment\.\.\./i, reason: 'download is a bot-challenge page, not documentation' },
-  { pattern: /^\s*please wait while your request is being verified(?:\.{3}|…)?(?:\s|$)/i, reason: 'download is a verification challenge response, not documentation' },
+  { pattern: /^\s*please wait while your request is being verified(?:\.{3}|…)?\s*$/i, reason: 'download is a verification challenge response, not documentation' },
   { pattern: /\battention required!?\s*\|\s*cloudflare\b/i, reason: 'download is a Cloudflare challenge page' },
   { pattern: /\benable javascript and cookies to continue\b/i, reason: 'download is a bot-challenge page, not documentation' },
   { pattern: /\bverify (?:that )?you are (?:a )?human\b/i, reason: 'download is a bot-challenge page, not documentation' },
@@ -1002,6 +1002,11 @@ function decodeCloudflareEmailProtectionAddress(encoded) {
   } catch (error) {
     return null;
   }
+
+  // Unsupported named HTML entities are left opaque instead of being treated
+  // as the protected email destination. Numeric references and percent escapes
+  // are decoded above; unrecognized named entities fail closed.
+  if (/&[a-z][a-z0-9]+;/i.test(address)) return null;
 
   const at = address.indexOf('@');
   if (

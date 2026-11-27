@@ -354,6 +354,12 @@ async function runTests() {
     assert.match(validateDocumentContent(challenge).reason, /verification challenge/i);
     const documentation = '# Verification troubleshooting\n\nA verification service may display a message such as "Please wait while your request is being verified" during a temporary access check. This page explains how to diagnose the issue and continue safely.\n';
     assert.ok(validateDocumentContent(documentation).ok);
+
+    const continuedAfterChallengeLine = 'Please wait while your request is being verified...\nThis documentation explains the API options, authentication configuration, response handling and retry behavior for supported clients.\n';
+    assert.ok(
+      validateDocumentContent(continuedAfterChallengeLine).ok,
+      'a document that continues with real content after a challenge-like opening line must not be rejected'
+    );
   });
 
   await test('normalizeDocumentationForComparison treats rotating Cloudflare email tokens as the same destination only', () => {
@@ -361,6 +367,7 @@ async function runTests() {
     const sameAddressToken = '2251474e44040111151904011710190401161a1954434e5747';
     const changedAddressToken = '33404643435c4147151000040815100601081510070b085d465e434a1d5c4154';
     const invalidToken = 'zz-not-a-cloudflare-token';
+    const namedEntityToken = '5d2e38313b7b3c302d661d2b3c312838';
     const prefix = '# NumPy API reference\n\nThe ndarray multiplication method is documented here: [matmul](https://numpy.org/cdn-cgi/l/email-protection#';
     const suffix = ').\n';
 
@@ -383,6 +390,11 @@ async function runTests() {
       normalizeDocumentationForComparison(original),
       normalizeDocumentationForComparison(invalid),
       'unrecognized or malformed tokens must remain unchanged in the comparison'
+    );
+    const namedEntityDocument = prefix + namedEntityToken + suffix;
+    assert.ok(
+      normalizeDocumentationForComparison(namedEntityDocument).includes(namedEntityToken),
+      'unsupported named HTML entities must leave the original protected token opaque'
     );
     assert.ok(original.includes(firstToken), 'comparison normalization must not mutate the source content');
     assert.ok(sameAddress.includes(sameAddressToken), 'downloaded source content must remain byte-for-byte intact');

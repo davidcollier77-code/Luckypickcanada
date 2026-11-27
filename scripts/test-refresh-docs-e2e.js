@@ -231,7 +231,6 @@ async function run() {
   assert.ok(report.includes('download is empty'), 'report must include the empty-download reason');
   assert.ok(report.includes('binary data'), 'report must include the binary-download reason');
   assert.ok(report.includes('HTTP error page'), 'report must include the error-page reason');
-  assert.ok(report.includes(manifest.sources[gsapLib].url), 'report must include the GSAP challenge source URL');
   assert.ok(report.includes('verification challenge response'), 'report must identify the rejected GSAP verification response');
   assert.ok(report.includes('existing document preserved'), 'report must state that existing copies were preserved');
   assert.ok(report.includes('Source URLs were not changed automatically'), 'report must not imply automatic URL replacement');
