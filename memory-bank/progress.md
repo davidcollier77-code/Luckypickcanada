@@ -1,3 +1,12 @@
+## 2026-11-27 — Cloudflare email-protection token stability (Spec 228)
+
+- Confirmed that the repeated NumPy snapshot changes came from rotating same-origin Cloudflare `/cdn-cgi/l/email-protection#<hex>` href fragments, not changing documentation text. Two live reads of the configured page matched after accounting only for that volatile fragment.
+- The updater correction is narrowly scoped to HTML-to-Markdown anchor serialization: preserve the visible label as text and omit only the recognized Cloudflare email-protection href. Ordinary links and the broader URL-validation logic are unchanged.
+- Added regression coverage for converter output and two consecutive complete updater passes. The expected second pass is `0 updated / 1 unchanged`, with byte-identical snapshot content and no manifest timestamp rewrite.
+- The NumPy source is a non-GitHub URL, so no upstream GitHub SHA is available; the updater's current live-fetch/content-comparison fallback is correct. Historical SHA metadata is inert and intentionally unchanged.
+- The existing Node 26 Application Verification workflow already runs the updater test suite. The updater script is protected and the PR retains the required authorization declaration and separate environment approval gate. Existing build validation and Playwright shards remain required for the root `scripts/` path.
+- No source URL, manifest, generated `.docs/` file, dependency, schedule, workflow, application code, deployment setting or production resource is changed. Local Node 26 tests/build are not claimed under ChatGPT's runtime; current-head CI remains the verification authority.
+
 ## 2026-11-27 — Restore official GSAP Timeline documentation (Spec 227 follow-up)
 
 - Recovered .docs/polishing/_llmstxt_gsap_llms_txt.md, which previously contained only a Cloudflare verification message, from the exact official URL already configured in .docs/manifest.json: https://gsap.com/docs/v3/GSAP/Timeline.

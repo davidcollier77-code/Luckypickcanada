@@ -1,3 +1,16 @@
+# Active Context — Stabilize the documentation updater's Cloudflare link normalization (Spec 228, 2026-11-27)
+
+## Current Task — Prevent token-only NumPy snapshot updates
+
+- **Cause:** The configured NumPy HTML page contains a same-origin `/cdn-cgi/l/email-protection#<hex>` anchor. Cloudflare changes its opaque hexadecimal fragment on separate responses while the visible label and the rest of the documentation remain identical. The converter had preserved that volatile href in the generated Markdown.
+- **Repair:** Spec 228 removes only the recognized same-origin Cloudflare email-protection href during HTML-to-Markdown conversion and retains the visible anchor label as text. Ordinary documentation links keep their existing behavior.
+- **Regression coverage:** The standalone updater test suite adds a two-token converter check and a two-pass `runRefresh()` test. The second live-source fetch must report unchanged, preserve the exact snapshot bytes and leave `manifest.lastUpdated` untouched.
+- **Upstream SHA finding:** NumPy is configured on `numpy.org`, so `getUpstreamSha()` returns null and the updater correctly falls back to live fetch plus normalized content comparison. The old SHA metadata is inert; it is intentionally not rewritten.
+- **Boundaries:** No manifest/source URL, generated `.docs/` snapshot, dependency, scheduler/workflow, Cloudflare setting, application code or production resource change. The protected updater script is explicitly owner-authorized; the separate protected-file environment gate remains mandatory.
+- **Verification:** Node.js 26-dependent updater tests/build are not run under ChatGPT's incompatible runtime. The existing Node 26 Application Verification job already executes the updater regression suite. Root `scripts/` paths still require the existing build validation and both Playwright shards; those are PR-triggered checks, not local passes.
+
+---
+
 # Active Context — Restore GSAP documentation and retain static updater policy (Spec 227, 2026-11-27)
 
 ## Current Task — Restore the official GSAP Timeline reference
