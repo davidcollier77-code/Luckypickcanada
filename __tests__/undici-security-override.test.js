@@ -69,7 +69,12 @@ describe('Undici security overrides', () => {
   });
 
   it('keeps every resolved version at or above its major patched floor', () => {
-    for (const version of uniqueSorted([...packageVersions, ...resolvedVersions])) {
+    const versions = uniqueSorted([...packageVersions, ...resolvedVersions]);
+
+    // Without this, an unparseable lockfile would make this test pass vacuously.
+    expect(versions.length).toBeGreaterThan(0);
+
+    for (const version of versions) {
       const major = Number(version.split('.')[0]);
       const floor = PATCHED_BY_MAJOR[major];
 

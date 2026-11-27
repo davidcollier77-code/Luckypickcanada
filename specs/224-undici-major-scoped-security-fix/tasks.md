@@ -68,6 +68,8 @@
 
 - **Pullfrog `memory-bank/techContext.md` finding — valid, applied.** The Spec 220 bullet still claimed the graph resolved `undici@8.12.2` and that the global override was unchanged. It now records that as the Spec 220-era state superseded by Spec 224, and no longer contradicts the current graph or the merged OpenNext 1.20.19 update.
 - **Graphite module-scope finding — declined.** The `packageVersions` and `resolvedVersions` arrays are immutable module constants with no mutation anywhere in the file, and the strict lockfile/manifest equality is already documented as intentional. Freezing them or moving the reads inside `it` would add noise without changing behaviour.
+- **Graphite vacuous-pass finding (on `498b6724`) — valid, applied.** The floor test iterated over an empty list if the lockfile could not be parsed, so it could pass without checking anything. It now asserts a non-empty version union before the loop.
+- **Graphite per-major direct-regex finding (on `498b6724`) — declined.** The generic floor test already rejects any below-floor release for majors 6 and 7 and fails on an unexpected major; the `8.12.x` regex is a targeted guard for the previously pinned family, not the general floor check. Adding per-major regexes would duplicate the floor test.
 
 ## Dependencies & Execution Order
 
