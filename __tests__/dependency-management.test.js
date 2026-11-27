@@ -228,7 +228,9 @@ describe('Dependency management policy', () => {
 
   it('keeps the pre-existing security overrides that must not be dropped', () => {
     expect(pkg.pnpm.overrides).toMatchObject({
-      undici: '8.12.2',
+      'undici@6': '6.29.1',
+      'undici@7': '7.30.2',
+      'undici@8': '8.13.1',
       sharp: '0.35.5',
       'source-map-js': '1.2.2',
       qs: '>=6.16.0',
@@ -239,6 +241,7 @@ describe('Dependency management policy', () => {
       // globSync return no matches.
       'glob@10': '14.0.4',
     });
+    expect(pkg.pnpm.overrides.undici).toBeUndefined();
     expect(pkg.pnpm.overrides['minimatch@9']).toBeUndefined();
   });
 

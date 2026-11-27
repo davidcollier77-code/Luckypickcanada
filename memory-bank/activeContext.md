@@ -1,4 +1,18 @@
-# Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
+# Active Context — Spec 224 undici major-scoped security fix (2026-11-26)
+
+## Current Task — Remove the vulnerable global Undici pin
+
+- **Branch:** `freebuff/b7618803c1c98fa008653cb9-undici`, originally based on `main` at `8a18c44583192e2f32e801c81c44c6f1311e71d7` and merged forward to `71b9e1a1a59a32708ca3c5f6a373a9cf015ce8cb` after PR #2047 merged the OpenNext 1.20.19 update.
+- **Scope:** `specs/224-undici-major-scoped-security-fix/`; 12 exact paths covering `package.json`, `pnpm-lock.yaml`, two dependency guards, four Spec 224 artifacts, `.specify/feature.json` and three Memory Bank files.
+- **Change:** replaced `undici: 8.12.2` with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`.
+- **Resolved graph:** `@dotenvx/dotenvx` 6.29.1; Wrangler, Miniflare and `@cloudflare/workers-utils` 7.30.2; jsdom 8.13.1. No 8.12.2 remains.
+- **Verification:** focused guards 50/50 before the merge and 51/51 after it; full `./freebuff-verify.sh` passed with 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build; production build 485,572,608 bytes (463.08 MiB), below 495 MiB; OpenNext build passed on `@opennextjs/cloudflare` 1.20.18 before the merge and on 1.20.19 after it; Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17.
+- **OpenNext boundary:** PR #2047 merged into `main` as `71b9e1a1`, so this branch now carries `@opennextjs/cloudflare` 1.20.19 and `@opennextjs/aws` 4.2.1 on a `glob 14.0.6` edge. The merged graph was re-verified with `pnpm install --frozen-lockfile`, `pnpm why undici` (6.29.1 / 7.30.2 / 8.13.1 only) and a passing OpenNext build that produced `.open-next/worker.js`.
+- **Delivery:** [PR #2048](https://github.com/davidcollier77-code/Luckypickcanada/pull/2048) is regular, non-draft, open and unmerged against `main`; no merge or deployment. An owner-directed post-submission repair addressed the Graphite and Pullfrog findings across the review rounds in `__tests__/undici-security-override.test.js` and `memory-bank/techContext.md`: the direct regression guard now rejects every `8.12.x` (not only `8.12.0`–`8.12.3`), `uniqueSorted` uses the existing `compareVersions` instead of a lexicographic sort, the exact lockfile equality is retained with its intent documented, and a `parseVersion` guard rejects non-numeric version segments. Focused guards pass `3 files / 51 tests` on the merged graph; the manifest, lockfile and all 12 declared paths are unchanged, and the consolidated report must refresh for each new head.
+
+---
+
+# Previous Active Context — Spec 223 documentation reconciliation closeout (2026-11-26)
 
 ## Current Repository State — Runtime documentation correction merged
 

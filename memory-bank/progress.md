@@ -1,3 +1,10 @@
+## 2026-11-26 — Undici major-scoped security fix (Spec 224)
+
+- Replaced the global `undici: 8.12.2` override with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`; regenerated the lockfile with pnpm 10.30.3.
+- Resolved split: dotenvx 6.29.1, Wrangler/Miniflare/workers-utils 7.30.2, jsdom 8.13.1. No 8.12.2 remains; each consumer stays in its declared major.
+- Updated the dedicated Undici guard and the dependency-management guard; focused tests 50/50; full verification passed 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build at 485,572,608 bytes (463.08 MiB), below 495 MiB.
+- OpenNext 1.20.18 build, Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17. PR #2047's OpenNext 1.20.19 update remains separate. No deployment or application code change.
+
 ## 2026-11-26 — Spec 220 Cloudflare toolchain re-audit implemented
 
 - A fresh, independent audit selected only `@opennextjs/cloudflare` 1.20.18 → **1.20.19** and retained **Wrangler 4.166.0**; the earlier plan's Wrangler bump was rejected because 4.167.0/4.168.0 contain no applicable security or compatibility fix.
