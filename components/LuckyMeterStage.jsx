@@ -589,7 +589,15 @@ export default function LuckyMeterStage({
                 className="lucky-colour-bar__meta"
                 style={{ fontSize: '0.5rem', lineHeight: 1.05, whiteSpace: 'nowrap' }}
               >
-                {colour ? colour.hex : '—'}
+                <span>{colour ? colour.hex : '—'}</span>
+                {seasonName ? (
+                  <>
+                    <span aria-hidden="true" className="lucky-colour-bar__dot">
+                      ·
+                    </span>
+                    <span className="lucky-colour-bar__season">{seasonName}</span>
+                  </>
+                ) : null}
               </span>
             </span>
           </section>
