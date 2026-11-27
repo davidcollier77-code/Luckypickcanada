@@ -958,6 +958,6 @@ This file is a concise record of meaningful completed work, not a chronological 
 ## 2026-11-27 — GSAP reference review repairs (Spec 227 follow-up)
 
 - Triaged all six inline findings in Graphite review 6093276048 against the official GSAP page, GSAP core implementation and actual updater tests.
-- Repaired the missing Timeline sequence example, truncated position-parameter bullet, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
-- Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. No test-code change was necessary.
+- Repaired the missing Timeline sequence example, truncated position-parameter bullet and Hint tokens, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
+- Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. The separate concern about an undefined URL was ruled out by the preceding assertion and immutable `const` binding. No test-code change was necessary.
 - The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.

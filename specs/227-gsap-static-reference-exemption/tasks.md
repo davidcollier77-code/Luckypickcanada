@@ -38,8 +38,9 @@
 ## Phase 6 — Review findings and corrections
 
 - [X] T018 Inspect all six inline findings from Graphite review 6093276048 against the exact official GSAP page, GSAP core implementation, and updater unit/end-to-end tests.
-- [X] T019 Repair the missing Timeline sequence example, truncated position-parameter syntax, malformed `onInterrupt` description, missing `getById` explanation, and contradictory specification boundary.
+- [X] T019 Repair the missing Timeline sequence example, truncated position-parameter syntax and Hint tokens, malformed `onInterrupt` description, missing `getById` explanation, and contradictory specification boundary.
 - [X] T020 Record the review dispositions in the research and Memory Bank; retain the renderer-focused unit test because the end-to-end suite already exercises the actual allowlist/report integration.
+- [X] T021 Resolve the earlier Pullfrog position-token finding and validate the earlier end-to-end URL-guard concern against the immutable setup value and preceding assertion.
 
 ## Recovery verification boundary
 

@@ -123,7 +123,7 @@ tl.to(".class", { x: 100, duration: 1 }, ">1");
 tl.to(".class", { y: 100, duration: 1 }, ">-2");
 ```
 
-Hint : think of `""` as pointers to the start or end of the most recently-added animation.
+Hint: think of `"<"` and `">"` as pointers to the start or end of the most recently-added animation.
 
 ## Special Properties and Callbacks
 

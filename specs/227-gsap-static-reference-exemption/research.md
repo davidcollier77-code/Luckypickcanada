@@ -40,6 +40,10 @@ The remaining test comment was reviewed but did not require a code change. The u
 
 The review's timeline-example finding was treated as a real conversion gap: although the earlier Quick Start defines `tl`, the source page's visual sequence demo was not represented in the Markdown. A compact code example now preserves that instructional content.
 
+An earlier Pullfrog review (6093188518) also identified that the conversion dropped the angle-bracket tokens from the closing `Hint` sentence. That line is now restored to the official wording, `"<"` and `">"`, alongside the repaired `"<1"` position-parameter bullet.
+
+An earlier review comment (6092819890) questioned whether the end-to-end assertion could silently pass if the GSAP source URL were undefined. The setup first asserts that `staticGsapSourceUrl` exists, stores it in a `const`, and does not mutate that binding before the request assertion; therefore `requests.includes(undefined)` cannot silently pass. No test change is warranted.
+
 ## Decision
 
 Keep one hard-coded, auditable static reference ID in the existing updater, retain report visibility and regression coverage, and restore only the existing `.docs` snapshot from the exact official source URL. Leave manifest routing, source URL and workflows unchanged.
