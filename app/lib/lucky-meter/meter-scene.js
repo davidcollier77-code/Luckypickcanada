@@ -60,6 +60,31 @@ const BOWL_PROFILE = Object.freeze([
   [METER_LAYOUT.vessel.radius, METER_LAYOUT.vessel.height],
 ]);
 
+/**
+ * The bowl's inner wall radius at a local height. The profile is piecewise
+ * linear, so interpolating it keeps the liquid exactly inside the glass shell
+ * at every level instead of ballooning past the flare near the foot.
+ */
+function bowlInnerRadiusAt(y) {
+  const height = METER_LAYOUT.vessel.height;
+  const level = Math.max(0, Math.min(height, Number(y) || 0));
+  for (let index = 1; index < BOWL_PROFILE.length; index += 1) {
+    const [x1, y1] = BOWL_PROFILE[index];
+    const [x0, y0] = BOWL_PROFILE[index - 1];
+    if (level <= y1) {
+      const span = y1 - y0 || 1;
+      const t = Math.max(0, Math.min(1, (level - y0) / span));
+      return x0 + (x1 - x0) * t;
+    }
+  }
+  return METER_LAYOUT.vessel.radius;
+}
+
+/** The liquid's own band inside the bowl, shared by the body and its surface. */
+const BOWL_LIQUID_BASE = METER_LAYOUT.vessel.liquidFloor;
+const BOWL_LIQUID_TOP = METER_LAYOUT.vessel.liquidTop;
+const BOWL_LIQUID_INSET = METER_LAYOUT.vessel.liquidInset;
+
 /** The moment the idle scene stops rendering; a state change wakes it. */
 const IDLE_STOP_SECONDS = 4;
 const FINISHED_STOP_SECONDS = 1.25;
@@ -305,6 +330,9 @@ function createFillMaterial(THREE, colourHex) {
       uColor: { value: new THREE.Color(colourHex) },
       uLevel: { value: 10 },
       uOpacity: { value: 1 },
+      // Optional depth gradient: the bowl's liquid is deeper than one visible
+      // wall, so it darkens toward the floor and brightens near the surface.
+      uDeepen: { value: 0 },
     },
     vertexShader: `
       varying vec3 vNormalView;
@@ -323,6 +351,7 @@ function createFillMaterial(THREE, colourHex) {
       uniform vec3 uColor;
       uniform float uLevel;
       uniform float uOpacity;
+      uniform float uDeepen;
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
       varying float vLocalY;
@@ -341,6 +370,8 @@ function createFillMaterial(THREE, colourHex) {
           uColor * (0.88 + 0.12 * diffuse + specularA * 0.12) +
           vec3(1.0, 0.94, 0.82) * specularB * 0.18 +
           vec3(1.0, 0.96, 0.88) * fresnel * 0.06;
+        float depthMix = clamp(vLocalY / max(uLevel, 0.0001), 0.0, 1.0);
+        colour *= mix(1.0, mix(0.66, 1.0, depthMix), uDeepen);
         gl_FragColor = vec4(colour, uOpacity);
         #include <colorspace_fragment>
       }
@@ -1018,7 +1049,7 @@ export async function createLuckyMeterScene({
       new THREE.LineBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.62,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -1037,7 +1068,7 @@ export async function createLuckyMeterScene({
       new THREE.MeshBasicMaterial({
         color: 0xeaffff,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.72,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -1090,42 +1121,36 @@ export async function createLuckyMeterScene({
   bowlFootRing.position.y = -0.11;
   bowlGroup.add(bowlFootRing);
 
-  const liquidMaterial = trackMaterial(
-    new THREE.MeshPhysicalMaterial({
-      color: 0xa65e3b,
-      metalness: 0,
-      roughness: 0.06,
-      transmission: 0,
-      thickness: 0.3,
-      ior: 1.34,
-      transparent: true,
-      opacity: 0.96,
-      emissive: 0x2a0f04,
-      emissiveIntensity: 0.58,
-      envMapIntensity: 1.45,
-      clearcoat: 1,
-      clearcoatRoughness: 0.03,
-      side: THREE.DoubleSide,
-      flatShading: true,
-    }),
-  );
-  const liquidGeometry = trackGeometry(
-    new THREE.CylinderGeometry(
-      METER_LAYOUT.vessel.liquidRadius,
-      METER_LAYOUT.vessel.liquidRadius * 0.93,
-      METER_LAYOUT.vessel.liquidDepth,
-      12,
-      1,
-      false,
+  // The liquid is the bowl's own inner shell, revolved from the same profile
+  // as the glass and held just inside it. The fill shader cuts it flat at the
+  // current level, so any amount of liquid keeps the crystal silhouette: a
+  // straight cylinder used to punch through the flare near the foot.
+  const liquidProfilePoints = [[0, BOWL_LIQUID_BASE]];
+  const LIQUID_PROFILE_STEPS = 18;
+  for (let step = 1; step <= LIQUID_PROFILE_STEPS; step += 1) {
+    const y = BOWL_LIQUID_BASE + (BOWL_LIQUID_TOP - BOWL_LIQUID_BASE) * (step / LIQUID_PROFILE_STEPS);
+    liquidProfilePoints.push([bowlInnerRadiusAt(y) * BOWL_LIQUID_INSET, y]);
+  }
+
+  const liquidMaterial = trackMaterial(createFillMaterial(THREE, '#a65e3b'));
+  liquidMaterial.uniforms.uLevel.value = BOWL_LIQUID_BASE;
+  liquidMaterial.uniforms.uOpacity.value = 0;
+  liquidMaterial.uniforms.uDeepen.value = 1;
+  const liquid = new THREE.Mesh(
+    trackGeometry(
+      new THREE.LatheGeometry(
+        liquidProfilePoints.map(([x, y]) => new THREE.Vector2(x, y)),
+        12,
+      ),
     ),
+    liquidMaterial,
   );
-  liquidGeometry.translate(0, METER_LAYOUT.vessel.liquidDepth / 2, 0);
-  const liquid = new THREE.Mesh(liquidGeometry, liquidMaterial);
-  liquid.position.y = METER_LAYOUT.vessel.liquidFloor;
-  liquid.scale.y = 0.001;
   liquid.renderOrder = 1;
+  liquid.visible = false;
   bowlGroup.add(liquid);
 
+  // The cut top is capped by a surface disc whose radius follows the same inner
+  // wall, so the liquid always meets the glass instead of floating inside it.
   const liquidSurfaceMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
       color: 0xc07048,
@@ -1137,11 +1162,11 @@ export async function createLuckyMeterScene({
     }),
   );
   const liquidSurface = new THREE.Mesh(
-    trackGeometry(new THREE.CircleGeometry(METER_LAYOUT.vessel.liquidRadius, 12)),
+    trackGeometry(new THREE.CircleGeometry(1, 12)),
     liquidSurfaceMaterial,
   );
   liquidSurface.rotation.x = -Math.PI / 2;
-  liquidSurface.position.y = METER_LAYOUT.vessel.liquidFloor + 0.004;
+  liquidSurface.position.y = BOWL_LIQUID_BASE + 0.004;
   liquidSurface.renderOrder = 3;
   bowlGroup.add(liquidSurface);
 
@@ -1155,16 +1180,42 @@ export async function createLuckyMeterScene({
     }),
   );
   const meniscus = new THREE.Mesh(
-    trackGeometry(new THREE.TorusGeometry(0.535, 0.009, 6, 36)),
+    trackGeometry(new THREE.TorusGeometry(1, 0.018, 6, 24)),
     meniscusMaterial,
   );
   meniscus.rotation.x = Math.PI / 2;
-  meniscus.position.y = METER_LAYOUT.vessel.liquidFloor + 0.006;
+  meniscus.position.y = BOWL_LIQUID_BASE + 0.006;
   meniscus.renderOrder = 4;
   bowlGroup.add(meniscus);
 
+  // A soft sheen on the surface: the liquid reads as glossy rather than as a
+  // painted disc, and its colour glows the way the reference bowl does.
+  const liquidSheenTexture = radialTexture(THREE, [
+    [0, 'rgba(255, 255, 255, 0.9)'],
+    [0.42, 'rgba(255, 255, 255, 0.24)'],
+    [1, 'rgba(255, 255, 255, 0)'],
+  ]);
+  const liquidSheenMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: liquidSheenTexture,
+      color: 0xc07048,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    }),
+  );
+  const liquidSheen = new THREE.Mesh(
+    trackGeometry(new THREE.PlaneGeometry(2, 2)),
+    liquidSheenMaterial,
+  );
+  liquidSheen.rotation.x = -Math.PI / 2;
+  liquidSheen.renderOrder = 5;
+  bowlGroup.add(liquidSheen);
+
   const liquidLight = new THREE.PointLight(0xa65e3b, 0.2, 2.4, 2);
-  liquidLight.position.set(0, METER_LAYOUT.vessel.liquidFloor + 0.12, 0.16);
+  liquidLight.position.set(0, BOWL_LIQUID_BASE + 0.12, 0.16);
   bowlGroup.add(liquidLight);
 
   const bowlRimLight = constrained ? null : new THREE.PointLight(0xbfe8ff, 0.6, 2.2, 2);
@@ -1754,23 +1805,27 @@ export async function createLuckyMeterScene({
     // Only the selected cup empties; the bowl is the colour's destination, not
     // a second drain.
     const vesselFill = clamp01(state.vesselFill);
-    const liquidHeight = vesselFill * METER_LAYOUT.vessel.liquidDepth;
-    liquid.scale.y = Math.max(0.001, vesselFill);
+    const liquidLevel = BOWL_LIQUID_BASE + vesselFill * (BOWL_LIQUID_TOP - BOWL_LIQUID_BASE);
+    const surfaceRadius = bowlInnerRadiusAt(liquidLevel) * BOWL_LIQUID_INSET;
     liquid.visible = vesselFill > 0.002;
-    liquidMaterial.color.copy(state.colour).offsetHSL(0, 0.04, 0.13);
-    liquidMaterial.emissive.copy(state.colour).multiplyScalar(0.22);
-    liquidMaterial.emissiveIntensity = 0.35 + vesselFill * 0.23;
-    liquidSurface.position.y = METER_LAYOUT.vessel.liquidFloor + liquidHeight + 0.004;
-    liquidSurface.scale.setScalar(0.78 + vesselFill * 0.22);
+    liquidMaterial.uniforms.uLevel.value = liquidLevel;
+    liquidMaterial.uniforms.uOpacity.value = liquid.visible ? 1 : 0;
+    liquidMaterial.uniforms.uColor.value.copy(state.colour).offsetHSL(0, 0.12, 0.04);
+    liquidSurface.position.y = liquidLevel + 0.004;
+    liquidSurface.scale.setScalar(surfaceRadius);
     liquidSurfaceMaterial.color.copy(state.colour).offsetHSL(0, -0.02, 0.24);
     liquidSurfaceMaterial.opacity = vesselFill > 0.02 ? 0.52 : 0;
-    meniscus.position.y = METER_LAYOUT.vessel.liquidFloor + liquidHeight + 0.008;
-    meniscus.scale.setScalar(0.78 + vesselFill * 0.22);
+    meniscus.position.y = liquidLevel + 0.008;
+    meniscus.scale.setScalar(surfaceRadius);
     meniscusMaterial.color.copy(state.colour).offsetHSL(0, -0.03, 0.24);
-    meniscusMaterial.opacity = vesselFill > 0.02 ? 0.62 : 0;
+    meniscusMaterial.opacity = vesselFill > 0.02 ? 0.78 : 0;
+    liquidSheen.position.y = liquidLevel + 0.01;
+    liquidSheen.scale.setScalar(surfaceRadius * 1.02);
+    liquidSheenMaterial.color.copy(state.colour).offsetHSL(0, 0.05, 0.3);
+    liquidSheenMaterial.opacity = vesselFill > 0.02 ? 0.34 : 0;
     liquidLight.color.copy(state.colour);
     liquidLight.intensity = 0.12 + vesselFill * 1.0;
-    liquidLight.position.y = METER_LAYOUT.vessel.liquidFloor + liquidHeight * 0.65;
+    liquidLight.position.y = BOWL_LIQUID_BASE + (liquidLevel - BOWL_LIQUID_BASE) * 0.65;
 
     // The stream exists only while colour is arriving; the vessel never drains.
     const pour = clamp01(state.pour);
@@ -1790,8 +1845,7 @@ export async function createLuckyMeterScene({
       droplet.position.copy(head);
       droplet.scale.set(1, 1.5 + Math.sin(secs * 12) * 0.12, 1);
       dropletMaterial.color.copy(state.colour).offsetHSL(0, -0.05, 0.18);
-      const impactY =
-        METER_LAYOUT.vessel.y + METER_LAYOUT.vessel.liquidFloor + liquidHeight + 0.02;
+      const impactY = METER_LAYOUT.vessel.y + liquidLevel + 0.02;
       splash.position.y = impactY;
       const pulse = (secs * 1.9) % 1;
       splash.scale.setScalar(0.5 + pulse * 1.6);
@@ -2082,6 +2136,7 @@ export async function createLuckyMeterScene({
       tokenHaloTexture?.dispose();
       for (const texture of engravingTextures) texture?.dispose?.();
       bowlShadowTexture?.dispose();
+      liquidSheenTexture?.dispose();
       surface.dispose();
       materials.dispose();
       lights.dispose();

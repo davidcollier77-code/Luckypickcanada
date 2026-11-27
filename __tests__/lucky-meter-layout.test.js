@@ -63,6 +63,19 @@ describe('Lucky Meter physical layout', () => {
     expect(METER_LAYOUT.arm.spout[1]).toBeLessThan(METER_LAYOUT.arm.socket[1]);
   });
 
+  it('keeps the bowl’s liquid band inside the crystal shell', () => {
+    const vessel = METER_LAYOUT.vessel;
+    // The liquid is the bowl's inner shell, not a cylinder through the flare:
+    // it starts above the glass floor, stays inside the wall, and stops short
+    // of the rim so cut crystal always shows above the surface.
+    expect(vessel.liquidFloor).toBeGreaterThan(0);
+    expect(vessel.liquidInset).toBeGreaterThan(0.9);
+    expect(vessel.liquidInset).toBeLessThan(1);
+    expect(vessel.liquidTop).toBeLessThan(vessel.height);
+    expect(vessel.height - vessel.liquidTop).toBeGreaterThan(0.05);
+    expect(vessel.liquidTop - vessel.liquidFloor).toBeGreaterThan(vessel.height * 0.6);
+  });
+
   it('drains only the selected chamber, and leaves the other eleven full', () => {
     for (const drain of [0, 0.25, 0.5, 1]) {
       for (let index = 0; index < CHAMBER_COUNT; index += 1) {

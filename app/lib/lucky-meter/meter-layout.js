@@ -69,9 +69,13 @@ export const METER_LAYOUT = Object.freeze({
     z: 0.05,
     radius: 0.6,
     height: 0.44,
-    liquidRadius: 0.52,
-    liquidDepth: 0.31,
-    liquidFloor: 0.06,
+    // The liquid body follows the bowl's inner wall rather than a straight
+    // cylinder. It starts just above the glass floor and stops short of the
+    // rim, and `liquidInset` keeps it inside the shell at every level, so the
+    // finished bowl always reads as cut crystal holding liquid.
+    liquidFloor: 0.018,
+    liquidTop: 0.355,
+    liquidInset: 0.965,
   }),
   plaque: Object.freeze({
     x: 0.72,
