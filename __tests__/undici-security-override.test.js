@@ -26,7 +26,7 @@ function compareVersions(left, right) {
 }
 
 function uniqueSorted(values) {
-  return [...new Set(values)].sort();
+  return [...new Set(values)].sort(compareVersions);
 }
 
 const packageVersions = [...lockfile.matchAll(/^  undici@(\d+\.\d+\.\d+):/gm)]
@@ -51,7 +51,7 @@ describe('Undici security overrides', () => {
     expect(resolvedVersions.length).toBeGreaterThan(0);
     expect(uniqueSorted(resolvedVersions)).toEqual(uniqueSorted(PATCHED_VERSIONS));
 
-    expect(lockfile).not.toMatch(/^[ \t]+undici:[ \t]+8\.12\.[0-3][ \t]*$/m);
+    expect(lockfile).not.toMatch(/^[ \t]+undici:[ \t]+8\.12\.\d+[ \t]*$/m);
   });
 
   it('keeps every resolved version at or above its major patched floor', () => {

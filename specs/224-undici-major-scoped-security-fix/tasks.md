@@ -34,9 +34,9 @@
 ## Phase 4 — Records and Delivery
 
 - [X] T019 Update `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` with the verified dependency change.
-- [ ] T020 Commit the 12-path change set with the required repository commit footer.
-- [ ] T021 Push `freebuff/b7618803c1c98fa008653cb9-undici` and open one regular, non-draft PR against `main`.
-- [ ] T022 Inspect the PR receipt and report the final SHA, the verification results and any pending checks. Do not merge or deploy.
+- [X] T020 Commit the 12-path change set with the required repository commit footer.
+- [X] T021 Push `freebuff/b7618803c1c98fa008653cb9-undici` and open one regular, non-draft PR against `main`.
+- [X] T022 Inspect the PR receipt and report the final SHA, the verification results and any pending checks. Do not merge or deploy.
 
 ## Verification Results
 
@@ -45,6 +45,12 @@
 - Full `./freebuff-verify.sh`: 520 Python tests passed, 113 Vitest files / 1,270 tests passed, TypeScript and Next.js build passed, size 485,572,608 bytes (463.08 MiB) below 495 MiB.
 - OpenNext 1.20.18 build passed; Wrangler 4.166.0 build passed; updater-scheduler dry-run passed; updater Node tests 17/17 passed.
 - Playwright/Visual QA: not run locally; PR-triggered checks pending.
+
+## Owner-directed review repair (post-submission)
+
+- **Graphite finding 1 — valid, applied.** The direct regression assertion matched only `8.12.0`–`8.12.3`, so a return of `8.12.4`/`8.12.5` would not be caught by that line. Broadened to `8\.12\.\d+`, which still permits every patched floor and now rejects any 8.12.x. A synthetic-string check confirmed all of `8.12.2`, `8.12.3`, `8.12.4`, `8.12.5` and `8.12.99` match while `6.29.1`, `7.30.2` and `8.13.1` do not.
+- **Graphite finding 2 — valid, applied (smaller fix than proposed).** `uniqueSorted` used the default lexicographic sort. The reported spurious-failure mode cannot occur because both compared arrays use the same comparator, but the helper's ordering was still wrong for versions. It now reuses the existing `compareVersions`; no duplicate comparator was added. Verified order: `2.1.0`, `8.9.0`, `8.13.1`, `10.0.0`.
+- **Re-verification:** focused guards `3 files / 50 tests` passed after the repair. The manifest, lockfile, override values and all 12 declared paths are unchanged by the repair.
 
 ## Dependencies & Execution Order
 

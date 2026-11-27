@@ -8,7 +8,7 @@
 - **Resolved graph:** `@dotenvx/dotenvx` 6.29.1; Wrangler, Miniflare and `@cloudflare/workers-utils` 7.30.2; jsdom 8.13.1. No 8.12.2 remains.
 - **Verification:** focused guards 50/50; full `./freebuff-verify.sh` passed with 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build; production build 485,572,608 bytes (463.08 MiB), below 495 MiB; OpenNext build on `@opennextjs/cloudflare` 1.20.18 passed; Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17.
 - **OpenNext boundary:** `main` still has `@opennextjs/cloudflare` 1.20.18. PR #2047's 1.20.19 update is separate and unmerged. The major-scoped Undici policy applies to both graphs; this branch does not claim 1.20.19 is installed.
-- **Delivery:** one regular, non-draft PR against `main`, open and unmerged. PR creation is the remaining step; no merge or deployment.
+- **Delivery:** [PR #2048](https://github.com/davidcollier77-code/Luckypickcanada/pull/2048) is regular, non-draft, open and unmerged against `main`; no merge or deployment. An owner-directed post-submission repair applied both valid Graphite findings to `__tests__/undici-security-override.test.js`: the direct regression guard now rejects every `8.12.x` (not only `8.12.0`–`8.12.3`), and `uniqueSorted` now uses the existing `compareVersions` instead of a lexicographic sort. Focused guards pass `3 files / 50 tests`; the manifest, lockfile and all 12 declared paths are unchanged, and the consolidated report must refresh for the new head.
 
 ---
 
