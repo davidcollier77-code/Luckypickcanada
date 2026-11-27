@@ -77,10 +77,17 @@ function lockfileOverrides(source = lockfile) {
   return entries;
 }
 
-/** Every resolved snapshot version of one exact package name in the lockfile. */
+/**
+ * Every resolved snapshot version of one exact package name in the lockfile.
+ *
+ * pnpm writes scoped snapshot keys with surrounding single quotes and appends a
+ * peer suffix, for example `'@vitest/mocker@5.1.1(vite@8.3.8(...))':`. Both forms
+ * must match, otherwise a scoped package silently yields an empty list and any
+ * assertion over it passes without checking anything.
+ */
 function lockfilePackageVersions(name, source = lockfile) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`^ {2}${escaped}@(\\d+\\.\\d+\\.\\d+):$`, 'gm');
+  const pattern = new RegExp(`^ {2}'?${escaped}@(\\d+\\.\\d+\\.\\d+)(?:\\(.*\\))?'?:$`, 'gm');
   return [...source.matchAll(pattern)].map((match) => match[1]);
 }
 
@@ -263,9 +270,16 @@ describe('Dependency management policy', () => {
   });
 
   it('resolves glob, minimatch and brace-expansion to patched releases without overrides', () => {
-    // glob 14 is the only glob line in the graph; it consumes minimatch 11.
-    expect([...new Set(lockfilePackageVersions('glob'))]).toEqual(['14.0.6']);
-    expect(lockfile).not.toMatch(/^ {2}glob@(?:10|13)\.\d+\.\d+:/m);
+    // glob 14 is the only glob line in the graph, and 14.0.6 is the first
+    // release whose minimatch edge is ^11. A later 14.x patch or minor is a
+    // legitimate upgrade, so the guard uses the floor rather than exact equality.
+    const globVersions = [...new Set(lockfilePackageVersions('glob'))];
+    expect(globVersions.length).toBeGreaterThan(0);
+    for (const version of globVersions) {
+      expect(version.split('.')[0], `unexpected glob major in ${version}`).toBe('14');
+      expect(compareVersions(version, '14.0.6'), `glob ${version} predates minimatch 11`).toBeGreaterThanOrEqual(0);
+    }
+    expect(lockfile).not.toMatch(/^ {2}'?glob@(?:10|13)\.\d+\.\d+/m);
 
     // GHSA-g3hv-75wg-m249 (CVE-2026-118764) affects minimatch >=7.0.0 <11.0.1.
     // The remaining 3.x copy is outside the affected range.
@@ -295,7 +309,10 @@ describe('Dependency management policy', () => {
   it('keeps the Vitest internals on the installed Vitest release', () => {
     // A downgraded @vitest/mocker mixed Vitest 5.1.x with 5.0.x internals.
     expect(pkg.pnpm.overrides['@vitest/mocker']).toBeUndefined();
-    expect(lockfilePackageVersions('@vitest/mocker')).not.toContain('5.0.5');
+    const mockerVersions = lockfilePackageVersions('@vitest/mocker');
+    // An unmatchable lockfile format must fail loudly instead of passing vacuously.
+    expect(mockerVersions.length).toBeGreaterThan(0);
+    expect(mockerVersions).not.toContain('5.0.5');
   });
 
   it('configures weekly npm (pnpm) updates and keeps weekly GitHub Actions updates', () => {

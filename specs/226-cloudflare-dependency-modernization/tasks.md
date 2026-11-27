@@ -54,6 +54,12 @@
 - T006–T009 precede T010–T018.
 - T019–T020 follow executed verification; T021–T022 follow the final diff review.
 
+## Owner-directed review repair (post-submission)
+
+- Pullfrog's approval gate failed on `b20a5e1c` for one substantive finding: `lockfilePackageVersions()` matched only unquoted, peer-suffix-free snapshot keys, so the `@vitest/mocker` guard read an empty list and could not fail on the regression it names.
+- Repair: the helper now accepts pnpm's quoted scoped keys and peer suffixes, and the guard asserts a non-empty result. The "one glob line" assertion uses the 14.0.6 floor instead of exact equality, so a legitimate 14.x patch/minor remains a valid graph while glob 10 and 13 still fail.
+- Re-confirmed on the repair commit: frozen install, dependency-management guards 12/12, `pnpm audit` clean, production build below the 495 MiB cap. No application source, configuration, workflow, binding or secret changed.
+
 ## Verification Boundary
 
 - `pnpm audit` is a point-in-time advisory snapshot; the advisory floors are also encoded in the unit guard.
