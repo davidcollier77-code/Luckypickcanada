@@ -185,7 +185,7 @@ async function runTests() {
     const htmlForToken = (token) =>
       '<!doctype html><html><body><main><h1>NumPy array reference</h1>' +
       '<p>Return <a href="/cdn-cgi/l/email-protection#' + token + '">self<span>&#64;</span>value</a>.</p>' +
-      '<p>See <a href="/reference/matmul">the matrix multiplication reference</a>.</p>' +
+      '<p>See <a href="/reference/matmul#top">the matrix multiplication reference</a>.</p>' +
       '<p>See <a href="https://external.example/cdn-cgi/l/email-protection#cafebabefeed">the external reference</a>.</p>' +
       '<p>This page contains enough readable documentation words to pass the content integrity check.</p>' +
       '</main></body></html>';
@@ -198,7 +198,7 @@ async function runTests() {
     assert.doesNotMatch(first, /2d5e4841|dcafb9b0|https:\/\/numpy\.org\/cdn-cgi\/l\/email-protection/, 'the volatile same-origin link target must not enter the snapshot');
     assert.match(
       first,
-      /\[the matrix multiplication reference\]\(https:\/\/numpy\.org\/reference\/matmul\)/,
+      /\[the matrix multiplication reference\]\(https:\/\/numpy\.org\/reference\/matmul#top\)/,
       'ordinary relative documentation links must remain clickable'
     );
     assert.match(
