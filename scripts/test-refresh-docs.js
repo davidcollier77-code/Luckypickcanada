@@ -567,6 +567,10 @@ async function runTests() {
       reason: 'download is empty',
       preserved: true
     });
+    report.staticReferences.push({
+      library: '/llmstxt/gsap_llms_txt',
+      reason: 'Static GSAP AI reference; preserve the checked-in snapshot without fetching its configured upstream URL.'
+    });
     report.removedLibraries.push({
       library: '/removed/doc',
       section: 'sources',
@@ -588,6 +592,9 @@ async function runTests() {
     assert.match(markdown, /https:\/\/www\.debian\.org\/doc\/manuals\/debian-reference\/debian-reference\.en\.txt/);
     assert.match(markdown, /HTTP 404: Not Found/);
     assert.match(markdown, /download is empty/);
+    assert.ok(markdown.includes('Static reference documents (not refreshed)'));
+    assert.ok(markdown.includes('/llmstxt/gsap_llms_txt'));
+    assert.ok(markdown.includes('Static GSAP AI reference'));
     assert.match(markdown, /Preserved/);
     assert.match(markdown, /\/removed\/doc/);
     assert.match(markdown, /repaired broken documentation symlink/);

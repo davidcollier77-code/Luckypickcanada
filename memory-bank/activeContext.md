@@ -1,4 +1,22 @@
-# Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
+# Active Context — Restore GSAP documentation and retain static updater policy (Spec 227, 2026-11-27)
+
+## Current Task — Restore the official GSAP Timeline reference
+
+- **Scope:** Keep the one /llmstxt/gsap_llms_txt route excluded from automatic refresh; restore its existing snapshot at .docs/polishing/_llmstxt_gsap_llms_txt.md from the exact manifest URL https://gsap.com/docs/v3/GSAP/Timeline.
+- **Recovered content:** Retrieved the official GSAP Timeline page through Browserless on 2026-11-27 and converted the article into Markdown. The snapshot now contains Timeline sequencing, position parameters, special properties/callbacks, defaults, nesting, mechanics, properties and methods.
+- **Updater policy:** The updater continues to skip the GSAP ID before upstream SHA/download requests and reports it as static. The route, inventory and source metadata remain unchanged; normal reconciliation and snapshot-presence checks remain active.
+- **Historical incident:** The previous snapshot contained only a Cloudflare verification message. The exact historical reason it was accepted is not proven from current evidence. The current updater includes challenge and raw-HTML rejection safeguards.
+- **Verification:** Browserless returned the official documentation page, not a challenge response. The restored snapshot is Markdown and includes the expected API sections. Node.js 26-dependent local tests/builds are not run under ChatGPT's current runtime; the updated PR head must receive fresh GitHub verification.
+- **Review triage:** Graphite review 6093276048 and the related earlier Pullfrog findings produced six confirmed documentation/spec corrections, now applied, including both lost position-parameter tokens. The report-renderer unit-test concern was not a defect: the isolated end-to-end test exercises the real updater path and verifies the static-reference report and zero upstream request. The separate URL-guard concern was also a false positive because the URL is asserted before use and held in an unchanged `const`.
+- **Boundaries:** One explicit owner-authorized .docs snapshot restoration plus the existing Spec 227 paths. No manifest/source URL, AGENTS.md, schedule/workflow, dependency, application code or production resource changes. The PR scope expansion requires the exact owner /approve-scope <digest> comment emitted by the checker; protected-file gates remain separate.
+
+## Previous Task State — Static GSAP reference exclusion
+
+- The updater change, static report section and regression coverage remain in place. See the prior context below for the implementation details.
+
+---
+
+# Previous Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
 
 ## Current Task — Current supported Cloudflare pair and a minimal override set
 
