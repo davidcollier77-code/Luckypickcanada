@@ -64,6 +64,11 @@
 - The PR branch was merged forward in `34805ce6`, keeping `.specify/feature.json` on Spec 224, the 1.20.19 adapter pin and the three major-scoped undici overrides.
 - Verified on the merged graph: `pnpm install --frozen-lockfile` exit 0; `pnpm why undici` resolves only 6.29.1, 7.30.2 and 8.13.1; focused guards `3 files / 51 tests` pass; `pnpm exec opennextjs-cloudflare build` succeeds on 1.20.19 and writes `.open-next/worker.js`.
 
+### Third review round (on `e897c928`)
+
+- **Pullfrog `memory-bank/techContext.md` finding — valid, applied.** The Spec 220 bullet still claimed the graph resolved `undici@8.12.2` and that the global override was unchanged. It now records that as the Spec 220-era state superseded by Spec 224, and no longer contradicts the current graph or the merged OpenNext 1.20.19 update.
+- **Graphite module-scope finding — declined.** The `packageVersions` and `resolvedVersions` arrays are immutable module constants with no mutation anywhere in the file, and the strict lockfile/manifest equality is already documented as intentional. Freezing them or moving the reads inside `it` would add noise without changing behaviour.
+
 ## Dependencies & Execution Order
 
 - T001–T004 are complete and block the implementation.
