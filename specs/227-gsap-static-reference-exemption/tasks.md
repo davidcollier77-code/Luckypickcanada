@@ -20,13 +20,24 @@
 
 - [X] T008 Point `.specify/feature.json` at Spec 227.
 - [X] T009 Update activeContext, techContext and progress with the permanent updater policy and current snapshot-state finding; leave stable projectBrief unchanged.
-- [X] T010 Review the complete intended diff and confirm no manifest, snapshot, AGENTS.md, workflow, dependency or application changes.
+- [X] T010 Review the complete intended diff and confirm no manifest, AGENTS.md, workflow, dependency or application changes; the snapshot restoration is now an explicitly authorized scope extension.
 
 ## Phase 4 — Verification and delivery
 
 - [ ] T011 Run `node scripts/test-refresh-docs.js` in Node.js 26.x. ChatGPT local runtime is Node.js 22.x; do not execute the Node 26-dependent test suite under Node 22. GitHub verification remains pending.
 - [ ] T012 Confirm current-head Application Verification/build size and both Visual QA shards from GitHub after PR creation; no local result is claimed.
-- [ ] T013 Open one regular, non-draft PR against `main`, keep it open/unmerged and hand off the current-head report plus the protected-file environment approval requirement.
+- [X] T013 Open one regular, non-draft PR against `main`, keep it open/unmerged and hand off the current-head report plus the protected-file environment approval requirement.
+
+## Phase 5 — Restore the official GSAP reference (owner-authorized follow-up)
+
+- [X] T014 Retrieve the exact official GSAP Timeline page already configured in `.docs/manifest.json` through Browserless; confirm the response is the actual documentation page, not a challenge response.
+- [X] T015 Restore `.docs/polishing/_llmstxt_gsap_llms_txt.md` as Markdown with the official Timeline overview, position parameter guidance, special properties, defaults, nesting, mechanics, properties and methods.
+- [X] T016 Update the Spec Kit records and Memory Bank to document the recovered snapshot, exact upstream source, static policy and remaining verification boundaries.
+- [ ] T017 Extend the existing PR scope declaration for the one restored `.docs` file, obtain the owner `/approve-scope <digest>` command emitted by the scope checker, and confirm all required current-head checks/report for the updated PR.
+
+## Recovery verification boundary
+
+The restored snapshot was retrieved from the exact URL already recorded in the live manifest using Browserless. It is a 27 KB Markdown document with the expected Timeline sections and method/property reference tables; it is not a challenge page or raw HTML. Node.js project tests are not run locally under the unsupported ChatGPT runtime. The new PR head must receive current-head CI verification and the explicit scope digest approval before merge.
 
 ## Verification boundary
 

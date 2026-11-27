@@ -1,14 +1,17 @@
-# Active Context — Static GSAP reference exclusion (Spec 227, 2026-11-27)
+# Active Context — Restore GSAP documentation and retain static updater policy (Spec 227, 2026-11-27)
 
-## Current Task — Keep the GSAP AI reference available without refreshing it
+## Current Task — Restore the official GSAP Timeline reference
 
-- **Scope:** One static reference ID, `/llmstxt/gsap_llms_txt`, excluded from the documentation refresh queue. Keep its `polishing` route, inventory entry, source metadata and snapshot unchanged.
-- **Implementation:** The updater recognizes the ID before source SHA/download processing, records it separately in the refresh report, and continues normal reconciliation and snapshot integrity checks against the routed ID.
-- **Regression coverage:** The updater report unit test checks the static section. The isolated end-to-end test asserts that no GSAP source request occurs, the copied snapshot remains byte-identical, and the manifest routing/inventory/source record remain intact.
-- **Current snapshot condition:** The checked-in GSAP file currently contains only a Cloudflare verification challenge response, not GSAP documentation. It was deliberately left untouched; recovering its technical content is separate work.
-- **Verification:** The Library startup procedure ran. ChatGPT reports Node.js 22.x while the repository requires Node.js 26.x; Node-dependent tests, dependency installs and builds were not run locally. PR-triggered checks are required after submission.
-- **Boundaries:** No `.docs` file, manifest, AGENTS.md, workflow/schedule, package/dependency, application code or production resource is changed. The updater source is protected and the PR declares user authorization; the separate GitHub protected-file Environment gate remains required.
-- **Memory Bank health:** All four core files were read. This file, techContext and progress are updated for the current task; projectBrief remains accurate and unchanged.
+- **Scope:** Keep the one /llmstxt/gsap_llms_txt route excluded from automatic refresh; restore its existing snapshot at .docs/polishing/_llmstxt_gsap_llms_txt.md from the exact manifest URL https://gsap.com/docs/v3/GSAP/Timeline.
+- **Recovered content:** Retrieved the official GSAP Timeline page through Browserless on 2026-11-27 and converted the article into Markdown. The snapshot now contains Timeline sequencing, position parameters, special properties/callbacks, defaults, nesting, mechanics, properties and methods.
+- **Updater policy:** The updater continues to skip the GSAP ID before upstream SHA/download requests and reports it as static. The route, inventory and source metadata remain unchanged; normal reconciliation and snapshot-presence checks remain active.
+- **Historical incident:** The previous snapshot contained only a Cloudflare verification message. The exact historical reason it was accepted is not proven from current evidence. The current updater includes challenge and raw-HTML rejection safeguards.
+- **Verification:** Browserless returned the official documentation page, not a challenge response. The restored snapshot is Markdown and includes the expected API sections. Node.js 26-dependent local tests/builds are not run under ChatGPT's current runtime; the updated PR head must receive fresh GitHub verification.
+- **Boundaries:** One explicit owner-authorized .docs snapshot restoration plus the existing Spec 227 paths. No manifest/source URL, AGENTS.md, schedule/workflow, dependency, application code or production resource changes. The PR scope expansion requires the exact owner /approve-scope <digest> comment emitted by the checker; protected-file gates remain separate.
+
+## Previous Task State — Static GSAP reference exclusion
+
+- The updater change, static report section and regression coverage remain in place. See the prior context below for the implementation details.
 
 ---
 

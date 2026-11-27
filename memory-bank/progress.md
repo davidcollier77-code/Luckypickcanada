@@ -1,3 +1,11 @@
+## 2026-11-27 — Restore official GSAP Timeline documentation (Spec 227 follow-up)
+
+- Recovered .docs/polishing/_llmstxt_gsap_llms_txt.md, which previously contained only a Cloudflare verification message, from the exact official URL already configured in .docs/manifest.json: https://gsap.com/docs/v3/GSAP/Timeline.
+- Retrieved the official page through Browserless and restored its article as Markdown, including Timeline sequencing, position parameters, special properties/callbacks, defaults, nesting, mechanics, properties and method reference tables.
+- Retained the static-reference updater exclusion. The manifest route, inventory and source URL remain unchanged; future automatic refreshes skip the GSAP ID before upstream requests.
+- The historical reason the old updater accepted the challenge response is not established by current evidence. Current updater code includes explicit challenge and raw-HTML rejection safeguards.
+- The existing PR #2059 was updated as an owner-authorized scope extension. The one new .docs path must be added to the exact QA scope declaration and approved with the current checker-generated /approve-scope <digest> command. Fresh current-head CI/report verification remains required; no merge or deployment.
+
 ## 2026-11-27 — Spec 225 build-size evidence and governance handoff
 
 - Clarified the shared `AGENTS.md` Production build limit section: smaller, logically coherent PRs are an ordinary optional planning approach when useful, not a panic response or a reason to compromise functionality, security or quality. The 495 MiB limit and existing safeguards are unchanged.

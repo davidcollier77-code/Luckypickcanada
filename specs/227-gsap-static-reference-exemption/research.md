@@ -20,7 +20,9 @@ Date: 2026-11-27. Findings were checked against the live `main` branch.
 
 ## Snapshot state
 
-The live checked-in GSAP snapshot currently contains only the two-line Cloudflare verification response, `Please wait while your request is being verified...`, rather than technical GSAP documentation. This task will not edit or replace the snapshot; recovery of usable GSAP content is separate.
+The prior checked-in snapshot contained only the Cloudflare verification response, `Please wait while your request is being verified...`, rather than technical GSAP documentation. On 2026-11-27, the exact configured upstream URL was retrieved through Browserless. The response was the official GSAP Timeline documentation page (HTML, not a challenge); the article content was converted into a readable Markdown snapshot. The recovered file records the canonical source URL and retrieval date. The updater exclusion remains in place, so future scheduled refreshes will not overwrite the recovered content.
+
+The historical reason the previous updater run accepted the challenge response is not proven by the current evidence. The current updater has explicit challenge/HTML rejection logic; this recovery does not alter that validation logic or the manifest source URL.
 
 ## QA evidence and constraints
 
@@ -32,4 +34,4 @@ The live checked-in GSAP snapshot currently contains only the two-line Cloudflar
 
 ## Decision
 
-Use one hard-coded, auditable static reference ID in the existing updater, add explicit report visibility and regression coverage, and leave all `.docs` files, manifest routing and workflows unchanged.
+Keep one hard-coded, auditable static reference ID in the existing updater, retain report visibility and regression coverage, and restore only the existing `.docs` snapshot from the exact official source URL. Leave manifest routing, source URL and workflows unchanged.

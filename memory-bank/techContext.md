@@ -7,7 +7,7 @@
 
 ## Documentation updater
 - `scripts/refresh-docs.js` keeps `/llmstxt/gsap_llms_txt` as a static reference: it remains routed under `.docs/polishing`, indexed in the manifest and subject to snapshot-presence checks, but is excluded before upstream SHA/source requests. The updater reports the exclusion separately from unchanged documents. Other manifest routes retain normal processing.
-- The current `.docs/polishing/_llmstxt_gsap_llms_txt.md` snapshot contains only a Cloudflare verification challenge response rather than GSAP technical content. Do not mistake the retained snapshot for a usable GSAP reference; content recovery is separate from the updater exclusion.
+- The `.docs/polishing/_llmstxt_gsap_llms_txt.md` snapshot was restored on 2026-11-27 from the exact official GSAP Timeline page already configured in `.docs/manifest.json` (`https://gsap.com/docs/v3/GSAP/Timeline`). The Markdown snapshot includes the Timeline overview, position parameter, special properties/callbacks, defaults, nesting, mechanics, properties and methods. The updater excludes `/llmstxt/gsap_llms_txt` before source SHA/download requests and reports it as static. The historical cause of the earlier Cloudflare challenge response being saved is not proven; current updater validation explicitly rejects challenge and raw-HTML responses.
 
 ## Application Stack
 - **Framework:** Next.js App Router 16.4.6, React 19.3.1 and TypeScript.
