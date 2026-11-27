@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-11-27T12:50:49-04:00",
+  "lastUpdated": "2026-11-27T19:18:28-04:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -497,7 +497,7 @@
     "/numpy/numpy"
   ],
   "githubShas": {
-    "/github/docs": "40bcd7e268bbc31873899d313fbab3066b5db91f",
+    "/github/docs": "6dd875c27b0a1262bb71679e979059c80ff8de72",
     "/vercel/next.js": "0755a3810e1bc63a5632f2b236e1b936d8d40477",
     "/reactjs/react.dev": "2e6dca162985d438d7a834b339d89177cf0a92b9",
     "/microsoft/typescript": "6aa91ad4015c3e6d0a8dc00ada77bbe842c1dc18",
