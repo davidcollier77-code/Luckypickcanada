@@ -1,3 +1,11 @@
+## 2026-11-27 — Documentation refresh stability and integrity (Spec 227)
+
+- Repaired two verified updater defects: rotating Cloudflare email-protection ciphertext for the same decoded address is now ignored for comparison only, and the plain-text `Please wait while your request is being verified...` response is rejected before a snapshot can be replaced.
+- Added unit and isolated end-to-end regressions for equivalent/different/malformed email-protection tokens, plain-text challenge rejection, source-reporting and preservation of a seeded good GSAP snapshot.
+- Kept the actual upstream content and link tokens intact; did not edit `.docs/`, the manifest, source URLs, group routing, refresh schedule, retry policy, workflow, dependencies or application code.
+- The GSAP snapshot already on main is known to contain a verification response. It remains untouched in this updater-code repair; the updater will reject further challenge responses and replace it only after receiving valid documentation.
+- Local updater tests remain to be run in the repository's Node.js 26 environment; the existing Node 26 Application Verification job is pending on the PR. No local test pass or new production build measurement is claimed.
+
 ## 2026-11-27 — Spec 225 build-size evidence and governance handoff
 
 - Clarified the shared `AGENTS.md` Production build limit section: smaller, logically coherent PRs are an ordinary optional planning approach when useful, not a panic response or a reason to compromise functionality, security or quality. The 495 MiB limit and existing safeguards are unchanged.

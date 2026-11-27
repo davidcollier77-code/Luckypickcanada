@@ -1,4 +1,19 @@
-# Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
+# Active Context — Documentation refresh stability and integrity (Spec 227, 2026-11-27)
+
+## Current Task — Stop recurring false-positive documentation updates and reject plain-text verification responses
+
+- **Scope:** `specs/227-docs-refresh-stability-integrity/`; exact paths are the updater, its two existing regression suites, Spec Kit feature pointer/artifacts and three task-relevant Memory Bank files. The real `.docs/` library and manifest are not changed.
+- **Confirmed causes:** NumPy's website source is fetched on each refresh; its Cloudflare email-protection ciphertext changes while decoding to the same `self@value` destination. Existing comparison handles line endings and Devsite metadata only. GSAP's current main snapshot is already the plain-text response `Please wait while your request is being verified...`, which previously passed the minimum text thresholds.
+- **Repair:** comparison-only normalization recognizes valid Cloudflare email-protection payloads and fingerprints the decoded address. The upstream token, downloaded Markdown and stored links remain unchanged. Different addresses remain real changes; malformed payloads remain opaque. The anchored plain-text verification signature is rejected before any write.
+- **Preservation:** existing HTTPS/same-origin redirect, timeout, strict UTF-8, 10 MB download and 495 MiB library limits, retry behavior, SHA shortcut, manifest, canonical-copy/symlink model, report format, source URLs, groups, schedule, timezone and Cloudflare scheduler are unchanged.
+- **Known library condition:** the existing GSAP snapshot on main is already a verification response. This repair does not rewrite `.docs/`; it makes the condition explicit and prevents another challenge response from replacing a good snapshot. A subsequent valid upstream response can refresh it; an invalid response is rejected and reported.
+- **Verification:** focused unit and isolated end-to-end regression cases are added. Node-dependent updater tests must run under Node.js 26; local execution is not claimed in the current ChatGPT runtime. The existing Node 26 Application Verification job runs `node scripts/test-refresh-docs.js`; PR checks and the current-head seven-category report remain pending until observed.
+- **Boundaries:** no manifest/source URL, document snapshot, workflow, schedule, dependency, application, deployment, visual asset, secret or production resource change. `scripts/refresh-docs.js` is a protected file explicitly authorized by the owner for this task; the separate protected-file Environment approval remains owner-controlled.
+- **Memory Bank health:** all four core files were reviewed. This active task is recorded here; `techContext.md` captures durable updater behavior; `progress.md` records this milestone; stable project identity in `projectBrief.md` remains unchanged.
+
+---
+
+# Previous Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
 
 ## Current Task — Current supported Cloudflare pair and a minimal override set
 
@@ -10,6 +25,7 @@
 - **Verification:** `pnpm audit` 0 advisories / 999 dependencies; focused guards 2 files / 15 tests; `./freebuff-verify.sh` exit 0 with 520 Python tests, 113 Vitest files / 1,272 tests, TypeScript, Next.js build and the size cap; OpenNext build on 1.20.19 + Wrangler 4.168.0 wrote `.open-next/worker.js` with a matching `BUILD_ID`; `wrangler build` 8,893.61 KiB with all bindings; updater-scheduler dry-run passed; updater Node tests 17/17. Combined `.next + public` **440,279,040 bytes (419.88 MiB)**, strictly below 495 MiB.
 - **Boundaries:** no application source, `open-next.config.ts`, `wrangler.jsonc`, compatibility date/flags, binding, workflow, secret, Cloudflare setting or production resource changed. Playwright/Visual QA was not run locally for this dependency-only diff; PR-triggered checks remain pending. No merge or deployment.
 - **Memory Bank health:** all four core files were read and checked. `activeContext.md`, `techContext.md` and `progress.md` are updated; `projectBrief.md` remains accurate and unchanged.
+
 
 ---
 

@@ -52,6 +52,8 @@ async function run() {
   const realManifest = JSON.parse(fs.readFileSync(realManifestPath, 'utf8'));
   const realSampleSnapshot = primaryPath(realDocs, realManifest, realSampleLib);
   const realSampleHash = hashFile(realSampleSnapshot);
+  const realGsapSnapshot = primaryPath(realDocs, realManifest, '/llmstxt/gsap_llms_txt');
+  const realGsapHash = hashFile(realGsapSnapshot);
 
   const manifestPath = path.join(docsDir, 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -64,6 +66,12 @@ async function run() {
   const retiredLib = '/example/retired-doc';
   const failingNewLib = '/example/failing-new-doc';
   const linkLib = '/google/eng-practices';
+  const gsapLib = '/llmstxt/gsap_llms_txt';
+  const gsapGoodSnapshot = '# GSAP Timeline Reference\n\nA timeline coordinates tweens and labels to create sequenced animation. Use a timeline to control playback, position and duration for an animation sequence.\n';
+  // The real main-branch GSAP snapshot is already a verification response. Seed
+  // this isolated copy with a previously-good document so the test proves that
+  // a new challenge response cannot destroy a known-good snapshot.
+  fs.writeFileSync(primaryPath(docsDir, manifest, gsapLib), gsapGoodSnapshot);
 
   // A deliberately removed document: no group routing, but a stale manifest
   // index entry, upstream SHA and snapshot remain.
@@ -129,6 +137,11 @@ async function run() {
   routes[manifest.sources[failingLib].url] = { status: 404, statusMessage: 'Not Found' };
   routes[manifest.sources[retiredLib].url] = { status: 200, body: '# Should never be fetched\n' };
   routes[manifest.sources[failingNewLib].url] = { status: 500, statusMessage: 'Internal Server Error' };
+  routes[manifest.sources[gsapLib].url] = {
+    status: 200,
+    headers: { 'content-type': 'text/plain; charset=utf-8' },
+    body: 'Please wait while your request is being verified...\n'
+  };
 
   const configPath = path.join(tmpRoot, 'mock-config.json');
   const requestsPath = path.join(tmpRoot, 'requests.log');
@@ -137,7 +150,7 @@ async function run() {
   fs.writeFileSync(requestsPath, '');
 
   const preservedBefore = {};
-  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib]) {
+  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib, gsapLib]) {
     const filePath = primaryPath(docsDir, manifest, library);
     preservedBefore[library] = fs.readFileSync(filePath);
   }
@@ -170,6 +183,7 @@ async function run() {
   // The real library is untouched.
   assert.strictEqual(hashFile(realManifestPath), realManifestHash, 'real manifest must not change');
   assert.strictEqual(hashFile(realSampleSnapshot), realSampleHash, 'real snapshot must not change');
+  assert.strictEqual(hashFile(realGsapSnapshot), realGsapHash, 'real GSAP snapshot must not change');
 
   // Deliberate removals are permanent: never downloaded, indexed or on disk.
   assert.ok(!requests.includes(manifest.sources[retiredLib].url), 'removed document source must not be fetched');
@@ -197,7 +211,7 @@ async function run() {
   assert.ok(!/^\s*(?:<!doctype\s+html|<html\b)/i.test(normalizedNext), 'no raw HTML may be saved for the normalized source');
 
   // Existing good documents are preserved when a download is invalid.
-  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib]) {
+  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib, gsapLib]) {
     const filePath = primaryPath(docsDir, manifest, library);
     assert.ok(
       fs.readFileSync(filePath).equals(preservedBefore[library]),
@@ -211,12 +225,14 @@ async function run() {
   );
 
   // The report explains each rejection and failure.
-  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib]) {
+  for (const library of [emptyLib, garbledLib, htmlErrorLib, failingLib, gsapLib]) {
     assert.ok(report.includes(manifest.sources[library].url), `report must include ${library} URL`);
   }
   assert.ok(report.includes('download is empty'), 'report must include the empty-download reason');
   assert.ok(report.includes('binary data'), 'report must include the binary-download reason');
   assert.ok(report.includes('HTTP error page'), 'report must include the error-page reason');
+  assert.ok(report.includes(manifest.sources[gsapLib].url), 'report must include the GSAP challenge source URL');
+  assert.ok(report.includes('verification challenge response'), 'report must identify the rejected GSAP verification response');
   assert.ok(report.includes('existing document preserved'), 'report must state that existing copies were preserved');
   assert.ok(report.includes('Source URLs were not changed automatically'), 'report must not imply automatic URL replacement');
 

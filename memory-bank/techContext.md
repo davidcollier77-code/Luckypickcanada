@@ -48,6 +48,13 @@
 - Cloudflare Pages is the hosting platform. Do not introduce a hosting migration as part of unrelated work.
 - Treat credentials and secret values as opaque. Never place them in source, logs, reports or Memory Bank files.
 
+## Documentation refresh stability and integrity (Spec 227)
+
+- `scripts/refresh-docs.js` compares existing and downloaded documentation through a comparison-only normalizer. Recognized Cloudflare `/cdn-cgi/l/email-protection#...` tokens are decoded to their email destination for equality checks only; fetched content and stored Markdown retain the original upstream token. A different decoded destination remains a real content change, and invalid payloads are not normalized.
+- The content validator explicitly rejects the plain-text response `Please wait while your request is being verified...` before any snapshot write. Rejected downloads preserve the existing snapshot and appear in the refresh report as a failure.
+- The main-branch GSAP snapshot was already replaced with that verification response by an earlier refresh. Spec 227 does not modify `.docs/`; it keeps the known invalid snapshot visible until a valid upstream response can replace it. Repeated challenge responses are rejected rather than accepted.
+- Existing GitHub SHA checks, source URLs, manifest routing, canonical snapshots/symlinks, HTTPS and redirect restrictions, strict UTF-8, retry behavior, 10 MB download limit, 495 MiB library limit, reports and schedule remain unchanged.
+
 ## Hard Constraints
 - **Production build size:** The measured production build output must remain strictly below **495 MiB**. This is the repository's hard cap, defined in AGENTS.md; it is not a .docs directory limit. Measure and report every production build.
 - Preserve current UI, artwork, functionality, security controls, integrations and responsive behavior unless the task explicitly authorizes a change.

@@ -48,6 +48,7 @@ const ERROR_PAGE_PATTERNS = [
     reason: 'download is an HTTP error page'
   },
   { pattern: /\bjust a moment\.\.\./i, reason: 'download is a bot-challenge page, not documentation' },
+  { pattern: /^\s*please wait while your request is being verified(?:\.{3}|…)?(?:\s|$)/i, reason: 'download is a verification challenge response, not documentation' },
   { pattern: /\battention required!?\s*\|\s*cloudflare\b/i, reason: 'download is a Cloudflare challenge page' },
   { pattern: /\benable javascript and cookies to continue\b/i, reason: 'download is a bot-challenge page, not documentation' },
   { pattern: /\bverify (?:that )?you are (?:a )?human\b/i, reason: 'download is a bot-challenge page, not documentation' },
@@ -951,6 +952,98 @@ function normalizeLineEndings(content) {
 }
 
 /**
+ * Decode Cloudflare's email-protection fragment to its actual email address.
+ * Invalid, malformed or non-email payloads are deliberately left opaque.
+ */
+function decodeCloudflareEmailProtectionAddress(encoded) {
+  if (
+    typeof encoded !== 'string' ||
+    encoded.length < 4 ||
+    encoded.length % 2 !== 0 ||
+    !/^[a-f0-9]+$/i.test(encoded)
+  ) {
+    return null;
+  }
+
+  const key = Number.parseInt(encoded.slice(0, 2), 16);
+  const encrypted = Buffer.from(encoded.slice(2), 'hex');
+  if (encrypted.length === 0) return null;
+
+  const bytes = Buffer.alloc(encrypted.length);
+  for (let index = 0; index < encrypted.length; index++) {
+    bytes[index] = encrypted[index] ^ key;
+  }
+
+  let decoded;
+  try {
+    decoded = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (error) {
+    return null;
+  }
+
+  const htmlDecoded = decoded.replace(/&#(x[0-9a-f]{1,6}|[0-9]{1,7});/gi, (entity, code) => {
+    const codePoint = code[0].toLowerCase() === 'x'
+      ? Number.parseInt(code.slice(1), 16)
+      : Number.parseInt(code, 10);
+    if (
+      !Number.isInteger(codePoint) ||
+      codePoint <= 0 ||
+      codePoint > 0x10ffff ||
+      (codePoint >= 0xd800 && codePoint <= 0xdfff)
+    ) {
+      return entity;
+    }
+    return String.fromCodePoint(codePoint);
+  });
+
+  let address;
+  try {
+    address = decodeURIComponent(htmlDecoded);
+  } catch (error) {
+    return null;
+  }
+
+  const at = address.indexOf('@');
+  if (
+    address.length > 254 ||
+    at <= 0 ||
+    at !== address.lastIndexOf('@') ||
+    at === address.length - 1 ||
+    /[\s<>"'\x00-\x1f\x7f]/.test(address)
+  ) {
+    return null;
+  }
+  return address;
+}
+
+/**
+ * Canonicalize only recognized Cloudflare email-protection links for equality
+ * checks. The fetched/stored document is never rewritten by this function.
+ */
+function normalizeCloudflareEmailProtection(content) {
+  return content.replace(
+    /(https:\/\/[^/\s<>"')]+\/cdn-cgi\/l\/email-protection)#([a-f0-9]+)/gi,
+    (match, urlPrefix, encoded) => {
+      const address = decodeCloudflareEmailProtectionAddress(encoded);
+      if (!address) return match;
+      const fingerprint = Buffer.from(address, 'utf8').toString('hex');
+      return urlPrefix + '#normalized-email-' + fingerprint;
+    }
+  );
+}
+
+/**
+ * Produces the comparison-only representation used to decide whether a
+ * downloaded document is materially different from its local snapshot.
+ */
+function normalizeDocumentationForComparison(content) {
+  if (typeof content !== 'string') return content;
+  return normalizeCloudflareEmailProtection(
+    normalizeDevsiteMetadata(normalizeLineEndings(content))
+  );
+}
+
+/**
  * Converts content to use the specified line-ending style.
  */
 function convertLineEndings(content, lineEnding) {
@@ -1700,8 +1793,8 @@ async function runRefresh(options, report) {
       let isContentUpdated = false;
 
       // Compare normalized versions to ignore line-ending differences
-      const normalizedBefore = contentBefore ? normalizeDevsiteMetadata(normalizeLineEndings(contentBefore)) : null;
-      const normalizedOutput = normalizeDevsiteMetadata(normalizeLineEndings(output));
+      const normalizedBefore = contentBefore ? normalizeDocumentationForComparison(contentBefore) : null;
+      const normalizedOutput = normalizeDocumentationForComparison(output);
       if (normalizedBefore === normalizedOutput) {
         console.log(`CURRENT: ${lib} (no changes)`);
         stats.unchanged++;
@@ -1943,6 +2036,7 @@ module.exports = {
   fetchDocumentation,
   fetchDocumentationResponse,
   normalizeDocumentationResponse,
+  normalizeDocumentationForComparison,
   convertHtmlToMarkdown,
   findMarkdownAlternateUrl,
   isHtmlDocumentContent,
