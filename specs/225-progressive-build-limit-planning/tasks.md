@@ -19,8 +19,8 @@
 
 ## Phase 3: Submission and handoff
 
-- [X] T008 Prepare one complete, regular, non-draft governance PR against `main`, with exact QA-scope paths, per-file purposes and required declarations.
-- [X] T009 Hand the PR to the owner unmerged; identify the separate protected-file environment approval and current governance digest requirement.
+- [X] T008 Finalize the dedicated branch change set, confirm every exact path and file purpose, and prepare the required PR handoff structure.
+- [ ] T009 Create one regular, non-draft governance PR against `main` and hand it to the owner open and unmerged; provide the separate protected-file authorization and governance digest requirements.
 - [ ] T010 Owner review, protected-file environment authorization, governance digest approval and final automated checks.
 
 ## Verification Notes
