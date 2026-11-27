@@ -226,7 +226,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 162 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 163 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Connect a Next.js app to Lakebase Postgres on Neon, query it from a Server Component, a Server Action, and a Route Handler, develop on a branch, deploy, and add the rest of your backend
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Create a Neon project, link it with neon link, and query Lakebase Postgres through Prisma 7 with the Neon driver adapter
