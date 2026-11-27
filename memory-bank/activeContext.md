@@ -1,4 +1,19 @@
-# Active Context — Progressive build-size planning guidance (Spec 225, 2026-11-27)
+# Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
+
+## Current Task — Current supported Cloudflare pair and a minimal override set
+
+- **Scope:** `specs/226-cloudflare-dependency-modernization/`; 11 exact paths covering `package.json`, `pnpm-lock.yaml`, one dependency guard, four Spec 226 artifacts, `.specify/feature.json` and three Memory Bank files.
+- **Cloudflare pair:** `@opennextjs/cloudflare` stays at **1.20.19**, the latest published release; `wrangler` moves **4.166.0 → 4.168.0**, the latest stable release inside the adapter's `wrangler ^4.148.0` peer range. The new Wrangler brings `workerd` 1.20261123.1, Miniflare 5.20261123.1-beta and `@cloudflare/workers-utils` 0.57.0.
+- **Overrides:** `pnpm.overrides` is reduced from 18 entries to the three verified Undici major floors (`undici@6` 6.29.1, `undici@7` 7.30.2, `undici@8` 8.13.1). Removed: `glob@10`, `minimatch@10`, the `brace-expansion` floors and parent-scoped selectors, `proxy-addr`, `source-map-js`, `qs`, `fast-uri`, `sharp`, `vite`, `postcss` and `@vitest/mocker`.
+- **Why the glob/minimatch workarounds are gone:** the only minimatch-10 consumer was `@typescript-eslint/typescript-estree` 8.69.0; 8.74.0 declares `minimatch ^11.0.1`, so normal resolution selects 11.0.9 and glob 14.0.6 is the only glob. GHSA-g3hv-75wg-m249 (affected `>=7.0.0 <11.0.1`) no longer needs an override, and the remaining minimatch 3.1.5 is outside its range.
+- **Other corrections:** `fast-uri` returns to ajv's declared `^3` line (3.1.9, above the security floor) instead of the forced 4.2.3; `@vitest/mocker`/`@vitest/spy` return to 5.1.1 to match Vitest 5.1.1; Next's own `postcss ^8.5.23` resolves normally (three audit-clean copies).
+- **Verification:** `pnpm audit` 0 advisories / 999 dependencies; focused guards 2 files / 15 tests; `./freebuff-verify.sh` exit 0 with 520 Python tests, 113 Vitest files / 1,272 tests, TypeScript, Next.js build and the size cap; OpenNext build on 1.20.19 + Wrangler 4.168.0 wrote `.open-next/worker.js` with a matching `BUILD_ID`; `wrangler build` 8,893.61 KiB with all bindings; updater-scheduler dry-run passed; updater Node tests 17/17. Combined `.next + public` **440,279,040 bytes (419.88 MiB)**, strictly below 495 MiB.
+- **Boundaries:** no application source, `open-next.config.ts`, `wrangler.jsonc`, compatibility date/flags, binding, workflow, secret, Cloudflare setting or production resource changed. Playwright/Visual QA was not run locally for this dependency-only diff; PR-triggered checks remain pending. No merge or deployment.
+- **Memory Bank health:** all four core files were read and checked. `activeContext.md`, `techContext.md` and `progress.md` are updated; `projectBrief.md` remains accurate and unchanged.
+
+---
+
+# Previous Active Context — Progressive build-size planning guidance (Spec 225, 2026-11-27)
 
 ## Current Task — Keep the build limit firm and make progressive delivery an ordinary option
 

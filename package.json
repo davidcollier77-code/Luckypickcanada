@@ -81,7 +81,7 @@
     "typescript": "^5.4.5",
     "vite": ">=8.3.8",
     "vitest": "^5.1.1",
-    "wrangler": "4.166.0",
+    "wrangler": "4.168.0",
     "zod": "^4.6.7",
     "zxcvbn": "^4.4.2"
   },
@@ -95,22 +95,7 @@
     "overrides": {
       "undici@6": "6.29.1",
       "undici@7": "7.30.2",
-      "undici@8": "8.13.1",
-      "brace-expansion@1": ">=1.1.21",
-      "brace-expansion@2": ">=2.1.7",
-      "minimatch@8.0.7>brace-expansion": "2.1.7",
-      "minimatch@3.1.5>brace-expansion": "1.1.21",
-      "minimatch@10.2.6>brace-expansion": "5.0.12",
-      "proxy-addr": "2.0.8",
-      "sharp": "0.35.5",
-      "source-map-js": "1.2.2",
-      "vite": ">=8.3.8",
-      "qs": ">=6.16.0",
-      "fast-uri": ">=3.1.8",
-      "glob@10": "14.0.4",
-      "minimatch@10": "11.0.1",
-      "@vitest/mocker": "5.0.5",
-      "postcss": "^8.5.10"
+      "undici@8": "8.13.1"
     }
   },
   "packageManager": "pnpm@10.30.3"
