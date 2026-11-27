@@ -430,7 +430,7 @@ async function runTests() {
           // verification response in an earlier refresh. Keep it explicitly
           // visible as known bad data until a valid upstream response replaces it;
           // every other non-HTML snapshot must still pass content validation.
-          assert.match(snapshotContent, /^Please wait while your request is being verified/i);
+          assert.strictEqual(snapshotContent, 'Please wait while your request is being verified...\n');
           knownVerificationChallengeSnapshots++;
         } else {
           assert.ok(validation.ok, `${library} failed validation: ${validation.reason}`);
