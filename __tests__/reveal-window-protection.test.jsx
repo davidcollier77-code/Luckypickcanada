@@ -130,7 +130,7 @@ describe('Reveal window protection', () => {
     render(<DailyResonance />);
     expect(isExperienceActive()).toBe(false);
 
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
 
     // No timers have advanced: `stageActive` is still false, yet the foreground
     // is already held, which is the gap the audit measured.
@@ -146,7 +146,7 @@ describe('Reveal window protection', () => {
 
   it('releases when the cinematic completes', () => {
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     act(() => {
       vi.advanceTimersByTime(EVENT_START_MS);
     });
@@ -169,7 +169,7 @@ describe('Reveal window protection', () => {
     await act(async () => {});
     expect(adapter).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     registerExperienceResources({
       id: 'probe-bg-late',
       version: 1,
@@ -202,7 +202,7 @@ describe('Reveal window protection', () => {
   it('defers background-marked warm-up even when it is requested as critical', async () => {
     const adapter = registerBackgroundProbe('probe-route');
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     expect(isExperienceActive()).toBe(true);
 
     // The current-route preparation is requested at critical priority, but the
@@ -230,7 +230,7 @@ describe('Reveal window protection', () => {
   it('keeps critical preparation unblocked during the reveal', async () => {
     const adapter = registerCriticalProbe('probe-critical');
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     expect(isExperienceActive()).toBe(true);
 
     const snapshot = await prepareExperience('probe-critical', { priority: 'critical' });
@@ -240,7 +240,7 @@ describe('Reveal window protection', () => {
 
   it('releases the foreground when the component unmounts mid-reveal', () => {
     const view = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     act(() => {
       vi.advanceTimersByTime(EVENT_START_MS);
     });
@@ -252,7 +252,7 @@ describe('Reveal window protection', () => {
 
   it('releases on the safety margin if completion never arrives', () => {
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     act(() => {
       vi.advanceTimersByTime(EVENT_START_MS);
     });

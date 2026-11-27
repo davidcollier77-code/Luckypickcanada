@@ -55,7 +55,7 @@ describe('Lucky Meter physical layout', () => {
       METER_LAYOUT.arm.shoulder,
       METER_LAYOUT.arm.socket,
       METER_LAYOUT.arm.spout,
-      METER_LAYOUT.beam.from,
+      METER_LAYOUT.spout.mouth,
       [METER_LAYOUT.vessel.x, METER_LAYOUT.vessel.y],
     ]) {
       expect(point[0]).toBeLessThan(0);

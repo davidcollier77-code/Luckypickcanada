@@ -30,25 +30,33 @@ import { createLightRig } from '../graphics/lighting.js';
 import { createParticleField } from '../graphics/particles.js';
 import {
   CHAMBER_COUNT,
+  CHAMBER_CUP,
   CHAMBER_DEGREES,
   METER_LAYOUT,
   POINTER_ANGLE_DEGREES,
+  chamberCentre,
+  numberTransferPath,
+  sampleNumberPath,
   stageFraming,
 } from './meter-layout.js';
 
 const DEG2RAD = Math.PI / 180;
 const CAMERA_FOV = 32;
 
-/** The wide, shallow crystal bowl's open cross-section. */
+/**
+ * The crystal bowl's open cross-section: a deep, flared cup rather than a
+ * shallow dish, so a full bowl reads as a filled vessel with a real liquid
+ * column.
+ */
 const BOWL_PROFILE = Object.freeze([
   [0.0, 0.0],
-  [0.2, 0.0],
-  [0.23, 0.015],
-  [0.24, 0.035],
-  [0.26, 0.05],
-  [0.38, 0.1],
-  [0.51, 0.18],
-  [0.59, 0.28],
+  [0.13, 0.0],
+  [0.16, 0.025],
+  [0.19, 0.05],
+  [0.33, 0.13],
+  [0.45, 0.24],
+  [0.53, 0.35],
+  [0.57, 0.41],
   [METER_LAYOUT.vessel.radius, METER_LAYOUT.vessel.height],
 ]);
 
@@ -79,28 +87,73 @@ function toMathAngle(screenDegrees) {
   return (90 - screenDegrees) * DEG2RAD;
 }
 
-/**
- * One annular chamber sector as a THREE.Shape.
- *
- * Built at 12 o'clock; each chamber group is rotated into place, so the fill
- * shader's radial test always uses the same local frame.
- */
-function annularSectorShape(THREE, innerRadius, outerRadius, startDegrees, endDegrees) {
-  const start = toMathAngle(startDegrees);
-  const end = toMathAngle(endDegrees);
-  const outerStart = [
-    Math.cos(start) * outerRadius,
-    Math.sin(start) * outerRadius,
-  ];
+/** A rounded rectangle as a THREE.Shape, used by the plaque and the token. */
+function roundedRectShape(THREE, width, height, radius) {
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const corner = Math.min(radius, halfWidth, halfHeight);
   const shape = new THREE.Shape();
-  shape.moveTo(outerStart[0], outerStart[1]);
-  // Screen angles run clockwise, which is a decreasing math angle.
-  shape.absarc(0, 0, outerRadius, start, end, true);
-  const innerEnd = [Math.cos(end) * innerRadius, Math.sin(end) * innerRadius];
-  shape.lineTo(innerEnd[0], innerEnd[1]);
-  shape.absarc(0, 0, innerRadius, end, start, false);
-  shape.closePath();
+  shape.moveTo(-halfWidth + corner, -halfHeight);
+  shape.lineTo(halfWidth - corner, -halfHeight);
+  shape.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + corner);
+  shape.lineTo(halfWidth, halfHeight - corner);
+  shape.quadraticCurveTo(halfWidth, halfHeight, halfWidth - corner, halfHeight);
+  shape.lineTo(-halfWidth + corner, halfHeight);
+  shape.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - corner);
+  shape.lineTo(-halfWidth, -halfHeight + corner);
+  shape.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + corner, -halfHeight);
   return shape;
+}
+
+/**
+ * A gold-on-transparent lettering texture, used for the banner, the plaque
+ * header and the colour bar. One canvas per string, cached by the caller.
+ */
+function makeEngravingTexture(THREE, text, options = {}) {
+  if (typeof document === 'undefined') return null;
+  const width = options.width ?? 512;
+  const height = options.height ?? 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+  if (!context) return null;
+  context.clearRect(0, 0, width, height);
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = `${options.weight ?? 700} ${options.fontSize ?? 64}px ${
+    options.font ?? '"Cinzel", "Playfair Display", Georgia, serif'
+  }`;
+  const spacing = options.spacing ?? 0;
+  const glow = context.createLinearGradient(0, height * 0.2, 0, height * 0.8);
+  glow.addColorStop(0, options.light ?? '#fff6d8');
+  glow.addColorStop(0.45, options.mid ?? '#ffdd94');
+  glow.addColorStop(1, options.deep ?? '#b97a22');
+  context.strokeStyle = 'rgba(36, 12, 3, 0.9)';
+  context.lineWidth = options.outline ?? 6;
+  if (spacing === 0) {
+    context.strokeText(text, width / 2, height / 2);
+    context.fillStyle = glow;
+    context.fillText(text, width / 2, height / 2);
+  } else {
+    const characters = Array.from(text);
+    const widths = characters.map((character) => context.measureText(character).width);
+    const total =
+      widths.reduce((sum, value) => sum + value, 0) + spacing * (characters.length - 1);
+    let cursor = width / 2 - total / 2;
+    for (let index = 0; index < characters.length; index += 1) {
+      const x = cursor + widths[index] / 2;
+      context.strokeText(characters[index], x, height / 2);
+      context.fillStyle = glow;
+      context.fillText(characters[index], x, height / 2);
+      cursor += widths[index] + spacing;
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 /** A tiny 2D canvas gradient for contact shadows and glows. */
@@ -640,91 +693,126 @@ export async function createLuckyMeterScene({
   }
 
   // ── The twelve seasonal chambers ───────────────────────────────────────
+  // One punched gold plate holds twelve glass cups. The plate is real geometry
+  // with twelve circular windows, so each colour sits *in* the instrument as a
+  // lit compartment rather than being painted on its face.
   const chamberFills = [];
 
-  const chamberShape = annularSectorShape(
-    THREE,
-    METER_LAYOUT.wheel.chamberInnerRadius + 0.016,
-    METER_LAYOUT.wheel.chamberOuterRadius - 0.016,
-    -CHAMBER_DEGREES / 2 + 2.0,
-    CHAMBER_DEGREES / 2 - 2.0,
-  );
-  const frameShape = annularSectorShape(
-    THREE,
-    METER_LAYOUT.wheel.chamberInnerRadius,
-    METER_LAYOUT.wheel.chamberOuterRadius,
-    -CHAMBER_DEGREES / 2 + 0.5,
-    CHAMBER_DEGREES / 2 - 0.5,
-  );
-  // Pierce the gold plate so the recessed enamel shows through a real border.
-  // The hole is slightly smaller than the fill, which tucks the enamel under
-  // the frame lip instead of leaving a visible gap.
-  const frameHole = annularSectorShape(
-    THREE,
-    METER_LAYOUT.wheel.chamberInnerRadius + 0.024,
-    METER_LAYOUT.wheel.chamberOuterRadius - 0.024,
-    -CHAMBER_DEGREES / 2 + 2.6,
-    CHAMBER_DEGREES / 2 - 2.6,
-  );
-  frameShape.holes.push(frameHole);
-
-  const frameGeometry = trackGeometry(
-    new THREE.ExtrudeGeometry(frameShape, {
+  const plateShape = new THREE.Shape();
+  plateShape.absarc(0, 0, METER_LAYOUT.wheel.outerRadius - 0.03, 0, Math.PI * 2, false);
+  const plateHole = new THREE.Path();
+  plateHole.absarc(0, 0, METER_LAYOUT.wheel.chamberInnerRadius - 0.045, 0, Math.PI * 2, true);
+  plateShape.holes.push(plateHole);
+  for (let index = 0; index < CHAMBER_COUNT; index += 1) {
+    const holeCentre = chamberCentre(index);
+    const hole = new THREE.Path();
+    hole.absarc(holeCentre.x, holeCentre.y, CHAMBER_CUP.radius + 0.032, 0, Math.PI * 2, true);
+    plateShape.holes.push(hole);
+  }
+  const plateGeometry = trackGeometry(
+    new THREE.ExtrudeGeometry(plateShape, {
       depth: 0.1,
       bevelEnabled: true,
       bevelThickness: 0.014,
       bevelSize: 0.012,
       bevelSegments: 2,
-      curveSegments: constrained ? 10 : 20,
+      curveSegments: constrained ? 16 : 28,
     }),
   );
-  const fillBaseGeometry = trackGeometry(
-    new THREE.ExtrudeGeometry(chamberShape, {
-      depth: 0.055,
-      bevelEnabled: true,
-      bevelThickness: 0.008,
-      bevelSize: 0.006,
-      bevelSegments: 1,
-      curveSegments: constrained ? 10 : 20,
-    }),
+  const plate = new THREE.Mesh(plateGeometry, gold);
+  plate.position.z = 0.02;
+  wheelGroup.add(plate);
+
+  // Radial gold spokes between the windows keep the plate reading as a wheel
+  // and separate the cups into individual compartments.
+  const spokeGeometry = trackGeometry(new THREE.BoxGeometry(0.05, 0.4, 0.11));
+  for (let index = 0; index < CHAMBER_COUNT; index += 1) {
+    const angle = toMathAngle(index * CHAMBER_DEGREES + CHAMBER_DEGREES / 2);
+    const radius = METER_LAYOUT.wheel.chamberOuterRadius - 0.25;
+    const spoke = new THREE.Mesh(spokeGeometry, gold);
+    spoke.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.055);
+    spoke.rotation.z = angle - Math.PI / 2;
+    wheelGroup.add(spoke);
+  }
+
+  const cupGlassMaterial = trackMaterial(createCrystalMaterial(THREE));
+  const cupGlassGeometry = trackGeometry(
+    new THREE.CylinderGeometry(
+      CHAMBER_CUP.radius,
+      CHAMBER_CUP.radius * 0.82,
+      CHAMBER_CUP.height,
+      constrained ? 12 : 20,
+      1,
+      true,
+    ),
   );
+  const cupBaseGeometry = trackGeometry(
+    new THREE.CircleGeometry(CHAMBER_CUP.radius * 0.85, constrained ? 12 : 20),
+  );
+  cupBaseGeometry.rotateX(-Math.PI / 2);
+  const cupRimGeometry = trackGeometry(
+    new THREE.TorusGeometry(CHAMBER_CUP.radius, 0.013, 8, constrained ? 16 : 28),
+  );
+  cupRimGeometry.rotateX(Math.PI / 2);
+  const cupLiquidGeometry = trackGeometry(
+    new THREE.CylinderGeometry(
+      CHAMBER_CUP.liquidRadius,
+      CHAMBER_CUP.liquidRadius * 0.9,
+      CHAMBER_CUP.liquidDepth,
+      constrained ? 12 : 18,
+      1,
+      false,
+    ),
+  );
+  cupLiquidGeometry.translate(0, CHAMBER_CUP.liquidDepth / 2, 0);
+
+  const cupCentreRadius =
+    (METER_LAYOUT.wheel.chamberInnerRadius + METER_LAYOUT.wheel.chamberOuterRadius) / 2;
 
   for (let index = 0; index < CHAMBER_COUNT; index += 1) {
     const group = new THREE.Group();
     group.rotation.z = -index * CHAMBER_DEGREES * DEG2RAD;
     wheelGroup.add(group);
 
-    const frame = new THREE.Mesh(frameGeometry, gold);
-    frame.position.z = 0.06;
-    group.add(frame);
-
-    // A gold floor behind the enamel is what the empty chamber shows after the
-    // pour; without it the recessed hole falls into the dark body and the
-    // emerging number has no readable ground.
-    const floorGeometry = trackGeometry(
-      new THREE.ShapeGeometry(chamberShape, constrained ? 10 : 20),
+    // The bezel is the cup's gold seat inside the punched plate.
+    const bezelGeometry = trackGeometry(
+      new THREE.TorusGeometry(CHAMBER_CUP.radius + 0.022, 0.017, 8, constrained ? 16 : 28),
     );
-    floorGeometry.rotateZ(-index * CHAMBER_DEGREES * DEG2RAD);
-    const floor = new THREE.Mesh(floorGeometry, gold);
-    floor.position.z = 0.045;
-    wheelGroup.add(floor);
+    const bezel = new THREE.Mesh(bezelGeometry, gold);
+    bezel.position.set(0, cupCentreRadius, 0.075);
+    group.add(bezel);
 
-    const fillGeometry = trackGeometry(fillBaseGeometry.clone());
-    fillGeometry.rotateZ(-index * CHAMBER_DEGREES * DEG2RAD);
-    fillGeometry.computeBoundingBox();
-    const bounds = fillGeometry.boundingBox;
+    const glass = new THREE.Mesh(cupGlassGeometry, cupGlassMaterial);
+    glass.position.set(0, cupCentreRadius, 0.045);
+    glass.renderOrder = 2;
+    group.add(glass);
+
+    const base = new THREE.Mesh(cupBaseGeometry, gold);
+    base.position.set(0, cupCentreRadius - CHAMBER_CUP.height / 2 + 0.012, 0.045);
+    group.add(base);
+
+    const rimMaterial = trackMaterial(
+      new THREE.MeshBasicMaterial({
+        color: 0xffe6a8,
+        transparent: true,
+        opacity: 0.34,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    );
+    const rim = new THREE.Mesh(cupRimGeometry, rimMaterial);
+    rim.position.set(0, cupCentreRadius + CHAMBER_CUP.height / 2, 0.045);
+    rim.renderOrder = 4;
+    group.add(rim);
+
     const fillMaterial = trackMaterial(createFillMaterial(THREE, '#f5c451'));
-    const fill = new THREE.Mesh(fillGeometry, fillMaterial);
-    fill.position.z = 0.07;
-    fill.renderOrder = 1;
-    wheelGroup.add(fill);
+    const liquid = new THREE.Mesh(cupLiquidGeometry, fillMaterial);
+    liquid.position.set(0, cupCentreRadius - CHAMBER_CUP.height / 2 + 0.02, 0.045);
+    liquid.renderOrder = 1;
+    group.add(liquid);
 
-    chamberFills.push({
-      material: fillMaterial,
-      minY: bounds?.min.y ?? -1,
-      maxY: bounds?.max.y ?? 1,
-      mesh: fill,
-    });
+    chamberFills.push({ material: fillMaterial, mesh: liquid, rimMaterial, glass });
   }
 
   // ── Central medallion and the reading well ─────────────────────────────
@@ -788,144 +876,119 @@ export async function createLuckyMeterScene({
     }
   }
 
-  // ── Fixed external pointer, curved arm and spout ───────────────────────
-  const pointerAssembly = new THREE.Group();
-  root.add(pointerAssembly);
+  // ── Fixed 7:30 spout ───────────────────────────────────────────────────
+  // The pointer is an open, angle-cut gold pipe. The cup that lands under it is
+  // read by the mouth, and the same mouth pours that cup's colour into the bowl
+  // below. It never rotates, so the selection maths is unchanged.
+  const spoutAssembly = new THREE.Group();
+  root.add(spoutAssembly);
 
-  const socketPosition = METER_LAYOUT.arm.socket;
+  const socketPosition = METER_LAYOUT.spout.socket;
   const socketOuterGeometry = trackGeometry(
-    new THREE.CylinderGeometry(0.095, 0.11, 0.11, high ? 40 : 24),
+    new THREE.CylinderGeometry(0.1, 0.118, 0.12, high ? 40 : 24),
   );
   socketOuterGeometry.rotateX(Math.PI / 2);
   const socket = new THREE.Mesh(socketOuterGeometry, gold);
   socket.position.set(socketPosition[0], socketPosition[1], socketPosition[2]);
-  pointerAssembly.add(socket);
+  spoutAssembly.add(socket);
 
-  const socketRingGeometry = trackGeometry(new THREE.TorusGeometry(0.1, 0.016, 8, 36));
+  const socketRingGeometry = trackGeometry(new THREE.TorusGeometry(0.105, 0.017, 8, 36));
   const socketRing = new THREE.Mesh(socketRingGeometry, gold);
   socketRing.position.set(socketPosition[0], socketPosition[1], socketPosition[2] + 0.06);
-  pointerAssembly.add(socketRing);
+  spoutAssembly.add(socketRing);
 
-  const pointerLeafMaterial = trackMaterial(
-    materials
-      .gold({
-        roughness: 0.21,
-        metalness: 0.74,
-        envMapIntensity: 1.7,
-        emissive: 0x3a2408,
-        emissiveIntensity: 0.36,
-        // The blade is seen from the camera side; the extruded edge and back
-        // face must light as gold too, never as a black silhouette.
-        side: THREE.DoubleSide,
-      })
-      .clone(),
-  );
-  const pointerLeafGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
-
-  const pointerLeafGroup = new THREE.Group();
-  pointerLeafGroup.scale.setScalar(METER_LAYOUT.pointer.leafScale * 1.1);
-  pointerLeafGroup.position.set(-0.92, -0.3, 0.18);
-  // The apex points up-right, inward toward the selected chamber.
-  pointerLeafGroup.rotation.z = -45 * DEG2RAD;
-  pointerLeafGroup.rotation.x = -0.1;
-  pointerAssembly.add(pointerLeafGroup);
-
-  // A dark, slightly larger silhouette separates the gold blade from the gold
-  // wheel rim; without it the pointer reads as another rim ornament.
-  const pointerShadow = new THREE.Mesh(
-    pointerLeafGeometry,
-    trackMaterial(
-      new THREE.MeshBasicMaterial({
-        color: 0x1c0d03,
-        transparent: true,
-        opacity: 0.38,
-        depthWrite: false,
-        side: THREE.DoubleSide,
-      }),
-    ),
-  );
-  pointerShadow.scale.setScalar(1.06);
-  pointerShadow.position.z = -0.02;
-  pointerShadow.renderOrder = 1;
-  pointerLeafGroup.add(pointerShadow);
-
-  const pointerLeaf = new THREE.Mesh(pointerLeafGeometry, pointerLeafMaterial);
-  pointerLeafGroup.add(pointerLeaf);
-
-  // Engraved veins are the strongest maple signal at phone size: the silhouette
-  // is small, but the midrib and four lobes read immediately.
-  const pointerVeinGeometry = trackGeometry(
-    new THREE.CylinderGeometry(0.022, 0.022, 1, 4),
-  );
-  const pointerVeinMaterial = trackMaterial(
-    new THREE.MeshBasicMaterial({
-      color: 0x6b3d0f,
-      transparent: true,
-      opacity: 0.8,
-      depthWrite: false,
-    }),
-  );
-  for (const [x, y] of [
-    [0, 0.86],
-    [0.44, 0.58],
-    [0.7, 0.18],
-    [-0.7, 0.18],
-    [-0.44, 0.58],
-    [0, -0.58],
-  ]) {
-    const length = Math.hypot(x, y);
-    const vein = new THREE.Mesh(pointerVeinGeometry, pointerVeinMaterial);
-    vein.position.set(x / 2, y / 2, 0.075);
-    vein.rotation.z = -Math.atan2(x, y);
-    vein.scale.set(1, Math.max(0.001, length), 1);
-    pointerLeafGroup.add(vein);
-  }
-
-  const armCurve = new THREE.CatmullRomCurve3(
+  const spoutCurve = new THREE.CatmullRomCurve3(
     [
-      METER_LAYOUT.arm.base,
-      METER_LAYOUT.arm.shoulder,
-      [-1.04, -0.31, 0.07],
       socketPosition,
-      [-0.86, -0.42, 0.07],
-      METER_LAYOUT.arm.spout,
+      [-0.79, -0.2, 0.075],
+      METER_LAYOUT.spout.elbow,
+      [-0.795, -0.47, 0.082],
+      METER_LAYOUT.spout.mouth,
     ].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
     false,
     'catmullrom',
     0.4,
   );
-
-  const armGeometry = trackGeometry(
-    new THREE.TubeGeometry(armCurve, high ? 96 : 56, METER_LAYOUT.arm.tubeRadius, 10, false),
+  const spoutTubeGeometry = trackGeometry(
+    new THREE.TubeGeometry(spoutCurve, high ? 72 : 48, METER_LAYOUT.pointer.tubeRadius, 14, false),
   );
-  const arm = new THREE.Mesh(armGeometry, gold);
-  pointerAssembly.add(arm);
+  const spoutTube = new THREE.Mesh(spoutTubeGeometry, gold);
+  spoutAssembly.add(spoutTube);
 
-  const armHighlightMaterial = trackMaterial(
+  // The channel inside the pipe: dark at rest, lit by the colour while pouring.
+  const spoutChannelMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
-      color: 0xffe6ae,
+      color: 0xffd9a6,
       transparent: true,
-      opacity: 0.28,
+      opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
+      toneMapped: false,
     }),
   );
-  const armHighlightGeometry = trackGeometry(
-    new THREE.TubeGeometry(armCurve, high ? 96 : 56, METER_LAYOUT.arm.tubeRadius * 0.3, 6, false),
+  const spoutChannel = new THREE.Mesh(
+    trackGeometry(
+      new THREE.TubeGeometry(
+        spoutCurve,
+        high ? 72 : 48,
+        METER_LAYOUT.pointer.tubeRadius * 0.42,
+        8,
+        false,
+      ),
+    ),
+    spoutChannelMaterial,
   );
-  const armHighlight = new THREE.Mesh(armHighlightGeometry, armHighlightMaterial);
-  armHighlight.position.z = 0.012;
-  pointerAssembly.add(armHighlight);
+  spoutChannel.renderOrder = 6;
+  spoutAssembly.add(spoutChannel);
 
-  const spoutLipGeometry = trackGeometry(new THREE.TorusGeometry(0.05, 0.012, 8, 28));
-  const spoutLip = new THREE.Mesh(spoutLipGeometry, gold);
-  spoutLip.position.set(
-    METER_LAYOUT.arm.spout[0],
-    METER_LAYOUT.arm.spout[1],
-    METER_LAYOUT.arm.spout[2],
+  // The mouth: an open cylinder whose end plane is cut at an angle, so the
+  // opening reads as a real pipe lip rather than a painted ring.
+  const mouthDirection = spoutCurve.getTangentAt(0.999).normalize();
+  const mouthGroup = new THREE.Group();
+  mouthGroup.position.set(
+    METER_LAYOUT.spout.mouth[0],
+    METER_LAYOUT.spout.mouth[1],
+    METER_LAYOUT.spout.mouth[2],
   );
-  spoutLip.rotation.x = Math.PI / 2.4;
-  pointerAssembly.add(spoutLip);
+  mouthGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), mouthDirection);
+  spoutAssembly.add(mouthGroup);
+
+  const spoutMouth = new THREE.Mesh(
+    trackGeometry(
+      new THREE.CylinderGeometry(
+        METER_LAYOUT.pointer.mouthRadius,
+        METER_LAYOUT.pointer.tubeRadius,
+        0.16,
+        high ? 24 : 16,
+        1,
+        true,
+      ),
+    ),
+    gold,
+  );
+  spoutMouth.rotation.x = METER_LAYOUT.spout.mouthAngleDegrees * DEG2RAD;
+  mouthGroup.add(spoutMouth);
+
+  const mouthInnerGeometry = trackGeometry(
+    new THREE.CircleGeometry(METER_LAYOUT.pointer.mouthRadius * 0.9, high ? 24 : 16),
+  );
+  mouthInnerGeometry.rotateX(-Math.PI / 2);
+  const spoutThroat = new THREE.Mesh(
+    mouthInnerGeometry,
+    trackMaterial(new THREE.MeshBasicMaterial({ color: 0x1a0c03, side: THREE.DoubleSide })),
+  );
+  spoutThroat.position.y = 0.055;
+  spoutThroat.rotation.x = METER_LAYOUT.spout.mouthAngleDegrees * DEG2RAD;
+  mouthGroup.add(spoutThroat);
+
+  const mouthRimGeometry = trackGeometry(
+    new THREE.TorusGeometry(METER_LAYOUT.pointer.mouthRadius, 0.016, 8, high ? 32 : 20),
+  );
+  mouthRimGeometry.rotateX(Math.PI / 2);
+  const spoutLip = new THREE.Mesh(mouthRimGeometry, gold);
+  spoutLip.position.y = -0.075;
+  spoutLip.rotation.x = METER_LAYOUT.spout.mouthAngleDegrees * DEG2RAD;
+  mouthGroup.add(spoutLip);
 
   // ── Faceted crystal receiving bowl ─────────────────────────────────────
   const bowlGroup = new THREE.Group();
@@ -1136,6 +1199,239 @@ export async function createLuckyMeterScene({
     root.add(bowlShadow);
   }
 
+  // ── The arched "Lucky Meter" banner ───────────────────────────────────
+  const engravingTextures = new Set();
+  const engraving = (text, options) => {
+    const texture = makeEngravingTexture(THREE, text, options);
+    if (texture) engravingTextures.add(texture);
+    return texture;
+  };
+
+  const bannerGroup = new THREE.Group();
+  bannerGroup.position.set(METER_LAYOUT.banner.x, METER_LAYOUT.banner.y, METER_LAYOUT.banner.z);
+  root.add(bannerGroup);
+
+  const bannerHalf = METER_LAYOUT.banner.width / 2;
+  const bannerHalfHeight = METER_LAYOUT.banner.height / 2;
+  const bannerShape = new THREE.Shape();
+  bannerShape.moveTo(-bannerHalf, -bannerHalfHeight);
+  bannerShape.lineTo(bannerHalf, -bannerHalfHeight);
+  bannerShape.quadraticCurveTo(bannerHalf + 0.05, -0.02, bannerHalf - 0.12, bannerHalfHeight - 0.06);
+  bannerShape.quadraticCurveTo(0, bannerHalfHeight + 0.08, -bannerHalf + 0.12, bannerHalfHeight - 0.06);
+  bannerShape.quadraticCurveTo(-bannerHalf - 0.05, -0.02, -bannerHalf, -bannerHalfHeight);
+
+  const bannerBorder = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(bannerShape, {
+        depth: 0.07,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.03,
+        bevelSegments: 2,
+        curveSegments: 12,
+      }),
+    ),
+    gold,
+  );
+  bannerBorder.position.z = -0.02;
+  bannerGroup.add(bannerBorder);
+
+  const bannerEnamelMaterial = trackMaterial(
+    new THREE.MeshPhysicalMaterial({
+      color: 0x8d1113,
+      metalness: 0.18,
+      roughness: 0.32,
+      clearcoat: 1,
+      clearcoatRoughness: 0.16,
+      emissive: 0x3a0505,
+      emissiveIntensity: 0.5,
+      envMapIntensity: 0.9,
+      side: THREE.DoubleSide,
+    }),
+  );
+  const bannerEnamel = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(bannerShape, { depth: 0.05, bevelEnabled: false, curveSegments: 12 }),
+    ),
+    bannerEnamelMaterial,
+  );
+  bannerEnamel.scale.set(0.94, 0.86, 1);
+  bannerEnamel.position.z = 0.045;
+  bannerGroup.add(bannerEnamel);
+
+  const bannerTextMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: engraving('Lucky Meter', { width: 640, height: 160, fontSize: 94, spacing: 2 }),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  const bannerText = new THREE.Mesh(trackGeometry(new THREE.PlaneGeometry(1.34, 0.34)), bannerTextMaterial);
+  bannerText.position.set(0, -0.01, 0.107);
+  bannerGroup.add(bannerText);
+
+  const bannerLeafGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
+  for (const side of [-1, 1]) {
+    const leaf = new THREE.Mesh(bannerLeafGeometry, gold);
+    leaf.scale.setScalar(0.12);
+    leaf.position.set(side * 0.75, 0.03, 0.12);
+    leaf.rotation.z = side * 1.15;
+    bannerGroup.add(leaf);
+  }
+
+  // ── The ornate Lucky Number plaque ─────────────────────────────────────
+  // The number's own destination: a gold-framed enamel display with an engraved
+  // header and a recessed slot. It is deliberately separate from the bowl.
+  const plaqueGroup = new THREE.Group();
+  plaqueGroup.position.set(METER_LAYOUT.plaque.x, METER_LAYOUT.plaque.y, METER_LAYOUT.plaque.z);
+  root.add(plaqueGroup);
+
+  const plaqueWidth = METER_LAYOUT.plaque.width;
+  const plaqueHeight = METER_LAYOUT.plaque.height;
+  const plaqueBackingMaterial = trackMaterial(
+    new THREE.MeshPhysicalMaterial({
+      color: 0x0b1730,
+      metalness: 0.32,
+      roughness: 0.4,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.22,
+      emissive: 0x071022,
+      emissiveIntensity: 0.75,
+      envMapIntensity: 0.9,
+    }),
+  );
+  const plaqueBacking = new THREE.Mesh(
+    trackGeometry(new THREE.BoxGeometry(plaqueWidth, plaqueHeight, 0.08)),
+    plaqueBackingMaterial,
+  );
+  plaqueGroup.add(plaqueBacking);
+
+  const plaqueBarGeometry = trackGeometry(new THREE.BoxGeometry(plaqueWidth, 0.062, 0.11));
+  const plaqueSideGeometry = trackGeometry(new THREE.BoxGeometry(0.062, plaqueHeight, 0.11));
+  for (const y of [plaqueHeight / 2 - 0.031, -plaqueHeight / 2 + 0.031]) {
+    const bar = new THREE.Mesh(plaqueBarGeometry, gold);
+    bar.position.set(0, y, 0.02);
+    plaqueGroup.add(bar);
+  }
+  for (const x of [plaqueWidth / 2 - 0.031, -plaqueWidth / 2 + 0.031]) {
+    const side = new THREE.Mesh(plaqueSideGeometry, gold);
+    side.position.set(x, 0, 0.02);
+    plaqueGroup.add(side);
+  }
+  const plaqueCornerGeometry = trackGeometry(new THREE.SphereGeometry(0.055, 12, 10));
+  for (const x of [-1, 1]) {
+    for (const y of [-1, 1]) {
+      const corner = new THREE.Mesh(plaqueCornerGeometry, gold);
+      corner.position.set(x * (plaqueWidth / 2 - 0.031), y * (plaqueHeight / 2 - 0.031), 0.03);
+      plaqueGroup.add(corner);
+    }
+  }
+
+  const plaqueHeaderMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: engraving('YOUR LUCKY NUMBER', {
+        width: 512,
+        height: 96,
+        fontSize: 40,
+        spacing: 1.6,
+        outline: 4,
+      }),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  const plaqueHeader = new THREE.Mesh(
+    trackGeometry(new THREE.PlaneGeometry(0.78, 0.17)),
+    plaqueHeaderMaterial,
+  );
+  plaqueHeader.position.set(0, plaqueHeight / 2 - 0.145, 0.085);
+  plaqueGroup.add(plaqueHeader);
+
+  const plaqueInsetMaterial = trackMaterial(
+    new THREE.MeshPhysicalMaterial({
+      color: 0x050b16,
+      metalness: 0.2,
+      roughness: 0.5,
+      emissive: 0x050b16,
+      emissiveIntensity: 0.9,
+    }),
+  );
+  const plaqueInset = new THREE.Mesh(
+    trackGeometry(
+      new THREE.PlaneGeometry(METER_LAYOUT.plaque.insetWidth, METER_LAYOUT.plaque.insetHeight),
+    ),
+    plaqueInsetMaterial,
+  );
+  plaqueInset.position.set(0, -0.09, 0.075);
+  plaqueGroup.add(plaqueInset);
+
+  const plaqueSlotMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: engraving('- - -', { width: 384, height: 128, fontSize: 66, spacing: 6, outline: 3 }),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  const plaqueSlot = new THREE.Mesh(
+    trackGeometry(new THREE.PlaneGeometry(0.36, 0.13)),
+    plaqueSlotMaterial,
+  );
+  plaqueSlot.position.set(0, -0.09, 0.085);
+  plaqueGroup.add(plaqueSlot);
+
+  const plaqueLaurelGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
+  for (const side of [-1, 1]) {
+    const laurel = new THREE.Mesh(plaqueLaurelGeometry, gold);
+    laurel.scale.setScalar(0.085);
+    laurel.position.set(side * 0.23, -0.09, 0.08);
+    laurel.rotation.z = side * 1.35;
+    plaqueGroup.add(laurel);
+  }
+
+  // ── The gold colour bar beneath the bowl ───────────────────────────────
+  const barGroup = new THREE.Group();
+  barGroup.position.set(METER_LAYOUT.colourBar.x, METER_LAYOUT.colourBar.y, METER_LAYOUT.colourBar.z);
+  root.add(barGroup);
+
+  const barBody = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(
+        roundedRectShape(THREE, METER_LAYOUT.colourBar.width, METER_LAYOUT.colourBar.height, 0.08),
+        {
+          depth: 0.05,
+          bevelEnabled: true,
+          bevelThickness: 0.016,
+          bevelSize: 0.014,
+          bevelSegments: 2,
+          curveSegments: 8,
+        },
+      ),
+    ),
+    gold,
+  );
+  barGroup.add(barBody);
+
+  const barLabelMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: engraving('YOUR LUCKY COLOUR', {
+        width: 512,
+        height: 96,
+        fontSize: 36,
+        spacing: 1.4,
+        outline: 4,
+      }),
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  const barLabel = new THREE.Mesh(trackGeometry(new THREE.PlaneGeometry(0.9, 0.13)), barLabelMaterial);
+  barLabel.position.set(0, 0.055, 0.078);
+  barGroup.add(barLabel);
+
   // ── Lucky Number inside the selected chamber ───────────────────────────
   const numberCentre = {
     x:
@@ -1175,10 +1471,10 @@ export async function createLuckyMeterScene({
   // ── Pour stream ────────────────────────────────────────────────────────
   const streamCurve = new THREE.CatmullRomCurve3(
     [
-      METER_LAYOUT.arm.spout,
-      [-0.785, -0.47, 0.05],
-      [-0.78, -0.55, 0.05],
-      [-0.78, -0.65, 0.05],
+      METER_LAYOUT.spout.mouth,
+      [-0.782, -0.66, 0.055],
+      [-0.78, -0.73, 0.06],
+      [-0.78, -0.8, 0.06],
     ].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
     false,
     'catmullrom',
@@ -1250,60 +1546,97 @@ export async function createLuckyMeterScene({
   droplet.renderOrder = 6;
   root.add(droplet);
 
-  // ── Golden transfer beam ───────────────────────────────────────────────
-  const beamCurve = new THREE.CatmullRomCurve3(
-    [
-      METER_LAYOUT.beam.from,
-      [-0.72, -0.48, 0.34],
-      [-0.62, -1.02, 0.36],
-      [-0.24, -1.3, 0.38],
-      METER_LAYOUT.beam.to,
-    ].map(([x, y, z]) => new THREE.Vector3(x, y, z)),
-    false,
-    'catmullrom',
-    0.45,
-  );
-  const beamGeometry = trackGeometry(new THREE.TubeGeometry(beamCurve, 72, 0.055, 8, false));
-  const beamMaterial = trackMaterial(
-    new THREE.MeshBasicMaterial({
-      color: 0xffb545,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }),
-  );
-  const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-  beam.renderOrder = 7;
-  root.add(beam);
+  // ── The Lucky Number's independent flight ──────────────────────────────
+  // The number is its own dimensional object: a gold token with the engraved
+  // numeral, its own halo and a short trail. It leaves the selected cup after
+  // the drain, never the spout, and seats itself in the plaque.
+  const tokenGroup = new THREE.Group();
+  tokenGroup.visible = false;
+  root.add(tokenGroup);
 
-  const beamCoreGeometry = trackGeometry(new THREE.TubeGeometry(beamCurve, 72, 0.014, 6, false));
-  const beamCoreMaterial = trackMaterial(
-    new THREE.MeshBasicMaterial({
-      color: 0xffdda0,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }),
+  const tokenPlate = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(roundedRectShape(THREE, 0.58, 0.42, 0.09), {
+        depth: 0.07,
+        bevelEnabled: true,
+        bevelThickness: 0.022,
+        bevelSize: 0.02,
+        bevelSegments: 2,
+        curveSegments: 8,
+      }),
+    ),
+    trackMaterial(
+      materials
+        .gold({
+          roughness: 0.18,
+          metalness: 0.82,
+          envMapIntensity: 1.8,
+          emissive: 0x3a2306,
+          emissiveIntensity: 0.55,
+        })
+        .clone(),
+    ),
   );
-  const beamCore = new THREE.Mesh(beamCoreGeometry, beamCoreMaterial);
-  beamCore.renderOrder = 8;
-  root.add(beamCore);
+  tokenGroup.add(tokenPlate);
 
-  const orbMaterial = trackMaterial(
+  const numeralMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
-      color: 0xffe2a2,
+      map: null,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  const numeralPlane = new THREE.Mesh(
+    trackGeometry(new THREE.PlaneGeometry(0.44, 0.44)),
+    numeralMaterial,
+  );
+  numeralPlane.position.z = 0.082;
+  tokenGroup.add(numeralPlane);
+
+  const tokenHaloTexture = radialTexture(THREE, [
+    [0, 'rgba(255, 236, 180, 0.85)'],
+    [0.4, 'rgba(255, 190, 90, 0.35)'],
+    [1, 'rgba(255, 160, 40, 0)'],
+  ]);
+  const tokenHaloMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: tokenHaloTexture,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.7,
+    }),
+  );
+  const tokenHalo = new THREE.Mesh(trackGeometry(new THREE.PlaneGeometry(1.4, 1.4)), tokenHaloMaterial);
+  tokenHalo.position.z = -0.05;
+  tokenGroup.add(tokenHalo);
+
+  const trailMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: tokenHaloTexture,
+      color: 0xffcf82,
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     }),
   );
-  const orbGeometry = trackGeometry(new THREE.SphereGeometry(0.055, 14, 10));
-  const orb = new THREE.Mesh(orbGeometry, orbMaterial);
-  orb.renderOrder = 9;
-  root.add(orb);
+  const trailGeometry = trackGeometry(new THREE.PlaneGeometry(0.2, 0.2));
+  const trailSprites = [];
+  for (let index = 0; index < 6; index += 1) {
+    const sprite = new THREE.Mesh(trailGeometry, trailMaterial);
+    sprite.visible = false;
+    root.add(sprite);
+    trailSprites.push(sprite);
+  }
+
+  let flightPoints = [];
+
+  function ensureFlightPath() {
+    if (flightPoints.length > 0 || selectedIndex < 0) return;
+    flightPoints = numberTransferPath({ index: selectedIndex, wheelAngle: state.wheelAngle });
+  }
 
   // ── Ambient dust ───────────────────────────────────────────────────────
   const dust = createParticleField(THREE, {
@@ -1357,7 +1690,9 @@ export async function createLuckyMeterScene({
   }
 
   function setSelectedIndex(index) {
-    selectedIndex = Number.isInteger(index) ? index : -1;
+    const next = Number.isInteger(index) ? index : -1;
+    if (next !== selectedIndex) flightPoints = [];
+    selectedIndex = next;
   }
 
   function applyColour(hex) {
@@ -1395,22 +1730,29 @@ export async function createLuckyMeterScene({
     medallionMaterial.opacity = 1;
     medallion.visible = true;
 
-    // Every chamber is full except the selected one. The shader cuts only that
-    // chamber at a falling wheel-space level, leaving its gold frame and floor
-    // intact and exposing the number inside it.
+    // Every cup is full except the selected one. Only the selected cup's liquid
+    // column shortens; its glass, bezel and rim stay exactly where they are, and
+    // the other eleven never move.
+    const choreo = state.choreography || {};
+    const focus = clamp01(choreo.focus ?? 0);
+    const rimGlow = clamp01(choreo.rim ?? 0);
     for (let index = 0; index < CHAMBER_COUNT; index += 1) {
       const chamber = chamberFills[index];
-      if (index !== selectedIndex) {
-        chamber.material.uniforms.uLevel.value = 10;
-        continue;
-      }
-      const span = chamber.maxY - chamber.minY + 0.04;
-      chamber.material.uniforms.uLevel.value =
-        chamber.maxY + 0.02 - clamp01(state.drain) * span;
+      const isSelected = index === selectedIndex;
+      const fill = isSelected ? 1 - clamp01(state.drain) : 1;
+      chamber.mesh.scale.y = Math.max(0.001, fill);
+      chamber.mesh.visible = fill > 0.004;
+      chamber.rimMaterial.opacity = isSelected ? 0.5 + rimGlow * 0.5 : 0.24 + (1 - focus) * 0.12;
     }
 
-    // The crystal bowl fills and stays full. Only the selected chamber empties;
-    // the bowl is the colour's destination, not a second drain.
+    bannerTextMaterial.opacity = 0.8 + clamp01(choreo.banner ?? 0) * 0.2;
+    bannerEnamelMaterial.emissiveIntensity = 0.36 + clamp01(choreo.banner ?? 0) * 0.42;
+    spoutChannelMaterial.opacity = clamp01(choreo.pourGlow ?? 0) * 0.8;
+    spoutChannelMaterial.color.copy(state.colour).offsetHSL(0, -0.05, 0.2);
+    plaqueSlotMaterial.opacity = state.numberReveal > 0.004 ? 0 : 1;
+
+    // Only the selected cup empties; the bowl is the colour's destination, not
+    // a second drain.
     const vesselFill = clamp01(state.vesselFill);
     const liquidHeight = vesselFill * METER_LAYOUT.vessel.liquidDepth;
     liquid.scale.y = Math.max(0.001, vesselFill);
@@ -1459,72 +1801,74 @@ export async function createLuckyMeterScene({
       splashMaterial.opacity = 0;
     }
 
-    // The golden beam carries the number from the vessel to its display.
-    const beamProgress = clamp01(state.beam);
-    const beamVisible = beamProgress > 0.005;
-    beam.visible = beamVisible;
-    beamCore.visible = beamVisible;
-    orb.visible = beamVisible;
-    if (beamVisible) {
-      for (const geometry of [beamGeometry, beamCoreGeometry]) {
-        const indexCount = geometry.index ? geometry.index.count : 0;
-        if (indexCount > 0) geometry.setDrawRange(0, Math.max(6, Math.floor(indexCount * beamProgress)));
+    // The Lucky Number is its own object. It forms in the selected cup while
+    // the liquid falls, then leaves the cup, flies a continuous arc in front of
+    // the instrument and seats itself in the plaque's recess. It never touches
+    // the spout, the stream or the bowl.
+    const transfer = clamp01(state.numberReveal);
+    ensureFlightPath();
+    const flying = transfer > 0.004 && transfer < 0.995 && flightPoints.length > 0;
+    tokenGroup.visible = flying;
+    if (flying) {
+      const head = sampleNumberPath(flightPoints, transfer);
+      tokenGroup.position.set(head.x, head.y, head.z);
+      tokenGroup.quaternion.copy(camera.quaternion);
+      tokenGroup.rotateZ(Math.sin(transfer * Math.PI * 2) * 0.14);
+      const pop = Math.sin(Math.min(1, transfer * 1.6) * Math.PI * 0.5);
+      tokenGroup.scale.setScalar(0.72 + pop * 0.34);
+      tokenHaloMaterial.opacity = 0.3 + Math.sin(transfer * Math.PI) * 0.5;
+      tokenPlate.material.emissiveIntensity = 0.4 + Math.sin(transfer * Math.PI) * 0.55;
+      // The trail fades out before the token reaches the plaque, so no ghost
+      // rings are left hanging beside the reading.
+      const trailStrength =
+        Math.sin(transfer * Math.PI) * 0.5 * clamp01((0.88 - transfer) / 0.12);
+      trailMaterial.opacity = trailStrength;
+      for (let index = 0; index < trailSprites.length; index += 1) {
+        const point = sampleNumberPath(flightPoints, Math.max(0, transfer - (index + 1) * 0.03));
+        const sprite = trailSprites[index];
+        sprite.visible = trailStrength > 0.01;
+        sprite.position.set(point.x, point.y, point.z - 0.02);
+        sprite.quaternion.copy(camera.quaternion);
+        sprite.scale.setScalar(1 - index * 0.12);
       }
-      const fade = Math.sin(Math.min(1, beamProgress) * Math.PI);
-      beamMaterial.opacity = 0.06 + fade * 0.36;
-      beamCoreMaterial.opacity = 0.12 + fade * 0.6;
-      const head = beamCurve.getPointAt(Math.min(0.999, beamProgress));
-      orb.position.copy(head);
-      orb.scale.setScalar(0.7 + fade * 0.9);
-      orbMaterial.opacity = 0.25 + fade * 0.65;
+    } else {
+      trailMaterial.opacity = 0;
+      for (const sprite of trailSprites) sprite.visible = false;
     }
 
-    // The number lives in the selected chamber while its liquid falls, then
-    // travels continuously along the beam to its own display beside the bowl.
-    // It never enters the colour bowl and never disappears mid-transfer.
+    // In the cup the number is revealed by the falling liquid; once it detaches
+    // the cup copy is gone and the token is the only number in the air.
     const numberReveal = clamp01(state.numberReveal);
-    const travelling = beamProgress > 0.001 && numberReveal < 0.999;
-    const inChamber = numberReveal < 0.999 && beamProgress <= 0.001;
-    numberPlane.visible =
-      shownNumber !== null && (travelling || (inChamber && state.drain > 0.06));
-    if (numberPlane.visible) {
+    const inChamber = numberReveal < 0.004 && state.drain > 0.06;
+    numberPlane.visible = shownNumber !== null && inChamber;
+    if (inChamber) {
       numberPlane.quaternion.copy(camera.quaternion);
-      if (travelling) {
-        // No chamber clip while the number is in the air; the beam is its
-        // reveal and the arrival display takes over at the end.
-        numberClip.constant = 100;
-        const head = beamCurve.getPointAt(Math.min(0.999, beamProgress));
-        numberPlane.position.copy(head);
-        numberPlane.position.z += 0.02;
-        numberPlane.scale.setScalar(0.92 + Math.sin(beamProgress * Math.PI) * 0.28);
-      } else {
-        numberPlane.position.set(numberCentre.x, numberCentre.y, 0.2);
-        numberPlane.scale.setScalar(1);
-        const top = numberCentre.y + 0.18;
-        const bottom = numberCentre.y - 0.18;
-        const revealed = clamp01((state.drain - 0.06) / 0.84);
-        numberClip.constant = -(top - revealed * (top - bottom));
-      }
+      numberPlane.position.set(numberCentre.x, numberCentre.y, 0.2);
+      numberPlane.scale.setScalar(1);
+      const top = numberCentre.y + 0.18;
+      const bottom = numberCentre.y - 0.18;
+      const revealed = clamp01((state.drain - 0.06) / 0.84);
+      numberClip.constant = -(top - revealed * (top - bottom));
     }
 
-    // Idle light: the wheel catches a slow sweep, the pointer glows faintly.
+
     const selected = selectedIndex >= 0 ? selectedIndex : 0;
     const selectedFill = chamberFills[selected];
     if (selectedFill) {
-      selectedFill.material.emissiveIntensity += Math.sin(secs * 2.1) * 0.02;
+      selectedFill.rimMaterial.opacity = 0.34 + Math.sin(secs * 2.1) * 0.04;
     }
     if (faceLight) {
       faceLight.intensity = (high ? 1.35 : 1.05) + Math.sin(secs * 0.85) * 0.06;
     }
     lights.update(0.016);
-    dust.setIntensity(0.35 + vesselFill * 0.4 + state.beam * 0.3);
+    dust.setIntensity(clamp01(choreo.dust ?? 0.35) * 0.9 + vesselFill * 0.15);
     dust.update(0.016, secs);
 
     // A finished or untouched scene must not keep rendering forever. A state
     // change or a pointer movement wakes it again.
     const atRest =
       state.phase === 'idle' ||
-      (state.phase === 'revealed' && state.beam <= 0.01 && state.numberReveal >= 0.99);
+      (state.phase === 'revealed' && state.numberReveal >= 0.99);
     if (atRest) {
       if (settleStart === null) settleStart = secs;
       const delay = state.phase === 'idle' ? IDLE_STOP_SECONDS : FINISHED_STOP_SECONDS;
@@ -1653,6 +1997,9 @@ export async function createLuckyMeterScene({
       if (typeof next.phase === 'string') {
         state.phase = next.phase;
       }
+      if (next.choreography && typeof next.choreography === 'object') {
+        state.choreography = { ...state.choreography, ...next.choreography };
+      }
       if (typeof next.colour === 'string') applyColour(next.colour);
       if (Array.isArray(next.palette)) setChamberPalette(next.palette);
       if (typeof next.colourIndex === 'number') setSelectedIndex(next.colourIndex);
@@ -1667,6 +2014,8 @@ export async function createLuckyMeterScene({
         numberTexture = makeNumberTexture(THREE, nextNumber);
         numberMaterial.map = numberTexture;
         numberMaterial.needsUpdate = true;
+        numeralMaterial.map = numberTexture;
+        numeralMaterial.needsUpdate = true;
       }
 
       const changed =
@@ -1730,6 +2079,8 @@ export async function createLuckyMeterScene({
       resizeObserver = null;
       numberTexture?.dispose();
       numberTexture = null;
+      tokenHaloTexture?.dispose();
+      for (const texture of engravingTextures) texture?.dispose?.();
       bowlShadowTexture?.dispose();
       surface.dispose();
       materials.dispose();

@@ -167,9 +167,9 @@ describe('Daily Resonance daily experience', () => {
 
   it('persists one seasonal result, then reveals it through every storyboard stage', () => {
     render(<DailyResonance />);
-    expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Daily Resonance Ritual/i).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
 
     // The complete reading is saved before any pixel moves.
     const stored = readStored();
@@ -280,7 +280,8 @@ describe('Daily Resonance daily experience', () => {
       'data-value',
       String(result.luckyNumber),
     );
-    expect(screen.getByText(result.event.name)).toBeInTheDocument();
+    // The event still drives the celebration, but it no longer gets a card.
+    expect(screen.queryByTestId('lucky-event-panel')).not.toBeInTheDocument();
     // The sentence was written while the colour poured and the number
     // travelled. It is already gone: the sky is clear before the celebration.
     expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
@@ -325,7 +326,7 @@ describe('Daily Resonance daily experience', () => {
 
   it('writes the tier sentence on the lock frame and removes it before the celebration', () => {
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const result = readStored().result;
 
     // The sentence starts on the lock frame, while the pour is still running.
@@ -351,9 +352,9 @@ describe('Daily Resonance daily experience', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
 
-    expect(screen.getByRole('button', { name: /Reveal My Resonance/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Start My Lucky Meter/i })).toBeInTheDocument();
     expect(screen.queryByText(/Reading today/i)).not.toBeInTheDocument();
     expect(window.localStorage.getItem(METER_STORAGE_KEY)).toBeNull();
     expect(screen.getByRole('status')).toHaveTextContent(/could not be prepared/i);
@@ -361,13 +362,13 @@ describe('Daily Resonance daily experience', () => {
 
   it('resumes an unfinished cinematic after refresh without rerolling the selections', () => {
     const first = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const result = readStored().result;
     advanceToCelebration(result.tier.message);
     first.unmount();
 
     render(<DailyResonance />);
-    expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Start My Lucky Meter/i })).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(result.percentage),
@@ -391,7 +392,7 @@ describe('Daily Resonance daily experience', () => {
 
   it('resumes the reveal after a refresh mid-pour instead of skipping to the reading', () => {
     const first = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const before = readStored();
     advance(PERCENTAGE_START_MS + 600);
     expect(before.revealCompleted).toBe(false);
@@ -484,7 +485,7 @@ describe('Daily Resonance daily experience', () => {
 
   it('rolls over to the welcome state when the local date changes in an open tab', () => {
     const view = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     advance(REVEAL_COMPLETE_MS + 600);
     expect(screen.getByTestId('lucky-colour-panel')).toBeInTheDocument();
 
@@ -493,7 +494,7 @@ describe('Daily Resonance daily experience', () => {
       view.rerender(<DailyResonance />);
     });
 
-    expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Daily Resonance Ritual/i).length).toBeGreaterThan(0);
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-spark-finale')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-meter-countdown')).not.toBeInTheDocument();
@@ -513,7 +514,7 @@ describe('Daily Resonance daily experience', () => {
     try {
       render(<DailyResonance />);
       act(() => {});
-      fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
 
       // No spins and no cinematic: every value is final immediately.
       const result = readStored().result;

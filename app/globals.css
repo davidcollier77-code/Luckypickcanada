@@ -1032,10 +1032,9 @@ body {
 .lucky-meter-stage {
   position: relative;
   isolation: isolate;
-  /* No aspect-ratio on the stage itself: the 1:1 scene sets the wheel box, and
-     the colour caption below it must add to the stage's height instead of
-     overflowing it and colliding with the detail panels. */
-  max-width: min(24rem, 84vw);
+  /* The instrument is a portrait object: the scene's own aspect sets the box,
+     and both results are drawn inside it rather than stacked below. */
+  max-width: min(28rem, 92vw);
   margin-inline: auto;
 }
 
@@ -1043,7 +1042,7 @@ body {
   position: relative;
   display: block;
   height: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 0.76 / 1;
   margin-bottom: 0;
   perspective: none;
   filter: none;
@@ -1503,10 +1502,10 @@ body {
   }
 
   .lucky-meter-experience[data-finished="true"] .lucky-meter-content {
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0;
     max-width: 100%;
   }
 
@@ -1573,10 +1572,10 @@ body {
   }
 
   .lucky-meter-experience[data-finished="true"] .lucky-meter-content {
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+    gap: 0;
     max-width: 75rem;
   }
 
@@ -1618,10 +1617,10 @@ body {
      closed instrument on the right. It shares the width instead of stacking
      the phone layout in the middle of a wide screen. */
   .lucky-meter-experience[data-finished="false"] .lucky-meter-content {
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3.5rem;
+    gap: 0;
     max-width: 75rem;
   }
 
@@ -1682,5 +1681,158 @@ body {
     display: block;
     font-size: 9px;
     line-height: 1.3;
+  }
+}
+
+/* ── Spec 227: the instrument's two destinations ────────────────────────────
+   The colour bar and the plaque's value are DOM inlays pinned to the projected
+   faces of the 3D objects behind them. They keep the live attributes and the
+   readable text while the geometry supplies the materials and the light. */
+.lucky-colour-bar {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.1rem 0.2rem;
+  z-index: 6;
+  pointer-events: none;
+  max-width: 62%;
+}
+
+.lucky-colour-bar__swatch {
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 236, 190, 0.55);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.55), 0 0 8px rgba(255, 200, 110, 0.25);
+}
+
+.lucky-colour-bar__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.lucky-colour-bar__name {
+  font-family: "Cinzel", Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(0.6rem, 2.05vw, 0.86rem);
+  color: #ffe9b8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lucky-colour-bar__meta {
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 225, 170, 0.62);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lucky-number-plaque {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.lucky-number-plaque__value {
+  font-size: clamp(1.25rem, 5.4vw, 2.1rem);
+  line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.85));
+}
+
+.lucky-meter-start-slot {
+  z-index: 20;
+}
+
+/* Landscape phones have height, not width: shrink the instrument so both
+   destinations and the dock still fit without scrolling. */
+@media (max-height: 560px) and (min-width: 640px) {
+  .lucky-meter-stage {
+    max-width: min(16rem, 58vh);
+  }
+}
+
+/* ── Spec 227: the dock's compact clock chip ────────────────────────────────*/
+.lucky-countdown--dock {
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+}
+
+.lucky-countdown--dock .lucky-countdown__value {
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+}
+
+.lucky-countdown__clock {
+  color: rgba(255, 220, 150, 0.8);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+/* ── Spec 227: Little Spark as a written script ─────────────────────────────*/
+.lucky-sky-writing__text {
+  font-family: "Playfair Display", "Iowan Old Style", Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.012em;
+  color: #ffe6ae;
+  text-shadow: 0 0 18px rgba(255, 186, 70, 0.35), 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.lucky-sky-writing__ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: -0.5rem;
+  width: 90%;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(255, 214, 140, 0.5) 0%,
+    rgba(255, 170, 60, 0.16) 45%,
+    rgba(255, 150, 40, 0) 72%
+  );
+  pointer-events: none;
+}
+
+.lucky-sky-writing__ribbon::before {
+  content: "";
+  position: absolute;
+  left: -0.35rem;
+  top: -0.55rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  background: linear-gradient(160deg, #ffe9a8, #d99a33 62%, #a4621c);
+  clip-path: polygon(50% 0%, 57% 24%, 72% 17%, 68% 33%, 100% 29%, 84% 47%, 98% 57%, 74% 59%, 80% 82%, 58% 70%, 50% 100%, 42% 70%, 20% 82%, 26% 59%, 2% 57%, 16% 47%, 0% 29%, 32% 33%, 28% 17%, 43% 24%);
+}
+
+/* Landscape phones: the compact column still has to fit 390 px of height, so
+   the instrument is sized from the viewport height, not its width. */
+@media (max-height: 560px) {
+  .lucky-meter-experience[data-finished='true'] > .relative.z-20 {
+    padding-top: 3.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .lucky-meter-experience .lucky-meter-stage {
+    max-width: min(13rem, 42vh) !important;
+  }
+
+  .lucky-meter-experience .lucky-meter-message-slot {
+    min-height: 0;
   }
 }

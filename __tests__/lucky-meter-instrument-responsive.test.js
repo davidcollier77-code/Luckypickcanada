@@ -3,9 +3,10 @@ import { instrumentFraming } from '../app/lib/lucky-meter/instrument-prototype.j
 import { stageFraming } from '../app/lib/lucky-meter/meter-layout.js';
 
 const PHONE_MAX_WIDTH = 500;
-const PHONE_VERTICAL_EXTENT = 6.6;
-const TABLET_VERTICAL_EXTENT = 4.5;
-const DESKTOP_VERTICAL_EXTENT = 4.2;
+// One portrait composition now frames the whole instrument: the wheel, the
+// twelve cups, the draining bowl, the plaque and the colour bar. Every screen
+// size uses that extent, so the camera distance only ever depends on 3.8.
+const VERTICAL_EXTENT = 3.8;
 
 describe('Lucky Meter responsive framing', () => {
   it('keeps the tall reference composition on small and large phones', () => {
@@ -18,8 +19,8 @@ describe('Lucky Meter responsive framing', () => {
     ]) {
       const framing = instrumentFraming(width, height);
       expect(framing.phone, `${width}×${height}`).toBe(true);
-      expect(framing.verticalExtent).toBe(PHONE_VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(-0.35);
+      expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
+      expect(framing.lookY).toBe(0.02);
       expect(framing.aspect).toBeCloseTo(width / height, 6);
       expect(Number.isFinite(framing.distance)).toBe(true);
     }
@@ -33,10 +34,10 @@ describe('Lucky Meter responsive framing', () => {
       const framing = instrumentFraming(width, height);
       expect(framing.phone, `${width}×${height}`).toBe(false);
       expect(framing.tabletPortrait).toBe(true);
-      expect(framing.verticalExtent).toBe(TABLET_VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(-0.2);
+      expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
+      expect(framing.lookY).toBe(0.02);
       expect(framing.distance).toBeCloseTo(
-        TABLET_VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
+        VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
         6,
       );
     }
@@ -49,10 +50,10 @@ describe('Lucky Meter responsive framing', () => {
       const framing = instrumentFraming(width, height);
       expect(framing.phone, `${width}×${height}`).toBe(false);
       expect(framing.tabletPortrait).toBe(false);
-      expect(framing.verticalExtent).toBe(DESKTOP_VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(-0.2);
+      expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
+      expect(framing.lookY).toBe(0.02);
       expect(framing.distance).toBeCloseTo(
-        DESKTOP_VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
+        VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
         6,
       );
     }
@@ -65,29 +66,31 @@ describe('Lucky Meter responsive framing', () => {
     const phone = instrumentFraming(390, 844);
     const tablet = instrumentFraming(820, 1180);
     const desktop = instrumentFraming(1440, 900);
-    // The tighter composition is closer to the instrument, not a different FOV.
-    expect(tablet.distance).toBeLessThan(phone.distance);
-    expect(desktop.distance).toBeLessThan(tablet.distance);
+    // One composition means one camera distance at every size: the wider
+    // frames crop nothing and never stretch the instrument.
+    expect(tablet.distance).toBeCloseTo(phone.distance, 6);
+    expect(desktop.distance).toBeCloseTo(phone.distance, 6);
+    expect(phone.verticalExtent).toBe(VERTICAL_EXTENT);
   });
 
   it('fills the production square stage without changing the wheel geometry', () => {
     const phone = stageFraming(390, 390);
     expect(phone.phone).toBe(true);
-    expect(phone.verticalExtent).toBe(3.9);
-    expect(phone.lookY).toBe(-0.15);
-    expect(phone.wheelTop).toBeCloseTo(0.5 - (0.62 + 0.15) / 3.9, 6);
+    expect(phone.verticalExtent).toBe(VERTICAL_EXTENT);
+    expect(phone.lookY).toBe(0.02);
+    expect(phone.wheelTop).toBeCloseTo(0.5 - (0.62 - 0.02) / VERTICAL_EXTENT, 6);
 
     const large = stageFraming(480, 480);
     expect(large.phone).toBe(true);
-    expect(large.verticalExtent).toBe(3.9);
+    expect(large.verticalExtent).toBe(VERTICAL_EXTENT);
 
     const tablet = stageFraming(520, 520);
     expect(tablet.phone).toBe(false);
-    expect(tablet.verticalExtent).toBe(3.6);
-    expect(tablet.wheelTop).toBeCloseTo(0.5 - (0.62 + 0.15) / 3.6, 6);
-    // The larger stage moves the camera closer; it never changes the FOV or
-    // applies a non-uniform scale.
-    expect(tablet.distance).toBeLessThan(phone.distance);
+    // A bigger stage crops the same composition instead of re-framing it.
+    expect(tablet.verticalExtent).toBe(VERTICAL_EXTENT);
+    expect(tablet.wheelTop).toBeCloseTo(phone.wheelTop, 6);
+    expect(tablet.distance).toBeCloseTo(phone.distance, 6);
+    expect(tablet.aspect).toBe(1);
   });
 
   it('keeps the production wheel centre inside a safe band at every stage size', () => {
@@ -108,7 +111,8 @@ describe('Lucky Meter responsive framing', () => {
     ]) {
       const framing = instrumentFraming(width, height);
       expect(framing.phone).toBe(true);
-      expect(framing.aspect).toBeCloseTo(390 / 844, 6);
+      expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
+      expect(framing.aspect).toBeCloseTo(0.76, 6);
       expect(framing.distance).toBeGreaterThan(0);
     }
   });

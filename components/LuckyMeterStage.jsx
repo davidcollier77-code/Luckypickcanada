@@ -4,21 +4,42 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createLuckyMeterScene } from '../app/lib/lucky-meter/meter-scene';
 import {
   CHAMBER_COUNT,
+  METER_LAYOUT,
+  STAGE_ASPECT,
   chamberGradient,
   selectedChamberIndex,
   stageFraming,
 } from '../app/lib/lucky-meter/meter-layout';
 import { LUCKY_COLOUR_LABEL, LUCKY_NUMBER_MAX, LUCKY_NUMBER_MIN } from '../app/lib/lucky-meter/config';
 
-/** The stage's camera maps the wheel centre to this point in its square box. */
-const WHEEL_CENTRE_TOP = 'var(--meter-wheel-top, 33.5%)';
+/** The stage's camera maps the wheel centre to this point in its box. */
+const WHEEL_CENTRE_TOP = 'var(--meter-wheel-top, 34.2%)';
 // Only a stuck-state guard: the measured first composite can exceed 3 s on a
 // loaded software host, and the canvas is already above the fallback by then.
 const FALLBACK_RETIRE_MS = 6000;
-const POINTER_LEFT = '26.4%';
-const POINTER_TOP = '55.1%';
-const VESSEL_LEFT = '30%';
-const VESSEL_TOP = '79%';
+
+/**
+ * The one framing the DOM inlays and the canvas share. It is derived from the
+ * same function the scene uses, so a label can never drift off its plaque.
+ */
+const FRAMING = stageFraming(390, 390 / STAGE_ASPECT);
+const HALF_WIDTH = (FRAMING.verticalExtent * STAGE_ASPECT) / 2;
+const HALF_HEIGHT = FRAMING.verticalExtent / 2;
+
+/** Projects a world point onto the stage as CSS percentages. */
+function project(x, y) {
+  return {
+    left: `${(50 + (x / HALF_WIDTH) * 50).toFixed(2)}%`,
+    top: `${(50 - ((y - FRAMING.lookY) / HALF_HEIGHT) * 50).toFixed(2)}%`,
+  };
+}
+
+const POINTER_POSITION = project(METER_LAYOUT.spout.socket[0], METER_LAYOUT.spout.socket[1]);
+const VESSEL_POSITION = project(METER_LAYOUT.vessel.x, METER_LAYOUT.vessel.y);
+const COLOUR_BAR_POSITION = project(METER_LAYOUT.colourBar.x, METER_LAYOUT.colourBar.y - 0.03);
+const PLAQUE_POSITION = project(METER_LAYOUT.plaque.x, METER_LAYOUT.plaque.y - 0.09);
+const BAR_WIDTH = `${((METER_LAYOUT.colourBar.width / (HALF_WIDTH * 2)) * 100).toFixed(2)}%`;
+const PLAQUE_WIDTH = `${((METER_LAYOUT.plaque.insetWidth / (HALF_WIDTH * 2)) * 100).toFixed(2)}%`;
 
 /**
  * The CSS maple silhouette used only when WebGL is unavailable. It is a
@@ -40,11 +61,11 @@ function formatNumber(value) {
 /**
  * The Lucky Meter's single physical stage.
  *
- * One Three.js canvas draws the medallion, the twelve chambers, the central
- * decorative leaf, the fixed 7:30 pointer with its curved arm and spout, the
- * receiving vessel, the pour and the golden transfer beam. The DOM overlays
- * stay readable text: the centre readout, the colour caption and the live
- * attributes the storyboard tests observe.
+ * One Three.js canvas draws the banner, the twelve glass cups, the fixed 7:30
+ * spout, the crystal bowl, the colour bar, the Lucky Number plaque and the
+ * number's independent flight. The DOM overlays stay readable text: the centre
+ * readout, the colour name inside the gold bar, the revealed number inside the
+ * plaque, and the live attributes the storyboard tests observe.
  *
  * Until the renderer has produced a frame — and permanently without WebGL or
  * after a context loss — a complete CSS composition takes over. It is built
@@ -67,8 +88,9 @@ function formatNumber(value) {
  * @param {number} [props.leafExit]
  * @param {'idle'|'filling'|'holding'|'transferring'|'settled'} [props.vesselPhase]
  * @param {object|null} [props.colour]
- * @param {boolean} [props.showDetails] Render the colour caption once the reading has details.
+ * @param {boolean} [props.showDetails] Render the colour bar once the reading has details.
  * @param {string} [props.seasonName]
+ * @param {object|null} [props.choreography]
  * @param {boolean} [props.reducedMotion]
  * @param {React.ReactNode} [props.children]
  * @param {string} [props.className]
@@ -92,6 +114,7 @@ export default function LuckyMeterStage({
   colour = null,
   showDetails = false,
   seasonName = '',
+  choreography = null,
   reducedMotion = false,
   children,
   className = '',
@@ -101,7 +124,7 @@ export default function LuckyMeterStage({
   const sceneRef = useRef(null);
   const [renderMode, setRenderMode] = useState('pending');
   const [fallbackRetired, setFallbackRetired] = useState(false);
-  const [wheelTop, setWheelTop] = useState(33.5);
+  const [wheelTop, setWheelTop] = useState(34.2);
 
   const palette = Array.isArray(colours) ? colours : [];
   const selectedIndex = selectedChamberIndex(palette, colourId);
@@ -121,8 +144,6 @@ export default function LuckyMeterStage({
       ? number
       : null;
   const showFallback = renderMode !== 'three' || !fallbackRetired;
-  const grain = Math.max(0, Math.min(1, colour?.texture?.grain ?? 0.1));
-  const sheen = Math.max(0, Math.min(1, colour?.texture?.sheen ?? 0.3));
 
   const latestStateRef = useRef({});
   latestStateRef.current = {
@@ -139,6 +160,7 @@ export default function LuckyMeterStage({
     beam: beamRatio,
     leafExit: leaf,
     numberReveal: reveal,
+    choreography,
     reducedMotion,
   };
 
@@ -150,7 +172,7 @@ export default function LuckyMeterStage({
     if (!element || typeof ResizeObserver === 'undefined') return undefined;
     const measure = () => {
       const width = element.clientWidth || 390;
-      const height = element.clientHeight || width;
+      const height = element.clientHeight || width / STAGE_ASPECT;
       const framing = stageFraming(width, height);
       setWheelTop(Number((framing.wheelTop * 100).toFixed(2)));
     };
@@ -337,10 +359,12 @@ export default function LuckyMeterStage({
       beam: beamRatio,
       leafExit: leaf,
       numberReveal: reveal,
+      choreography,
       reducedMotion,
     });
   }, [
     beamRatio,
+    choreography,
     colour?.hex,
     drain,
     fillRatio,
@@ -357,7 +381,7 @@ export default function LuckyMeterStage({
 
   // The fallback wheel is a conic gradient whose bands start at index × step.
   // The landing rotation puts a band's start under the pointer, so subtract
-  // half a band to centre the selected chamber on the fixed 7:30 pointer.
+  // half a band to centre the selected chamber on the fixed 7:30 spout.
   const fallbackWheelAngle = rotation - chamberStep / 2;
   const drainOverlay = selected
     ? `conic-gradient(from ${selectedIndex * chamberStep}deg, rgba(2, 5, 9, 0.94) 0deg ${chamberStep}deg, rgba(2, 5, 9, 0) ${chamberStep}deg 360deg)`
@@ -429,13 +453,16 @@ export default function LuckyMeterStage({
             <span
               className="lucky-meter-fallback__arm"
               aria-hidden="true"
-              style={{ left: POINTER_LEFT, top: POINTER_TOP }}
+              style={{ left: POINTER_POSITION.left, top: POINTER_POSITION.top }}
             />
             <span
               className="lucky-meter-fallback__pointer-wrap"
-              style={{ left: POINTER_LEFT, top: POINTER_TOP }}
+              style={{ left: POINTER_POSITION.left, top: POINTER_POSITION.top }}
             >
-              <span className="lucky-meter-fallback__pointer" />
+              <span
+                className="lucky-meter-fallback__pointer"
+                style={{ clipPath: CSS_LEAF_CLIP, WebkitClipPath: CSS_LEAF_CLIP }}
+              />
             </span>
 
             {leaf < 0.995 && (
@@ -455,8 +482,8 @@ export default function LuckyMeterStage({
             <span
               className="lucky-meter-fallback__stream"
               style={{
-                left: POINTER_LEFT,
-                top: POINTER_TOP,
+                left: POINTER_POSITION.left,
+                top: POINTER_POSITION.top,
                 opacity: pourRatio > 0.02 ? 0.85 : 0,
                 background: `linear-gradient(180deg, ${colour?.hex ?? '#f5c451'}, ${
                   colour?.hex ?? '#f5c451'
@@ -464,7 +491,18 @@ export default function LuckyMeterStage({
               }}
             />
 
-            <span className="lucky-meter-fallback__vessel" style={{ left: VESSEL_LEFT, top: VESSEL_TOP }}>
+            {/* The number's flight in the no-WebGL composition: the same
+                independent path, drawn as a soft additive streak. */}
+            <span
+              className="lucky-meter-fallback__beam"
+              aria-hidden="true"
+              style={{ opacity: beamRatio > 0.02 ? Math.sin(beamRatio * Math.PI) * 0.9 : 0 }}
+            />
+
+            <span
+              className="lucky-meter-fallback__vessel"
+              style={{ left: VESSEL_POSITION.left, top: VESSEL_POSITION.top }}
+            >
               <span className="lucky-meter-fallback__vessel-glass" />
               <span
                 className="lucky-meter-fallback__liquid"
@@ -478,13 +516,6 @@ export default function LuckyMeterStage({
               />
               <span className="lucky-meter-fallback__vessel-rim" />
             </span>
-
-            <span
-              className="lucky-meter-fallback__beam"
-              style={{
-                opacity: beamRatio > 0.02 ? Math.sin(beamRatio * Math.PI) * 0.9 : 0,
-              }}
-            />
           </div>
         )}
 
@@ -496,8 +527,8 @@ export default function LuckyMeterStage({
           {children}
         </div>
 
-        {/* The fixed pointer's test hook: the visible pointer is geometry in the
-            scene (or the CSS leaf above), never an SVG. */}
+        {/* The fixed spout's test hook: the visible spout is geometry in the
+            scene, never an SVG. */}
         <span
           aria-hidden="true"
           data-testid="lucky-meter-pointer"
@@ -512,63 +543,82 @@ export default function LuckyMeterStage({
             vesselPhase === 'settled' ? 'is-active' : ''
           }`}
         />
-      </div>
 
-      {showDetails && (
-        <section
-          data-testid="lucky-colour-panel"
-          data-vessel-open="1.00"
-          data-vessel-fill={formatNumber(fillRatio)}
-          data-vessel-renderer={renderMode}
-          data-vessel-motion={reducedMotion ? 'calm' : 'full'}
-          data-vessel-phase={vesselPhase}
-          className={`lucky-vessel-stage relative mx-auto w-full ${
-            compact ? 'mt-1 max-w-[280px]' : 'mt-1 max-w-[24rem] sm:max-w-[27rem]'
-          }`}
-        >
-          <div className="lucky-vessel__caption">
-            {colour ? (
+        {/* The colour's destination: the gold bar beneath the bowl. It carries
+            the same vessel attributes the storyboard and the tests observe. */}
+        {showDetails && (
+          <section
+            data-testid="lucky-colour-panel"
+            data-vessel-open="1.00"
+            data-vessel-fill={formatNumber(fillRatio)}
+            data-vessel-renderer={renderMode}
+            data-vessel-motion={reducedMotion ? 'calm' : 'full'}
+            data-vessel-phase={vesselPhase}
+            className={`lucky-colour-bar ${compact ? 'is-compact' : ''}`}
+            style={{
+              left: COLOUR_BAR_POSITION.left,
+              top: COLOUR_BAR_POSITION.top,
+              width: BAR_WIDTH,
+              // Above the WebGL canvas (10): the reading's colour is printed on
+              // the plaque, not behind it.
+              zIndex: 12,
+              // The plaque prints its own caption; the reading stacks under it.
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '0.28rem',
+              paddingTop: '0.78rem',
+              paddingBottom: 0,
+              justifyContent: 'center',
+            }}
+          >
+            <h2 className="sr-only">{LUCKY_COLOUR_LABEL}</h2>
+            <span className="lucky-colour-bar__text">
               <span
-                aria-hidden="true"
-                className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-full border shadow-inner sm:h-9 sm:w-9 ${
-                  colour.light ? 'border-slate-500/70' : 'border-white/25'
-                }`}
+                className="lucky-colour-bar__name"
                 style={{
-                  backgroundColor: colour.hex,
-                  backgroundImage: `radial-gradient(circle at 32% 26%, rgba(255,255,255,${
-                    0.16 + sheen * 0.4
-                  }) 0%, rgba(255,255,255,0) 58%), repeating-linear-gradient(118deg, rgba(255,255,255,${
-                    grain * 0.22
-                  }) 0 1px, rgba(0,0,0,${grain * 0.28}) 1px 2.4px)`,
+                  opacity: colour ? 0.45 + fillRatio * 0.55 : 0.6,
+                  fontSize: '0.58rem',
+                  lineHeight: 1,
+                  letterSpacing: '0.06em',
+                  whiteSpace: 'nowrap',
                 }}
-              />
-            ) : (
-              <span
-                aria-hidden="true"
-                className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-amber-200/25 bg-[radial-gradient(circle_at_32%_26%,rgba(255,228,168,0.18),rgba(4,9,14,0.9))] shadow-inner sm:h-9 sm:w-9"
-              />
-            )}
-            <div className="min-w-0 text-left">
-              <h2 className="lucky-panel-label text-[12px] uppercase">{LUCKY_COLOUR_LABEL}</h2>
-              <p
-                className="truncate text-sm font-semibold leading-tight text-white sm:text-base"
-                style={{ opacity: colour ? 0.35 + fillRatio * 0.65 : 0.7 }}
               >
                 {colour ? colour.name : 'Awaiting the reading'}
-              </p>
-              <p
-                className="text-[12px] uppercase tracking-wider text-slate-300/85 tabular-nums"
-                style={{ opacity: colour ? 0.35 + fillRatio * 0.65 : 0.55 }}
+              </span>
+              <span
+                className="lucky-colour-bar__meta"
+                style={{ fontSize: '0.5rem', lineHeight: 1.05, whiteSpace: 'nowrap' }}
               >
                 {colour ? colour.hex : '—'}
-              </p>
-            </div>
-            <span className="ml-auto hidden text-[12px] uppercase tracking-[0.16em] text-amber-200/60 sm:block">
-              {seasonName}
+              </span>
             </span>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
+
+        {/* The number's destination: the plaque's recess. It mounts only once
+            the transfer has settled, so the empty plaque stays canvas art. */}
+        {numberSettled && shownNumber !== null && (
+          <section
+            data-testid="lucky-number-panel"
+            className={`lucky-number-plaque ${compact ? 'is-compact' : ''}`}
+            style={{
+              left: PLAQUE_POSITION.left,
+              top: PLAQUE_POSITION.top,
+              width: PLAQUE_WIDTH,
+              // Above the WebGL canvas (10), inside the plaque's recess.
+              zIndex: 13,
+            }}
+          >
+            <p
+              className="lucky-number-value lucky-number-plaque__value"
+              data-testid="lucky-number-value"
+              data-value={shownNumber}
+            >
+              {shownNumber}
+            </p>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
