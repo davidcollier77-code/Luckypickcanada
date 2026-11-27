@@ -937,3 +937,11 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Reduced `pnpm.overrides` from 18 entries to the three verified Undici major floors. The glob 10/13 and minimatch 10 workarounds were removed after `@typescript-eslint` 8.74.0 declared `minimatch ^11.0.1` upstream; the brace-expansion floors, parent-scoped selectors, `proxy-addr`, `source-map-js`, `qs`, `fast-uri`, `sharp`, `vite`, `postcss` and `@vitest/mocker` were removed because normal resolution selects supported, patched, within-range versions.
 - Verification: `pnpm audit` 0 advisories; focused guards 15 tests; full gate exit 0 with 520 Python tests, 113 Vitest files / 1,272 tests, TypeScript and the Next.js build; OpenNext build passed with a matching `BUILD_ID`; `wrangler build` 8,893.61 KiB with all bindings; updater dry-run passed and its Node tests 17/17; combined `.next + public` 440,279,040 bytes (419.88 MiB), below 495 MiB.
 - No application source, Cloudflare configuration, binding, workflow, secret or production resource changed.
+
+
+## 2026-11-27 — Keep the GSAP AI reference static (Spec 227)
+
+- Added a narrow updater exclusion for the single manifest ID `/llmstxt/gsap_llms_txt`. It remains routed under `polishing`, stays in the manifest inventory/source metadata and remains subject to the routed-snapshot integrity audit; the updater skips it before upstream SHA or source requests.
+- Added separate static-reference reporting and regression coverage for zero source requests, byte-identical snapshot retention and unchanged routing/index entries. Other routed documentation keeps the existing refresh path.
+- Preserved `.docs/manifest.json`, the GSAP snapshot, AGENTS.md, refresh schedules/workflows, dependencies, application code and production configuration. The current checked-in GSAP snapshot is a Cloudflare verification-challenge response; restoring actual technical content remains separate.
+- Local Node-dependent verification was not run because ChatGPT's startup runtime is Node.js 22.x and the repository requires Node.js 26.x. The regression coverage is committed for the repository's Node 26 CI checks; no local test/build pass is claimed.

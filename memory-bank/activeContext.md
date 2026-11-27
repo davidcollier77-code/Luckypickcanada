@@ -1,4 +1,18 @@
-# Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
+# Active Context — Static GSAP reference exclusion (Spec 227, 2026-11-27)
+
+## Current Task — Keep the GSAP AI reference available without refreshing it
+
+- **Scope:** One static reference ID, `/llmstxt/gsap_llms_txt`, excluded from the documentation refresh queue. Keep its `polishing` route, inventory entry, source metadata and snapshot unchanged.
+- **Implementation:** The updater recognizes the ID before source SHA/download processing, records it separately in the refresh report, and continues normal reconciliation and snapshot integrity checks against the routed ID.
+- **Regression coverage:** The updater report unit test checks the static section. The isolated end-to-end test asserts that no GSAP source request occurs, the copied snapshot remains byte-identical, and the manifest routing/inventory/source record remain intact.
+- **Current snapshot condition:** The checked-in GSAP file currently contains only a Cloudflare verification challenge response, not GSAP documentation. It was deliberately left untouched; recovering its technical content is separate work.
+- **Verification:** The Library startup procedure ran. ChatGPT reports Node.js 22.x while the repository requires Node.js 26.x; Node-dependent tests, dependency installs and builds were not run locally. PR-triggered checks are required after submission.
+- **Boundaries:** No `.docs` file, manifest, AGENTS.md, workflow/schedule, package/dependency, application code or production resource is changed. The updater source is protected and the PR declares user authorization; the separate GitHub protected-file Environment gate remains required.
+- **Memory Bank health:** All four core files were read. This file, techContext and progress are updated for the current task; projectBrief remains accurate and unchanged.
+
+---
+
+# Previous Active Context — Cloudflare dependency modernization (Spec 226, 2026-11-27)
 
 ## Current Task — Current supported Cloudflare pair and a minimal override set
 
