@@ -35,7 +35,7 @@ Add one optional planning clarification to the shared Production build limit sec
 - **Implementation sequence**: Specify → plan → tasks → implement; no routine owner pause because the scope and text were explicitly authorized.
 - **Protected systems**: `AGENTS.md` is changed only in a dedicated governance PR. The separate protected-file environment authorization and governance digest approval remain mandatory; the agent will not post owner approval commands.
 - **Resource conservation**: No dependency, install, service, application build or deployment is introduced.
-- **Build policy**: The existing 495 MiB limit and current stop-safe/measurement requirements remain unchanged. The latest successful CI build measured 426,389,100 bytes (406.64 MiB) combined `.next + public` in run #2614 / `${runId}` on PR #2048 head `${runHead}`, leaving 88.36 MiB below the cap. PR #2052's own build is trusted-skipped as not applicable; the recorded size is the latest verified base measurement, not a new build for this PR.
+- **Build policy**: The existing 495 MiB limit and current stop-safe/measurement requirements remain unchanged. The latest successful CI build measured 426,389,100 bytes (406.64 MiB) combined `.next + public` in run #2614 / `45919768945` on PR #2048 head `7049dd547aade8ea2c4fa95a223a1a7dd7933193`, leaving 88.36 MiB below the cap. PR #2052's own build is trusted-skipped as not applicable; the recorded size is the latest verified base measurement, not a new build for this PR.
 
 ## QA and Governance Review
 

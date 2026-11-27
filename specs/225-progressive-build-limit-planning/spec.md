@@ -53,7 +53,7 @@ As a repository maintainer, I want the existing build-size guidance to recognize
 
 ## Build-size Evidence
 
-- The latest successful production build-size measurement available for the current base is **426,389,100 bytes (406.64 MiB)** for combined `.next + public`, from `Validate OpenNext Repair` run #2614 (run ID `${runId}`) on PR #2048 head `${runHead}`.
+- The latest successful production build-size measurement available for the current base is **426,389,100 bytes (406.64 MiB)** for combined `.next + public`, from `Validate OpenNext Repair` run #2614 (run ID `45919768945`) on PR #2048 head `7049dd547aade8ea2c4fa95a223a1a7dd7933193`.
 - The 495 MiB maximum is 519,045,120 bytes, leaving 92,656,020 bytes (88.36 MiB) of measured headroom.
 - The PR #2052 changed paths are build-exempt under the trusted classifier, so no new production build was run for this PR. The recorded value is the latest verified base measurement, not a PR #2052 build result.
 
