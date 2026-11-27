@@ -127,7 +127,7 @@ Managed authentication built on Better Auth that branches with your database.
 
 Long-running serverless compute, close to your database.
 
-- [All 19 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
+- [All 20 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
 
 - [Neon Functions](https://neon.com/docs/compute/functions/overview.md): Long-running serverless functions on your Neon branch, next to your data.
 - [Get started with Neon Functions](https://neon.com/docs/compute/functions/get-started.md): Deploy your first Neon Function and call it over HTTP.
@@ -148,6 +148,16 @@ S3-compatible object storage that branches with your projects.
 - [Object storage troubleshooting](https://neon.com/docs/storage/troubleshooting.md): Common errors and how to fix them
 - [Objects](https://neon.com/docs/storage/objects.md): Upload, download, list, and delete files
 - [S3 compatibility](https://neon.com/docs/storage/s3-compatibility.md): Which S3 operations Neon Object Storage supports
+
+### Uploads
+
+- [Import files from URLs and cloud services with Uppy Companion](https://neon.com/docs/storage/uploads/uppy-remote-sources.md): Have Companion fetch remote files and stream them into your Neon bucket
+- [Recover Uppy uploads after a reload or crash](https://neon.com/docs/storage/uploads/uppy-golden-retriever.md): Use Golden Retriever to resume uploads to Neon in a new tab
+- [Resumable uploads](https://neon.com/docs/storage/uploads/resumable-uploads.md): Upload large files that survive pauses, network drops, and page reloads
+- [Resumable uploads with Uppy and a signing endpoint](https://neon.com/docs/storage/uploads/uppy-s3-multipart.md): Upload from the browser directly to Neon, with your backend presigning each request
+- [Resumable uploads with Uppy and tus](https://neon.com/docs/storage/uploads/uppy-tus.md): Run a tus server that stores uploads in Neon Object Storage
+- [Resumable uploads with Uppy Companion](https://neon.com/docs/storage/uploads/uppy-companion.md): Let Uppy Companion sign S3 multipart uploads to your Neon bucket
+- [Sign Uppy uploads in the browser with short-lived credentials](https://neon.com/docs/storage/uploads/uppy-browser-signing.md): Use @uppy/aws-s3 getCredentials with an expiring Neon credential
 
 ## AI Gateway
 
@@ -216,7 +226,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 159 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 162 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Connect a Next.js app to Lakebase Postgres on Neon, query it from a Server Component, a Server Action, and a Route Handler, develop on a branch, deploy, and add the rest of your backend
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Create a Neon project, link it with neon link, and query Lakebase Postgres through Prisma 7 with the Neon driver adapter
@@ -308,7 +318,7 @@ Postgres extensions supported by Neon, with install and usage instructions.
 
 Contributor guides, component architecture, and documentation standards.
 
-- [All 9 Community pages](https://neon.com/docs/community/llms.txt) — key pages below
+- [All 10 Community pages](https://neon.com/docs/community/llms.txt) — key pages below
 
 - [Docs contribution guide](https://neon.com/docs/community/contribution-guide.md): Learn how to contribute to the Neon documentation
 - [Getting Neon docs as Markdown](https://neon.com/docs/community/llms-markdown-guide.md): How to get our documentation as plain Markdown for LLMs, tools, and scripts
