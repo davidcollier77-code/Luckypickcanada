@@ -8,7 +8,7 @@
 ## Application Stack
 - **Framework:** Next.js App Router 16.4.6, React 19.3.1 and TypeScript.
 - **Runtime:** Node.js 26.x.
-- **Cloudflare build tools (verified 2026-11-26):** root package.json pins @opennextjs/cloudflare 1.20.18 and Wrangler 4.166.0. Candidate versions in Spec 220 are not installed or verified.
+- **Cloudflare build tools (verified 2026-11-26, Spec 220):** root package.json pins @opennextjs/cloudflare 1.20.19 and Wrangler 4.166.0. The adapter's `glob ^14.0.6` edge removes the advisory-affected glob 13/minimatch 10 path; Wrangler is deliberately retained at 4.166.0 because 4.167.0/4.168.0 add no applicable security or compatibility fix. The graph resolves one `undici@8.12.2`; the global undici override is unchanged and still crosses the toolchain's declared 7.30.2 range.
 - **Package manager:** pnpm 10.30.3. Use the committed lockfile and pnpm; never use npm ci.
 - **Undici resolution (verified 2026-11-26):** `pnpm.overrides` uses major-scoped patched releases: `undici@6` 6.29.1 (dotenvx under OpenNext 1.20.18), `undici@7` 7.30.2 (Wrangler, Miniflare, `@cloudflare/workers-utils`) and `undici@8` 8.13.1 (jsdom). The former bare 8.12.2 pin forced every consumer across majors and was below the 2026-11-05 security floor. PR #2047's OpenNext 1.20.19 update is separate and does not replace this policy.
 - **Styling and motion:** Tailwind CSS 4, Framer Motion, GSAP and existing Canvas-based visual effects.

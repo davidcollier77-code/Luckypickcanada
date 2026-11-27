@@ -164,6 +164,28 @@ describe('Dependency management policy', () => {
     });
   });
 
+  it('keeps the Cloudflare build tools exact-pinned and free of the glob 13 minimatch 10 path', () => {
+    const adapter = pkg.devDependencies['@opennextjs/cloudflare'];
+    const wrangler = pkg.devDependencies.wrangler;
+
+    expect(adapter).toMatch(EXACT_SEMVER);
+    expect(wrangler).toMatch(EXACT_SEMVER);
+    expect(lockfileDependency('@opennextjs/cloudflare')).toEqual({
+      specifier: adapter,
+      version: adapter,
+    });
+    expect(lockfileDependency('wrangler')).toEqual({
+      specifier: wrangler,
+      version: wrangler,
+    });
+
+    // glob 13 declares minimatch ^10, which has no patched release for
+    // GHSA-g3hv-75wg-m249. The adapter must resolve glob 14 instead of relying
+    // on a cross-major minimatch override.
+    expect(lockfile).not.toMatch(/^ {2}glob@13\.\d+\.\d+:/m);
+    expect(lockfile).not.toMatch(/^ {2}minimatch@10\.\d+\.\d+:/m);
+  });
+
   it('keeps dependency overrides in pnpm.overrides only', () => {
     expect(pkg.overrides).toBeUndefined();
     expect(pkg.pnpm).toBeTypeOf('object');

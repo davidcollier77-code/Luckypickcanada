@@ -5,6 +5,14 @@
 - Updated the dedicated Undici guard and the dependency-management guard; focused tests 50/50; full verification passed 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build at 485,572,608 bytes (463.08 MiB), below 495 MiB.
 - OpenNext 1.20.18 build, Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17. PR #2047's OpenNext 1.20.19 update remains separate. No deployment or application code change.
 
+## 2026-11-26 — Spec 220 Cloudflare toolchain re-audit implemented
+
+- A fresh, independent audit selected only `@opennextjs/cloudflare` 1.20.18 → **1.20.19** and retained **Wrangler 4.166.0**; the earlier plan's Wrangler bump was rejected because 4.167.0/4.168.0 contain no applicable security or compatibility fix.
+- 1.20.19 moves the adapter to `glob ^14.0.6` and `@opennextjs/aws 4.2.1`, removing the GHSA-g3hv-75wg-m249 minimatch 10 path that the repository had only avoided with a cross-major `minimatch@10 → 11.0.1` override, and fixing the cookie/middleware 500 regression introduced in 1.20.18.
+- The lockfile was regenerated with Node 26.13.0 and pnpm 10.30.3: `glob@13.0.7`/`path-scurry@2.0.2` removed, one `glob@14.0.6`, one `undici@8.12.2`, every override unchanged. A dependency-policy test now fails if the glob 13/minimatch 10 path or an unpinned/unlocked build tool returns.
+- Verified: frozen install; focused dependency tests 12/12; `./freebuff-verify.sh` exit 0 (520 Python, 1,269 Vitest across 113 files, TypeScript, 51 docs tests); OpenNext build with Worker/assets/compiled CSS and a matching BUILD_ID; `wrangler build` and scheduler dry-run exit 0; combined `.next` + `public` **439,922,688 bytes (419.54 MiB)**, below 495 MiB.
+- Playwright, DevSkim, the OpenNext CI job, the seven-category report and deployment remain PENDING for CI. No application, Cloudflare or deployment configuration changed; one regular, non-draft PR is open and unmerged.
+
 ## 2026-11-26 — Spec 223 merged and PR handoff closed out
 
 - PR [#2043](https://github.com/davidcollier77-code/Luckypickcanada/pull/2043) merged to `main` as `17135708adc7b3e96e71e2bab7397723553a5852`; the 16-path documentation reconciliation is present on the default branch.
