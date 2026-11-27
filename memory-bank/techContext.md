@@ -55,3 +55,10 @@
 
 ## Environment Configuration
 Environment-variable names and availability change over time. Inspect the current deployment configuration and repository examples before relying on any variable; do not treat a remembered list as authoritative. Never record secret values.
+
+## Latest production build measurement (verified 2026-11-27)
+
+- **Latest successful CI measurement:** combined `.next + public` output was **426,389,100 bytes (406.64 MiB)** in the successful `Validate OpenNext Repair` workflow run #2614, run ID `45919768945`, on PR #2048 head `7049dd547aade8ea2c4fa95a223a1a7dd7933193`. The workflow's hard maximum was 519,045,120 bytes (495 MiB); measured headroom was 92,656,020 bytes (88.36 MiB).
+- **Provenance:** PR #2048's measured Git tree is identical to its merge commit tree. The two commits between that merge and PR #2052's base changed only `.docs/` and `.specify/` metadata, which the trusted build-applicability classifier explicitly excludes. PR #2052's own changed paths are also build-exempt, so its OpenNext build was correctly `SKIPPED — NOT APPLICABLE`; the 406.64 MiB value is the latest verified current-base measurement, not a build produced by PR #2052.
+- **Historical distinction:** Spec 224's separate full-verification record of 485,572,608 bytes (463.08 MiB) from 2026-11-26 is retained as a distinct historical measurement. Do not silently substitute one run's result for another or describe either as a fresh PR #2052 build.
+

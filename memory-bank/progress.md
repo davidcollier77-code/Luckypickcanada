@@ -1,3 +1,18 @@
+## 2026-11-27 — Spec 225 build-size evidence and governance handoff
+
+- Clarified the shared `AGENTS.md` Production build limit section: smaller, logically coherent PRs are an ordinary optional planning approach when useful, not a panic response or a reason to compromise functionality, security or quality. The 495 MiB limit and existing safeguards are unchanged.
+- Latest successful CI production build measurement: combined `.next + public` **426,389,100 bytes (406.64 MiB)**, from `Validate OpenNext Repair` run #2614 (run ID `45919768945`) on PR #2048 head `7049dd547aade8ea2c4fa95a223a1a7dd7933193`, 2026-11-27. The 495 MiB cap is 519,045,120 bytes; measured headroom was 92,656,020 bytes (88.36 MiB).
+- PR #2048's measured tree is identical to its merge commit tree. The two later commits before PR #2052's base changed only build-exempt `.docs/` and `.specify/` metadata. PR #2052's own changes are likewise build-exempt; its production build was correctly skipped by the trusted classifier. The 406.64 MiB figure is the latest verified current-base measurement, **not** a fresh build produced by PR #2052. Preserve Spec 224's separate 485,572,608-byte (463.08 MiB) full-gate result as historical evidence.
+- Completed the Spec Kit specify → plan → tasks → implement records for Spec 225 and updated the feature pointer. Read and health-checked all four Memory Bank core files; updated `activeContext.md`, `techContext.md` and this `progress.md`; left the stable `projectBrief.md` unchanged.
+- PR #2052 remains open and unmerged for owner review. The new head must receive its own current-head seven-category report and refreshed governance digest; the owner approval and protected-file environment gate remain separate mandatory steps.
+
+## 2026-11-27 — Progressive build-size planning guidance (Spec 225)
+
+- Added a calm, optional planning clarification to the shared `AGENTS.md` Production build limit section: when helpful, logically coherent work may be divided into smaller PRs and delivered progressively; this is a normal option, not a reason to rush, abandon work or compromise functionality, security or quality.
+- The strict 495 MiB threshold and every existing measurement, safe-stop, quality and reporting safeguard remain unchanged.
+- The change set is prepared on its dedicated branch for one regular, non-draft governance PR against `main`, with the required Spec Kit and Memory Bank records. The protected-file environment gate and separate governance digest approval remain owner actions; no merge or deployment has occurred.
+- Documentation-only scope: no application, dependency, workflow, build, deployment, visual, secret or production-resource changes. No local full build-size measurement is claimed.
+
 ## 2026-11-26 — Undici major-scoped security fix (Spec 224)
 
 - Replaced the global `undici: 8.12.2` override with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`; regenerated the lockfile with pnpm 10.30.3.

@@ -35,6 +35,7 @@ ChatGPT follows 🟢 and 🟣 sections. Freebuff follows 🟢 and 🔵 sections.
 - The production build must remain strictly below **495 MiB**.
 - Consider build impact during planning and measure the actual size whenever an authorized production build is run.
 - If the remaining work would reach or exceed the limit, stop at a safe, complete point. Do not trade away functionality, security or quality. Report completed and deferred work; never leave the application broken or incomplete.
+- When helpful, divide work into smaller, logically coherent PRs so changes can be completed and deployed progressively while remaining within the build-size limit. This is a normal planning option, not a reason to rush, abandon work or compromise functionality, security or quality.
 - If the agent cannot measure the build, mark it unverified and identify the required authorized verification.
 
 ### Security and data integrity
