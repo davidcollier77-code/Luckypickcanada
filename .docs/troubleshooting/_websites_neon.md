@@ -214,7 +214,7 @@ Instant copy-on-write database environments for dev, CI, previews, and recovery.
 
 Projects, branches, computes, roles, databases, and organization settings.
 
-- [All 28 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
+- [All 27 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
 
 - [Manage projects](https://neon.com/docs/manage/projects.md): Learn how to manage Neon projects from the Neon Console or the Neon API.
 - [Manage branches](https://neon.com/docs/manage/branches.md)
