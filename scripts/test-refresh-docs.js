@@ -119,6 +119,23 @@ function restoreDocsDirectory() {
   configureDocsDirectory(realDocsDir);
 }
 
+/**
+ * Create deterministic Cloudflare email-protection fixtures without storing
+ * opaque hexadecimal tokens in source code (which resemble credential strings).
+ */
+function createCloudflareEmailProtectionToken(address, key) {
+  if (!Number.isInteger(key) || key < 0 || key > 0xff) {
+    throw new RangeError('Cloudflare fixture key must be one byte.');
+  }
+  const plaintext = Buffer.from(address, 'utf8');
+  const payload = Buffer.alloc(plaintext.length + 1);
+  payload[0] = key;
+  for (let index = 0; index < plaintext.length; index++) {
+    payload[index + 1] = plaintext[index] ^ key;
+  }
+  return payload.toString('hex');
+}
+
 async function runTests() {
   let passed = 0;
   let failed = 0;
@@ -363,11 +380,11 @@ async function runTests() {
   });
 
   await test('normalizeDocumentationForComparison treats rotating Cloudflare email tokens as the same destination only', () => {
-    const firstToken = '5d2e38313b7b7e6e6a667b7e686f667b7e6965662b3c312838';
-    const sameAddressToken = '2251474e44040111151904011710190401161a1954434e5747';
-    const changedAddressToken = '33404643435c4147151000040815100601081510070b085d465e434a1d5c4154';
+    const firstToken = createCloudflareEmailProtectionToken('self&#37;&#52;&#48;value', 0x5d);
+    const sameAddressToken = createCloudflareEmailProtectionToken('self&#37;&#52;&#48;value', 0x22);
+    const changedAddressToken = createCloudflareEmailProtectionToken('support&#37;&#52;&#48;numpy.org', 0x33);
     const invalidToken = 'zz-not-a-cloudflare-token';
-    const namedEntityToken = '5d2e38313b7b3c302d661d2b3c312838';
+    const namedEntityToken = createCloudflareEmailProtectionToken('self&amp;@value', 0x5d);
     const prefix = '# NumPy API reference\n\nThe ndarray multiplication method is documented here: [matmul](https://numpy.org/cdn-cgi/l/email-protection#';
     const suffix = ').\n';
 
@@ -754,9 +771,9 @@ async function runTests() {
     fs.mkdirSync(path.join(root, 'audio'));
     const library = '/numpy/numpy';
     const sourceUrl = 'https://numpy.org/doc/stable/reference/arrays.ndarray.html';
-    const firstToken = '5d2e38313b7b7e6e6a667b7e686f667b7e6965662b3c312838';
-    const sameAddressToken = '2251474e44040111151904011710190401161a1954434e5747';
-    const changedAddressToken = '33404643435c4147151000040815100601081510070b085d465e434a1d5c4154';
+    const firstToken = createCloudflareEmailProtectionToken('self&#37;&#52;&#48;value', 0x5d);
+    const sameAddressToken = createCloudflareEmailProtectionToken('self&#37;&#52;&#48;value', 0x22);
+    const changedAddressToken = createCloudflareEmailProtectionToken('support&#37;&#52;&#48;numpy.org', 0x33);
     const prefix = '# NumPy ndarray reference\n\nThis reference explains multidimensional arrays, shapes, attributes and indexing for Python users.\n\nSee [matrix multiplication](https://numpy.org/cdn-cgi/l/email-protection#';
     const suffix = ').\n';
     const original = prefix + firstToken + suffix;
