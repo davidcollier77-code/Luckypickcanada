@@ -1,4 +1,17 @@
-# Active Context — Spec 224 undici major-scoped security fix (2026-11-26)
+# Active Context — Progressive build-size planning guidance (Spec 225, 2026-11-27)
+
+## Current Task — Keep the build limit firm and make progressive delivery an ordinary option
+
+- **Scope:** Clarify only the shared Production build limit section of `AGENTS.md`, with the required Spec Kit records and focused Memory Bank updates.
+- **Decision:** The production build remains strictly below **495 MiB**. The added wording says logically coherent work may be divided into smaller PRs when helpful and completed/deployed progressively. It explicitly says this is a normal planning option, not a reason to rush, abandon work or compromise functionality, security or quality.
+- **Preserved requirements:** Existing build-impact planning, actual measurement, safe-stop, no-quality-tradeoff, completed/deferred reporting and unavailable-measurement rules remain unchanged.
+- **Governance:** `AGENTS.md` is submitted only in a dedicated governance PR with the corresponding Spec Kit and Memory Bank records. The protected-file environment gate and separate owner `/approve-governance` digest remain mandatory; no owner approval is posted by the agent.
+- **Boundaries:** No application source, dependency, build configuration, workflow, deployment setting, security control, secret, visual asset or production resource is changed.
+- **Verification:** The full diff is reviewed against the policy and governance acceptance criteria. Repository-local scripts and the complete verification gate are not run in this environment; the PR's automated workflows must publish their own results against the current head. No production build-size measurement is claimed for this documentation-only change.
+
+---
+
+# Previous Active Context — Spec 224 undici major-scoped security fix (2026-11-26)
 
 ## Current Task — Remove the vulnerable global Undici pin
 

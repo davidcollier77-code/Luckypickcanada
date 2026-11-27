@@ -1,3 +1,10 @@
+## 2026-11-27 — Progressive build-size planning guidance (Spec 225)
+
+- Added a calm, optional planning clarification to the shared `AGENTS.md` Production build limit section: when helpful, logically coherent work may be divided into smaller PRs and delivered progressively; this is a normal option, not a reason to rush, abandon work or compromise functionality, security or quality.
+- The strict 495 MiB threshold and every existing measurement, safe-stop, quality and reporting safeguard remain unchanged.
+- The change is delivered as a dedicated governance PR with the required Spec Kit and Memory Bank records. It remains open and unmerged for owner review; the protected-file environment gate and separate governance digest approval are still required.
+- Documentation-only scope: no application, dependency, workflow, build, deployment, visual, secret or production-resource changes. No local full build-size measurement is claimed.
+
 ## 2026-11-26 — Undici major-scoped security fix (Spec 224)
 
 - Replaced the global `undici: 8.12.2` override with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`; regenerated the lockfile with pnpm 10.30.3.
