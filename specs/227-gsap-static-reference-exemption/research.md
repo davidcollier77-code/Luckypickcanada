@@ -32,6 +32,14 @@ The historical reason the previous updater run accepted the challenge response i
 - `scripts/` is not excluded by the current build and visual classifiers, so the existing build validation and Visual QA remain required. No checker or workflow is being changed.
 - The repository requires Node.js 26.x and pnpm 10.30.3. ChatGPT startup reports Node.js 22.x; Node-based unit/e2e tests and build operations are not run under the incompatible runtime.
 
+## External review triage — Graphite review 6093276048
+
+The advisory review identified six issues. Five were confirmed and repaired: the conversion omitted the visible “WITH Timelines” sequence example; the relative-position bullet was truncated; the `onInterrupt` description contained the typo “min animation”; the `getById` method description was absent; and the scope-boundary sentence contradicted the authorized snapshot restoration. The `getById` description was checked against the GSAP core implementation, which searches nested tweens/timelines for a matching `vars.id` and returns no result when none matches.
+
+The remaining test comment was reviewed but did not require a code change. The unit test deliberately supplies a `staticReferences` fixture to test report rendering in isolation. The separate end-to-end test runs the actual updater against a copied documentation tree and asserts that the GSAP source URL is never requested and that the generated report contains the static-reference section and ID. This covers the allowlist-to-report integration path the comment was concerned about.
+
+The review's timeline-example finding was treated as a real conversion gap: although the earlier Quick Start defines `tl`, the source page's visual sequence demo was not represented in the Markdown. A compact code example now preserves that instructional content.
+
 ## Decision
 
 Keep one hard-coded, auditable static reference ID in the existing updater, retain report visibility and regression coverage, and restore only the existing `.docs` snapshot from the exact official source URL. Leave manifest routing, source URL and workflows unchanged.

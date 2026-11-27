@@ -35,6 +35,12 @@
 - [X] T016 Update the Spec Kit records and Memory Bank to document the recovered snapshot, exact upstream source, static policy and remaining verification boundaries.
 - [ ] T017 Extend the existing PR scope declaration for the one restored `.docs` file, obtain the owner `/approve-scope <digest>` command emitted by the scope checker, and confirm all required current-head checks/report for the updated PR.
 
+## Phase 6 — Review findings and corrections
+
+- [X] T018 Inspect all six inline findings from Graphite review 6093276048 against the exact official GSAP page, GSAP core implementation, and updater unit/end-to-end tests.
+- [X] T019 Repair the missing Timeline sequence example, truncated position-parameter syntax, malformed `onInterrupt` description, missing `getById` explanation, and contradictory specification boundary.
+- [X] T020 Record the review dispositions in the research and Memory Bank; retain the renderer-focused unit test because the end-to-end suite already exercises the actual allowlist/report integration.
+
 ## Recovery verification boundary
 
 The restored snapshot was retrieved from the exact URL already recorded in the live manifest using Browserless. It is a 27 KB Markdown document with the expected Timeline sections and method/property reference tables; it is not a challenge page or raw HTML. Node.js project tests are not run locally under the unsupported ChatGPT runtime. The new PR head must receive current-head CI verification and the explicit scope digest approval before merge.

@@ -37,7 +37,7 @@ As a maintainer, I need every other routed document to continue through the exis
 - Keep the restored snapshot static; the updater exclusion must prevent automatic fetches or overwrites.
 - Keep the single GSAP route in `.docs/manifest.json`; do not remove its group, inventory or source metadata.
 - Do not change `AGENTS.md`, updater schedules/workflows, unrelated documentation, application code, dependencies, deployment settings or production resources.
-- This change prevents future automated refreshes; it does not repair or replace the currently checked-in snapshot content.
+- This change prevents future automated refreshes and restores the currently checked-in snapshot content from the exact official source URL configured in the manifest.
 
 ## Functional Requirements
 

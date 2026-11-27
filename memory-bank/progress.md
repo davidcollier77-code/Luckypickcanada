@@ -951,5 +951,13 @@ This file is a concise record of meaningful completed work, not a chronological 
 
 - Added a narrow updater exclusion for the single manifest ID `/llmstxt/gsap_llms_txt`. It remains routed under `polishing`, stays in the manifest inventory/source metadata and remains subject to the routed-snapshot integrity audit; the updater skips it before upstream SHA or source requests.
 - Added separate static-reference reporting and regression coverage for zero source requests, byte-identical snapshot retention and unchanged routing/index entries. Other routed documentation keeps the existing refresh path.
-- Preserved `.docs/manifest.json`, the GSAP snapshot, AGENTS.md, refresh schedules/workflows, dependencies, application code and production configuration. The current checked-in GSAP snapshot is a Cloudflare verification-challenge response; restoring actual technical content remains separate.
+- Preserved `.docs/manifest.json`, AGENTS.md, refresh schedules/workflows, dependencies, application code and production configuration. At the time of this original updater-exclusion change, the checked-in GSAP snapshot still contained a Cloudflare verification-challenge response; the owner-authorized Spec 227 follow-up subsequently restored the official Timeline documentation.
 - Local Node-dependent verification was not run because ChatGPT's startup runtime is Node.js 22.x and the repository requires Node.js 26.x. The regression coverage is committed for the repository's Node 26 CI checks; no local test/build pass is claimed.
+
+
+## 2026-11-27 — GSAP reference review repairs (Spec 227 follow-up)
+
+- Triaged all six inline findings in Graphite review 6093276048 against the official GSAP page, GSAP core implementation and actual updater tests.
+- Repaired the missing Timeline sequence example, truncated position-parameter bullet, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
+- Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. No test-code change was necessary.
+- The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.

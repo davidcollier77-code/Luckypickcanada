@@ -36,6 +36,13 @@ gsap.to("#id", { opacity: 0, duration: 1, delay: 3 }); //wait 3 seconds
 
 What if you wanted to make the first animation longer? You'd need to adjust every delay thereafter. And what if you want to `pause()` the whole sequence or `restart()` it or `reverse()` it on-the-fly or repeat it twice? This could become quite messy, but GSAP's Timelines make it incredibly simple:
 
+```js
+// WITH Timelines:
+let tl = gsap.timeline();
+tl.to("#id", { x: 100, duration: 1 })
+  .to("#id", { y: 50, duration: 2 })
+  .to("#id", { opacity: 0, duration: 1 });
+```
 
 ```js
 // then we can control the whole thing easily...
@@ -96,7 +103,7 @@ tl.to(".class", { x: 100 }, "<");
 tl.to(".class", { x: 100 }, ">");
 ```
 
-- Relative to the start of the most recently-added animation, like `"
+- Relative to the start of the most recently-added animation, like `"<1"`
 
 ```js
 //insert 1 second after the START of the most recently added animation
@@ -143,7 +150,7 @@ All of timeline's `vars` properties are described below:
 - #### delay Number Amount of delay in seconds before the animation should begin.
 - #### onComplete Function A function that should be called when the animation has completed.
 - #### onCompleteParams Array An array of parameters to pass the `onComplete` function. For example, `gsap.timeline({onComplete: myFunction, onCompleteParams: ["param1", "param2"]});` .
-- #### onInterrupt A function to call when the animation is interrupted min animation. Note that this does not fire if the animation completes normally.
+- #### onInterrupt A function to call when the animation is interrupted mid-animation. Note that this does not fire if the animation completes normally.
 - #### onInterruptParams An Array of parameters to pass the onInterrupt function. For example, `gsap.to(".class", {x:100, onInterrupt:myFunction, onInterruptParams:["param1", "param2"]});` .
 - #### onRepeat Function A function that should be called each time the animation repeats.
 - #### onRepeatParams Array An Array of parameters to pass the `onRepeat` function. For example, `gsap.timeline({onRepeat: myFunction, onRepeatParams: ["param1", "param2"]});` .
@@ -305,7 +312,7 @@ note
 | eventCallback ( type:String, callback:Function, params:Array ) : [Function \| self] | Gets or sets an event callback like `onComplete`, `onUpdate`, `onStart`, `onReverseComplete`, or `onRepeat` along with any parameters that should be passed to that callback. |
 | from ( target:[ Object \| Array \| String ], vars:Object, position:[ Number \| String ] ) : self | Adds a `.from()` tween to the end of the timeline (or elsewhere using the `position` parameter) - this is a convenience method that accomplishes exactly the same thing as `add( gsap.from(...) )` but with less code. |
 | fromTo ( target:[ Object \| Array \| String ], fromVars:Object, toVars:Object, position:[ Number \| String ] ) : self | Adds a `.fromTo()` tween to the end of the timeline - this is a convenience method that accomplishes exactly the same thing as `add( gsap.fromTo(...) )` but with less code. |
-| getById ( id:String ) : Animation |  |
+| getById ( id:String ) : Animation | Returns the matching nested tween or timeline whose `vars.id` equals the supplied ID, or `undefined` if none is found. |
 | getChildren ( nested:Boolean, tweens:Boolean, timelines:Boolean, ignoreBeforeTime:Number ) : Array | Returns an array containing all the tweens and/or timelines nested in this timeline. |
 | getTweensOf ( target:[Object \| Selector text \| Array], nested:Boolean ) : Array | Returns the tweens of a particular object that are inside this timeline. |
 | globalTime ( localTime:Number ) : Number | Converts a local time to the corresponding time on the gsap.globalTimeline (factoring in all nesting, timeScales, etc.). |
