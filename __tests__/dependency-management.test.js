@@ -294,14 +294,25 @@ describe('Dependency management policy', () => {
       }
     }
 
-    // GHSA-v6h2-p8h4-qcjw (CVE-2025-5889) patched floors per major.
+    // GHSA-v6h2-p8h4-qcjw (CVE-2025-5889) patched floors per major. The
+    // advisory's affected lines stop at 4, so 5.x and later are not affected —
+    // but that must be an explicit decision per resolved major. A silent skip
+    // would pass for any unrecognised major, which is the failure mode this
+    // whole guard exists to catch.
     const braceFloors = { 1: '1.1.12', 2: '2.0.2', 3: '3.0.1', 4: '4.0.1' };
+    const braceUnaffectedFrom = 5;
     const braceVersions = lockfilePackageVersions('brace-expansion');
     expect(braceVersions.length).toBeGreaterThan(0);
     for (const version of braceVersions) {
-      const floor = braceFloors[Number(version.split('.')[0])];
+      const major = Number(version.split('.')[0]);
+      const floor = braceFloors[major];
       if (floor) {
         expect(compareVersions(version, floor), `vulnerable brace-expansion ${version}`).toBeGreaterThanOrEqual(0);
+      } else {
+        expect(
+          major,
+          `unexpected brace-expansion major in ${version}; add its patched floor to braceFloors`
+        ).toBeGreaterThanOrEqual(braceUnaffectedFrom);
       }
     }
   });
