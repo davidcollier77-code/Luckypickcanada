@@ -40,6 +40,8 @@ As a repository maintainer, I want the existing build-size guidance to recognize
 - **FR-004**: Preserve all existing safe-stop, measurement and reporting requirements.
 - **FR-005**: Limit the governance wording change to the shared Production build limit section; do not change application code, dependencies, build configuration or unrelated governance.
 
+- **FR-006**: Record the latest verified production build-size measurement with its exact byte/MiB value, source workflow/run and commit, and explicitly distinguish an existing base measurement from a build executed for this documentation-only PR.
+
 ## Success Criteria
 
 - **SC-001**: The 495 MiB threshold is byte-for-byte unchanged.
@@ -47,6 +49,13 @@ As a repository maintainer, I want the existing build-size guidance to recognize
 - **SC-003**: The new paragraph communicates optional progressive PR delivery without urgency.
 - **SC-004**: The final change set contains only the targeted governance amendment and its required Spec Kit and Memory Bank records.
 - **SC-005**: The dedicated governance PR remains open and unmerged for owner review; owner approval gates remain intact.
+- **SC-006**: The PR and Memory Bank record the latest verified build-size evidence, its provenance and headroom, and state clearly that the documentation-only PR did not run a new production build.
+
+## Build-size Evidence
+
+- The latest successful production build-size measurement available for the current base is **426,389,100 bytes (406.64 MiB)** for combined `.next + public`, from `Validate OpenNext Repair` run #2614 (run ID `${runId}`) on PR #2048 head `${runHead}`.
+- The 495 MiB maximum is 519,045,120 bytes, leaving 92,656,020 bytes (88.36 MiB) of measured headroom.
+- The PR #2052 changed paths are build-exempt under the trusted classifier, so no new production build was run for this PR. The recorded value is the latest verified base measurement, not a PR #2052 build result.
 
 ## Assumptions
 
