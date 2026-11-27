@@ -52,6 +52,18 @@
 - **Graphite finding 2 — valid, applied (smaller fix than proposed).** `uniqueSorted` used the default lexicographic sort. The reported spurious-failure mode cannot occur because both compared arrays use the same comparator, but the helper's ordering was still wrong for versions. It now reuses the existing `compareVersions`; no duplicate comparator was added. Verified order: `2.1.0`, `8.9.0`, `8.13.1`, `10.0.0`.
 - **Re-verification:** focused guards `3 files / 50 tests` passed after the repair. The manifest, lockfile, override values and all 12 declared paths are unchanged by the repair.
 
+### Second review round (Graphite review 6081813015 on `80da671a`)
+
+- **Exact lockfile equality — not changed as proposed.** The reviewer proposed replacing the exact-version equality with a major-only comparison. The strict assertion is intentional: the manifest pins one exact release per major, so the lockfile must resolve exactly those three versions, and this is the check that catches manifest/lockfile drift. The floor test cannot catch that drift on its own. The assertion was kept and its intent documented inline, which is the reviewer's alternative remedy.
+- **Non-numeric version segments — hardened.** The claimed silent pass cannot occur: `NaN !== 0` is true, so `compareVersions` returns `NaN` and the floor assertion fails. The helper was still hardened with an explicit `parseVersion` guard so a pre-release or prefixed version throws a clear error instead of producing a `NaN` comparison. Verified: `8.13.1-beta.1` and `v8.13.1` throw, `8.12.5 < 8.13.1` and `8.14.0 > 8.13.1` still hold.
+- **Second-round re-verification:** focused guards `3 files / 51 tests` passed after the branch was merged forward. Pullfrog's incremental review of the first repair reported no new issues; Amazon Q reported no blocking defects.
+
+### Merge forward after PR #2047
+
+- PR #2047 merged into `main` as `71b9e1a1a59a32708ca3c5f6a373a9cf015ce8cb`, moving the toolchain to `@opennextjs/cloudflare` 1.20.19, `@opennextjs/aws` 4.2.1 and a `glob 14.0.6` edge.
+- The PR branch was merged forward in `34805ce6`, keeping `.specify/feature.json` on Spec 224, the 1.20.19 adapter pin and the three major-scoped undici overrides.
+- Verified on the merged graph: `pnpm install --frozen-lockfile` exit 0; `pnpm why undici` resolves only 6.29.1, 7.30.2 and 8.13.1; focused guards `3 files / 51 tests` pass; `pnpm exec opennextjs-cloudflare build` succeeds on 1.20.19 and writes `.open-next/worker.js`.
+
 ## Dependencies & Execution Order
 
 - T001–T004 are complete and block the implementation.

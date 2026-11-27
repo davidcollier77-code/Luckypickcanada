@@ -13,9 +13,19 @@ const PATCHED_BY_MAJOR = {
 };
 const PATCHED_VERSIONS = Object.values(PATCHED_BY_MAJOR);
 
+function parseVersion(version) {
+  const parts = String(version).split('.');
+
+  if (!parts.every((part) => /^\d+$/.test(part))) {
+    throw new Error(`Unsupported version "${version}": expected numeric dot-separated segments.`);
+  }
+
+  return parts.map(Number);
+}
+
 function compareVersions(left, right) {
-  const leftParts = left.split('.').map(Number);
-  const rightParts = right.split('.').map(Number);
+  const leftParts = parseVersion(left);
+  const rightParts = parseVersion(right);
 
   for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
     const difference = (leftParts[index] ?? 0) - (rightParts[index] ?? 0);
@@ -45,6 +55,10 @@ describe('Undici security overrides', () => {
   });
 
   it('resolves only the patched release for every Undici major in the lockfile', () => {
+    // The manifest pins one exact release per major, so the lockfile must
+    // resolve exactly those three versions. Raising an override is a policy
+    // change that updates PATCHED_BY_MAJOR here at the same time; the floor
+    // test below independently rejects any below-floor regression.
     expect(packageVersions.length).toBeGreaterThan(0);
     expect(uniqueSorted(packageVersions)).toEqual(uniqueSorted(PATCHED_VERSIONS));
 
