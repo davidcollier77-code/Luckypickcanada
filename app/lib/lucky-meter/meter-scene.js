@@ -387,12 +387,6 @@ function buildPointerLeafGeometry(THREE) {
 }
 
 /**
- * The medallion's maple blade. The reference leaf has three long lobes and two
- * notches on each side, a wide waist and a short stem; a parametric spike disc
- * reads as a star instead, so the silhouette is cut from that outline and
- * extruded with a real bevelled edge.
- */
-/**
  * Offsets a closed outline inward by a constant distance, using each vertex's
  * miter so the rim keeps an even width into the notches. A uniform scale cannot
  * do this: it leaves the gold rim far too wide where the outline turns in, and
@@ -427,6 +421,12 @@ function insetOutline(outline, inset) {
   });
 }
 
+/**
+ * The medallion's maple blade. The reference leaf has three long lobes and two
+ * notches on each side, a wide waist and a short stem; a parametric spike disc
+ * reads as a star instead, so the silhouette is cut from that outline and
+ * extruded with a real bevelled edge.
+ */
 function mapleSilhouetteGeometry(THREE, options = {}) {
   const rightHalf = [
     [0.0, 1.0],
@@ -1370,15 +1370,7 @@ export async function createLuckyMeterScene({
     wheelGroup.add(spoke);
   }
 
-  const cupGlassMaterial = trackMaterial(
-    createCrystalMaterial(THREE, {
-      facet: false,
-      brightness: 0.6,
-      alphaScale: 0.13,
-      tint: 0xeaf8ff,
-    }),
-  );
-  animatedMaterials.push(cupGlassMaterial);
+
   // Each chamber is a wedge-shaped glazed cell, the shape the reference draws:
   // a radial block that widens outward, with a rounded gold frame around it.
   const cellInnerRadius = METER_LAYOUT.wheel.chamberInnerRadius + 0.004;
@@ -1414,7 +1406,7 @@ export async function createLuckyMeterScene({
   };
 
   const cupLiquidGeometry = extrudeCell(0.006, 0.085, 0.012);
-  const cupGlassGeometry = extrudeCell(0.002, 0.02, 0.006);
+
   const cupBackGeometry = extrudeCell(0.012, 0.03, 0);
   // The frame is a real ring: the cell's wedge with its own opening cut out, so
   // gold shows around every segment instead of a solid plate in front of it.
@@ -1460,16 +1452,6 @@ export async function createLuckyMeterScene({
     back.position.set(0, cellMidRadius, 0.12);
     group.add(back);
 
-    // A thin glazed face over the enamel. It is nearly invisible face-on and
-    // only catches light at its edges, so it adds gloss without milking the
-    // colour out of the cell.
-    const glass = new THREE.Mesh(cupGlassGeometry, cupGlassMaterial);
-    glass.position.set(0, cellMidRadius, 0.212);
-    glass.renderOrder = 2;
-    // The reference's segments are bare enamel, not covered by a lens: the
-    // glaze only survives as the rim highlight, which the frame already gives.
-    glass.visible = false;
-
     const rimMaterial = trackMaterial(
       new THREE.MeshBasicMaterial({
         color: 0xfff2cc,
@@ -1505,7 +1487,9 @@ export async function createLuckyMeterScene({
     liquid.renderOrder = 1;
     group.add(liquid);
 
-    chamberFills.push({ material: fillMaterial, mesh: liquid, rimMaterial, glass, dome: glass });
+    // The reference's segments are bare enamel, not covered by a lens, so the
+    // cell has no glazed face: the rim highlight is the only gloss.
+    chamberFills.push({ material: fillMaterial, mesh: liquid, rimMaterial });
   }
 
   // ── Central medallion and the reading well ─────────────────────────────
@@ -1659,9 +1643,10 @@ export async function createLuckyMeterScene({
     [0, -0.34],
   ]) {
     const length = Math.hypot(x, y);
-    // Just above each face, so the relief sits on the enamel instead of
-    // floating clear of it.
-    for (const side of [0.058, -0.058]) {
+    // The veins are 0.0085 across, and the enamel's front cap sits at 0.090,
+    // so the front set has to be centred past that or the opaque inlay buries
+    // it. The back set mirrors it for the reverse face.
+    for (const side of [0.0995, -0.0995]) {
       const vein = new THREE.Mesh(medallionVeinGeometry, medallionVeinMaterial);
       vein.position.set(x / 2, y / 2, side);
       vein.rotation.z = -Math.atan2(x, y);
@@ -1903,8 +1888,11 @@ export async function createLuckyMeterScene({
     [1, 'rgba(160, 200, 255, 0)'],
   ]);
   const sparkles = [];
-  for (let index = 0; index < (constrained ? 3 : 7); index += 1) {
-    const angle = (index / 7) * Math.PI * 2 + 0.4;
+  const sparkleCount = constrained ? 3 : 7;
+  for (let index = 0; index < sparkleCount; index += 1) {
+    // The divisor is the count actually built, so the constrained tier's three
+    // sparkles spread around the whole bowl instead of clustering in 3/7 of it.
+    const angle = (index / sparkleCount) * Math.PI * 2 + 0.4;
     const sprite = new THREE.Sprite(
       trackMaterial(
         new THREE.SpriteMaterial({

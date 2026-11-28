@@ -1,3 +1,12 @@
+## 2026-11-28 — Third review pass: medallion relief, dead glaze, sparkle spread
+
+- The vein relief sat at ±0.058 inside the blade and behind the opaque enamel, which spans 0.034–0.090, so it never drew. Both sets now sit at ±0.0995, just outside the enamel cap for their 0.0085 thickness, so the maple reads as raised gold on the red inlay.
+- Removed the glazed cell face that was allocated, added to every cell group and then set `visible = false`, along with its crystal material and extrusion: the reference draws bare enamel, so the mesh was only wasted allocation and a per-frame uniform update. `chamberFills` no longer carries the unused `glass`/`dome` aliases.
+- The sparkle ring divided by a hardcoded 7 while the constrained tier builds three, clustering them in 3/7 of the circle; the divisor is now the count actually built.
+- Moved the maple-blade doc block off `insetOutline`, where it was orphaned, onto `mapleSilhouetteGeometry`.
+- Declined: `TextureLoader` cannot abort an in-flight request, and the arriving texture is disposed by the `disposed` guard, so the only cost is a decode that cannot be avoided without replacing the loader.
+- Verification: 46/46 across the four Lucky Meter suites, `tsc --noEmit` exit 0, and the page still renders `data-meter-renderer="three"` with no console errors.
+
 ## 2026-11-28 — Second review round: shader, gradient and teardown repairs
 
 - The open review threads on the branch were re-read against the code. Five were valid and are repaired here: the bubble bead and ring used `smoothstep` with its edges reversed (undefined in GLSL and vendor-dependent, now written low-to-high); the compartment bubbles are gated off on the constrained tier again, as the plan requires; the crystal body-thickness gradient now rides a `uBodyGradient` uniform so it applies to the lathe shell only and the torus rim keeps one continuous alpha around its tube; `dispose()` sets `disposed` before anything else, closing the window where the artwork promise could assign an environment after teardown began; and the laurel leaf parameter guards a single-leaf division by zero.
