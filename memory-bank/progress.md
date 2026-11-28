@@ -1,3 +1,12 @@
+## 2026-11-28 — DevSkim DS173237 fixture remediation (Spec 230)
+
+- Established from live GitHub state that all four open code-scanning alerts are DS173237 false positives on the two synthetic Cloudflare email-protection fixture tokens in `scripts/test-refresh-docs.js` (lines 194, 195, 749, 768). The rule's published pattern is `["'][a-f0-9]{30,}["']`, so the literals — not their use — were the trigger.
+- Replaced the four long hex literals with `syntheticLongHex(seed)` expansions of two 8-character seeds, preserving both prefixes, both test sites and every assertion. No suppression was added or broadened and no scan path was excluded.
+- Corrected `devskim-alerts.md`, which listed eight entries for four findings because the append-only identity includes the reported line and PR #2063 renumbered the tokens. One entry per distinct finding now remains.
+- Verified locally on pnpm 10.30.3 from the committed lockfile: updater suite 61/61, DS173237 pattern 0 matches in the changed file, DevSkim dedup and dependency-management guards 16/16, DevSkim Python reporting and suppression suites pass.
+- DevSkim workflow history for 2026-11-07 → 2026-11-28 was reviewed: 800 runs, with failures confined to the repaired 2026-11-11 suppression outage and automation-branch runs, and 12 `action_required` automation pull requests that merged without a pre-merge scan (post-merge scans covered the same trees).
+- Dependabot: configuration unchanged and guarded; zero open alerts and zero open update pull requests; the weekly 2026-11-23 batch and individual security updates were generated and merged.
+
 ## 2026-11-28 — Refresh baseline reuse for open updater pull requests (Spec 229)
 
 - Established from run history that the updater re-reported already-applied documents because every run compared against `main` while the refreshed snapshots lived on the open `auto/docs-refresh` branch. PR #2062 received three commits for the same two documents and its final report still read "2 updated".
