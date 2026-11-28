@@ -173,6 +173,21 @@ function convertHtmlToMarkdown(html, baseUrl) {
     }
   };
 
+  // Cloudflare rotates the opaque hexadecimal token on email-protection links.
+  // Their visible label is meaningful documentation; the generated href is not.
+  const isCloudflareEmailProtectionHref = (href) => {
+    if (typeof href !== 'string') return false;
+    try {
+      const page = new URL(baseUrl);
+      const url = new URL(href, page);
+      return url.origin === page.origin &&
+        url.pathname.toLowerCase() === '/cdn-cgi/l/email-protection' &&
+        /^#[0-9a-f]+$/i.test(url.hash);
+    } catch (error) {
+      return false;
+    }
+  };
+
   const inline = (node) => {
     if (node.nodeType === 3) return node.nodeValue.replace(/\s+/g, ' ');
     if (node.nodeType !== 1) return '';
@@ -186,7 +201,9 @@ function convertHtmlToMarkdown(html, baseUrl) {
     }
     if (tag === 'a') {
       const label = children().trim();
-      const href = safeHref(node.getAttribute('href'));
+      const rawHref = node.getAttribute('href');
+      if (isCloudflareEmailProtectionHref(rawHref)) return label;
+      const href = safeHref(rawHref);
       return label && href ? '[' + label + '](' + href + ')' : label;
     }
     if (['strong', 'b'].includes(tag)) return '**' + children().trim() + '**';
