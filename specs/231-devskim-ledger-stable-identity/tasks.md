@@ -1,36 +1,67 @@
-# Tasks: Line-Insensitive DevSkim Ledger Identity
+# Tasks: Stable DevSkim Ledger Identity
 
 **Input**: spec.md and plan.md
 **Prerequisites**: plan.md and spec.md
 
 ## Phase 1: Evidence
 
-- [x] T001 Re-read `.github/scripts/append_devskim_findings.py` and confirm the fingerprint path already ignores the line while the fingerprint-less path hashes `(rule, uri, line, message, columns, endLine)`.
-- [x] T002 Confirm the duplication mechanism from Spec 230's evidence: the four DS173237 findings moved one line down in PR #2063 and each received a new line-based id.
-- [x] T003 Read the existing guards: `__tests__/devskim-dedup.test.js`, `finding_identities` usage in `test_suppress_devskim_false_positives.py`, and `artifacts/devskim-review-pipeline/identity_benchmark.py`'s four scenarios, so the new identity keeps every existing expectation.
+- [x] T001 Read Pullfrog's review on PR #2065 (`pullrequestreview-6097218187`) and reproduced its two sequences by executing the superseded `19fe6ee` script from `HEAD`.
+- [x] T002 Established what finding-specific data the SARIF actually offers: DevSkim emits `charOffset`/`charLength` (UTF-16 code units) and `snippet` for located results, and omits `partialFingerprints` for rules such as DS173237. The suppression filter already validates that span against source and snippet (Spec 047), so the same contract is available to the appender.
+- [x] T003 Confirmed `.github/workflows/devskim.yml` checks out the repository in `update-report` before running the script, so the source tree the scan ran on is readable at append time.
 
 ## Phase 2: Implementation
 
-- [x] T004 Add `_shape_parts()` (rule, uri, message, start column, end column, span) and `_occurrence_indices()` to build line-free shapes and a position-ordered occurrence index per scan.
-- [x] T005 Replace the fingerprint-less identity with `("v2", "shape", *shape, occurrence)` and version the fingerprint identity as `("v2", "fingerprint", rule, uri, fingerprint)`.
-- [x] T006 Add `previous_identities()` covering the three ids earlier versions could write, and skip a result when its new identity or any alias is already recorded.
-- [x] T007 Keep the report append-only: unchanged marker parsing, row rendering and `new_count` output; no existing entry is edited, reordered or removed.
+- [x] T004 Replaced the occurrence-rank identity with `("v3","content", rule, uri, message, span text, column, length, source line text)`. No absolute line and no per-scan rank participates.
+- [x] T005 Added `_SourceFile`/`_SourceIndex`: workspace-only resolution, one read and one split per file per run, 2 MiB cap, UTF-16 → code-point conversion with a bisect over astral characters.
+- [x] T006 Added `_validated_span()`: the absolute span is accepted only when it matches the source at the reported start line and equals the scanner's own snippet; otherwise the snippet and then the reported columns are used.
+- [x] T007 Replaced the rank lookup in `append_findings()` with occurrence accounting: same recorded location first, remaining recorded occurrences for a renumber, then legacy aliases, appending only the surplus.
+- [x] T008 Kept the fingerprint identity (`v2`) unchanged so fingerprinted ids never change, and kept every earlier id as an alias, including the superseded v2 shape id.
+- [x] T009 Fixed the display-message extraction to use the defensive `_message_text()` helper, so a non-dict SARIF `message` cannot raise `AttributeError` in the append loop (Graphite review note).
+- [x] T010 Corrected the `previous_identities()` docstring to say it lists earlier ids only and that the current primary id is checked separately (Graphite review note).
 
-## Phase 3: Verification
+## Phase 3: Tests
 
-- [x] T008 `python3 -m py_compile .github/scripts/append_devskim_findings.py` → exit 0.
-- [x] T009 `node node_modules/vitest/vitest.mjs run __tests__/devskim-dedup.test.js` → 10 tests passed (4 existing, 6 new).
-- [x] T010 `python3 -m unittest test_summarize_devskim_findings test_suppress_devskim_false_positives` in `.github/scripts` → OK.
-- [x] T011 `python3 artifacts/devskim-review-pipeline/identity_benchmark.py --old-scripts /tmp/old-scripts` against the pre-change script → distinct same-line 2/2, duplicate 1/1, repeat idempotent, legacy entry re-added 0.
+- [x] T011 `__tests__/devskim-dedup.test.js` now asserts the recorded `uri:line` and id of every row, not only `newCount` and marker totals.
+- [x] T012 Added the renumber case: a recorded finding stays at its recorded location and id across a one-line shift and a forty-line shift, with `newCount` 0 both times.
+- [x] T013 Added the insertion case: a different same-shape finding inserted between two known ones appends exactly one row naming the inserted line, keeps both known ids, and produces no duplicate id.
+- [x] T014 Added the remediation case: removing a known finding appends nothing and removes nothing; a different new finding at the same line is then appended with a new id.
+- [x] T015 Added the legacy-entry case: one earlier-version line-based entry plus two different findings on that line appends the second finding and repeats cleanly, so an old entry cannot hide a new finding.
+- [x] T015b Added the repeated-scan case: three identical scans (including a reordered result list) append nothing after the first.
+- [x] T016 Kept the exact-duplicate and distinct-same-line cases, now with source text, and added the span-validation fallback case.
+- [x] T017 Pinned the documented byte-identical-findings limitation under a test named for it.
 
-## Phase 4: Records
+## Phase 4: Benchmark
 
-- [x] T012 Write the Spec 231 spec, plan and tasks, and update `.specify/feature.json`.
-- [x] T013 Update the Memory Bank active context, technical context and progress milestone.
+- [x] T018 Extended `artifacts/devskim-review-pipeline/identity_benchmark.py` with the insertion and remediation sequences and recorded the `uri:line` each append names plus `insertion_new_finding_recorded_at_expected_line` and `remediation_new_finding_recorded_at_expected_line`.
+
+## Phase 5: Records
+
+- [x] T019 Rewrote the Spec 231 spec, plan and tasks; added `specs/231-devskim-ledger-stable-identity/evidence/identity-benchmark.json`; pointed `RESULTS.md` at the new evidence.
+- [x] T020 Updated the Memory Bank active context, technical context and progress milestone to the corrected design and its limitation.
+
+## Verification results
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Script syntax | `python3 -m py_compile .github/scripts/append_devskim_findings.py` | exit 0 |
+| Dedup regression suite | `node node_modules/vitest/vitest.mjs run __tests__/devskim-dedup.test.js` | 13 passed / 13 |
+| Python checker suites | `cd .github/scripts && python3 -m unittest discover -s . -p 'test_*.py'` | Ran 520 tests, OK |
+| Identity benchmark | `python3 artifacts/devskim-review-pipeline/identity_benchmark.py --old-scripts $HOME/agent-tmp/old-scripts --json specs/231-devskim-ledger-stable-identity/evidence/identity-benchmark.json` | exit 0 |
+
+Benchmark against the superseded `19fe6ee` script (`before`) and this script (`after`):
+
+| Sequence | Before | After |
+| --- | --- | --- |
+| Insertion (`1,2` → `1,new,2`) | appended 1 row at `src/example.ts:3` — the moved existing finding — and never recorded the new one | appended 1 row at `src/example.ts:2` — the new finding — existing ids unchanged |
+| `insertion_new_finding_recorded_at_expected_line` | false | true |
+| Remediation (`1,3` → `1` → `1,new`) | appended 0 at the last step; the new finding was skipped | appended 1 at `src/example.ts:2` |
+| `remediation_new_finding_recorded_at_expected_line` | false | true |
+| Legacy entry written by `before`, rescanned by `after` | n/a | 0 appended, 1 entry |
+| Legacy entry plus a second, different finding on its line (Vitest) | n/a | 1 appended, repeat appends 0 |
 
 ## Verification boundary
 
-- `./freebuff-verify.sh`, the production build, Playwright and the OpenNext build are not run locally; they are build-exempt or PR-triggered for this change. The scanner, workflow and suppression filter are untouched.
+- `./freebuff-verify.sh`, the production build, Playwright, OpenNext and a live DevSkim scan were not run for this change; the modified paths are build-exempt and the scanner is untouched. The PR-triggered workflows remain authoritative.
 - This change is a follow-up on the open PR #2065 branch; the PR remains open, non-draft and unmerged for owner review.
 
 ## Preserved behaviour

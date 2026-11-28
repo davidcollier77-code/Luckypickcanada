@@ -1,83 +1,183 @@
-# Feature Specification: Line-Insensitive DevSkim Ledger Identity
+# Feature Specification: Stable DevSkim Ledger Identity
 
 **Feature Branch**: `freebuff/d05e4582a2636e1701cac123`
 **Created**: 2026-11-28
-**Status**: Implemented — local suites passing
-**Input**: Owner follow-up on PR #2065: the append-only DevSkim ledger still keys a finding on its reported line when the scanner supplies no fingerprint, so renumbering a file re-appends a known finding.
+**Status**: Implemented — local suites passing; owner review pending
+**Input**: Pullfrog review on PR #2065, finding "Occurrence rank misattributes ledger entries when findings are added or removed": the first repair replaced the reported line with a per-scan occurrence rank, which is not a property of a finding.
 
 ## Problem Statement
 
-`devskim-alerts.md` is the append-only "running list of distinct findings". Each entry carries a `<!-- devskim-id:… -->` marker, and `append_devskim_findings.py` appends a finding only when its identity is not already recorded.
+`devskim-alerts.md` is an append-only ledger. `append_devskim_findings.py` appends
+a finding only when its identity is not already recorded, so an identity must
+name one finding and only that finding for the life of the ledger.
 
-Spec 110 gave the identity two forms:
+Spec 110 first keyed a fingerprint-less finding on `(rule, uri, line, message,
+columns, endLine)`. PR #2063 shifted four DS173237 fixtures by one line, every id
+changed, and all four were appended a second time.
 
-- **fingerprint present** — `(rule, uri, scanner fingerprint)`, already independent of the reported line;
-- **no fingerprint** — `(rule, uri, reported line, message, columns, end line)`.
+The first repair (commit `19fe6ee`) removed the line but added a **per-scan
+occurrence rank**: the index of a result among the results sharing its shape,
+ordered by reported position. A rank describes the scan's current set, not the
+finding, and the ledger's ids are permanent. Pullfrog reproduced both consequences
+by executing the changed script:
 
-DevSkim emits `partialFingerprints` for only some results, so most findings take the second form. That identity contains the reported line. When PR #2063 inserted a line above `scripts/test-refresh-docs.js`'s fixture tokens, the same four DS173237 findings moved from 193/194/748/767 to 194/195/749/768, every identity changed, and all four were appended a second time. The ledger then held eight entries for four findings, and PR #2065 had to prune the four superseded rows by hand. Any future renumbering of a file with an open fingerprint-less finding reproduces the same defect, and an unattended `main` scan can silently double the ledger.
+- `194/749` then `194/300/749` (a new same-shape finding inserted between two known
+  ones) appended a **second entry for 749** and **never recorded 300** — the new
+  result inherited a known rank and was skipped, while the known result got a new
+  rank and was recorded again.
+- `194/749` then `194` (the 749 finding remediated) then `194/300` appended
+  **nothing at all**: the new finding inherited the removed finding's rank.
 
-The line is not part of a finding's identity; it is a property of the file's current text. The ledger must recognise the same finding after a renumber, keep genuinely distinct findings separate (Spec 110's "two distinct findings on one line" requirement), keep exact duplicate results collapsed, and remain append-only — no existing entry is rewritten, moved or removed.
+Both suites passed, because the new insertion test asserted only `newCount` and the
+marker total, and both coincidentally stayed correct.
 
 ## User Scenarios & Testing
 
-### User Story 1 — A renumbering must not re-append a known finding (Priority: P1)
+### User Story 1 — A new same-shape finding inserted between known ones (Priority: P1)
 
-As the maintainer of the DevSkim ledger, I need an already-recorded finding to keep its identity when the file is renumbered, so the ledger stays one entry per distinct finding without manual dedupe.
+As the owner, I need a finding inserted between two recorded findings to be appended
+at its own location, without touching or re-appending the known entries.
 
-**Independent Test**: Record a fingerprint-less finding at line 194, re-scan the same finding at line 195, and then at line 300. `new_count` is `0` for both later scans and the ledger still holds one entry.
+**Independent Test**: scan tokens at lines 1 and 2; then insert a different token at
+line 2 (moving the second to line 3). Exactly one row is appended and it names
+`src/example.ts:2`; the two existing rows and ids are unchanged.
 
-### User Story 2 — Distinct findings must stay distinct (Priority: P1)
+### User Story 2 — A finding remediated, then a different new finding (Priority: P1)
 
-As a reviewer, I need two identical findings on different lines, and two different findings on one line, to remain separate entries so no defect is hidden by deduplication.
+As the owner, I need a new finding that appears after another one was remediated to
+be recorded, even though it occupies the remediated finding's old line.
 
-**Independent Test**: Two identical findings at lines 194/195 both append; shifting both to 195/196 appends nothing and keeps two entries. Two findings on one line with different columns still produce two entries.
+**Independent Test**: scan lines 1 and 2; scan line 1 only; scan line 1 plus a
+different token at line 2. The middle scan appends nothing and removes nothing, and
+the last scan appends one row naming `src/example.ts:2` with a new id.
 
-### User Story 3 — Duplicate results and prior ledger entries (Priority: P2)
+### User Story 3 — Renumbering and rescanning (Priority: P1)
 
-As a maintainer, I need an exact duplicate result in one SARIF file recorded once, and a ledger written by the previous script still recognised, so upgrading the script never rewrites or duplicates history.
+As the owner, I need unrelated line insertions to append nothing, whichever line the
+finding now occupies.
 
-**Independent Test**: A scan containing the same result twice appends one entry; a report holding a previous-version entry is not appended to again.
+**Independent Test**: record a finding, shift it one line, then move it forty lines
+down. Both later scans append nothing and the recorded rows are byte-identical.
+
+### User Story 4 — Duplicates and distinct same-line findings (Priority: P2)
+
+As a reviewer, I need an exactly duplicated SARIF result recorded once and two
+different findings sharing one line recorded separately.
+
+**Independent Test**: a result repeated twice in one file appends once; two different
+tokens on one line append two rows with different ids.
+
+### User Story 5 — Upgrading an existing ledger (Priority: P2)
+
+As the owner, I need ids written by earlier versions of the script still recognised,
+so the upgrade appends nothing for findings the ledger already holds.
+
+**Independent Test**: the benchmark writes an entry with the superseded script, then
+  the current script scans the same finding: zero appends, one entry, report unchanged.
+  With one earlier-version entry and two different findings on its line, the entry
+  covers one and the other is still appended.
 
 ### Edge Cases
 
-- A finding with no source location (no file, no line) has no region; its shape uses empty columns and a zero span, and it remains distinct from other messages.
-- A scanner that starts or stops emitting a fingerprint for the same finding changes the identity form; unchanged ids from either form are recognised through the previous-identity aliases.
-- An identical finding added next to one that was just renumbered appends exactly one entry: the occurrence index is count-preserving, not a blanket "one entry per shape".
-- An entry superseded by remediation stays in the ledger until a maintainer removes it after verified remediation; the script never removes entries.
+- A finding whose `charOffset`/`charLength` disagrees with the checked-out source or
+  with the scanner's own snippet is identified from the snippet, then from the
+  reported columns; an invalid span is never trusted.
+- A finding with no readable source (no location, an unreadable file, a path outside
+  the workspace, a file over 2 MiB) falls back to snippet and reported coordinates.
+- Two findings that are byte-identical in every observable field (rule, message,
+  span text, column, length, line text) and have no fingerprint cannot be told
+  apart across scans; see Limitation.
+- A scanner change to the message, snippet or span of the same finding changes its
+  identity and appends once more, as the message did before this change.
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: The identity used for a result with a stable scanner fingerprint MUST NOT include the reported line.
-- **FR-002**: The identity used for a result without a fingerprint MUST NOT include the reported line.
-- **FR-003**: Two findings that differ in rule, file, message, columns or span MUST remain separate entries.
-- **FR-004**: Two identical findings on different lines MUST remain separate entries, and renumbering them together MUST NOT append anything.
-- **FR-005**: Two results identical in every reported field MUST be recorded once.
-- **FR-006**: Identities written by earlier versions of the script MUST still be recognised, so no existing ledger entry is duplicated or rewritten.
-- **FR-007**: The ledger MUST remain append-only: the script adds entries and never edits, reorders or deletes existing ones.
-- **FR-008**: The SARIF input, report format, `new_count` output and workflow invocation MUST remain unchanged.
+- **FR-001**: A result with a scanner fingerprint MUST use the fingerprint identity,
+  which MUST NOT include the reported line.
+- **FR-002**: A result without a fingerprint MUST be identified from finding-specific
+  data only. A per-scan rank among other results MUST NOT be part of its identity.
+- **FR-003**: The identity MUST NOT include the absolute reported line.
+- **FR-004**: The identity MUST use DevSkim's matched source span when it can be
+  validated against the checked-out source and the scanner's snippet, converting
+  UTF-16 offsets to code points; otherwise the snippet; otherwise the reported
+  columns. The script MUST NOT invent content.
+- **FR-005**: Findings that differ in rule, file, message, span text, column, length
+  or source-line text MUST be separate entries.
+- **FR-006**: Two results identical in identity and reported position MUST be
+  recorded once.
+- **FR-007**: Occurrences of one identity MUST be matched against the ledger's
+  existing entries: a scan holding no more occurrences than the ledger records MUST
+  append nothing, and a scan holding more MUST append only the surplus, preferring
+  occurrences at locations not yet recorded.
+- **FR-008**: Ids written by earlier versions MUST still be recognised as aliases:
+  `(rule, uri, line)`, `(rule, uri, fingerprint)`,   `(rule, uri, line, detail)` and
+  the superseded v2 shape id. The current primary id MUST be checked separately and
+  MUST NOT be presented as a "previous" id.
+- **FR-008a**: Each earlier id MUST cover at most one occurrence, so an earlier
+  line-based entry cannot hide a second, different finding recorded at that line.
+- **FR-009**: The ledger MUST remain append-only: add entries, never edit, reorder
+  or delete them. No existing entry may be removed or rewritten to satisfy the new
+  identity.
+- **FR-010**: The SARIF input, row format, marker syntax, `new_count` output and
+  workflow invocation MUST remain unchanged.
+- **FR-011**: Only files inside the checked-out workspace may be read, each at most
+  once per run, with a size cap.
+- **FR-012**: No scanner rule, scan glob, suppression filter, permission, SARIF
+  upload, trigger or reporting behaviour may change.
 
 ### Non-Functional Requirements
 
-- The change is confined to one reporting script and its regression test; no scanner rule, scan glob, workflow, suppression filter, permission, dependency or application code changes.
-- Identity computation stays linear in the number of results plus one sort per distinct shape.
+- The change is confined to one reporting script, its test and the benchmark.
+- Identity computation is linear per result plus one report scan; each source file
+  is read and split once per run.
+
+## Limitation (explicit)
+
+Two findings that share rule, message, span text, column, length and line text and
+have no scanner fingerprint are **indistinguishable across scans**. They share one
+identity. The ledger therefore tracks *occurrences*, not physical copies:
+
+- an unchanged scan of them appends nothing;
+- an additional copy appends one entry, but that entry cannot be guaranteed to name
+  the inserted copy when the copies also shift;
+- removing one copy and later adding an identical one appends nothing, because an
+  append-only ledger cannot observe the removal and must not rewrite an entry.
+
+DevSkim supplies no other finding-specific signal for such results. The design does
+not claim a stable identity for them, and `__tests__/devskim-dedup.test.js` pins the
+observable behaviour under a test named for the limitation.
 
 ## Out of Scope
 
-- Removing the four existing `devskim-alerts.md` entries; they are removed only after remediation is verified on `main`.
-- Changing `.github/workflows/devskim.yml`, `suppress_devskim_false_positives.py` or any scanner rule.
-- Recovering a ledger entry written by an earlier version of the script that is later renumbered; the aliases cover unchanged ids only, and no such entry exists in the current ledger.
+- Removing the four existing `devskim-alerts.md` entries; that happens after their
+  remediation is verified on `main`.
+- Changing `.github/workflows/devskim.yml`, the suppression filter or any scanner
+  rule (including adding a fingerprint to DevSkim's output).
+- CodeQL, Dependabot, scheduler or workflow-trigger changes.
+- Rewriting or migrating existing ledger entries.
 
 ## Success Criteria
 
-- **SC-001**: A fingerprint-less finding renumbered across three scans appends once.
-- **SC-002**: Two identical findings on separate lines append twice and survive a joint renumbering with zero new entries.
-- **SC-003**: An exact duplicate result in one scan appends once; distinct same-line columns append twice.
-- **SC-004**: `vitest run __tests__/devskim-dedup.test.js` passes every existing and new case.
-- **SC-005**: The DevSkim Python reporting, suppression and replay suites still pass, and the previous script's identity benchmark still reports one entry for duplicate and legacy cases.
+- **SC-001**: An inserted same-shape finding is recorded at its own line and no known
+  finding is appended twice.
+- **SC-002**: A new finding after a remediation is recorded and the remediated
+  finding is not re-added.
+- **SC-003**: A renumber, a repeated scan and a reordered scan append nothing.
+- **SC-004**: An exact duplicate appends once; two different same-line findings append
+  twice.
+- **SC-005**: `vitest run __tests__/devskim-dedup.test.js` passes, asserting the
+  recorded `uri:line` and id for every appended entry.
+- **SC-006**: `identity_benchmark.py` records the expected line for the new finding
+  in both sequences against this script, and records the wrong line for both against
+  the superseded `19fe6ee` script.
+- **SC-007**: The DevSkim Python reporting and suppression suites and `py_compile`
+  pass.
 
 ## Assumptions
 
-- DevSkim continues to omit fingerprints for rules such as DS173237; the fingerprint path remains the precise identity when one is available.
-- The reported columns and span of an unchanged finding are stable across scans, which the DS173237 records confirm (all four tokens are 56 characters in the same columns).
+- DevSkim continues to omit fingerprints for rules such as DS173237, and continues to
+  emit `charOffset`/`charLength` and `snippet` for located findings.
+- The report job checks out the same commit the scan ran on, as `.github/workflows/devskim.yml`
+  currently does.

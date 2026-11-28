@@ -1,0 +1,154 @@
+{
+  "before": {
+    "distinct_same_line_appended": 2,
+    "distinct_same_line_entries": 2,
+    "duplicate_appended": 1,
+    "duplicate_entries": 1,
+    "repeat_is_idempotent": true,
+    "insertion_appended": [
+      2,
+      1
+    ],
+    "insertion_appended_rows": [
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:b17e411d9e9e3e41e2f7 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:2bf67ec0b20877962b3f -->"
+      ],
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:3` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:1860635717f249c6144e -->"
+      ]
+    ],
+    "insertion_rows": [
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2",
+        "src/example.ts:3"
+      ]
+    ],
+    "insertion_final_rows": [
+      "src/example.ts:1",
+      "src/example.ts:2",
+      "src/example.ts:3"
+    ],
+    "insertion_entries": 3,
+    "insertion_expected_where": "src/example.ts:2",
+    "insertion_new_finding_recorded_at_expected_line": false,
+    "remediation_appended": [
+      2,
+      0,
+      0
+    ],
+    "remediation_appended_rows": [
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:b17e411d9e9e3e41e2f7 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:2bf67ec0b20877962b3f -->"
+      ],
+      [],
+      []
+    ],
+    "remediation_rows": [
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ]
+    ],
+    "remediation_final_rows": [
+      "src/example.ts:1",
+      "src/example.ts:2"
+    ],
+    "remediation_entries": 2,
+    "remediation_expected_where": "src/example.ts:2",
+    "remediation_new_finding_recorded_at_expected_line": false
+  },
+  "after": {
+    "distinct_same_line_appended": 2,
+    "distinct_same_line_entries": 2,
+    "duplicate_appended": 1,
+    "duplicate_entries": 1,
+    "repeat_is_idempotent": true,
+    "insertion_appended": [
+      2,
+      1
+    ],
+    "insertion_appended_rows": [
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:d7d3f38bc92b755b4624 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:941cd9ec5e4b7a335751 -->"
+      ],
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:755da0a3970feb1345ea -->"
+      ]
+    ],
+    "insertion_rows": [
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2",
+        "src/example.ts:2"
+      ]
+    ],
+    "insertion_final_rows": [
+      "src/example.ts:1",
+      "src/example.ts:2",
+      "src/example.ts:2"
+    ],
+    "insertion_entries": 3,
+    "insertion_expected_where": "src/example.ts:2",
+    "insertion_new_finding_recorded_at_expected_line": true,
+    "remediation_appended": [
+      2,
+      0,
+      1
+    ],
+    "remediation_appended_rows": [
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:d7d3f38bc92b755b4624 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:941cd9ec5e4b7a335751 -->"
+      ],
+      [],
+      [
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:79d6cd17e418ad6b57ac -->"
+      ]
+    ],
+    "remediation_rows": [
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2"
+      ],
+      [
+        "src/example.ts:1",
+        "src/example.ts:2",
+        "src/example.ts:2"
+      ]
+    ],
+    "remediation_final_rows": [
+      "src/example.ts:1",
+      "src/example.ts:2",
+      "src/example.ts:2"
+    ],
+    "remediation_entries": 3,
+    "remediation_expected_where": "src/example.ts:2",
+    "remediation_new_finding_recorded_at_expected_line": true,
+    "legacy_entry_readded": 0,
+    "legacy_entries": 1
+  }
+}

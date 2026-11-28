@@ -1,4 +1,14 @@
-## 2026-11-28 — Line-insensitive DevSkim ledger identity (Spec 231)
+## 2026-11-28 — Content-anchored DevSkim ledger identity (Spec 231, corrected)
+
+- Pullfrog's PR #2065 review demonstrated that the first repair's per-scan occurrence rank misattributes entries: executing `19fe6ee` over `194/749` → `194/300/749` appended a second entry for 749 and never recorded 300, and `194/749` → `194` → `194/300` appended nothing. A rank describes the scan's current set, not a finding.
+- Replaced it with an identity from the finding's own content: rule, uri, message, matched source span, column within its line, span length and trimmed source-line text. The span comes from DevSkim's absolute `charOffset`/`charLength`, accepted only when it matches the checked-out source at the reported line and the scanner's own snippet, with snippet and reported-column fallbacks. No line number and no rank participates.
+- Occurrences are now matched against the ledger's recorded entries for the identity — same `uri:line` first, remaining recorded occurrences for a pure renumber, then earlier-version aliases — and only the surplus is appended, preferring unrecorded locations. Unchanged, renumbered and reordered scans append nothing; an inserted finding appends at its own line; a remediated finding keeps its entry.
+- Replaced the count-only insertion test with row-level cases: renumbering, insertion between known findings, remediation followed by a different new finding, repeated and reordered scans, exact duplicates versus distinct same-line findings, span-validation fallback and the documented byte-identical-findings limitation. 12/12 pass and each asserts the recorded `uri:line` and id.
+- Extended `identity_benchmark.py` with the insertion and remediation sequences. Against `19fe6ee` both record the wrong line (existing finding re-appended, new finding skipped); against this script the new finding is recorded at its expected line in both sequences.
+- Recorded limitation: findings identical in every observable field and without a fingerprint cannot be told apart across scans; their occurrences are tracked, an extra copy appends one entry (attribution not guaranteed), and remove-then-add-identical appends nothing. No other finding-specific signal exists in the SARIF.
+- Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
+
+## 2026-11-28 — Line-insensitive DevSkim ledger identity (Spec 231, superseded)
 
 - Established that the ledger's duplication in PR #2065 came from the fingerprint-less identity including the reported line; DevSkim omits `partialFingerprints` for most results, so PR #2063's one-line shift changed all four DS173237 ids.
 - Replaced the line-based half of the identity with `(rule, uri, message, startColumn, endColumn, span, occurrence)`, where `occurrence` is the result's index among identical shapes ordered by reported position. Renumbering changes neither the shape nor the index; identical findings on different lines stay separate; exact duplicate results still collapse; an added identical finding appends exactly one entry.
