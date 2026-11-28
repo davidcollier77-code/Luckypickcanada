@@ -1004,3 +1004,12 @@ This file is a concise record of meaningful completed work, not a chronological 
 - The centre flip was captured from a CDP screencast (`Page.startScreencast`) rather than repeated page screenshots, which could never land inside the turn. `flip-screencast.webp` (16 frames, 90 ms) and its `flip-filmstrip.png` are committed as evidence; both show the leaf narrowing, going edge-on and the percentage arriving.
 - Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` and the `.next + public` size gate re-run on this head.
 - Not verified here: the full unit suite, the PR's Playwright shards and physical-GPU smoothness.
+
+
+## 2026-11-28 — The gold band across the Lucky Meter medallion (Spec 230)
+
+- Removed the horizontal gold band that crossed the maple inside the reading well. It was not a separate ornament: the twelve-window plate was extruded as one disc with thirteen holes, and the triangulator bridged the central opening across the narrow web beside each window, leaving stray gold triangles lying over the well. The plate is now extruded as twelve wedge pieces with one window each, so it cannot produce that bridge. The wheel reads as separate gold-framed compartments, which is also closer to the reference.
+- The maple inlay is now cut from a mitred inset outline instead of a 0.9 scale, and its blade was narrowed at the waist, so the gold reads as an even outline with no bar across the notches.
+- Refreshed `ready-desktop.png`, `ready-instrument-closeup.png` (both previously stale), `flip-filmstrip.png` and `flip-screencast.webp` for the new configuration.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` compiled in 25.8 s and `du -sb .next public` measured 426,455,445 bytes (406.70 MiB), below 495 MiB.
+- Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.

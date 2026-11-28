@@ -393,20 +393,55 @@ function buildPointerLeafGeometry(THREE) {
  * reads as a star instead, so the silhouette is cut from that outline and
  * extruded with a real bevelled edge.
  */
+/**
+ * Offsets a closed outline inward by a constant distance, using each vertex's
+ * miter so the rim keeps an even width into the notches. A uniform scale cannot
+ * do this: it leaves the gold rim far too wide where the outline turns in, and
+ * the notches then read as gold bands across the blade.
+ */
+function insetOutline(outline, inset) {
+  const count = outline.length;
+  let area = 0;
+  for (let index = 0; index < count; index += 1) {
+    const [x1, y1] = outline[index];
+    const [x2, y2] = outline[(index + 1) % count];
+    area += x1 * y2 - x2 * y1;
+  }
+  // Clockwise and counter-clockwise outlines need opposite normals.
+  const sign = area > 0 ? 1 : -1;
+  const edgeNormal = (from, to) => {
+    const dx = to[0] - from[0];
+    const dy = to[1] - from[1];
+    const length = Math.hypot(dx, dy) || 1;
+    return [(sign * dy) / length, (-sign * dx) / length];
+  };
+  return outline.map(([x, y], index) => {
+    const before = edgeNormal(outline[(index - 1 + count) % count], outline[index]);
+    const after = edgeNormal(outline[index], outline[(index + 1) % count]);
+    const bisectorX = before[0] + after[0];
+    const bisectorY = before[1] + after[1];
+    const bisectorLength = Math.hypot(bisectorX, bisectorY) || 1;
+    const normalX = bisectorX / bisectorLength;
+    const normalY = bisectorY / bisectorLength;
+    const miter = Math.max(0.5, normalX * before[0] + normalY * before[1]);
+    return [x - (normalX * inset) / miter, y - (normalY * inset) / miter];
+  });
+}
+
 function mapleSilhouetteGeometry(THREE, options = {}) {
   const rightHalf = [
     [0.0, 1.0],
-    [0.1, 0.7],
-    [0.3, 0.78],
-    [0.25, 0.52],
-    [0.56, 0.56],
-    [0.46, 0.3],
-    [0.62, 0.12],
-    [0.4, 0.02],
-    [0.46, -0.18],
-    [0.22, -0.14],
-    [0.18, -0.44],
-    [0.07, -0.36],
+    [0.09, 0.7],
+    [0.26, 0.76],
+    [0.21, 0.5],
+    [0.44, 0.52],
+    [0.34, 0.28],
+    [0.48, 0.1],
+    [0.3, 0.0],
+    [0.36, -0.2],
+    [0.2, -0.16],
+    [0.16, -0.46],
+    [0.07, -0.38],
     [0.065, -0.7],
     [0.0, -0.66],
   ];
@@ -414,10 +449,11 @@ function mapleSilhouetteGeometry(THREE, options = {}) {
   for (let index = rightHalf.length - 2; index >= 1; index -= 1) {
     outline.push([-rightHalf[index][0], rightHalf[index][1]]);
   }
+  const points = options.inset ? insetOutline(outline, options.inset) : outline;
 
   const shape = new THREE.Shape();
-  shape.moveTo(outline[0][0], outline[0][1]);
-  for (const [x, y] of outline.slice(1)) shape.lineTo(x, y);
+  shape.moveTo(points[0][0], points[0][1]);
+  for (const [x, y] of points.slice(1)) shape.lineTo(x, y);
   shape.closePath();
 
   const geometry = new THREE.ExtrudeGeometry(shape, {
@@ -1214,33 +1250,48 @@ export async function createLuckyMeterScene({
   // lit compartment rather than being painted on its face.
   const chamberFills = [];
 
-  const plateShape = new THREE.Shape();
-  plateShape.absarc(0, 0, METER_LAYOUT.wheel.outerRadius - 0.03, 0, Math.PI * 2, false);
-  const plateHole = new THREE.Path();
-  plateHole.absarc(0, 0, METER_LAYOUT.wheel.chamberInnerRadius - 0.045, 0, Math.PI * 2, true);
-  plateShape.holes.push(plateHole);
-  for (let index = 0; index < CHAMBER_COUNT; index += 1) {
-    const holeCentre = chamberCentre(index);
-    const hole = new THREE.Path();
-    hole.absarc(holeCentre.x, holeCentre.y, CHAMBER_CUP.radius + 0.006, 0, Math.PI * 2, true);
-    plateShape.holes.push(hole);
-  }
-  const plateGeometry = trackGeometry(
-    new THREE.ExtrudeGeometry(plateShape, {
-      depth: 0.1,
-      bevelEnabled: true,
-      bevelThickness: 0.014,
-      bevelSize: 0.012,
-      bevelSegments: 2,
-      curveSegments: constrained ? 16 : 28,
-    }),
-  );
+  // The plate is extruded in twelve pieces, one per window. A single disc with
+  // thirteen holes makes the triangulator bridge the central opening across the
+  // narrow web beside each window, and those bridges survived as stray gold
+  // triangles lying across the reading well. One window per piece cannot do it.
+  const plateInnerRadius = 0.5;
+  const plateOuterRadius = METER_LAYOUT.wheel.outerRadius - 0.03;
+  const plateHalfAngle = (CHAMBER_DEGREES / 2 - 1.3) * DEG2RAD;
+  const plateWindowRadius = CHAMBER_CUP.radius + 0.006;
+  const plateWindowCentre =
+    (METER_LAYOUT.wheel.chamberInnerRadius + METER_LAYOUT.wheel.chamberOuterRadius) / 2;
+  const plateGeometry = (() => {
+    const shape = new THREE.Shape();
+    chamberWedgePath(shape, {
+      angle: 0,
+      inner: plateInnerRadius,
+      outer: plateOuterRadius,
+      halfAngle: plateHalfAngle,
+      corner: 0.03,
+    });
+    const window = new THREE.Path();
+    window.absarc(0, plateWindowCentre, plateWindowRadius, 0, Math.PI * 2, true);
+    shape.holes.push(window);
+    return trackGeometry(
+      new THREE.ExtrudeGeometry(shape, {
+        depth: 0.1,
+        bevelEnabled: true,
+        bevelThickness: 0.014,
+        bevelSize: 0.012,
+        bevelSegments: 2,
+        curveSegments: constrained ? 16 : 28,
+      }),
+    );
+  })();
   // The plate is the dark metal the windows are punched through; the polished
   // gold lives on the bezels and spokes, so the twelve compartments carry the
   // colour instead of a wide field of flat gold.
-  const plate = new THREE.Mesh(plateGeometry, gold);
-  plate.position.z = 0.02;
-  wheelGroup.add(plate);
+  for (let index = 0; index < CHAMBER_COUNT; index += 1) {
+    const plateSegment = new THREE.Mesh(plateGeometry, gold);
+    plateSegment.rotation.z = -index * CHAMBER_DEGREES * DEG2RAD;
+    plateSegment.position.z = 0.02;
+    wheelGroup.add(plateSegment);
+  }
 
   // A dark bronze well behind the plate: every window becomes a deep
   // compartment instead of a hole punched through a flat disc.
@@ -1491,7 +1542,9 @@ export async function createLuckyMeterScene({
   // The leaf itself is red enamel inset into its gold rim, exactly as the
   // reference draws it: gold silhouette, deep red blade, raised gold veins.
   const medallionInlay = new THREE.Mesh(
-    leafGeometry,
+    trackGeometry(
+      mapleSilhouetteGeometry(THREE, { thickness: 0.04, bevel: 0.008, inset: 0.052 }),
+    ),
     trackMaterial(
       new THREE.MeshPhysicalMaterial({
         color: 0xc21d10,
@@ -1506,8 +1559,7 @@ export async function createLuckyMeterScene({
       }),
     ),
   );
-  medallionInlay.scale.setScalar(0.9);
-  medallionInlay.position.z = 0.014;
+  medallionInlay.position.z = 0.062;
   medallion.add(medallionInlay);
 
   // Raised veins turn the stamped silhouette into a readable maple relief. A
