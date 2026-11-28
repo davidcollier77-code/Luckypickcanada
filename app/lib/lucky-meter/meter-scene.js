@@ -833,6 +833,7 @@ export async function createLuckyMeterScene({
       }),
     );
     const rim = new THREE.Mesh(cupRimGeometry, rimMaterial);
+    rim.name = `chamber-rim-${index}`;
     rim.position.set(0, cupCentreRadius + CHAMBER_CUP.height / 2, 0.045);
     rim.renderOrder = 4;
     group.add(rim);
@@ -1602,6 +1603,7 @@ export async function createLuckyMeterScene({
   // numeral, its own halo and a short trail. It leaves the selected cup after
   // the drain, never the spout, and seats itself in the plaque.
   const tokenGroup = new THREE.Group();
+  tokenGroup.name = 'number-token';
   tokenGroup.visible = false;
   root.add(tokenGroup);
 
@@ -1683,10 +1685,24 @@ export async function createLuckyMeterScene({
   }
 
   let flightPoints = [];
+  let flightPathKey = '';
 
+  /**
+   * The token leaves the cup the wheel lands on. The selected index is
+   * published while the wheel is still spinning, so the path is built from the
+   * landing angle the scene is easing toward — never from the angle the wheel
+   * happens to be passing through on the frame the index becomes known — and
+   * it is rebuilt if the selection or that landing angle changes.
+   */
   function ensureFlightPath() {
-    if (flightPoints.length > 0 || selectedIndex < 0) return;
-    flightPoints = numberTransferPath({ index: selectedIndex, wheelAngle: state.wheelAngle });
+    if (selectedIndex < 0) return;
+    const key = `${selectedIndex}:${state.targetWheelAngle.toFixed(3)}`;
+    if (flightPoints.length > 0 && key === flightPathKey) return;
+    flightPoints = numberTransferPath({
+      index: selectedIndex,
+      wheelAngle: state.targetWheelAngle,
+    });
+    flightPathKey = key;
   }
 
   // ── Ambient dust ───────────────────────────────────────────────────────
@@ -1908,7 +1924,10 @@ export async function createLuckyMeterScene({
 
     const selected = selectedIndex >= 0 ? selectedIndex : 0;
     const selectedFill = chamberFills[selected];
-    if (selectedFill) {
+    // Only the idle meter breathes. Every other phase belongs to the `rim`
+    // envelope assigned above, which this write used to overwrite on every
+    // frame, so the selected cup never showed its landing light.
+    if (selectedFill && state.phase === 'idle') {
       selectedFill.rimMaterial.opacity = 0.34 + Math.sin(secs * 2.1) * 0.04;
     }
     if (faceLight) {

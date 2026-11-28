@@ -25,6 +25,8 @@ import {
 } from '../app/lib/gpu-scene-light';
 import { resolveRenderQuality } from '../app/lib/graphics-capabilities';
 import { READY_WATCHDOG_MS, createLuckyMeterScene } from '../app/lib/lucky-meter/meter-scene';
+import { numberTransferPath, sampleNumberPath } from '../app/lib/lucky-meter/meter-layout';
+import { getPaletteForSeasonKey } from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
 
 /**
  * The reveal gate runs inside the real meter scene. The shared surface is the
@@ -472,5 +474,74 @@ describe('Lucky Meter produced-frame reveal gate', () => {
 
     expect(onReady).not.toHaveBeenCalled();
     expect(surface.stop).not.toHaveBeenCalled();
+  });
+
+  it('leaves the cup the wheel lands on, not the angle the spin passed through', async () => {
+    const scene = await createScene();
+    const palette = getPaletteForSeasonKey('autumn');
+    const index = 5;
+    const spinAngle = 300;
+    const landed = (((225 - index * 30) % 360) + 360) % 360;
+
+    // The colour index is published while the wheel is still turning.
+    scene.setState({
+      palette,
+      colourIndex: index,
+      wheelAngle: spinAngle,
+      phase: 'spin',
+      numberReveal: 0,
+      reducedMotion: true,
+    });
+    callbacks.onFrame({ elapsed: 0.016 });
+
+    // The wheel lands, then the number detaches from its cup.
+    scene.setState({ wheelAngle: landed, phase: 'landed', reducedMotion: true });
+    callbacks.onFrame({ elapsed: 0.016 });
+    scene.setState({ numberReveal: 0.2, reducedMotion: true });
+    callbacks.onFrame({ elapsed: 0.016 });
+
+    const token = surface.stage.scene.getObjectByName('number-token');
+    expect(token).toBeDefined();
+    expect(token.visible).toBe(true);
+
+    const expected = sampleNumberPath(numberTransferPath({ index, wheelAngle: landed }), 0.2);
+    expect(token.position.x).toBeCloseTo(expected.x, 4);
+    expect(token.position.y).toBeCloseTo(expected.y, 4);
+
+    // The two paths are far apart, so this is not a vacuous comparison.
+    const fromSpinAngle = sampleNumberPath(
+      numberTransferPath({ index, wheelAngle: spinAngle }),
+      0.2,
+    );
+    expect(Math.hypot(expected.x - fromSpinAngle.x, expected.y - fromSpinAngle.y)).toBeGreaterThan(
+      0.05,
+    );
+  });
+
+  it('lets the rim envelope own the selected cup once the wheel has landed', async () => {
+    const scene = await createScene();
+    const palette = getPaletteForSeasonKey('autumn');
+    const index = 2;
+    const landed = (((225 - index * 30) % 360) + 360) % 360;
+
+    scene.setState({
+      palette,
+      colourIndex: index,
+      wheelAngle: landed,
+      phase: 'landed',
+      choreography: { focus: 1, rim: 1 },
+    });
+    callbacks.onFrame({ elapsed: 0.016 });
+
+    const rim = surface.stage.scene.getObjectByName(`chamber-rim-${index}`);
+    expect(rim).toBeDefined();
+    // 0.5 + rim × 0.5 from the choreography, not the idle sine pulse.
+    expect(rim.material.opacity).toBeCloseTo(1, 5);
+
+    // The untouched meter keeps its slow breathing.
+    scene.setState({ phase: 'idle', choreography: { focus: 0, rim: 0 } });
+    callbacks.onFrame({ elapsed: 1.5 });
+    expect(rim.material.opacity).toBeGreaterThan(0.29);
+    expect(rim.material.opacity).toBeLessThan(0.39);
   });
 });
