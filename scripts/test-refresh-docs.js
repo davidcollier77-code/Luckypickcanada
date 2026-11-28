@@ -79,6 +79,7 @@ https.get = function (urlOrOptions, optionsOrCallback, callback) {
 };
 
 const refreshDocs = require('./refresh-docs.js');
+const { mergePendingBaselineManifest } = require('./prepare-docs-refresh-baseline.js');
 const {
   validateDocumentContent,
   collectRoutedLibraries,
@@ -1131,6 +1132,423 @@ async function runTests() {
     assert.match(markdown, /\*\*Result:\*\* FAILED/);
     assert.match(markdown, /0 download failure\(s\)/);
     assert.match(markdown, /no source configuration/);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Consecutive refresh runs, baseline reuse and manifest bookkeeping
+  // ---------------------------------------------------------------------------
+
+  function writeFixtureManifest(docsDir, manifest) {
+    fs.writeFileSync(path.join(docsDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+  }
+
+  function readFixtureManifest(docsDir) {
+    return JSON.parse(fs.readFileSync(path.join(docsDir, 'manifest.json'), 'utf8'));
+  }
+
+  function makeSingleDocumentFixture({ library, sourceUrl, snapshot, githubShas = {}, lastUpdated = '2026-11-07T00:00:00-04:00' }) {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'creation'));
+    if (snapshot !== undefined) {
+      fs.writeFileSync(path.join(root, 'creation', getLibraryFilename(library)), snapshot);
+    }
+    writeFixtureManifest(root, {
+      lastUpdated,
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url: sourceUrl } },
+      inventory: [library],
+      githubShas
+    });
+    return root;
+  }
+
+  await test('a genuine upstream content change is refreshed once and the next run records it as unchanged', async () => {
+    const library = '/acme/guide';
+    const sourceUrl = 'https://raw.githubusercontent.com/acme/guide/main/README.md';
+    const apiUrl = 'https://api.github.com/repos/acme/guide/commits/main';
+    const previousContent = '# Guide\n\nThe guide still describes the original workflow steps and options.\n';
+    const upstreamContent = '# Guide\n\nThe guide now describes the revised workflow steps and the new options.\n';
+    const root = makeSingleDocumentFixture({
+      library,
+      sourceUrl,
+      snapshot: previousContent,
+      githubShas: { [library]: 'rev-1' }
+    });
+    const snapshotPath = path.join(root, 'creation', getLibraryFilename(library));
+
+    mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'rev-2' }) };
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/markdown; charset=utf-8' },
+      data: upstreamContent
+    };
+
+    const firstReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, firstReport);
+    assert.strictEqual(firstReport.updated, 1, 'the genuine upstream change must be applied');
+    assert.strictEqual(firstReport.unchanged, 0);
+    assert.strictEqual(firstReport.errors.length, 0);
+    assert.strictEqual(fs.readFileSync(snapshotPath, 'utf8'), upstreamContent);
+    let manifest = readFixtureManifest(root);
+    assert.strictEqual(manifest.githubShas[library], 'rev-2', 'the verified upstream SHA must be recorded');
+    assert.notStrictEqual(manifest.lastUpdated, '2026-11-07T00:00:00-04:00', 'a content change must advance lastUpdated');
+    const firstSnapshotBytes = fs.readFileSync(snapshotPath);
+    const firstLastUpdated = manifest.lastUpdated;
+
+    // Same upstream revision and same content: nothing to apply a second time.
+    const secondReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, secondReport);
+    assert.strictEqual(secondReport.updated, 0, 'an unchanged document must never be reported as updated again');
+    assert.strictEqual(secondReport.unchanged + secondReport.skipped, 1);
+    assert.strictEqual(secondReport.skipped, 1, 'an unchanged upstream SHA is recorded as skipped');
+    assert.deepStrictEqual(fs.readFileSync(snapshotPath), firstSnapshotBytes, 'the snapshot must remain byte-identical');
+    manifest = readFixtureManifest(root);
+    assert.strictEqual(manifest.lastUpdated, firstLastUpdated, 'an unchanged run must not advance lastUpdated');
+    assert.strictEqual(manifest.githubShas[library], 'rev-2');
+    restoreDocsDirectory();
+  });
+
+  await test('a second run without upstream SHA tracking reports the document as unchanged', async () => {
+    const library = '/acme/handbook';
+    const sourceUrl = 'https://docs.example.com/handbook';
+    const content = '# Handbook\n\nThe handbook documents the approved release and review process.\n';
+    const root = makeSingleDocumentFixture({ library, sourceUrl });
+    const snapshotPath = path.join(root, 'creation', getLibraryFilename(library));
+    mockResponses[sourceUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: content };
+
+    const firstReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, firstReport);
+    assert.strictEqual(firstReport.updated, 1);
+    const firstSnapshotBytes = fs.readFileSync(snapshotPath);
+    const firstLastUpdated = readFixtureManifest(root).lastUpdated;
+
+    const secondReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, secondReport);
+    assert.strictEqual(secondReport.updated, 0);
+    assert.strictEqual(secondReport.unchanged, 1, 'the second run must record the document as unchanged');
+    assert.strictEqual(secondReport.skipped, 0);
+    assert.deepStrictEqual(fs.readFileSync(snapshotPath), firstSnapshotBytes);
+    assert.strictEqual(readFixtureManifest(root).lastUpdated, firstLastUpdated);
+    restoreDocsDirectory();
+  });
+
+  await test('two documents sharing an upstream repository SHA are decided independently', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'troubleshooting'));
+    const pages = '/acme/docs/pages';
+    const turnstile = '/acme/docs/turnstile';
+    const pagesUrl = 'https://raw.githubusercontent.com/acme/docs/production/src/content/pages.mdx';
+    const turnstileUrl = 'https://raw.githubusercontent.com/acme/docs/production/src/content/turnstile.mdx';
+    const apiUrl = 'https://api.github.com/repos/acme/docs/commits/production';
+    const pagesSnapshot = '# Pages\n\nDeploy static sites to the network from a Git repository.\n';
+    const pagesUpstream = '# Pages\n\nDeploy static sites and full-stack applications with Workers Static Assets.\n';
+    const turnstileSnapshot = '# Turnstile\n\nVerify visitors without interrupting their documentation session.\n';
+
+    fs.writeFileSync(path.join(root, 'troubleshooting', getLibraryFilename(pages)), pagesSnapshot);
+    fs.writeFileSync(path.join(root, 'troubleshooting', getLibraryFilename(turnstile)), turnstileSnapshot);
+    const turnstileBytes = fs.readFileSync(path.join(root, 'troubleshooting', getLibraryFilename(turnstile)));
+    writeFixtureManifest(root, {
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { troubleshooting: [pages, turnstile] },
+      sources: {
+        [pages]: { type: 'url', url: pagesUrl },
+        [turnstile]: { type: 'url', url: turnstileUrl }
+      },
+      inventory: [pages, turnstile],
+      githubShas: { [pages]: 'old-sha', [turnstile]: 'old-sha' }
+    });
+
+    mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'new-sha' }) };
+    mockResponses[pagesUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: pagesUpstream };
+    mockResponses[turnstileUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: turnstileSnapshot };
+
+    const report = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, report);
+
+    assert.strictEqual(report.updated, 1, 'only the genuinely changed document may be updated');
+    assert.strictEqual(report.unchanged, 1, 'the unchanged sibling from the same repository is not an update');
+    assert.strictEqual(
+      fs.readFileSync(path.join(root, 'troubleshooting', getLibraryFilename(pages)), 'utf8'),
+      pagesUpstream
+    );
+    assert.deepStrictEqual(
+      fs.readFileSync(path.join(root, 'troubleshooting', getLibraryFilename(turnstile))),
+      turnstileBytes,
+      'the unchanged sibling must not be rewritten'
+    );
+    let manifest = readFixtureManifest(root);
+    assert.strictEqual(manifest.githubShas[pages], 'new-sha');
+    assert.strictEqual(manifest.githubShas[turnstile], 'new-sha', 'verified SHA pins advance per document');
+    assert.notStrictEqual(manifest.lastUpdated, '2026-11-07T00:00:00-04:00');
+    const lastUpdated = manifest.lastUpdated;
+
+    const repeatedReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, repeatedReport);
+    assert.strictEqual(repeatedReport.updated, 0, 'shared upstream state must not force a second update');
+    assert.strictEqual(repeatedReport.skipped, 2);
+    manifest = readFixtureManifest(root);
+    assert.strictEqual(manifest.lastUpdated, lastUpdated, 'a no-change run must not advance lastUpdated');
+    restoreDocsDirectory();
+  });
+
+  await test('volatile URL tokens and formatting differences do not create recurring updates', async () => {
+    const library = '/acme/reference';
+    const sourceUrl = 'https://docs.example.com/reference/page';
+    const html = ({ token, nonce, eol }) => [
+      '<!doctype html><html><head><title>Reference</title></head><body>',
+      '<main>',
+      `<h1>Reference</h1>`,
+      `<p>Contact <a href="/cdn-cgi/l/email-protection#${token}">support<span>&#64;</span>example</a> for help with the API.</p>`,
+      `<p>Search with <a href="https://docs.example.com/search?q=api&amp;sealed_token=${token}" nonce="${nonce}">the search API</a>.</p>`,
+      '<p>This reference contains enough readable documentation words to pass the integrity check.</p>',
+      '</main></body></html>'
+    ].join(eol);
+
+    const root = makeSingleDocumentFixture({ library, sourceUrl });
+    const snapshotPath = path.join(root, 'creation', getLibraryFilename(library));
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+      data: html({ token: '2d5e48414b0b0e1e', nonce: 'nonce-first', eol: '\n' })
+    };
+
+    const firstReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, firstReport);
+    assert.strictEqual(firstReport.updated, 1);
+    assert.strictEqual(firstReport.errors.length, 0);
+    const firstSnapshotBytes = fs.readFileSync(snapshotPath);
+    const firstContent = firstSnapshotBytes.toString('utf8');
+    const firstLastUpdated = readFixtureManifest(root).lastUpdated;
+    assert.match(firstContent, /Contact support@example for help with the API\./);
+    assert.doesNotMatch(firstContent, /email-protection|2d5e4841/);
+    assert.match(firstContent, /sealed_token=REDACTED/);
+
+    // Rotated tokens, a different nonce and CRLF line endings must all compare equal.
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+      data: html({ token: 'dcafb9b0bafaffef', nonce: 'nonce-second', eol: '\r\n' })
+    };
+    const secondReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, secondReport);
+    assert.strictEqual(secondReport.updated, 0, 'volatile tokens must not be reported as documentation updates');
+    assert.strictEqual(secondReport.unchanged, 1);
+    assert.deepStrictEqual(fs.readFileSync(snapshotPath), firstSnapshotBytes, 'the snapshot must remain byte-identical');
+    assert.strictEqual(readFixtureManifest(root).lastUpdated, firstLastUpdated);
+    restoreDocsDirectory();
+  });
+
+  await test('manifest SHAs and timestamps advance only for verified downloads', async () => {
+    const previousRetryDelay = process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+    process.env.DOCS_REFRESH_RETRY_DELAY_MS = '0';
+    try {
+      const library = '/acme/release-notes';
+      const sourceUrl = 'https://raw.githubusercontent.com/acme/release-notes/main/NOTES.md';
+      const apiUrl = 'https://api.github.com/repos/acme/release-notes/commits/main';
+      const goodContent = '# Release notes\n\nThe approved release notes describe the verified behaviour.\n';
+
+      // A failed download must never advance the recorded SHA or the timestamp.
+      const failureRoot = makeSingleDocumentFixture({
+        library,
+        sourceUrl,
+        snapshot: goodContent,
+        githubShas: { [library]: 'rev-1' }
+      });
+      mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'rev-2' }) };
+      mockResponses[sourceUrl] = { statusCode: 404, statusMessage: 'Not Found' };
+      const failureReport = createRefreshReport();
+      await runRefresh({ docsDir: failureRoot, reportPath: null }, failureReport);
+      assert.strictEqual(failureReport.failed, 1);
+      assert.strictEqual(failureReport.updated, 0);
+      assert.strictEqual(failureReport.downloadFailures.length, 1);
+      assert.strictEqual(hasCriticalFailures(failureReport), true);
+      let manifest = readFixtureManifest(failureRoot);
+      assert.strictEqual(manifest.githubShas[library], 'rev-1', 'a failed download must not record the upstream SHA');
+      assert.strictEqual(manifest.lastUpdated, '2026-11-07T00:00:00-04:00');
+      restoreDocsDirectory();
+
+      // A rejected download must never advance the recorded SHA or the timestamp.
+      const rejectionRoot = makeSingleDocumentFixture({
+        library,
+        sourceUrl,
+        snapshot: goodContent,
+        githubShas: { [library]: 'rev-1' }
+      });
+      mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'rev-3' }) };
+      mockResponses[sourceUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: '   \n\t\n' };
+      const rejectionReport = createRefreshReport();
+      await runRefresh({ docsDir: rejectionRoot, reportPath: null }, rejectionReport);
+      assert.strictEqual(rejectionReport.rejected, 1);
+      assert.strictEqual(rejectionReport.updated, 0);
+      assert.strictEqual(rejectionReport.validationRejections.length, 1);
+      assert.strictEqual(hasCriticalFailures(rejectionReport), true);
+      assert.match(renderRefreshReport(rejectionReport), /\*\*Result:\*\* FAILED/);
+      manifest = readFixtureManifest(rejectionRoot);
+      assert.strictEqual(manifest.githubShas[library], 'rev-1', 'a rejected download must not record the upstream SHA');
+      assert.strictEqual(manifest.lastUpdated, '2026-11-07T00:00:00-04:00');
+      assert.strictEqual(
+        fs.readFileSync(path.join(rejectionRoot, 'creation', getLibraryFilename(library)), 'utf8'),
+        goodContent,
+        'the existing snapshot must be preserved'
+      );
+      restoreDocsDirectory();
+
+      // A verified, content-identical download advances the SHA but not the timestamp.
+      const unchangedRoot = makeSingleDocumentFixture({
+        library,
+        sourceUrl,
+        snapshot: goodContent,
+        githubShas: { [library]: 'rev-1' }
+      });
+      mockResponses[apiUrl] = { statusCode: 200, data: JSON.stringify({ sha: 'rev-4' }) };
+      mockResponses[sourceUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: goodContent };
+      const unchangedReport = createRefreshReport();
+      await runRefresh({ docsDir: unchangedRoot, reportPath: null }, unchangedReport);
+      assert.strictEqual(unchangedReport.updated, 0);
+      assert.strictEqual(unchangedReport.unchanged, 1);
+      manifest = readFixtureManifest(unchangedRoot);
+      assert.strictEqual(manifest.githubShas[library], 'rev-4', 'a verified download records its upstream SHA');
+      assert.strictEqual(manifest.lastUpdated, '2026-11-07T00:00:00-04:00');
+      restoreDocsDirectory();
+    } finally {
+      if (previousRetryDelay === undefined) {
+        delete process.env.DOCS_REFRESH_RETRY_DELAY_MS;
+      } else {
+        process.env.DOCS_REFRESH_RETRY_DELAY_MS = previousRetryDelay;
+      }
+    }
+  });
+
+  await test('an open refresh pull request baseline prevents rediscovering the same update', async () => {
+    const root = makeTempDocsRoot();
+    const docsDir = path.join(root, 'docs');
+    fs.mkdirSync(path.join(docsDir, 'creation'), { recursive: true });
+    const library = '/acme/guide';
+    const sourceUrl = 'https://docs.example.com/guide';
+    const snapshotPath = path.join(docsDir, 'creation', getLibraryFilename(library));
+    fs.writeFileSync(snapshotPath, '# Guide\n\nThe guide describes the original published workflow.\n');
+    writeFixtureManifest(docsDir, {
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { creation: [library] },
+      sources: { [library]: { type: 'url', url: sourceUrl } },
+      inventory: [library],
+      githubShas: {}
+    });
+
+    const git = (...args) => {
+      const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+      assert.strictEqual(result.status, 0, `git ${args.join(' ')} failed: ${result.stderr || result.stdout}`);
+      return result.stdout.trim();
+    };
+    git('init', '-q', '-b', 'main');
+    git('config', 'user.email', 'docs-refresh@example.com');
+    git('config', 'user.name', 'Docs Refresh Test');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'default branch documentation');
+
+    configureDocsDirectory(docsDir);
+    const upstream = '# Guide\n\nThe guide describes the revised published workflow and options.\n';
+    mockResponses[sourceUrl] = { statusCode: 200, headers: { 'content-type': 'text/markdown' }, data: upstream };
+
+    // Run 1 on the default branch publishes the refresh to the pending branch.
+    const firstReport = createRefreshReport();
+    await runRefresh({ docsDir, reportPath: null }, firstReport);
+    assert.strictEqual(firstReport.updated, 1);
+    git('checkout', '-q', '-b', 'auto/docs-refresh');
+    git('add', '-A');
+    git('commit', '-q', '-m', 'docs: update upstream documentation snapshots');
+    const baselineSha = git('rev-parse', 'HEAD');
+
+    // Control: without the baseline, the next run starts from the default branch
+    // again and rediscovers the change the open pull request already contains.
+    git('checkout', '-q', 'main');
+    const rediscoveredReport = createRefreshReport();
+    await runRefresh({ docsDir, reportPath: null }, rediscoveredReport);
+    assert.strictEqual(rediscoveredReport.updated, 1, 'the pre-repair workflow rediscovered the pending update');
+    git('checkout', '-q', '--', 'docs');
+
+    // Repair: reuse the pending snapshots as the comparison baseline.
+    git('checkout', '-q', 'auto/docs-refresh', '--', 'docs');
+    const defaultBranchManifest = JSON.parse(git('show', 'main:docs/manifest.json'));
+    const mergedManifest = mergePendingBaselineManifest(readFixtureManifest(docsDir), defaultBranchManifest);
+    writeFixtureManifest(docsDir, mergedManifest);
+
+    const repeatedReport = createRefreshReport();
+    await runRefresh({ docsDir, reportPath: null }, repeatedReport);
+    assert.strictEqual(repeatedReport.updated, 0, 'the pending update must not be recreated');
+    assert.strictEqual(repeatedReport.unchanged, 1);
+    git('add', 'docs');
+    const stagedDiff = spawnSync('git', ['diff', '--staged', '--quiet', baselineSha], { cwd: root, encoding: 'utf8' });
+    assert.strictEqual(stagedDiff.status, 0, 'the repeated run must produce no new commit against the pending branch');
+    restoreDocsDirectory();
+  });
+
+  await test('the pending baseline keeps the default branch routing authoritative', () => {
+    const pending = {
+      lastUpdated: '2026-11-27T21:38:42-04:00',
+      groups: { creation: ['/keep/doc', '/removed/doc'] },
+      sources: {
+        '/keep/doc': { type: 'url', url: 'https://example.com/keep' },
+        '/removed/doc': { type: 'url', url: 'https://example.com/removed' }
+      },
+      inventory: ['/keep/doc', '/removed/doc'],
+      githubShas: { '/keep/doc': 'keep-sha' }
+    };
+    const defaultBranch = { groups: { creation: ['/keep/doc'] } };
+
+    const merged = mergePendingBaselineManifest(pending, defaultBranch);
+    assert.deepStrictEqual(merged.groups, defaultBranch.groups, 'removed documents must not be re-routed');
+    assert.deepStrictEqual(merged.sources, pending.sources, 'pending source metadata is reused');
+    assert.deepStrictEqual(merged.githubShas, pending.githubShas, 'pending SHA pins are reused');
+    assert.deepStrictEqual(merged.inventory, pending.inventory);
+    assert.strictEqual(merged.lastUpdated, pending.lastUpdated);
+
+    assert.throws(() => mergePendingBaselineManifest(null, defaultBranch), /Invalid pending/);
+    assert.throws(() => mergePendingBaselineManifest(pending, {}), /default-branch/);
+    assert.throws(
+      () => mergePendingBaselineManifest({ ...pending, sources: [] }, defaultBranch),
+      /sources must be an object/
+    );
+
+    const cliRoot = makeTempDocsRoot();
+    const pendingPath = path.join(cliRoot, 'pending-manifest.json');
+    const routingPath = path.join(cliRoot, 'routing-manifest.json');
+    fs.writeFileSync(pendingPath, JSON.stringify(pending, null, 2) + '\n');
+    fs.writeFileSync(routingPath, JSON.stringify(defaultBranch, null, 2) + '\n');
+    const cliResult = spawnSync(
+      process.execPath,
+      [path.join(__dirname, 'prepare-docs-refresh-baseline.js'), '--pending-manifest', pendingPath, '--routing-manifest', routingPath],
+      { encoding: 'utf8' }
+    );
+    assert.strictEqual(cliResult.status, 0, cliResult.stderr || cliResult.stdout);
+    assert.match(cliResult.stdout, /default-branch routing/);
+    assert.deepStrictEqual(
+      JSON.parse(fs.readFileSync(pendingPath, 'utf8')).groups,
+      defaultBranch.groups,
+      'the CLI must write the default-branch routing'
+    );
+  });
+
+  await test('refresh workflow reuses an open refresh pull request as its comparison baseline', () => {
+    const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'refresh-docs.yml'), 'utf8');
+    assert.match(workflow, /- name: Reuse Open Refresh Pull Request/);
+    assert.match(workflow, /gh pr list --state open --head auto\/docs-refresh/);
+    assert.match(workflow, /git fetch --no-tags origin \+refs\/heads\/auto\/docs-refresh:refs\/remotes\/origin\/auto\/docs-refresh/);
+    assert.match(workflow, /git checkout refs\/remotes\/origin\/auto\/docs-refresh -- \.docs/);
+    assert.match(workflow, /scripts\/prepare-docs-refresh-baseline\.js/);
+    assert.match(workflow, /BASELINE_REF: \$\{\{ steps\.baseline\.outputs\.ref \}\}/);
+    assert.match(workflow, /git diff --staged --quiet "\$BASELINE_REF"/);
+    assert.strictEqual(
+      (workflow.match(/echo "ref=/g) || []).length,
+      1,
+      'the baseline step must publish exactly one baseline ref output'
+    );
+    assert.match(workflow, /git push --force origin HEAD:refs\/heads\/auto\/docs-refresh/);
+    assert.match(workflow, /--base main --head auto\/docs-refresh/);
+    assert.match(workflow, /vars\.UPDATER_SCHEDULER_ACTIVE != 'true'/, 'the activation guard must remain');
+    assert.match(workflow, /workflow_dispatch:/, 'manual dispatch must remain available');
   });
 
   // ---------------------------------------------------------------------------

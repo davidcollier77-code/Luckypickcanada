@@ -1,3 +1,12 @@
+## 2026-11-28 — Refresh baseline reuse for open updater pull requests (Spec 229)
+
+- Established from run history that the updater re-reported already-applied documents because every run compared against `main` while the refreshed snapshots lived on the open `auto/docs-refresh` branch. PR #2062 received three commits for the same two documents and its final report still read "2 updated".
+- Separated the document causes: NumPy changed one line per run from rotating Cloudflare email-protection tokens (Spec 228 repaired the converter; #2062 was the legitimate clean-up), while the Cloudflare Pages snapshot changed exactly once, from a genuine upstream rewrite moving Pages guidance to Workers Static Assets.
+- Added `scripts/prepare-docs-refresh-baseline.js` and a workflow step that reuse an open refresh pull request's `.docs` tree as the comparison baseline while keeping default-branch routing authoritative. The change gate now diffs against the baseline commit, so an unchanged repeat run creates no commit, branch push or notification comment.
+- Added eight regression tests: genuine change plus unchanged next run, unchanged without SHA tracking, sibling documents sharing a repository SHA, volatile-token/formatting stability, SHA and timestamp advance rules, failure/rejection visibility, a real-git open-pull-request loop with a pre-repair control, and workflow structure assertions.
+- Local updater suite: 61/61 passing. The three workflow paths (open PR, no open PR, failed fetch) were executed as the real extracted shell steps in a temporary git repository. Schedule, timezone, guard, manual dispatch, inventory, source URLs and PR behaviour are unchanged.
+- Tests ran under Node.js 24 in this environment, not the required Node.js 26; no production build or Playwright run was performed and none is affected by these paths.
+
 ## 2026-11-27 — Cloudflare email-protection token stability (Spec 228)
 
 - Confirmed that the repeated NumPy snapshot changes came from rotating same-origin Cloudflare `/cdn-cgi/l/email-protection#<hex>` href fragments, not changing documentation text. Two live reads of the configured page matched after accounting only for that volatile fragment.
