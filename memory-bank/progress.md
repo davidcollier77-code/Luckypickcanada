@@ -995,3 +995,12 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Repaired the missing Timeline sequence example, truncated position-parameter bullet and Hint tokens, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
 - Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. The separate concern about an undefined URL was ruled out by the preceding assertion and immutable `const` binding. No test-code change was necessary.
 - The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.
+
+
+## 2026-11-28 — Lucky Meter banner scrolls, maple silhouette and the captured flip (Spec 230)
+
+- The arched banner now finishes with cast volute scrolls: two-and-a-quarter-turn gold tube spirals with a turned boss at each end, so the plate curls away instead of cutting off radially. The plate itself, its two rolled rims and the lettering are unchanged.
+- The medallion's maple was re-cut from a narrower, deeper-notched outline (crown, two upper lobes, side point, lower lobes and a short stem) with the bevel reduced to a hairline, so the gold reads as an outline like the reference rather than a thick frame.
+- The centre flip was captured from a CDP screencast (`Page.startScreencast`) rather than repeated page screenshots, which could never land inside the turn. `flip-screencast.webp` (16 frames, 90 ms) and its `flip-filmstrip.png` are committed as evidence; both show the leaf narrowing, going edge-on and the percentage arriving.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` and the `.next + public` size gate re-run on this head.
+- Not verified here: the full unit suite, the PR's Playwright shards and physical-GPU smoothness.

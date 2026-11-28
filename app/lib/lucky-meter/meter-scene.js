@@ -395,19 +395,19 @@ function buildPointerLeafGeometry(THREE) {
  */
 function mapleSilhouetteGeometry(THREE, options = {}) {
   const rightHalf = [
-    [0.0, 0.94],
-    [0.12, 0.62],
-    [0.3, 0.7],
-    [0.29, 0.5],
-    [0.57, 0.52],
-    [0.55, 0.32],
-    [0.82, 0.2],
-    [0.72, 0.02],
-    [0.84, -0.1],
-    [0.5, -0.24],
-    [0.46, -0.42],
-    [0.2, -0.34],
-    [0.18, -0.62],
+    [0.0, 1.0],
+    [0.1, 0.7],
+    [0.3, 0.78],
+    [0.25, 0.52],
+    [0.56, 0.56],
+    [0.46, 0.3],
+    [0.62, 0.12],
+    [0.4, 0.02],
+    [0.46, -0.18],
+    [0.22, -0.14],
+    [0.18, -0.44],
+    [0.07, -0.36],
+    [0.065, -0.7],
     [0.0, -0.66],
   ];
   const outline = [...rightHalf];
@@ -1469,7 +1469,7 @@ export async function createLuckyMeterScene({
   // The reference's blade: three long lobes and two notches a side, a wide
   // waist and a short stem, extruded with a true bevelled edge.
   const leafGeometry = trackGeometry(
-    mapleSilhouetteGeometry(THREE, { thickness: 0.13, bevel: 0.045 }),
+    mapleSilhouetteGeometry(THREE, { thickness: 0.11, bevel: 0.022 }),
   );
   const medallionMaterial = trackMaterial(
     materials
@@ -2045,6 +2045,47 @@ export async function createLuckyMeterScene({
     const rolled = new THREE.Mesh(bannerRollGeometry(radius), polishedGold);
     rolled.position.z = 0.028;
     bannerGroup.add(rolled);
+  }
+
+  // Ornamental end scrolls: a real volute tube curled in on itself at each end
+  // of the plate, as the reference finishes its banner rather than cutting the
+  // band off square.
+  const bannerScrollGeometry = (side) => {
+    const points = [];
+    const steps = constrained ? 30 : 54;
+    // Two and a quarter turns, opening outward: the ear leaves the plate
+    // horizontally, sweeps down and then curls into a tight spiral tip.
+    for (let index = 0; index <= steps; index += 1) {
+      const t = index / steps;
+      const angle = t * Math.PI * 4.5;
+      const radius = 0.012 + 0.088 * t;
+      points.push(
+        new THREE.Vector3(
+          side * (Math.cos(angle) * radius * 1.15 + 0.02),
+          Math.sin(angle) * radius * 0.92,
+          0,
+        ),
+      );
+    }
+    return trackGeometry(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), steps, 0.019, 10, false),
+    );
+  };
+  const bannerEndX = Math.sin(bannerArcHalf) * bannerArcRadius;
+  const bannerEndY = Math.cos(bannerArcHalf) * bannerArcRadius - bannerArcRadius;
+  for (const side of [-1, 1]) {
+    const scroll = new THREE.Mesh(bannerScrollGeometry(side), gold);
+    scroll.position.set(side * (bannerEndX + 0.055), bannerEndY - 0.015, 0.035);
+    scroll.scale.setScalar(1.35);
+    bannerGroup.add(scroll);
+
+    // A turned finial caps each scroll where it meets the plate.
+    const boss = new THREE.Mesh(
+      trackGeometry(new THREE.SphereGeometry(0.026, 14, 12)),
+      polishedGold,
+    );
+    boss.position.set(side * (bannerEndX + 0.012), bannerEndY + 0.005, 0.05);
+    bannerGroup.add(boss);
   }
 
   const bannerEnamelMaterial = trackMaterial(
