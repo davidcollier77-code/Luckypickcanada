@@ -1032,3 +1032,13 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Refreshed all eight evidence captures on this head, including the 13-frame flip WebP and filmstrip, which were re-cut from a fresh CDP screencast.
 - Verification: focused Vitest 37/37 (dimensional renderers, stage, layout), `tsc --noEmit` exit 0, clean `next build --webpack`, `du -sb .next public` 426,697,533 bytes (406.93 MiB), below 495 MiB.
 - Not verified: the full unit suite, the PR Playwright shards and physical-GPU smoothness.
+
+
+## 2026-11-28 — Ring-seam regression guard, filmstrip framing and review fixes (Spec 230)
+
+- Added three regression tests to `__tests__/lucky-meter-dimensional-renderers.test.js` that pin the revolved-ring closure, the welded seam normals and the no-duplicate behaviour for an already closed profile; `revolvedRingGeometry` is exported for them. The well-ring hairline is now guarded by a test, not only by a fix.
+- Re-cut the flip filmstrip and its WebP crop so the well matches the earlier committed framing (195 px wide in a 300 px tile) instead of the tighter crop from the previous pass.
+- Repaired the two valid automated review findings: the sparkle `SpriteMaterial`s are now tracked and disposed on teardown, and `beadRingGeometry` takes its material as an argument rather than building an `InstancedMesh` with a null material. Reviewed and declined the environment-intensity and barrel-glass comments: `scene.environmentIntensity` is a scene property that replacing `scene.environment` does not touch, and the barrel lathe described there was replaced by the extruded wedge cell.
+- Corrected the PR's QA scope declaration (`file_purposes` as path/purpose objects) and its governance reporting (values on the label line), both of which the checker had rejected.
+- Verification: 40/40 focused Vitest, `tsc --noEmit` exit 0, clean `next build --webpack`, `du -sb .next public` 426,708,836 bytes (406.94 MiB), below 495 MiB.
+- Not verified: the full unit suite, the PR Playwright shards and physical-GPU smoothness.

@@ -755,11 +755,14 @@ function createCrystalMaterial(THREE, options = {}) {
  * flat against the instrument face, so a single lathe produces a solid gold
  * band with real front, back, chamfer and inner return faces.
  *
+ * Exported for the regression suite, which pins the closure and the welded
+ * seam so the medallion's hairline cannot return.
+ *
  * @param {any} THREE
  * @param {ReadonlyArray<readonly [number, number]>} profile radius/x, depth/y
  * @param {number} segments
  */
-function revolvedRingGeometry(THREE, profile, segments) {
+export function revolvedRingGeometry(THREE, profile, segments) {
   const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
   // An open cross-section revolves into a band with a slit where the profile
   // should meet itself. On the well ring that slit showed as a hairline crack
@@ -804,12 +807,14 @@ function weldLatheSeam(geometry, columnLength) {
 
 /**
  * A ring of identical gold beads — rivets on the housing, a beaded border on
- * the well — as one instanced draw call.
+ * the well — as one instanced draw call. The batch takes its material here
+ * rather than leaving it null for the caller to fill in.
  *
  * @param {any} THREE
  * @param {{ count: number, radius: number, z?: number, size?: number, centre?: [number, number], bulge?: number }} options
+ * @param {any} material
  */
-function beadRingGeometry(THREE, options) {
+function beadRingGeometry(THREE, options, material) {
   const count = Math.max(1, Math.round(options.count));
   const radius = Math.max(0.001, options.radius);
   const size = Math.max(0.001, options.size ?? 0.012);
@@ -817,7 +822,7 @@ function beadRingGeometry(THREE, options) {
   const z = Number.isFinite(options.z) ? options.z : 0;
   const bulge = Number.isFinite(options.bulge) ? options.bulge : 0;
   const geometry = new THREE.SphereGeometry(size, 8, 6);
-  const mesh = new THREE.InstancedMesh(geometry, null, count);
+  const mesh = new THREE.InstancedMesh(geometry, material, count);
   // Instances sit far from the geometry's origin, so its bounding sphere is
   // not a valid cull volume for the batch.
   mesh.frustumCulled = false;
@@ -1208,13 +1213,11 @@ export async function createLuckyMeterScene({
   }
 
   // Rivets around the front lip: one instanced draw for the whole set.
-  const rivets = beadRingGeometry(THREE, {
-    count: high ? 36 : 24,
-    radius: 1.038,
-    z: 0.186,
-    size: 0.0105,
-  });
-  rivets.material = polishedGold;
+  const rivets = beadRingGeometry(
+    THREE,
+    { count: high ? 36 : 24, radius: 1.038, z: 0.186, size: 0.0105 },
+    polishedGold,
+  );
   wheelGroup.add(rivets);
 
   // ── Layer 3: the stepped bezel that frames the reading well ────────────
@@ -1236,13 +1239,11 @@ export async function createLuckyMeterScene({
     gold,
   );
   wheelGroup.add(innerBezel);
-  const innerBeads = beadRingGeometry(THREE, {
-    count: high ? 56 : 36,
-    radius: 0.552,
-    z: 0.158,
-    size: 0.0085,
-  });
-  innerBeads.material = polishedGold;
+  const innerBeads = beadRingGeometry(
+    THREE,
+    { count: high ? 56 : 36, radius: 0.552, z: 0.158, size: 0.0085 },
+    polishedGold,
+  );
   wheelGroup.add(innerBeads);
 
   // The dark enamel well behind the central leaf.
@@ -1526,13 +1527,11 @@ export async function createLuckyMeterScene({
     polishedGold,
   );
   centreGroup.add(wellRing);
-  const wellBeads = beadRingGeometry(THREE, {
-    count: high ? 44 : 30,
-    radius: 0.478,
-    z: 0.116,
-    size: 0.0075,
-  });
-  wellBeads.material = polishedGold;
+  const wellBeads = beadRingGeometry(
+    THREE,
+    { count: high ? 44 : 30, radius: 0.478, z: 0.116, size: 0.0075 },
+    polishedGold,
+  );
   centreGroup.add(wellBeads);
 
   // A laurel leaf is a smooth pointed oval. The pointer's five-lobed maple read
@@ -1898,13 +1897,15 @@ export async function createLuckyMeterScene({
   for (let index = 0; index < (constrained ? 3 : 7); index += 1) {
     const angle = (index / 7) * Math.PI * 2 + 0.4;
     const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        map: sparkleTexture,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        opacity: 0.5,
-      }),
+      trackMaterial(
+        new THREE.SpriteMaterial({
+          map: sparkleTexture,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          opacity: 0.5,
+        }),
+      ),
     );
     const level = 0.12 + (index % 3) * 0.11;
     sprite.position.set(
