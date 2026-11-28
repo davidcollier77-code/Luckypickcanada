@@ -468,3 +468,8 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `specs/217-lucky-meter-reveal-delivery/evidence/reveal-transfer-final-local.json:3` — Do not leave debug code in production <!-- devskim-id:3d6d10d06476554f1ac5 -->
 
 - **NOTE — DS172411** — `app/lib/lucky-meter/meter-scene.js:1575` — Review setTimeout for untrusted data <!-- devskim-id:4bac9786dd709fca702f -->
+
+- **ERROR — DS173237** — `scripts/test-refresh-docs.js:767` — Do not store tokens or keys in source code. <!-- devskim-id:ffbcb4386442b89933fb -->
+- **ERROR — DS173237** — `scripts/test-refresh-docs.js:748` — Do not store tokens or keys in source code. <!-- devskim-id:40d3d6d71eef71e7845d -->
+- **ERROR — DS173237** — `scripts/test-refresh-docs.js:194` — Do not store tokens or keys in source code. <!-- devskim-id:948c1bae1fed9a80314d -->
+- **ERROR — DS173237** — `scripts/test-refresh-docs.js:193` — Do not store tokens or keys in source code. <!-- devskim-id:561f29209a733203dbff -->
