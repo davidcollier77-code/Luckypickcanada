@@ -73,7 +73,11 @@ jobs:
         run: |
           set -euo pipefail
           BASELINE_REF=""
-          PR_NUMBER="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || true)"
+          PR_NUMBER=""
+          if ! PR_NUMBER="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number')"; then
+            echo "::warning::Could not query open auto/docs-refresh pull requests; comparing against the default branch."
+            PR_NUMBER=""
+          fi
           if [[ -z "$PR_NUMBER" || "$PR_NUMBER" == "null" ]]; then
             echo "No open auto/docs-refresh pull request; comparing against the default branch."
           else
@@ -112,6 +116,7 @@ jobs:
         env:
           BASELINE_REF: ${{ steps.baseline.outputs.ref }}
         run: |
+          set -euo pipefail
           git add .docs/
           BASELINE_REF="${BASELINE_REF:-HEAD}"
           if git diff --staged --quiet "$BASELINE_REF"; then

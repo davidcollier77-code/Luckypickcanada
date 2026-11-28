@@ -68,7 +68,12 @@ function writeManifestAtomically(manifestPath, manifest) {
     fs.writeFileSync(tempPath, JSON.stringify(manifest, null, 2) + '\n');
     fs.renameSync(tempPath, manifestPath);
   } catch (error) {
-    if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+    try {
+      fs.unlinkSync(tempPath);
+    } catch {
+      // Best-effort cleanup: a missing or already-removed temp file must never
+      // replace the error that explains why the manifest could not be written.
+    }
     throw error;
   }
 }

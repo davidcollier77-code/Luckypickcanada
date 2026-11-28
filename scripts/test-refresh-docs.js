@@ -1529,17 +1529,47 @@ async function runTests() {
       defaultBranch.groups,
       'the CLI must write the default-branch routing'
     );
+
+    const missingPending = spawnSync(
+      process.execPath,
+      [
+        path.join(__dirname, 'prepare-docs-refresh-baseline.js'),
+        '--pending-manifest',
+        path.join(cliRoot, 'absent-manifest.json'),
+        '--routing-manifest',
+        routingPath
+      ],
+      { encoding: 'utf8' }
+    );
+    assert.strictEqual(missingPending.status, 1, 'an unreadable manifest must fail the baseline step');
+    assert.match(missingPending.stderr, /Could not prepare the documentation refresh baseline/);
+    assert.deepStrictEqual(
+      fs.readdirSync(cliRoot).filter((name) => name.includes('.tmp.')),
+      [],
+      'a failed run must not leave a temporary manifest behind'
+    );
   });
 
   await test('refresh workflow reuses an open refresh pull request as its comparison baseline', () => {
     const workflow = fs.readFileSync(path.join(repoRoot, '.github', 'workflows', 'refresh-docs.yml'), 'utf8');
     assert.match(workflow, /- name: Reuse Open Refresh Pull Request/);
     assert.match(workflow, /gh pr list --state open --head auto\/docs-refresh/);
+    assert.match(
+      workflow,
+      /::warning::Could not query open auto\/docs-refresh pull requests/,
+      'a failed pull request lookup must stay visible instead of silently falling back'
+    );
     assert.match(workflow, /git fetch --no-tags origin \+refs\/heads\/auto\/docs-refresh:refs\/remotes\/origin\/auto\/docs-refresh/);
     assert.match(workflow, /git checkout refs\/remotes\/origin\/auto\/docs-refresh -- \.docs/);
     assert.match(workflow, /scripts\/prepare-docs-refresh-baseline\.js/);
     assert.match(workflow, /BASELINE_REF: \$\{\{ steps\.baseline\.outputs\.ref \}\}/);
     assert.match(workflow, /git diff --staged --quiet "\$BASELINE_REF"/);
+    const changesStep = workflow.slice(workflow.indexOf('- name: Check for Changes'));
+    assert.match(
+      changesStep.slice(0, 400),
+      /run: \|\n\s+set -euo pipefail\n\s+git add \.docs\//,
+      'the change gate must fail loudly instead of reporting no changes'
+    );
     assert.strictEqual(
       (workflow.match(/echo "ref=/g) || []).length,
       1,

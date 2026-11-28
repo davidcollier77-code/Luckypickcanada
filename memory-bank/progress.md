@@ -6,6 +6,7 @@
 - Added eight regression tests: genuine change plus unchanged next run, unchanged without SHA tracking, sibling documents sharing a repository SHA, volatile-token/formatting stability, SHA and timestamp advance rules, failure/rejection visibility, a real-git open-pull-request loop with a pre-repair control, and workflow structure assertions.
 - Local updater suite: 61/61 passing. The three workflow paths (open PR, no open PR, failed fetch) were executed as the real extracted shell steps in a temporary git repository. Schedule, timezone, guard, manual dispatch, inventory, source URLs and PR behaviour are unchanged.
 - Tests ran under Node.js 24 in this environment, not the required Node.js 26; no production build or Playwright run was performed and none is affected by these paths.
+- Review follow-up on PR #2063: the change gate now runs under `set -euo pipefail` so a failed `git add` or diff can never be reported as "no changes"; a failed `gh pr list` lookup emits an `::warning::` and falls back to the default branch instead of failing silently; and the baseline helper's cleanup ignores a missing temp file so it cannot mask the original write error. Regression assertions cover the gate and the warning.
 
 ## 2026-11-27 — Cloudflare email-protection token stability (Spec 228)
 
