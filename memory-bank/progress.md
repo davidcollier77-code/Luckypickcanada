@@ -1,3 +1,12 @@
+## 2026-11-28 — Line-insensitive DevSkim ledger identity (Spec 231)
+
+- Established that the ledger's duplication in PR #2065 came from the fingerprint-less identity including the reported line; DevSkim omits `partialFingerprints` for most results, so PR #2063's one-line shift changed all four DS173237 ids.
+- Replaced the line-based half of the identity with `(rule, uri, message, startColumn, endColumn, span, occurrence)`, where `occurrence` is the result's index among identical shapes ordered by reported position. Renumbering changes neither the shape nor the index; identical findings on different lines stay separate; exact duplicate results still collapse; an added identical finding appends exactly one entry.
+- Kept every id an earlier version could write as a recognised alias, so the append-only ledger is never duplicated or rewritten on upgrade. No entry was edited, reordered or removed.
+- Added six regression cases to `__tests__/devskim-dedup.test.js` that spawn the real script; 10/10 pass, the DevSkim Python reporting and suppression suites pass, `py_compile` is clean, and the committed identity benchmark still reports distinct same-line 2/2, duplicate 1/1, idempotent repeat and 0 legacy re-adds.
+- Recorded limitation: a ledger entry written before this change whose finding later moves line and still has no fingerprint can be appended once more; the current ledger holds no such live finding, and closing it would require rewriting entries, which the append-only contract forbids.
+- Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
+
 ## 2026-11-28 — DevSkim DS173237 fixture remediation (Spec 230)
 
 - Established from live GitHub state that all four open code-scanning alerts are DS173237 false positives on the two synthetic Cloudflare email-protection fixture tokens in `scripts/test-refresh-docs.js` (lines 194, 195, 749, 768). The rule's published pattern is `["'][a-f0-9]{30,}["']`, so the literals — not their use — were the trigger.

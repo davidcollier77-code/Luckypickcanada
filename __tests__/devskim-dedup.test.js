@@ -21,6 +21,20 @@ const finding = (overrides = {}) => ({
   ...overrides,
 });
 
+// A fingerprint-less finding, the shape DevSkim reports for most rules.
+const located = ({ line = 194, column = 3, message = 'Do not store tokens or keys in source code.', ruleId = 'DS173237', fingerprints = {} } = {}) => ({
+  ruleId,
+  level: 'error',
+  message: { text: message },
+  locations: [{
+    physicalLocation: {
+      artifactLocation: { uri: 'src/fixture.js' },
+      region: { startLine: line, startColumn: column, endColumn: column + 56 },
+    },
+  }],
+  partialFingerprints: fingerprints,
+});
+
 function createFixture() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'devskim-dedup-'));
   temporaryDirs.push(dir);
@@ -84,6 +98,60 @@ describe('DevSkim append-only report implementation', () => {
     expect(second.newCount).toBe(0);
     expect(second.report).toContain('original wording');
     expect(second.report).not.toContain('updated scanner wording');
+  });
+
+  it('does not re-append a fingerprinted finding when the file is renumbered', () => {
+    const { scan } = createFixture();
+    scan([finding({ locations: [{ physicalLocation: {
+      artifactLocation: { uri: 'src/example.js' },
+      region: { startLine: 12 },
+    } }] })]);
+    const second = scan([finding({ locations: [{ physicalLocation: {
+      artifactLocation: { uri: 'src/example.js' },
+      region: { startLine: 40 },
+    } }] })]);
+    expect(second.newCount).toBe(0);
+    expect((second.report.match(/devskim-id:/g) || []).length).toBe(1);
+  });
+
+  it('does not re-append a fingerprint-less finding when the file is renumbered', () => {
+    const { scan } = createFixture();
+    scan([located({ line: 194 })]);
+    expect(scan([located({ line: 195 })])).toMatchObject({ newCount: 0 });
+    const renumbered = scan([located({ line: 300 })]);
+    expect(renumbered.newCount).toBe(0);
+    expect((renumbered.report.match(/devskim-id:/g) || []).length).toBe(1);
+  });
+
+  it('keeps identical fingerprint-less findings on separate lines as separate entries across a renumbering', () => {
+    const { scan } = createFixture();
+    const first = scan([located({ line: 194 }), located({ line: 195 })]);
+    expect(first.newCount).toBe(2);
+    const shifted = scan([located({ line: 195 }), located({ line: 196 })]);
+    expect(shifted.newCount).toBe(0);
+    expect((shifted.report.match(/devskim-id:/g) || []).length).toBe(2);
+  });
+
+  it('records an exact duplicate fingerprint-less result once', () => {
+    const { scan } = createFixture();
+    const result = scan([located(), located()]);
+    expect(result.newCount).toBe(1);
+    expect((result.report.match(/devskim-id:/g) || []).length).toBe(1);
+  });
+
+  it('keeps distinct fingerprint-less findings on one line separate', () => {
+    const { scan } = createFixture();
+    const result = scan([located({ column: 3 }), located({ column: 40 })]);
+    expect(result.newCount).toBe(2);
+    expect((result.report.match(/devskim-id:/g) || []).length).toBe(2);
+  });
+
+  it('appends only the genuinely new occurrence when an identical finding is added', () => {
+    const { scan } = createFixture();
+    scan([located({ line: 194 }), located({ line: 749 })]);
+    const added = scan([located({ line: 194 }), located({ line: 300 }), located({ line: 749 })]);
+    expect(added.newCount).toBe(1);
+    expect((added.report.match(/devskim-id:/g) || []).length).toBe(3);
   });
 
   it('appends a genuinely new finding without removing existing entries', () => {
