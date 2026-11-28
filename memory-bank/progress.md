@@ -1,3 +1,20 @@
+## 2026-11-27 — Cloudflare email-protection token stability (Spec 228)
+
+- Confirmed that the repeated NumPy snapshot changes came from rotating same-origin Cloudflare `/cdn-cgi/l/email-protection#<hex>` href fragments, not changing documentation text. Two live reads of the configured page matched after accounting only for that volatile fragment.
+- The updater correction is narrowly scoped to HTML-to-Markdown anchor serialization: preserve the visible label as text and omit only the recognized Cloudflare email-protection href. Ordinary links and the broader URL-validation logic are unchanged.
+- Added regression coverage for converter output and two consecutive complete updater passes. The expected second pass is `0 updated / 1 unchanged`, with byte-identical snapshot content and no manifest timestamp rewrite.
+- The NumPy source is a non-GitHub URL, so no upstream GitHub SHA is available; the updater's current live-fetch/content-comparison fallback is correct. Historical SHA metadata is inert and intentionally unchanged.
+- The existing Node 26 Application Verification workflow already runs the updater test suite. The updater script is protected and the PR retains the required authorization declaration and separate environment approval gate. Existing build validation and Playwright shards remain required for the root `scripts/` path.
+- No source URL, manifest, generated `.docs/` file, dependency, schedule, workflow, application code, deployment setting or production resource is changed. Local Node 26 tests/build are not claimed under ChatGPT's runtime; current-head CI remains the verification authority.
+
+## 2026-11-27 — Restore official GSAP Timeline documentation (Spec 227 follow-up)
+
+- Recovered .docs/polishing/_llmstxt_gsap_llms_txt.md, which previously contained only a Cloudflare verification message, from the exact official URL already configured in .docs/manifest.json: https://gsap.com/docs/v3/GSAP/Timeline.
+- Retrieved the official page through Browserless and restored its article as Markdown, including Timeline sequencing, position parameters, special properties/callbacks, defaults, nesting, mechanics, properties and method reference tables.
+- Retained the static-reference updater exclusion. The manifest route, inventory and source URL remain unchanged; future automatic refreshes skip the GSAP ID before upstream requests.
+- The historical reason the old updater accepted the challenge response is not established by current evidence. Current updater code includes explicit challenge and raw-HTML rejection safeguards.
+- The existing PR #2059 was updated as an owner-authorized scope extension. The one new .docs path must be added to the exact QA scope declaration and approved with the current checker-generated /approve-scope <digest> command. Fresh current-head CI/report verification remains required; no merge or deployment.
+
 ## 2026-11-27 — Spec 225 build-size evidence and governance handoff
 
 - Clarified the shared `AGENTS.md` Production build limit section: smaller, logically coherent PRs are an ordinary optional planning approach when useful, not a panic response or a reason to compromise functionality, security or quality. The 495 MiB limit and existing safeguards are unchanged.
@@ -937,3 +954,19 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Reduced `pnpm.overrides` from 18 entries to the three verified Undici major floors. The glob 10/13 and minimatch 10 workarounds were removed after `@typescript-eslint` 8.74.0 declared `minimatch ^11.0.1` upstream; the brace-expansion floors, parent-scoped selectors, `proxy-addr`, `source-map-js`, `qs`, `fast-uri`, `sharp`, `vite`, `postcss` and `@vitest/mocker` were removed because normal resolution selects supported, patched, within-range versions.
 - Verification: `pnpm audit` 0 advisories; focused guards 15 tests; full gate exit 0 with 520 Python tests, 113 Vitest files / 1,272 tests, TypeScript and the Next.js build; OpenNext build passed with a matching `BUILD_ID`; `wrangler build` 8,893.61 KiB with all bindings; updater dry-run passed and its Node tests 17/17; combined `.next + public` 440,279,040 bytes (419.88 MiB), below 495 MiB.
 - No application source, Cloudflare configuration, binding, workflow, secret or production resource changed.
+
+
+## 2026-11-27 — Keep the GSAP AI reference static (Spec 227)
+
+- Added a narrow updater exclusion for the single manifest ID `/llmstxt/gsap_llms_txt`. It remains routed under `polishing`, stays in the manifest inventory/source metadata and remains subject to the routed-snapshot integrity audit; the updater skips it before upstream SHA or source requests.
+- Added separate static-reference reporting and regression coverage for zero source requests, byte-identical snapshot retention and unchanged routing/index entries. Other routed documentation keeps the existing refresh path.
+- Preserved `.docs/manifest.json`, AGENTS.md, refresh schedules/workflows, dependencies, application code and production configuration. At the time of this original updater-exclusion change, the checked-in GSAP snapshot still contained a Cloudflare verification-challenge response; the owner-authorized Spec 227 follow-up subsequently restored the official Timeline documentation.
+- Local Node-dependent verification was not run because ChatGPT's startup runtime is Node.js 22.x and the repository requires Node.js 26.x. The regression coverage is committed for the repository's Node 26 CI checks; no local test/build pass is claimed.
+
+
+## 2026-11-27 — GSAP reference review repairs (Spec 227 follow-up)
+
+- Triaged all six inline findings in Graphite review 6093276048 against the official GSAP page, GSAP core implementation and actual updater tests.
+- Repaired the missing Timeline sequence example, truncated position-parameter bullet and Hint tokens, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
+- Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. The separate concern about an undefined URL was ruled out by the preceding assertion and immutable `const` binding. No test-code change was necessary.
+- The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.
