@@ -49,7 +49,10 @@ describe('Lucky Meter physical layout', () => {
     ).toBeCloseTo(METER_LAYOUT.pointer.radius, 6);
   });
 
-  it('keeps the arm and spout on the same lower-left side as the pointer', () => {
+  // `arm` is retained for the development-only instrument prototype; production
+  // geometry uses `spout`. This guards the inherited shape, so removing `arm`
+  // has to update this test deliberately.
+  it('keeps the retained legacy arm, the spout and the bowl on the pointer’s lower-left', () => {
     for (const point of [
       METER_LAYOUT.arm.base,
       METER_LAYOUT.arm.shoulder,

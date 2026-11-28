@@ -544,4 +544,18 @@ describe('Lucky Meter produced-frame reveal gate', () => {
     expect(rim.material.opacity).toBeGreaterThan(0.29);
     expect(rim.material.opacity).toBeLessThan(0.39);
   });
+
+  it('lands the new colour with the rest of the scene under reduced motion', async () => {
+    const scene = await createScene();
+    const target = getPaletteForSeasonKey('autumn')[9];
+
+    // Reduced motion draws one frame, so the colour must jump to its target
+    // instead of easing 16% of the way there on that single pass.
+    scene.setState({ colour: target.hex, reducedMotion: true });
+    callbacks.onFrame({ elapsed: 0.016 });
+
+    const liquidLight = surface.stage.scene.getObjectByName('bowl-liquid-light');
+    expect(liquidLight).toBeDefined();
+    expect(liquidLight.color.getHex()).toBe(new THREE.Color(target.hex).getHex());
+  });
 });

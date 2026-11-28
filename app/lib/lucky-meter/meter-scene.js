@@ -1216,6 +1216,7 @@ export async function createLuckyMeterScene({
   bowlGroup.add(liquidSheen);
 
   const liquidLight = new THREE.PointLight(0xa65e3b, 0.2, 2.4, 2);
+  liquidLight.name = 'bowl-liquid-light';
   liquidLight.position.set(0, BOWL_LIQUID_BASE + 0.12, 0.16);
   bowlGroup.add(liquidLight);
 
@@ -2130,6 +2131,10 @@ export async function createLuckyMeterScene({
         state.leaf = state.targetLeaf;
         state.beam = state.targetBeam;
         state.numberReveal = state.targetNumberReveal;
+        // Only one frame is drawn under reduced motion, so the colour has to
+        // land with every other scalar; the 0.16 lerp in `update` cannot close
+        // the gap in a single pass and the bowl would render the old colour.
+        state.colour.copy(state.targetColour);
         surface.render();
       }
     },

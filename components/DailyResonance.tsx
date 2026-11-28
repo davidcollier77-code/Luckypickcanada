@@ -1332,12 +1332,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           // row rules must never split it again.
           style={{ flexDirection: 'column' }}
         >
-          {!result && stage === 'idle' && (
-            <div className="sr-only">
-              <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
-            </div>
-          )}
-
           {/* The exact tier message is written above the meter, held, then
               settles visibly. It never fades: it stays at full opacity through
               the celebration and the finished state. */}
@@ -1456,6 +1450,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                 leavesCleared ? 'opacity-100' : 'pointer-events-none opacity-0'
               }`}
             >
+              {/* The kicker is read-only and lives beside the control it
+                  introduces, so the idle state is one block, not two. */}
+              <div className="sr-only">
+                <p className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</p>
+              </div>
               {/* The button stays in the accessibility tree so it is never a
                   mystery control, but it cannot be clicked or tabbed to until
                   the breeze has cleared and the pause has passed. */}
