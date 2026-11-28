@@ -1,15 +1,53 @@
 #!/usr/bin/env python3
-"""Append previously unseen DevSkim SARIF findings to devskim-alerts.md."""
+"""Append previously unseen DevSkim SARIF findings to devskim-alerts.md.
+
+The ledger is append-only: an entry is never edited, reordered or removed here.
+
+A finding's identity is, in order of preference:
+
+* the scanner fingerprint DevSkim emits in ``partialFingerprints`` /
+  ``fingerprints`` when it emits one. It already ignores line numbering;
+* otherwise finding data the SARIF itself carries: the rule, file, message, the
+  matched ``snippet`` text, the reported column and the span length. None of
+  those depends on absolute line numbers or on how many other findings exist, so
+  renumbering, inserting another finding elsewhere, or remediating another
+  finding cannot hand an identity to a different finding.
+
+The identity is built from the SARIF alone. The report job may reuse an existing
+``chore/devskim-report-update-*`` branch before running this script, so its
+working tree is not guaranteed to match the revision the scan ran on; reading
+source here would let the checkout change an id for unchanged SARIF.
+
+Occurrences of one identity are matched against the entries the ledger already
+records for that identity instead of a rank recomputed from the scan. A scan that
+holds no more occurrences than the ledger already records appends nothing; a scan
+that holds more appends only the surplus, preferring the occurrences whose
+``uri:line`` is not recorded yet. This is what keeps an inserted finding recorded
+at its own location and an unchanged finding recorded once. See the limitation in
+``_content_identity`` for findings that are byte-identical in every observable
+way.
+"""
 
 import hashlib
 import json
 import os
 import re
+from collections import Counter, defaultdict
 from pathlib import Path
 
 SARIF_PATH = Path("devskim-alerts.sarif")
 REPORT_PATH = Path("devskim-alerts.md")
 MARKER = "<!-- DevSkim findings are appended below this line. -->"
+NO_LOCATION = "Location not provided"
+# Content-based identity. Bumped whenever the parts of the identity change.
+# The v3 content shape was withdrawn during PR review before writing any ledger
+# entry; v4 keeps every part SARIF-only so a checkout cannot change an id.
+IDENTITY_VERSION = "v4"
+# Fingerprint identity written by the version this one supersedes; kept so an
+# entry it wrote is still recognised.
+FINGERPRINT_IDENTITY_VERSION = "v2"
+ROW_LOCATION = re.compile(r"`([^`\n]+)`[^\n]*?<!-- devskim-id:([0-9a-f]{20}) -->")
+ID_MARKER = re.compile(r"<!-- devskim-id:([0-9a-f]{20}) -->")
 
 
 def clean(value):
@@ -20,53 +58,243 @@ def _identity_digest(parts):
     return hashlib.sha256("\0".join(parts).encode("utf-8")).hexdigest()[:20]
 
 
-def finding_identities(rule_id, uri, line, result):
-    """Return (identity, legacy_identity) for one SARIF result.
-
-    A stable scanner fingerprint identifies a finding across scans. DevSkim
-    omits one for findings with no source region, and the legacy identity
-    (rule, uri, line) collapsed every such finding in a file into one entry,
-    hiding distinct defects from the shared report. Those findings now also use
-    their reported message and columns, while the legacy identity is still
-    recognised so an entry already in the report is never duplicated.
-    """
+def _stable_fingerprint(result):
     fingerprints = result.get("partialFingerprints") or result.get("fingerprints") or {}
-    stable_fingerprint = (
+    if not isinstance(fingerprints, dict):
+        return ""
+    return (
         fingerprints.get("primaryLocationLineHash")
         or fingerprints.get("primaryLocationStartColumnFingerprint")
         or ""
     )
-    legacy_identity = _identity_digest([str(rule_id), str(uri), str(line or "")])
-    if stable_fingerprint:
-        return (
-            _identity_digest([str(rule_id), str(uri), str(stable_fingerprint)]),
-            legacy_identity,
-        )
-    region = {}
+
+
+def _message_text(result):
+    message = result.get("message") or {}
+    return str(message.get("text", "")) if isinstance(message, dict) else ""
+
+
+def _location(result):
+    """Return (uri, region) for the first physical location of a result."""
     locations = result.get("locations") or []
+    physical = {}
     if locations and isinstance(locations[0], dict):
         physical = locations[0].get("physicalLocation") or {}
-        if isinstance(physical, dict):
-            region = physical.get("region") or {}
-    if not isinstance(region, dict):
-        region = {}
+    if not isinstance(physical, dict):
+        physical = {}
+    artifact = physical.get("artifactLocation") or {}
+    uri = artifact.get("uri", NO_LOCATION) if isinstance(artifact, dict) else NO_LOCATION
+    region = physical.get("region") or {}
+    return uri, region if isinstance(region, dict) else {}
+
+
+def _as_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _reported_position(result):
+    """Return the reported position, used only to collapse exact duplicates."""
+    region = _location(result)[1]
+    return tuple(
+        _as_int(region.get(key))
+        for key in ("startLine", "startColumn", "endLine", "endColumn")
+    )
+
+
+def _shape_parts(rule_id, uri, message, region):
+    """Parts of the occurrence-rank identity this version supersedes (v2)."""
+    start_line = region.get("startLine")
+    end_line = region.get("endLine")
+    span = _as_int(end_line if end_line is not None else start_line) - _as_int(start_line)
+    return [
+        str(rule_id),
+        str(uri),
+        message,
+        str(region.get("startColumn") or ""),
+        str(region.get("endColumn") or ""),
+        str(span),
+    ]
+
+
+def _content_identity(rule_id, uri, message, region):
+    """Return the fingerprint-less identity for one result.
+
+    Every part comes from the SARIF result itself: rule, file, message, the
+    matched ``snippet`` text, the reported column and the span length. No
+    absolute line number and no rank among other findings participates, so the
+    identity cannot move to another finding when findings are inserted, removed
+    or renumbered.
+
+    The identity is deliberately independent of the checked-out source. The
+    report job may reuse an older ``chore/devskim-report-update-*`` branch before
+    running this script, so the working tree need not match the revision the scan
+    ran on; the same SARIF must always produce the same ids.
+
+    Limitation: two findings that are identical in every one of those fields --
+    same rule and message, same snippet text and column/length, in the same file,
+    with no fingerprint -- are genuinely indistinguishable across scans. They
+    share an identity, and the ledger then records their *occurrences*: an
+    unchanged scan appends nothing, an extra copy appends one entry, but which
+    physical location that entry names cannot be guaranteed when the copies also
+    shift. DevSkim supplies no other finding-specific signal for them, and the
+    ledger cannot rewrite the entry it already holds.
+    """
+    snippet = region.get("snippet")
+    span_text = snippet.get("text") if isinstance(snippet, dict) else ""
+    if not isinstance(span_text, str):
+        span_text = ""
+    column = _as_int(region.get("startColumn"))
+    length = _as_int(region.get("charLength"))
+    if length <= 0:
+        end_column = _as_int(region.get("endColumn"))
+        length = end_column - column if column >= 1 and end_column > column else 0
+    if length <= 0 and span_text:
+        length = len(span_text)
+    return _identity_digest(
+        [
+            IDENTITY_VERSION,
+            "content",
+            str(rule_id),
+            str(uri),
+            message,
+            span_text,
+            str(column),
+            str(length),
+        ]
+    )
+
+
+def _previous_identities(rule_id, uri, line, result, region, occurrence=0):
+    """Ids written by earlier versions of this script, in their original order.
+
+    The first entry is the original ``(rule, uri, line)`` id, which is also the
+    legacy id this module has always returned as the second element of
+    ``finding_identities``. The current primary identity is deliberately not
+    included: callers check it separately.
+    """
+    identities = [_identity_digest([str(rule_id), str(uri), str(line or "")])]
+    stable_fingerprint = _stable_fingerprint(result)
+    if stable_fingerprint:
+        identities.append(_identity_digest([str(rule_id), str(uri), str(stable_fingerprint)]))
     detail = "\0".join(
         [
-            str(result.get("message", {}).get("text", "")),
+            _message_text(result),
             str(region.get("startColumn") or ""),
             str(region.get("endColumn") or ""),
             str(region.get("endLine") or ""),
         ]
     )
-    return (
-        _identity_digest([str(rule_id), str(uri), str(line or ""), detail]),
-        legacy_identity,
+    identities.append(_identity_digest([str(rule_id), str(uri), str(line or ""), detail]))
+    # The occurrence-rank identity of the superseded version, so a ledger it had
+    # already appended to is still recognised.
+    identities.append(
+        _identity_digest(
+            [FINGERPRINT_IDENTITY_VERSION, "shape"]
+            + _shape_parts(rule_id, uri, clean(_message_text(result)), region)
+            + [str(occurrence)]
+        )
+    )
+    return identities
+
+
+def previous_identities(rule_id, uri, line, result, occurrence=0):
+    """Return the legacy ids earlier versions of this script could have written.
+
+    The current primary identity is not part of this list; callers check it and
+    these aliases separately.
+    """
+    return _previous_identities(
+        rule_id, uri, line, result, _location(result)[1], occurrence
     )
 
 
-def finding_identity(rule_id, uri, line, result):
+def _occurrence_indices(data):
+    """Map each fingerprint-less result to the occurrence rank the v2 version used.
+
+    Only needed to reproduce the ids that version may already have written.
+    """
+    positions = {}
+    for run_index, run in enumerate(data.get("runs") or []):
+        results = run.get("results") or []
+        for result_index, result in enumerate(results):
+            if not isinstance(result, dict) or _stable_fingerprint(result):
+                continue
+            uri, region = _location(result)
+            shape = tuple(
+                _shape_parts(
+                    result.get("ruleId", "unknown"),
+                    uri,
+                    clean(_message_text(result)),
+                    region,
+                )
+            )
+            position = _reported_position(result)
+            positions[(run_index, result_index)] = (shape, position)
+
+    grouped = {}
+    for location, (shape, position) in positions.items():
+        grouped.setdefault(shape, []).append((position, location))
+
+    indices = {}
+    for items in grouped.values():
+        index = 0
+        previous = None
+        for position, location in sorted(items):
+            if previous is not None and position != previous:
+                index += 1
+            previous = position
+            indices[location] = index
+    return indices
+
+
+def finding_identities(rule_id, uri, line, result, occurrence=0):
+    """Return (identity, legacy_identity) for one SARIF result.
+
+    ``identity`` is the fingerprint when DevSkim supplies one, otherwise the
+    finding data the SARIF carries. It never depends on the reported line, so a
+    renumber cannot re-append a recorded finding; it never depends on the number
+    or order of other findings, so an insertion or a remediation cannot transfer
+    it to a different finding; and it never depends on the checked-out source, so
+    a reused report branch cannot either.
+
+    ``occurrence`` is an implementation detail: it is used only to reproduce the
+    superseded version's alias.
+    """
+    region = _location(result)[1]
+    stable_fingerprint = _stable_fingerprint(result)
+    if stable_fingerprint:
+        identity = _identity_digest(
+            [
+                FINGERPRINT_IDENTITY_VERSION,
+                "fingerprint",
+                str(rule_id),
+                str(uri),
+                str(stable_fingerprint),
+            ]
+        )
+    else:
+        identity = _content_identity(rule_id, uri, _message_text(result), region)
+    return identity, _previous_identities(rule_id, uri, line, result, region, occurrence)[0]
+
+
+def finding_identity(rule_id, uri, line, result, occurrence=0):
     """Return the identity used to record one SARIF result."""
-    return finding_identities(rule_id, uri, line, result)[0]
+    return finding_identities(rule_id, uri, line, result, occurrence)[0]
+
+
+def _recorded_entries(report):
+    """Return how many entries the ledger records per identity, and where."""
+    counts = Counter()
+    locations = defaultdict(set)
+    for match in ID_MARKER.finditer(report):
+        counts[match.group(1)] += 1
+    for match in ROW_LOCATION.finditer(report):
+        where, identity = match.group(1), match.group(2)
+        locations[identity].add(where)
+    return counts, locations
 
 
 def append_findings(sarif_path=SARIF_PATH, report_path=REPORT_PATH):
@@ -81,32 +309,94 @@ def append_findings(sarif_path=SARIF_PATH, report_path=REPORT_PATH):
             + MARKER + "\n"
         )
 
-    known = set(re.findall(r"<!-- devskim-id:([0-9a-f]{20}) -->", report))
+    counts, recorded_locations = _recorded_entries(report)
     data = json.loads(Path(sarif_path).read_text(encoding="utf-8"))
-    additions = []
+    legacy_occurrences = _occurrence_indices(data)
 
-    for run in data.get("runs", []):
-        for result in run.get("results", []):
+    # One candidate per distinct reported occurrence: an exact duplicate result
+    # (same identity at the same position) is recorded once.
+    candidates = []
+    seen = set()
+    for run_index, run in enumerate(data.get("runs") or []):
+        if not isinstance(run, dict):
+            continue
+        for result_index, result in enumerate(run.get("results") or []):
+            if not isinstance(result, dict):
+                continue
             rule_id = result.get("ruleId", "unknown")
-            message = clean(result.get("message", {}).get("text", "No message provided"))
-            level = clean(result.get("level", "unspecified"))
-            locations = result.get("locations", [])
-            location = locations[0] if locations else {}
-            physical = location.get("physicalLocation", {})
-            uri = physical.get("artifactLocation", {}).get("uri", "Location not provided")
-            region = physical.get("region", {})
+            uri, region = _location(result)
             line = region.get("startLine")
             where = f"{uri}:{line}" if line else uri
-            finding_id, legacy_id = finding_identities(rule_id, uri, line, result)
-
-            if finding_id in known or legacy_id in known:
-                continue
-            known.add(finding_id)
-            additions.append(
-                f"- **{level.upper()} — {clean(rule_id)}** — "
-                f"`{clean(where)}` — {message} "
-                f"<!-- devskim-id:{finding_id} -->"
+            message = clean(_message_text(result) or "No message provided")
+            level = clean(result.get("level", "unspecified"))
+            identity = finding_identity(
+                rule_id,
+                uri,
+                line,
+                result,
+                legacy_occurrences.get((run_index, result_index), 0),
             )
+            key = (identity, _reported_position(result))
+            if key in seen:
+                continue
+            seen.add(key)
+            candidates.append(
+                {
+                    "identity": identity,
+                    "where": where,
+                    "row": (
+                        f"- **{level.upper()} — {clean(rule_id)}** — "
+                        f"`{clean(where)}` — {message} "
+                        f"<!-- devskim-id:{identity} -->"
+                    ),
+                    "aliases": previous_identities(
+                        rule_id,
+                        uri,
+                        line,
+                        result,
+                        legacy_occurrences.get((run_index, result_index), 0),
+                    ),
+                }
+            )
+
+    # Match the scan's occurrences against the entries the ledger already holds
+    # for the same identity.
+    remaining = Counter(counts)
+    matched = [False] * len(candidates)
+
+    # 1. Same identity at the location it was recorded at: that entry is this
+    #    occurrence, whatever else was inserted or removed around it.
+    for index, candidate in enumerate(candidates):
+        identity = candidate["identity"]
+        if remaining[identity] > 0 and candidate["where"] in recorded_locations.get(identity, ()):
+            remaining[identity] -= 1
+            matched[index] = True
+
+    # 2. Remaining recorded occurrences of the same identity cover the rest of
+    #    this scan's occurrences (a pure renumber, or a copy that moved).
+    for index, candidate in enumerate(candidates):
+        if not matched[index] and remaining[candidate["identity"]] > 0:
+            remaining[candidate["identity"]] -= 1
+            matched[index] = True
+
+    # 3. An entry written by an earlier version of this script still covers the
+    #    finding it named, so upgrading never duplicates history. Each such entry
+    #    covers one occurrence only: an earlier id is line-based, so letting it
+    #    cover every candidate on that line could hide a genuinely new finding.
+    for index, candidate in enumerate(candidates):
+        if matched[index]:
+            continue
+        for alias in candidate["aliases"]:
+            if remaining[alias] > 0:
+                remaining[alias] -= 1
+                matched[index] = True
+                break
+
+    additions = [
+        candidate["row"]
+        for index, candidate in enumerate(candidates)
+        if not matched[index]
+    ]
 
     if additions:
         report = report.rstrip() + "\n\n" + "\n".join(additions) + "\n"
