@@ -5,20 +5,22 @@
 
 ## Summary
 
-Replace the per-scan occurrence rank with an identity built from the finding's own
-source content, and match occurrences against the entries the ledger already holds
-instead of a rank recomputed from the scan. Keep the fingerprint identity, keep every
-earlier id as an alias, keep the report append-only.
+Replace the per-scan occurrence rank with an identity built from the SARIF result
+alone, and match occurrences against the entries the ledger already holds instead of
+a rank recomputed from the scan. Keep the fingerprint identity, keep every earlier id
+as an alias, keep the report append-only.
 
 ## Technical Context
 
 - **Language/Version**: Python 3 on the GitHub Actions Ubuntu runner, standard library
-  only (`bisect`, `hashlib`, `json`, `re`, `pathlib`, `collections`).
+  only (`hashlib`, `json`, `re`, `pathlib`, `collections`).
 - **Primary Dependencies**: none added.
 - **Storage**: `devskim-alerts.md` (append-only ledger) and `devskim-alerts.sarif`
   (generated input).
-- **Source input**: the repository checkout the workflow performs before the append
-  step; `.github/workflows/devskim.yml` checks out the same commit the scan ran on.
+- **Inputs**: the SARIF artifact and the ledger. The identity does not read the
+  working tree: the `update-report` job checks out an existing
+  `chore/devskim-report-update-*` branch after downloading the current run's SARIF,
+  so the checkout may be from a different revision than the scan.
 - **Testing**: `vitest run __tests__/devskim-dedup.test.js` (spawns the real script),
   `python3 -m unittest test_suppress_devskim_false_positives`,
   `python3 -m py_compile`, and `identity_benchmark.py` against the superseded script.
@@ -42,25 +44,24 @@ earlier id as an alias, keep the report append-only.
 | Case | Identity |
 | --- | --- |
 | Stable scanner fingerprint | `sha256("v2", "fingerprint", rule, uri, fingerprint)` — unchanged from the version this repairs, so fingerprinted ids never change |
-| No fingerprint | `sha256("v3", "content", rule, uri, message, span text, column, length, source line text)` |
+| No fingerprint | `sha256("v4", "content", rule, uri, message, snippet text, column, length)` |
 
 Content parts and where they come from:
 
-- **span text** — the exact source the result points at. Preferred source: DevSkim's
-  absolute `charOffset`/`charLength`, converted from UTF-16 code units to code points
-  and accepted only when it matches the source at the reported start line *and* the
-  scanner's own `snippet`. Then the snippet alone, then the source slice at the
-  reported columns.
-- **column** — the finding's 1-based position within its own line, derived from the
-  validated absolute offset when available, otherwise the reported column. It
-  separates two different findings on one line; it does not depend on the line number.
-- **length** — the span length, which stays meaningful when no snippet is present.
-- **source line text** — the trimmed text of the line the finding starts on. It
-  separates identical tokens that appear in different code, and it is unaffected by
-  insertions or removals anywhere else in the file.
+- **span text** — the `snippet.text` DevSkim records for the result. It is the
+  matched source text, so it separates different findings and survives renumbering;
+  it is part of the SARIF, so the checkout cannot change it.
+- **column** — the reported `startColumn`, the finding's 1-based position within its
+  own line. It separates two different findings on one line and does not depend on
+  the line number.
+- **length** — `charLength` when present, else `endColumn - startColumn`, else the
+  snippet length. It stays meaningful when no snippet is present and is independent
+  of absolute offsets.
 
-No absolute line and no rank among other results participates, so a renumber cannot
-change an id and an insertion or remediation cannot transfer one to another finding.
+No absolute line, no absolute `charOffset`, no source-file content and no rank among
+other results participates, so a renumber cannot change an id, an insertion or
+remediation cannot transfer one to another finding, and a reused report branch cannot
+change one either.
 
 ### Occurrence accounting
 
@@ -83,12 +84,13 @@ remediated finding keeps its entry (append-only).
 
 ### Compatibility
 
-`previous_identities()` returns the four ids earlier versions could write —
+`previous_identities()` returns the ids earlier versions could write —
 `(rule, uri, line)`, `(rule, uri, fingerprint)` and `(rule, uri, line, detail)` — plus
-the superseded v2 shape id for its own occurrence rank. The v2 fingerprint id is the
-*current* primary id for fingerprinted results, so it is not repeated in the alias
-list; the docstring states that the primary id is checked separately (addressing the
-Graphite API-review note).
+the superseded v2 shape id for its own occurrence rank. The v3 content shape was
+withdrawn during review and never wrote a ledger entry, so no alias is needed for it.
+The v2 fingerprint id is the *current* primary id for fingerprinted results, so it is
+not repeated in the alias list; the docstring states that the primary id is checked
+separately (addressing the Graphite API-review note).
 
 The public contract is unchanged: `finding_identities()` still returns
 `(identity, legacy_identity)`, where the second element is the original
@@ -96,14 +98,16 @@ The public contract is unchanged: `finding_identities()` still returns
 
 ### Limitation
 
-Findings that are byte-identical in every observable field — same rule, message, span
-text, column, length and line text — and have no fingerprint cannot be distinguished
-across scans. They share an identity and the ledger tracks their occurrences: an
-additional copy appends one entry (attribution to the inserted copy is not
-guaranteed when the copies also shift), and removing a copy then adding an identical
-one appends nothing because the append-only ledger cannot observe the removal. This
-is recorded rather than papered over with a rank, which would reintroduce the defect
-for every finding.
+Findings that are identical in every SARIF field — same rule, file, message, snippet
+text, column and length — and have no fingerprint cannot be distinguished across
+scans. They share an identity and the ledger tracks their occurrences: an additional
+copy appends one entry (attribution to the inserted copy is not guaranteed when the
+copies also shift), and removing a copy then adding an identical one appends nothing
+because the append-only ledger cannot observe the removal. This is recorded rather
+than papered over with a rank, which would reintroduce the defect for every finding.
+Dropping the source line from the identity broadens this to identical findings that
+sit on different lines of the same file; that is the price of an identity no
+checkout can change.
 
 ## Files
 
@@ -119,11 +123,11 @@ for every finding.
 
 ## Risks
 
-- **Source/scan drift** — if the report checkout differs from the scan tree, the
-  absolute span fails validation and the snippet/column fallback keeps the identity
-  stable rather than inventing content.
+- **Source/scan drift** — the report checkout may differ from the scan tree. The
+  identity no longer reads the checkout, so this cannot change an id; it is covered
+  by a fixed-SARIF/changed-workspace regression.
 - **Scanner wording or span changes** — treated as a new finding, as before.
 - **Byte-identical findings** — the documented limitation; no stable discriminator
   exists in the SARIF.
-- **Performance** — one read and one split per distinct file, a bisect-based UTF-16
-  conversion, and a single pass over the ledger.
+- **Performance** — a single pass over each result and over the ledger; no source
+  file is opened.

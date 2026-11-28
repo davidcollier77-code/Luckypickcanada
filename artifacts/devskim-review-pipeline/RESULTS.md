@@ -69,6 +69,11 @@ which are `false` for the superseded script and `true` for the current one; the 
 `specs/231-devskim-ledger-stable-identity/evidence/identity-benchmark.json`. The first four rows above
 compare against the pre-Spec-231 script, so their "after" column is unchanged.
 
+The `workspace_changed_appended` / `workspace_changed_entries` fields record a scan appended twice
+from the same SARIF while the workspace source differs between runs. The withdrawn v3 script
+(`aed9b241`) appended `[1, 1]` and left 2 entries; the current script appends `[1, 0]` and leaves 1,
+and `__tests__/devskim-dedup.test.js` pins the same case.
+
 ## 4. Unit suite
 
 `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'`

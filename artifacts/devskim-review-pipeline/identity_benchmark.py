@@ -182,6 +182,26 @@ def run(module, directory):
         repeat_appended = module.append_findings(repeat_sarif, repeat_report)
     repeat_entries = _entries(repeat_report)
 
+    # The same SARIF appended from a workspace whose source has changed: the
+    # report job can reuse an older report branch, so the checkout may not match
+    # the scanned revision and the identity must not read it.
+    drift_dir = directory / "workspace-drift"
+    (drift_dir / "src").mkdir(parents=True)
+    drift_source = _source(alpha)
+    (drift_dir / "src" / "example.ts").write_text(drift_source, encoding="utf-8")
+    drift_sarif = drift_dir / "scan.sarif"
+    drift_sarif.write_text(
+        json.dumps(_sarif([_result(drift_source, alpha)])), encoding="utf-8"
+    )
+    drift_report = drift_dir / "report.md"
+    with _working_directory(drift_dir):
+        drift_first = module.append_findings(drift_sarif, drift_report)
+        (drift_dir / "src" / "example.ts").write_text(
+            "// source from another revision\n", encoding="utf-8"
+        )
+        drift_second = module.append_findings(drift_sarif, drift_report)
+    drift_entries = _entries(drift_report)
+
     insertion_scans = [(alpha, omega), (alpha, beta, omega)]
     insertion = _sequence(module, directory, "insertion", insertion_scans)
     remediation_scans = [(alpha, omega), (alpha,), (alpha, gamma)]
@@ -197,6 +217,8 @@ def run(module, directory):
         "duplicate_appended": duplicate_appended,
         "duplicate_entries": duplicate_entries,
         "repeat_is_idempotent": repeat_appended == 0 and repeat_entries == 1,
+        "workspace_changed_appended": [drift_first, drift_second],
+        "workspace_changed_entries": drift_entries,
         "insertion_appended": insertion["appended"],
         "insertion_appended_rows": insertion["appended_rows"],
         "insertion_rows": insertion["rows"],

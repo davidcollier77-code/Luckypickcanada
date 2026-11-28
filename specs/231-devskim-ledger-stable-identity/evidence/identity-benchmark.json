@@ -5,6 +5,11 @@
     "duplicate_appended": 1,
     "duplicate_entries": 1,
     "repeat_is_idempotent": true,
+    "workspace_changed_appended": [
+      1,
+      0
+    ],
+    "workspace_changed_entries": 1,
     "insertion_appended": [
       2,
       1
@@ -78,17 +83,22 @@
     "duplicate_appended": 1,
     "duplicate_entries": 1,
     "repeat_is_idempotent": true,
+    "workspace_changed_appended": [
+      1,
+      0
+    ],
+    "workspace_changed_entries": 1,
     "insertion_appended": [
       2,
       1
     ],
     "insertion_appended_rows": [
       [
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:d7d3f38bc92b755b4624 -->",
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:941cd9ec5e4b7a335751 -->"
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:0343e0873a23975b7ae3 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:45efc6ff6dfc66b34915 -->"
       ],
       [
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:755da0a3970feb1345ea -->"
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:69e8a7a4ccf638772ab2 -->"
       ]
     ],
     "insertion_rows": [
@@ -117,12 +127,12 @@
     ],
     "remediation_appended_rows": [
       [
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:d7d3f38bc92b755b4624 -->",
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:941cd9ec5e4b7a335751 -->"
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:1` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:0343e0873a23975b7ae3 -->",
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:45efc6ff6dfc66b34915 -->"
       ],
       [],
       [
-        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:79d6cd17e418ad6b57ac -->"
+        "- **ERROR \u2014 DS173237** \u2014 `src/example.ts:2` \u2014 Do not store tokens or keys in source code. <!-- devskim-id:987f0c76f198ea6a41fc -->"
       ]
     ],
     "remediation_rows": [

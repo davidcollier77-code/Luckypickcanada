@@ -2,7 +2,7 @@
 
 **Feature Branch**: `freebuff/d05e4582a2636e1701cac123`
 **Created**: 2026-11-28
-**Status**: Implemented — local suites passing; owner review pending
+**Status**: Implemented — local suites passing; second review round addressed; owner review pending
 **Input**: Pullfrog review on PR #2065, finding "Occurrence rank misattributes ledger entries when findings are added or removed": the first repair replaced the reported line with a per-scan occurrence rank, which is not a property of a finding.
 
 ## Problem Statement
@@ -30,6 +30,15 @@ by executing the changed script:
 
 Both suites passed, because the new insertion test asserted only `newCount` and the
 marker total, and both coincidentally stayed correct.
+
+The second repair (commit `aed9b241`) removed the rank and keyed a fingerprint-less
+finding on its source content, but read part of that content from the working tree.
+Pullfrog's next review found that the `update-report` job prepares its branch by
+checking out an existing `chore/devskim-report-update-*` branch *after* downloading
+the current run's SARIF, so the checkout need not match the scanned revision. The
+same unchanged SARIF then produced two different ids and two ledger rows when only
+the workspace source differed. A finding's identity must not depend on which
+tree happens to be checked out.
 
 ## User Scenarios & Testing
 
@@ -79,14 +88,15 @@ so the upgrade appends nothing for findings the ledger already holds.
 
 ### Edge Cases
 
-- A finding whose `charOffset`/`charLength` disagrees with the checked-out source or
-  with the scanner's own snippet is identified from the snippet, then from the
-  reported columns; an invalid span is never trusted.
-- A finding with no readable source (no location, an unreadable file, a path outside
-  the workspace, a file over 2 MiB) falls back to snippet and reported coordinates.
-- Two findings that are byte-identical in every observable field (rule, message,
-  span text, column, length, line text) and have no fingerprint cannot be told
-  apart across scans; see Limitation.
+- A finding whose reported `charOffset`/`charLength` is stale or absent is identified
+  from the SARIF snippet and the reported column/length; the absolute span never
+  participates, so a usable and an unusable offset produce the same identity.
+- The appending job can reuse an older report branch, so its working tree may come
+  from a different revision than the scan. The same SARIF appended from two
+  different working trees must append nothing the second time.
+- Two findings identical in every SARIF field (rule, file, message, snippet text,
+  column, length) with no fingerprint cannot be told apart across scans; see
+  Limitation.
 - A scanner change to the message, snippet or span of the same finding changes its
   identity and appends once more, as the message did before this change.
 
@@ -99,12 +109,12 @@ so the upgrade appends nothing for findings the ledger already holds.
 - **FR-002**: A result without a fingerprint MUST be identified from finding-specific
   data only. A per-scan rank among other results MUST NOT be part of its identity.
 - **FR-003**: The identity MUST NOT include the absolute reported line.
-- **FR-004**: The identity MUST use DevSkim's matched source span when it can be
-  validated against the checked-out source and the scanner's snippet, converting
-  UTF-16 offsets to code points; otherwise the snippet; otherwise the reported
-  columns. The script MUST NOT invent content.
-- **FR-005**: Findings that differ in rule, file, message, span text, column, length
-  or source-line text MUST be separate entries.
+- **FR-004**: A result without a fingerprint MUST be identified from the SARIF
+  result alone: rule, file, message, the matched `snippet` text, the reported
+  column and the span length. The identity MUST NOT read the working tree, so a
+  reused report branch cannot change it, and the script MUST NOT invent content.
+- **FR-005**: Findings that differ in rule, file, message, snippet text, column or
+  length MUST be separate entries.
 - **FR-006**: Two results identical in identity and reported position MUST be
   recorded once.
 - **FR-007**: Occurrences of one identity MUST be matched against the ledger's
@@ -122,8 +132,8 @@ so the upgrade appends nothing for findings the ledger already holds.
   identity.
 - **FR-010**: The SARIF input, row format, marker syntax, `new_count` output and
   workflow invocation MUST remain unchanged.
-- **FR-011**: Only files inside the checked-out workspace may be read, each at most
-  once per run, with a size cap.
+- **FR-011**: The script MUST NOT read source files to build an identity. Its SARIF
+  input, the ledger and `GITHUB_OUTPUT` are its only inputs.
 - **FR-012**: No scanner rule, scan glob, suppression filter, permission, SARIF
   upload, trigger or reporting behaviour may change.
 
@@ -135,7 +145,7 @@ so the upgrade appends nothing for findings the ledger already holds.
 
 ## Limitation (explicit)
 
-Two findings that share rule, message, span text, column, length and line text and
+Two findings that share rule, file, message, snippet text, column and length and
 have no scanner fingerprint are **indistinguishable across scans**. They share one
 identity. The ledger therefore tracks *occurrences*, not physical copies:
 
@@ -174,10 +184,12 @@ observable behaviour under a test named for the limitation.
   the superseded `19fe6ee` script.
 - **SC-007**: The DevSkim Python reporting and suppression suites and `py_compile`
   pass.
+- **SC-008**: The same SARIF appended from a workspace whose source changed, or was
+  removed, appends nothing and leaves exactly one entry.
 
 ## Assumptions
 
-- DevSkim continues to omit fingerprints for rules such as DS173237, and continues to
-  emit `charOffset`/`charLength` and `snippet` for located findings.
-- The report job checks out the same commit the scan ran on, as `.github/workflows/devskim.yml`
-  currently does.
+- DevSkim continues to emit `snippet` for located findings, together with the
+  reported columns and, when present, `charOffset`/`charLength`.
+- `.github/workflows/devskim.yml` may run the appender on a reused report branch
+  whose checkout differs from the scanned revision; the identity does not read it.

@@ -326,7 +326,7 @@ describe('DevSkim append-only report implementation', () => {
     expect(inserted.rows).toHaveLength(3);
   });
 
-  it('reports a fingerprint-less finding when the reported absolute span cannot be validated', () => {
+  it('keeps one identity whether the reported absolute span is usable or not', () => {
     const { scan, writeSource } = createFixture();
     const token = 'a'.repeat(56);
     const source = writeSource(`// header\n${sourceWithTokens(token)}`);
@@ -337,12 +337,50 @@ describe('DevSkim append-only report implementation', () => {
     expect(scrambled.newCount).toBe(1);
     expect(scrambled.rows[0].where).toBe(`${URI}:2`);
 
-    // The snippet/column fallback still recognises the same finding after a renumber.
+    // A renumbered file with a usable absolute span must produce the id the
+    // unusable span produced: identity never depends on charOffset.
     const shifted = writeSource(`// header\n// another\n${sourceWithTokens(token)}`);
     const second = scan([at(shifted, token)]);
     expect(second.newCount).toBe(0);
     expect(second.rows).toEqual(scrambled.rows);
+
+    // Two scans whose absolute spans are both unusable are also stable across
+    // a renumber.
+    const shiftedAgain = writeSource(
+      `// header\n// another\n// and another\n${sourceWithTokens(token)}`
+    );
+    const staleShifted = at(shiftedAgain, token);
+    staleShifted.locations[0].physicalLocation.region.charOffset += 3;
+    const third = scan([staleShifted]);
+    expect(third.newCount).toBe(0);
+    expect(third.rows).toEqual(scrambled.rows);
+
     expect(plausible.locations[0].physicalLocation.region.charOffset).toBe(source.indexOf(token));
+  });
+
+  it('keeps one identity when the same SARIF is appended from a different workspace tree', () => {
+    // The report job can reuse an older chore/devskim-report-update-* branch
+    // before appending the current run's SARIF, so the checkout may not match the
+    // scanned revision. The identity must come from the SARIF alone.
+    const { scan, writeSource } = createFixture();
+    const token = 'a'.repeat(56);
+    const source = writeSource(`// header\n${sourceWithTokens(token)}`);
+    const result = at(source, token);
+    const recorded = scan([result]);
+    expect(recorded.newCount).toBe(1);
+    expect(recorded.rows[0].where).toBe(`${URI}:2`);
+
+    // Same SARIF, a workspace whose source has changed underneath it.
+    writeSource(`// header\nconst replaced = "different source";`);
+    const changed = scan([result]);
+    expect(changed.newCount).toBe(0);
+    expect(changed.rows).toEqual(recorded.rows);
+
+    // Same SARIF, no workspace source at all.
+    writeSource('');
+    const absent = scan([result]);
+    expect(absent.newCount).toBe(0);
+    expect(absent.rows).toEqual(recorded.rows);
   });
 
   it('appends a genuinely new finding without removing existing entries', () => {
