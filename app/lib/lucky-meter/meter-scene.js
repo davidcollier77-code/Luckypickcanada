@@ -1449,11 +1449,16 @@ export async function createLuckyMeterScene({
     const euler = new THREE.Euler();
     for (let index = 0; index < 16; index += 1) {
       // A laurel wreath around the relief, with a gap at the top for the crown.
-      const angle = (22 + (index / 15) * 316) * DEG2RAD;
-      position.set(Math.sin(angle) * 0.448, Math.cos(angle) * 0.448, 0.128);
-      euler.set(0, 0, angle + Math.PI / 2);
+      // Two laurel branches climb the sides of the well, as in the reference:
+      // eight slim leaves each, turning outward as they rise, leaving the crown
+      // clear for the maple.
+      const side = index < 8 ? 1 : -1;
+      const climb = (index % 8) / 7;
+      const angle = (side === 1 ? 34 + climb * 82 : 244 + climb * 82) * DEG2RAD;
+      position.set(Math.sin(angle) * 0.45, Math.cos(angle) * 0.45, 0.128);
+      euler.set(0, 0, angle + Math.PI / 2 + side * 0.35);
       quaternion.setFromEuler(euler);
-      scale.setScalar(0.118);
+      scale.set(0.052, 0.082, 0.028);
       matrix.compose(position, quaternion, scale);
       wreath.setMatrixAt(index, matrix);
     }
@@ -1991,30 +1996,56 @@ export async function createLuckyMeterScene({
 
   const bannerHalf = METER_LAYOUT.banner.width / 2;
   const bannerHalfHeight = METER_LAYOUT.banner.height / 2;
-  const bannerShape = new THREE.Shape();
-  // A true arch: the ends drop away while the crown rises, so the ribbon reads
-  // as a bent plate rather than a rounded rectangle.
-  bannerShape.moveTo(-bannerHalf, -bannerHalfHeight - 0.02);
-  bannerShape.lineTo(bannerHalf, -bannerHalfHeight - 0.02);
-  bannerShape.quadraticCurveTo(bannerHalf + 0.06, -0.06, bannerHalf - 0.1, bannerHalfHeight - 0.02);
-  bannerShape.quadraticCurveTo(0, bannerHalfHeight + 0.09, -bannerHalf + 0.1, bannerHalfHeight - 0.02);
-  bannerShape.quadraticCurveTo(-bannerHalf - 0.06, -0.06, -bannerHalf, -bannerHalfHeight - 0.02);
-
-  const bannerBorder = new THREE.Mesh(
-    trackGeometry(
-      new THREE.ExtrudeGeometry(bannerShape, {
-        // No bevel on this one: the arch's curvature plus a bevel produced thin
-        // folded fins above the crown. The depth and the inset enamel layers
-        // already give the frame its thickness and its stepped edge.
-        depth: 0.095,
-        bevelEnabled: false,
-        curveSegments: 20,
+  // The reference's banner is a plate bent around the wheel: a wide arc band
+  // with dropped ends, so the crown rises and the ribbon curves with the
+  // instrument instead of sitting on it like a straight sign.
+  const bannerArcRadius = 3;
+  const bannerArcHalf = Math.asin(Math.min(0.97, bannerHalf / bannerArcRadius));
+  // Each layer is its own band, inset from the one beneath it, so the gold frame
+  // shows as a real rolled edge rather than a scaled copy of one shape.
+  const bannerArchGeometry = (inset, depth, bevel) => {
+    const shape = new THREE.Shape();
+    const inner = bannerArcRadius - bannerHalfHeight + inset;
+    const outer = bannerArcRadius + bannerHalfHeight - inset;
+    shape.absarc(0, 0, outer, Math.PI / 2 - bannerArcHalf, Math.PI / 2 + bannerArcHalf, false);
+    shape.absarc(0, 0, inner, Math.PI / 2 + bannerArcHalf, Math.PI / 2 - bannerArcHalf, true);
+    shape.closePath();
+    const geometry = trackGeometry(
+      new THREE.ExtrudeGeometry(shape, {
+        depth,
+        bevelEnabled: bevel > 0,
+        bevelThickness: bevel,
+        bevelSize: bevel,
+        bevelSegments: 2,
+        curveSegments: constrained ? 12 : 26,
       }),
-    ),
-    gold,
-  );
+    );
+    geometry.translate(0, -bannerArcRadius, 0);
+    return geometry;
+  };
+
+  const bannerBorder = new THREE.Mesh(bannerArchGeometry(0, 0.095, 0), gold);
   bannerBorder.position.z = -0.02;
   bannerGroup.add(bannerBorder);
+
+  // Rolled gold rims along both arcs: real tube sections that carry a highlight
+  // around the whole edge, as the reference's banner does.
+  const bannerRollGeometry = (radius) => {
+    const geometry = trackGeometry(
+      new THREE.TorusGeometry(radius, 0.03, 10, constrained ? 24 : 64, bannerArcHalf * 2),
+    );
+    geometry.rotateZ(Math.PI / 2 - bannerArcHalf);
+    geometry.translate(0, -bannerArcRadius, 0);
+    return geometry;
+  };
+  for (const radius of [
+    bannerArcRadius - bannerHalfHeight,
+    bannerArcRadius + bannerHalfHeight,
+  ]) {
+    const rolled = new THREE.Mesh(bannerRollGeometry(radius), polishedGold);
+    rolled.position.z = 0.028;
+    bannerGroup.add(rolled);
+  }
 
   const bannerEnamelMaterial = trackMaterial(
     new THREE.MeshPhysicalMaterial({
@@ -2029,13 +2060,7 @@ export async function createLuckyMeterScene({
       side: THREE.DoubleSide,
     }),
   );
-  const bannerEnamel = new THREE.Mesh(
-    trackGeometry(
-      new THREE.ExtrudeGeometry(bannerShape, { depth: 0.05, bevelEnabled: false, curveSegments: 12 }),
-    ),
-    bannerEnamelMaterial,
-  );
-  bannerEnamel.scale.set(0.94, 0.86, 1);
+  const bannerEnamel = new THREE.Mesh(bannerArchGeometry(0.03, 0.05, 0), bannerEnamelMaterial);
   bannerEnamel.position.z = 0.045;
   bannerGroup.add(bannerEnamel);
 
@@ -2065,16 +2090,7 @@ export async function createLuckyMeterScene({
   // A second, raised enamel field: the crimson panel steps down from the gilt
   // frame in two layers, so light breaks along the step instead of one plane.
   const bannerEnamelTop = new THREE.Mesh(
-    trackGeometry(
-      new THREE.ExtrudeGeometry(bannerShape, {
-        depth: 0.022,
-        bevelEnabled: true,
-        bevelThickness: 0.012,
-        bevelSize: 0.014,
-        bevelSegments: 1,
-        curveSegments: 12,
-      }),
-    ),
+    bannerArchGeometry(0.058, 0.022, 0.012),
     trackMaterial(
       new THREE.MeshPhysicalMaterial({
         color: 0xa4151a,
@@ -2089,7 +2105,6 @@ export async function createLuckyMeterScene({
       }),
     ),
   );
-  bannerEnamelTop.scale.set(0.88, 0.74, 1);
   bannerEnamelTop.position.z = 0.074;
   bannerGroup.add(bannerEnamelTop);
 
