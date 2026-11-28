@@ -509,17 +509,17 @@ function createFillMaterial(THREE, colourHex) {
         float specularA = pow(max(dot(normal, normalize(lightA + view)), 0.0), 26.0);
         float specularB = pow(max(dot(normal, normalize(lightB + view)), 0.0), 92.0);
 
-        // The reference's enamel: dense, saturated colour pooling at the floor
-        // and flaring where light enters the block, never washed toward white.
+        // Enamel depth: the colour deepens in the block's shadowed lower half
+        // and lifts toward the light at the top, without leaving the palette.
         float depth = clamp(vLocalY / max(uLevel, 0.0001), 0.0, 1.0);
-        vec3 colour = mix(uColor * 0.42, uColor * 1.3, pow(depth, 1.3));
-        colour *= 0.9 + 0.26 * diffuse;
-        colour += uColor * (0.1 + 0.26 * uGlow) * (0.3 + 0.7 * depth);
+        vec3 colour = mix(uColor * 0.6, uColor * 1.06, pow(depth, 1.2));
+        colour *= 0.92 + 0.2 * diffuse;
+        colour += uColor * (0.05 + 0.12 * uGlow) * (0.35 + 0.65 * depth);
         // A thick glass wall deepens toward its outline; the thin skin over the
         // top face picks up a bright sheen instead.
-        colour *= 1.0 - fresnel * 0.5;
-        colour += mix(uColor, vec3(1.0), 0.4) * fresnel * 0.14;
-        colour += vec3(1.0, 0.97, 0.9) * specularA * 0.22;
+        colour *= 1.0 - fresnel * 0.45;
+        colour += mix(uColor, vec3(1.0), 0.3) * fresnel * 0.12;
+        colour += vec3(1.0, 0.97, 0.9) * specularA * 0.13;
         colour += vec3(1.0) * specularB * 0.32;
 
         // Suspended micro-bubbles below the surface: a filled glass bead with a
@@ -542,8 +542,8 @@ function createFillMaterial(THREE, colourHex) {
         float line = smoothstep(0.03, 0.0, abs(vLocalY - surfaceY)) * uSurface;
         float sheen = smoothstep(surfaceY - 0.075, surfaceY, vLocalY) *
           step(vLocalY, surfaceY) * uSurface;
-        colour += mix(uColor, vec3(1.0), 0.9) * line * 0.95;
-        colour += mix(uColor, vec3(1.0), 0.5) * sheen * 0.2;
+        colour += mix(uColor, vec3(1.0), 0.75) * line * 0.5;
+        colour += mix(uColor, vec3(1.0), 0.4) * sheen * 0.12;
 
         if (uDeepen > 0.5) {
           colour *= mix(0.72, 1.0, depth);
@@ -1332,7 +1332,7 @@ export async function createLuckyMeterScene({
     // Internal illumination, suspended bubbles and the liquid line. The face is
     // never clipped: the whole cell is filled and the level is drawn as a line.
     fillMaterial.uniforms.uGlow.value = 1;
-    fillMaterial.uniforms.uBubbles.value = 0.55;
+    fillMaterial.uniforms.uBubbles.value = 0.4;
     fillMaterial.uniforms.uSurface.value = 1;
     fillMaterial.uniforms.uLevel.value = 0.078;
     fillMaterial.uniforms.uClip.value = 0;
@@ -2546,17 +2546,10 @@ export async function createLuckyMeterScene({
     for (let index = 0; index < CHAMBER_COUNT; index += 1) {
       const colour = colours[index];
       if (!colour) continue;
-      // The palette keeps its hues, but a UI swatch is far too pale to read as
-      // enamel: hold the hue and push saturation and depth to pigment values.
-      const tint = new THREE.Color(colour.hex);
-      const hsl = { h: 0, s: 0, l: 0 };
-      tint.getHSL(hsl);
-      tint.setHSL(
-        hsl.h,
-        Math.min(0.96, hsl.s * 0.45 + 0.66),
-        Math.min(0.46, hsl.l * 0.5 + 0.2),
-      );
-      chamberFills[index].material.uniforms.uColor.value.copy(tint);
+      // The cell wears the seasonal Lucky Colour exactly as the palette defines
+      // it. Depth and gloss come from the material and its lighting, never from
+      // shifting the hue, saturation or lightness of the visitor's colour.
+      chamberFills[index].material.uniforms.uColor.value.set(colour.hex);
     }
   }
 
