@@ -17,10 +17,13 @@ function isPlainObject(value) {
 }
 
 /**
- * Returns the pending manifest with the default branch's owner-controlled
- * routing. Snapshot metadata already published to the pending branch
- * (lastUpdated, sources, inventory, githubShas) is kept so the refresh can
- * continue from it; only `groups` is taken from the default branch.
+ * Returns the pending snapshot state with the default branch's
+ * owner-controlled configuration. `groups`, `sources` and `inventory` belong to
+ * the default branch and are never taken from a pending branch, so a refresh
+ * cannot reintroduce a document, a source URL or an inventory entry that was
+ * deliberately changed or removed on the default branch. Updater-managed state
+ * already published to the pending branch (`lastUpdated`, `githubShas`) is kept
+ * so the refresh continues from it instead of rediscovering applied changes.
  */
 function mergePendingBaselineManifest(pendingManifest, defaultBranchManifest) {
   if (!isPlainObject(pendingManifest)) {
@@ -34,10 +37,19 @@ function mergePendingBaselineManifest(pendingManifest, defaultBranchManifest) {
       throw new Error(`Invalid pending documentation manifest: ${section} must be an object.`);
     }
   }
-  return {
+  if (defaultBranchManifest.sources !== undefined && !isPlainObject(defaultBranchManifest.sources)) {
+    throw new Error('Invalid default-branch documentation manifest: sources must be an object.');
+  }
+  if (defaultBranchManifest.inventory !== undefined && !Array.isArray(defaultBranchManifest.inventory)) {
+    throw new Error('Invalid default-branch documentation manifest: inventory must be an array.');
+  }
+  const merged = {
     ...pendingManifest,
     groups: defaultBranchManifest.groups
   };
+  if (defaultBranchManifest.sources !== undefined) merged.sources = defaultBranchManifest.sources;
+  if (defaultBranchManifest.inventory !== undefined) merged.inventory = defaultBranchManifest.inventory;
+  return merged;
 }
 
 function parseArgs(argv) {

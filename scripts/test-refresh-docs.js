@@ -1482,6 +1482,17 @@ async function runTests() {
     git('add', 'docs');
     const stagedDiff = spawnSync('git', ['diff', '--staged', '--quiet', baselineSha], { cwd: root, encoding: 'utf8' });
     assert.strictEqual(stagedDiff.status, 0, 'the repeated run must produce no new commit against the pending branch');
+
+    // Inline review follow-up: an unrelated non-documentation change that
+    // landed on the default branch after the pending tip must not be counted
+    // as a documentation change by the pathspec-scoped gate.
+    fs.mkdirSync(path.join(root, 'other'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'other', 'code.txt'), 'unrelated default branch change\n');
+    git('add', 'other');
+    const unscopedDiff = spawnSync('git', ['diff', '--staged', '--quiet', baselineSha], { cwd: root, encoding: 'utf8' });
+    assert.notStrictEqual(unscopedDiff.status, 0, 'the unscoped diff reports the unrelated change');
+    const scopedDiff = spawnSync('git', ['diff', '--staged', '--quiet', baselineSha, '--', 'docs/'], { cwd: root, encoding: 'utf8' });
+    assert.strictEqual(scopedDiff.status, 0, 'only .docs changes may set changed=true');
     restoreDocsDirectory();
   });
 
@@ -1510,6 +1521,31 @@ async function runTests() {
     assert.throws(
       () => mergePendingBaselineManifest({ ...pending, sources: [] }, defaultBranch),
       /sources must be an object/
+    );
+
+    // Owner-controlled configuration merged on the default branch while the
+    // refresh pull request is open stays authoritative.
+    const routingWithConfig = {
+      groups: { creation: ['/keep/doc', '/new/doc'] },
+      sources: {
+        '/keep/doc': { type: 'url', url: 'https://example.com/keep-v2' },
+        '/new/doc': { type: 'url', url: 'https://example.com/new' }
+      },
+      inventory: ['/keep/doc', '/new/doc']
+    };
+    const ownerConfig = mergePendingBaselineManifest(pending, routingWithConfig);
+    assert.deepStrictEqual(ownerConfig.sources, routingWithConfig.sources, 'owner-controlled sources come from the default branch');
+    assert.deepStrictEqual(ownerConfig.inventory, routingWithConfig.inventory, 'the approved inventory comes from the default branch');
+    assert.deepStrictEqual(ownerConfig.groups, routingWithConfig.groups);
+    assert.deepStrictEqual(ownerConfig.githubShas, pending.githubShas, 'verified SHA pins continue from the pending branch');
+    assert.strictEqual(ownerConfig.lastUpdated, pending.lastUpdated, 'the pending refresh timestamp is preserved');
+    assert.throws(
+      () => mergePendingBaselineManifest(pending, { groups: {}, sources: [] }),
+      /sources must be an object/
+    );
+    assert.throws(
+      () => mergePendingBaselineManifest(pending, { groups: {}, inventory: {} }),
+      /inventory must be an array/
     );
 
     const cliRoot = makeTempDocsRoot();
@@ -1564,6 +1600,11 @@ async function runTests() {
     assert.match(workflow, /scripts\/prepare-docs-refresh-baseline\.js/);
     assert.match(workflow, /BASELINE_REF: \$\{\{ steps\.baseline\.outputs\.ref \}\}/);
     assert.match(workflow, /git diff --staged --quiet "\$BASELINE_REF"/);
+    assert.match(
+      workflow,
+      /git diff --staged --quiet "\$BASELINE_REF" -- \.docs\//,
+      'the gate must compare only documentation paths'
+    );
     const changesStep = workflow.slice(workflow.indexOf('- name: Check for Changes'));
     assert.match(
       changesStep.slice(0, 400),

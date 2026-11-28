@@ -37,6 +37,14 @@
 - [x] T018 Execute the real workflow baseline and change-gate scripts in a temporary git repository for the open-PR, no-PR and fetch-failure cases.
 - [x] T019 Record local results and limitations in the handoff.
 
+## Phase 6: Review follow-up
+
+- [x] T020 The change gate runs under `set -euo pipefail`, so a failed `git add` or diff can never be reported as "no changes".
+- [x] T021 A failed open-pull-request lookup emits an `::warning::` and falls back to the default branch instead of failing silently or aborting the run.
+- [x] T022 The change gate compares only the `.docs/` pathspec, so a non-documentation file that advanced on the default branch cannot be reported as a documentation change; covered by a real-git regression.
+- [x] T023 The baseline merge keeps owner-controlled `sources` and `inventory` from the default branch while `lastUpdated` and `githubShas` continue from the pending branch; covered by a merge-precedence regression.
+- [x] T024 The manifest cleanup ignores a missing temp file so it cannot mask the original write error; covered by a CLI failure-path regression.
+
 ## Preserved behavior
 
 The refresh implementation, transport, validation/integrity safeguards, static GSAP policy, approved inventory, source URLs, 495 MiB library cap, PR creation/update flow, reporting and the Tuesday/Friday 02:21, 06:21 and 10:21 `America/Halifax` schedule remain unchanged.

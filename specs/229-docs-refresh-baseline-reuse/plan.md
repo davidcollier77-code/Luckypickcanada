@@ -34,9 +34,9 @@ Add a "Reuse Open Refresh Pull Request" workflow step that, only when an open `a
 
 ## Design
 
-1. `scripts/prepare-docs-refresh-baseline.js` exports `mergePendingBaselineManifest(pending, defaultBranch)` and a CLI. It returns the pending manifest with `groups` replaced by the default branch's routing, keeping `lastUpdated`, `sources`, `inventory` and `githubShas`. It validates its inputs and writes atomically.
+1. `scripts/prepare-docs-refresh-baseline.js` exports `mergePendingBaselineManifest(pending, defaultBranch)` and a CLI. It returns the pending manifest with the owner-controlled configuration (`groups`, `sources`, `inventory`) taken from the default branch, keeping the updater-managed `lastUpdated` and `githubShas` from the pending branch. It validates its inputs and writes atomically, without letting a cleanup failure mask the original error.
 2. In the workflow, after dependency installation, a new step resolves the open pull request with `gh pr list --state open --head auto/docs-refresh`. When one exists it saves the default-branch manifest, fetches the pending branch, checks out its `.docs`, runs the helper and publishes the baseline commit SHA. Every path publishes a single `ref` output; a missing pull request or a failed fetch leaves it empty and the run continues from the default branch.
-3. The change-detection gate compares `git diff --staged` against `${BASELINE_REF:-HEAD}`, so an unchanged repeat run reports `changed=false` and creates no commit or pull request comment.
+3. The change-detection gate compares `git diff --staged` against `${BASELINE_REF:-HEAD}` with a `.docs/` pathspec and `set -euo pipefail`, so an unchanged repeat run — or a run where unrelated files advanced on the default branch — reports `changed=false`, and a failed git command fails the step instead of reporting no changes.
 4. Regression coverage in `scripts/test-refresh-docs.js`: genuine change plus unchanged second run, non-SHA unchanged second run, sibling documents sharing a repository SHA, volatile-token and formatting stability, SHA/timestamp advance rules, download/rejection visibility, a real-git simulation of the open-pull-request loop with an explicit pre-repair control, helper unit tests (including the CLI), and workflow structure assertions.
 
 ## Project Structure

@@ -40,9 +40,9 @@ As the maintainer, I need `lastUpdated` and `githubShas` to move only when a run
 ### Functional Requirements
 
 - **FR-001**: When an open `auto/docs-refresh` pull request exists, the workflow MUST reuse that branch's `.docs` tree as the comparison baseline before running the refresh.
-- **FR-002**: `manifest.groups` MUST remain authoritative from the default branch, so a pending branch can never reintroduce a deliberately removed document.
+- **FR-002**: The owner-controlled manifest configuration (`manifest.groups`, `manifest.sources`, `manifest.inventory`) MUST remain authoritative from the default branch, so a pending branch can never reintroduce a deliberately removed document, source URL or inventory entry.
 - **FR-003**: When no open refresh pull request exists, or the pending branch cannot be fetched, the workflow MUST behave exactly as before (compare against the default branch) and must not fail the run.
-- **FR-004**: The "Check for Changes" gate MUST compare the staged `.docs` tree against the selected baseline so an unchanged repeat run creates no commit, no branch update and no pull request comment.
+- **FR-004**: The "Check for Changes" gate MUST compare only the staged `.docs` paths against the selected baseline, so an unchanged repeat run — including one where unrelated files advanced on the default branch — creates no commit, no branch update and no pull request comment.
 - **FR-005**: A genuine upstream content change MUST still be detected, validated and applied while a refresh pull request is open.
 - **FR-006**: Upstream SHAs MUST be recorded only after a download passes validation; download and validation failures MUST remain visible and must not be counted as updates.
 - **FR-007**: Documents that share an upstream repository SHA MUST be decided independently by their own content and their own SHA pin.

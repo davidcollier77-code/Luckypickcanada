@@ -119,7 +119,7 @@ jobs:
           set -euo pipefail
           git add .docs/
           BASELINE_REF="${BASELINE_REF:-HEAD}"
-          if git diff --staged --quiet "$BASELINE_REF"; then
+          if git diff --staged --quiet "$BASELINE_REF" -- .docs/; then
             echo "No changes detected in documentation."
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
