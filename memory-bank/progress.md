@@ -1,3 +1,9 @@
+## 2026-11-28 — Merge of main after the DevSkim remediation (#2065)
+
+- Merged `1ad132ec` into the meter branch so the pull request is no longer in conflict with `main`. The three conflicted files were append-only records: `memory-bank/activeContext.md` and `memory-bank/progress.md` keep both sides verbatim, and `.specify/feature.json` keeps `specs/230-lucky-meter-dimensional-artwork` because this PR is that feature.
+- Numbering collision to resolve by the owner: main now also holds `specs/230-devskim-findings-remediation`. Both 230 directories coexist, and this branchs own context was corrected to the current construction (single faceted bowl, closed and welded revolved rings, 40/40 tests, 406.94 MiB build) rather than renumbering a spec whose twelve evidence paths and QA declaration would all have to move.
+- The four DS173237 alerts this PR recorded as out of scope are removed at source on main by that merge; the next code-scanning run over the merged tree should close them.
+
 ## 2026-11-28 — Lucky Meter: reference-shaped wedge cells (Spec 230 follow-up)
 
 - Replaced the cylindrical cups with wedge-shaped glazed cells (`chamberWedgePath`): each compartment now spans the chamber's radial band with rounded corners, a real gold frame ring cut from the same wedge, a bronze back, and an enamel body whose liquid line and bubbles are drawn in screen-vertical space so liquid stays level on every cell.
@@ -12,6 +18,36 @@
 - Extended only the two scene shaders (enamel and crystal) and added two geometry helpers; no renderer, dependency, light, timing, persistence or layout contract changed.
 - Delivered the reference artwork as a retained source plus AVIF/WebP derivatives and used it as the instrument's reflection probe, so the metal and crystal reflect the design's own palette.
 - Focused Vitest suites 29/29, `tsc --noEmit` clean, and the ready state inspected at 900 × 1180 on the repository Playwright CLI.
+
+## 2026-11-28 — DevSkim findings remediation: SARIF-anchored ledger identity (Spec 230, corrected)
+
+- Pullfrog's PR #2065 review demonstrated that the first repair's per-scan occurrence rank misattributes entries: executing `19fe6ee` over `194/749` → `194/300/749` appended a second entry for 749 and never recorded 300, and `194/749` → `194` → `194/300` appended nothing. A rank describes the scan's current set, not a finding.
+- Replaced it with the SARIF-only identity `("v4", "content", rule, uri, message, snippet text, column, span length)`. The first content identity (`v3`) also hashed the checked-out source line; Pullfrog showed the report job checks out an older `chore/devskim-report-update-*` branch after downloading the current SARIF, so the same SARIF produced two ids when only the workspace source differed. Reproduced against `aed9b241` (2 entries); the repair appends nothing (1 entry). No line number, absolute offset, source content or rank participates.
+- Occurrences are now matched against the ledger's recorded entries for the identity — same `uri:line` first, remaining recorded occurrences for a pure renumber, then earlier-version aliases — and only the surplus is appended, preferring unrecorded locations. Unchanged, renumbered and reordered scans append nothing; an inserted finding appends at its own line; a remediated finding keeps its entry.
+- Replaced the count-only insertion test with row-level cases: renumbering, insertion between known findings, remediation followed by a different new finding, repeated and reordered scans, exact duplicates versus distinct same-line findings, usable/unusable absolute spans, a fixed SARIF appended from changed and absent workspaces, and the documented identical-findings limitation. 14/14 pass and each asserts the recorded `uri:line` and id.
+- Extended `identity_benchmark.py` with the insertion and remediation sequences. Against `19fe6ee` both record the wrong line (existing finding re-appended, new finding skipped); against this script the new finding is recorded at its expected line in both sequences.
+- Recorded limitation: findings identical in every SARIF field and without a fingerprint cannot be told apart across scans, including on different lines; their occurrences are tracked, an extra copy appends one entry (attribution not guaranteed), and remove-then-add-identical appends nothing. No other finding-specific signal exists in the SARIF.
+- Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
+
+## 2026-11-28 — DevSkim ledger identity, first repair (Spec 230, superseded)
+
+- Established that the ledger's duplication in PR #2065 came from the fingerprint-less identity including the reported line; DevSkim omits `partialFingerprints` for most results, so PR #2063's one-line shift changed all four DS173237 ids.
+- Replaced the line-based half of the identity with `(rule, uri, message, startColumn, endColumn, span, occurrence)`, where `occurrence` is the result's index among identical shapes ordered by reported position. Renumbering changes neither the shape nor the index; identical findings on different lines stay separate; exact duplicate results still collapse; an added identical finding appends exactly one entry.
+- Kept every id an earlier version could write as a recognised alias, so the append-only ledger is never duplicated or rewritten on upgrade. No entry was edited, reordered or removed.
+- Added six regression cases to `__tests__/devskim-dedup.test.js` that spawn the real script; 10/10 pass, the DevSkim Python reporting and suppression suites pass, `py_compile` is clean, and the committed identity benchmark still reports distinct same-line 2/2, duplicate 1/1, idempotent repeat and 0 legacy re-adds.
+- Recorded limitation: a ledger entry written before this change whose finding later moves line and still has no fingerprint can be appended once more; the current ledger holds no such live finding, and closing it would require rewriting entries, which the append-only contract forbids.
+- Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
+
+## 2026-11-28 — DevSkim DS173237 fixture remediation (Spec 230)
+
+Both 2026-11-28 DevSkim repairs are recorded in one feature directory, `specs/230-devskim-findings-remediation/`, after the Spec Kit governance gate rejected a PR changing two feature directories.
+
+- Established from live GitHub state that all four open code-scanning alerts are DS173237 false positives on the two synthetic Cloudflare email-protection fixture tokens in `scripts/test-refresh-docs.js` (lines 194, 195, 749, 768). The rule's published pattern is `["'][a-f0-9]{30,}["']`, so the literals — not their use — were the trigger.
+- Replaced the four long hex literals with `syntheticLongHex(seed)` expansions of two 8-character seeds, preserving both prefixes, both test sites and every assertion. No suppression was added or broadened and no scan path was excluded.
+- Corrected `devskim-alerts.md`, which listed eight entries for four findings because the append-only identity includes the reported line and PR #2063 renumbered the tokens. One entry per distinct finding now remains.
+- Verified locally on pnpm 10.30.3 from the committed lockfile: updater suite 61/61, DS173237 pattern 0 matches in the changed file, DevSkim dedup and dependency-management guards 16/16, DevSkim Python reporting and suppression suites pass.
+- DevSkim workflow history for 2026-11-07 → 2026-11-28 was reviewed: 800 runs, with failures confined to the repaired 2026-11-11 suppression outage and automation-branch runs, and 12 `action_required` automation pull requests that merged without a pre-merge scan (post-merge scans covered the same trees).
+- Dependabot: configuration unchanged and guarded; zero open alerts and zero open update pull requests; the weekly 2026-11-23 batch and individual security updates were generated and merged.
 
 ## 2026-11-28 — Refresh baseline reuse for open updater pull requests (Spec 229)
 
