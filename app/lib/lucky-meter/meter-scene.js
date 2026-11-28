@@ -464,6 +464,7 @@ function createFillMaterial(THREE, colourHex) {
       varying vec3 vViewDirection;
       varying float vLocalY;
       varying vec2 vUv;
+      varying vec2 vCell;
 
       void main() {
         vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
@@ -473,6 +474,10 @@ function createFillMaterial(THREE, colourHex) {
         // settles level in the visitor's frame, so a cell on the wheel's side
         // draws its surface horizontally rather than radially.
         vLocalY = viewPosition.y - (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).y;
+        // The cell's own face coordinates, in screen space, so a glass sheen can
+        // be drawn exactly where a curved surface would catch the light.
+        vCell = (viewPosition.xy - (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xy) /
+          vec2(0.19, 0.22);
         vUv = uv;
         gl_Position = projectionMatrix * viewPosition;
       }
@@ -491,6 +496,7 @@ function createFillMaterial(THREE, colourHex) {
       varying vec3 vViewDirection;
       varying float vLocalY;
       varying vec2 vUv;
+      varying vec2 vCell;
 
       float hash21(vec2 value) {
         vec2 seeded = fract(value * vec2(123.34, 456.21));
@@ -544,6 +550,26 @@ function createFillMaterial(THREE, colourHex) {
           step(vLocalY, surfaceY) * uSurface;
         colour += mix(uColor, vec3(1.0), 0.75) * line * 0.5;
         colour += mix(uColor, vec3(1.0), 0.4) * sheen * 0.12;
+
+        // Glass: a broad curved reflection near the top of the cell and a foot
+        // that darkens where the block thickens at its base. Both are shaded on
+        // top of the seasonal colour and never shift its hue.
+        if (uSurface > 0.5) {
+          float sheenArc = smoothstep(
+            0.62,
+            0.0,
+            length((vCell - vec2(-0.1, 0.52)) / vec2(0.86, 0.4))
+          );
+          colour += vec3(1.0, 0.985, 0.95) * sheenArc * 0.34;
+          float glint = smoothstep(
+            0.6,
+            0.0,
+            length((vCell - vec2(0.3, 0.46)) / vec2(0.32, 0.18))
+          );
+          colour += vec3(1.0) * glint * 0.22;
+          float foot = smoothstep(-0.05, -0.98, vCell.y);
+          colour *= 1.0 - foot * 0.42;
+        }
 
         if (uDeepen > 0.5) {
           colour *= mix(0.72, 1.0, depth);
@@ -1311,9 +1337,9 @@ export async function createLuckyMeterScene({
 
     const rimMaterial = trackMaterial(
       new THREE.MeshBasicMaterial({
-        color: 0xffe6a8,
+        color: 0xfff2cc,
         transparent: true,
-        opacity: 0.34,
+        opacity: 0.72,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
@@ -1600,12 +1626,16 @@ export async function createLuckyMeterScene({
   // ── Faceted crystal receiving bowl ─────────────────────────────────────
   const bowlGroup = new THREE.Group();
   bowlGroup.position.set(METER_LAYOUT.vessel.x, METER_LAYOUT.vessel.y, METER_LAYOUT.vessel.z);
+  // The reference's vessel is a generous serving bowl; its depth and cut are
+  // tied to the wheel, so the whole vessel scales together rather than growing
+  // a taller wall.
+  bowlGroup.scale.setScalar(1.12);
   root.add(bowlGroup);
 
   // A single open shell, not a thick double wall: the liquid stays visible and
   // the twelve radial segments read as cut crystal instead of frosted glass.
   const bowlGlassMaterial = trackMaterial(
-    createCrystalMaterial(THREE, { facet: true, facets: 3.6, brightness: 1.15 }),
+    createCrystalMaterial(THREE, { facet: true, facets: 2.4, brightness: 1.62 }),
   );
   animatedMaterials.push(bowlGlassMaterial);
   const bowlGlassSource = trackGeometry(
@@ -1651,9 +1681,9 @@ export async function createLuckyMeterScene({
     trackGeometry(new THREE.EdgesGeometry(bowlGlassSource, 24)),
     trackMaterial(
       new THREE.LineBasicMaterial({
-        color: 0xffffff,
+        color: 0xfff6e2,
         transparent: true,
-        opacity: 0.85,
+        opacity: 1,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -2047,6 +2077,9 @@ export async function createLuckyMeterScene({
   // header and a recessed slot. It is deliberately separate from the bowl.
   const plaqueGroup = new THREE.Group();
   plaqueGroup.position.set(METER_LAYOUT.plaque.x, METER_LAYOUT.plaque.y, METER_LAYOUT.plaque.z);
+  // Sized to sit with the vessel as the reference's second container, not as a
+  // label beneath the wheel.
+  plaqueGroup.scale.setScalar(1.14);
   root.add(plaqueGroup);
 
   const plaqueWidth = METER_LAYOUT.plaque.width;
@@ -2074,7 +2107,7 @@ export async function createLuckyMeterScene({
         curveSegments: 10,
       }),
     ),
-    gold,
+    polishedGold,
   );
   plaqueFrame.position.z = 0.014;
   plaqueGroup.add(plaqueFrame);
@@ -2103,7 +2136,7 @@ export async function createLuckyMeterScene({
       map: haloTexture,
       color: 0xffd9a0,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.46,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     }),
