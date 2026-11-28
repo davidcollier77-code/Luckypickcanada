@@ -92,6 +92,12 @@ const FINISHED_STOP_SECONDS = 1.25;
 /** The longest wait for a produced frame before the complete CSS meter wins. */
 export const READY_WATCHDOG_MS = 3000;
 
+/**
+ * The resting size of the central maple relief. It leaves room for the laurel
+ * wreath and the turned rings that frame it inside the well.
+ */
+const MEDALLION_SCALE = 0.455;
+
 /** A no-op when the Performance API is unavailable; never throws. */
 function mark(name) {
   try {
@@ -206,7 +212,7 @@ function radialTexture(THREE, stops) {
  * highlights; generating it once through PMREM costs one short frame and no
  * network request.
  */
-function createEnvironment(THREE, renderer) {
+function createEnvironment(THREE, renderer, artwork) {
   if (!renderer || typeof THREE.PMREMGenerator !== 'function') return null;
   let generator;
   try {
@@ -238,6 +244,19 @@ function createEnvironment(THREE, renderer) {
     // hard, bright facet highlights.
     addPanel(0xfff3d6, 6.4, 5.0, [0, 1.4, 7.0]);
     addPanel(0xbfe0ff, 3.6, 3.0, [3.2, -0.2, 5.5]);
+
+    // The supplied artwork as a soft-box: its gold, red enamel and seasonal
+    // glass become the highlights travelling across the instrument's metal and
+    // crystal, so the rendered object reflects its own design language.
+    if (artwork) {
+      const artworkPanel = new THREE.Mesh(
+        new THREE.PlaneGeometry(15, 20),
+        new THREE.MeshBasicMaterial({ map: artwork, color: 0x5e5e5e, toneMapped: false }),
+      );
+      artworkPanel.position.set(-1.0, 0.8, 9.2);
+      artworkPanel.lookAt(0, 0.6, 0);
+      scene.add(artworkPanel);
+    }
 
     const target = generator.fromScene(scene, 0.03, 0.1, 60);
     room.geometry.dispose();
@@ -333,17 +352,26 @@ function createFillMaterial(THREE, colourHex) {
       // Optional depth gradient: the bowl's liquid is deeper than one visible
       // wall, so it darkens toward the floor and brightens near the surface.
       uDeepen: { value: 0 },
+      // Internal illumination. Zero for the bowl's liquid (which is lit by its
+      // own point light), one for the back-lit glass compartments.
+      uGlow: { value: 0 },
+      // Suspended micro-bubbles and a bright cut edge, both compartment-only.
+      uBubbles: { value: 0 },
+      uSurface: { value: 0 },
+      uTime: { value: 0 },
     },
     vertexShader: `
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
       varying float vLocalY;
+      varying vec2 vUv;
 
       void main() {
         vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
         vNormalView = normalize(normalMatrix * normal);
         vViewDirection = normalize(-viewPosition.xyz);
         vLocalY = position.y;
+        vUv = uv;
         gl_Position = projectionMatrix * viewPosition;
       }
     `,
@@ -352,26 +380,58 @@ function createFillMaterial(THREE, colourHex) {
       uniform float uLevel;
       uniform float uOpacity;
       uniform float uDeepen;
+      uniform float uGlow;
+      uniform float uBubbles;
+      uniform float uSurface;
+      uniform float uTime;
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
       varying float vLocalY;
+      varying vec2 vUv;
+
+      float hash21(vec2 value) {
+        vec2 seeded = fract(value * vec2(123.34, 456.21));
+        seeded += dot(seeded, seeded + 45.32);
+        return fract(seeded.x * seeded.y);
+      }
 
       void main() {
         if (vLocalY > uLevel) discard;
         vec3 normal = normalize(vNormalView);
         vec3 view = normalize(vViewDirection);
-        vec3 lightA = normalize(vec3(-0.32, 0.45, 1.0));
-        vec3 lightB = normalize(vec3(0.55, 0.25, 1.0));
+        vec3 lightA = normalize(vec3(-0.34, 0.5, 0.95));
+        vec3 lightB = normalize(vec3(0.62, 0.28, 0.9));
         float diffuse = max(dot(normal, lightA), 0.0);
-        float fresnel = pow(1.0 - max(dot(normal, view), 0.0), 2.2);
-        float specularA = pow(max(dot(normal, normalize(lightA + view)), 0.0), 18.0);
-        float specularB = pow(max(dot(normal, normalize(lightB + view)), 0.0), 64.0);
-        vec3 colour =
-          uColor * (0.88 + 0.12 * diffuse + specularA * 0.12) +
-          vec3(1.0, 0.94, 0.82) * specularB * 0.18 +
-          vec3(1.0, 0.96, 0.88) * fresnel * 0.06;
-        float depthMix = clamp(vLocalY / max(uLevel, 0.0001), 0.0, 1.0);
-        colour *= mix(1.0, mix(0.66, 1.0, depthMix), uDeepen);
+        float fresnel = pow(1.0 - max(dot(normal, view), 0.0), 2.0);
+        float specularA = pow(max(dot(normal, normalize(lightA + view)), 0.0), 26.0);
+        float specularB = pow(max(dot(normal, normalize(lightB + view)), 0.0), 92.0);
+
+        // Thickness: the enamel is dense at its floor and luminous under its
+        // surface, the way a back-lit resin inlay reads.
+        float depth = clamp(vLocalY / max(uLevel, 0.0001), 0.0, 1.0);
+        vec3 colour = mix(uColor * 0.6, uColor, pow(depth, 0.6));
+        colour *= 0.86 + 0.2 * diffuse + specularA * 0.2;
+        colour += vec3(1.0, 0.95, 0.84) * specularB * 0.2;
+        colour += uColor * smoothstep(0.16, 0.92, depth) * (0.1 + 0.24 * uGlow);
+        colour += mix(uColor, vec3(1.0), 0.45) * fresnel * 0.1;
+
+        // Suspended micro-bubbles. One hashed disc per cell, drifting upward.
+        if (uBubbles > 0.001) {
+          vec2 cellUv = vec2(vUv.x * 9.0, vUv.y * 15.0 + uTime * 0.14);
+          vec2 cell = floor(cellUv);
+          vec2 local = fract(cellUv) - 0.5;
+          float radius = 0.1 + hash21(cell) * 0.14;
+          float bubble = smoothstep(radius, radius * 0.4, length(local));
+          colour += mix(uColor, vec3(1.0), 0.72) * bubble * uBubbles * 0.55;
+        }
+
+        // The cut edge at the liquid level: a bright meniscus line.
+        float line = smoothstep(0.05, 0.0, abs(vLocalY - uLevel)) * uSurface;
+        colour += mix(uColor, vec3(1.0), 0.62) * line * 0.6;
+
+        if (uDeepen > 0.5) {
+          colour *= mix(0.72, 1.0, depth);
+        }
         gl_FragColor = vec4(colour, uOpacity);
         #include <colorspace_fragment>
       }
@@ -386,10 +446,18 @@ function createFillMaterial(THREE, colourHex) {
  * turns away from the camera. This fakes refraction with a Fresnel alpha and a
  * hard specular glint, so the bowl stays legible without a transmission pass.
  */
-function createCrystalMaterial(THREE) {
+function createCrystalMaterial(THREE, options = {}) {
   return new THREE.ShaderMaterial({
     uniforms: {
-      uTint: { value: new THREE.Color(0xdffcff) },
+      uTint: { value: new THREE.Color(options.tint ?? 0xdffcff) },
+      uTintDeep: { value: new THREE.Color(options.deepTint ?? 0x9fc6ff) },
+      // 1 turns the smooth lathe into flat diamond-cut plates by quantising the
+      // view-space normal; the geometry cost stays at one shell.
+      uFacet: { value: options.facet === false ? 0 : 1 },
+      uFacetCount: { value: Number.isFinite(options.facets) ? options.facets : 5.5 },
+      uBrightness: { value: Number.isFinite(options.brightness) ? options.brightness : 1 },
+      uAlpha: { value: Number.isFinite(options.alphaScale) ? options.alphaScale : 1 },
+      uTime: { value: 0 },
     },
     vertexShader: `
       varying vec3 vNormalView;
@@ -404,23 +472,60 @@ function createCrystalMaterial(THREE) {
     `,
     fragmentShader: `
       uniform vec3 uTint;
+      uniform vec3 uTintDeep;
+      uniform float uFacet;
+      uniform float uFacetCount;
+      uniform float uBrightness;
+      uniform float uAlpha;
+      uniform float uTime;
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
+
+      float hash21(vec2 value) {
+        vec2 seeded = fract(value * vec2(123.34, 456.21));
+        seeded += dot(seeded, seeded + 45.32);
+        return fract(seeded.x * seeded.y);
+      }
 
       void main() {
         vec3 normal = normalize(vNormalView);
         vec3 view = normalize(vViewDirection);
-        float facing = abs(dot(normal, view));
-        float fresnel = pow(1.0 - facing, 2.4);
+
+        // Diamond-cut facet plates, each catching the light on its own.
+        vec3 facetNormal = normal;
+        float facetId = 0.5;
+        if (uFacet > 0.5) {
+          vec3 grid = floor(normal * uFacetCount + 0.5);
+          facetNormal = normalize(grid + sign(grid) * 0.16);
+          facetId = hash21(grid.xy + grid.z);
+        }
+
+        float facing = abs(dot(facetNormal, view));
+        float fresnel = pow(1.0 - facing, 2.6);
         vec3 lightA = normalize(vec3(-0.45, 0.55, 0.9));
         vec3 lightB = normalize(vec3(0.55, 0.25, 0.95));
-        float specularA = pow(max(dot(normal, normalize(lightA + view)), 0.0), 80.0);
-        float specularB = pow(max(dot(normal, normalize(lightB + view)), 0.0), 24.0);
-        vec3 colour =
-          uTint * (0.62 + 0.38 * specularB) +
-          vec3(1.0, 0.98, 0.9) * specularA * 0.85;
-        float alpha = 0.018 + fresnel * 0.5 + specularA * 0.38 + specularB * 0.03;
-        gl_FragColor = vec4(colour, clamp(alpha, 0.0, 0.72));
+        float specularA = pow(max(dot(facetNormal, normalize(lightA + view)), 0.0), 90.0);
+        float specularB = pow(max(dot(facetNormal, normalize(lightB + view)), 0.0), 26.0);
+
+        // Refraction: bend the view ray through the glass and read a two-pole
+        // sky. Cheap, stable and it gives the bowl real depth behind the rim.
+        vec3 refracted = refract(-view, facetNormal, 0.58);
+        float sky = clamp(refracted.y * 0.5 + 0.5, 0.0, 1.0);
+        vec3 refractionTint = mix(vec3(0.3, 0.44, 0.72), vec3(1.0, 0.86, 0.62), sky);
+        refractionTint += vec3(0.14, -0.02, -0.12) * (facetId - 0.5) * uFacet;
+
+        vec3 colour = uTint * (0.46 + 0.54 * specularB) + refractionTint * 0.24;
+        colour += vec3(1.0, 0.97, 0.88) * specularA * 0.95;
+        colour += uTintDeep * fresnel * 0.3;
+
+        // A facet occasionally throws a hard sparkle as the light crosses it.
+        float twinkle = pow(max(sin(uTime * 0.9 + facetId * 6.28318), 0.0), 22.0);
+        colour += vec3(1.0, 0.98, 0.92) * twinkle * uFacet * 0.35;
+
+        float alpha = 0.02 + fresnel * 0.44 + specularA * 0.4 + specularB * 0.045;
+        alpha += twinkle * 0.2 * uFacet;
+        alpha *= uAlpha;
+        gl_FragColor = vec4(colour * uBrightness, clamp(alpha, 0.0, 0.8));
         #include <colorspace_fragment>
       }
     `,
@@ -428,6 +533,58 @@ function createCrystalMaterial(THREE) {
     depthWrite: false,
     side: THREE.DoubleSide,
   });
+}
+
+/**
+ * Revolves a closed 2D cross-section around the ring axis and lays the result
+ * flat against the instrument face, so a single lathe produces a solid gold
+ * band with real front, back, chamfer and inner return faces.
+ *
+ * @param {any} THREE
+ * @param {ReadonlyArray<readonly [number, number]>} profile radius/x, depth/y
+ * @param {number} segments
+ */
+function revolvedRingGeometry(THREE, profile, segments) {
+  const geometry = new THREE.LatheGeometry(
+    profile.map(([x, y]) => new THREE.Vector2(x, y)),
+    Math.max(3, Math.round(segments)),
+  );
+  geometry.rotateX(Math.PI / 2);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+/**
+ * A ring of identical gold beads — rivets on the housing, a beaded border on
+ * the well — as one instanced draw call.
+ *
+ * @param {any} THREE
+ * @param {{ count: number, radius: number, z?: number, size?: number, centre?: [number, number], bulge?: number }} options
+ */
+function beadRingGeometry(THREE, options) {
+  const count = Math.max(1, Math.round(options.count));
+  const radius = Math.max(0.001, options.radius);
+  const size = Math.max(0.001, options.size ?? 0.012);
+  const [centreX, centreY] = options.centre ?? [0, 0];
+  const z = Number.isFinite(options.z) ? options.z : 0;
+  const bulge = Number.isFinite(options.bulge) ? options.bulge : 0;
+  const geometry = new THREE.SphereGeometry(size, 8, 6);
+  const mesh = new THREE.InstancedMesh(geometry, null, count);
+  // Instances sit far from the geometry's origin, so its bounding sphere is
+  // not a valid cull volume for the batch.
+  mesh.frustumCulled = false;
+  const matrix = new THREE.Matrix4();
+  for (let index = 0; index < count; index += 1) {
+    const angle = (index / count) * Math.PI * 2;
+    matrix.makeTranslation(
+      centreX + Math.cos(angle) * radius,
+      centreY + Math.sin(angle) * radius,
+      z + Math.abs(Math.sin(angle)) * bulge,
+    );
+    mesh.setMatrixAt(index, matrix);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  return mesh;
 }
 
 function drawSpacedText(context, text, x, y, spacing) {
@@ -439,6 +596,41 @@ function drawSpacedText(context, text, x, y, spacing) {
     context.fillText(characters[index], cursor + widths[index] / 2, y);
     cursor += widths[index] + spacing;
   }
+}
+
+/**
+ * Loads the reference artwork once, AVIF first with the WebP derivative as the
+ * fallback, matching the site's image delivery. It is only ever used as a
+ * reflection source: nothing is drawn to the visitor as a flat image.
+ *
+ * @param {any} THREE
+ * @returns {Promise<any|null>}
+ */
+function loadArtworkTexture(THREE) {
+  if (typeof document === 'undefined' || typeof THREE.TextureLoader !== 'function') {
+    return Promise.resolve(null);
+  }
+  const loader = new THREE.TextureLoader();
+  const candidates = ['/assets/lucky-meter-artwork.avif', '/assets/lucky-meter-artwork.webp'];
+  return new Promise((resolve) => {
+    const attempt = (index) => {
+      if (index >= candidates.length) {
+        resolve(null);
+        return;
+      }
+      loader.load(
+        candidates[index],
+        (texture) => {
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.anisotropy = 2;
+          resolve(texture);
+        },
+        undefined,
+        () => attempt(index + 1),
+      );
+    };
+    attempt(0);
+  });
 }
 
 /** A crisp cream-and-gold Lucky Number texture for the chamber and transfer. */
@@ -521,6 +713,7 @@ export async function createLuckyMeterScene({
   // announcement; otherwise the stage can hand back to a canvas that has
   // already been stopped.
   let failed = false;
+  let disposed = false;
   let ready = false;
   let announced = false;
   let readyFrame = 0;
@@ -631,10 +824,32 @@ export async function createLuckyMeterScene({
     resizeObserver.observe(canvas);
   }
 
-  const environment = createEnvironment(THREE, renderer);
+  let environment = createEnvironment(THREE, renderer);
   if (environment) {
     scene.environment = environment.texture;
     scene.environmentIntensity = 1.1;
+  }
+  let artworkTexture = null;
+  if (!constrained) {
+    // The artwork arrives after first paint; the procedural room lights the
+    // instrument until it does, then the probe is rebuilt with it in place.
+    loadArtworkTexture(THREE)
+      .then((texture) => {
+        if (disposed || !texture) {
+          texture?.dispose();
+          return;
+        }
+        artworkTexture = texture;
+        const rebuilt = createEnvironment(THREE, renderer, texture);
+        if (!rebuilt) return;
+        scene.environment = rebuilt.texture;
+        const previous = environment;
+        environment = rebuilt;
+        previous?.dispose();
+      })
+      .catch(() => {
+        // A missing reflection source only costs some highlight colour.
+      });
   }
 
   const lights = createLightRig(THREE, { quality: stage.quality, budget: stage.budget });
@@ -658,30 +873,123 @@ export async function createLuckyMeterScene({
   wheelGroup.position.set(METER_LAYOUT.wheel.x, METER_LAYOUT.wheel.y, METER_LAYOUT.wheel.z);
   root.add(wheelGroup);
 
-  const gold = materials.gold({ roughness: 0.24, envMapIntensity: 1.45 });
+  const gold = materials.gold({ color: 0xecae45, roughness: 0.22, envMapIntensity: 1.65 });
+  // Two more metals give the housing its layered construction: a hot polished
+  // band that takes a hard highlight, and a deep bronze case that reads as the
+  // instrument's body behind the goldwork.
+  const polishedGold = trackMaterial(
+    materials.gold({ color: 0xffdc94, roughness: 0.085, envMapIntensity: 2.4 }),
+  );
+  const bronze = trackMaterial(
+    materials.gold({ color: 0x6b4a1a, roughness: 0.46, envMapIntensity: 0.85 }),
+  );
+  // Small ornaments sit far from the key light; a warm self-lit gold keeps
+  // laurels, screws and veins reading as metal instead of black shapes.
+  const warmGold = trackMaterial(
+    materials.gold({
+      color: 0xffc65e,
+      roughness: 0.3,
+      envMapIntensity: 1.3,
+      emissive: 0x2e1c05,
+      emissiveIntensity: 0.6,
+    }),
+  );
+  const animatedMaterials = [];
+  const housingSegments = high ? 96 : constrained ? 40 : 64;
 
-  const bodyGeometry = trackGeometry(
+  // ── Layer 1: the deep case the whole wheel is set into ─────────────────
+  const caseGeometry = trackGeometry(
     new THREE.CylinderGeometry(
-      METER_LAYOUT.wheel.outerRadius,
-      METER_LAYOUT.wheel.outerRadius,
-      0.16,
-      high ? 96 : constrained ? 40 : 64,
+      METER_LAYOUT.wheel.outerRadius - 0.02,
+      METER_LAYOUT.wheel.outerRadius - 0.035,
+      0.3,
+      housingSegments,
     ),
   );
-  bodyGeometry.rotateX(Math.PI / 2);
-  const body = new THREE.Mesh(bodyGeometry, gold);
-  body.position.z = -0.12;
-  wheelGroup.add(body);
+  caseGeometry.rotateX(Math.PI / 2);
+  const housingCase = new THREE.Mesh(caseGeometry, bronze);
+  housingCase.position.z = -0.16;
+  wheelGroup.add(housingCase);
 
-  const outerRimGeometry = trackGeometry(new THREE.TorusGeometry(1.045, 0.046, 12, high ? 96 : 56));
-  const outerRim = new THREE.Mesh(outerRimGeometry, gold);
-  outerRim.position.z = 0.005;
-  wheelGroup.add(outerRim);
+  // ── Layer 2: the sculpted gold housing ────────────────────────────────
+  // One closed cross-section revolved into a solid band: outer wall, rolled
+  // front lip, chamfer, inner return and a recessed seat for the plate.
+  const housing = new THREE.Mesh(
+    trackGeometry(
+      revolvedRingGeometry(
+        THREE,
+        [
+          [0.966, 0.2],
+          [1.012, 0.218],
+          [1.058, 0.198],
+          [1.088, 0.152],
+          [1.106, 0.088],
+          [1.116, 0.0],
+          [1.104, -0.096],
+          [1.076, -0.16],
+          [1.03, -0.2],
+          [0.99, -0.206],
+          [0.972, -0.14],
+          [0.962, 0.06],
+        ],
+        housingSegments,
+      ),
+    ),
+    gold,
+  );
+  housing.position.z = -0.03;
+  wheelGroup.add(housing);
 
-  const innerRimGeometry = trackGeometry(new THREE.TorusGeometry(0.515, 0.03, 10, 72));
-  const innerRim = new THREE.Mesh(innerRimGeometry, gold);
-  innerRim.position.z = 0.045;
-  wheelGroup.add(innerRim);
+  // Machined highlight bands: two mirror rings that separate the layers.
+  for (const [radius, tube, z] of [
+    [1.11, 0.0085, 0.03],
+    [1.1, 0.0065, -0.088],
+  ]) {
+    const band = new THREE.Mesh(
+      trackGeometry(new THREE.TorusGeometry(radius, tube, 6, high ? 96 : 48)),
+      polishedGold,
+    );
+    band.position.z = z;
+    wheelGroup.add(band);
+  }
+
+  // Rivets around the front lip: one instanced draw for the whole set.
+  const rivets = beadRingGeometry(THREE, {
+    count: high ? 36 : 24,
+    radius: 1.038,
+    z: 0.186,
+    size: 0.0105,
+  });
+  rivets.material = polishedGold;
+  wheelGroup.add(rivets);
+
+  // ── Layer 3: the stepped bezel that frames the reading well ────────────
+  const innerBezel = new THREE.Mesh(
+    trackGeometry(
+      revolvedRingGeometry(
+        THREE,
+        [
+          [0.51, 0.15],
+          [0.548, 0.16],
+          [0.578, 0.134],
+          [0.586, 0.096],
+          [0.562, 0.07],
+          [0.522, 0.078],
+        ],
+        housingSegments,
+      ),
+    ),
+    gold,
+  );
+  wheelGroup.add(innerBezel);
+  const innerBeads = beadRingGeometry(THREE, {
+    count: high ? 56 : 36,
+    radius: 0.552,
+    z: 0.158,
+    size: 0.0085,
+  });
+  innerBeads.material = polishedGold;
+  wheelGroup.add(innerBeads);
 
   // The dark enamel well behind the central leaf.
   const wellMaterial = trackMaterial(
@@ -737,7 +1045,7 @@ export async function createLuckyMeterScene({
   for (let index = 0; index < CHAMBER_COUNT; index += 1) {
     const holeCentre = chamberCentre(index);
     const hole = new THREE.Path();
-    hole.absarc(holeCentre.x, holeCentre.y, CHAMBER_CUP.radius + 0.032, 0, Math.PI * 2, true);
+    hole.absarc(holeCentre.x, holeCentre.y, CHAMBER_CUP.radius + 0.006, 0, Math.PI * 2, true);
     plateShape.holes.push(hole);
   }
   const plateGeometry = trackGeometry(
@@ -750,9 +1058,22 @@ export async function createLuckyMeterScene({
       curveSegments: constrained ? 16 : 28,
     }),
   );
+  // The plate is the dark metal the windows are punched through; the polished
+  // gold lives on the bezels and spokes, so the twelve compartments carry the
+  // colour instead of a wide field of flat gold.
   const plate = new THREE.Mesh(plateGeometry, gold);
   plate.position.z = 0.02;
   wheelGroup.add(plate);
+
+  // A dark bronze well behind the plate: every window becomes a deep
+  // compartment instead of a hole punched through a flat disc.
+  const plateRecess = new THREE.Mesh(
+    trackGeometry(new THREE.CylinderGeometry(1.02, 1.02, 0.03, housingSegments)),
+    bronze,
+  );
+  plateRecess.rotation.x = Math.PI / 2;
+  plateRecess.position.z = -0.075;
+  wheelGroup.add(plateRecess);
 
   // Radial gold spokes between the windows keep the plate reading as a wheel
   // and separate the cups into individual compartments.
@@ -760,42 +1081,77 @@ export async function createLuckyMeterScene({
   for (let index = 0; index < CHAMBER_COUNT; index += 1) {
     const angle = toMathAngle(index * CHAMBER_DEGREES + CHAMBER_DEGREES / 2);
     const radius = METER_LAYOUT.wheel.chamberOuterRadius - 0.25;
-    const spoke = new THREE.Mesh(spokeGeometry, gold);
+    const spoke = new THREE.Mesh(spokeGeometry, polishedGold);
     spoke.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.055);
     spoke.rotation.z = angle - Math.PI / 2;
     wheelGroup.add(spoke);
   }
 
-  const cupGlassMaterial = trackMaterial(createCrystalMaterial(THREE));
+  const cupGlassMaterial = trackMaterial(
+    createCrystalMaterial(THREE, {
+      facet: false,
+      brightness: 0.82,
+      alphaScale: 0.55,
+      tint: 0xe8fbff,
+    }),
+  );
+  animatedMaterials.push(cupGlassMaterial);
+  // A barrel-shaped shell rather than a straight tube: the curvature is what
+  // makes a glass compartment catch a highlight and read as a lens.
   const cupGlassGeometry = trackGeometry(
-    new THREE.CylinderGeometry(
-      CHAMBER_CUP.radius,
-      CHAMBER_CUP.radius * 0.82,
-      CHAMBER_CUP.height,
-      constrained ? 12 : 20,
-      1,
-      true,
+    new THREE.LatheGeometry(
+      [
+        [CHAMBER_CUP.radius * 0.84, 0],
+        [CHAMBER_CUP.radius * 0.95, 0.03],
+        [CHAMBER_CUP.radius, 0.11],
+        [CHAMBER_CUP.radius * 0.99, 0.2],
+        [CHAMBER_CUP.radius * 0.93, CHAMBER_CUP.height],
+      ].map(([x, y]) => new THREE.Vector2(x, y)),
+      constrained ? 14 : 26,
     ),
   );
-  const cupBaseGeometry = trackGeometry(
-    new THREE.CircleGeometry(CHAMBER_CUP.radius * 0.85, constrained ? 12 : 20),
+  // A flat-backed cabochon glazed over the front of each compartment.
+  const cupDomeGeometry = trackGeometry(
+    new THREE.SphereGeometry(
+      CHAMBER_CUP.radius * 0.92,
+      constrained ? 12 : 22,
+      constrained ? 5 : 9,
+      0,
+      Math.PI * 2,
+      0,
+      Math.PI * 0.5,
+    ),
   );
-  cupBaseGeometry.rotateX(-Math.PI / 2);
+  cupDomeGeometry.rotateX(Math.PI / 2);
+  cupDomeGeometry.scale(1, 1, 0.5);
+  const cupBaseGeometry = trackGeometry(
+    new THREE.CylinderGeometry(
+      CHAMBER_CUP.radius * 0.86,
+      CHAMBER_CUP.radius * 0.74,
+      0.03,
+      constrained ? 12 : 20,
+    ),
+  );
   const cupRimGeometry = trackGeometry(
-    new THREE.TorusGeometry(CHAMBER_CUP.radius, 0.013, 8, constrained ? 16 : 28),
+    new THREE.TorusGeometry(CHAMBER_CUP.radius, 0.0075, 8, constrained ? 16 : 28),
   );
   cupRimGeometry.rotateX(Math.PI / 2);
+  // The enamel body is a bulged column with a curved wall, so its specular
+  // highlight travels as the wheel turns instead of sliding over a flat face.
   const cupLiquidGeometry = trackGeometry(
-    new THREE.CylinderGeometry(
-      CHAMBER_CUP.liquidRadius,
-      CHAMBER_CUP.liquidRadius * 0.9,
-      CHAMBER_CUP.liquidDepth,
-      constrained ? 12 : 18,
-      1,
-      false,
+    new THREE.LatheGeometry(
+      [
+        [0, 0],
+        [0.078, 0],
+        [0.128, 0.014],
+        [0.147, 0.058],
+        [0.152, 0.128],
+        [0.15, 0.21],
+        [0.142, CHAMBER_CUP.liquidDepth],
+      ].map(([x, y]) => new THREE.Vector2(x, y)),
+      constrained ? 12 : 20,
     ),
   );
-  cupLiquidGeometry.translate(0, CHAMBER_CUP.liquidDepth / 2, 0);
 
   const cupCentreRadius =
     (METER_LAYOUT.wheel.chamberInnerRadius + METER_LAYOUT.wheel.chamberOuterRadius) / 2;
@@ -805,16 +1161,18 @@ export async function createLuckyMeterScene({
     group.rotation.z = -index * CHAMBER_DEGREES * DEG2RAD;
     wheelGroup.add(group);
 
-    // The bezel is the cup's gold seat inside the punched plate.
+    // The bezel is the cup's gold seat inside the punched plate: a torus
+    // stretched along the view axis becomes a chamfered, seated rim.
     const bezelGeometry = trackGeometry(
       new THREE.TorusGeometry(CHAMBER_CUP.radius + 0.022, 0.017, 8, constrained ? 16 : 28),
     );
-    const bezel = new THREE.Mesh(bezelGeometry, gold);
-    bezel.position.set(0, cupCentreRadius, 0.075);
+    const bezel = new THREE.Mesh(bezelGeometry, polishedGold);
+    bezel.position.set(0, cupCentreRadius, 0.08);
+    bezel.scale.z = 1.25;
     group.add(bezel);
 
     const glass = new THREE.Mesh(cupGlassGeometry, cupGlassMaterial);
-    glass.position.set(0, cupCentreRadius, 0.045);
+    glass.position.set(0, cupCentreRadius, 0.062);
     glass.renderOrder = 2;
     group.add(glass);
 
@@ -839,12 +1197,26 @@ export async function createLuckyMeterScene({
     group.add(rim);
 
     const fillMaterial = trackMaterial(createFillMaterial(THREE, '#f5c451'));
+    // Internal illumination, suspended bubbles and a bright cut edge. The cut
+    // is pinned to the enamel's own top; the drain shortens the mesh instead.
+    fillMaterial.uniforms.uGlow.value = 1;
+    fillMaterial.uniforms.uBubbles.value = 0;
+    fillMaterial.uniforms.uSurface.value = 1;
+    fillMaterial.uniforms.uLevel.value = CHAMBER_CUP.liquidDepth;
+    animatedMaterials.push(fillMaterial);
     const liquid = new THREE.Mesh(cupLiquidGeometry, fillMaterial);
     liquid.position.set(0, cupCentreRadius - CHAMBER_CUP.height / 2 + 0.02, 0.045);
+    liquid.name = `chamber-liquid-${index}`;
     liquid.renderOrder = 1;
     group.add(liquid);
 
-    chamberFills.push({ material: fillMaterial, mesh: liquid, rimMaterial, glass });
+    // The glazed lens over the compartment's face.
+    const dome = new THREE.Mesh(cupDomeGeometry, cupGlassMaterial);
+    dome.position.set(0, cupCentreRadius, 0.14);
+    dome.renderOrder = 3;
+    group.add(dome);
+
+    chamberFills.push({ material: fillMaterial, mesh: liquid, rimMaterial, glass, dome });
   }
 
   // ── Central medallion and the reading well ─────────────────────────────
@@ -854,6 +1226,58 @@ export async function createLuckyMeterScene({
   // turn. The medallion is real geometry that turns over, not a cross-fade.
   const centreGroup = new THREE.Group();
   wheelGroup.add(centreGroup);
+
+  // Decorative rings and a laurel wreath frame the medallion, as in the
+  // reference: a beaded border, two turned gold rings and twenty-six bronze
+  // leaves laid tangentially around the well.
+  const wellRing = new THREE.Mesh(
+    trackGeometry(
+      revolvedRingGeometry(
+        THREE,
+        [
+          [0.396, 0.128],
+          [0.424, 0.142],
+          [0.452, 0.126],
+          [0.448, 0.098],
+          [0.41, 0.1],
+        ],
+        high ? 96 : 56,
+      ),
+    ),
+    polishedGold,
+  );
+  centreGroup.add(wellRing);
+  const wellBeads = beadRingGeometry(THREE, {
+    count: high ? 44 : 30,
+    radius: 0.478,
+    z: 0.116,
+    size: 0.0075,
+  });
+  wellBeads.material = polishedGold;
+  centreGroup.add(wellBeads);
+
+  const wreathLeafGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
+  const wreath = new THREE.InstancedMesh(wreathLeafGeometry, warmGold, 16);
+  wreath.frustumCulled = false;
+  {
+    const matrix = new THREE.Matrix4();
+    const position = new THREE.Vector3();
+    const quaternion = new THREE.Quaternion();
+    const scale = new THREE.Vector3();
+    const euler = new THREE.Euler();
+    for (let index = 0; index < 16; index += 1) {
+      // A laurel wreath around the relief, with a gap at the top for the crown.
+      const angle = (22 + (index / 15) * 316) * DEG2RAD;
+      position.set(Math.sin(angle) * 0.448, Math.cos(angle) * 0.448, 0.128);
+      euler.set(0, 0, angle + Math.PI / 2);
+      quaternion.setFromEuler(euler);
+      scale.setScalar(0.118);
+      matrix.compose(position, quaternion, scale);
+      wreath.setMatrixAt(index, matrix);
+    }
+    wreath.instanceMatrix.needsUpdate = true;
+  }
+  centreGroup.add(wreath);
 
   const leafGeometry = trackGeometry(
     mapleLeafGeometry(THREE, { thickness: 0.12, bevel: 0.05, dome: 0.034 }),
@@ -871,9 +1295,31 @@ export async function createLuckyMeterScene({
       .clone(),
   );
   const medallion = new THREE.Mesh(leafGeometry, medallionMaterial);
-  medallion.scale.setScalar(0.54);
+  medallion.scale.setScalar(MEDALLION_SCALE);
   medallion.position.set(0, 0.01, 0.16);
   centreGroup.add(medallion);
+
+  // The leaf itself is red enamel inset into its gold rim, exactly as the
+  // reference draws it: gold silhouette, deep red blade, raised gold veins.
+  const medallionInlay = new THREE.Mesh(
+    leafGeometry,
+    trackMaterial(
+      new THREE.MeshPhysicalMaterial({
+        color: 0xc21d10,
+        metalness: 0.4,
+        roughness: 0.22,
+        clearcoat: 1,
+        clearcoatRoughness: 0.12,
+        emissive: 0x5e0c04,
+        emissiveIntensity: 0.9,
+        envMapIntensity: 1.2,
+        side: THREE.DoubleSide,
+      }),
+    ),
+  );
+  medallionInlay.scale.setScalar(0.9);
+  medallionInlay.position.z = 0.014;
+  medallion.add(medallionInlay);
 
   // Raised veins turn the stamped silhouette into a readable maple relief. A
   // single unit cylinder is shared; each vein is scaled to its lobe and the
@@ -1029,7 +1475,10 @@ export async function createLuckyMeterScene({
 
   // A single open shell, not a thick double wall: the liquid stays visible and
   // the twelve radial segments read as cut crystal instead of frosted glass.
-  const bowlGlassMaterial = trackMaterial(createCrystalMaterial(THREE));
+  const bowlGlassMaterial = trackMaterial(
+    createCrystalMaterial(THREE, { facet: true, facets: 3.6, brightness: 1.15 }),
+  );
+  animatedMaterials.push(bowlGlassMaterial);
   const bowlGlassSource = trackGeometry(
     new THREE.LatheGeometry(
       BOWL_PROFILE.map(([x, y]) => new THREE.Vector2(x, y)),
@@ -1044,13 +1493,38 @@ export async function createLuckyMeterScene({
   bowlGlass.renderOrder = 2;
   bowlGroup.add(bowlGlass);
 
+  // A second wall of the same cut, inset inside the first: together they give
+  // the rim visible thickness and a second refractive layer behind the glass.
+  const bowlInnerMaterial = trackMaterial(
+    createCrystalMaterial(THREE, {
+      facet: true,
+      facets: 3.2,
+      brightness: 0.88,
+      deepTint: 0xd8f0ff,
+    }),
+  );
+  animatedMaterials.push(bowlInnerMaterial);
+  const bowlInner = new THREE.Mesh(
+    trackGeometry(
+      new THREE.LatheGeometry(
+        BOWL_PROFILE.map(([x, y]) =>
+          new THREE.Vector2(Math.max(0.002, x * 0.93), y * 0.955),
+        ),
+        constrained ? 10 : 12,
+      ),
+    ),
+    bowlInnerMaterial,
+  );
+  bowlInner.renderOrder = 1;
+  bowlGroup.add(bowlInner);
+
   const bowlEdges = new THREE.LineSegments(
     trackGeometry(new THREE.EdgesGeometry(bowlGlassSource, 24)),
     trackMaterial(
       new THREE.LineBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.62,
+        opacity: 0.85,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -1097,30 +1571,93 @@ export async function createLuckyMeterScene({
   bowlBaseHighlight.renderOrder = 4;
   bowlGroup.add(bowlBaseHighlight);
 
+  // The crystal rim itself: a real polished edge, with a fine gold fillet
+  // beneath it where the glass meets its mount.
+  const bowlRimMaterial = trackMaterial(
+    createCrystalMaterial(THREE, { facet: false, brightness: 1.4, tint: 0xf2ffff }),
+  );
+  animatedMaterials.push(bowlRimMaterial);
   const bowlRim = new THREE.Mesh(
     trackGeometry(
-      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius, 0.02, 8, high ? 72 : 40),
+      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.004, 0.024, 10, high ? 72 : 40),
     ),
-    gold,
+    bowlRimMaterial,
   );
   bowlRim.rotation.x = Math.PI / 2;
   bowlRim.position.y = METER_LAYOUT.vessel.height;
+  bowlRim.renderOrder = 4;
   bowlGroup.add(bowlRim);
 
+  const bowlRimFillet = new THREE.Mesh(
+    trackGeometry(
+      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.004, 0.008, 6, high ? 72 : 40),
+    ),
+    polishedGold,
+  );
+  bowlRimFillet.rotation.x = Math.PI / 2;
+  bowlRimFillet.position.y = METER_LAYOUT.vessel.height - 0.026;
+  bowlGroup.add(bowlRimFillet);
+
+  // A turned gold foot: a lathe profile with a knop, a step and a plinth.
   const bowlFoot = new THREE.Mesh(
-    trackGeometry(new THREE.CylinderGeometry(0.22, 0.28, 0.12, 12)),
+    trackGeometry(
+      new THREE.LatheGeometry(
+        [
+          [0.16, -0.175],
+          [0.245, -0.17],
+          [0.29, -0.148],
+          [0.302, -0.108],
+          [0.276, -0.072],
+          [0.232, -0.048],
+          [0.206, -0.026],
+          [0.19, -0.008],
+        ].map(([x, y]) => new THREE.Vector2(x, y)),
+        constrained ? 18 : 36,
+      ),
+    ),
     gold,
   );
-  bowlFoot.position.y = -0.05;
   bowlGroup.add(bowlFoot);
 
   const bowlFootRing = new THREE.Mesh(
-    trackGeometry(new THREE.TorusGeometry(0.27, 0.02, 8, 32)),
-    gold,
+    trackGeometry(new THREE.TorusGeometry(0.288, 0.011, 6, high ? 48 : 28)),
+    polishedGold,
   );
   bowlFootRing.rotation.x = Math.PI / 2;
-  bowlFootRing.position.y = -0.11;
+  bowlFootRing.position.y = -0.118;
   bowlGroup.add(bowlFootRing);
+
+  // Cut-glass sparkles: a handful of billboarded glints that ride the rim and
+  // body. Sprites keep the effect cheap and always face the visitor.
+  const sparkleTexture = radialTexture(THREE, [
+    [0, 'rgba(255, 255, 255, 1)'],
+    [0.22, 'rgba(226, 246, 255, 0.55)'],
+    [0.55, 'rgba(190, 224, 255, 0.14)'],
+    [1, 'rgba(160, 200, 255, 0)'],
+  ]);
+  const sparkles = [];
+  for (let index = 0; index < (constrained ? 3 : 7); index += 1) {
+    const angle = (index / 7) * Math.PI * 2 + 0.4;
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: sparkleTexture,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        opacity: 0.5,
+      }),
+    );
+    const level = 0.12 + (index % 3) * 0.11;
+    sprite.position.set(
+      Math.cos(angle) * bowlInnerRadiusAt(level) * 0.94,
+      level,
+      Math.sin(angle) * bowlInnerRadiusAt(level) * 0.55 + 0.08,
+    );
+    sprite.scale.setScalar(index % 2 === 0 ? 0.13 : 0.085);
+    sprite.renderOrder = 6;
+    bowlGroup.add(sprite);
+    sparkles.push({ sprite, phase: index * 1.37, rate: 0.9 + (index % 3) * 0.4 });
+  }
 
   // The liquid is the bowl's own inner shell, revolved from the same profile
   // as the glass and held just inside it. The fill shader cuts it flat at the
@@ -1267,21 +1804,23 @@ export async function createLuckyMeterScene({
   const bannerHalf = METER_LAYOUT.banner.width / 2;
   const bannerHalfHeight = METER_LAYOUT.banner.height / 2;
   const bannerShape = new THREE.Shape();
-  bannerShape.moveTo(-bannerHalf, -bannerHalfHeight);
-  bannerShape.lineTo(bannerHalf, -bannerHalfHeight);
-  bannerShape.quadraticCurveTo(bannerHalf + 0.05, -0.02, bannerHalf - 0.12, bannerHalfHeight - 0.06);
-  bannerShape.quadraticCurveTo(0, bannerHalfHeight + 0.08, -bannerHalf + 0.12, bannerHalfHeight - 0.06);
-  bannerShape.quadraticCurveTo(-bannerHalf - 0.05, -0.02, -bannerHalf, -bannerHalfHeight);
+  // A true arch: the ends drop away while the crown rises, so the ribbon reads
+  // as a bent plate rather than a rounded rectangle.
+  bannerShape.moveTo(-bannerHalf, -bannerHalfHeight - 0.02);
+  bannerShape.lineTo(bannerHalf, -bannerHalfHeight - 0.02);
+  bannerShape.quadraticCurveTo(bannerHalf + 0.06, -0.06, bannerHalf - 0.1, bannerHalfHeight - 0.02);
+  bannerShape.quadraticCurveTo(0, bannerHalfHeight + 0.09, -bannerHalf + 0.1, bannerHalfHeight - 0.02);
+  bannerShape.quadraticCurveTo(-bannerHalf - 0.06, -0.06, -bannerHalf, -bannerHalfHeight - 0.02);
 
   const bannerBorder = new THREE.Mesh(
     trackGeometry(
       new THREE.ExtrudeGeometry(bannerShape, {
-        depth: 0.07,
-        bevelEnabled: true,
-        bevelThickness: 0.02,
-        bevelSize: 0.03,
-        bevelSegments: 2,
-        curveSegments: 12,
+        // No bevel on this one: the arch's curvature plus a bevel produced thin
+        // folded fins above the crown. The depth and the inset enamel layers
+        // already give the frame its thickness and its stepped edge.
+        depth: 0.095,
+        bevelEnabled: false,
+        curveSegments: 20,
       }),
     ),
     gold,
@@ -1314,23 +1853,64 @@ export async function createLuckyMeterScene({
 
   const bannerTextMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
-      map: engraving('Lucky Meter', { width: 640, height: 160, fontSize: 94, spacing: 2 }),
+      map: engraving('Lucky Meter', { width: 960, height: 200, fontSize: 112, spacing: 3 }),
       transparent: true,
       depthWrite: false,
       toneMapped: false,
     }),
   );
-  const bannerText = new THREE.Mesh(trackGeometry(new THREE.PlaneGeometry(1.34, 0.34)), bannerTextMaterial);
-  bannerText.position.set(0, -0.01, 0.107);
+  const bannerText = new THREE.Mesh(trackGeometry(new THREE.PlaneGeometry(1.22, 0.31)), bannerTextMaterial);
+  // In front of the raised enamel field (which reaches z ≈ 0.108 with its
+  // bevel), so the arched lettering is never swallowed by the second layer.
+  bannerText.position.set(0, -0.01, 0.132);
   bannerGroup.add(bannerText);
 
   const bannerLeafGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
   for (const side of [-1, 1]) {
     const leaf = new THREE.Mesh(bannerLeafGeometry, gold);
     leaf.scale.setScalar(0.12);
-    leaf.position.set(side * 0.75, 0.03, 0.12);
-    leaf.rotation.z = side * 1.15;
+    leaf.position.set(side * 0.82, -0.02, 0.12);
+    leaf.rotation.z = side * 1.3;
     bannerGroup.add(leaf);
+  }
+
+  // A second, raised enamel field: the crimson panel steps down from the gilt
+  // frame in two layers, so light breaks along the step instead of one plane.
+  const bannerEnamelTop = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(bannerShape, {
+        depth: 0.022,
+        bevelEnabled: true,
+        bevelThickness: 0.012,
+        bevelSize: 0.014,
+        bevelSegments: 1,
+        curveSegments: 12,
+      }),
+    ),
+    trackMaterial(
+      new THREE.MeshPhysicalMaterial({
+        color: 0xa4151a,
+        metalness: 0.2,
+        roughness: 0.26,
+        clearcoat: 1,
+        clearcoatRoughness: 0.1,
+        emissive: 0x430606,
+        emissiveIntensity: 0.55,
+        envMapIntensity: 1.1,
+        side: THREE.DoubleSide,
+      }),
+    ),
+  );
+  bannerEnamelTop.scale.set(0.88, 0.74, 1);
+  bannerEnamelTop.position.z = 0.074;
+  bannerGroup.add(bannerEnamelTop);
+
+  // Polished screw heads where the banner is bolted to its frame.
+  const bannerScrewGeometry = trackGeometry(new THREE.SphereGeometry(0.024, 10, 8));
+  for (const side of [-1, 1]) {
+    const screw = new THREE.Mesh(bannerScrewGeometry, polishedGold);
+    screw.position.set(side * 0.66, -0.115, 0.115);
+    bannerGroup.add(screw);
   }
 
   // ── The ornate Lucky Number plaque ─────────────────────────────────────
@@ -1342,44 +1922,87 @@ export async function createLuckyMeterScene({
 
   const plaqueWidth = METER_LAYOUT.plaque.width;
   const plaqueHeight = METER_LAYOUT.plaque.height;
-  const plaqueBackingMaterial = trackMaterial(
-    new THREE.MeshPhysicalMaterial({
-      color: 0x0b1730,
-      metalness: 0.32,
-      roughness: 0.4,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.22,
-      emissive: 0x071022,
-      emissiveIntensity: 0.75,
-      envMapIntensity: 0.9,
+  // The plate is a real gilded frame rather than a slab: one extruded ring
+  // with a bevelled face around an actual opening, over a deep case, with a
+  // black well set back inside it and its own internal light.
+  const plaqueFrameShape = roundedRectShape(THREE, plaqueWidth, plaqueHeight, 0.085);
+  const plaqueOpening = roundedRectShape(
+    THREE,
+    plaqueWidth - 0.128,
+    plaqueHeight - 0.128,
+    0.048,
+  );
+  plaqueFrameShape.holes.push(new THREE.Path(plaqueOpening.getPoints(28)));
+
+  const plaqueFrame = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(plaqueFrameShape, {
+        depth: 0.062,
+        bevelEnabled: true,
+        bevelThickness: 0.022,
+        bevelSize: 0.02,
+        bevelSegments: 2,
+        curveSegments: 10,
+      }),
+    ),
+    gold,
+  );
+  plaqueFrame.position.z = 0.014;
+  plaqueGroup.add(plaqueFrame);
+
+  // The case behind the frame, seen as the plate's depth at every edge.
+  const plaqueCase = new THREE.Mesh(
+    trackGeometry(new THREE.BoxGeometry(plaqueWidth - 0.05, plaqueHeight - 0.05, 0.17)),
+    trackMaterial(
+      new THREE.MeshPhysicalMaterial({
+        color: 0x150f07,
+        metalness: 0.62,
+        roughness: 0.32,
+        clearcoat: 0.7,
+        clearcoatRoughness: 0.2,
+        envMapIntensity: 0.8,
+      }),
+    ),
+  );
+  plaqueCase.position.z = -0.062;
+  plaqueGroup.add(plaqueCase);
+
+  // The interior light: a warm wash inside the recess that lifts with the
+  // number's arrival. It is the plaque's own illumination, not a page glow.
+  const plaqueGlowMaterial = trackMaterial(
+    new THREE.MeshBasicMaterial({
+      map: haloTexture,
+      color: 0xffd9a0,
+      transparent: true,
+      opacity: 0.3,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
     }),
   );
-  const plaqueBacking = new THREE.Mesh(
-    trackGeometry(new THREE.BoxGeometry(plaqueWidth, plaqueHeight, 0.08)),
-    plaqueBackingMaterial,
+  const plaqueGlow = new THREE.Mesh(
+    trackGeometry(new THREE.PlaneGeometry(plaqueWidth * 0.96, plaqueHeight * 0.8)),
+    plaqueGlowMaterial,
   );
-  plaqueGroup.add(plaqueBacking);
+  plaqueGlow.position.z = -0.018;
+  plaqueGroup.add(plaqueGlow);
 
-  const plaqueBarGeometry = trackGeometry(new THREE.BoxGeometry(plaqueWidth, 0.062, 0.11));
-  const plaqueSideGeometry = trackGeometry(new THREE.BoxGeometry(0.062, plaqueHeight, 0.11));
-  for (const y of [plaqueHeight / 2 - 0.031, -plaqueHeight / 2 + 0.031]) {
-    const bar = new THREE.Mesh(plaqueBarGeometry, gold);
-    bar.position.set(0, y, 0.02);
-    plaqueGroup.add(bar);
-  }
-  for (const x of [plaqueWidth / 2 - 0.031, -plaqueWidth / 2 + 0.031]) {
-    const side = new THREE.Mesh(plaqueSideGeometry, gold);
-    side.position.set(x, 0, 0.02);
-    plaqueGroup.add(side);
-  }
-  const plaqueCornerGeometry = trackGeometry(new THREE.SphereGeometry(0.055, 12, 10));
+  // Screw heads at the corners and a small maple finial beneath the frame.
+  const plaqueCornerGeometry = trackGeometry(new THREE.SphereGeometry(0.024, 10, 8));
   for (const x of [-1, 1]) {
     for (const y of [-1, 1]) {
-      const corner = new THREE.Mesh(plaqueCornerGeometry, gold);
-      corner.position.set(x * (plaqueWidth / 2 - 0.031), y * (plaqueHeight / 2 - 0.031), 0.03);
+      const corner = new THREE.Mesh(plaqueCornerGeometry, polishedGold);
+      corner.position.set(x * (plaqueWidth / 2 - 0.034), y * (plaqueHeight / 2 - 0.034), 0.088);
       plaqueGroup.add(corner);
     }
   }
+  const plaqueCrest = new THREE.Mesh(
+    trackGeometry(buildPointerLeafGeometry(THREE)),
+    gold,
+  );
+  plaqueCrest.scale.setScalar(0.075);
+  plaqueCrest.position.set(0, -plaqueHeight / 2 + 0.012, 0.09);
+  plaqueCrest.rotation.z = Math.PI;
+  plaqueGroup.add(plaqueCrest);
 
   const plaqueHeaderMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
@@ -1402,22 +2025,27 @@ export async function createLuckyMeterScene({
   plaqueHeader.position.set(0, plaqueHeight / 2 - 0.145, 0.085);
   plaqueGroup.add(plaqueHeader);
 
+  // The black interior itself: a deep, glossy, near-black field set back
+  // behind the frame's face so the number reads as recessed into the plate.
   const plaqueInsetMaterial = trackMaterial(
     new THREE.MeshPhysicalMaterial({
-      color: 0x050b16,
-      metalness: 0.2,
-      roughness: 0.5,
-      emissive: 0x050b16,
-      emissiveIntensity: 0.9,
+      color: 0x020408,
+      metalness: 0.7,
+      roughness: 0.14,
+      clearcoat: 1,
+      clearcoatRoughness: 0.06,
+      emissive: 0x030508,
+      emissiveIntensity: 0.6,
+      envMapIntensity: 1.2,
     }),
   );
   const plaqueInset = new THREE.Mesh(
     trackGeometry(
-      new THREE.PlaneGeometry(METER_LAYOUT.plaque.insetWidth, METER_LAYOUT.plaque.insetHeight),
+      new THREE.PlaneGeometry(plaqueWidth - 0.13, plaqueHeight - 0.13),
     ),
     plaqueInsetMaterial,
   );
-  plaqueInset.position.set(0, -0.09, 0.075);
+  plaqueInset.position.set(0, 0, -0.006);
   plaqueGroup.add(plaqueInset);
 
   const plaqueSlotMaterial = trackMaterial(
@@ -1437,9 +2065,9 @@ export async function createLuckyMeterScene({
 
   const plaqueLaurelGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
   for (const side of [-1, 1]) {
-    const laurel = new THREE.Mesh(plaqueLaurelGeometry, gold);
-    laurel.scale.setScalar(0.085);
-    laurel.position.set(side * 0.23, -0.09, 0.08);
+    const laurel = new THREE.Mesh(plaqueLaurelGeometry, warmGold);
+    laurel.scale.setScalar(0.125);
+    laurel.position.set(side * 0.215, -0.09, 0.062);
     laurel.rotation.z = side * 1.35;
     plaqueGroup.add(laurel);
   }
@@ -1466,6 +2094,42 @@ export async function createLuckyMeterScene({
     gold,
   );
   barGroup.add(barBody);
+
+  // A recessed bronze field inside the gilt frame, with turned end caps: the
+  // bar reads as a cast nameplate rather than a printed strip.
+  const barField = new THREE.Mesh(
+    trackGeometry(
+      new THREE.ExtrudeGeometry(
+        roundedRectShape(
+          THREE,
+          METER_LAYOUT.colourBar.width * 0.9,
+          METER_LAYOUT.colourBar.height * 0.7,
+          0.05,
+        ),
+        {
+          depth: 0.012,
+          bevelEnabled: true,
+          bevelThickness: 0.006,
+          bevelSize: 0.008,
+          bevelSegments: 1,
+          curveSegments: 8,
+        },
+      ),
+    ),
+    bronze,
+  );
+  barField.position.set(0, -0.008, 0.052);
+  barGroup.add(barField);
+
+  const barCapGeometry = trackGeometry(
+    new THREE.CylinderGeometry(0.034, 0.042, 0.06, 12),
+  );
+  barCapGeometry.rotateX(Math.PI / 2);
+  for (const side of [-1, 1]) {
+    const cap = new THREE.Mesh(barCapGeometry, polishedGold);
+    cap.position.set(side * (METER_LAYOUT.colourBar.width / 2 - 0.02), 0, 0.03);
+    barGroup.add(cap);
+  }
 
   const barLabelMaterial = trackMaterial(
     new THREE.MeshBasicMaterial({
@@ -1770,6 +2434,12 @@ export async function createLuckyMeterScene({
 
   function update(frameElapsed = 0) {
     const secs = Number(frameElapsed) || 0;
+    // One clock for every custom material: bubbles drift and facets sparkle
+    // without each material owning a timer.
+    for (const material of animatedMaterials) {
+      const time = material.uniforms?.uTime;
+      if (time) time.value = secs;
+    }
 
     // The component already supplies eased values; a light smoothing pass only
     // removes the one-frame stair-step of React state updates.
@@ -1794,7 +2464,7 @@ export async function createLuckyMeterScene({
     medallion.rotation.z = Math.sin(leaf * Math.PI * 2) * 0.035 * (1 - leaf) + float;
     medallion.position.y = 0.01 + leaf * 0.37 + float;
     medallion.position.z = 0.16 + leaf * 0.01;
-    medallion.scale.setScalar(0.54 * (1 - leaf * 0.48));
+    medallion.scale.setScalar(MEDALLION_SCALE * (1 - leaf * 0.45));
     medallionMaterial.opacity = 1;
     medallion.visible = true;
 
@@ -1818,6 +2488,23 @@ export async function createLuckyMeterScene({
     spoutChannelMaterial.opacity = clamp01(choreo.pourGlow ?? 0) * 0.8;
     spoutChannelMaterial.color.copy(state.colour).offsetHSL(0, -0.05, 0.2);
     plaqueSlotMaterial.opacity = state.numberReveal > 0.004 ? 0 : 1;
+
+    // The plaque's interior warms as the number approaches and settles.
+    plaqueGlowMaterial.opacity =
+      (state.phase === 'idle' ? 0.08 : 0.22) +
+      clamp01(state.numberReveal) * 0.34 +
+      clamp01(choreo.plaque ?? 0) * 0.24;
+
+    // Crystal glints ride the bowl continuously and quicken as it fills. The
+    // glass itself is lit by the same choreography, so the highlights and the
+    // light on the facets always agree.
+    const bowlGlow = clamp01(choreo.bowl ?? 0);
+    for (const sparkle of sparkles) {
+      const pulse = Math.max(0, Math.sin(secs * sparkle.rate + sparkle.phase));
+      sparkle.sprite.material.opacity =
+        0.1 + Math.pow(pulse, 6) * (0.5 + state.vesselFill * 0.3 + bowlGlow * 0.2);
+    }
+    bowlRimMaterial.uniforms.uBrightness.value = 1.35 + bowlGlow * 0.5;
 
     // Only the selected cup empties; the bowl is the colour's destination, not
     // a second drain.
@@ -2149,6 +2836,7 @@ export async function createLuckyMeterScene({
     },
     dispose() {
       clearReadyWatch();
+      disposed = true;
       failed = true;
       announced = true;
       watchdogStopped = false;
@@ -2166,6 +2854,8 @@ export async function createLuckyMeterScene({
       lights.dispose();
       dust.dispose();
       environment?.dispose();
+      artworkTexture?.dispose();
+      sparkleTexture?.dispose();
       haloTexture?.dispose();
       if (faceLight) scene.remove(faceLight);
       for (const material of ownedMaterials) {

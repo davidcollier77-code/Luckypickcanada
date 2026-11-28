@@ -1,3 +1,19 @@
+# Active Context — Lucky Meter dimensional artwork (Spec 230, 2026-11-28)
+
+## Current Task — Reconstruct the meter as a crafted instrument from the supplied artwork
+
+- **Scope:** `specs/230-lucky-meter-dimensional-artwork/`; the scene (`app/lib/lucky-meter/meter-scene.js`), the composition constants (`app/lib/lucky-meter/meter-layout.js`), one registry texture entry (`app/lib/graphics/experiences.js`), the delivered artwork under `public/assets/`, the Spec 230 artifacts and three Memory Bank files.
+- **Housing:** the previous flat cylinder face and two tori are replaced by a deep bronze case, a sculpted gold band revolved from a closed cross-section (outer wall, rolled lip, chamfer, inner return), two machined highlight rings, instanced rivets, a stepped inner bezel with a beaded border, and a bronze recess behind the plate so every window is a compartment.
+- **Compartments:** `CHAMBER_CUP` grows to 0.19 radius / 0.26 height so the twelve circles fill their punched windows while clearing each other; each is a barrel glass shell, a barrel enamel column and a convex cabochon in a bevelled seat. The enamel shader gains a depth gradient, internal illumination, a bright cut edge and optional hashed bubbles (off on the constrained tier).
+- **Medallion:** the shared maple silhouette at 0.455 scale with a red enamel inlay inside its gold rim, raised veins, a sixteen-leaf laurel wreath, a beaded border and turned gold rings. The flip, shrink and rise contract is unchanged and the wreath stays upright.
+- **Crystal and plaque:** the bowl is a double-walled faceted lathe with a diamond-cut refraction shader (quantised normals, dispersion, twinkle, alpha control), a crystal rim with a gold fillet, a turned gold foot and seven billboarded sparkles. The plaque is a gilded frame extruded around a real opening over a deep case, with a glossy near-black well set back inside, internal warm light, screws and a finial.
+- **Artwork asset:** a faithful rendition of the supplied artwork is stored as `public/assets/lucky-meter-artwork-source.jpg`, with AVIF primary and WebP fallback at 880 w and 480 w. The scene loads the AVIF (WebP fallback) and rebuilds its PMREM environment with the artwork as a soft-box, so gold and crystal reflections carry the reference palette; nothing is drawn as a flat image and the constrained tier skips the request.
+- **Composition:** the banner rises to 1.74 with a stronger arch and a second raised enamel field; the portrait crop widens to 4.1/0.14 look-at so the crown and foot fit. Both are shared constants, so the DOM overlays stay projected from the same framing.
+- **Verification:** focused Vitest `lucky-meter-dimensional-renderers` + `lucky-meter-stage` 29/29; `tsc --noEmit` exit 0; visual inspection of the ready state at 900 × 1180 through `./scripts/playwright-cli.sh` with `data-meter-renderer="three"`; production build measured after a clean rebuild (see progress.md).
+- **Limitations:** repository Playwright needed `libgbm1`/`libdrm2` unpacked into the workspace's private Chromium prefix before it could launch; hydration only occurs on `localhost` because Next blocks its dev assets on `127.0.0.1`. The full three-project Playwright regression, physical-GPU performance and the mobile tiers remain CI/device work. The reference attachment was not present in the workspace filesystem, so the delivered asset is a faithful rendition of it rather than the original file.
+
+---
+
 # Active Context — Reuse an open refresh pull request as the updater baseline (Spec 229, 2026-11-28)
 
 ## Current Task — Stop re-reporting already-applied documentation updates

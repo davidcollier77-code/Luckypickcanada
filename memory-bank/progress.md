@@ -1,3 +1,10 @@
+## 2026-11-28 — Lucky Meter dimensional artwork reconstruction (Spec 230)
+
+- Rebuilt the Lucky Meter's physical construction from the supplied artwork: a layered sculpted gold housing with real bevels and rivets, twelve glazed and back-lit enamel compartments that fill their windows, a red-enamelled maple medallion inside a laurel wreath and turned rings, a double-walled diamond-cut crystal bowl with refraction and sparkles, and a dimensionally framed plaque with a recessed black interior and its own light.
+- Extended only the two scene shaders (enamel and crystal) and added two geometry helpers; no renderer, dependency, light, timing, persistence or layout contract changed.
+- Delivered the reference artwork as a retained source plus AVIF/WebP derivatives and used it as the instrument's reflection probe, so the metal and crystal reflect the design's own palette.
+- Focused Vitest suites 29/29, `tsc --noEmit` clean, and the ready state inspected at 900 × 1180 on the repository Playwright CLI.
+
 ## 2026-11-28 — Refresh baseline reuse for open updater pull requests (Spec 229)
 
 - Established from run history that the updater re-reported already-applied documents because every run compared against `main` while the refreshed snapshots lived on the open `auto/docs-refresh` branch. PR #2062 received three commits for the same two documents and its final report still read "2 updated".
