@@ -101,7 +101,9 @@ export const METER_LAYOUT = Object.freeze({
   banner: Object.freeze({
     x: 0,
     y: 1.74,
-    z: 0.1,
+    // In front of the cell frames (which reach z ≈ 0.21) so the top chambers
+    // pass behind the plate instead of cutting through it.
+    z: 0.18,
     width: 1.7,
     height: 0.42,
   }),

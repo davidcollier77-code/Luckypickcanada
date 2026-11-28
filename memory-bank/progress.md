@@ -1013,3 +1013,12 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Refreshed `ready-desktop.png`, `ready-instrument-closeup.png` (both previously stale), `flip-filmstrip.png` and `flip-screencast.webp` for the new configuration.
 - Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` compiled in 25.8 s and `du -sb .next public` measured 426,455,445 bytes (406.70 MiB), below 495 MiB.
 - Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.
+
+
+## 2026-11-28 — Large-render review of the Lucky Meter and refreshed QA evidence (Spec 230)
+
+- Reviewed the branch diff at 3x device scale. Repaired four real defects: the medallion's veins reached past the narrowed blade as loose gold lines; the banner sat behind the cell frames, so the top chambers cut through the plate; the twelve plate pieces left serrated gaps at the well and at the rim; and the wreath used the five-lobed pointer leaf, which read as starfish. Veins now stay inside the blade at ±0.058, the banner sits at z = 0.18 in front of the frames, the pieces meet at 0.25° and tuck under the bezel from radius 0.52, and the wreath is twelve smooth laurel leaves.
+- Removed the now-unused `chamberCentre` import left behind when the plate stopped calling it.
+- Refreshed every evidence capture on the final head: desktop ready state, instrument close-up, phone 390, spin, pour, reveal, and the flip filmstrip plus its 13-frame animated WebP.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` in 13.3 s, `du -sb .next public` 426,490,430 bytes (406.73 MiB) below 495 MiB.
+- Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.

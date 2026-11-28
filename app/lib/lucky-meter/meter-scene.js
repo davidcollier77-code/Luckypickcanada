@@ -34,7 +34,6 @@ import {
   CHAMBER_DEGREES,
   METER_LAYOUT,
   POINTER_ANGLE_DEGREES,
-  chamberCentre,
   numberTransferPath,
   sampleNumberPath,
   stageFraming,
@@ -441,9 +440,9 @@ function mapleSilhouetteGeometry(THREE, options = {}) {
     [0.36, -0.2],
     [0.2, -0.16],
     [0.16, -0.46],
-    [0.07, -0.38],
-    [0.065, -0.7],
-    [0.0, -0.66],
+    [0.085, -0.4],
+    [0.075, -0.56],
+    [0.0, -0.52],
   ];
   const outline = [...rightHalf];
   for (let index = rightHalf.length - 2; index >= 1; index -= 1) {
@@ -1254,9 +1253,14 @@ export async function createLuckyMeterScene({
   // thirteen holes makes the triangulator bridge the central opening across the
   // narrow web beside each window, and those bridges survived as stray gold
   // triangles lying across the reading well. One window per piece cannot do it.
-  const plateInnerRadius = 0.5;
+  // tucks the pieces' inner ends under the stepped bezel (0.51–0.586), so the
+  // gaps between them cannot show as a serrated ring around the well.
+  const plateInnerRadius = 0.52;
   const plateOuterRadius = METER_LAYOUT.wheel.outerRadius - 0.03;
-  const plateHalfAngle = (CHAMBER_DEGREES / 2 - 1.3) * DEG2RAD;
+  // The pieces nearly meet: at 1.3° a side the gap reached 0.047 units at the
+  // rim and showed as a dark crack between compartments. The spokes still sit
+  // over the remaining hairline.
+  const plateHalfAngle = (CHAMBER_DEGREES / 2 - 0.25) * DEG2RAD;
   const plateWindowRadius = CHAMBER_CUP.radius + 0.006;
   const plateWindowCentre =
     (METER_LAYOUT.wheel.chamberInnerRadius + METER_LAYOUT.wheel.chamberOuterRadius) / 2;
@@ -1489,8 +1493,24 @@ export async function createLuckyMeterScene({
   wellBeads.material = polishedGold;
   centreGroup.add(wellBeads);
 
-  const wreathLeafGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
-  const wreath = new THREE.InstancedMesh(wreathLeafGeometry, warmGold, 16);
+  // A laurel leaf is a smooth pointed oval. The pointer's five-lobed maple read
+  // as scattered starfish at this size, and twelve of them turned the wreath
+  // into a ragged ring.
+  const laurelShape = new THREE.Shape();
+  laurelShape.moveTo(0, -0.5);
+  laurelShape.quadraticCurveTo(0.3, -0.06, 0, 0.5);
+  laurelShape.quadraticCurveTo(-0.3, -0.06, 0, -0.5);
+  const wreathLeafGeometry = trackGeometry(
+    new THREE.ExtrudeGeometry(laurelShape, {
+      depth: 0.02,
+      bevelEnabled: true,
+      bevelThickness: 0.006,
+      bevelSize: 0.006,
+      bevelSegments: 2,
+      curveSegments: constrained ? 4 : 10,
+    }),
+  );
+  const wreath = new THREE.InstancedMesh(wreathLeafGeometry, warmGold, 12);
   wreath.frustumCulled = false;
   {
     const matrix = new THREE.Matrix4();
@@ -1498,18 +1518,18 @@ export async function createLuckyMeterScene({
     const quaternion = new THREE.Quaternion();
     const scale = new THREE.Vector3();
     const euler = new THREE.Euler();
-    for (let index = 0; index < 16; index += 1) {
+    for (let index = 0; index < 12; index += 1) {
       // A laurel wreath around the relief, with a gap at the top for the crown.
       // Two laurel branches climb the sides of the well, as in the reference:
       // eight slim leaves each, turning outward as they rise, leaving the crown
       // clear for the maple.
-      const side = index < 8 ? 1 : -1;
-      const climb = (index % 8) / 7;
-      const angle = (side === 1 ? 34 + climb * 82 : 244 + climb * 82) * DEG2RAD;
-      position.set(Math.sin(angle) * 0.45, Math.cos(angle) * 0.45, 0.128);
-      euler.set(0, 0, angle + Math.PI / 2 + side * 0.35);
+      const side = index < 6 ? 1 : -1;
+      const climb = (index % 6) / 5;
+      const angle = (side === 1 ? 38 + climb * 78 : 244 + climb * 78) * DEG2RAD;
+      position.set(Math.sin(angle) * 0.452, Math.cos(angle) * 0.452, 0.128);
+      euler.set(0, 0, angle + Math.PI / 2 + side * 0.3);
       quaternion.setFromEuler(euler);
-      scale.set(0.052, 0.082, 0.028);
+      scale.set(0.19, 0.26, 1);
       matrix.compose(position, quaternion, scale);
       wreath.setMatrixAt(index, matrix);
     }
@@ -1577,16 +1597,21 @@ export async function createLuckyMeterScene({
   const medallionVeinGeometry = trackGeometry(
     new THREE.CylinderGeometry(0.0085, 0.0085, 1, 4),
   );
+  // The vein targets stay inside the blade. They used to reach x = 0.66 and
+  // y = -0.82, which the narrower outline no longer covers, so the rays stuck
+  // out past the enamel as loose gold lines.
   for (const [x, y] of [
-    [0, 0.78],
-    [0.52, 0.48],
-    [0.66, 0.02],
-    [-0.66, 0.02],
-    [-0.52, 0.48],
-    [0, -0.82],
+    [0, 0.7],
+    [0.22, 0.42],
+    [0.3, 0.08],
+    [-0.3, 0.08],
+    [-0.22, 0.42],
+    [0, -0.34],
   ]) {
     const length = Math.hypot(x, y);
-    for (const side of [0.102, -0.102]) {
+    // Just above each face, so the relief sits on the enamel instead of
+    // floating clear of it.
+    for (const side of [0.058, -0.058]) {
       const vein = new THREE.Mesh(medallionVeinGeometry, medallionVeinMaterial);
       vein.position.set(x / 2, y / 2, side);
       vein.rotation.z = -Math.atan2(x, y);
