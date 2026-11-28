@@ -66,6 +66,37 @@ jobs:
           npm install -g pnpm@10.30.3
           pnpm install --frozen-lockfile
 
+      - name: Reuse Open Refresh Pull Request
+        id: baseline
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BASELINE_REF=""
+          PR_NUMBER=""
+          if ! PR_NUMBER="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number')"; then
+            echo "::warning::Could not query open auto/docs-refresh pull requests; comparing against the default branch."
+            PR_NUMBER=""
+          fi
+          if [[ -z "$PR_NUMBER" || "$PR_NUMBER" == "null" ]]; then
+            echo "No open auto/docs-refresh pull request; comparing against the default branch."
+          else
+            echo "Open refresh pull request #$PR_NUMBER found; reusing its snapshots as the comparison baseline."
+            cp .docs/manifest.json "$RUNNER_TEMP/default-branch-manifest.json"
+            if git fetch --no-tags origin +refs/heads/auto/docs-refresh:refs/remotes/origin/auto/docs-refresh; then
+              # A failed checkout or helper run fails this step on purpose: continuing
+              # with a partly restored .docs tree could commit and force-push it.
+              git checkout refs/remotes/origin/auto/docs-refresh -- .docs
+              node scripts/prepare-docs-refresh-baseline.js \
+                --pending-manifest .docs/manifest.json \
+                --routing-manifest "$RUNNER_TEMP/default-branch-manifest.json"
+              BASELINE_REF="$(git rev-parse refs/remotes/origin/auto/docs-refresh)"
+            else
+              echo "Could not fetch the pending refresh branch; comparing against the default branch instead." >&2
+            fi
+          fi
+          echo "ref=$BASELINE_REF" >> "$GITHUB_OUTPUT"
+
       - name: Run Documentation Refresh
         id: refresh
         continue-on-error: true
@@ -84,9 +115,13 @@ jobs:
 
       - name: Check for Changes
         id: changes
+        env:
+          BASELINE_REF: ${{ steps.baseline.outputs.ref }}
         run: |
+          set -euo pipefail
           git add .docs/
-          if git diff --staged --quiet; then
+          BASELINE_REF="${BASELINE_REF:-HEAD}"
+          if git diff --staged --quiet "$BASELINE_REF" -- .docs/; then
             echo "No changes detected in documentation."
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else

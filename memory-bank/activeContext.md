@@ -1,3 +1,16 @@
+# Active Context — Reuse an open refresh pull request as the updater baseline (Spec 229, 2026-11-28)
+
+## Current Task — Stop re-reporting already-applied documentation updates
+
+- **Cause (primary):** the workflow checks out the default branch and force-pushes to `auto/docs-refresh`, so a run that starts while the refresh pull request is open compares against `main` and rediscovers the changes the branch already holds. PR #2062 was pushed three times for the same two documents (`d9c906d`, `08d8ccb`, `50b5337`) and still reported "2 updated".
+- **Cause (NumPy):** rotating same-origin Cloudflare `/cdn-cgi/l/email-protection#<hex>` href tokens produced one-line snapshot changes in nine consecutive refreshes. Spec 228 fixed the converter; #2062 was the single legitimate clean-up pass, and the live library now reports NumPy `CURRENT`.
+- **Cause (Cloudflare Pages):** one genuine upstream edit (Pages guidance moving to Workers Static Assets), re-applied only because of the baseline defect. It is not volatile, and its repository SHA is shared with Turnstile by design; each document keeps its own pin.
+- **Repair:** new `scripts/prepare-docs-refresh-baseline.js` and a "Reuse Open Refresh Pull Request" step restore the pending `.docs` tree as the baseline while keeping the owner-controlled `manifest.groups`, `sources` and `inventory` from the default branch; "Check for Changes" diffs only `.docs/` against that baseline ref under `set -euo pipefail`, so an unchanged repeat run creates no commit or comment. No refresh-logic change.
+- **Verification:** `node scripts/test-refresh-docs.js` 61/61 passing, including a real-git control that reproduces the pre-repair re-update and the repaired no-change result; the workflow baseline and change-gate scripts were also executed in a temporary git repository for the open-PR, no-PR and fetch-failure paths.
+- **Boundaries:** schedule, timezone, scheduler slots, activation guard, manual dispatch, inventory, source URLs, validation/integrity safeguards, PR flow and reporting unchanged. Tests ran under Node.js 24 locally; Node.js 26 CI remains authoritative.
+
+---
+
 # Active Context — Stabilize the documentation updater's Cloudflare link normalization (Spec 228, 2026-11-27)
 
 ## Current Task — Prevent token-only NumPy snapshot updates
