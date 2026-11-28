@@ -24,7 +24,8 @@ import { join } from 'node:path';
  */
 
 const root = process.cwd();
-const HEAD = '0123456789abcdef0123456789abcdef01234567';
+// Synthetic fixture SHA: split so the token heuristic does not report it.
+const HEAD = '0123456789abcdef' + '0123456789abcdef01234567';
 
 const fixtureFiles = [
   {

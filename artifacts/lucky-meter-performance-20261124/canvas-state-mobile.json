@@ -1,0 +1,41 @@
+{
+  "label": "canvas-state-mobile",
+  "measuredAt": "2026-11-24",
+  "method": "read-only Playwright probe of the deployed page, mobile emulation, 8 s settle, no Start press",
+  "url": "https://luckypickcanada.ca/lucky-meter",
+  "emulation": {
+    "viewport": { "width": 390, "height": 844 },
+    "deviceScaleFactor": 3,
+    "isMobile": true,
+    "hasTouch": true
+  },
+  "environment": {
+    "devicePixelRatio": 3,
+    "coarsePointer": true,
+    "deviceMemoryGb": 16,
+    "hardwareConcurrency": 8
+  },
+  "meters": [
+    {
+      "index": 0,
+      "renderer": "three",
+      "ringBox": { "width": 328, "height": 328, "visible": true },
+      "hostClass": "lucky-vessel-canvas-host lucky-meter-stage__canvas-host is-ready",
+      "hostOpacity": "1",
+      "hostTransition": "opacity 0.6s",
+      "canvasOpacity": "1",
+      "canvasBox": { "width": 328, "height": 328 },
+      "buffer": { "width": 524, "height": 524 },
+      "effectivePixelRatio": 1.6,
+      "backingPixels": 274576,
+      "fallbackPresent": false
+    }
+  ],
+  "glVersion": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+  "conclusions": [
+    "The shipped meter renders at the balanced tier's 1.6 pixel-ratio cap, not DPR 3.",
+    "The canvas is 0.27 MP, so the 1,976-2,118 ms GLES2::ReadPixels cost recorded in Phase 0 is not proportional to canvas area.",
+    "The canvas host carries the 600 ms opacity transition that the reveal hand-off animates.",
+    "A single meter instance exists on the page; an earlier 2.5 s probe read opacity 0 while the transition was still starting."
+  ]
+}

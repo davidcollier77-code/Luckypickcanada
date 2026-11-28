@@ -76,6 +76,18 @@ describe('playwright-cli wrapper', () => {
     expect(bootstrap).toBeLessThan(dependencyGuard);
   });
 
+  // A dependency tree that predates the lockfile still contains a playwright
+  // binary, so checking only for the binary would run the previous Playwright
+  // and its browser after a Dependabot or owner update. The wrapper compares
+  // pnpm's installed lockfile copy instead of pinning any version.
+  it('reinstalls when node_modules predates the lockfile', () => {
+    const source = fs.readFileSync(wrapper, 'utf8');
+
+    expect(source).toContain('node_modules/.pnpm/lock.yaml');
+    expect(source).toContain('cmp -s "$installed_lockfile" "$ROOT/pnpm-lock.yaml"');
+    expect(source).toContain('CI=true pnpm install --frozen-lockfile');
+  });
+
   // A `chromium-*` glob matches a cache left by any Playwright version, so a
   // dependency bump would skip the install and fail at launch. The revision
   // decision belongs to `--browser-root`, which checks the pinned revision.

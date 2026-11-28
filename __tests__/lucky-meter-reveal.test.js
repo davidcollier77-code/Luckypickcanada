@@ -58,7 +58,8 @@ describe('corrected Spec 212 storyboard timing', () => {
     expect(REVEAL_TIMING.percentageMs).toBe(9400);
     expect(REVEAL_TIMING.pourMs).toBe(2000);
     expect(REVEAL_TIMING.numberPauseMs).toBe(1500);
-    expect(REVEAL_TIMING.transferMs).toBe(1500);
+    expect(REVEAL_TIMING.transferMs).toBe(2200);
+    expect(REVEAL_TIMING.transferSettleMs).toBe(700);
 
     // The preserved later stages.
     expect(REVEAL_TIMING.messageDelayMs).toBe(800);
@@ -82,14 +83,14 @@ describe('corrected Spec 212 storyboard timing', () => {
     expect(REVEAL_MOTION_MS).toBe(11_300);
     expect(POUR_END_MS).toBe(13_300);
     expect(NUMBER_PAUSE_END_MS).toBe(14_800);
-    expect(REVEAL_COMPLETE_MS).toBe(16_300);
+    expect(REVEAL_COMPLETE_MS).toBe(17_700);
 
     expect(WHEEL_END_MS - PERCENTAGE_START_MS).toBe(4400);
     expect(PERCENTAGE_END_MS - PERCENTAGE_START_MS).toBe(9400);
     expect(REVEAL_MOTION_MS).toBeGreaterThan(WHEEL_END_MS);
     expect(POUR_END_MS - PERCENTAGE_END_MS).toBe(2000);
     expect(NUMBER_PAUSE_END_MS - POUR_END_MS).toBe(1500);
-    expect(REVEAL_COMPLETE_MS - NUMBER_PAUSE_END_MS).toBe(1500);
+    expect(REVEAL_COMPLETE_MS - NUMBER_PAUSE_END_MS).toBe(2900);
   });
 
   it('lists the eleven ordered stages with the wheel ending inside generation', () => {
@@ -111,10 +112,17 @@ describe('corrected Spec 212 storyboard timing', () => {
       'hold',
       'dock',
     ]);
-    for (let index = 0; index < stages.length - 1; index += 1) {
-      expect(stages[index].endMs).toBeLessThanOrEqual(stages[index + 1].startMs);
-      expect(stages[index].durationMs).toBeGreaterThanOrEqual(0);
+    for (const stage of stages) {
+      expect(stage.endMs).toBeGreaterThanOrEqual(stage.startMs);
+      expect(stage.durationMs).toBeGreaterThanOrEqual(0);
     }
+    // The message deliberately overlaps the pour and transfer: it starts on
+    // the lock frame and is removed before the celebration.
+    const messageStage = stages.find((stage) => stage.id === 'message');
+    expect(messageStage.startMs).toBe(REVEAL_MOTION_MS);
+    expect(messageStage.endMs).toBeLessThan(
+      stages.find((stage) => stage.id === 'celebration').startMs,
+    );
     const generation = stages.find((stage) => stage.id === 'generation');
     expect(generation.startMs).toBe(PERCENTAGE_START_MS);
     expect(generation.endMs).toBe(PERCENTAGE_END_MS);
@@ -135,9 +143,9 @@ describe('corrected Spec 212 storyboard timing', () => {
     const total = getExperienceTotalMs(TIER_MESSAGE, CELEBRATION_MS, SPARK_MESSAGE);
     // The reveal is shorter by design; no later stage is shortened to force a
     // particular total and nothing pads the runtime.
-    expect(total).toBeGreaterThanOrEqual(48_000);
-    expect(total).toBeLessThanOrEqual(52_500);
-    expect(REVEAL_COMPLETE_MS).toBeLessThan(17_000);
+    expect(total).toBeGreaterThanOrEqual(43_000);
+    expect(total).toBeLessThanOrEqual(46_000);
+    expect(REVEAL_COMPLETE_MS).toBeLessThan(18_000);
   });
 
   it('gives every tier the same 12,000 ms celebration', () => {
@@ -155,7 +163,7 @@ describe('corrected Spec 212 storyboard timing', () => {
     );
   });
 
-  it('pours for 2,000 ms, pauses 1,500 ms and transfers for 1,500 ms', () => {
+  it('pours for 2,000 ms, pauses 1,500 ms and transfers for 2,200 ms plus a 700 ms settle', () => {
     const stages = buildStoryboard({
       tierMessage: TIER_MESSAGE,
       eventDurationMs: CELEBRATION_MS,
@@ -168,28 +176,23 @@ describe('corrected Spec 212 storyboard timing', () => {
     expect(pour.startMs).toBe(PERCENTAGE_END_MS);
     expect(pour.endMs - pour.startMs).toBe(2000);
     expect(pause.endMs - pause.startMs).toBe(1500);
-    expect(transfer.endMs - transfer.startMs).toBe(1500);
+    expect(transfer.endMs - transfer.startMs).toBe(2900);
     expect(transfer.endMs).toBe(REVEAL_COMPLETE_MS);
 
-    // The message starts on the same frame the transfer completes, so the
-    // number and its sentence hand off without a gap.
+    // The message starts on the lock frame, while the pour and transfer run.
     const message = stages.find((stage) => stage.id === 'message');
-    expect(message.startMs).toBe(REVEAL_COMPLETE_MS);
+    expect(message.startMs).toBe(REVEAL_MOTION_MS);
   });
 
-  it('keeps the message at full visibility while the celebration runs', () => {
+  it('removes the message before the celebration begins', () => {
     const typing = getMessageTypingMs(TIER_MESSAGE);
     expect(getMessageTotalMs(TIER_MESSAGE)).toBe(800 + typing + 3000 + 800);
     const start = getEventStartMs(TIER_MESSAGE);
+    const messageEnd = REVEAL_MOTION_MS + getMessageTotalMs(TIER_MESSAGE);
     expect(start).toBe(
-      REVEAL_COMPLETE_MS +
-        STORYBOARD_TIMING.messageDelayMs +
-        typing +
-        STORYBOARD_TIMING.messageHoldMs +
-        STORYBOARD_TIMING.messageSettleMs +
-        STORYBOARD_TIMING.eventDelayMs,
+      Math.max(REVEAL_COMPLETE_MS, messageEnd) + STORYBOARD_TIMING.eventDelayMs,
     );
-    expect(start).toBeGreaterThan(REVEAL_COMPLETE_MS + 800 + typing + 3000);
+    expect(start).toBeGreaterThan(messageEnd);
     expect(getCelebrationEndMs(TIER_MESSAGE, CELEBRATION_MS)).toBe(start + CELEBRATION_MS);
   });
 

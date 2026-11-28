@@ -189,10 +189,10 @@ describe('Daily Resonance daily experience', () => {
     expect(stored.eventCompleted).toBe(false);
     expect(stored.sparkCompleted).toBe(false);
 
-    // The welcome state has no caption and no result panels.
+    // The welcome state has no caption and no result panels. The medallion is
+    // still closed, so the percentage is not visible yet.
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
-    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-value', '0');
-    expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute('data-plaque', 'hidden');
+    expect(screen.queryByTestId('lucky-meter-value')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-number-panel')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lucky-colour-panel')).not.toBeInTheDocument();
     // The pointer is fixed at 7:30 and the wheel carries twelve chambers.
@@ -281,28 +281,10 @@ describe('Daily Resonance daily experience', () => {
       String(result.luckyNumber),
     );
     expect(screen.getByText(result.event.name)).toBeInTheDocument();
-    // The message starts after its own lead-in.
+    // The sentence was written while the colour poured and the number
+    // travelled. It is already gone: the sky is clear before the celebration.
     expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
-
-    // The exact tier message is written below the meter.
-    advance(STORYBOARD_TIMING.messageDelayMs + STORYBOARD_TIMING.messageCharMs);
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'writing');
-
-    advance(getMessageTypingMs(result.tier.message) - STORYBOARD_TIMING.messageCharMs);
-    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
-    // It then holds, settles visibly and stays on screen for the celebration.
-    advance(
-      STORYBOARD_TIMING.messageHoldMs +
-        STORYBOARD_TIMING.messageSettleMs +
-        STORYBOARD_TIMING.eventDelayMs +
-        100,
-    );
-    const message = screen.getByTestId('lucky-tier-message');
-    expect(message).toHaveAttribute('data-state', 'holding');
-    expect(message).toHaveAttribute('data-settled', 'true');
-    expect(screen.getByTestId('lucky-tier-message-visible')).toHaveTextContent(
-      result.tier.message,
-    );
+    advance(STORYBOARD_TIMING.eventDelayMs + 100);
     const stage = screen.getByTestId('cosmic-event-stage');
     expect(stage).toHaveAttribute('data-event', result.event.id);
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
@@ -329,14 +311,37 @@ describe('Daily Resonance daily experience', () => {
       result.spark.message.slice(0, 24),
     );
 
-    // Frame 9: Home and the countdown arrive together, after the writing.
-    const dock = screen.getByTestId('lucky-meter-home').parentElement;
+    // Frame 9: Home and the countdown arrive together in the corner controls,
+    // after the writing.
+    const dock = screen.getByTestId('lucky-meter-dock');
+    expect(dock).toContainElement(screen.getByTestId('lucky-meter-home'));
     expect(dock).toContainElement(screen.getByTestId('lucky-meter-countdown'));
     expect(screen.getByText('07:30:00')).toBeInTheDocument();
     expect(readStored().revealCompleted).toBe(true);
     expect(readStored().messageCompleted).toBe(true);
     expect(readStored().eventCompleted).toBe(true);
     expect(readStored().sparkCompleted).toBe(true);
+  });
+
+  it('writes the tier sentence on the lock frame and removes it before the celebration', () => {
+    render(<DailyResonance />);
+    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    const result = readStored().result;
+
+    // The sentence starts on the lock frame, while the pour is still running.
+    advance(PERCENTAGE_END_MS + STORYBOARD_TIMING.messageDelayMs + 60);
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'writing');
+
+    advance(getMessageTypingMs(result.tier.message) + 60);
+    expect(screen.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+
+    // It is removed before the celebration's first frame, never left over the
+    // open sky during the cinematic.
+    advance(REVEAL_COMPLETE_MS - PERCENTAGE_END_MS + 60);
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
+    advance(STORYBOARD_TIMING.eventDelayMs + 100);
+    expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
+    expect(screen.queryByTestId('lucky-tier-message')).not.toBeInTheDocument();
   });
 
   it('keeps the page usable when a daily result cannot be created', () => {

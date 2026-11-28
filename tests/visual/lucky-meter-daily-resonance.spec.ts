@@ -47,6 +47,27 @@ const TIERS = {
 
 type TierId = keyof typeof TIERS;
 
+/** The four cues needed to begin the ritual; these may load before Start. */
+const OPENING_AUDIO = [
+  '/freesound_community-starship-rail-gun-charge-35904.mp3',
+  '/sounds/crystal-ball-leaf.mp3',
+  '/sounds/crystal-ball-leaf.wav',
+  '/sounds/mixkit-magic-sparkles.mp3',
+  '/sounds/chime-sound.mp3',
+];
+
+/** The eight celebration cues; none may be requested before activation. */
+const CELEBRATION_AUDIO = [
+  '/dragon-studio-whoosh-cinematic-376875.mp3',
+  '/sounds/mixkit-cinematic-impact.mp3',
+  '/freesound_community-fireworks-1-94483.mp3',
+  '/sounds/mixkit-magical-impact.mp3',
+  '/sounds/mixkit-firework-crackle.mp3',
+  '/sounds/mixkit-firework-whistle.mp3',
+  '/sounds/lucky-meter-finale-boom.wav',
+  '/sounds/lucky-meter-thunder-rumble.wav',
+];
+
 function localDateKey() {
   const now = new Date();
   const month = `${now.getMonth() + 1}`.padStart(2, '0');
@@ -185,6 +206,9 @@ test.describe('Daily Resonance arrival and Start', () => {
   test('holds Start until the breeze has cleared, then starts the reading at 0', async ({
     page,
   }) => {
+    // This test can spend 15 s waiting for Start and another 20 s waiting for
+    // the first value; the default 30 s budget is shorter than both waits.
+    test.slow();
     await page.addInitScript(() => {
       const reading: { value?: string; plaque?: string } = {};
       (window as Window & { __luckyMeterStartReading?: typeof reading }).__luckyMeterStartReading =
@@ -246,6 +270,142 @@ test.describe('Daily Resonance arrival and Start', () => {
     await expect(pointer).toHaveAttribute('data-position', '7.5');
     // The meter contains no SVG artwork at all.
     await expect(ring.locator('svg')).toHaveCount(0);
+  });
+});
+
+test.describe('Daily Resonance reveal hand-off', () => {
+  test('uses one approved fade and keeps the CSS meter until the canvas is visible', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.addInitScript(() => {
+      type Handoff = {
+        removedAtOpacity: number | null;
+        transitions: number;
+        sawFallback: boolean;
+        heldWhileTransparent: boolean;
+      };
+      const state: Handoff = {
+        removedAtOpacity: null,
+        transitions: 0,
+        sawFallback: false,
+        heldWhileTransparent: false,
+      };
+      (window as Window & { __spec217Handoff?: Handoff }).__spec217Handoff = state;
+
+      const hostSelector = '[data-testid="lucky-vessel-canvas-host"]';
+      const fallbackSelector = '[data-testid="lucky-meter-fallback"]';
+      const readOpacity = () => {
+        const host = document.querySelector(hostSelector);
+        if (!host) return null;
+        const raw = getComputedStyle(host).opacity;
+        return raw === '' ? null : Number(raw);
+      };
+
+      const observer = new MutationObserver(() => {
+        if (document.querySelector(fallbackSelector)) {
+          state.sawFallback = true;
+          return;
+        }
+        if (state.sawFallback && state.removedAtOpacity === null) {
+          // The removal is the behaviour under test: the old hand-off removed
+          // the complete CSS meter while the canvas was still transparent.
+          state.removedAtOpacity = readOpacity();
+        }
+      });
+      // `documentElement` can still be null when an init script runs.
+      observer.observe(document, { childList: true, subtree: true });
+
+      const tick = () => {
+        const host = document.querySelector(hostSelector) as HTMLElement | null;
+        if (host) {
+          const opacity = readOpacity();
+          if (
+            host.classList.contains('is-ready') &&
+            document.querySelector(fallbackSelector) &&
+            opacity === 0
+          ) {
+            state.heldWhileTransparent = true;
+          }
+        }
+        if (performance.now() < 15_000) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+
+      document.addEventListener(
+        'transitionrun',
+        (event) => {
+          const target = event.target as Element | null;
+          if (
+            target?.getAttribute('data-testid') === 'lucky-vessel-canvas-host' &&
+            (event as TransitionEvent).propertyName === 'opacity'
+          ) {
+            state.transitions += 1;
+          }
+        },
+        true,
+      );
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    const host = page.getByTestId('lucky-vessel-canvas-host');
+    await expect(host).toHaveCSS('transition-duration', '0.3s');
+    await expect(host).toHaveCSS('transition-property', 'opacity');
+
+    const ring = page.getByTestId('lucky-meter-ring');
+    await expect(ring).toHaveAttribute('data-meter-renderer', 'three', { timeout: 30_000 });
+    await expect(page.getByTestId('lucky-meter-fallback')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+
+    const handoff = await page.evaluate(
+      () =>
+        (window as Window & {
+          __spec217Handoff?: {
+            removedAtOpacity: number | null;
+            transitions: number;
+            heldWhileTransparent: boolean;
+          };
+        }).__spec217Handoff,
+    );
+    expect(handoff?.transitions).toBe(1);
+    expect(handoff?.heldWhileTransparent).toBe(true);
+    expect(handoff?.removedAtOpacity).not.toBeNull();
+    expect(handoff?.removedAtOpacity ?? 0).toBeGreaterThan(0);
+    // One reveal only: the welcome stage stays idle and no second hand-off runs.
+    await expect(ring).toHaveAttribute('data-phase', 'idle');
+  });
+});
+
+test.describe('Daily Resonance activation-gated audio', () => {
+  test('requests no celebration cue before Start and the full set after', async ({ page }) => {
+    test.slow();
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      const pathname = new URL(request.url()).pathname;
+      if (/\.(mp3|wav)$/i.test(pathname)) requests.push(pathname);
+    });
+
+    await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded' });
+    await waitForStart(page);
+    await expect
+      .poll(() => requests.filter((path) => OPENING_AUDIO.includes(path)).length, {
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(0);
+
+    // Route-time preparation may finish after the Start button settles.
+    await page.waitForTimeout(750);
+    expect(requests.filter((path) => CELEBRATION_AUDIO.includes(path))).toEqual([]);
+    expect(requests.every((path) => OPENING_AUDIO.includes(path))).toBe(true);
+
+    await startReveal(page);
+    await expect
+      .poll(
+        () => CELEBRATION_AUDIO.filter((path) => requests.includes(path)).length,
+        { timeout: 15_000 },
+      )
+      .toBe(CELEBRATION_AUDIO.length);
   });
 });
 
@@ -329,8 +489,19 @@ test.describe('Daily Resonance storyboard', () => {
     const phases = await page.evaluate(
       () => (window as Window & { __luckyMeterPhases?: string[] }).__luckyMeterPhases ?? [],
     );
-    expect(phases).toContain('landed');
+    // The landed hand-off is a short beat. A loaded main thread can commit it
+    // and the pour in the same React batch, so the DOM may go from spin
+    // straight to pouring. Require the storyboard's order instead of every
+    // intermediate commit: spin first, one pour, revealed last.
+    const storyboardOrder = ['spin', 'landed', 'pouring', 'revealed'];
+    expect(phases[0]).toBe('spin');
+    expect(phases.at(-1)).toBe('revealed');
     expect(phases).toContain('pouring');
+    expect(phases).toEqual(
+      [...phases].sort(
+        (a, b) => storyboardOrder.indexOf(a) - storyboardOrder.indexOf(b),
+      ),
+    );
 
     const beats = await page.evaluate(
       () =>
@@ -372,7 +543,7 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(ring.locator('svg')).toHaveCount(0);
   });
 
-  test('keeps the tier message visible through the celebration, then docks Home and the countdown', async ({
+  test('clears the tier message before the celebration, then docks Home and the countdown', async ({
     page,
   }) => {
     test.slow();
@@ -393,11 +564,10 @@ test.describe('Daily Resonance storyboard', () => {
       'data-event',
       stored.event.id,
     );
-    // The exact sentence remains visible and settled for the whole cinematic.
+    // The temporary sentence settles and unmounts before the cinematic's
+    // first frame, so the sky is clear for the celebration.
     const message = page.getByTestId('lucky-tier-message');
-    await expect(message).toHaveAttribute('data-state', 'holding');
-    await expect(message).toHaveAttribute('data-settled', 'true');
-    await expect(message).toContainText(stored.tier.message);
+    await expect(message).toHaveCount(0);
     // The vessel is still full during the celebration.
     await expect(page.getByTestId('lucky-colour-panel')).toHaveAttribute(
       'data-vessel-fill',
@@ -415,11 +585,13 @@ test.describe('Daily Resonance storyboard', () => {
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
 
     await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 45_000 });
-    const dock = page.getByTestId('lucky-meter-home').locator('..');
+    // The finished controls are a corner overlay: the countdown sits in the
+    // left column and Home in the right column of the same dock.
+    const dock = page.getByTestId('lucky-meter-dock');
     await expect(dock.getByTestId('lucky-meter-countdown')).toBeVisible();
     await expect(page.getByTestId('lucky-spark-cursor')).toHaveCount(0);
-    // FINISHED keeps the same sentence: it never faded away.
-    await expect(message).toHaveAttribute('data-state', 'holding');
+    // FINISHED keeps the Spark, not the temporary tier sentence.
+    await expect(message).toHaveCount(0);
   });
 });
 
@@ -524,7 +696,10 @@ test.describe('Daily Resonance approved fallbacks and refresh policy', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toHaveCount(0);
     // The exact sentence is shown whole, with no typing and no fade.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
+      'data-state',
+      'holding',
+    );
     await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-settled', 'true');
     await expect(page.getByTestId('lucky-tier-message')).toContainText(stored.tier.message);
     const dock = page.getByTestId('lucky-meter-dock');
@@ -551,8 +726,13 @@ test.describe('Daily Resonance seasonal palettes', () => {
       const palette = getPaletteForSeasonKey(season);
       const ring = page.getByTestId('lucky-meter-ring');
       // The stored reading hydrates after first paint; wait for its palette.
+      // The stage shows a single placeholder chamber until then, so allow the
+      // same generous hydration budget the other stored-state waits use.
       await expect
-        .poll(async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length)
+        .poll(
+          async () => ((await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? []).length,
+          { timeout: 25_000 },
+        )
         .toBe(12);
       const ids = (await ring.getAttribute('data-chamber-ids'))?.split(' ') ?? [];
       for (const entry of palette) expect(ids).toContain(entry.id);
@@ -601,11 +781,8 @@ test.describe('Daily Resonance resume points', () => {
     );
     await expect(page.getByTestId('cosmic-event-stage')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId('lucky-meter-home')).toHaveCount(0);
-    // The resumed message stays visible through the cinematic.
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute(
-      'data-state',
-      'holding',
-    );
+    // The message is written now and cleared before the resumed cinematic.
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 
   test('resumes the Spark writing after the celebration', async ({ page }) => {
@@ -648,7 +825,7 @@ test.describe('Daily Resonance resume points', () => {
       'data-vessel-fill',
       '1.000',
     );
-    await expect(page.getByTestId('lucky-tier-message')).toHaveAttribute('data-state', 'holding');
+    await expect(page.getByTestId('lucky-tier-message')).toHaveCount(0);
   });
 });
 
@@ -713,6 +890,120 @@ test.describe('Daily Resonance WebGL fallback', () => {
     );
     expect(failures).toEqual([]);
   });
+});
+
+test.describe('production responsive composition', () => {
+  test('desktop finished state uses the width and keeps every reading visible', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    const content = page.locator('.lucky-meter-content');
+    await expect(content).toHaveCSS('flex-direction', 'row');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // The result column sits beside the instrument, not under it. The stage
+    // element carries the 3D canvas, whose box is wider than the visible
+    // wheel, so compare against the instrument's central column instead of the
+    // whole canvas box (a stacked column would still fail this).
+    expect(number!.x).toBeGreaterThan(stage!.x + stage!.width / 2);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(900);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);
+  });
+
+  test('tablet finished state keeps one readable column without overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(stage!.width).toBeGreaterThanOrEqual(400);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(1180);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(820);
+  });
+
+  test('landscape phone shows the colour and number without scrolling across', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'row');
+
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    expect(colour).not.toBeNull();
+    expect(number).not.toBeNull();
+    // Both readings stay inside the 390 px viewport, side by side.
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(390);
+    expect(number!.y + number!.height).toBeLessThanOrEqual(390);
+    expect(number!.x).toBeGreaterThan(colour!.x + colour!.width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(844);
+  });
+
+  test('320 px phone stacks the readings without clipping or overlap', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await pinNoon(page);
+    await seed(page, buildState({ tierId: 'high', started: true }));
+
+    await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+    const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+    const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+    const number = await page.getByTestId('lucky-number-panel').boundingBox();
+    const dock = await page.getByTestId('lucky-meter-dock').boundingBox();
+    const spark = await page.getByTestId('lucky-spark-finale').boundingBox();
+    expect(stage).not.toBeNull();
+    expect(number!.y).toBeGreaterThan(colour!.y);
+    expect(stage!.x).toBeGreaterThanOrEqual(0);
+    expect(stage!.x + stage!.width).toBeLessThanOrEqual(320);
+    // The corner controls stop above the Spark, and the Spark above the meter.
+    expect(spark!.y).toBeGreaterThanOrEqual(dock!.y + dock!.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  });
+
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 390, height: 844 },
+    { width: 412, height: 915 },
+    { width: 430, height: 932 },
+  ]) {
+    test(`${viewport.width} px phone keeps the reading inside the viewport`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await pinNoon(page);
+      await seed(page, buildState({ tierId: 'high', started: true }));
+
+      await expect(page.getByTestId('lucky-meter-home')).toBeVisible({ timeout: 15_000 });
+      await expect(page.locator('.lucky-meter-content')).toHaveCSS('flex-direction', 'column');
+
+      const stage = await page.getByTestId('lucky-meter-ring').boundingBox();
+      const colour = await page.getByTestId('lucky-colour-panel').boundingBox();
+      const number = await page.getByTestId('lucky-number-panel').boundingBox();
+      expect(stage).not.toBeNull();
+      expect(number!.y).toBeGreaterThan(colour!.y);
+      expect(stage!.x).toBeGreaterThanOrEqual(0);
+      expect(stage!.x + stage!.width).toBeLessThanOrEqual(viewport.width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(
+        viewport.width,
+      );
+    });
+  }
 });
 
 test.describe('Daily Resonance visual evidence', () => {

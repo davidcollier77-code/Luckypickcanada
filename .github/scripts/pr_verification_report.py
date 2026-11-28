@@ -26,6 +26,7 @@ from pathlib import PurePosixPath
 
 import check_qa_pr_scope as scope
 import checker_suite
+import qa_skip
 import review_pr_changes
 
 REPORT_MARKER = "<!-- qa-verification-report -->"
@@ -166,7 +167,7 @@ def _placeholder(value):
     return bool(PLACEHOLDER.search(text) or PLACEHOLDER_ONLY.match(text))
 
 
-def _category(key, status, summary, details=None, attention=None):
+def _category(key, status, summary, details=None, attention=None, skipped=None):
     return {
         "id": key,
         "name": CATEGORY_NAMES[key],
@@ -174,6 +175,7 @@ def _category(key, status, summary, details=None, attention=None):
         "summary": summary,
         "details": list(details or []),
         "attention": list(attention or []),
+        "skipped": list(skipped or []),
     }
 
 
@@ -271,6 +273,7 @@ def _supporting_rows(evidence):
             audited.get("Visual QA") if name.startswith("Visual QA") else None
         ) or {}
         applicable = record.get("applicable") is not False
+        skip = record.get("skip")
         row = {
             "name": name,
             "purpose": purpose,
@@ -283,7 +286,18 @@ def _supporting_rows(evidence):
         }
         if not applicable:
             row["reason"] = record.get("detail") or "not applicable for this change set"
-            row["status"] = NOT_RUN
+            if qa_skip.is_authorized_record(skip):
+                # Authorized skip: the individual item keeps its own label. It is
+                # never presented as a pass, and it is excluded from the
+                # "incomplete coverage" warning because it cannot apply.
+                row["skip"] = skip
+                row["status"] = qa_skip.LABEL
+            else:
+                row["status"] = NOT_RUN
+            if status == FAILED:
+                # An observed failure outranks any claimed inapplicability.
+                row["status"] = FAILED
+                row["failure_overrides_skip"] = True
         rows.append(row)
     return rows
 
@@ -348,20 +362,25 @@ def qa_checker_category(evidence):
     details = []
     attention = []
 
-    if declaration_present:
+    attestation_skip = None
+    if is_bot:
+        # A human-only attestation cannot exist on an automation-authored pull
+        # request. That is an authorized actor-inapplicable skip, not a failure
+        # and not a pass of the human action itself.
+        attestation_skip = qa_skip.record(
+            qa_skip.ACTOR_INAPPLICABLE,
+            "a human pre-submission attestation cannot be given by an automation author",
+        )
+        details.append(
+            "Human pre-submission attestation: **%s** (the author is `%s`). The "
+            "supporting automated results still decide this category."
+            % (qa_skip.LABEL, author)
+        )
+    elif declaration_present:
         details.append(
             "Pre-submission declaration present: the submitter attested that the personal "
             "code quality review was completed. Its presence is an attestation, not proof "
             "that the review was performed."
-        )
-    elif is_bot:
-        details.append(
-            "This pull request is authored by `%s`. The human pre-submission attestation is "
-            "not applicable and is reported as NOT RUN, not as a failure." % author
-        )
-        attention.append(
-            "Bot-authored pull request: the human pre-submission attestation is NOT RUN. Its "
-            "supporting automated results still decide this category."
         )
     else:
         attention.append(
@@ -374,10 +393,20 @@ def qa_checker_category(evidence):
         % ", ".join("%s (%s)" % (row["name"], row["status"]) for row in supporting)
     )
     for row in supporting:
-        if row.get("applicable") is False:
+        if row.get("failure_overrides_skip"):
             details.append(
-                "%s: NOT RUN — not applicable: %s."
-                % (row["name"], row.get("reason") or "not required for this change set")
+                "%s: FAILED — an observed failed run outranks the claimed "
+                "inapplicability." % row["name"]
+            )
+        elif row.get("skip"):
+            details.append(
+                "%s: %s — %s."
+                % (row["name"], qa_skip.LABEL, row.get("reason") or "not required")
+            )
+        elif row.get("applicable") is False:
+            details.append(
+                "%s: NOT RUN — the claimed inapplicability is not authorized: %s."
+                % (row["name"], row.get("reason") or "no trusted reason supplied")
             )
         else:
             details.append(
@@ -438,8 +467,6 @@ def qa_checker_category(evidence):
         status = FAILED
     elif any(row["status"] == FAILED for row in supporting):
         status = FAILED
-    elif not declaration_present and is_bot:
-        status = WARNING
     elif any(
         row["status"] in {WARNING, NOT_RUN} and row.get("applicable") is not False
         for row in supporting
@@ -458,20 +485,27 @@ def qa_checker_category(evidence):
                 "%s is %s on the current head: %s." % (row["name"], row["status"], row["detail"])
             )
 
-    if status == PASSED:
+    if status == PASSED and attestation_skip:
+        summary = (
+            "The human attestation is SKIPPED — NOT APPLICABLE for an automation author, and "
+            "every supporting automated result passed."
+        )
+    elif status == PASSED:
         summary = "Declaration present and every supporting automated result passed."
     elif status == FAILED:
         summary = "Required QA evidence is missing or failed."
-    elif not declaration_present and is_bot:
-        summary = (
-            "Bot-authored pull request: the human attestation is NOT RUN; supporting results "
-            "are reported without failing the pull request for the missing attestation."
-        )
     elif status == WARNING:
         summary = "Incomplete coverage: at least one supporting result is not a pass."
     else:
         summary = "No supporting QA result is available for the current head."
-    return _category("qa-checker", status, summary, details, attention)
+    return _category(
+        "qa-checker",
+        status,
+        summary,
+        details,
+        attention,
+        skipped=[attestation_skip] if attestation_skip else [],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -869,7 +903,7 @@ def pr_scope_category(evidence):
     comments = evidence.get("comments") or []
     owner = evidence.get("owner") or ""
     try:
-        report = scope.validate(pr, files, comments, owner)
+        report = scope.validate(pr, files, comments, owner, evidence.get("commits"))
     except (scope.ScopeError, ReportError) as error:
         return _category(
             "pr-scope",
@@ -885,10 +919,23 @@ def pr_scope_category(evidence):
     details = [
         "Changed paths checked: %d." % len(report.get("changed_paths", [])),
         "Every changed file has a declared purpose: %s."
-        % ("yes" if report.get("file_purposes") else "no"),
+        % (
+            "yes"
+            if report.get("file_purposes")
+            else "n/a — the declaration is an authorized skip"
+            if qa_skip.is_authorized_record(report.get("skip"))
+            else "no"
+        ),
         "Exact-path declaration, scope-expansion validation and owner-approval digests are "
         "enforced; a description alone never approves an expansion.",
     ]
+    skipped = []
+    if qa_skip.is_authorized_record(report.get("skip")):
+        skipped.append(report["skip"])
+        details.append(
+            "QA scope declaration: **%s** — %s."
+            % (qa_skip.LABEL, report["skip"]["reason"])
+        )
     if report.get("scope_expansion"):
         details.append(
             "Scope expansion declared for: %s."
@@ -926,8 +973,13 @@ def pr_scope_category(evidence):
         summary = "Scope matches the diff; a reviewer warning needs attention."
     else:
         status = PASSED
-        summary = "Every changed file is declared with an accurate purpose."
-    return _category("pr-scope", status, summary, details, attention)
+        summary = (
+            "Verified Dependabot maintenance update: the QA scope declaration is skipped as "
+            "not applicable, and no declared path is out of scope."
+            if skipped
+            else "Every changed file is declared with an accurate purpose."
+        )
+    return _category("pr-scope", status, summary, details, attention, skipped=skipped)
 
 
 # ---------------------------------------------------------------------------
@@ -965,11 +1017,29 @@ def protected_files_category(evidence):
     details.append("Protected file(s) changed: %s." % ", ".join(protected_changed))
     declaration_present = PROTECTED_DECLARATION in body
     gate_status, gate_detail, gate_run = _check_state(evidence, PROTECTED_AUTHORIZATION_CHECK)
+    maintenance, maintenance_reason = qa_skip.dependabot_maintenance(
+        evidence.get("pull_request") or {},
+        evidence.get("commits"),
+        evidence.get("files"),
+    )
+    declaration_skip = None
 
     if declaration_present:
         details.append(
             "The required protected-file authorization declaration is present. It is the "
             "submitter's attestation and does not replace the human authorization gate."
+        )
+    elif maintenance:
+        # The submitter declaration cannot apply to a verified Dependabot update.
+        # The environment-protected human authorization gate is never skipped.
+        declaration_skip = qa_skip.record(
+            qa_skip.VERIFIED_DEPENDABOT_MAINTENANCE,
+            "a Dependabot maintenance update carries no human submitter declaration",
+        )
+        details.append(
+            "Protected-file submitter declaration: **%s** (%s). The separate human "
+            "authorization gate below is not skipped."
+            % (qa_skip.LABEL, maintenance_reason)
         )
     else:
         attention.append(
@@ -992,26 +1062,38 @@ def protected_files_category(evidence):
             "approval is still required." % PROTECTED_AUTHORIZATION_CHECK
         )
 
-    if not declaration_present or gate_status == FAILED:
+    if gate_status == FAILED:
         status = FAILED
-        summary = (
-            "Protected files changed without the required authorization declaration."
-            if not declaration_present
-            else "The protected-file human authorization gate failed."
-        )
+        summary = "The protected-file human authorization gate failed."
+    elif not declaration_present and not declaration_skip:
+        status = FAILED
+        summary = "Protected files changed without the required authorization declaration."
     elif gate_status == PASSED:
         status = PASSED
-        summary = "Protected change declared and the human authorization gate recorded approval."
+        summary = (
+            "Protected change authorized; the submitter declaration is SKIPPED — NOT "
+            "APPLICABLE for this verified Dependabot update and the human authorization gate "
+            "recorded approval."
+            if declaration_skip
+            else "Protected change declared and the human authorization gate recorded approval."
+        )
     else:
         status = WARNING
         summary = (
-            "Protected change declared; the separate human authorization gate is not yet recorded."
+            "Protected change; the separate human authorization gate is not yet recorded."
         )
         attention.append(
             "Obtain repository-owner approval in the environment-protected human authorization "
             "gate; the declaration alone is not approval and does not replace that gate."
         )
-    return _category("protected-files", status, summary, details, attention)
+    return _category(
+        "protected-files",
+        status,
+        summary,
+        details,
+        attention,
+        skipped=[declaration_skip] if declaration_skip else [],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1104,12 +1186,20 @@ def verification_integrity_category(evidence):
     for record in required:
         details.append(
             "%s (required): %s — %s"
-            % (record.get("name"), _audit_status(record), record.get("detail"))
+            % (
+                record.get("name"),
+                qa_skip.display_status(_audit_status(record), record.get("skip")),
+                record.get("detail"),
+            )
         )
     for record in conditional:
         details.append(
             "%s (conditional): %s — %s"
-            % (record.get("name"), _audit_status(record), record.get("detail"))
+            % (
+                record.get("name"),
+                qa_skip.display_status(_audit_status(record), record.get("skip")),
+                record.get("detail"),
+            )
         )
     if stale:
         details.append(
@@ -1182,15 +1272,65 @@ def verification_integrity_category(evidence):
         status = WARNING
         summary = "A conditional check is still running on the current head."
         attention.append("Wait for the running conditional checks to finish.")
+    elif any(
+        _audit_status(record) == NOT_RUN
+        and record.get("blocking") is not True
+        and not qa_skip.is_authorized_record(record.get("skip"))
+        for record in conditional
+    ):
+        status = WARNING
+        summary = (
+            "A conditional check did not run and no trusted applicability decision explains "
+            "why; that is not a pass."
+        )
+        for record in conditional:
+            if (
+                _audit_status(record) == NOT_RUN
+                and record.get("blocking") is not True
+                and not qa_skip.is_authorized_record(record.get("skip"))
+            ):
+                attention.append(
+                    "%s is NOT RUN and its applicability is unproven: %s"
+                    % (record.get("name"), record.get("detail"))
+                )
     else:
         status = PASSED
         summary = "Every required check completed successfully against the current head."
         if any(item == NOT_RUN for item in conditional_statuses):
             details.append(
-                "At least one conditional check did not run for this change set; it is reported "
-                "as NOT RUN and is not counted as a pass."
+                "At least one conditional check did not run; it is shown as "
+                "SKIPPED — NOT APPLICABLE with its trusted reason and is not counted as a pass."
             )
-    return _category("verification-integrity", status, summary, details, attention)
+
+    unauthorized = [
+        record
+        for record in required + conditional
+        if record.get("applicable") is False
+        and not qa_skip.is_authorized_record(record.get("skip"))
+    ]
+    if unauthorized:
+        status = FAILED
+        summary = (
+            "At least one check is recorded as not applicable without a trusted, reasoned "
+            "skip authority."
+        )
+        for record in unauthorized:
+            attention.append(
+                "%s claims inapplicability without an authorized skip: %s"
+                % (record.get("name"), record.get("detail"))
+            )
+    return _category(
+        "verification-integrity",
+        status,
+        summary,
+        details,
+        attention,
+        skipped=[
+            record["skip"]
+            for record in required + conditional
+            if qa_skip.is_authorized_record(record.get("skip"))
+        ],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1274,19 +1414,365 @@ def governance_category(evidence):
     for label in missing:
         attention.append("Complete the required PR description reporting: %s." % label)
 
+    maintenance, maintenance_reason = qa_skip.dependabot_maintenance(
+        evidence.get("pull_request") or {},
+        evidence.get("commits"),
+        evidence.get("files"),
+    )
+    governance_skip = None
+    if missing and maintenance:
+        governance_skip = qa_skip.record(
+            qa_skip.VERIFIED_DEPENDABOT_MAINTENANCE,
+            "Spec Kit and Library reporting cannot apply to a Dependabot maintenance update",
+        )
+        details.append(
+            "Governance and Spec Kit reporting: **%s** (%s)."
+            % (qa_skip.LABEL, maintenance_reason)
+        )
+        missing = []
+        attention = [
+            entry
+            for entry in attention
+            if not entry.startswith("Complete the required PR description reporting:")
+        ]
+
     if missing:
         status = FAILED
         summary = "Required governance and workflow reporting is missing from the PR description."
     elif attention:
         status = WARNING
         summary = "Governance reporting is present, but declared artifacts are not evidenced in this diff."
+    elif governance_skip:
+        status = PASSED
+        summary = (
+            "Verified Dependabot maintenance update: Spec Kit and Library reporting is "
+            "SKIPPED — NOT APPLICABLE."
+        )
     else:
         status = PASSED
         summary = (
             "Required governance declarations are present and the declared Spec Kit artifacts "
             "appear in this diff."
         )
-    return _category("governance", status, summary, details, attention)
+    return _category(
+        "governance",
+        status,
+        summary,
+        details,
+        attention,
+        skipped=[governance_skip] if governance_skip else [],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Informational performance health (outside the seven checker categories)
+# ---------------------------------------------------------------------------
+
+PERFORMANCE_GOOD = "GOOD"
+PERFORMANCE_NEEDS_ATTENTION = "NEEDS ATTENTION"
+PERFORMANCE_BAD = "BAD"
+PERFORMANCE_NOT_ENOUGH_DATA = "NOT ENOUGH DATA"
+PERFORMANCE_OUTCOMES = (
+    PERFORMANCE_GOOD,
+    PERFORMANCE_NEEDS_ATTENTION,
+    PERFORMANCE_BAD,
+    PERFORMANCE_NOT_ENOUGH_DATA,
+)
+PERFORMANCE_MEASURED_STATUSES = ("healthy", "strained", "critical")
+
+
+def _finite_number(value):
+    """Return a finite float, or None for anything the report cannot trust."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        # An oversized int raises OverflowError instead of returning inf, so an
+        # untrusted snapshot must not be able to reach the formatter with it.
+        number = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None
+    return number
+
+
+def _format_number(value):
+    text = "%.1f" % value
+    return text[:-2] if text.endswith(".0") else text
+
+
+_INLINE_WHITESPACE = re.compile(r"\s+")
+
+
+def _inline_text(value, limit=300):
+    """Collapse untrusted text so it cannot add a line to the report."""
+    text = _INLINE_WHITESPACE.sub(" ", str(value or "")).strip().replace("`", "'")
+    if len(text) > limit:
+        text = text[: limit - 3].rstrip() + "..."
+    return text
+
+
+def _performance_snapshot(payload):
+    """Accept a Workbench diagnostics payload, a wrapper or a bare snapshot."""
+    if not isinstance(payload, dict):
+        return None, None
+    for key in ("monitor", "performance"):
+        nested = payload.get(key)
+        if isinstance(nested, dict):
+            return nested, payload
+    if "status" in payload or "evidence" in payload:
+        return payload, payload
+    return None, payload
+
+
+def _performance_not_enough(explanation, **details):
+    block = {
+        "outcome": PERFORMANCE_NOT_ENOUGH_DATA,
+        "explanation": explanation,
+        "measured_fps": None,
+        "target_fps": None,
+        "tier": None,
+        "status": None,
+        "evidence": None,
+        "source": None,
+        "warnings": [],
+        "samples": None,
+        "window_ms": None,
+        "commit_pinned": False,
+    }
+    block.update(details)
+    # This helper always means "not enough data"; optional fields may be filled
+    # in, but a caller can never turn it into a measured outcome.
+    block["outcome"] = PERFORMANCE_NOT_ENOUGH_DATA
+    block["explanation"] = explanation
+    return block
+
+
+def _performance_explanation(outcome, fps, target, thresholds):
+    healthy = _finite_number(thresholds.get("healthyFps")) if isinstance(thresholds, dict) else None
+    strained = (
+        _finite_number(thresholds.get("strainedFps")) if isinstance(thresholds, dict) else None
+    )
+    if outcome == PERFORMANCE_GOOD:
+        return "Measured delivery is inside the healthy band for the active %s fps plan." % (
+            _format_number(target),
+        )
+    if outcome == PERFORMANCE_NEEDS_ATTENTION:
+        if healthy is not None and fps < healthy:
+            return (
+                "Measured delivery is %.1f fps, below the %s fps healthy floor for the %s fps plan."
+                % (fps, _format_number(healthy), _format_number(target))
+            )
+        if target is not None:
+            # The monitor also strains on p95 frame time and long frames while
+            # the rate is still above the floor, so the sentence must not
+            # claim an fps shortfall that did not happen.
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were exceeded (see monitor warnings such as frame-time-p95-high or "
+                "long-frame-ratio-high)." % (fps, _format_number(target))
+            )
+        return "Measured delivery is below the healthy band for the active plan."
+    if outcome == PERFORMANCE_BAD:
+        if strained is not None and fps < strained:
+            return (
+                "Measured delivery is %.1f fps, below the %s fps critical floor for the %s fps plan."
+                % (fps, _format_number(strained), _format_number(target))
+            )
+        if target is not None:
+            return (
+                "Measured delivery is %.1f fps; frame-time or long-frame limits for the %s fps "
+                "plan were critically exceeded (see monitor warnings such as "
+                "frame-time-p95-high or long-frame-ratio-high)." % (fps, _format_number(target))
+            )
+        return "Measured delivery is below the critical band for the active plan."
+    return ""
+
+
+def performance_health_block(evidence):
+    """Build one informational snapshot; it never affects the seven categories."""
+    if "performance" not in evidence or evidence.get("performance") is None:
+        return _performance_not_enough(
+            "No runtime frame-delivery snapshot was supplied. CI does not measure frame "
+            "delivery, so no performance claim is made."
+        )
+    payload = evidence.get("performance")
+    if isinstance(payload, dict) and payload.get("message"):
+        message = _inline_text(payload["message"], 300)
+        return _performance_not_enough(
+            message or "The supplied performance evidence could not be read."
+        )
+    snapshot, wrapper = _performance_snapshot(payload)
+    if snapshot is None:
+        return _performance_not_enough(
+            "The supplied performance evidence does not contain a monitor snapshot."
+        )
+
+    head = _head_sha(evidence)
+    declared = None
+    for source in (snapshot, wrapper or {}):
+        if not isinstance(source, dict):
+            continue
+        for key in ("headSha", "head_sha", "commit"):
+            if source.get(key):
+                declared = str(source[key]).strip()
+                break
+        if declared:
+            break
+    if declared and head and declared.lower() != str(head).lower():
+        return _performance_not_enough(
+            "The snapshot was captured at %s, not at the current report head %s."
+            % (declared[:12], str(head)[:12])
+        )
+
+    status = _inline_text(snapshot.get("status") or "", 40).lower()
+    evidence_state = _inline_text(snapshot.get("evidence") or "", 40).lower()
+    fps = _finite_number(snapshot.get("fps"))
+    target = _finite_number(snapshot.get("targetFps"))
+    thresholds = snapshot.get("thresholds")
+    if not isinstance(thresholds, dict):
+        thresholds = {}
+    plan = wrapper.get("plan") if isinstance(wrapper, dict) else None
+    if not isinstance(plan, dict):
+        plan = snapshot.get("plan") if isinstance(snapshot.get("plan"), dict) else {}
+    tier = (
+        _inline_text(plan.get("tier"), 80)
+        if isinstance(plan.get("tier"), str)
+        else None
+    ) or None
+    source = (
+        _inline_text(snapshot.get("source"), 80)
+        if isinstance(snapshot.get("source"), str)
+        else None
+    ) or None
+    warnings = []
+    raw_warnings = snapshot.get("warnings")
+    if not isinstance(raw_warnings, (list, tuple)):
+        # A malformed warnings field is decoration, not a measurement; ignore it
+        # rather than failing the whole report.
+        raw_warnings = []
+    for item in raw_warnings[:6]:
+        if isinstance(item, str):
+            warning = _inline_text(item, 120)
+            if warning:
+                warnings.append(warning)
+    samples = _finite_number(snapshot.get("sampleCount"))
+    window_ms = _finite_number(snapshot.get("windowMs"))
+    common = {
+        "target_fps": target,
+        "tier": tier,
+        "status": status or None,
+        "evidence": evidence_state or None,
+        "source": source,
+        "warnings": warnings,
+        "samples": samples,
+        "window_ms": window_ms,
+        "commit_pinned": bool(declared),
+    }
+
+    if status == "paused":
+        return _performance_not_enough(
+            "The active plan intentionally pauses frame delivery (%s), so there is no "
+            "health measurement." % (", ".join(warnings) or "plan paused"),
+            **common
+        )
+    if status == "idle":
+        return _performance_not_enough(
+            "The plan expects frames but the observed renderer stopped delivering them, so "
+            "there is no current measurement.",
+            **common
+        )
+    if status == "warming":
+        return _performance_not_enough(
+            "The monitor has not completed a sufficient measurement window yet.",
+            **common
+        )
+    if status not in PERFORMANCE_MEASURED_STATUSES or evidence_state != "measured":
+        return _performance_not_enough(
+            "The snapshot does not contain a measured frame-delivery classification.",
+            **common
+        )
+    if fps is None or fps <= 0 or target is None or target <= 0:
+        return _performance_not_enough(
+            "The snapshot does not contain a usable measured frame rate and plan target.",
+            **common
+        )
+
+    healthy_floor = _finite_number(thresholds.get("healthyFps"))
+    if status == "healthy" and healthy_floor is not None and fps < healthy_floor - 0.05:
+        return _performance_not_enough(
+            "The snapshot is internally inconsistent: it reports healthy at %.1f fps, below "
+            "its own %s fps healthy floor." % (fps, _format_number(healthy_floor)),
+            **common
+        )
+    if status == "healthy" and healthy_floor is None and fps < target * 0.5:
+        return _performance_not_enough(
+            "The snapshot is internally inconsistent: it reports healthy at %.1f fps for a "
+            "%s fps plan." % (fps, _format_number(target)),
+            **common
+        )
+
+    outcome = {
+        "healthy": PERFORMANCE_GOOD,
+        "strained": PERFORMANCE_NEEDS_ATTENTION,
+        "critical": PERFORMANCE_BAD,
+    }[status]
+    block = dict(common)
+    block.update(
+        {
+            "outcome": outcome,
+            "measured_fps": fps,
+            "explanation": _performance_explanation(outcome, fps, target, thresholds),
+        }
+    )
+    return block
+
+
+def _render_performance_health(block):
+    lines = ["### Performance health (informational)", ""]
+    lines.append("- Result: **%s**" % block.get("outcome"))
+    fps = block.get("measured_fps")
+    target = block.get("target_fps")
+    if fps is not None and target:
+        measurement = "%.1f fps against a %s fps plan target" % (fps, _format_number(target))
+        if block.get("tier"):
+            measurement += " (tier `%s`)" % block["tier"]
+        lines.append("- Measured frame delivery: %s." % measurement)
+    else:
+        lines.append("- Measured frame delivery: not available.")
+    if block.get("status"):
+        monitor = "- Monitor state: `%s`; evidence `%s`" % (
+            block["status"],
+            block.get("evidence") or "unknown",
+        )
+        if block.get("source"):
+            monitor += "; source `%s`" % block["source"]
+        lines.append(monitor + ".")
+    samples = block.get("samples")
+    window_ms = block.get("window_ms")
+    if samples and window_ms:
+        lines.append(
+            "- Samples: %d across the %s ms measurement window."
+            % (int(samples), _format_number(window_ms))
+        )
+    if block.get("explanation"):
+        lines.append("- %s" % _inline_text(block["explanation"], 500))
+    if block.get("warnings"):
+        lines.append(
+            "- Monitor warnings: %s."
+            % ", ".join("`%s`" % warning for warning in block["warnings"])
+        )
+    if block.get("outcome") != PERFORMANCE_NOT_ENOUGH_DATA and not block.get("commit_pinned"):
+        lines.append(
+            "- Commit binding: not supplied; the snapshot is informational and is not "
+            "treated as current-head verification."
+        )
+    lines.append(
+        "- Scope: informational only. It does not change the seven checker categories, "
+        "their gates or the PR status, and CI does not measure frame delivery."
+    )
+    lines.append("")
+    return lines
 
 
 # ---------------------------------------------------------------------------
@@ -1334,12 +1820,17 @@ def build_report(evidence):
         "overall_status": overall,
         "categories": categories,
         "supporting_checks": _supporting_rows(evidence),
+        "performance_health": performance_health_block(evidence),
     }
 
 
 def _supporting_status(row):
+    if row.get("failure_overrides_skip"):
+        return "FAILED — an observed failed run outranks the claimed inapplicability"
+    if qa_skip.is_authorized_record(row.get("skip")):
+        return qa_skip.LABEL
     if row.get("applicable") is False:
-        return "NOT RUN — not applicable: %s" % (row.get("reason") or "not required for this change set")
+        return "NOT RUN — the claimed inapplicability is not authorized"
     return row["status"]
 
 
@@ -1365,12 +1856,22 @@ def render_comment(report, limit=LIMIT):
         "- Current PR head: `%s`" % head,
         "- Overall: **%s**" % report.get("overall_status"),
         "",
-        "The report is updated in place on every run and always describes the current head. "
-        "A result from an earlier commit is never accepted as proof that the latest commit passed.",
-        "",
-        "| # | Checker category | Status | Summary |",
-        "| --- | --- | --- | --- |",
     ]
+    lines.extend(
+        _render_performance_health(
+            report.get("performance_health")
+            or _performance_not_enough("No performance snapshot was available.")
+        )
+    )
+    lines.extend(
+        [
+            "The report is updated in place on every run and always describes the current head. "
+            "A result from an earlier commit is never accepted as proof that the latest commit passed.",
+            "",
+            "| # | Checker category | Status | Summary |",
+            "| --- | --- | --- | --- |",
+        ]
+    )
     for index, item in enumerate(report["categories"], start=1):
         lines.append(
             "| %d | %s | **%s** | %s |"
@@ -1403,6 +1904,15 @@ def render_comment(report, limit=LIMIT):
                 "",
             ]
         )
+        if item.get("skipped"):
+            lines.append(
+                "Skipped (not applicable): %s."
+                % "; ".join(
+                    "%s (%s)" % (entry["reason"], entry["authority"])
+                    for entry in item["skipped"]
+                )
+            )
+            lines.append("")
         details = item.get("details") or []
         rendered = []
         for entry in details:
@@ -1417,8 +1927,13 @@ def render_comment(report, limit=LIMIT):
         [
             "---",
             "",
-            "Statuses are limited to `PASSED`, `FAILED`, `WARNING` and `NOT RUN`. A missing, "
-            "skipped, cancelled, incomplete or outdated result is never shown as passed. "
+            "Category statuses are limited to `PASSED`, `FAILED`, `WARNING` and `NOT RUN`. "
+            "An individual check that a trusted authority proves cannot apply is labelled "
+            "`SKIPPED — NOT APPLICABLE` with its reason; it is never labelled `PASSED`, and "
+            "the category and overall report stay successful only when every other applicable "
+            "requirement passes. An unexplained, unauthorized or accidental skip is never "
+            "successful, and an observed failure always outranks a claimed inapplicability. "
+            "A missing, cancelled, incomplete or outdated result is never shown as passed. "
             "The PR description carries the submitter's declarations and documentation; this "
             "report publishes the checker results for the current head.",
         ]
@@ -1442,9 +1957,19 @@ def render_comment(report, limit=LIMIT):
             "- Pull request: #%s" % report.get("pr_number"),
             "- Current PR head: `%s`" % head,
             "",
-            "| # | Checker category | Status | Summary |",
-            "| --- | --- | --- | --- |",
         ]
+        lines.extend(
+            _render_performance_health(
+                report.get("performance_health")
+                or _performance_not_enough("No performance snapshot was available.")
+            )
+        )
+        lines.extend(
+            [
+                "| # | Checker category | Status | Summary |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
         for index, item in enumerate(trimmed, start=1):
             lines.append(
                 "| %d | %s | **%s** | %s |"
@@ -1455,6 +1980,11 @@ def render_comment(report, limit=LIMIT):
         lines.extend(["", "### Category details", ""])
         for index, item in enumerate(trimmed, start=1):
             lines.extend(["#### %d. %s — %s" % (index, item["name"], item["status"]), ""])
+            if item.get("skipped"):
+                lines.append(
+                    "- Skipped (not applicable): %s"
+                    % "; ".join(entry["reason"] for entry in item["skipped"])
+                )
             if item.get("attention"):
                 lines.extend("- Needs attention: %s" % entry for entry in item["attention"])
             lines.extend(
@@ -1494,10 +2024,17 @@ def build_parser():
     parser.add_argument("--comments", help="GitHub issue comment records JSON")
     parser.add_argument("--owner", required=True, help="repository owner login")
     parser.add_argument("--checks", help="check runs JSON for the current head")
+    parser.add_argument(
+        "--commits", help="pull request commit records JSON (used for verified Dependabot skips)"
+    )
     parser.add_argument("--verification", help="current-head verification audit JSON")
     parser.add_argument("--alerts", help="code-scanning alerts JSON")
     parser.add_argument(
         "--dependency-alerts", help="open Dependabot dependency advisory records JSON"
+    )
+    parser.add_argument(
+        "--performance",
+        help="optional runtime frame-delivery snapshot JSON (informational)",
     )
     parser.add_argument("--comment", help="write the sticky pull request comment here")
     parser.add_argument("--summary", help="append the report to this Markdown file")
@@ -1522,6 +2059,9 @@ def main(argv=None):
     checks = _read_optional(args.checks)
     if checks is not None:
         evidence["check_runs"] = checks
+    commits = _read_optional(args.commits)
+    if commits is not None:
+        evidence["commits"] = commits
     verification = _read_optional(args.verification)
     if verification is not None:
         evidence["verification"] = verification
@@ -1537,10 +2077,26 @@ def main(argv=None):
         evidence["dependabot_alerts"] = {
             "message": "the Dependabot alerts could not be read"
         }
+    if args.performance:
+        performance = _read_optional(args.performance)
+        if performance is None:
+            evidence["performance"] = {
+                "message": "the supplied performance snapshot could not be read"
+            }
+        else:
+            evidence["performance"] = performance
 
     try:
         report = build_report(evidence)
-    except (OSError, json.JSONDecodeError, ReportError, scope.ScopeError) as error:
+    except (
+        OSError,
+        json.JSONDecodeError,
+        ReportError,
+        scope.ScopeError,
+        OverflowError,
+        TypeError,
+        ValueError,
+    ) as error:
         print("PR verification report could not be built: %s" % error, file=sys.stderr)
         return 2
 

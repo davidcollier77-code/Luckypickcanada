@@ -68,11 +68,16 @@ describe('trusted applicability recomputation', () => {
     expect(auditScript).toContain('for record in required + conditional:');
   });
 
-  it('reports not-applicable rows honestly instead of warning', () => {
+  it('reports an authorized skip honestly instead of warning or passing', () => {
+    const skipContract = read('.github/scripts/qa_skip.py');
     expect(reportScript).toContain('"Application Verification"');
-    expect(reportScript).toContain('NOT RUN — not applicable:');
+    expect(skipContract).toContain('SKIPPED — NOT APPLICABLE');
+    expect(reportScript).toContain('qa_skip.is_authorized_record');
     expect(reportScript).toContain('row.get("applicable") is not False');
     expect(reportScript).toContain('conditional_required');
+    // The individual skip is never a category status, so the fixed four
+    // statuses and seven categories are unchanged.
+    expect(reportScript).not.toContain('BLOCKED =');
   });
 });
 
@@ -83,6 +88,10 @@ describe('preserved safeguards', () => {
     expect(verify).not.toMatch(/^    if:/m);
     expect(verify).toContain('pnpm run test');
     expect(verify).toContain('pnpm exec tsc --noEmit');
+    // The browser install is unconditional inside the classifier-gated job, so
+    // it cannot silently reuse a browser from an older Playwright version.
+    expect(visual).toContain('Install Chromium with its system dependencies');
+    expect(visual).not.toContain('verify-playwright-cache.sh');
   });
 
   it('keeps DevSkim, CodeQL default setup and Dependabot unchanged', () => {

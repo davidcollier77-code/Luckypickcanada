@@ -213,6 +213,7 @@ jobs:
             .github/scripts/check_qa_pr_scope.py \
             .github/scripts/checker_suite.py \
             .github/scripts/pr_verification_report.py \
+            .github/scripts/qa_skip.py \
             .github/scripts/report_visual_qa_install_timings.py \
             .github/scripts/review_pr_changes.py \
             .github/scripts/summarize_devskim_findings.py \
@@ -221,6 +222,7 @@ jobs:
             test_check_qa_pr_scope \
             test_checker_suite \
             test_pr_verification_report \
+            test_qa_skip \
             test_report_visual_qa_install_timings \
             test_review_pr_changes \
             test_summarize_devskim_findings \
@@ -309,28 +311,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-chromium-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
-      # A version-keyed cache normally restores a matching browser, but a partial
-      # or corrupt archive restores "successfully" with nothing runnable inside.
-      # Verify the archive before skipping the download so that case reinstalls
-      # instead of failing every test at launch.
-      - name: Validate restored Playwright Chromium
-        id: playwright-browser
-        shell: bash
-        run: |
-          set -euo pipefail
-          state="$(bash .github/scripts/verify-playwright-cache.sh)"
-          printf '%s\n' "$state" >> "$GITHUB_OUTPUT"
-          if [[ "$state" != 'ready=true' ]]; then
-            echo "::warning::The restored Playwright cache has no usable Chromium executable; installing a matching build."
-          fi
-
-      - name: Install Playwright Chromium (browser unavailable)
-        if: steps.playwright-browser.outputs.ready != 'true'
+      # A version-keyed cache normally restores a matching browser. Install
+      # unconditionally: Playwright already skips a download when its pinned
+      # revision is present, installs it when the cache missed or was partial,
+      # and always provisions the matching system dependencies. That removes the
+      # custom cache validator and its version-specific assumptions; the
+      # installed Playwright remains the only source of truth.
+      - name: Install Chromium with its system dependencies
         run: pnpm exec playwright install --with-deps chromium
-
-      - name: Install Playwright system dependencies (browser cached)
-        if: steps.playwright-browser.outputs.ready == 'true'
-        run: pnpm exec playwright install-deps chromium
 
       # Assign whole spec files to this shard using committed duration weights.
       # The planner discovers the files itself and refuses to continue if any

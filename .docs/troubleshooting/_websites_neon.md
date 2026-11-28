@@ -108,7 +108,7 @@ Agent Skills, MCP integrations, vector search, and tools for building AI-powered
 - [Set up other agents and MCP clients](https://neon.com/docs/ai/connect-mcp-clients-to-neon.md): Install Neon's agent skills and the Neon MCP Server in Devin Desktop, Cline, Zed, Gemini CLI, Kiro, Kimi Code, and other agents
 - [Agent Skills](https://neon.com/docs/ai/agent-skills.md): Teach your AI coding assistant how to work with Neon
 - [Set up your AI agent for Neon](https://neon.com/docs/ai/agent-setup.md): Connect Neon to your coding agent or chat app
-- [Lakebase Search](https://neon.com/docs/ai/lakebase-search.md): Scalable vector and full-text search for Postgres
+- [Lakebase Search](https://neon.com/docs/ai/lakebase-search.md): A search system built for agents, running inside your Postgres database
 - [Database versioning with snapshots](https://neon.com/docs/ai/ai-database-versioning.md): How AI agents and codegen platforms implement database version control using snapshots and preview branches
 
 ## Auth
@@ -127,7 +127,7 @@ Managed authentication built on Better Auth that branches with your database.
 
 Long-running serverless compute, close to your database.
 
-- [All 19 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
+- [All 20 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
 
 - [Neon Functions](https://neon.com/docs/compute/functions/overview.md): Long-running serverless functions on your Neon branch, next to your data.
 - [Get started with Neon Functions](https://neon.com/docs/compute/functions/get-started.md): Deploy your first Neon Function and call it over HTTP.
@@ -148,6 +148,16 @@ S3-compatible object storage that branches with your projects.
 - [Object storage troubleshooting](https://neon.com/docs/storage/troubleshooting.md): Common errors and how to fix them
 - [Objects](https://neon.com/docs/storage/objects.md): Upload, download, list, and delete files
 - [S3 compatibility](https://neon.com/docs/storage/s3-compatibility.md): Which S3 operations Neon Object Storage supports
+
+### Uploads
+
+- [Import files from URLs and cloud services with Uppy Companion](https://neon.com/docs/storage/uploads/uppy-remote-sources.md): Have Companion fetch remote files and stream them into your Neon bucket
+- [Recover Uppy uploads after a reload or crash](https://neon.com/docs/storage/uploads/uppy-golden-retriever.md): Use Golden Retriever to resume uploads to Neon in a new tab
+- [Resumable uploads](https://neon.com/docs/storage/uploads/resumable-uploads.md): Upload large files that survive pauses, network drops, and page reloads
+- [Resumable uploads with Uppy and a signing endpoint](https://neon.com/docs/storage/uploads/uppy-s3-multipart.md): Upload from the browser directly to Neon, with your backend presigning each request
+- [Resumable uploads with Uppy and tus](https://neon.com/docs/storage/uploads/uppy-tus.md): Run a tus server that stores uploads in Neon Object Storage
+- [Resumable uploads with Uppy Companion](https://neon.com/docs/storage/uploads/uppy-companion.md): Let Uppy Companion sign S3 multipart uploads to your Neon bucket
+- [Sign Uppy uploads in the browser with short-lived credentials](https://neon.com/docs/storage/uploads/uppy-browser-signing.md): Use @uppy/aws-s3 getCredentials with an expiring Neon credential
 
 ## AI Gateway
 
@@ -204,7 +214,7 @@ Instant copy-on-write database environments for dev, CI, previews, and recovery.
 
 Projects, branches, computes, roles, databases, and organization settings.
 
-- [All 28 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
+- [All 27 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
 
 - [Manage projects](https://neon.com/docs/manage/projects.md): Learn how to manage Neon projects from the Neon Console or the Neon API.
 - [Manage branches](https://neon.com/docs/manage/branches.md)
@@ -216,11 +226,11 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 160 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 163 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Connect a Next.js app to Lakebase Postgres on Neon, query it from a Server Component, a Server Action, and a Route Handler, develop on a branch, deploy, and add the rest of your backend
-- [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
-- [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Learn how to connect to Neon from Drizzle
+- [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Create a Neon project, link it with neon link, and query Lakebase Postgres through Prisma 7 with the Neon driver adapter
+- [Connect from Drizzle to Neon](https://neon.com/docs/guides/drizzle.md): Create a Node.js project, link it with neon link, and query Lakebase Postgres through Drizzle ORM with node-postgres
 - [Neon integration guides](https://neon.com/docs/guides/integrations.md): Find setup instructions for connecting Neon to platforms and services.
 - [Integrating Neon with Vercel](https://neon.com/docs/guides/vercel-overview.md): Choose the right connection path
 - [Integrating with Neon](https://neon.com/docs/guides/platform-integration-overview.md): Choose the right integration path for your platform or application
@@ -292,7 +302,6 @@ Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701,
 - [HIPAA Compliance](https://neon.com/docs/security/hipaa.md)
 - [Security overview](https://neon.com/docs/security/security-overview.md)
 - [Security reporting](https://neon.com/docs/security/security-reporting.md)
-- [SOC 3 report](https://neon.com/docs/security/soc-3-report.md): Controls relevant to security, availability, and confidentiality
 
 ## Extensions
 
@@ -309,7 +318,7 @@ Postgres extensions supported by Neon, with install and usage instructions.
 
 Contributor guides, component architecture, and documentation standards.
 
-- [All 9 Community pages](https://neon.com/docs/community/llms.txt) — key pages below
+- [All 10 Community pages](https://neon.com/docs/community/llms.txt) — key pages below
 
 - [Docs contribution guide](https://neon.com/docs/community/contribution-guide.md): Learn how to contribute to the Neon documentation
 - [Getting Neon docs as Markdown](https://neon.com/docs/community/llms-markdown-guide.md): How to get our documentation as plain Markdown for LLMs, tools, and scripts

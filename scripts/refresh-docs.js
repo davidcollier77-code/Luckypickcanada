@@ -10,6 +10,15 @@ const MIN_DOCUMENT_CHARACTERS = 24;
 const MIN_READABLE_WORDS = 5;
 const MIN_WORD_CHARACTER_RATIO = 0.5;
 
+// These agent reference snapshots remain routed and integrity-checked, but their
+// upstream URLs must never be requested by the scheduled documentation updater.
+const STATIC_REFERENCE_DOCUMENTS = new Map([
+  [
+    '/llmstxt/gsap_llms_txt',
+    'Static GSAP AI reference; preserve the checked-in snapshot without fetching its configured upstream URL.'
+  ]
+]);
+
 /**
  * Decode complete HTTP response bytes as UTF-8 only after all chunks arrive.
  * A streaming boundary can split a multi-byte character; decoding individual
@@ -164,6 +173,21 @@ function convertHtmlToMarkdown(html, baseUrl) {
     }
   };
 
+  // Cloudflare rotates the opaque hexadecimal token on email-protection links.
+  // Their visible label is meaningful documentation; the generated href is not.
+  const isCloudflareEmailProtectionHref = (href) => {
+    if (typeof href !== 'string') return false;
+    try {
+      const page = new URL(baseUrl);
+      const url = new URL(href, page);
+      return url.origin === page.origin &&
+        url.pathname.toLowerCase() === '/cdn-cgi/l/email-protection' &&
+        /^#[0-9a-f]+$/i.test(url.hash);
+    } catch (error) {
+      return false;
+    }
+  };
+
   const inline = (node) => {
     if (node.nodeType === 3) return node.nodeValue.replace(/\s+/g, ' ');
     if (node.nodeType !== 1) return '';
@@ -177,7 +201,9 @@ function convertHtmlToMarkdown(html, baseUrl) {
     }
     if (tag === 'a') {
       const label = children().trim();
-      const href = safeHref(node.getAttribute('href'));
+      const rawHref = node.getAttribute('href');
+      if (isCloudflareEmailProtectionHref(rawHref)) return label;
+      const href = safeHref(rawHref);
       return label && href ? '[' + label + '](' + href + ')' : label;
     }
     if (['strong', 'b'].includes(tag)) return '**' + children().trim() + '**';
@@ -1249,6 +1275,7 @@ function createRefreshReport() {
     finalSize: 0,
     downloadFailures: [],
     validationRejections: [],
+    staticReferences: [],
     removedLibraries: [],
     removedSnapshots: [],
     repairedLinks: [],
@@ -1297,6 +1324,7 @@ function renderRefreshReport(report) {
   lines.push(
     `- **Summary:** ${report.updated} updated · ${report.unchanged} unchanged · ${report.skipped} skipped · ` +
     `${report.failed} download failure(s) · ${report.rejected} rejected download(s) · ` +
+    `${report.staticReferences.length} static reference(s) retained · ` +
     `${criticalIssues.length} critical integrity issue(s)`
   );
   lines.push(`- **Library size:** ${report.finalSize} bytes (${(report.finalSize / 1024 / 1024).toFixed(2)} MB)`);
@@ -1317,6 +1345,17 @@ function renderRefreshReport(report) {
     }
     lines.push('');
     lines.push('The existing good document was preserved where one existed. Source URLs were not changed automatically; review and correct them in a pull request.');
+  }
+  lines.push('');
+
+  lines.push('### Static reference documents (not refreshed)');
+  lines.push('');
+  if (report.staticReferences.length === 0) {
+    lines.push('None.');
+  } else {
+    for (const entry of report.staticReferences) {
+      lines.push('- `' + escapeListText(entry.library) + '` — ' + escapeListText(entry.reason) + '.');
+    }
   }
   lines.push('');
 
@@ -1512,6 +1551,12 @@ async function runRefresh(options, report) {
 
   const pendingUpdates = [];
   for (const [library, groups] of libraryToGroups) {
+    const staticReason = STATIC_REFERENCE_DOCUMENTS.get(library);
+    if (staticReason) {
+      report.staticReferences.push({ library, reason: staticReason });
+      console.log('STATIC REFERENCE (not refreshed): ' + library);
+      continue;
+    }
     if (ambiguousFilenames.has(getLibraryFilename(library))) continue;
     pendingUpdates.push({ lib: library, groups });
   }
@@ -1887,6 +1932,7 @@ async function main() {
   console.log(`Rejected downloads: ${report.rejected}`);
   console.log(`Unchanged: ${report.unchanged}`);
   console.log(`Skipped (no upstream change): ${report.skipped}`);
+  console.log(`Static references retained without refresh: ${report.staticReferences.length}`);
   console.log(`Pending: ${report.pending}`);
   console.log(`Bytes added: ${report.bytesAdded}`);
   console.log(`Final .docs size: ${report.finalSize} bytes (${(report.finalSize / 1024 / 1024).toFixed(2)} MB)`);

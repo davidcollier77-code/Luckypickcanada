@@ -15,6 +15,7 @@
  * of the same scene at the same time are comparable before and after a change.
  */
 
+import { buildInstrumentPrototype } from '../lucky-meter/instrument-prototype.js';
 import { createLightRig } from './lighting.js';
 import { createMaterialLibrary } from './materials.js';
 import { createParticleField } from './particles.js';
@@ -40,6 +41,9 @@ function mulberry32(seed) {
  */
 export async function buildWorkbenchScene({ scene, surface, seed = 11 } = {}) {
   if (!scene || !surface) return null;
+  if (scene.id === 'lucky-meter-instrument' && surface.kind === GRAPHICS_TECHNOLOGY.THREE) {
+    return buildInstrumentPrototype({ surface, seed });
+  }
   if (surface.kind === GRAPHICS_TECHNOLOGY.THREE) return buildThreeScene({ scene, surface, seed });
   if (surface.kind === GRAPHICS_TECHNOLOGY.CANVAS2D) return buildCanvasScene({ scene, surface, seed });
   // An existing engine owns its frames; the workbench does not take them over.

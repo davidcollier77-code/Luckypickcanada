@@ -1,3 +1,160 @@
+## 2026-11-27 — Cloudflare email-protection token stability (Spec 228)
+
+- Confirmed that the repeated NumPy snapshot changes came from rotating same-origin Cloudflare `/cdn-cgi/l/email-protection#<hex>` href fragments, not changing documentation text. Two live reads of the configured page matched after accounting only for that volatile fragment.
+- The updater correction is narrowly scoped to HTML-to-Markdown anchor serialization: preserve the visible label as text and omit only the recognized Cloudflare email-protection href. Ordinary links and the broader URL-validation logic are unchanged.
+- Added regression coverage for converter output and two consecutive complete updater passes. The expected second pass is `0 updated / 1 unchanged`, with byte-identical snapshot content and no manifest timestamp rewrite.
+- The NumPy source is a non-GitHub URL, so no upstream GitHub SHA is available; the updater's current live-fetch/content-comparison fallback is correct. Historical SHA metadata is inert and intentionally unchanged.
+- The existing Node 26 Application Verification workflow already runs the updater test suite. The updater script is protected and the PR retains the required authorization declaration and separate environment approval gate. Existing build validation and Playwright shards remain required for the root `scripts/` path.
+- No source URL, manifest, generated `.docs/` file, dependency, schedule, workflow, application code, deployment setting or production resource is changed. Local Node 26 tests/build are not claimed under ChatGPT's runtime; current-head CI remains the verification authority.
+
+## 2026-11-27 — Restore official GSAP Timeline documentation (Spec 227 follow-up)
+
+- Recovered .docs/polishing/_llmstxt_gsap_llms_txt.md, which previously contained only a Cloudflare verification message, from the exact official URL already configured in .docs/manifest.json: https://gsap.com/docs/v3/GSAP/Timeline.
+- Retrieved the official page through Browserless and restored its article as Markdown, including Timeline sequencing, position parameters, special properties/callbacks, defaults, nesting, mechanics, properties and method reference tables.
+- Retained the static-reference updater exclusion. The manifest route, inventory and source URL remain unchanged; future automatic refreshes skip the GSAP ID before upstream requests.
+- The historical reason the old updater accepted the challenge response is not established by current evidence. Current updater code includes explicit challenge and raw-HTML rejection safeguards.
+- The existing PR #2059 was updated as an owner-authorized scope extension. The one new .docs path must be added to the exact QA scope declaration and approved with the current checker-generated /approve-scope <digest> command. Fresh current-head CI/report verification remains required; no merge or deployment.
+
+## 2026-11-27 — Spec 225 build-size evidence and governance handoff
+
+- Clarified the shared `AGENTS.md` Production build limit section: smaller, logically coherent PRs are an ordinary optional planning approach when useful, not a panic response or a reason to compromise functionality, security or quality. The 495 MiB limit and existing safeguards are unchanged.
+- Latest successful CI production build measurement: combined `.next + public` **426,389,100 bytes (406.64 MiB)**, from `Validate OpenNext Repair` run #2614 (run ID `45919768945`) on PR #2048 head `7049dd547aade8ea2c4fa95a223a1a7dd7933193`, 2026-11-27. The 495 MiB cap is 519,045,120 bytes; measured headroom was 92,656,020 bytes (88.36 MiB).
+- PR #2048's measured tree is identical to its merge commit tree. The two later commits before PR #2052's base changed only build-exempt `.docs/` and `.specify/` metadata. PR #2052's own changes are likewise build-exempt; its production build was correctly skipped by the trusted classifier. The 406.64 MiB figure is the latest verified current-base measurement, **not** a fresh build produced by PR #2052. Preserve Spec 224's separate 485,572,608-byte (463.08 MiB) full-gate result as historical evidence.
+- Completed the Spec Kit specify → plan → tasks → implement records for Spec 225 and updated the feature pointer. Read and health-checked all four Memory Bank core files; updated `activeContext.md`, `techContext.md` and this `progress.md`; left the stable `projectBrief.md` unchanged.
+- PR #2052 remains open and unmerged for owner review. The new head must receive its own current-head seven-category report and refreshed governance digest; the owner approval and protected-file environment gate remain separate mandatory steps.
+
+## 2026-11-27 — Progressive build-size planning guidance (Spec 225)
+
+- Added a calm, optional planning clarification to the shared `AGENTS.md` Production build limit section: when helpful, logically coherent work may be divided into smaller PRs and delivered progressively; this is a normal option, not a reason to rush, abandon work or compromise functionality, security or quality.
+- The strict 495 MiB threshold and every existing measurement, safe-stop, quality and reporting safeguard remain unchanged.
+- The change set is prepared on its dedicated branch for one regular, non-draft governance PR against `main`, with the required Spec Kit and Memory Bank records. The protected-file environment gate and separate governance digest approval remain owner actions; no merge or deployment has occurred.
+- Documentation-only scope: no application, dependency, workflow, build, deployment, visual, secret or production-resource changes. No local full build-size measurement is claimed.
+
+## 2026-11-26 — Undici major-scoped security fix (Spec 224)
+
+- Replaced the global `undici: 8.12.2` override with `undici@6: 6.29.1`, `undici@7: 7.30.2` and `undici@8: 8.13.1`; regenerated the lockfile with pnpm 10.30.3.
+- Resolved split: dotenvx 6.29.1, Wrangler/Miniflare/workers-utils 7.30.2, jsdom 8.13.1. No 8.12.2 remains; each consumer stays in its declared major.
+- Updated the dedicated Undici guard and the dependency-management guard; focused tests 50/50; full verification passed 520 Python tests, 113 Vitest files / 1,270 tests, TypeScript and the Next.js build at 485,572,608 bytes (463.08 MiB), below 495 MiB.
+- OpenNext 1.20.18 build, Wrangler 4.166.0 build and updater-scheduler dry-run passed; updater Node tests 17/17. PR #2047's OpenNext 1.20.19 update remains separate. No deployment or application code change.
+
+## 2026-11-26 — Spec 220 Cloudflare toolchain re-audit implemented
+
+- A fresh, independent audit selected only `@opennextjs/cloudflare` 1.20.18 → **1.20.19** and retained **Wrangler 4.166.0**; the earlier plan's Wrangler bump was rejected because 4.167.0/4.168.0 contain no applicable security or compatibility fix.
+- 1.20.19 moves the adapter to `glob ^14.0.6` and `@opennextjs/aws 4.2.1`, removing the GHSA-g3hv-75wg-m249 minimatch 10 path that the repository had only avoided with a cross-major `minimatch@10 → 11.0.1` override, and fixing the cookie/middleware 500 regression introduced in 1.20.18.
+- The lockfile was regenerated with Node 26.13.0 and pnpm 10.30.3: `glob@13.0.7`/`path-scurry@2.0.2` removed, one `glob@14.0.6`, one `undici@8.12.2`, every override unchanged. A dependency-policy test now fails if the glob 13/minimatch 10 path or an unpinned/unlocked build tool returns.
+- Verified: frozen install; focused dependency tests 12/12; `./freebuff-verify.sh` exit 0 (520 Python, 1,269 Vitest across 113 files, TypeScript, 51 docs tests); OpenNext build with Worker/assets/compiled CSS and a matching BUILD_ID; `wrangler build` and scheduler dry-run exit 0; combined `.next` + `public` **439,922,688 bytes (419.54 MiB)**, below 495 MiB.
+- Playwright, DevSkim, the OpenNext CI job, the seven-category report and deployment remain PENDING for CI. No application, Cloudflare or deployment configuration changed; one regular, non-draft PR is open and unmerged.
+
+## 2026-11-26 — Spec 223 merged and PR handoff closed out
+
+- PR [#2043](https://github.com/davidcollier77-code/Luckypickcanada/pull/2043) merged to `main` as `17135708adc7b3e96e71e2bab7397723553a5852`; the 16-path documentation reconciliation is present on the default branch.
+- The last published seven-category report was current for PR head `7ce7c3678d157dabce99bfe5cec609474787e22e` and recorded: QA Checker **PASSED**; DevSkim **PASSED**; PR Scope Verification **PASSED**; Protected File Changes **PASSED**; Verification Integrity **PASSED**; Governance and Workflow Verification **FAILED**; Dependency Health & Vulnerability Review **PASSED**. Application Verification passed; Visual QA and OpenNext build validation were marked `SKIPPED — NOT APPLICABLE` for the documentation-only diff.
+- Governance failed because the PR body used non-canonical labels: it said `Spec Kit stages declared` instead of `Spec Kit stages completed`, omitted a separate `Spec Kit artifact paths` label, and used `Memory Bank files read` instead of `Memory Bank`. The report checker and its tests require those exact labels. Task-group and Library-document labels were present. The report was not refreshed after merge; no later passing result is claimed.
+- Spec 223 task T017 is closed with the actual report outcome recorded. PR #2044 remains closed and unmerged because its duplicate Spec 223 path and feature-pointer change are unnecessary.
+- Spec 220 remains a separate authorized but unstarted dependency task. Its implementation/verification tasks remain pending; no dependency, application, workflow, deployment or production configuration was changed by this closeout.
+
+## 2026-11-26 — Stale ChatGPT runtime documentation reconciliation (Spec 223)
+
+- Corrected the false blanket repository-script prohibition across Spec 220 and the affected historical Spec Kit/Memory Bank records while preserving accurate statements that Node-26-dependent tests, builds and pnpm operations were not run.
+- Reaffirmed the live `AGENTS.md` §6 boundary: Node.js 26.x-dependent project operations and the repository Playwright CLI/setup are unavailable in this ChatGPT environment; compatible repository QA and PR-support scripts remain permitted when their individual prerequisites and safety conditions are satisfied.
+- Added the complete Spec 223 specification, plan and task list and moved `.specify/feature.json` to this documentation reconciliation. Spec 220's separately authorized Wrangler/OpenNext dependency implementation remains unstarted and outside this PR.
+- No application, dependency, workflow, Cloudflare or production configuration changed. Local repository verification remains unrun because the ChatGPT container has no repository checkout and lacks the required Node.js 26.x / pnpm 10.30.3 toolchain; PR-triggered checks remain pending.
+
+## 2026-11-26 — ChatGPT runtime governance clarification (Spec 222)
+
+- Clarified AGENTS.md §6 without changing the surrounding governance: ChatGPT uses Node.js 22.x; the repository requires Node.js 26.x; only operations requiring Node 26 are blocked in ChatGPT.
+- Explicitly preserved permission to run other compatible repository and Freebuff QA/PR-support scripts, including `freebuff-verify.sh`; the Freebuff startup/environment-provisioning sequence remains excluded because it provisions the separate Node 26/Playwright environment.
+- Explicitly identified the repository Playwright CLI/setup as unavailable to ChatGPT and retained the ChatGPT Library startup procedure and Python Playwright browser path.
+- Updated the governance regression test to assert these exact boundaries. No application, dependency, deployment or Cloudflare configuration changed.
+
+## 2026-11-26 — Playwright alignment and authorized QA skips (Spec 221)
+
+- Made the installed lockfile the only Playwright version source: deleted the custom cache validator, replaced the conditional browser installs with one unconditional `pnpm exec playwright install --with-deps chromium`, and added lockfile-sync guards to the CLI wrapper and agent setup (the setup also rejects split installed versions of the three packages). No version or Chromium revision is hardcoded in operational files.
+- Added the shared `qa_skip.py` contract: exact per-item label `SKIPPED — NOT APPLICABLE`, three trusted authorities, a required specific reason, and a narrow verified-Dependabot verifier. The audit, consolidated report and scope checker now label an authorized skip without turning it into a pass; the category and PR check stay green only when every other applicable requirement passes, an observed failure wins, and an unauthorized or unexplained skip fails.
+- Split the scope checker's missing-declaration case from a malformed one, and passed pull request commit evidence to it and to the report with `--commits`.
+- Verified the Python checker suites and the focused Vitest contracts; full results are in the PR handoff. No dependency version, protected file, scanner configuration, deployment or secret changed.
+
+## 2026-11-26 — DevSkim backlog investigation and remediation (Spec 219)
+
+- Established that the repository never held "about 100" open alerts: the consolidated report fetched one `per_page=100` page and never followed pagination, so any backlog of 100 or more rendered as exactly 100. The true count is **422**, all severity `note`: 421 DS162092 and 1 DS172411.
+- Established the cause: all 422 alerts were created by the Spec 217 pull-request scan at `2026-11-24T23:48:05Z` from 13 newly added evidence JSON files (421 loopback findings) plus the meter readiness watchdog (1). The November 24 npm Dependabot updates touched no DevSkim file; the November 25 Actions update changed only the `upload-sarif` uploader pin. The DevSkim action has been pinned at v1.0.16 since 2026-10-24 and there is no scan-glob or DevSkim configuration to expand coverage.
+- Remediated with the existing exact-span filter rather than a directory-wide exclusion: `specs/<NNN-feature>/evidence/**/*.json` is admitted for DS162092 only, and the meter watchdog is matched by its exact statement for DS172411 only. The report now paginates code-scanning alerts. No scanner rule, scan glob, trigger, dependency or application source changed.
+- Verified against the real default-branch SARIF from `da8f104c`: 3,545 raw → 422 remaining before the change (exactly the live count), → **0 remaining** with matching source; replay gate exit 0; 115 suppression tests, 102 report contract tests and 14 workflow Vitest tests pass. The 422 alerts remain open until the next default-branch scan after merge.
+- `main` advanced to `da8f104c` when the owner merged PR #2035 (Spec 218); the end-to-end count was re-run against that head's fresh SARIF (still 3,545 raw / 422 open, watchdog now line 1575, **0 remaining**). An accidental push then auto-merged the first submission (PR #2036); PR #2037 reverted it and merged as `0c9e1596`, restoring `main`'s tree byte-for-byte to `da8f104c`. The reviewed remediation is PR #2038, now based on `main` and left open for the owner; its fresh-eyes review simplified the shared local-origin path predicate and replaced the workflow test's hard-coded slice offsets with an anchored regex.
+
+## 2026-11-25 — Spec 218 production Lucky Meter experience
+
+- Implemented the complete visitor route: corrected message timing (starts at lock, removed before the celebration), physical medallion flip, crystal bowl, selected-chamber drain, in-chamber number, golden transfer to the separate **Your Lucky Number** panel, Spark/celebration sequence and corner countdown/Home/Share controls.
+- Added the production responsive composition: phone stack 320–430 px, tablet portrait column, desktop Spark/instrument/results row and compact landscape row. Added a bottom safe area for the site compass and preserved the legal disclaimer. No new dependency; storage/palette/audio behavior unchanged.
+- Verified full Vitest **1,268 / 1,268** across 113 files, `tsc --noEmit` exit 0, production responsive Playwright **8 / 8** plus finished-resume, READY/FINISHED captures at five viewports, and a clean production build of **423,959,610 bytes (404.32 MiB exact; 419.54 MiB by `du -sk`)**, below the 495 MiB cap.
+- Submitted as PR [#2035](https://github.com/davidcollier77-code/Luckypickcanada/pull/2035) (regular, non-draft, open, unmerged). Outstanding: `pnpm lint` (no ESLint config), `./freebuff-verify.sh`, and physical-device/high-DPR/touch/cross-browser/hardware-GPU evidence.
+
+## 2026-11-25 — Spec 218 post-submission review repair
+
+- Repaired the Amazon Q finding in `tests/visual/lucky-meter-daily-resonance.spec.ts`: the reduced-motion case asserted the tier message was absent and then queried it; it now asserts `data-state="holding"`, matching `completeCalmly()` and the separate reduced-motion test.
+- Found and repaired two further stale assertions: the celebration and resumed-cinematic cases still expected the temporary sentence during the celebration, while Spec 218 acceptance scenario 1 and the unit tests require it to unmount before the celebration's first frame. Both now assert absence.
+- Confirmed the Playwright dependency needs no change: `1.65.1` is the current stable release and the locked version; `1.66` is alpha-only. The earlier failures were stale assertions and software-WebGL commit timing under concurrent workers, not a Playwright defect.
+- Also repaired the percentage's first visible frame: the sampler could run before the generating stage committed, so the reading could appear part-way up its curve. Sampling now waits for that stage to paint.
+- Verified after the repair: full Vitest **1,268 / 1,268**, `tsc --noEmit` exit 0, targeted Playwright **9 / 9**, full Lucky Meter spec **78 passed / 6 opt-in captures skipped / 0 failed** across desktop, mobile-390 and mobile-412 at two workers, and a clean build at **423,980,206 bytes (404.34 MiB)**, below the 495 MiB cap. The PR head and consolidated report were refreshed for the new commit.
+- Follow-up on the first Visual QA run for the pushed head, which failed both shards: shard 1's failing seasonal-palette case was reproduced in CI mode. The hydration poll used Playwright's default 5 s while the stage still showed a single placeholder chamber; it now allows 25 s, matching the spec's other stored-state waits, and still requires twelve ids. The four palette cases pass and `tsc --noEmit` exits 0. Two shard 1 failures were recovered from the uploaded Playwright report artifact: the storyboard case required the short `landed` DOM commit (React can batch it with the pour under load), and the desktop finished case compared the results column with the stage's whole 3D canvas box (wider than the visible wheel, so a false overlap). The assertions now check the storyboard order and the instrument's central column, and pass 6/6 locally. Shard 2's failure was real and PR-caused: the Start emblem had been changed from `✨` to `✦`, breaking the sitewide gold-CTA contract in `sitewide-gold-cta.spec.ts`. The emblem is restored to `✨`, preserving the sitewide identity, and the case passes on all three projects. This VM has no emoji font, so the local evidence capture shows a placeholder box; CI installs Noto Color Emoji.
+
+## 2026-11-25 (UTC) — Spec 218 responsive prototype gate
+
+- Added the development-only `lucky-meter-instrument` Creative Workbench scene: gold 12-chamber wheel, upright percentage well, physical medallion flip, fixed 7:30 maple pointer/spout, faceted crystal bowl and seasonal fill. After owner review, refined the empty bowl to a clear Fresnel crystal shader with flat facet normals and white edge/rim highlights, replaced the pointer with a broad five-lobed veined maple blade outside the rim, and added a two-lobe specular/Fresnel sheen to the chamber enamel while preserving the palette.
+- Made the prototype responsive without duplicating it: `WORKBENCH_STAGES` and `resolveWorkbenchStage()` expose mobile 390×844, tablet 820×1180 and desktop 1440×900; the workbench has a stage selector and `setStage()` capture API; pure `instrumentFraming()` keeps one perspective and changes only camera distance/look-at (phone 6.6, tablet portrait 4.5, desktop 4.2). The wheel stays circular and all result elements stay clear of stage edges.
+- Captured READY and FINISHED at all three sizes (six exact-size images in `specs/218-lucky-meter-complete-experience/evidence/`). The first tablet capture exposed a bowl edge crop; the tablet extent was widened and the set recaptured. Responsive observations and limitations are in `research.md` §12; visual comparison is in §11.
+- Verified: focused workbench 18/18; responsive framing 4/4; full Vitest 1,265/1,265 across 113 files; `tsc --noEmit` exit 0; clean production build 394,624 KB (385.38 MiB), below 495 MiB; all capture states `surface: ready`, `error: null`, `errors: []`; `git diff --check` clean. No visitor route, `meter-scene.js`, `storyboard.js` or `DailyResonance.tsx` change.
+- Gate: awaiting owner comparison of the refined READY/FINISHED captures at all three sizes before Phase 3. Production responsive layout, physical-device/high-DPR/cross-browser verification and production implementation remain outstanding.
+
+## 2026-11-25 (UTC) — Spec 217 merged after review repairs
+
+- Repaired Pullfrog P2: a surface stopped by the no-frame watchdog is restarted when the WebGL context is restored, so the one-frame restore cannot announce ready behind a stopped animation loop. An explicit stop still prevents restart, and both paths have regression tests.
+- Repaired Pullfrog P3: celebration-cue loading is idempotent across repeated activations on the shared Howl set and resets when the set is released; tests cover double activation and release-then-reactivate.
+- Repaired Visual QA shard 1's hard timeout by giving the sequential 15 s + 20 s Start test its required budget with `test.slow()`; assertions are unchanged. The PR description now carries the exact protected-file authorization declaration for the owner-approved `app/globals.css` fade.
+- Verified: 24 focused unit tests, full suite **1,259/1,259** across 112 files, **9/9** affected Playwright cases on desktop/mobile-390/mobile-412, `tsc --noEmit` exit 0, 490 Python and 51 docs tests, clean production build **437,895,168 bytes (417.61 MiB)**, and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0. PR #2033 merged into `main` at `2026-11-25T00:38:11Z` (2026-11-24 20:38:11 Atlantic), merge commit `ae844b4902a387cde508a4d1a312c9a535ad29ff`. The current `main` ref was verified at the same SHA. SC-006 physical-device GPU verification remains outstanding.
+
+## 2026-11-24 — Lucky Meter reveal hand-off and mobile delivery (spec 217)
+
+- Replaced the fixed 90 ms readiness timer with a produced-frame gate: the first `onFrame` is followed by two animation frames before `meter-ready`, and a 3,000 ms watchdog stops the surface and keeps the CSS fallback when no frame is produced. Context loss and disposal cancel the pending announcement.
+- Adopted the measured 300 ms fade (4 → 2 median transition frames, 0 ms blocking) and retained the complete CSS fallback until the canvas host's computed opacity leaves 0 or `transitionend` fires; a 6 s guard stops polling but never removes it while the canvas is transparent. This removes the measured 1,976–2,304 ms empty stage without touching the scene.
+- Kept celebration audio activation-gated: the four opening cues stay eager, the eight celebration cues use `preload: false`, and activation explicitly loads them through the same shared set (Howler queues an unloaded cue but does not fetch it on `play()`).
+- Verified: 219 focused Vitest, full suite 1,255/1,255 across 112 files, `tsc --noEmit` exit 0, full Lucky Meter Playwright 54 passed / 6 opt-in captures skipped on desktop and both mobile projects, final transfer 1,473 KiB total / 590 KiB audio, final build 456,519,680 bytes (435.37 MiB), and `SPEC_KIT_BASE_REF=a05be05540f794be1598fa66a96a37e1a5193ed8 ./freebuff-verify.sh` exit 0 with 490 Python and 51 docs tests. SC-006 and physical-device smoothness remain outstanding.
+
+## 2026-11-24 — ChatGPT browser-access priority (spec 216)
+
+- Updated the ChatGPT-only browser rule to prioritize the Python Playwright setup configured through the ChatGPT Library startup script, using the existing async API and installed Chromium first; Browserless is the fallback, and Firecrawl is used only when Browserless is unavailable or not working. Retrieval is not described as interactive browser testing.
+- Updated the governance regression assertions and active Spec Kit feature pointer. The separate shared requirement for automatic PR-checker Playwright workflows remains unchanged; no application code, browser workflow, dependencies, visuals or deployment settings changed.
+- Local project verification was not run: the ChatGPT startup preflight reported Node.js 22.16.0 (the repository requires 26.x) and pnpm unavailable. Node-26-dependent project tests and pnpm commands therefore remained unverified. The earlier blanket statement that ChatGPT-only rules prohibited project scripts was incorrect; current `AGENTS.md` §6 permits compatible repository scripts when their prerequisites and safety conditions are met. Current-head GitHub checks remained pending.
+
+## 2026-11-24 — Plan-aware monitoring and PR performance health (spec 215 follow-up)
+
+- Corrected the observational monitor to scale its existing 60 fps policy to the active plan: a 30 fps plan is healthy at 25 fps or better and critical below 14 fps, with 56/140 ms p95 and 100 ms long-frame budgets. Added `paused` (hidden, reduced motion or a zero frame rate) and `idle` (a source stopped while frames are expected), plus `measured`/`insufficient`/`unavailable`/`paused`/`stale` evidence, so absent evidence is never reported as degradation.
+- Kept one monitor and one sample window per existing source (`adaptive-frame-loop`, `cosmic-engine`); the aggregate reports the weakest measured source, so a fast renderer cannot mask a slow one. Preserved the 1.5 s window, 2 s warm-up, 250 ms evaluation, 1 s hysteresis, gap/hidden/target resets and the engine's local 42/18 fps step; no loop, timer or listener was added.
+- Exposed `getPerformanceDiagnostics()` as `window.__creativeWorkbench.getState().diagnostics` (state version 2) and added a compact Performance health panel showing status, measured fps, plan target and tier, evidence, source and warnings.
+- Added one informational performance-health block outside the seven PR checker categories. `GOOD` requires measured evidence and a healthy plan-aware classification; `strained` is `NEEDS ATTENTION` and `critical` is `BAD`; pauses, idle sources, insufficient/unavailable/inconsistent evidence and snapshots pinned to another commit are `NOT ENOUGH DATA`. It never changes category statuses or the overall PR status, and CI adds no measurement.
+- Added an optional `--performance <json>` report input and documented that CI supplies no runtime sample, so the live block reports `NOT ENOUGH DATA`.
+- Verified 37 Workbench/monitor tests, all 485 Python checker tests, `tsc --noEmit`, the production build at 500,695,040 bytes (477.50 MiB) and 51 docs tests. The full Vitest suite is 1,244/1,244: the pre-existing `lucky-meter-stage` failure on `main` at 28f74865 (jsdom 31.0.1 drops a default `from 0deg` from serialized gradients) was repaired on the owner's merge-readiness instruction by reading the gradient's start angle and treating a missing `from` as 0deg, which keeps the assertion's strength. The automated review's Workbench `performance` shadowing and report text-injection findings were corrected. Exact results are in `specs/215-device-capability-observability/tasks.md`.
+- Applied the second-round reviewer repairs: `_finite_number` is now range-safe instead of raising on oversized ints, `warnings` is type-checked before slicing, the CLI boundary degrades a malformed snapshot instead of aborting the report, `_performance_not_enough` can no longer be turned into a measured outcome, and a strained/critical explanation names the p95 and long-frame limits unless the measured rate really is below the floor. Added a source guard that the Workbench diagnostics state never shadows the global frame clock.
+- Applied the owner-directed merge-readiness repairs: the drain assertion reads the conic-gradient start angle so jsdom 31 dropping a default `from 0deg` no longer fails the suite; a paused plan's `targetFps: 0` renders as `0 fps` in the Workbench panel instead of `—`; and a warm-up source that already holds samples warns `insufficient-samples` rather than `no-samples`. The monitor suite is 23 tests and the full suite is 1,246.
+
+## 2026-11-24 — Device capability and observational frame monitoring (spec 215)
+
+- Kept the 3 MP backing-store gate and the coarse-pointer DPR-3 gate deferred and active. Recorded the exact matrix and the visual/GPU delta of removing only the surface gate (particle scale 0.85 → 1.2, spark budget 560 → 900, point budget 24,000 → 44,000, mesh 160 → 192, lights 2 → 4, plus a MacBook DPR cap 1.6 → 2 and +56.25% backing pixels) and of removing both gates (S23/iPhone DPR cap 1.6 → 2, meter dust 32 → 46, geometry +28.6%–71.4%).
+- Centralized the hardware read in one cached `getDeviceAssessment()` used by the graphics profile, render quality, adaptive device state and capability report; missing hints report `balanced` with `confidence: none`, not weakness. `refreshDeviceAssessment()` runs only at the adaptive plan's existing reassessment boundary.
+- Added live `getDisplayDemand()` and `describeRenderBudget()`, naming `surface`, `legacy-pointer-density`, `capability` or `policy` without changing any render profile. Added one lazy WebGL2-first feature report with scalar limits and context release.
+- Added an observational frame monitor fed by the existing shared loop and cosmic frame function: 1.5 s window, 2 s warm-up, 250 ms evaluation, 1 s hysteresis, hidden/gap/target resets and same-frame dedupe. It adds no loop, timer or listener and never changes quality, cadence or the 12-second celebration.
+- Verified the focused 88 graphics/adaptive/monitor tests, 45 resource-readiness tests, 111 files / 1,233 Vitest tests, `tsc --noEmit`, 471 Python checker tests, 51 docs tests and the production build at 434,126,848 bytes (414.02 MiB), below 495 MiB; `SPEC_KIT_BASE_REF=6afebdfa ./freebuff-verify.sh` exited 0.
+
+## 2026-11-23 — Repository security audit and monitoring (spec 213)
+
+- Audited the live GitHub Security tab: 11 open DevSkim code-scanning alerts, no open secret-scanning alerts and one open Dependabot advisory for `minimatch` 9.0.9.
+- Added reviewed inline DS172411 suppressions for every callable timer, including the identifier-callback timers, removed synthetic 40-hex fixture tokens and literal placeholder markers from checker tests, and overrode `glob@10` to 14.0.4 so patched minimatch 11.0.5 resolves without breaking glob matching.
+- Re-verified the review findings: forcing minimatch 11 into glob 10 returned an empty `globSync` result, and the cleared ledger would have re-appended the surviving timer findings. `@node-minify/core` now resolves glob 14.0.4 and matches real files.
+- Verified Dependabot alerts are enabled, weekly Dependabot scheduling is unchanged, security and minor/patch updates are grouped per ecosystem, DevSkim runs on pull requests plus a weekly schedule, and CodeQL default setup remains configured.
+- Cleared verified historical entries from `devskim-alerts.md` after dismissing every open code-scanning alert; the append workflow and marker remain.
+- Final GitHub Security: 0 open code-scanning alerts, 0 open secret-scanning alerts and 1 Dependabot alert pending the corrected lockfile reaching `main`.
+- The dependency-policy and focused checker suites pass; `SPEC_KIT_BASE_REF=4c6087cf ./freebuff-verify.sh` exits 0 with 471 Python tests, 110 Vitest files, 51 docs tests and the Next.js build below the 495 MiB cap.
+
 ## 2026-11-21 — Lucky Meter approved Build (spec 205)
 
 - Implemented the approved presentation on `freebuff/lucky-meter-build`: the
@@ -790,3 +947,26 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Repaired four rendering defects found by visual QA: the maple-leaf index was uploaded as a raw typed array instead of a BufferAttribute, chamber drain used a custom shader that collided with Three's transmission uniforms (replaced by a centred fill-mesh scale), the glass transmission pass was removed for transparent clear-coated glass, and the stage accepted `leafExit` instead of the scene's `leaf` state. Also fixed the colour-caption/stage aspect-ratio overflow, circular-well label clipping, the transfer beam endpoint (now the centre readout) and the misleading 30 ms landed label (now a visible 450 ms beat while the pour starts on time).
 - Verification: `tsc --noEmit` exit 0; 110 files / 1,204 Vitest tests pass; 16 desktop and 32 mobile Playwright meter tests pass plus four evidence captures; clean build 417,476,761 bytes (398.14 MiB) and the verify gate 431.15 MiB, both below 495 MiB; `SPEC_KIT_BASE_REF=FETCH_HEAD ./freebuff-verify.sh` exit 0. Local WebGL used SwiftShader; no hardware-GPU device was available.
 - Visual QA caught the idle readout labels shrinking to 10px at phone widths. The stage label is now a fixed 12px with balanced wrapping, so `Daily Resonance` and `Awaiting the reading` remain at the accessibility floor; the mobile-accessibility audit passes at 390 and 412px.
+
+## 2026-11-27 — Cloudflare dependency modernization (Spec 226)
+
+- Kept `@opennextjs/cloudflare` 1.20.19 (latest) and moved `wrangler` 4.166.0 → 4.168.0 (latest stable inside the adapter's `^4.148.0` peer range), bringing workerd 1.20261123.1 and Miniflare 5.20261123.1-beta.
+- Reduced `pnpm.overrides` from 18 entries to the three verified Undici major floors. The glob 10/13 and minimatch 10 workarounds were removed after `@typescript-eslint` 8.74.0 declared `minimatch ^11.0.1` upstream; the brace-expansion floors, parent-scoped selectors, `proxy-addr`, `source-map-js`, `qs`, `fast-uri`, `sharp`, `vite`, `postcss` and `@vitest/mocker` were removed because normal resolution selects supported, patched, within-range versions.
+- Verification: `pnpm audit` 0 advisories; focused guards 15 tests; full gate exit 0 with 520 Python tests, 113 Vitest files / 1,272 tests, TypeScript and the Next.js build; OpenNext build passed with a matching `BUILD_ID`; `wrangler build` 8,893.61 KiB with all bindings; updater dry-run passed and its Node tests 17/17; combined `.next + public` 440,279,040 bytes (419.88 MiB), below 495 MiB.
+- No application source, Cloudflare configuration, binding, workflow, secret or production resource changed.
+
+
+## 2026-11-27 — Keep the GSAP AI reference static (Spec 227)
+
+- Added a narrow updater exclusion for the single manifest ID `/llmstxt/gsap_llms_txt`. It remains routed under `polishing`, stays in the manifest inventory/source metadata and remains subject to the routed-snapshot integrity audit; the updater skips it before upstream SHA or source requests.
+- Added separate static-reference reporting and regression coverage for zero source requests, byte-identical snapshot retention and unchanged routing/index entries. Other routed documentation keeps the existing refresh path.
+- Preserved `.docs/manifest.json`, AGENTS.md, refresh schedules/workflows, dependencies, application code and production configuration. At the time of this original updater-exclusion change, the checked-in GSAP snapshot still contained a Cloudflare verification-challenge response; the owner-authorized Spec 227 follow-up subsequently restored the official Timeline documentation.
+- Local Node-dependent verification was not run because ChatGPT's startup runtime is Node.js 22.x and the repository requires Node.js 26.x. The regression coverage is committed for the repository's Node 26 CI checks; no local test/build pass is claimed.
+
+
+## 2026-11-27 — GSAP reference review repairs (Spec 227 follow-up)
+
+- Triaged all six inline findings in Graphite review 6093276048 against the official GSAP page, GSAP core implementation and actual updater tests.
+- Repaired the missing Timeline sequence example, truncated position-parameter bullet and Hint tokens, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
+- Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. The separate concern about an undefined URL was ruled out by the preceding assertion and immutable `const` binding. No test-code change was necessary.
+- The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.

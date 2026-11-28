@@ -26,4 +26,4 @@ description: "Tasks for shared graphics toolkit governance guidance"
 - **User Story 1**: 5 tasks
 - **Parallel opportunities**: None; the documentation rule defines the exact regression assertion and records.
 - **Independent test**: The governance test asserts that the 🟢 section exists, applies to both agents and contains the required existing toolkit references.
-- **Verification limitation**: The startup preflight reports Node.js 22.16.0 and missing pnpm 10.30.3. Repository scripts are not run by ChatGPT; local test execution and build-size measurement remain unverified.
+- **Verification limitation**: The startup preflight reports Node.js 22.16.0 and missing pnpm 10.30.3. The Node-26-dependent local tests and build-size measurement were not run in that task and remain unverified. Current `AGENTS.md` §6 permits compatible repository scripts and QA/PR-support utilities when their prerequisites and safety conditions are met; there is no blanket script prohibition.

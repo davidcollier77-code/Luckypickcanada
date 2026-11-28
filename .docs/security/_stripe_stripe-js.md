@@ -3696,6 +3696,8 @@ Updates the customer's phone number. Requires `phone_number_collection.enabled` 
 
 If your integration uses the [Express Checkout Element](https://docs.stripe.com/elements/express-checkout-element.md), the phone number is collected directly from the wallet and the value set by `updatePhoneNumber` isn't used for express checkout payments.
 
+Use this method when you collect a phone number outside an Address Element. If you set a phone number with this method and an Address Element is mounted and collecting a phone number when you call [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md), confirmation fails because both sources provide a phone number. Pass `null` to clear a previously set phone number before using the Address Element's value.
+
 - `phoneNumber`
   The Customer's phone number.
 
@@ -3839,7 +3841,7 @@ If provided, this value overrides any values previously set using [updateEmail](
 
 Requires `phone_number_collection.enabled` to be `true` on the Checkout Session.
 
-If provided, this value overrides any values previously set using [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md).
+If no Address Element is mounted and collecting a phone number, this value overrides any value previously set using [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md). Otherwise, omit this option. Checkout uses the phone number collected by the Address Element automatically.
     - `billingAddress`
       The Customer's billing address.
 
@@ -4748,6 +4750,14 @@ The default setting is `automatic`, where we'll support autocomplete when possib
         Specify your own [Google Maps API key](https://developers.google.com/maps/documentation/javascript/places#add-places-api-to-the-api-keys-api-restrictions-list) with it.
 
 **Only needs to be passed in when `autocomplete.mode` is set to `google_maps_api`.**
+    - `fields`
+      Controls which fields appear in the Billing Address Element.
+      - `phone`
+        Set to `always` to display a required phone field. Requires `phone_number_collection.enabled` to be `true` on the Checkout Session. The default is `auto`. Both `auto` and `never` hide the phone field.
+
+Only one Address Element can collect a phone number at a time. When the Element is mounted and collecting a phone number, Checkout uses its value automatically. Don't also call [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md) or pass `phoneNumber` to [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md).
+
+The phone field is required when displayed. Don't pass `validation.phone.required` when creating or updating the Element.
 
 ### Example
 
@@ -4807,6 +4817,14 @@ The default setting is `automatic`, where we'll support autocomplete when possib
         Specify your own [Google Maps API key](https://developers.google.com/maps/documentation/javascript/places#add-places-api-to-the-api-keys-api-restrictions-list) with it.
 
 **Only needs to be passed in when `autocomplete.mode` is set to `google_maps_api`.**
+    - `fields`
+      Controls which fields appear in the Shipping Address Element.
+      - `phone`
+        Set to `always` to display a required phone field. Requires `phone_number_collection.enabled` to be `true` on the Checkout Session. The default is `auto`. Both `auto` and `never` hide the phone field.
+
+Only one Address Element can collect a phone number at a time. When the Element is mounted and collecting a phone number, Checkout uses its value automatically. Don't also call [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md) or pass `phoneNumber` to [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md).
+
+The phone field is required when displayed. Don't pass `validation.phone.required` when creating or updating the Element.
 
 ### Example
 
@@ -6838,6 +6856,8 @@ Updates the customer's phone number. Requires `phone_number_collection.enabled` 
 
 If your integration uses the [Express Checkout Element](https://docs.stripe.com/elements/express-checkout-element.md), the phone number is collected directly from the wallet and the value set by `updatePhoneNumber` isn't used for express checkout payments.
 
+Use this method when you collect a phone number outside an Address Element. If you set a phone number with this method and an Address Element is mounted and collecting a phone number when you call [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md), confirmation fails because both sources provide a phone number. Pass `null` to clear a previously set phone number before using the Address Element's value.
+
 - `phoneNumber`
   The Customer's phone number.
 
@@ -6965,7 +6985,7 @@ If provided, this value overrides any values previously set using [updateEmail](
 
 Requires `phone_number_collection.enabled` to be `true` on the Checkout Session.
 
-If provided, this value overrides any values previously set using [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md).
+If no Address Element is mounted and collecting a phone number, this value overrides any value previously set using [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md). Otherwise, omit this option. Checkout uses the phone number collected by the Address Element automatically.
     - `billingAddress`
       The Customer's billing address.
 
@@ -7480,6 +7500,14 @@ The default setting is `automatic`, where we'll support autocomplete when possib
         Specify your own [Google Maps API key](https://developers.google.com/maps/documentation/javascript/places#add-places-api-to-the-api-keys-api-restrictions-list) with it.
 
 **Only needs to be passed in when `autocomplete.mode` is set to `google_maps_api`.**
+    - `fields`
+      Controls which fields appear in the Billing Address Element.
+      - `phone`
+        Set to `always` to display a required phone field. Requires `phone_number_collection.enabled` to be `true` on the Checkout Session. The default is `auto`. Both `auto` and `never` hide the phone field.
+
+Only one Address Element can collect a phone number at a time. When the Element is mounted and collecting a phone number, Checkout uses its value automatically. Don't also call [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md) or pass `phoneNumber` to [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md).
+
+The phone field is required when displayed. Don't pass `validation.phone.required` when creating or updating the Element.
 
 - `onChange`
   Callback called when any value in the [change event payload](https://docs.stripe.com/js/element/events/on_change?type=addressElement.md#element_on_change-handler) changes.
@@ -7572,6 +7600,14 @@ The default setting is `automatic`, where we'll support autocomplete when possib
         Specify your own [Google Maps API key](https://developers.google.com/maps/documentation/javascript/places#add-places-api-to-the-api-keys-api-restrictions-list) with it.
 
 **Only needs to be passed in when `autocomplete.mode` is set to `google_maps_api`.**
+    - `fields`
+      Controls which fields appear in the Shipping Address Element.
+      - `phone`
+        Set to `always` to display a required phone field. Requires `phone_number_collection.enabled` to be `true` on the Checkout Session. The default is `auto`. Both `auto` and `never` hide the phone field.
+
+Only one Address Element can collect a phone number at a time. When the Element is mounted and collecting a phone number, Checkout uses its value automatically. Don't also call [updatePhoneNumber](https://docs.stripe.com/js/custom_checkout/update_phone_number.md) or pass `phoneNumber` to [confirm](https://docs.stripe.com/js/custom_checkout/confirm.md).
+
+The phone field is required when displayed. Don't pass `validation.phone.required` when creating or updating the Element.
 
 - `onChange`
   Callback called when any value in the [change event payload](https://docs.stripe.com/js/element/events/on_change?type=addressElement.md#element_on_change-handler) changes.

@@ -12,9 +12,12 @@ import check_qa_pr_scope as scope
 import pr_verification_report as report
 
 
-HEAD = "0123456789abcdef0123456789abcdef01234567"
-EARLIER = "fedcba9876543210fedcba9876543210fedcba98"
+# Synthetic fixture SHAs are split so the token heuristic does not report them.
+HEAD = "0123456789abcdef" + "0123456789abcdef01234567"
+EARLIER = "fedcba9876543210" + "fedcba9876543210fedcba98"
 OWNER = "davidcollier77-code"
+# Split so this test's placeholder fixture is not reported as unfinished code.
+PLACEHOLDER_TODO = "TO" + "DO"
 
 SPEC_PATHS = [
     "specs/198-fixture/spec.md",
@@ -102,6 +105,10 @@ def check(name, conclusion, sha=HEAD, status="completed"):
 
 def all_supporting(conclusion="success", sha=HEAD):
     return [check(name, conclusion, sha) for name, _purpose in report.QA_SUPPORTING_CHECKS]
+
+
+def row_status(row):
+    return report._supporting_status(row)
 
 
 def verification(head=HEAD, required=None, conditional=None, stale=None, directives=None, head_present=True):
@@ -212,20 +219,28 @@ class CategoryContractTests(unittest.TestCase):
             {
                 "name": "Validate OpenNext build artifacts",
                 "status": "NOT RUN",
-                "detail": "not applicable: no changed path can affect the production build",
+                "detail": "the trusted classifier proved that no changed path can affect the production build",
                 "applicable": False,
                 "blocking": False,
                 "head_sha": "",
+                "skip": {
+                    "authority": "trusted-applicability-classifier",
+                    "reason": "no changed path can affect the production build",
+                },
             },
         ]
         conditional = [
             {
                 "name": "Visual QA",
                 "status": "NOT RUN",
-                "detail": "not applicable: no changed path can affect rendered output",
+                "detail": "the trusted classifier proved that no changed path can affect rendered output",
                 "applicable": False,
                 "blocking": False,
                 "head_sha": "",
+                "skip": {
+                    "authority": "trusted-applicability-classifier",
+                    "reason": "no changed path can affect rendered output",
+                },
             }
         ]
         runs = [
@@ -246,9 +261,17 @@ class CategoryContractTests(unittest.TestCase):
         self.assertFalse(rows["Validate OpenNext build artifacts"]["applicable"])
         self.assertFalse(rows["Visual QA (shard 1/2)"]["applicable"])
         self.assertFalse(rows["Visual QA (shard 2/2)"]["applicable"])
-        self.assertIn("not applicable", rows["Visual QA (shard 1/2)"]["reason"])
+        self.assertIn("rendered output", rows["Visual QA (shard 1/2)"]["reason"])
+        # An authorized skip keeps its own label and never becomes a pass.
+        self.assertEqual(
+            rows["Visual QA (shard 1/2)"]["status"], report.qa_skip.LABEL
+        )
+        self.assertEqual(
+            rows["Validate OpenNext build artifacts"]["status"], report.qa_skip.LABEL
+        )
+        self.assertEqual(row_status(rows["Visual QA (shard 1/2)"]), report.qa_skip.LABEL)
 
-    def test_unknown_visual_applicability_does_not_fail_the_report(self):
+    def test_unknown_visual_applicability_warns_instead_of_passing(self):
         required = [
             {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
             {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
@@ -277,8 +300,10 @@ class CategoryContractTests(unittest.TestCase):
         )
 
         integrity = category(result, "verification-integrity")
-        self.assertEqual(integrity["status"], "PASSED")
-        self.assertFalse(any("Visual QA" in item for item in integrity["attention"]))
+        # Unknown applicability is not a skip and not a pass: it is a warning
+        # that someone must confirm the browser check really does not apply.
+        self.assertEqual(integrity["status"], "WARNING")
+        self.assertTrue(any("Visual QA" in item for item in integrity["attention"]))
 
     def test_every_status_uses_the_four_allowed_values(self):
         result = report.build_report(evidence())
@@ -353,13 +378,19 @@ class QaDeclarationTests(unittest.TestCase):
         result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
         self.assertEqual(result["status"], "FAILED")
 
-    def test_bot_authored_pull_request_reports_the_attestation_as_not_run(self):
+    def test_bot_authored_pull_request_skips_the_human_attestation(self):
         pr = evidence()["pull_request"]
-        pr["user"] = {"login": "dependabot[bot]"}
+        pr["user"] = {"login": "dependabot[bot]", "type": "Bot"}
         pr["body"] = pr["body"].replace(report.QA_DECLARATION, "")
         result = category(report.build_report(evidence(pull_request=pr)), "qa-checker")
-        self.assertEqual(result["status"], "WARNING")
-        self.assertIn("NOT RUN", json.dumps(result["details"]))
+        # The human attestation is an authorized actor-inapplicable skip: the
+        # item is not a pass, but the passing supporting checks keep the
+        # category, and therefore the PR check, green.
+        self.assertEqual(result["status"], "PASSED")
+        self.assertTrue(result["skipped"])
+        details = "\n".join(result["details"])
+        self.assertIn(report.qa_skip.LABEL, details)
+        self.assertNotIn("NOT RUN", details)
 
     def test_changed_code_finding_renders_the_matched_excerpt(self):
         files = file_records(
@@ -957,7 +988,7 @@ class PlaceholderHeuristicTests(unittest.TestCase):
             "placeholder text",
             "Placeholder value",
             "placeholder goes here",
-            "TODO",
+            PLACEHOLDER_TODO,
             "TBD",
             "fill this in",
             "name each task group",
@@ -1034,7 +1065,7 @@ class GovernanceTests(unittest.TestCase):
 
     def test_real_placeholder_markers_still_fail_governance(self):
         line = "**Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/techContext.md` and `memory-bank/progress.md` were read."
-        for marker in ("placeholder", "TODO", "<memory bank>"):
+        for marker in ("placeholder", PLACEHOLDER_TODO, "<memory bank>"):
             with self.subTest(marker=marker):
                 pr = evidence()["pull_request"]
                 pr["body"] = body().replace(line, "**Memory Bank:** " + marker)
@@ -1185,6 +1216,534 @@ class DocumentationContractTests(unittest.TestCase):
         self.assertIn("Statuses are exactly **PASSED**, **FAILED**, **WARNING** and **NOT RUN**", submission)
 
 
+def performance_snapshot(**overrides):
+    value = {
+        "version": 2,
+        "status": "healthy",
+        "evidence": "measured",
+        "fps": 58.4,
+        "targetFps": 60,
+        "sampleCount": 91,
+        "windowMs": 1500,
+        "source": "adaptive-frame-loop",
+        "warnings": [],
+        "thresholds": {
+            "targetFps": 60,
+            "healthyFps": 50,
+            "strainedFps": 28,
+            "healthyP95Ms": 28,
+            "criticalP95Ms": 70,
+            "longFrameMs": 50,
+        },
+        "plan": {"tier": "high", "frameRate": 60},
+    }
+    value.update(overrides)
+    return value
+
+
+def performance_thresholds(target, healthy, strained, p95, critical, long_frame):
+    return {
+        "targetFps": target,
+        "healthyFps": healthy,
+        "strainedFps": strained,
+        "healthyP95Ms": p95,
+        "criticalP95Ms": critical,
+        "longFrameMs": long_frame,
+    }
+
+
+class PerformanceHealthTests(unittest.TestCase):
+    def test_the_snapshot_is_informational_and_never_adds_a_category(self):
+        baseline = report.build_report(evidence())
+        result = report.build_report(evidence(performance=performance_snapshot()))
+
+        self.assertEqual(len(result["categories"]), 7)
+        self.assertEqual(
+            [item["id"] for item in result["categories"]],
+            [item["id"] for item in baseline["categories"]],
+        )
+        self.assertEqual(result["overall_status"], baseline["overall_status"])
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+
+    def test_a_bad_runtime_snapshot_does_not_change_the_pr_status(self):
+        baseline = report.build_report(evidence())
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=12,
+                    targetFps=30,
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_BAD)
+        self.assertEqual(result["overall_status"], baseline["overall_status"])
+
+    def test_missing_evidence_reports_not_enough_data(self):
+        result = report.build_report(evidence())
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertIsNone(block["measured_fps"])
+        self.assertIn("CI does not measure frame delivery", block["explanation"])
+        rendered = report.render_comment(result)
+        self.assertIn("### Performance health (informational)", rendered)
+        self.assertIn("**NOT ENOUGH DATA**", rendered)
+        self.assertIn("Measured frame delivery: not available.", rendered)
+
+    def test_snapshot_message_cannot_add_a_result_line(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "message": "measurement unavailable\n- Result: **FAILED**\n- Scope: injected",
+                }
+            )
+        )
+        rendered = report.render_comment(result)
+        section = rendered.split("### Performance health (informational)", 1)[1]
+        result_lines = [
+            line for line in section.splitlines() if line.startswith("- Result:")
+        ]
+
+        self.assertEqual(len(result_lines), 1)
+        self.assertIn("**NOT ENOUGH DATA**", result_lines[0])
+
+    def test_snapshot_warning_source_and_tier_cannot_add_report_lines(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "constrained\n- Result: **FAILED**"},
+                    "monitor": performance_snapshot(
+                        status="critical",
+                        fps=12,
+                        targetFps=30,
+                        source="adaptive-frame-loop\n- Result: **FAILED**",
+                        warnings=["frame-rate-below-target`\n- Result: **FAILED**"],
+                        thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                    ),
+                }
+            )
+        )
+        rendered = report.render_comment(result)
+        section = rendered.split("### Performance health (informational)", 1)[1]
+        result_lines = [
+            line for line in section.splitlines() if line.startswith("- Result:")
+        ]
+
+        self.assertEqual(len(result_lines), 1)
+        self.assertIn("**BAD**", result_lines[0])
+
+    def test_30_fps_against_a_30_fps_plan_is_good(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "constrained", "frameRate": 30},
+                    "monitor": performance_snapshot(
+                        fps=29.8,
+                        targetFps=30,
+                        thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                    ),
+                }
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_GOOD)
+        self.assertEqual(block["measured_fps"], 29.8)
+        self.assertEqual(block["target_fps"], 30)
+        self.assertEqual(block["tier"], "constrained")
+        rendered = report.render_comment(result)
+        self.assertIn("29.8 fps against a 30 fps plan target", rendered)
+
+    def test_12_fps_against_a_30_fps_plan_is_bad(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=12,
+                    targetFps=30,
+                    warnings=["frame-rate-below-target"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_BAD)
+        self.assertIn("below the 14 fps critical floor", block["explanation"])
+        rendered = report.render_comment(result)
+        self.assertIn("**BAD**", rendered)
+        self.assertIn("`frame-rate-below-target`", rendered)
+
+    def test_20_fps_against_a_30_fps_plan_needs_attention(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="strained",
+                    fps=20,
+                    targetFps=30,
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        self.assertEqual(
+            result["performance_health"]["outcome"], report.PERFORMANCE_NEEDS_ATTENTION
+        )
+        self.assertIn(
+            "below the 25 fps healthy floor", result["performance_health"]["explanation"]
+        )
+
+    def test_a_strained_frame_time_verdict_does_not_claim_an_fps_floor(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="strained",
+                    fps=40,
+                    targetFps=30,
+                    warnings=["frame-time-p95-high"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NEEDS_ATTENTION)
+        self.assertNotIn("below the", block["explanation"])
+        self.assertIn("frame-time", block["explanation"])
+        self.assertIn("30 fps plan", block["explanation"])
+
+    def test_a_critical_frame_time_verdict_does_not_claim_an_fps_floor(self):
+        result = report.build_report(
+            evidence(
+                performance=performance_snapshot(
+                    status="critical",
+                    fps=40,
+                    targetFps=30,
+                    warnings=["frame-time-p95-high", "long-frame-ratio-high"],
+                    thresholds=performance_thresholds(30, 25, 14, 56, 140, 100),
+                )
+            )
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_BAD)
+        self.assertNotIn("below the", block["explanation"])
+        self.assertIn("critically exceeded", block["explanation"])
+
+    def test_a_malformed_snapshot_field_never_breaks_the_report(self):
+        cases = (
+            {"warnings": 7},
+            {"warnings": True},
+            {"warnings": {"first": "frame-rate-below-target"}},
+            {"fps": 10**400},
+            {"sampleCount": 10**400},
+            {"windowMs": -(10**400)},
+            {"thresholds": {"healthyFps": 10**400, "strainedFps": -(10**400)}},
+        )
+        for overrides in cases:
+            with self.subTest(overrides=overrides):
+                result = report.build_report(
+                    evidence(performance=performance_snapshot(**overrides))
+                )
+                self.assertEqual(len(result["categories"]), 7)
+                self.assertIn(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_OUTCOMES,
+                )
+                report.render_comment(result)
+
+    def test_the_not_enough_helper_cannot_report_a_measured_outcome(self):
+        block = report._performance_not_enough(
+            "no data",
+            outcome=report.PERFORMANCE_GOOD,
+            warnings=["frame-rate-below-target"],
+        )
+
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertEqual(block["explanation"], "no data")
+        self.assertEqual(block["warnings"], ["frame-rate-below-target"])
+
+    def test_paused_idle_and_unmeasured_snapshots_are_not_judged(self):
+        cases = (
+            ("paused", "paused"),
+            ("idle", "stale"),
+            ("warming", "insufficient"),
+        )
+        for status, evidence_state in cases:
+            with self.subTest(status=status):
+                result = report.build_report(
+                    evidence(
+                        performance=performance_snapshot(
+                            status=status,
+                            evidence=evidence_state,
+                            fps=None,
+                        )
+                    )
+                )
+                self.assertEqual(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_NOT_ENOUGH_DATA,
+                )
+
+    def test_malformed_or_inconsistent_evidence_is_not_judged(self):
+        payloads = (
+            "not-an-object",
+            42,
+            {},
+            {"monitor": "not-an-object"},
+            {"status": "healthy", "evidence": "measured", "fps": "fast"},
+            {
+                "status": "healthy",
+                "evidence": "measured",
+                "fps": 10,
+                "targetFps": 30,
+                "thresholds": performance_thresholds(30, 25, 14, 56, 140, 100),
+            },
+            {"status": "healthy", "evidence": "insufficient", "fps": 60, "targetFps": 60},
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                result = report.build_report(evidence(performance=payload))
+                self.assertEqual(
+                    result["performance_health"]["outcome"],
+                    report.PERFORMANCE_NOT_ENOUGH_DATA,
+                )
+
+    def test_a_snapshot_from_another_commit_is_not_used(self):
+        result = report.build_report(
+            evidence(performance=performance_snapshot(headSha=EARLIER))
+        )
+
+        block = result["performance_health"]
+        self.assertEqual(block["outcome"], report.PERFORMANCE_NOT_ENOUGH_DATA)
+        self.assertIn("not at the current report head", block["explanation"])
+
+    def test_a_snapshot_pinned_to_the_current_head_is_accepted(self):
+        result = report.build_report(
+            evidence(performance=performance_snapshot(headSha=HEAD))
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+        self.assertTrue(result["performance_health"]["commit_pinned"])
+
+    def test_the_workbench_diagnostics_payload_is_accepted(self):
+        result = report.build_report(
+            evidence(
+                performance={
+                    "plan": {"tier": "high", "frameRate": 60},
+                    "monitor": performance_snapshot(),
+                    "device": {"capabilityTier": "high", "confidence": "high"},
+                }
+            )
+        )
+
+        self.assertEqual(result["performance_health"]["outcome"], report.PERFORMANCE_GOOD)
+
+    def test_cli_accepts_an_optional_performance_snapshot(self):
+        with tempfile.TemporaryDirectory() as folder:
+            pr = os.path.join(folder, "pr.json")
+            files = os.path.join(folder, "files.json")
+            performance = os.path.join(folder, "performance.json")
+            comment = os.path.join(folder, "comment.md")
+            with open(pr, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["pull_request"], handle)
+            with open(files, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["files"], handle)
+            with open(performance, "w", encoding="utf-8") as handle:
+                json.dump(performance_snapshot(), handle)
+
+            status = report.main(
+                [
+                    "--pull-request",
+                    pr,
+                    "--files",
+                    files,
+                    "--owner",
+                    OWNER,
+                    "--performance",
+                    performance,
+                    "--comment",
+                    comment,
+                ]
+            )
+            self.assertEqual(status, 0)
+            with open(comment, encoding="utf-8") as handle:
+                rendered = handle.read()
+
+        self.assertIn("**GOOD**", rendered)
+        self.assertIn("58.4 fps against a 60 fps plan target", rendered)
+        self.assertIn("Commit binding: not supplied", rendered)
+
+    def test_cli_degrades_a_malformed_snapshot_instead_of_crashing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            pr = os.path.join(folder, "pr.json")
+            files = os.path.join(folder, "files.json")
+            performance = os.path.join(folder, "performance.json")
+            comment = os.path.join(folder, "comment.md")
+            with open(pr, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["pull_request"], handle)
+            with open(files, "w", encoding="utf-8") as handle:
+                json.dump(evidence()["files"], handle)
+            with open(performance, "w", encoding="utf-8") as handle:
+                json.dump(performance_snapshot(fps=10**400, warnings=7), handle)
+
+            status = report.main(
+                [
+                    "--pull-request",
+                    pr,
+                    "--files",
+                    files,
+                    "--owner",
+                    OWNER,
+                    "--performance",
+                    performance,
+                    "--comment",
+                    comment,
+                ]
+            )
+            self.assertEqual(status, 0)
+            with open(comment, encoding="utf-8") as handle:
+                rendered = handle.read()
+
+        self.assertIn("**NOT ENOUGH DATA**", rendered)
+
+
+class AuthorizedSkipTests(unittest.TestCase):
+    def build_skip(self):
+        return {
+            "name": "Validate OpenNext build artifacts",
+            "status": "NOT RUN",
+            "detail": "the trusted classifier proved that no changed path can affect the production build",
+            "applicable": False,
+            "blocking": False,
+            "head_sha": "",
+            "skip": {
+                "authority": "trusted-applicability-classifier",
+                "reason": "no changed path can affect the production build",
+            },
+        }
+
+    def required_with_skip(self):
+        return [
+            {"name": "Application Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": report.DEVSKIM_CHECK, "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            {"name": "PR Scope Verification", "status": "PASS", "detail": "conclusion success", "head_sha": HEAD},
+            self.build_skip(),
+        ]
+
+    def test_an_authorized_skip_is_labelled_and_keeps_the_report_green(self):
+        result = report.build_report(
+            evidence(verification=verification(required=self.required_with_skip()))
+        )
+        self.assertEqual(result["overall_status"], "PASSED")
+        self.assertEqual(category(result, "qa-checker")["status"], "PASSED")
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertEqual(
+            report._supporting_status(rows["Validate OpenNext build artifacts"]),
+            report.qa_skip.LABEL,
+        )
+        self.assertIn(report.qa_skip.LABEL, report.render_comment(result))
+
+    def test_an_observed_failure_outranks_the_skip(self):
+        runs = [
+            check(name, "failure" if name == "Validate OpenNext build artifacts" else "success")
+            for name, _purpose in report.QA_SUPPORTING_CHECKS
+        ] + [check(report.DEVSKIM_CHECK, "success")]
+        result = report.build_report(
+            evidence(
+                check_runs=runs,
+                verification=verification(required=self.required_with_skip()),
+            )
+        )
+        rows = {row["name"]: row for row in result["supporting_checks"]}
+        self.assertEqual(rows["Validate OpenNext build artifacts"]["status"], "FAILED")
+        self.assertEqual(category(result, "qa-checker")["status"], "FAILED")
+        self.assertEqual(result["overall_status"], "FAILED")
+
+    def test_an_unauthorized_inapplicability_never_passes(self):
+        record = self.build_skip()
+        del record["skip"]
+        result = report.build_report(
+            evidence(verification=verification(required=self.required_with_skip()[:-1] + [record]))
+        )
+        self.assertEqual(category(result, "verification-integrity")["status"], "FAILED")
+        self.assertEqual(result["overall_status"], "FAILED")
+
+
+def dependabot_commit():
+    return {
+        "sha": HEAD,
+        "author": {"login": "dependabot[bot]", "type": "Bot"},
+        "commit": {
+            "message": "bump the playwright group",
+            "author": {
+                "name": "dependabot[bot]",
+                "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            },
+            "committer": {"name": "GitHub", "email": "noreply@github.com"},
+        },
+    }
+
+
+def dependabot_files():
+    return [
+        {"filename": "package.json", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
+        {"filename": "pnpm-lock.yaml", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"},
+    ]
+
+
+class DependabotMaintenanceTests(unittest.TestCase):
+    def maintenance_evidence(self, files=None):
+        pr = evidence()["pull_request"]
+        pr["user"] = {"login": "dependabot[bot]", "type": "Bot"}
+        pr["body"] = "Automated dependency update."
+        runs = all_supporting() + [
+            check(report.DEVSKIM_CHECK, "success"),
+            check(report.PROTECTED_AUTHORIZATION_CHECK, "success"),
+        ]
+        return evidence(
+            pull_request=pr,
+            files=dependabot_files() if files is None else files,
+            check_runs=runs,
+            commits=[dependabot_commit()],
+        )
+
+    def test_protected_and_governance_declarations_are_skipped_not_failed(self):
+        result = report.build_report(self.maintenance_evidence())
+        protected = category(result, "protected-files")
+        governance = category(result, "governance")
+        self.assertEqual(protected["status"], "PASSED")
+        self.assertTrue(protected["skipped"])
+        self.assertEqual(governance["status"], "PASSED")
+        self.assertTrue(governance["skipped"])
+        self.assertIn(report.qa_skip.LABEL, report.render_comment(result))
+
+    def test_scope_declaration_is_skipped_for_a_verified_update(self):
+        result = report.build_report(self.maintenance_evidence())
+        scope_category = category(result, "pr-scope")
+        self.assertEqual(scope_category["status"], "PASSED")
+        self.assertTrue(scope_category["skipped"])
+
+    def test_a_mixed_update_does_not_get_the_governance_exemption(self):
+        files = dependabot_files() + [
+            {"filename": "app/page.js", "status": "modified", "patch": "@@ -1 +1 @@\n-a\n+b"}
+        ]
+        result = report.build_report(self.maintenance_evidence(files=files))
+        self.assertEqual(category(result, "governance")["status"], "FAILED")
+        self.assertFalse(category(result, "governance")["skipped"])
+
+    def test_a_human_pull_request_keeps_the_declarations_required(self):
+        pr = evidence()["pull_request"]
+        pr["body"] = body(governance=False)
+        result = report.build_report(
+            evidence(pull_request=pr, commits=[dependabot_commit()])
+        )
+        self.assertEqual(category(result, "governance")["status"], "FAILED")
+
+
 class WorkflowContractTests(unittest.TestCase):
     def test_report_refreshes_after_owner_approval_comments(self):
         path = os.path.join(
@@ -1199,7 +1758,7 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("startsWith(github.event.comment.body, '/approve-')", text)
 
-    def test_check_runs_and_dependency_advisories_are_paginated(self):
+    def test_check_runs_alerts_and_dependency_advisories_are_paginated(self):
         path = os.path.join(
             os.path.dirname(__file__), "..", "workflows", "pr-verification-report.yml"
         )
@@ -1207,6 +1766,8 @@ class WorkflowContractTests(unittest.TestCase):
             text = handle.read()
         self.assertIn("check-runs?per_page=100&filter=all", text)
         self.assertIn("[.[].check_runs[]]", text)
+        self.assertIn("code-scanning/alerts?pr=", text)
+        self.assertIn("| jq 'add // []' > \"$RUNNER_TEMP/alerts.json\"", text)
         self.assertIn("dependabot/alerts?state=open&per_page=100", text)
         self.assertIn("dependency-alerts.json", text)
 

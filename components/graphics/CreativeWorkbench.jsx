@@ -8,10 +8,11 @@
  * runtime a production feature uses, then exposes everything an AI coding agent
  * needs for visual QA before a pull request is approved:
  *
- *   - `window.__creativeWorkbench.getState()` — plan, surface kind, audio
- *     envelope, fps, canvas size, capture and error state as plain JSON;
- *   - `selectScene`, `setTier`, `setSeed`, `setReducedMotion` — deterministic
- *     harness state, independent of the machine's OS preferences;
+ *   - `window.__creativeWorkbench.getState()` — plan, adaptive performance
+ *     diagnostics, surface kind, audio envelope, fps, canvas size, capture and
+ *     error state as plain JSON;
+ *   - `selectScene`, `setStage`, `setTier`, `setSeed`, `setReducedMotion` —
+ *     deterministic harness state, independent of the machine's OS preferences;
  *   - `setTime(seconds)` — freeze the scene clock and repaint one composed frame,
  *     so two captures at the same time are comparable;
  *   - `playCue(name)` — play an existing same-origin Lucky Meter recording and
@@ -27,16 +28,19 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getPerformanceDiagnostics } from '../../app/lib/adaptive-performance.js';
 import { getHtml5AnalyserCount } from '../../app/lib/graphics/audio-reactivity.js';
 import { createCreativeSurface } from '../../app/lib/graphics/runtime.js';
 import { buildWorkbenchScene } from '../../app/lib/graphics/workbench-runtime.js';
 import {
   WORKBENCH_SCENES,
+  WORKBENCH_STAGES,
   WORKBENCH_TIERS,
   getWorkbenchScene,
   isWorkbenchCue,
   normalizeWorkbenchState,
   resolveWorkbenchPlan,
+  resolveWorkbenchStage,
   workbenchCaptureName,
   workbenchHtml5CueSource,
 } from '../../app/lib/graphics/workbench.js';
@@ -66,6 +70,10 @@ export default function CreativeWorkbench() {
   });
   const stateRef = useRef(state);
   stateRef.current = state;
+  // Stage is a development view choice, not part of the scene clock state. The
+  // ref keeps getState() current without re-registering the whole API.
+  const [stageId, setStageId] = useState(null);
+  const stageIdRef = useRef(null);
 
   const [status, setStatus] = useState({
     surface: 'building',
@@ -78,6 +86,7 @@ export default function CreativeWorkbench() {
   statusRef.current = status;
 
   const [inspector, setInspector] = useState('{}');
+  const [performanceDiagnostics, setPerformanceDiagnostics] = useState(null);
 
   const applyState = useCallback((next) => {
     stateRef.current = next;
@@ -93,6 +102,7 @@ export default function CreativeWorkbench() {
   }, []);
 
   const scene = getWorkbenchScene(state.sceneId) ?? WORKBENCH_SCENES[0];
+  const stagePreset = resolveWorkbenchStage(scene, stageId);
   // Resolve after mount, never during render: the capability probes answer
   // differently on the server (no WebGL, no audio) than in the browser, and a
   // plan rendered from the server's answer would hydrate a different tree.
@@ -203,7 +213,7 @@ export default function CreativeWorkbench() {
     };
     // Playing and time are applied separately so scrubbing does not rebuild.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.sceneId, state.tier, state.seed, state.reducedMotion, pushError]);
+  }, [state.sceneId, stagePreset?.id, state.tier, state.seed, state.reducedMotion, pushError]);
 
   /* ------------------------------------------------------------------ *
    * Playback and scene clock.
@@ -249,6 +259,8 @@ export default function CreativeWorkbench() {
       );
       const target = getWorkbenchScene(next.sceneId);
       if (target) next.seed = target.seed;
+      stageIdRef.current = null;
+      setStageId(null);
       applyState(next);
       return { sceneId: next.sceneId, seed: next.seed };
     },
@@ -282,6 +294,18 @@ export default function CreativeWorkbench() {
     [applyState],
   );
 
+  const setStage = useCallback((id) => {
+    const activeScene = getWorkbenchScene(stateRef.current.sceneId) ?? WORKBENCH_SCENES[0];
+    const next = resolveWorkbenchStage(activeScene, id);
+    stageIdRef.current = next?.id ?? null;
+    setStageId(next?.id ?? null);
+    return {
+      stage: next?.id ?? null,
+      width: next?.width ?? null,
+      height: next?.height ?? null,
+    };
+  }, []);
+
   /* ------------------------------------------------------------------ *
    * Sound: play an existing recording and let the envelope react.
    * ------------------------------------------------------------------ */
@@ -290,7 +314,8 @@ export default function CreativeWorkbench() {
     const cue = isWorkbenchCue(name) ? name : activeScene.cue;
     try {
       const audio = await import('../../app/lib/lucky-meter/audio.js');
-      const sounds = await audio.prepareLuckyMeterAudio();
+      // Dev-only cue auditioning: load the deferred celebration cues too.
+      const sounds = await audio.prepareLuckyMeterAudio({ loadEventCues: true });
       const sound = sounds?.[cue] ?? audio.getLuckyMeterAudio()?.[cue];
       if (!sound || typeof sound.play !== 'function') {
         return { ok: false, cue, reason: 'cue-unavailable' };
@@ -428,6 +453,7 @@ export default function CreativeWorkbench() {
     const surface = surfaceRef.current;
     const envelope = surface?.reactive?.getEnvelope?.() ?? null;
     const activeScene = getWorkbenchScene(current.sceneId);
+    const activeStage = resolveWorkbenchStage(activeScene, stageIdRef.current);
     let html5Playing = false;
     try {
       html5Playing = Boolean(html5CueRef.current?.howl?.playing?.());
@@ -436,9 +462,13 @@ export default function CreativeWorkbench() {
     }
 
     return {
-      version: 1,
+      version: 2,
       ready: readyRef.current,
       sceneId: current.sceneId,
+      stage: activeStage?.id ?? null,
+      stageSize: activeStage
+        ? { width: activeStage.width, height: activeStage.height }
+        : null,
       label: activeScene?.label ?? null,
       description: activeScene?.description ?? null,
       tier: current.tier,
@@ -449,6 +479,7 @@ export default function CreativeWorkbench() {
       surface: currentStatus.surface,
       surfaceKind: currentStatus.kind,
       plan: resolveWorkbenchPlan(current.sceneId, current),
+      diagnostics: getPerformanceDiagnostics(),
       envelope: envelope
         ? {
             available: envelope.available === true,
@@ -481,20 +512,23 @@ export default function CreativeWorkbench() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const api = {
-      version: 1,
+      version: 2,
       get ready() {
         return readyRef.current;
       },
       listScenes: () =>
-        WORKBENCH_SCENES.map(({ id, label, description, duration, cue }) => ({
+        WORKBENCH_SCENES.map(({ id, label, description, duration, cue, stage, stages }) => ({
           id,
           label,
           description,
           duration,
           cue,
+          stage: stage ?? null,
+          stages: stages ?? [],
         })),
       getState,
       selectScene,
+      setStage,
       setTier,
       setSeed,
       setReducedMotion,
@@ -521,12 +555,17 @@ export default function CreativeWorkbench() {
     selectScene,
     setReducedMotion,
     setSeed,
+    setStage,
     setTier,
     setTime,
   ]);
 
   useEffect(() => {
-    const update = () => setInspector(JSON.stringify(getState(), null, 2));
+    const update = () => {
+      const next = getState();
+      setInspector(JSON.stringify(next, null, 2));
+      setPerformanceDiagnostics(next.diagnostics);
+    };
     update();
     const interval = setInterval(update, 600);
     return () => clearInterval(interval);
@@ -537,7 +576,11 @@ export default function CreativeWorkbench() {
   }, [capture]);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 text-slate-100">
+    <main
+      className={`mx-auto w-full px-4 py-8 text-slate-100 ${
+        stagePreset ? 'max-w-[1600px]' : 'max-w-6xl'
+      }`}
+    >
       <header className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-300/80">
           Development sandbox
@@ -550,13 +593,27 @@ export default function CreativeWorkbench() {
         </p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className={stagePreset ? 'space-y-5' : 'grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]'}>
         <section className="space-y-4" aria-label="Scene">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-slate-800 bg-[#04070f]">
+          <div
+            id="workbench-stage"
+            data-workbench-stage={stagePreset?.id ?? 'standard'}
+            className={`relative w-full overflow-hidden rounded-2xl border border-slate-800 bg-[#04070f] ${
+              stagePreset ? 'mx-auto' : 'aspect-[16/10]'
+            }`}
+            style={
+              stagePreset
+                ? {
+                    aspectRatio: `${stagePreset.width} / ${stagePreset.height}`,
+                    maxWidth: `${stagePreset.width}px`,
+                  }
+                : undefined
+            }
+          >
             {/* A canvas can only ever hold one context type, so a scene change
                 gets a fresh element rather than a refused 2D context. */}
             <canvas
-              key={`${state.sceneId}-${state.tier}-${state.seed}-${state.reducedMotion ? 'calm' : 'motion'}`}
+              key={`${state.sceneId}-${stagePreset?.id ?? 'standard'}-${state.tier}-${state.seed}-${state.reducedMotion ? 'calm' : 'motion'}`}
               ref={canvasRef}
               className="h-full w-full"
               aria-hidden="true"
@@ -591,7 +648,31 @@ export default function CreativeWorkbench() {
 
             <p className="mt-3 text-sm text-slate-400">{scene.description}</p>
 
-            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div
+              className={`mt-4 grid gap-4 ${
+                scene.stages?.length ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'
+              }`}
+            >
+              {scene.stages?.length ? (
+                <label className="block text-xs font-medium uppercase tracking-wide text-slate-400">
+                  Stage
+                  <select
+                    value={stagePreset?.id ?? scene.stage}
+                    onChange={(event) => setStage(event.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-sm text-slate-100"
+                  >
+                    {scene.stages.map((id) => {
+                      const stage = WORKBENCH_STAGES[id];
+                      return (
+                        <option key={id} value={id}>
+                          {stage.label} — {stage.width}×{stage.height}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+              ) : null}
+
               <label className="block text-xs font-medium uppercase tracking-wide text-slate-400">
                 Tier
                 <select
@@ -702,6 +783,48 @@ await __creativeWorkbench.capture()`}
             <pre className="mt-2 max-h-[420px] overflow-auto rounded-lg bg-slate-950 p-3 text-[11px] leading-relaxed text-slate-300">
               {inspector}
             </pre>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">
+            <h2 className="text-sm font-semibold text-white">Performance health</h2>
+            <dl className="mt-2 space-y-1">
+              <div className="flex justify-between gap-3">
+                <dt>Monitor</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.status ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Measured FPS</dt>
+                <dd className="text-slate-200">
+                  {performanceDiagnostics?.monitor?.fps != null ? performanceDiagnostics.monitor.fps : '—'}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Plan target</dt>
+                <dd className="text-slate-200">
+                  {performanceDiagnostics?.monitor?.targetFps != null
+                    ? `${performanceDiagnostics.monitor.targetFps} fps`
+                    : '—'}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Plan tier</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.plan?.tier ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Evidence</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.evidence ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Source</dt>
+                <dd className="text-slate-200">{performanceDiagnostics?.monitor?.source ?? '—'}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Warnings</dt>
+                <dd className="text-right text-slate-200">
+                  {performanceDiagnostics?.monitor?.warnings?.join(', ') || 'none'}
+                </dd>
+              </div>
+            </dl>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-xs text-slate-400">

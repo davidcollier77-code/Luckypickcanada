@@ -54,7 +54,7 @@ VISUAL_JOB_PREFIX = "Visual QA"
 APPLICATION_VERIFICATION_JOB = "Application Verification"
 CHROMIUM_CACHE_PREFIX = "playwright-chromium-"
 PNPM_CACHE_PREFIX = "node-cache-"
-CHROMIUM_MISS_STEP = "Install Playwright Chromium (cache miss)"
+CHROMIUM_RESTORE_STEP = "Restore cached Playwright Chromium"
 REPO_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 LOG_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T[0-9:.]+Z ?")
@@ -194,29 +194,14 @@ def parse_cache_states(log_text):
 
 
 def chromium_state_from_steps(job):
-    """Infer the Chromium cache outcome from the step that only runs on a miss.
+    """Report whether the job has a Chromium cache restore at all.
 
-    A skipped miss-only step only proves a hit when the restore step really
-    completed successfully; without that evidence the outcome is unknown.
+    The cache outcome comes from the restore log lines; the workflow installs
+    Chromium unconditionally, so no step conclusion encodes a hit or a miss. A
+    job without a restore step (the verification job) is ``n/a``; a job with
+    one but no readable log stays ``unknown`` rather than guessing.
     """
-    restore = find_step(job, "Restore cached Playwright Chromium")
-    if restore is None:
-        return "n/a"
-    if str(restore.get("status") or "").lower() != "completed":
-        return "unknown"
-    if str(restore.get("conclusion") or "").lower() != "success":
-        return "unknown"
-    miss_step = find_step(job, CHROMIUM_MISS_STEP)
-    if miss_step is None:
-        return "unknown"
-    if str(miss_step.get("status") or "").lower() != "completed":
-        return "unknown"
-    conclusion = str(miss_step.get("conclusion") or "").lower()
-    if conclusion == "skipped":
-        return "hit"
-    if conclusion == "success":
-        return "miss"
-    return "unknown"
+    return "n/a" if find_step(job, CHROMIUM_RESTORE_STEP) is None else "unknown"
 
 
 def decode_log(payload):

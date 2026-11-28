@@ -42,6 +42,9 @@ permissions:
   issues: read
   checks: read
   security-events: read
+  # The seventh category reads Dependabot alerts. security-events covers code
+  # scanning only, so this separate read-only permission is required.
+  vulnerability-alerts: read
 
 # One report per branch or pull request, whatever event refreshed it, so a PR
 # event, an approval comment and a workflow_run completion cannot publish two
@@ -161,15 +164,23 @@ jobs:
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
             | jq 'add // []' > "$RUNNER_TEMP/comments.json"
+          # Commit records prove the narrow Dependabot maintenance exemption; a
+          # missing list leaves the exemption unverified (fail closed).
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/commits?per_page=100" \
+            | jq 'add // []' > "$RUNNER_TEMP/commits.json"
           head_sha="$(jq -r '.head.sha' "$RUNNER_TEMP/pr.json")"
           # Paginate: a busy head can carry more than 100 check runs, and a
           # missing page would be reported as NOT RUN instead of its real result.
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/commits/${head_sha}/check-runs?per_page=100&filter=all" \
             | jq '[.[].check_runs[]]' > "$RUNNER_TEMP/checks.json"
-          if ! gh api \
+          # Paginate: a single page silently reported any backlog above 100
+          # alerts as exactly 100, so the real count was never visible.
+          if ! gh api --paginate --slurp \
             "repos/${REPOSITORY}/code-scanning/alerts?pr=${PR_NUMBER}&state=open&per_page=100" \
-            > "$RUNNER_TEMP/alerts.json" 2> "$RUNNER_TEMP/alerts.err"; then
+            2> "$RUNNER_TEMP/alerts.err" \
+            | jq 'add // []' > "$RUNNER_TEMP/alerts.json"; then
             printf '{"message": "the code-scanning alerts could not be read"}\n' \
               > "$RUNNER_TEMP/alerts.json"
             cat "$RUNNER_TEMP/alerts.err" >&2 || true
@@ -246,6 +257,7 @@ jobs:
             --pull-request "$RUNNER_TEMP/pr.json" \
             --files "$RUNNER_TEMP/files.json" \
             --comments "$RUNNER_TEMP/comments.json" \
+            --commits "$RUNNER_TEMP/commits.json" \
             --checks "$RUNNER_TEMP/checks.json" \
             --verification "$RUNNER_TEMP/verification.json" \
             --alerts "$RUNNER_TEMP/alerts.json" \

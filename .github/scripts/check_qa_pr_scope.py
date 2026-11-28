@@ -27,6 +27,8 @@ import re
 import sys
 from pathlib import PurePosixPath
 
+import qa_skip
+
 START_MARKER = "<!-- qa-scope:start -->"
 END_MARKER = "<!-- qa-scope:end -->"
 ALLOWED_BROWSER_TOOLS = frozenset({"playwright", "firecrawl", "browserless"})
@@ -71,6 +73,15 @@ class ScopeError(ValueError):
     """The declaration or GitHub evidence cannot be classified safely."""
 
 
+class MissingDeclaration(ScopeError):
+    """The description carries no QA scope declaration at all.
+
+    A verified Dependabot maintenance update cannot provide one, so this is the
+    only declaration failure the narrow maintenance exemption may skip. A
+    malformed declaration, a duplicate block or invalid JSON stays a failure.
+    """
+
+
 def _placeholder_wording(value: str, pattern: re.Pattern) -> bool:
     """Reject template instructions, a leading marker phrase and a bare marker."""
     text = value.strip()
@@ -111,6 +122,10 @@ def _string_list(value, field: str, *, required: bool = False) -> list[str]:
 def extract_declaration(body: str) -> dict:
     if not isinstance(body, str):
         raise ScopeError("pull request body is missing")
+    if body.count(START_MARKER) == 0 and body.count(END_MARKER) == 0:
+        raise MissingDeclaration(
+            "PR description contains no QA scope declaration"
+        )
     if body.count(START_MARKER) != 1 or body.count(END_MARKER) != 1:
         raise ScopeError("PR description must contain exactly one QA scope declaration")
     match = re.search(
@@ -358,7 +373,39 @@ def _is_governance_path(path: str) -> bool:
     )
 
 
-def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
+def _maintenance_skip_report(pr: dict, actual: set[str], reason: str) -> dict:
+    """Report a verified Dependabot maintenance update as an authorized skip."""
+    skip = qa_skip.record(qa_skip.VERIFIED_DEPENDABOT_MAINTENANCE, reason)
+    visual_changes = sorted(path for path in actual if _is_visual_path(path))
+    return {
+        "status": "PASS",
+        "pr_number": pr.get("number"),
+        "changed_paths": sorted(actual),
+        "declared_path_patterns": sorted(actual),
+        "file_purposes": {},
+        "features": ["Verified Dependabot maintenance update"],
+        "shared_dependencies": [],
+        "matched_paths": sorted(actual),
+        "scope_expansion": [],
+        "visual_changes": visual_changes,
+        "visual_impact": None,
+        "visual_baseline_updates": [],
+        "governance_changes": [],
+        "scope_change_statement": "",
+        "browser_evidence": [],
+        "approvals": {},
+        "warnings": [],
+        "errors": [],
+        "skip": skip,
+        "note": (
+            "This is an authorized, proven-inapplicable skip, never a pass of the "
+            "human declaration itself. Protected-file and Agent MD authorization "
+            "workflows remain mandatory."
+        ),
+    }
+
+
+def validate(pr: dict, file_records: list, comments: list, owner: str, commits=None) -> dict:
     if not isinstance(pr, dict) or not isinstance(pr.get("body"), str):
         raise ScopeError("GitHub pull request metadata is missing its body")
     if not isinstance(owner, str) or not owner.strip():
@@ -368,7 +415,6 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
     if not isinstance(head_sha, str) or not head_sha.strip():
         raise ScopeError("current pull request head SHA is required for approval-bound scope checks")
 
-    declaration = extract_declaration(pr["body"])
     actual = changed_paths(file_records)
     changed_file_count = pr.get("changed_files")
     if type(changed_file_count) is not int:
@@ -380,6 +426,14 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
             "GitHub changed-file count does not match the complete file list "
             f"(reported {changed_file_count!r}; received {len(file_records)})"
         )
+
+    try:
+        declaration = extract_declaration(pr["body"])
+    except MissingDeclaration:
+        maintenance, reason = qa_skip.dependabot_maintenance(pr, commits, file_records)
+        if not maintenance:
+            raise
+        return _maintenance_skip_report(pr, actual, reason)
     patterns = declaration["paths"]
     file_purposes = _file_purpose_entries(declaration.get("file_purposes"))
     expansion = _entries_with_reasons(declaration.get("scope_expansion"), "scope_expansion")
@@ -523,6 +577,7 @@ def validate(pr: dict, file_records: list, comments: list, owner: str) -> dict:
         "approvals": approvals,
         "warnings": warnings,
         "errors": errors,
+        "skip": None,
         "note": "This scope check does not grant permission to change protected files. Existing protected-file and Agent MD authorization workflows remain mandatory.",
     }
 
@@ -544,6 +599,12 @@ def render_markdown(report: dict) -> str:
         f"- {path}: {purpose}"
         for path, purpose in sorted(report.get("file_purposes", {}).items())
     )
+    if report.get("skip"):
+        lines.extend(["", "### Skipped (not applicable)"])
+        lines.append(
+            "- %s — %s (%s)"
+            % (qa_skip.LABEL, report["skip"]["reason"], report["skip"]["authority"])
+        )
     lines.extend(["", "### Browser verification"])
     lines.append(
         "- Automated Playwright verification owns browser evidence; the submitter is not "
@@ -586,11 +647,21 @@ def main(argv=None) -> int:
     parser.add_argument("--files", required=True)
     parser.add_argument("--comments", required=True)
     parser.add_argument("--owner", required=True)
+    parser.add_argument(
+        "--commits",
+        help="pull request commit records JSON (required to verify the Dependabot exemption)",
+    )
     parser.add_argument("--summary")
     parser.add_argument("--json")
     args = parser.parse_args(argv)
     try:
-        report = validate(_read_json(args.pull_request), _read_json(args.files), _read_json(args.comments), args.owner)
+        report = validate(
+            _read_json(args.pull_request),
+            _read_json(args.files),
+            _read_json(args.comments),
+            args.owner,
+            _read_json(args.commits) if args.commits else None,
+        )
     except (OSError, json.JSONDecodeError, ScopeError) as error:
         report = {"status": "BLOCKED", "errors": [str(error)]}
         if args.summary:

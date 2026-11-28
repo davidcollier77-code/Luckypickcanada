@@ -21,16 +21,21 @@
  *     timers and probes begin only when a consumer subscribes or asks.
  *   - Adaptations are reversible. When a condition improves, the next
  *     reassessment restores the fuller experience.
+ *   - Frame-delivery diagnostics compare each observed rendering source with
+ *     the active plan's target cadence, not with a fixed 60 fps expectation.
  *   - No cookies, storage or user-agent string is read. Browser storage does
  *     not provide additional RAM, so it is never consulted for memory limits.
  */
 
 import {
+  describeRenderBudget,
+  getDeviceAssessment,
+  getDisplayDemand,
+  getGraphicsFeatures,
   getRenderQuality,
+  isPageVisible,
   prefersReducedMotion,
-  supportsCanvas2D,
-  supportsPath2D,
-  supportsWebGL,
+  refreshDeviceAssessment,
 } from './graphics-capabilities.js';
 
 /** Coarse network classes derived from measured throughput and latency. */
@@ -77,6 +82,64 @@ const REASSESS_DEBOUNCE_MS = 120;
 const PLAN_CACHE_TTL_MS = 1000;
 
 const FRAME_RATE = Object.freeze({ FULL: 60, CONSTRAINED: 30, PAUSED: 0 });
+
+/**
+ * Observational frame-delivery states. They never trigger an adaptation.
+ * `paused` means the active plan intentionally asks for no frames; `idle`
+ * means the plan expects frames but the observed source stopped delivering
+ * them. Neither is evidence of degradation.
+ */
+export const PERFORMANCE_STATUS = Object.freeze({
+  WARMING: 'warming',
+  HEALTHY: 'healthy',
+  STRAINED: 'strained',
+  CRITICAL: 'critical',
+  PAUSED: 'paused',
+  IDLE: 'idle',
+});
+
+/** What a monitor status is based on. Only `measured` supports a health claim. */
+export const PERFORMANCE_EVIDENCE = Object.freeze({
+  MEASURED: 'measured',
+  INSUFFICIENT: 'insufficient',
+  UNAVAILABLE: 'unavailable',
+  PAUSED: 'paused',
+  STALE: 'stale',
+});
+
+/** Existing rendering sources that feed the one shared monitor. */
+export const FRAME_SOURCES = Object.freeze({
+  SHARED: 'adaptive-frame-loop',
+  COSMIC: 'cosmic-engine',
+});
+
+// A rAF suspension produces no callback while the document is hidden, so the
+// hidden/visible branches cannot observe it. On resume the elapsed delta would
+// otherwise enter the sample window as a very slow frame and could report a
+// healthy stream as strained or critical. An interval beyond 250 ms (more than
+// seven 30 fps frame periods) is therefore an interruption, not delivered
+// cadence, and resets the window instead of being measured as a frame.
+const FRAME_MONITOR = Object.freeze({
+  // Thresholds are defined for the plan's full 60 fps cadence and scaled to
+  // the active plan target, so a 30 fps plan is never reported as strained
+  // merely for delivering 30 fps.
+  referenceFps: 60,
+  windowMs: 1_500,
+  warmupMs: 2_000,
+  staleAfterMs: 3_000,
+  minimumSamples: 4,
+  gapResetMs: 250,
+  duplicateSampleMs: 1,
+  evaluationIntervalMs: 250,
+  hysteresisMs: 1_000,
+  healthyFps: 50,
+  strainedFps: 28,
+  healthyP95Ms: 28,
+  criticalP95Ms: 70,
+  longFrameMs: 50,
+  strainedLongFrameRatio: 0.05,
+  criticalLongFrameRatio: 0.2,
+});
 
 /** Server-rendered default: permissive, never restricting. */
 const SERVER_PLAN = Object.freeze({
@@ -222,43 +285,33 @@ export function classifyNetwork(network = DEFAULT_NETWORK) {
 /**
  * Reads device hints. `deviceMemory` and `hardwareConcurrency` are coarse
  * privacy-reduced values and are absent in several browsers, so absent values
- * stay `null` and are treated as capable.
+ * stay `null` and are treated as capable. An explicitly injected source
+ * bypasses the shared caches; omitting it uses them.
  *
  * @param {{ navigatorObject?: Navigator|null, windowObject?: Window|null }} [sources]
  * @returns {typeof DEFAULT_DEVICE}
  */
-export function readDeviceState({ navigatorObject = getNavigator(), windowObject = getWindow() } = {}) {
-  const memory =
-    typeof navigatorObject?.deviceMemory === 'number' ? navigatorObject.deviceMemory : null;
-  const cores =
-    typeof navigatorObject?.hardwareConcurrency === 'number' &&
-    Number.isFinite(navigatorObject.hardwareConcurrency) &&
-    navigatorObject.hardwareConcurrency > 0
-      ? navigatorObject.hardwareConcurrency
-      : null;
-
-  const pixelRatio =
-    windowObject && Number.isFinite(windowObject.devicePixelRatio) && windowObject.devicePixelRatio > 0
-      ? windowObject.devicePixelRatio
-      : DEFAULT_DEVICE.pixelRatio;
-  const viewportWidth =
-    windowObject && Number.isFinite(windowObject.innerWidth) && windowObject.innerWidth > 0
-      ? windowObject.innerWidth
-      : DEFAULT_DEVICE.viewportWidth;
-  const viewportHeight =
-    windowObject && Number.isFinite(windowObject.innerHeight) && windowObject.innerHeight > 0
-      ? windowObject.innerHeight
-      : DEFAULT_DEVICE.viewportHeight;
+export function readDeviceState({ navigatorObject, windowObject } = {}) {
+  // Presence of an argument, not object identity, decides whether to bypass the
+  // shared cache. Comparing against fresh `getNavigator()`/`getWindow()` calls
+  // would silently follow a reassigned global and pick the wrong branch.
+  const injectedNavigator = navigatorObject !== undefined;
+  const injectedWindow = windowObject !== undefined;
+  const assessment = injectedNavigator
+    ? getDeviceAssessment({ navigatorObject })
+    : getDeviceAssessment();
+  const display = injectedWindow ? getDisplayDemand({ windowObject }) : getDisplayDemand();
+  const resolvedWindow = injectedWindow ? windowObject : getWindow();
 
   return {
-    memoryGb: memory !== null && memory > 0 ? memory : null,
-    cores,
-    pixelRatio,
-    viewportWidth,
-    viewportHeight,
+    memoryGb: assessment.memoryGb,
+    cores: assessment.cores,
+    pixelRatio: display.pixelRatio,
+    viewportWidth: display.width,
+    viewportHeight: display.height,
     reducedMotion:
-      mediaQueryMatches(windowObject, MEDIA_QUERIES.reducedMotion) || prefersReducedMotion(),
-    coarsePointer: mediaQueryMatches(windowObject, MEDIA_QUERIES.coarsePointer),
+      mediaQueryMatches(resolvedWindow, MEDIA_QUERIES.reducedMotion) || prefersReducedMotion(),
+    coarsePointer: mediaQueryMatches(resolvedWindow, MEDIA_QUERIES.coarsePointer),
   };
 }
 
@@ -565,6 +618,9 @@ export function getAdaptivePlan({ refresh = false } = {}) {
  */
 export function refreshAdaptivePlan() {
   if (typeof window === 'undefined') return SERVER_PLAN;
+  // The plan's reassessment is the one explicit refresh boundary for the shared
+  // hardware assessment; consumers between reassessments keep the cached read.
+  refreshDeviceAssessment();
   const plan = computeLivePlan();
   cachedPlanAt = Date.now();
   return emitIfChanged(plan);
@@ -650,15 +706,637 @@ export function allowSpeculativeAudio(plan = getAdaptivePlan()) {
  * }}
  */
 export function getAdaptiveCapabilities() {
+  const device = getDeviceAssessment();
+  const display = getDisplayDemand();
+  const renderQuality = getRenderQuality();
+  const graphics = getGraphicsFeatures();
+
   return {
     plan: getAdaptivePlan(),
     features: {
-      canvas2d: supportsCanvas2D(),
-      webgl: supportsWebGL(),
-      path2d: supportsPath2D(),
+      canvas2d: graphics.canvas2d,
+      webgl: graphics.webgl,
+      path2d: graphics.path2d,
     },
-    renderQuality: getRenderQuality(),
+    renderQuality,
+    device,
+    display,
+    graphics,
+    renderBudget: describeRenderBudget({ quality: renderQuality, assessment: device, display }),
+    performance: getPerformanceSnapshot(),
   };
+}
+
+/* ------------------------------------------------------------------------- *
+ * Observational frame-delivery monitor
+ * ------------------------------------------------------------------------- */
+
+function readDisplayTarget() {
+  const display = getDisplayDemand();
+  return {
+    width: display.width,
+    height: display.height,
+    pixelRatio: display.pixelRatio,
+  };
+}
+
+function targetSignature(target) {
+  return `${target.width}x${target.height}@${target.pixelRatio}`;
+}
+
+function normalizeSource(source) {
+  if (typeof source !== 'string') return FRAME_SOURCES.SHARED;
+  const trimmed = source.trim();
+  return trimmed ? trimmed.slice(0, 40) : FRAME_SOURCES.SHARED;
+}
+
+/**
+ * Scales the 60 fps policy to the active plan's target cadence. A plan that
+ * intentionally targets 30 fps is healthy at 25 fps or better and critical
+ * only below 14 fps; frame-time budgets follow the period, so ~33 ms frames are
+ * normal for that plan instead of a warning. This reuses the existing policy
+ * instead of introducing a second set of capability thresholds.
+ */
+function monitorThresholds(targetFps) {
+  const target =
+    Number.isFinite(targetFps) && targetFps > 0 ? targetFps : FRAME_MONITOR.referenceFps;
+  const scale = target / FRAME_MONITOR.referenceFps;
+  return Object.freeze({
+    targetFps: target,
+    healthyFps: FRAME_MONITOR.healthyFps * scale,
+    strainedFps: FRAME_MONITOR.strainedFps * scale,
+    healthyP95Ms: Math.round((FRAME_MONITOR.healthyP95Ms / scale) * 10) / 10,
+    criticalP95Ms: Math.round((FRAME_MONITOR.criticalP95Ms / scale) * 10) / 10,
+    longFrameMs: Math.round((FRAME_MONITOR.longFrameMs / scale) * 10) / 10,
+  });
+}
+
+function defaultPlanReference() {
+  return {
+    tier: PERFORMANCE_TIER.BALANCED,
+    frameRate: FRAME_RATE.FULL,
+    animationBudget: 'full',
+    reducedMotion: false,
+    visible: true,
+  };
+}
+
+function readPlanReference() {
+  return getAdaptivePlan();
+}
+
+function normalizePlan(value) {
+  if (!value || typeof value !== 'object') return defaultPlanReference();
+  return {
+    tier: typeof value.tier === 'string' ? value.tier : PERFORMANCE_TIER.BALANCED,
+    frameRate: Number.isFinite(value.frameRate) ? value.frameRate : FRAME_RATE.FULL,
+    animationBudget:
+      typeof value.animationBudget === 'string' ? value.animationBudget : 'full',
+    reducedMotion: value.reducedMotion === true,
+    visible: value.visible !== false,
+  };
+}
+
+function monitorPlanSignature(plan) {
+  return [plan.tier, plan.frameRate, plan.reducedMotion ? 1 : 0, plan.visible ? 1 : 0].join('|');
+}
+
+function pauseReasonFor(plan, visible) {
+  if (!visible || plan.visible === false) return 'hidden';
+  if (plan.reducedMotion) return 'reduced-motion';
+  if (!(plan.frameRate > 0)) return 'plan-paused';
+  return null;
+}
+
+function roundOne(value) {
+  return Math.round(value * 10) / 10;
+}
+
+function roundThree(value) {
+  return Math.round(value * 1000) / 1000;
+}
+
+/**
+ * Creates an observational frame monitor. It records timestamps supplied by an
+ * existing render loop; it never schedules a frame, starts a timer or registers
+ * a listener. The injected clock/visibility/target/plan sources exist for
+ * focused tests.
+ *
+ * Samples are kept per rendering source inside this one monitor. A shared frame
+ * loop and a cinematic engine can deliver frames on different schedules, so one
+ * global window could let a fast source hide a slow one (or report a source's
+ * deliberate pause as site-wide degradation). Every source is classified
+ * against the same active plan and the aggregate reports the weakest measured
+ * source.
+ *
+ * @param {{
+ *   now?: () => number,
+ *   isVisible?: () => boolean,
+ *   readTarget?: () => { width: number, height: number, pixelRatio: number },
+ *   readPlan?: () => object,
+ * }} [options]
+ * @returns {{
+ *   record: (timestamp: number, source?: string) => void,
+ *   reset: (reason?: string, timestamp?: number) => object,
+ *   snapshot: () => object,
+ * }}
+ */
+export function createPerformanceMonitor({
+  now = nowMs,
+  isVisible = isPageVisible,
+  readTarget = readDisplayTarget,
+  readPlan = readPlanReference,
+} = {}) {
+  const sources = new Map();
+
+  function readNow() {
+    try {
+      const value = now();
+      if (Number.isFinite(value)) return value;
+    } catch {
+      // A broken clock must not break the snapshot.
+    }
+    return nowMs();
+  }
+
+  function readVisibility() {
+    try {
+      return isVisible() !== false;
+    } catch {
+      return true;
+    }
+  }
+
+  function readTargetSafely() {
+    try {
+      const value = readTarget();
+      if (
+        value &&
+        Number.isFinite(value.width) &&
+        value.width > 0 &&
+        Number.isFinite(value.height) &&
+        value.height > 0 &&
+        Number.isFinite(value.pixelRatio) &&
+        value.pixelRatio > 0
+      ) {
+        return {
+          width: value.width,
+          height: value.height,
+          pixelRatio: value.pixelRatio,
+        };
+      }
+    } catch {
+      // A missing target only means the target-change reset cannot run.
+    }
+    return null;
+  }
+
+  function readPlanSafely() {
+    try {
+      return normalizePlan(readPlan());
+    } catch {
+      return defaultPlanReference();
+    }
+  }
+
+  function getSource(id) {
+    let entry = sources.get(id);
+    if (!entry) {
+      entry = {
+        id,
+        status: PERFORMANCE_STATUS.WARMING,
+        statusSince: null,
+        updatedAt: null,
+        lastTimestamp: null,
+        target: null,
+        lastTargetSignature: null,
+        targetFps: null,
+        samples: [],
+        firstCollectedAt: null,
+        warmupUntil: 0,
+        lastResetReason: 'startup',
+        pendingStatus: null,
+        pendingSince: 0,
+        lastEvaluationAt: 0,
+        planSignature: '',
+      };
+      sources.set(id, entry);
+    }
+    return entry;
+  }
+
+  function resetSource(entry, reason, timestamp, plan) {
+    entry.status = PERFORMANCE_STATUS.WARMING;
+    entry.statusSince = timestamp;
+    entry.updatedAt = timestamp;
+    entry.lastTimestamp = timestamp;
+    entry.target = readTargetSafely();
+    entry.lastTargetSignature = entry.target ? targetSignature(entry.target) : null;
+    entry.targetFps = plan.frameRate;
+    entry.samples = [];
+    entry.firstCollectedAt = null;
+    entry.warmupUntil = timestamp + FRAME_MONITOR.warmupMs;
+    entry.lastResetReason = reason;
+    entry.pendingStatus = null;
+    entry.pendingSince = 0;
+    entry.lastEvaluationAt = 0;
+    entry.planSignature = monitorPlanSignature(plan);
+  }
+
+  function metrics(entry, thresholds) {
+    if (entry.samples.length < 2) return null;
+    const deltas = entry.samples.map((sample) => sample.delta);
+    const sorted = [...deltas].sort((a, b) => a - b);
+    const averageFrameMs = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
+    const p95Index = Math.min(
+      sorted.length - 1,
+      Math.max(0, Math.ceil(sorted.length * 0.95) - 1),
+    );
+    // A long frame is judged against the active plan's period, so 33 ms is
+    // normal for a 30 fps plan while 100 ms is not.
+    const longFrames = deltas.filter((value) => value >= thresholds.longFrameMs).length;
+
+    return {
+      fps: averageFrameMs > 0 ? 1000 / averageFrameMs : 0,
+      averageFrameMs,
+      p95FrameMs: sorted[p95Index],
+      longFrameRatio: longFrames / deltas.length,
+    };
+  }
+
+  function classify(frameMetrics, thresholds) {
+    if (
+      frameMetrics.fps < thresholds.strainedFps ||
+      frameMetrics.p95FrameMs >= thresholds.criticalP95Ms ||
+      frameMetrics.longFrameRatio >= FRAME_MONITOR.criticalLongFrameRatio
+    ) {
+      return PERFORMANCE_STATUS.CRITICAL;
+    }
+    if (
+      frameMetrics.fps < thresholds.healthyFps ||
+      frameMetrics.p95FrameMs >= thresholds.healthyP95Ms ||
+      frameMetrics.longFrameRatio >= FRAME_MONITOR.strainedLongFrameRatio
+    ) {
+      return PERFORMANCE_STATUS.STRAINED;
+    }
+    return PERFORMANCE_STATUS.HEALTHY;
+  }
+
+  function sourceWarnings(status, frameMetrics, thresholds, pauseReason, hasSamples) {
+    if (pauseReason) return [`paused-${pauseReason}`];
+    if (status === PERFORMANCE_STATUS.IDLE) return ['no-recent-samples'];
+    if (status === PERFORMANCE_STATUS.WARMING) {
+      // Warm-up can already hold samples without computed metrics yet; the
+      // warning must not claim there are none.
+      return [frameMetrics || hasSamples ? 'insufficient-samples' : 'no-samples'];
+    }
+    const warnings = [];
+    if (frameMetrics && frameMetrics.fps < thresholds.healthyFps) {
+      warnings.push('frame-rate-below-target');
+    }
+    if (frameMetrics && frameMetrics.p95FrameMs >= thresholds.healthyP95Ms) {
+      warnings.push('frame-time-p95-high');
+    }
+    if (
+      frameMetrics &&
+      frameMetrics.longFrameRatio >= FRAME_MONITOR.strainedLongFrameRatio
+    ) {
+      warnings.push('long-frame-ratio-high');
+    }
+    return warnings;
+  }
+
+  function describeSource(entry, plan, pauseReason, currentTime) {
+    const thresholds = monitorThresholds(entry.targetFps ?? plan.frameRate);
+    const paused = pauseReason !== null;
+    let status = entry.status;
+    let evidence = PERFORMANCE_EVIDENCE.UNAVAILABLE;
+    let frameMetrics = null;
+    let stale = false;
+
+    if (paused) {
+      status = PERFORMANCE_STATUS.PAUSED;
+      evidence = PERFORMANCE_EVIDENCE.PAUSED;
+    } else if (entry.status === PERFORMANCE_STATUS.PAUSED) {
+      // The plan resumed but this source has not delivered a frame yet.
+      status = PERFORMANCE_STATUS.WARMING;
+    } else if (
+      entry.updatedAt !== null &&
+      currentTime - entry.updatedAt > FRAME_MONITOR.staleAfterMs
+    ) {
+      // The source stopped delivering frames while the plan still expects
+      // them. That is an idle renderer, not a measured slowdown.
+      status = PERFORMANCE_STATUS.IDLE;
+      evidence = PERFORMANCE_EVIDENCE.STALE;
+      stale = true;
+    } else if (entry.status === PERFORMANCE_STATUS.WARMING) {
+      evidence =
+        entry.samples.length > 0
+          ? PERFORMANCE_EVIDENCE.INSUFFICIENT
+          : PERFORMANCE_EVIDENCE.UNAVAILABLE;
+    } else {
+      frameMetrics = metrics(entry, thresholds);
+      if (frameMetrics) {
+        evidence = PERFORMANCE_EVIDENCE.MEASURED;
+      } else {
+        status = PERFORMANCE_STATUS.WARMING;
+        evidence = PERFORMANCE_EVIDENCE.INSUFFICIENT;
+      }
+    }
+
+    const measured =
+      status === PERFORMANCE_STATUS.HEALTHY ||
+      status === PERFORMANCE_STATUS.STRAINED ||
+      status === PERFORMANCE_STATUS.CRITICAL;
+    const displayMetrics = measured ? frameMetrics : null;
+
+    return Object.freeze({
+      id: entry.id,
+      status,
+      statusSince: entry.statusSince,
+      evidence,
+      targetFps: entry.targetFps,
+      fps: displayMetrics ? roundOne(displayMetrics.fps) : null,
+      averageFrameMs: displayMetrics ? roundOne(displayMetrics.averageFrameMs) : null,
+      p95FrameMs: displayMetrics ? roundOne(displayMetrics.p95FrameMs) : null,
+      longFrameRatio: displayMetrics ? roundThree(displayMetrics.longFrameRatio) : null,
+      sampleCount: paused || stale ? 0 : entry.samples.length,
+      warmupRemainingMs: Math.max(0, Math.round(entry.warmupUntil - currentTime)),
+      updatedAt: entry.updatedAt,
+      lastResetReason: entry.lastResetReason,
+      stale,
+      target: entry.target ? Object.freeze({ ...entry.target }) : null,
+      warnings: Object.freeze(
+        sourceWarnings(status, frameMetrics, thresholds, pauseReason, entry.samples.length > 0),
+      ),
+    });
+  }
+
+  function snapshot() {
+    const plan = readPlanSafely();
+    const pauseReason = pauseReasonFor(plan, readVisibility());
+    const currentTime = readNow();
+    const described = [...sources.values()]
+      .map((entry) => describeSource(entry, plan, pauseReason, currentTime))
+      .sort((a, b) => {
+        if (a.id === FRAME_SOURCES.SHARED) return -1;
+        if (b.id === FRAME_SOURCES.SHARED) return 1;
+        return a.id.localeCompare(b.id);
+      });
+
+    const rank = { healthy: 1, strained: 2, critical: 3 };
+    let driver = null;
+    for (const source of described) {
+      if (!Object.prototype.hasOwnProperty.call(rank, source.status)) continue;
+      if (!driver || rank[source.status] > rank[driver.status]) driver = source;
+    }
+    if (!driver) {
+      driver =
+        described.find((source) => source.status === PERFORMANCE_STATUS.IDLE) ??
+        described.find((source) => source.evidence === PERFORMANCE_EVIDENCE.INSUFFICIENT) ??
+        described[0] ??
+        null;
+    }
+
+    const status = pauseReason
+      ? PERFORMANCE_STATUS.PAUSED
+      : driver
+        ? driver.status
+        : PERFORMANCE_STATUS.WARMING;
+    const evidence = pauseReason
+      ? PERFORMANCE_EVIDENCE.PAUSED
+      : driver
+        ? driver.evidence
+        : PERFORMANCE_EVIDENCE.UNAVAILABLE;
+    const measuredSource =
+      driver && Object.prototype.hasOwnProperty.call(rank, driver.status) ? driver : null;
+
+    return Object.freeze({
+      version: 2,
+      status,
+      statusSince: driver?.statusSince ?? null,
+      evidence,
+      paused: Boolean(pauseReason),
+      source: pauseReason ? null : measuredSource?.id ?? driver?.id ?? null,
+      targetFps: plan.frameRate,
+      plan: Object.freeze({
+        tier: plan.tier,
+        frameRate: plan.frameRate,
+        animationBudget: plan.animationBudget,
+        reducedMotion: plan.reducedMotion,
+        visible: plan.visible,
+      }),
+      fps: measuredSource?.fps ?? null,
+      averageFrameMs: measuredSource?.averageFrameMs ?? null,
+      p95FrameMs: measuredSource?.p95FrameMs ?? null,
+      longFrameRatio: measuredSource?.longFrameRatio ?? null,
+      sampleCount: driver?.sampleCount ?? 0,
+      windowMs: FRAME_MONITOR.windowMs,
+      warmupRemainingMs: driver?.warmupRemainingMs ?? 0,
+      lastResetReason: driver?.lastResetReason ?? 'startup',
+      updatedAt: driver?.updatedAt ?? null,
+      target: driver?.target ?? null,
+      thresholds: plan.frameRate > 0 ? monitorThresholds(plan.frameRate) : null,
+      warnings: Object.freeze(
+        pauseReason
+          ? [`paused-${pauseReason}`]
+          : driver
+            ? [...driver.warnings]
+            : ['no-samples'],
+      ),
+      sources: Object.freeze(described),
+    });
+  }
+
+  function record(timestamp, source = FRAME_SOURCES.SHARED) {
+    if (!Number.isFinite(timestamp)) return;
+
+    const entry = getSource(normalizeSource(source));
+    const plan = readPlanSafely();
+    const pauseReason = pauseReasonFor(plan, readVisibility());
+
+    if (pauseReason) {
+      const wasPaused = entry.status === PERFORMANCE_STATUS.PAUSED;
+      entry.samples = [];
+      entry.firstCollectedAt = null;
+      entry.pendingStatus = null;
+      entry.pendingSince = 0;
+      entry.updatedAt = timestamp;
+      entry.lastTimestamp = timestamp;
+      entry.targetFps = plan.frameRate;
+      if (!wasPaused) {
+        entry.status = PERFORMANCE_STATUS.PAUSED;
+        entry.statusSince = timestamp;
+        entry.lastResetReason = pauseReason;
+      }
+      return;
+    }
+
+    if (entry.status === PERFORMANCE_STATUS.PAUSED) {
+      resetSource(entry, 'resumed', timestamp, plan);
+      return;
+    }
+
+    if (entry.lastTimestamp === null) {
+      resetSource(entry, 'startup', timestamp, plan);
+      return;
+    }
+
+    if (entry.planSignature !== monitorPlanSignature(plan)) {
+      resetSource(entry, 'plan-change', timestamp, plan);
+      return;
+    }
+
+    const nextTarget = readTargetSafely();
+    const nextSignature = nextTarget ? targetSignature(nextTarget) : null;
+    if (
+      entry.lastTargetSignature !== null &&
+      nextSignature !== null &&
+      nextSignature !== entry.lastTargetSignature
+    ) {
+      resetSource(entry, 'target-change', timestamp, plan);
+      entry.target = nextTarget;
+      entry.lastTargetSignature = nextSignature;
+      return;
+    }
+
+    if (timestamp - entry.lastTimestamp > FRAME_MONITOR.gapResetMs) {
+      resetSource(entry, 'gap', timestamp, plan);
+      return;
+    }
+    if (timestamp - entry.lastTimestamp < FRAME_MONITOR.duplicateSampleMs) return;
+
+    const delta = timestamp - entry.lastTimestamp;
+    entry.lastTimestamp = timestamp;
+    entry.updatedAt = timestamp;
+    entry.target = nextTarget ?? entry.target;
+
+    if (timestamp < entry.warmupUntil) return;
+
+    if (entry.firstCollectedAt === null) entry.firstCollectedAt = timestamp;
+    entry.samples.push({ at: timestamp, delta });
+    while (entry.samples.length > 0 && timestamp - entry.samples[0].at > FRAME_MONITOR.windowMs) {
+      entry.samples.shift();
+    }
+
+    const thresholds = monitorThresholds(entry.targetFps ?? plan.frameRate);
+    if (
+      timestamp - entry.firstCollectedAt >= FRAME_MONITOR.windowMs &&
+      entry.samples.length >= FRAME_MONITOR.minimumSamples &&
+      timestamp - entry.lastEvaluationAt >= FRAME_MONITOR.evaluationIntervalMs
+    ) {
+      entry.lastEvaluationAt = timestamp;
+      const frameMetrics = metrics(entry, thresholds);
+      if (frameMetrics) {
+        const candidate = classify(frameMetrics, thresholds);
+        if (entry.status === PERFORMANCE_STATUS.WARMING) {
+          entry.status = candidate;
+          entry.statusSince = timestamp;
+          entry.pendingStatus = null;
+        } else if (candidate === entry.status) {
+          entry.pendingStatus = null;
+        } else if (entry.pendingStatus !== candidate) {
+          entry.pendingStatus = candidate;
+          entry.pendingSince = timestamp;
+        } else if (timestamp - entry.pendingSince >= FRAME_MONITOR.hysteresisMs) {
+          entry.status = candidate;
+          entry.statusSince = timestamp;
+          entry.pendingStatus = null;
+        }
+      }
+    }
+  }
+
+  function reset(reason = 'manual', timestamp = readNow()) {
+    const plan = readPlanSafely();
+    for (const entry of sources.values()) resetSource(entry, reason, timestamp, plan);
+    return snapshot();
+  }
+
+  return {
+    record,
+    reset,
+    snapshot,
+  };
+}
+
+let performanceMonitor = null;
+
+function getPerformanceMonitor() {
+  if (!performanceMonitor) performanceMonitor = createPerformanceMonitor();
+  return performanceMonitor;
+}
+
+/**
+ * Records one painted frame from an existing loop. Samples are attributed to
+ * their rendering source, so a faster loop cannot hide a slower one; repeating
+ * the same timestamp for a source is ignored. Observational by design: a
+ * failure here must never stop the renderer that supplied the timestamp.
+ *
+ * @param {number} timestamp
+ * @param {string} [source]
+ * @returns {void}
+ */
+export function recordFrameSample(timestamp, source = FRAME_SOURCES.SHARED) {
+  try {
+    getPerformanceMonitor().record(timestamp, source);
+  } catch {
+    // Diagnostics must not break the frame loop they observe.
+  }
+}
+
+/**
+ * Returns the current observational snapshot. It never starts a frame loop.
+ *
+ * @returns {object}
+ */
+export function getPerformanceSnapshot() {
+  return getPerformanceMonitor().snapshot();
+}
+
+/**
+ * Resets every observed source after a deliberate test or diagnostic boundary.
+ *
+ * @param {string} [reason]
+ * @returns {object}
+ */
+export function resetPerformanceMonitor(reason = 'manual') {
+  return getPerformanceMonitor().reset(reason);
+}
+
+/**
+ * Returns the adaptive plan, the plan-aware frame monitor and the device
+ * assessment that produced them as one diagnostics payload. The Creative
+ * Workbench reads this instead of creating a second diagnostics surface.
+ *
+ * @returns {{
+ *   plan: object,
+ *   monitor: object,
+ *   device: object,
+ * }}
+ */
+export function getPerformanceDiagnostics() {
+  const plan = getAdaptivePlan();
+  const assessment = getDeviceAssessment();
+
+  return Object.freeze({
+    plan: Object.freeze({
+      tier: plan.tier,
+      frameRate: plan.frameRate,
+      animationBudget: plan.animationBudget,
+      reducedMotion: plan.reducedMotion,
+      visible: plan.visible,
+      reasons: Object.freeze([...(plan.reasons ?? [])]),
+    }),
+    monitor: getPerformanceSnapshot(),
+    device: Object.freeze({
+      capabilityTier: assessment.capabilityTier,
+      confidence: assessment.confidence,
+      unknownSignals: Object.freeze([...assessment.unknownSignals]),
+      memoryGb: assessment.memoryGb,
+      cores: assessment.cores,
+    }),
+  });
 }
 
 /* ------------------------------------------------------------------------- *
@@ -725,6 +1403,8 @@ export function createAdaptiveFrameLoop({ requestFrame, cancelFrame } = {}) {
     try {
       draw(stamp);
     } finally {
+      // Observation only: the monitor never schedules work or changes cadence.
+      recordFrameSample(stamp);
       // Keep the loop alive even when a consumer's draw no longer re-requests
       // (for example after it switches to a static reduced-motion frame).
       // `cancel()` clears the callback, so an explicit stop is never undone.

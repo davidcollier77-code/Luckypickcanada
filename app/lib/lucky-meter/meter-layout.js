@@ -36,28 +36,107 @@ export const METER_LAYOUT = Object.freeze({
     leafScale: 0.34,
   }),
   arm: Object.freeze({
-    base: Object.freeze([-1.68, -0.5, 0]),
-    shoulder: Object.freeze([-1.42, -0.3, 0.03]),
-    socket: Object.freeze([-0.88, -0.24, 0.08]),
+    base: Object.freeze([-1.28, -0.46, 0.01]),
+    shoulder: Object.freeze([-1.15, -0.34, 0.04]),
+    socket: Object.freeze([-0.95, -0.35, 0.08]),
     spout: Object.freeze([-0.78, -0.62, 0.05]),
     tubeRadius: 0.042,
   }),
   vessel: Object.freeze({
     x: -0.78,
-    y: -1.2,
+    y: -1.28,
     z: 0.05,
-    radius: 0.31,
-    height: 0.63,
-    liquidRadius: 0.265,
-    liquidDepth: 0.48,
+    radius: 0.62,
+    height: 0.36,
+    liquidRadius: 0.54,
+    liquidDepth: 0.27,
+    liquidFloor: 0.075,
   }),
   beam: Object.freeze({
-    // The transfer starts in the receiving vessel and ends at the wheel's
-    // centre readout, where the lucky number is displayed.
-    from: Object.freeze([-0.78, -0.86, 0.2]),
-    to: Object.freeze([0, 0.58, 0.42]),
+    // The transfer starts in the selected 7:30 chamber and ends at the separate
+    // number display beside the receiving bowl. The two results are never
+    // combined: the colour stays in the bowl and the number owns its own place.
+    from: Object.freeze([-0.56, 0.06, 0.3]),
+    to: Object.freeze([0.16, -1.2, 0.38]),
   }),
 });
+
+/** The widest stage that still uses the tall phone composition. */
+export const PHONE_MAX_WIDTH = 500;
+const PHONE_VERTICAL_EXTENT = 6.6;
+const TABLET_VERTICAL_EXTENT = 4.5;
+const DESKTOP_VERTICAL_EXTENT = 4.2;
+const PHONE_LOOK_Y = -0.35;
+const LARGE_LOOK_Y = -0.2;
+const FRAMING_FOV = 32;
+
+/**
+ * Responsive camera framing for the instrument.
+ *
+ * The perspective and every world coordinate stay identical; only the camera
+ * distance and look-at height change with the stage size. That keeps the wheel
+ * circular, preserves relative spacing and never applies a non-uniform scale.
+ * `wheelTop` is the projected vertical centre of the wheel as a 0–1 fraction
+ * from the top of the stage, so DOM overlays can stay aligned with the canvas.
+ *
+ * @param {number} width CSS pixels
+ * @param {number} height CSS pixels
+ * @returns {{ phone: boolean, tabletPortrait: boolean, verticalExtent: number, lookY: number, distance: number, aspect: number, wheelTop: number }}
+ */
+export function instrumentFraming(width, height) {
+  const safeWidth = Math.max(1, Number(width) || 390);
+  const safeHeight = Math.max(1, Number(height) || 844);
+  const phone = safeWidth <= PHONE_MAX_WIDTH;
+  const tabletPortrait = !phone && safeWidth / safeHeight < 1.05;
+  const verticalExtent = phone
+    ? PHONE_VERTICAL_EXTENT
+    : tabletPortrait
+      ? TABLET_VERTICAL_EXTENT
+      : DESKTOP_VERTICAL_EXTENT;
+  const lookY = phone ? PHONE_LOOK_Y : LARGE_LOOK_Y;
+  const distance = verticalExtent / (2 * Math.tan((FRAMING_FOV * Math.PI) / 360));
+  return {
+    phone,
+    tabletPortrait,
+    verticalExtent,
+    lookY,
+    distance,
+    aspect: safeWidth / safeHeight,
+    wheelTop: 0.5 - (METER_LAYOUT.wheel.y - lookY) / verticalExtent,
+  };
+}
+
+/**
+ * Framing for the production visitor stage.
+ *
+ * The visitor canvas is a square crop of the same instrument rather than the
+ * prototype's full-height viewport, so it uses a tighter vertical extent. The
+ * geometry, perspective, circular wheel and relative spacing are unchanged;
+ * only the crop is closer. Phones keep slightly more breathing room than
+ * tablets and desktops, which deliberately let the instrument fill more of the
+ * square.
+ *
+ * @param {number} width CSS pixels
+ * @param {number} height CSS pixels
+ * @returns {{ phone: boolean, tabletPortrait: boolean, verticalExtent: number, lookY: number, distance: number, aspect: number, wheelTop: number }}
+ */
+export function stageFraming(width, height) {
+  const safeWidth = Math.max(1, Number(width) || 390);
+  const safeHeight = Math.max(1, Number(height) || safeWidth);
+  const phone = safeWidth <= PHONE_MAX_WIDTH;
+  const verticalExtent = phone ? 3.9 : 3.6;
+  const lookY = -0.15;
+  const distance = verticalExtent / (2 * Math.tan((FRAMING_FOV * Math.PI) / 360));
+  return {
+    phone,
+    tabletPortrait: !phone && safeWidth / safeHeight < 1.05,
+    verticalExtent,
+    lookY,
+    distance,
+    aspect: safeWidth / safeHeight,
+    wheelTop: 0.5 - (METER_LAYOUT.wheel.y - lookY) / verticalExtent,
+  };
+}
 
 /** Wraps any angle into [0, 360). */
 export function normalizeDegrees(angle) {

@@ -1,0 +1,53 @@
+{
+  "measuredAt": "2026-11-24T22:50:31.594645+00:00",
+  "url": "http://127.0.0.1:3100/lucky-meter",
+  "label": "local production build, cold mobile context, 8 s settle, no Start press",
+  "runs": 3,
+  "phase0LocalReference": {
+    "source": "artifacts/lucky-meter-performance-20261124/baseline-local-uninstrumented-mobile-*.json",
+    "totalTransferKiB": 3771,
+    "audioKiB": 2889,
+    "longestTaskMs": 2080,
+    "totalBlockingTimeMs": 3200
+  },
+  "after": {
+    "totalTransferKiB": [
+      1472
+    ],
+    "audioKiB": [
+      590
+    ],
+    "audioRequestCount": [
+      4
+    ],
+    "longestTaskMs": [
+      2218,
+      2102,
+      2136
+    ],
+    "totalBlockingTimeMs": [
+      3312,
+      3234,
+      3268
+    ],
+    "meterReadyMs": [
+      998.6,
+      867.8,
+      914.8
+    ],
+    "audioFirstStartMs": [
+      3609,
+      3374,
+      3438
+    ]
+  },
+  "successCriteria": {
+    "SC-002": "PASS \u2014 1,473 KiB total and 590 KiB audio, both under the 1,650 KiB / 650 KiB targets on this cold mobile profile",
+    "SC-006": "OUTSTANDING \u2014 no hardware GPU in this workspace"
+  },
+  "notes": [
+    "This build contains the activation-gated audio delivery only; the reveal gate and the CSS duration are not applied yet.",
+    "The 2.1\u20132.2 s first-composite task is unchanged and is the subject of the separate missing-meter investigation.",
+    "Software compositing (SwiftShader); these numbers are not a phone measurement."
+  ]
+}

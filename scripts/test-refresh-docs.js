@@ -180,6 +180,35 @@ async function runTests() {
     assert.ok(validateDocumentContent(markdown).ok);
   });
 
+  await test('convertHtmlToMarkdown ignores rotating Cloudflare email-protection tokens but preserves labels and ordinary links', () => {
+    const sourceUrl = 'https://numpy.org/doc/stable/reference/arrays.ndarray.html';
+    const htmlForToken = (token) =>
+      '<!doctype html><html><body><main><h1>NumPy array reference</h1>' +
+      '<p>Return <a href="/cdn-cgi/l/email-protection#' + token + '">self<span>&#64;</span>value</a>.</p>' +
+      '<p>See <a href="/reference/matmul#top">the matrix multiplication reference</a>.</p>' +
+      '<p>See <a href="https://external.example/cdn-cgi/l/email-protection#cafebabefeed">the external reference</a>.</p>' +
+      '<p>This page contains enough readable documentation words to pass the content integrity check.</p>' +
+      '</main></body></html>';
+
+    const first = convertHtmlToMarkdown(htmlForToken('2d5e48414b0b0e1e1a160b0e181f160b0e1915165b4c415848'), sourceUrl);
+    const second = convertHtmlToMarkdown(htmlForToken('dcafb9b0bafaffefebe7faffe9eee7faffe8e4e7aabdb0a9b9'), sourceUrl);
+
+    assert.strictEqual(first, second, 'rotating Cloudflare tokens must not change the Markdown snapshot');
+    assert.match(first, /Return self@value\./, 'the visible email-protection label must be preserved');
+    assert.doesNotMatch(first, /2d5e4841|dcafb9b0|https:\/\/numpy\.org\/cdn-cgi\/l\/email-protection/, 'the volatile same-origin link target must not enter the snapshot');
+    assert.match(
+      first,
+      /\[the matrix multiplication reference\]\(https:\/\/numpy\.org\/reference\/matmul#top\)/,
+      'ordinary relative documentation links must remain clickable'
+    );
+    assert.match(
+      first,
+      /\[the external reference\]\(https:\/\/external\.example\/cdn-cgi\/l\/email-protection#cafebabefeed\)/,
+      'a matching-looking URL on a different origin must remain an ordinary link'
+    );
+    assert.ok(validateDocumentContent(first).ok);
+  });
+
   await test('normalizeDocumentationResponse prefers a same-origin Markdown alternate', async () => {
     const sourceUrl = 'https://example.com/docs/app';
     const markdownUrl = 'https://example.com/docs/app.md';
@@ -567,6 +596,10 @@ async function runTests() {
       reason: 'download is empty',
       preserved: true
     });
+    report.staticReferences.push({
+      library: '/llmstxt/gsap_llms_txt',
+      reason: 'Static GSAP AI reference; preserve the checked-in snapshot without fetching its configured upstream URL.'
+    });
     report.removedLibraries.push({
       library: '/removed/doc',
       section: 'sources',
@@ -588,6 +621,9 @@ async function runTests() {
     assert.match(markdown, /https:\/\/www\.debian\.org\/doc\/manuals\/debian-reference\/debian-reference\.en\.txt/);
     assert.match(markdown, /HTTP 404: Not Found/);
     assert.match(markdown, /download is empty/);
+    assert.ok(markdown.includes('Static reference documents (not refreshed)'));
+    assert.ok(markdown.includes('/llmstxt/gsap_llms_txt'));
+    assert.ok(markdown.includes('Static GSAP AI reference'));
     assert.match(markdown, /Preserved/);
     assert.match(markdown, /\/removed\/doc/);
     assert.match(markdown, /repaired broken documentation symlink/);
@@ -680,6 +716,72 @@ async function runTests() {
     assert.strictEqual(fs.readFileSync(path.join(root, 'creation', '_lib_doc.md'), 'utf8'), replacement);
     assert.strictEqual(report.updated, 1);
     assert.strictEqual(report.consistencyIssues.length, 0);
+    restoreDocsDirectory();
+  });
+
+  await test('runRefresh leaves a NumPy snapshot unchanged when only Cloudflare email-protection tokens rotate', async () => {
+    const root = makeTempDocsRoot();
+    configureDocsDirectory(root);
+    fs.mkdirSync(path.join(root, 'audio'));
+    const library = '/numpy/numpy';
+    const sourceUrl = 'https://numpy.org/doc/stable/reference/arrays.ndarray.html';
+    const snapshotPath = path.join(root, 'audio', '_numpy_numpy.md');
+    const manifestPath = path.join(root, 'manifest.json');
+    const htmlForToken = (token) =>
+      '<!doctype html><html><body><main><h1>NumPy ndarray reference</h1>' +
+      '<p>This page documents array operations and matrix multiplication using readable reference content.</p>' +
+      '<p>Return <a href="/cdn-cgi/l/email-protection#' + token + '">self<span>&#64;</span>value</a>.</p>' +
+      '<p>See <a href="/reference/matmul">the matrix multiplication reference</a>.</p>' +
+      '</main></body></html>';
+
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      lastUpdated: '2026-11-07T00:00:00-04:00',
+      groups: { audio: [library] },
+      sources: { [library]: { type: 'url', url: sourceUrl } },
+      inventory: [library],
+      githubShas: { [library]: 'legacy-non-github-sha' }
+    }, null, 2) + '\n');
+
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+      data: htmlForToken('2d5e48414b0b0e1e1a160b0e181f160b0e1915165b4c415848')
+    };
+    const firstReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, firstReport);
+    assert.strictEqual(firstReport.updated, 1, 'the first live response must create the snapshot');
+    assert.strictEqual(firstReport.unchanged, 0);
+    assert.strictEqual(firstReport.errors.length, 0);
+    assert.strictEqual(requestedUrls.filter((url) => url === sourceUrl).length, 1);
+    const firstSnapshot = fs.readFileSync(snapshotPath);
+    const firstContent = firstSnapshot.toString('utf8');
+    const firstManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const firstLastUpdated = firstManifest.lastUpdated;
+    assert.match(firstContent, /Return self@value\./);
+    assert.match(firstContent, /\[the matrix multiplication reference\]/);
+    assert.doesNotMatch(firstContent, /email-protection|2d5e4841/);
+
+    mockResponses[sourceUrl] = {
+      statusCode: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+      data: htmlForToken('dcafb9b0bafaffefebe7faffe9eee7faffe8e4e7aabdb0a9b9')
+    };
+    const secondReport = createRefreshReport();
+    await runRefresh({ docsDir: root, reportPath: null }, secondReport);
+    assert.strictEqual(secondReport.updated, 0, 'a rotated Cloudflare token must not trigger an update');
+    assert.strictEqual(secondReport.unchanged, 1, 'the second live response must be recorded as unchanged');
+    assert.strictEqual(secondReport.errors.length, 0);
+    assert.strictEqual(
+      requestedUrls.filter((url) => url === sourceUrl).length,
+      2,
+      'the updater must continue to fetch the configured live source on each refresh'
+    );
+    assert.deepStrictEqual(fs.readFileSync(snapshotPath), firstSnapshot, 'the saved snapshot must remain byte-identical');
+    assert.strictEqual(
+      JSON.parse(fs.readFileSync(manifestPath, 'utf8')).lastUpdated,
+      firstLastUpdated,
+      'a content-identical refresh must not rewrite manifest metadata'
+    );
     restoreDocsDirectory();
   });
 

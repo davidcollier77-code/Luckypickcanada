@@ -27,6 +27,18 @@ export const WORKBENCH_TIERS = Object.freeze([
 ]);
 
 /**
+ * Development capture stages. These are representative viewport sizes, not
+ * production breakpoints: the visitor route will use its own responsive layout,
+ * while the prototype needs exact canvases to compare composition at phone,
+ * tablet and desktop sizes.
+ */
+export const WORKBENCH_STAGES = Object.freeze({
+  mobile: Object.freeze({ id: 'mobile', label: 'Mobile', width: 390, height: 844 }),
+  tablet: Object.freeze({ id: 'tablet', label: 'Tablet', width: 820, height: 1180 }),
+  desktop: Object.freeze({ id: 'desktop', label: 'Desktop', width: 1440, height: 900 }),
+});
+
+/**
  * The scenes an agent can mount. Each one is a description, not code: the
  * workbench builds it through the same `createCreativeSurface` entry point a
  * production feature uses, so what the sandbox shows is what the layer does.
@@ -87,6 +99,28 @@ export const WORKBENCH_SCENES = Object.freeze([
       reactiveAudio: true,
     }),
   }),
+  Object.freeze({
+    id: 'lucky-meter-instrument',
+    label: 'Lucky Meter instrument',
+    description:
+      'Spec 218 responsive prototype: twelve-chamber gold meter, flipping maple medallion and faceted crystal bowl at 78% High Resonance across mobile, tablet and desktop stages.',
+    duration: 6,
+    cue: 'colourPour',
+    seed: 218,
+    // The workbench sizes this scene to a representative device frame. Other
+    // scenes keep the standard 16:10 stage.
+    stage: 'mobile',
+    stages: Object.freeze(['mobile', 'tablet', 'desktop']),
+    requirements: Object.freeze({
+      renderer: 'three',
+      dimension: '3d',
+      postProcessing: false,
+      particles: true,
+      timeline: true,
+      audio: true,
+      reactiveAudio: true,
+    }),
+  }),
 ]);
 
 /**
@@ -115,6 +149,22 @@ const scenesById = new Map(WORKBENCH_SCENES.map((scene) => [scene.id, scene]));
 /** @returns {object|null} One scene descriptor. */
 export function getWorkbenchScene(id) {
   return scenesById.get(id) ?? null;
+}
+
+/**
+ * Resolves the requested development stage for a scene. Scenes without stage
+ * presets keep the standard workbench frame; an unknown stage falls back to the
+ * scene's declared default rather than throwing.
+ *
+ * @param {object|null} scene
+ * @param {string|null} [stageId]
+ * @returns {object|null}
+ */
+export function resolveWorkbenchStage(scene, stageId = null) {
+  if (!scene || !Array.isArray(scene.stages) || scene.stages.length === 0) return null;
+  const fallback = scene.stages.includes(scene.stage) ? scene.stage : scene.stages[0];
+  const id = scene.stages.includes(stageId) ? stageId : fallback;
+  return WORKBENCH_STAGES[id] ?? null;
 }
 
 export const DEFAULT_WORKBENCH_STATE = Object.freeze({

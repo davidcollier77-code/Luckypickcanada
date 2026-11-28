@@ -135,6 +135,32 @@ describe('Lucky Meter stage surface', () => {
     expect(api.setState.mock.calls[0][0]).toMatchObject({ phase: 'pouring', instant: true });
   });
 
+  it('keeps the complete fallback until the canvas opacity leaves zero', async () => {
+    const { callbacks } = mountScene();
+    const view = render(<LuckyMeterStage {...stageProps()} />);
+    await waitFor(() => expect(callbacks.onReady).toBeTypeOf('function'));
+
+    const host = screen.getByTestId('lucky-vessel-canvas-host');
+    // jsdom has no stylesheet, so supply the opacity signal the CSS transition
+    // starts from. The fallback must survive the transparent phase.
+    host.style.opacity = '0';
+    act(() => callbacks.onReady());
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 80));
+    });
+    expect(screen.getByTestId('lucky-meter-fallback')).toBeInTheDocument();
+    expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute(
+      'data-meter-renderer',
+      'three',
+    );
+
+    host.style.opacity = '0.35';
+    await waitFor(() =>
+      expect(screen.queryByTestId('lucky-meter-fallback')).not.toBeInTheDocument(),
+    );
+    view.unmount();
+  });
+
   it('returns to the fallback while the context is lost and recovers after restore', async () => {
     const { callbacks } = mountScene();
     render(<LuckyMeterStage {...stageProps()} />);
@@ -237,7 +263,13 @@ describe('Lucky Meter stage surface', () => {
       expect(centre).toBeCloseTo(225, 6);
 
       const drain = view.container.querySelector('.lucky-meter-fallback__drain');
-      expect(drain.getAttribute('style')).toContain(`from ${index * step}deg`);
+      const drainStyle = drain.getAttribute('style');
+      expect(drainStyle).toContain('conic-gradient');
+      // jsdom omits a default `from 0deg` when it serializes the gradient, so a
+      // missing `from` angle means the gradient starts at 0deg.
+      const fromMatch = drainStyle.match(/from\s+(-?[\d.]+)deg/);
+      const drainFrom = fromMatch ? Number(fromMatch[1]) : 0;
+      expect(drainFrom).toBeCloseTo((index * step) % 360, 6);
 
       view.unmount();
     }

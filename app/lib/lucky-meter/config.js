@@ -112,7 +112,7 @@ export { ALL_COLOURS, COLOURS_BY_ID, isKnownColourId } from './sparks-and-season
 export const COLOUR_WHEEL_SEGMENTS = 12;
 
 /** Shown wherever the single daily Lucky Number appears. */
-export const LUCKY_NUMBER_LABEL = 'Lucky Number';
+export const LUCKY_NUMBER_LABEL = 'Your Lucky Number';
 /** Shown wherever the independently selected Lucky Colour appears. */
 export const LUCKY_COLOUR_LABEL = 'Lucky Colour';
 export const ENTERTAINMENT_DISCLAIMER =

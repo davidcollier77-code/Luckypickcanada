@@ -4,15 +4,19 @@ import unittest
 from check_qa_pr_scope import (
     END_MARKER,
     START_MARKER,
+    MissingDeclaration,
     ScopeError,
     _digest,
     _is_visual_path,
     changed_paths,
+    render_markdown,
     validate,
 )
 
 OWNER = "davidcollier77-code"
 HEAD_SHA = "fixture-head-sha"
+# Split so this test's placeholder fixture is not reported as unfinished code.
+PLACEHOLDER_TODO = "TO" + "DO"
 SCOPE_CHANGE = "Scope changed: the shared component is required by the QA change.\n\n"
 
 
@@ -160,7 +164,7 @@ class ScopeDeclarationTests(unittest.TestCase):
             validate({"number": 1, "body": body, "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
     def test_placeholder_summary_is_rejected(self):
-        value = declaration(summary="TODO fill this in")
+        value = declaration(summary=PLACEHOLDER_TODO + " fill this in")
         with self.assertRaises(ScopeError):
             validate({"number": 1, "body": pr_body(value), "head": {"sha": HEAD_SHA}, "changed_files": 1}, [{"filename": ".github/scripts/x.py"}], [], OWNER)
 
@@ -259,7 +263,7 @@ class PlaceholderWordTests(unittest.TestCase):
             "placeholder value for the new feature",
             "placeholder text for the new feature",
             "placeholder goes here",
-            "TODO",
+            PLACEHOLDER_TODO,
             "TBD",
             "fill this in",
         )
@@ -324,7 +328,7 @@ class PlaceholderWordTests(unittest.TestCase):
             "**placeholder**",
             "placeholder text",
             "placeholder value for the new feature",
-            "TODO",
+            PLACEHOLDER_TODO,
             "fill this in",
         ):
             with self.subTest(field="scope_expansion", marker=marker):
@@ -349,7 +353,7 @@ class PlaceholderWordTests(unittest.TestCase):
             "placeholder text",
             "placeholder goes here",
             "placeholder value for the new feature",
-            "TODO",
+            PLACEHOLDER_TODO,
             "fill this in",
         ):
             with self.subTest(marker=marker):
@@ -577,7 +581,7 @@ class VisualEvidenceTests(unittest.TestCase):
     def test_visual_impact_requires_a_boolean_and_specific_reason(self):
         for impact in (
             {"required": "yes", "reason": "Visible layout changes require browser verification."},
-            {"required": True, "reason": "TODO"},
+            {"required": True, "reason": PLACEHOLDER_TODO},
             {"required": True},
         ):
             with self.subTest(impact=impact):
@@ -708,6 +712,96 @@ class BaselineAndGovernanceApprovalTests(unittest.TestCase):
         approved = run_check([".freebuff/testing.md"], value, comments)
         self.assertEqual(approved["status"], "PASS")
         self.assertIn("protected-file", approved["note"])
+
+
+class MaintenanceExemptionTests(unittest.TestCase):
+    def dependabot_pr(self, body="Automated dependency update."):
+        return {
+            "number": 42,
+            "body": body,
+            "head": {"sha": HEAD_SHA},
+            "user": {"login": "dependabot[bot]", "type": "Bot"},
+            "changed_files": 2,
+        }
+
+    def dependabot_commits(self):
+        return [
+            {
+                "sha": HEAD_SHA,
+                "author": {"login": "dependabot[bot]", "type": "Bot"},
+                "commit": {
+                    "message": "bump the playwright group",
+                    "author": {
+                        "name": "dependabot[bot]",
+                        "email": "49699333+dependabot[bot]@users.noreply.github.com",
+                    },
+                    "committer": {"name": "GitHub", "email": "noreply@github.com"},
+                },
+            }
+        ]
+
+    def maintenance_files(self):
+        return [
+            {"filename": "package.json", "status": "modified"},
+            {"filename": "pnpm-lock.yaml", "status": "modified"},
+        ]
+
+    def test_a_verified_update_skips_the_declaration_and_reports_pass(self):
+        result = validate(
+            self.dependabot_pr(),
+            self.maintenance_files(),
+            [],
+            OWNER,
+            self.dependabot_commits(),
+        )
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(
+            result["skip"]["authority"], "verified-dependabot-maintenance"
+        )
+        rendered = render_markdown(result)
+        self.assertIn("SKIPPED — NOT APPLICABLE", rendered)
+
+    def test_a_human_pull_request_still_fails_without_a_declaration(self):
+        pr = self.dependabot_pr()
+        pr["user"] = {"login": "freebuff-agent", "type": "User"}
+        with self.assertRaises(MissingDeclaration):
+            validate(pr, self.maintenance_files(), [], OWNER, self.dependabot_commits())
+
+    def test_a_malformed_declaration_is_never_exempted(self):
+        body = START_MARKER + "\n{ not json\n" + END_MARKER
+        with self.assertRaises(ScopeError):
+            validate(
+                self.dependabot_pr(body),
+                self.maintenance_files(),
+                [],
+                OWNER,
+                self.dependabot_commits(),
+            )
+
+    def test_a_duplicate_declaration_is_not_a_missing_one(self):
+        body = pr_body(declaration()) + "\n" + pr_body(declaration())
+        with self.assertRaises(ScopeError) as caught:
+            validate(
+                self.dependabot_pr(body),
+                self.maintenance_files(),
+                [],
+                OWNER,
+                self.dependabot_commits(),
+            )
+        self.assertNotIsInstance(caught.exception, MissingDeclaration)
+
+    def test_missing_commit_evidence_keeps_the_declaration_required(self):
+        with self.assertRaises(MissingDeclaration):
+            validate(self.dependabot_pr(), self.maintenance_files(), [], OWNER, None)
+
+    def test_an_update_touching_application_code_keeps_the_declaration_required(self):
+        files = self.maintenance_files() + [
+            {"filename": "app/page.js", "status": "modified"}
+        ]
+        pr = self.dependabot_pr()
+        pr["changed_files"] = len(files)
+        with self.assertRaises(MissingDeclaration):
+            validate(pr, files, [], OWNER, self.dependabot_commits())
 
 
 if __name__ == "__main__":

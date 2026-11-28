@@ -1056,7 +1056,7 @@ body {
   z-index: 10;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 600ms ease;
+  transition: opacity 300ms ease;
 }
 
 .lucky-meter-stage__canvas-host.is-ready,
@@ -1288,12 +1288,12 @@ body {
 .lucky-meter-fallback__beam {
   position: absolute;
   z-index: 4;
-  left: 29.4%;
-  top: 81.7%;
-  width: 40%;
+  left: 30%;
+  top: 79%;
+  width: 34%;
   height: 3px;
   transform-origin: left center;
-  transform: rotate(-18deg);
+  transform: rotate(-4deg);
   border-radius: 9999px;
   background: linear-gradient(90deg, rgba(255, 246, 220, 0.95), rgba(255, 196, 92, 0));
   box-shadow: 0 0 14px rgba(255, 214, 140, 0.8);
@@ -1374,5 +1374,313 @@ body {
   }
   .animate-lucky-number-flash {
     animation: none !important;
+  }
+}
+
+/* ── Spec 218 responsive visitor shell ─────────────────────────────────────
+   Mobile is the primary composition. Tablet and desktop are deliberate
+   adaptations, not enlarged phones: the instrument grows into the available
+   square, the results keep a readable width, and the finished controls live in
+   the corners so they can never cover the Spark or a result. */
+.lucky-meter-experience {
+  min-height: clamp(620px, 100svh, 1500px);
+  overflow-x: clip;
+}
+
+.lucky-meter-experience.is-compact {
+  min-height: 200px;
+}
+
+.lucky-finish-controls {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: clamp(0.75rem, 2.4vw, 1.75rem) clamp(0.75rem, 3vw, 2.25rem);
+  pointer-events: none;
+}
+
+.lucky-finish-controls__left,
+.lucky-finish-controls__right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: auto;
+}
+
+.lucky-finish-controls__right {
+  align-items: flex-end;
+}
+
+.lucky-finish-controls .lucky-countdown--dock {
+  text-align: left;
+}
+
+.lucky-finish-controls .lucky-share-btn--dock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 13rem;
+}
+
+.lucky-meter-stage {
+  max-width: min(24rem, 84vw);
+}
+
+.lucky-meter-stage.is-compact {
+  max-width: min(17.5rem, 80vw);
+}
+
+/* Tablet portrait and landscape get a larger instrument without changing its
+   geometry or letting the stage push the results off the screen. */
+@media (min-width: 768px) {
+  .lucky-meter-stage {
+    max-width: min(27rem, 66vw);
+  }
+}
+
+@media (min-width: 1024px) {
+  .lucky-meter-stage {
+    max-width: min(30rem, 42vw);
+  }
+}
+
+/* Short landscape phones: shrink the instrument, not the results or controls. */
+@media (max-height: 560px) and (orientation: landscape) {
+  .lucky-meter-experience {
+    min-height: 100svh;
+  }
+
+  .lucky-meter-stage {
+    max-width: min(18rem, 46vh);
+  }
+
+  .lucky-finish-controls {
+    padding-block: 0.5rem;
+  }
+}
+
+/* Very narrow phones: the top controls must never collide. */
+@media (max-width: 360px) {
+  .lucky-finish-controls {
+    gap: 0.4rem;
+    padding-inline: 0.6rem;
+  }
+
+  .lucky-finish-controls .lucky-home-btn,
+  .lucky-finish-controls .lucky-share-btn--dock {
+    padding-inline: 0.65rem;
+    font-size: 0.72rem;
+  }
+
+  .lucky-meter-stage {
+    max-width: min(21rem, 88vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucky-finish-controls,
+  .lucky-results-dock {
+    animation: none;
+  }
+}
+
+/* Landscape phones cannot stack the Spark, a 180 px instrument, the colour
+   caption and two result panels in 390 px. Recompose the finished state into
+   one row: the Spark on the left, the instrument in the centre and the results
+   on the right. Nothing is cropped and the page does not scroll sideways. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .lucky-meter-experience[data-finished="true"] > .relative.z-20 {
+    padding-top: 5.25rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-visits {
+    display: none;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-message-slot {
+    width: 30%;
+    min-height: 0;
+    justify-content: center;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-stage {
+    width: 27%;
+    max-width: 12rem;
+    margin-top: 0;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results {
+    width: 30%;
+    margin-top: 0;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results > .grid {
+    max-width: none;
+    gap: 0.4rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results > p {
+    display: none;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-sky-writing {
+    margin-block: 0;
+  }
+}
+
+/* The landscape caption is narrow; the season label is the first thing to go,
+   and the colour name must never truncate. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .lucky-meter-experience[data-finished="true"] .lucky-vessel__caption {
+    gap: 0.4rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-vessel__caption > .ml-auto {
+    display: none !important;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-vessel__caption p.truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results > div > p {
+    display: none;
+  }
+}
+
+/* Desktop is a deliberate three-part composition: the Spark on the left, the
+   centred collectible in the middle and the two separate results on the right.
+   It is not the phone column enlarged; the side space carries the reading. */
+@media (min-width: 1024px) and (min-height: 561px) {
+  .lucky-meter-experience[data-finished="true"] > .relative.z-20 {
+    padding-top: 5.5rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    max-width: 75rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-message-slot {
+    width: 24%;
+    min-height: 0;
+    justify-content: center;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-stage {
+    width: 38%;
+    max-width: 30rem;
+    margin-top: 0;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-stage .lucky-vessel__caption {
+    margin-top: -3rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results {
+    width: 24%;
+    margin-top: 0;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results > .grid {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-visits {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+  }
+
+  /* READY is a two-column hero on desktop: the invitation on the left, the
+     closed instrument on the right. It shares the width instead of stacking
+     the phone layout in the middle of a wide screen. */
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 3.5rem;
+    max-width: 75rem;
+  }
+
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-intro {
+    width: 40%;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-intro h1,
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-intro p {
+    text-align: left;
+  }
+
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-message-slot {
+    display: none;
+  }
+
+  .lucky-meter-experience[data-finished="false"] .lucky-meter-stage {
+    width: 44%;
+    max-width: 32rem;
+    margin-top: 0;
+  }
+}
+
+/* The site's fixed compass badge sits in the lower-left corner. Give the
+   finished reading enough bottom room that the legal disclaimer is never
+   covered by it on a phone. */
+@media (max-width: 640px) {
+  .lucky-meter-experience[data-finished="true"] > .relative.z-20 {
+    padding-bottom: 4.5rem;
+  }
+}
+
+/* Landscape has vertical room for a larger collectible than 192 px once the
+   season label is dropped. Widen it and keep the legal disclaimer in the
+   results column instead of hiding it. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-message-slot,
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results {
+    width: 28%;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-stage {
+    width: 30%;
+    max-width: 15rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-vessel__caption {
+    padding: 0.3rem 0.55rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-vessel__caption p {
+    font-size: 0.8rem;
+  }
+
+  .lucky-meter-experience[data-finished="true"] .lucky-meter-results > p {
+    display: block;
+    font-size: 9px;
+    line-height: 1.3;
   }
 }

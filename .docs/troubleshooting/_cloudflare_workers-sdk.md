@@ -1,4 +1,9 @@
 ---
+agent:
+  instructions: "Use this search API to find relevant content across this site with keywords or natural-language queries, instead of crawling individual pages. Results are returned in Markdown."
+  endpoint: "https://developers.cloudflare.com/.well-known/search?q={query}"
+  method: "GET"
+  documentation: "https://developers.cloudflare.com/ai-search/how-to/search-for-agents/"
 description: Wrangler is the CLI for the Cloudflare Developer Platform. Use it to build, test, and deploy Workers projects.
 title: Wrangler
 image: https://developers.cloudflare.com/workers/wrangler/og.png?v=c466a5d29c4457f9

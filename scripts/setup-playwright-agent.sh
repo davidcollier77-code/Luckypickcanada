@@ -64,15 +64,71 @@ if [[ ! -x "$ROOT/node_modules/.bin/playwright" ]]; then
   exit 1
 fi
 
+# Fail closed when node_modules predates the lockfile. pnpm records the resolved
+# lockfile at node_modules/.pnpm/lock.yaml; comparing it (never a hardcoded
+# version) means a Playwright update by Dependabot or the owner is picked up
+# instead of silently running the previous install.
+installed_lockfile="$ROOT/node_modules/.pnpm/lock.yaml"
+if [[ ! -f "$installed_lockfile" ]] || ! cmp -s "$installed_lockfile" "$ROOT/pnpm-lock.yaml"; then
+  printf 'FAIL: node_modules does not match pnpm-lock.yaml. Run pnpm install --frozen-lockfile.\n' >&2
+  exit 1
+fi
+printf 'PASS: node_modules matches pnpm-lock.yaml.\n'
+
 printf 'Project Playwright version: '
 pnpm exec playwright --version
 printf 'Checking local CLI entrypoint...\n'
 
 if ! pnpm exec playwright cli --help >/dev/null 2>&1; then
-  printf 'FAIL: pnpm exec playwright cli is not available. Ensure Playwright 1.x is installed with CLI support (pnpm install --frozen-lockfile).\n' >&2
+  printf 'FAIL: pnpm exec playwright cli is not available. Install the repository Playwright packages with CLI support (pnpm install --frozen-lockfile).\n' >&2
   exit 1
 fi
 printf 'PASS: pnpm exec playwright cli is available.\n'
+
+# The CLI, @playwright/test and playwright-chromium must all resolve to the
+# same installed release. A split install would launch tests with one version
+# and provision a browser for another. Nothing here pins a version: the
+# installed tree is the single source of truth.
+if ! node --input-type=module <<'NODE'
+import { readFileSync } from 'node:fs';
+
+const declared = JSON.parse(readFileSync('package.json', 'utf8'));
+const sections = [declared.dependencies || {}, declared.devDependencies || {}];
+const packages = ['playwright', '@playwright/test', 'playwright-chromium'];
+const installed = {};
+for (const name of packages) {
+  const range = sections.map((section) => section[name]).find(Boolean);
+  if (!range) {
+    console.error(`FAIL: ${name} is not declared in package.json.`);
+    process.exit(1);
+  }
+  let version;
+  try {
+    version = JSON.parse(readFileSync(`node_modules/${name}/package.json`, 'utf8')).version;
+  } catch {
+    console.error(`FAIL: ${name} is not installed; run pnpm install --frozen-lockfile.`);
+    process.exit(1);
+  }
+  installed[name] = version;
+}
+const versions = new Set(Object.values(installed));
+if (versions.size !== 1) {
+  console.error(
+    `FAIL: Playwright packages resolve to different versions: ${Object.entries(installed)
+      .map(([name, version]) => `${name}=${version}`)
+      .join(', ')}.`,
+  );
+  process.exit(1);
+}
+const [version] = versions;
+// The declared range is reported for context. It is deliberately not compared
+// with the resolved version: a range like ^x.y.z legitimately resolves to a
+// later patch, and the lockfile is what the repository approved.
+console.log(`PASS: all Playwright packages resolve to ${version}; the browser revision comes from that install.`);
+NODE
+then
+  exit 1
+fi
 
 # Exit codes: 0 = success, 1 = environment/setup failure,
 # 2 = invalid usage (unknown option), 3 = Chromium launch blocked.

@@ -158,9 +158,10 @@ that.
 will launch. A prebaked Playwright install — `$PLAYWRIGHT_BROWSERS_PATH`, or one of `/opt/ms-playwright`,
 `/usr/local/share/ms-playwright`, `/usr/share/ms-playwright`, `/ms-playwright` — is used as it is and exported, so
 Playwright, the probe and the CLI read it instead of downloading it. A read-only directory is only trusted when it
-holds the revision this repository pins (`chromium-1248`), because Playwright fails on a mismatch instead of falling
-back; a writable one may hold any revision, since `playwright install` can repair it in place. With no prebaked
-install, the default `~/.cache/ms-playwright` is used.
+holds the revision the installed Playwright records in `playwright-core/browsers.json`, because Playwright fails on a
+mismatch instead of falling back; a writable one may hold any revision, since `playwright install` can repair it in
+place. With no prebaked install, the default `~/.cache/ms-playwright` is used. No script, test or document pins the
+revision: a Playwright update changes it and everything follows automatically.
 
 The same revision rule covers Playwright's own `~/.cache/ms-playwright`: `--browser-root` succeeds only when the
 pinned revision is present there, so a cache written by an older or newer Playwright makes
@@ -190,6 +191,8 @@ Build validation and the Playwright shards are conditional: the trusted classifi
 can affect them, and any unknown, empty or unreadable change set keeps them required. Playwright is not part of this
 local gate and does not run for documentation, CI or backend-only pull requests; the browser shards run only when a
 change can affect rendered output or the visual tests. The always-required application job is named **Application
-Verification**; a check that could not apply is reported as `NOT RUN — not applicable` with its reason, never as a
-pass. Playwright remains two shards, assigned by whole spec file from recorded durations, and every spec, project
-and committed baseline still runs and is compared.
+Verification**; a check that a trusted authority proves cannot apply is labelled `SKIPPED — NOT APPLICABLE` with its
+reason. That item is never labelled `PASSED`, but the category and the pull request check stay successful when every
+other applicable requirement passed. An unexplained or unauthorized skip is never successful. Playwright remains two
+shards, assigned by whole spec file from recorded durations, and every spec, project and committed baseline still runs
+and is compared.

@@ -1,0 +1,1032 @@
+{
+  "url": "http://127.0.0.1:3100/lucky-meter",
+  "label": "local-reveal-1",
+  "measuredAt": "2026-11-24T22:49:53.108Z",
+  "wallClockMs": 8425,
+  "settleMs": 8000,
+  "cacheState": "cold-context (fresh browser context, empty HTTP cache)",
+  "networkCondition": "unthrottled, no CPU throttling (lab baseline)",
+  "profile": {
+    "devicePixelRatio": 3,
+    "hardwareConcurrency": 8,
+    "deviceMemory": 16,
+    "userAgent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "rendererInfo": {
+      "available": true,
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "vendor": "Google Inc. (Google)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "maxTextureSize": 8192
+    },
+    "userTimingSupport": true
+  },
+  "navigation": {
+    "ttfb": 12.700000017881393,
+    "responseEnd": 14,
+    "domContentLoaded": 73.90000000596046,
+    "load": 231.30000001192093,
+    "transferSize": 6942,
+    "encodedBodySize": 6642,
+    "decodedBodySize": 29545
+  },
+  "paints": {
+    "first-paint": 160,
+    "first-contentful-paint": 160
+  },
+  "metrics": {
+    "fcpMs": 160,
+    "lcpMs": 160,
+    "lcpElement": {
+      "tag": "H1",
+      "id": null,
+      "className": "font-light text-white text-balance text-2xl sm:text-3xl md:text-4xl mb-3",
+      "src": null,
+      "size": 10830
+    },
+    "cls": 0,
+    "ttfbMs": 13,
+    "domContentLoadedMs": 74,
+    "loadMs": 231,
+    "longTaskCount": 16,
+    "totalBlockingTimeMs": 3312,
+    "longTasks": [
+      {
+        "start": 154.40000000596046,
+        "duration": 52,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 416.2000000178814,
+        "duration": 148,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 565.5,
+        "duration": 406,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 1020.3000000119209,
+        "duration": 2218,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3239.9000000059605,
+        "duration": 111,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3356.4000000059605,
+        "duration": 112,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3469.7000000178814,
+        "duration": 103,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3610.7000000178814,
+        "duration": 109,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3726.5,
+        "duration": 110,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3844.800000011921,
+        "duration": 106,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 3951.4000000059605,
+        "duration": 109,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4060.7000000178814,
+        "duration": 104,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4165.700000017881,
+        "duration": 108,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4274.600000023842,
+        "duration": 103,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4379.200000017881,
+        "duration": 110,
+        "name": "self",
+        "container": "window"
+      },
+      {
+        "start": 4490.100000023842,
+        "duration": 103,
+        "name": "self",
+        "container": "window"
+      }
+    ]
+  },
+  "rendererTimeline": [
+    {
+      "t": 73.7000000178814,
+      "mode": "pending",
+      "phase": "idle",
+      "canvasCount": 0
+    },
+    {
+      "t": 1020.2000000178814,
+      "mode": "three",
+      "phase": "idle",
+      "canvasCount": 1
+    }
+  ],
+  "canvasAppends": [
+    {
+      "t": 331,
+      "canvasCount": 1
+    },
+    {
+      "t": 1020.3000000119209,
+      "canvasCount": 1
+    }
+  ],
+  "rendererWork": null,
+  "marks": [
+    {
+      "name": "meter-surface",
+      "startTime": 469.60000002384186
+    },
+    {
+      "name": "meter-started",
+      "startTime": 564.3000000119209
+    },
+    {
+      "name": "meter-ready",
+      "startTime": 998.6000000238419
+    }
+  ],
+  "markDeltas": {
+    "meter-surface->meter-ready": 529,
+    "meter-started->meter-ready": 434.3,
+    "navigationStart->meter-surface": 469.60000002384186,
+    "navigationStart->meter-ready": 998.6000000238419,
+    "navigationStart->meter-started": 564.3000000119209
+  },
+  "measures": [],
+  "loaf": [
+    {
+      "start": 49.400000005960464,
+      "duration": 53.900000005960464,
+      "renderStart": 103.2000000178814,
+      "styleAndLayoutStart": 103.30000001192093,
+      "blockingDuration": 0,
+      "firstUIEventTimestamp": 0,
+      "scripts": []
+    },
+    {
+      "start": 152.7000000178814,
+      "duration": 72,
+      "renderStart": 224.60000002384186,
+      "styleAndLayoutStart": 224.60000002384186,
+      "blockingDuration": 2.2,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "http://127.0.0.1:3100/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js",
+          "invokerType": "classic-script",
+          "sourceURL": "http://127.0.0.1:3100/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js",
+          "sourceFunctionName": "",
+          "duration": 51.30000001192093,
+          "executionStart": 154.40000000596046,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "http://127.0.0.1:3100/_next/static/chunks/5105-7d2ab24c638cac3b.js",
+          "invokerType": "classic-script",
+          "sourceURL": "http://127.0.0.1:3100/_next/static/chunks/5105-7d2ab24c638cac3b.js",
+          "sourceFunctionName": "",
+          "duration": 5.100000023841858,
+          "executionStart": 209.5,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        }
+      ]
+    },
+    {
+      "start": 416.2000000178814,
+      "duration": 535.9000000059605,
+      "renderStart": 565.5,
+      "styleAndLayoutStart": 951.8000000119209,
+      "blockingDuration": 485.3,
+      "firstUIEventTimestamp": 0,
+      "scripts": [
+        {
+          "invoker": "http://127.0.0.1:3100/_next/static/chunks/c23c07e0.03f755df33144189.js",
+          "invokerType": "classic-script",
+          "sourceURL": "http://127.0.0.1:3100/_next/static/chunks/c23c07e0.03f755df33144189.js",
+          "sourceFunctionName": "",
+          "duration": 148.5,
+          "executionStart": 416.40000000596046,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        },
+        {
+          "invoker": "FrameRequestCallback",
+          "invokerType": "user-callback",
+          "sourceURL": "http://127.0.0.1:3100/_next/static/chunks/6607-82ce7a18ded596ee.js",
+          "sourceFunctionName": "u",
+          "duration": 384.5,
+          "executionStart": 567.3000000119209,
+          "forcedStyleAndLayoutDuration": 0,
+          "pauseDuration": 0
+        }
+      ]
+    }
+  ],
+  "audio": {
+    "requestCount": 4,
+    "transferBytes": 604579,
+    "firstRequestStartMs": 3609,
+    "files": [
+      {
+        "file": "mixkit-magic-sparkles.mp3",
+        "transferSize": 375234,
+        "decodedBodySize": 374934,
+        "startTime": 3609,
+        "responseEnd": 3617,
+        "transferDuration": 8
+      },
+      {
+        "file": "freesound_community-starship-rail-gun-charge-35904.mp3",
+        "transferSize": 191340,
+        "decodedBodySize": 191040,
+        "startTime": 3609,
+        "responseEnd": 3615,
+        "transferDuration": 6
+      },
+      {
+        "file": "chime-sound.mp3",
+        "transferSize": 20735,
+        "decodedBodySize": 20435,
+        "startTime": 3610,
+        "responseEnd": 3614,
+        "transferDuration": 5
+      },
+      {
+        "file": "crystal-ball-leaf.mp3",
+        "transferSize": 17270,
+        "decodedBodySize": 16970,
+        "startTime": 3609,
+        "responseEnd": 3613,
+        "transferDuration": 4
+      }
+    ]
+  },
+  "network": {
+    "requestCount": 31,
+    "totalTransferBytes": 1508017,
+    "byType": {
+      "link": {
+        "count": 6,
+        "bytes": 80375
+      },
+      "script": {
+        "count": 20,
+        "bytes": 432429
+      },
+      "img": {
+        "count": 1,
+        "bytes": 390634
+      },
+      "xmlhttprequest": {
+        "count": 4,
+        "bytes": 604579
+      }
+    },
+    "heaviest": [
+      {
+        "transferSize": 390634,
+        "type": "img",
+        "startTime": 48,
+        "responseEnd": 71,
+        "url": "http://127.0.0.1:3100/images/lucky-meter-night-sky.avif"
+      },
+      {
+        "transferSize": 375234,
+        "type": "xmlhttprequest",
+        "startTime": 3609,
+        "responseEnd": 3617,
+        "url": "http://127.0.0.1:3100/sounds/mixkit-magic-sparkles.mp3"
+      },
+      {
+        "transferSize": 191340,
+        "type": "xmlhttprequest",
+        "startTime": 3609,
+        "responseEnd": 3615,
+        "url": "http://127.0.0.1:3100/freesound_community-starship-rail-gun-charge-35904.mp3"
+      },
+      {
+        "transferSize": 102550,
+        "type": "script",
+        "startTime": 331,
+        "responseEnd": 348,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/c23c07e0.03f755df33144189.js"
+      },
+      {
+        "transferSize": 88644,
+        "type": "script",
+        "startTime": 331,
+        "responseEnd": 346,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/d02cf09b.d0dbcf54162f077d.js"
+      },
+      {
+        "transferSize": 66949,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 84,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/3834-11354a5842dba802.js"
+      },
+      {
+        "transferSize": 64357,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 85,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js"
+      },
+      {
+        "transferSize": 41915,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 95,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/5105-7d2ab24c638cac3b.js"
+      },
+      {
+        "transferSize": 26188,
+        "type": "link",
+        "startTime": 46,
+        "responseEnd": 61,
+        "url": "http://127.0.0.1:3100/_next/static/media/a273567b21a7c318-s.p.woff2"
+      },
+      {
+        "transferSize": 24736,
+        "type": "link",
+        "startTime": 46,
+        "responseEnd": 56,
+        "url": "http://127.0.0.1:3100/_next/static/media/8760c4774489e4ba-s.p.woff2"
+      },
+      {
+        "transferSize": 20735,
+        "type": "xmlhttprequest",
+        "startTime": 3610,
+        "responseEnd": 3614,
+        "url": "http://127.0.0.1:3100/sounds/chime-sound.mp3"
+      },
+      {
+        "transferSize": 18135,
+        "type": "link",
+        "startTime": 47,
+        "responseEnd": 68,
+        "url": "http://127.0.0.1:3100/_next/static/css/68b4f55fd04ed524.css"
+      },
+      {
+        "transferSize": 17270,
+        "type": "xmlhttprequest",
+        "startTime": 3609,
+        "responseEnd": 3613,
+        "url": "http://127.0.0.1:3100/sounds/crystal-ball-leaf.mp3"
+      },
+      {
+        "transferSize": 10712,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 90,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-a261b2f724e07bb4.js"
+      },
+      {
+        "transferSize": 9963,
+        "type": "script",
+        "startTime": 3355,
+        "responseEnd": 3361,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/9638-e4cfb5132af586c0.js"
+      },
+      {
+        "transferSize": 8150,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 77,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/6607-82ce7a18ded596ee.js"
+      },
+      {
+        "transferSize": 6904,
+        "type": "link",
+        "startTime": 47,
+        "responseEnd": 64,
+        "url": "http://127.0.0.1:3100/_next/static/css/327cedb80f9293ec.css"
+      },
+      {
+        "transferSize": 6250,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 82,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/4367-0323b910051511e3.js"
+      },
+      {
+        "transferSize": 5436,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 90,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/8075-ade23aaeedbfed11.js"
+      },
+      {
+        "transferSize": 4031,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 88,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/5736-730e998567bf74d5.js"
+      },
+      {
+        "transferSize": 3937,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 87,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/layout-5c4440fd3fe754da.js"
+      },
+      {
+        "transferSize": 3925,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 82,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/2530-4da0544d2c208157.js"
+      },
+      {
+        "transferSize": 3540,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 76,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/1598-d83c72ecd7dadb8b.js"
+      },
+      {
+        "transferSize": 2908,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 89,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/1634-6bd70109bdb6e9c0.js"
+      },
+      {
+        "transferSize": 2860,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 84,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/9171-ae6fe4ee5ef85164.js"
+      },
+      {
+        "transferSize": 2462,
+        "type": "link",
+        "startTime": 47,
+        "responseEnd": 66,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-723408679b22fe03.js"
+      },
+      {
+        "transferSize": 2132,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 89,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/8859-04cee245a49ece8e.js"
+      },
+      {
+        "transferSize": 2123,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 85,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/1037-196e2a43ff24dbf2.js"
+      },
+      {
+        "transferSize": 1950,
+        "type": "link",
+        "startTime": 47,
+        "responseEnd": 63,
+        "url": "http://127.0.0.1:3100/_next/static/css/008e26072c923d16.css"
+      },
+      {
+        "transferSize": 1233,
+        "type": "script",
+        "startTime": 47,
+        "responseEnd": 90,
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/lucky-meter/page-126c330299300e1e.js"
+      }
+    ]
+  },
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0xa34003d4200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0xa34003d4200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0xa34003d4200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0xa34003d4200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ],
+  "pageErrors": [],
+  "resources": [
+    {
+      "name": "http://127.0.0.1:3100/_next/static/media/8760c4774489e4ba-s.p.woff2",
+      "initiatorType": "link",
+      "startTime": 46.10000002384186,
+      "responseEnd": 55.60000002384186,
+      "duration": 9.5,
+      "transferSize": 24736,
+      "encodedBodySize": 24436,
+      "decodedBodySize": 24436,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8760c4774489e4ba-s.p.woff2",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/media/a273567b21a7c318-s.p.woff2",
+      "initiatorType": "link",
+      "startTime": 46.400000005960464,
+      "responseEnd": 61.400000005960464,
+      "duration": 15,
+      "transferSize": 26188,
+      "encodedBodySize": 25888,
+      "decodedBodySize": 25888,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "a273567b21a7c318-s.p.woff2",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/css/008e26072c923d16.css",
+      "initiatorType": "link",
+      "startTime": 46.5,
+      "responseEnd": 62.60000002384186,
+      "duration": 16.100000023841858,
+      "transferSize": 1950,
+      "encodedBodySize": 1650,
+      "decodedBodySize": 35783,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "008e26072c923d16.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/css/327cedb80f9293ec.css",
+      "initiatorType": "link",
+      "startTime": 46.60000002384186,
+      "responseEnd": 63.900000005960464,
+      "duration": 17.299999982118607,
+      "transferSize": 6904,
+      "encodedBodySize": 6604,
+      "decodedBodySize": 24244,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "327cedb80f9293ec.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/webpack-723408679b22fe03.js",
+      "initiatorType": "link",
+      "startTime": 46.60000002384186,
+      "responseEnd": 66.10000002384186,
+      "duration": 19.5,
+      "transferSize": 2462,
+      "encodedBodySize": 2162,
+      "decodedBodySize": 4065,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "webpack-723408679b22fe03.js",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/css/68b4f55fd04ed524.css",
+      "initiatorType": "link",
+      "startTime": 46.60000002384186,
+      "responseEnd": 67.7000000178814,
+      "duration": 21.099999994039536,
+      "transferSize": 18135,
+      "encodedBodySize": 17835,
+      "decodedBodySize": 95844,
+      "renderBlockingStatus": "blocking",
+      "deliveryType": "",
+      "fileName": "68b4f55fd04ed524.css",
+      "isAudio": false,
+      "contentTypeGroup": "link"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/7a3aeed1-208a6de3f20899a1.js",
+      "initiatorType": "script",
+      "startTime": 46.70000001788139,
+      "responseEnd": 85.2000000178814,
+      "duration": 38.5,
+      "transferSize": 64357,
+      "encodedBodySize": 64057,
+      "decodedBodySize": 203721,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "7a3aeed1-208a6de3f20899a1.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/main-app-e9f5f0bc046e7c00.js",
+      "initiatorType": "script",
+      "startTime": 46.80000001192093,
+      "responseEnd": 72.5,
+      "duration": 25.69999998807907,
+      "transferSize": 814,
+      "encodedBodySize": 514,
+      "decodedBodySize": 514,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "main-app-e9f5f0bc046e7c00.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/3834-11354a5842dba802.js",
+      "initiatorType": "script",
+      "startTime": 46.80000001192093,
+      "responseEnd": 83.80000001192093,
+      "duration": 37,
+      "transferSize": 66949,
+      "encodedBodySize": 66649,
+      "decodedBodySize": 241758,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "3834-11354a5842dba802.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/1598-d83c72ecd7dadb8b.js",
+      "initiatorType": "script",
+      "startTime": 46.900000005960464,
+      "responseEnd": 75.90000000596046,
+      "duration": 29,
+      "transferSize": 3540,
+      "encodedBodySize": 3240,
+      "decodedBodySize": 7641,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1598-d83c72ecd7dadb8b.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/6607-82ce7a18ded596ee.js",
+      "initiatorType": "script",
+      "startTime": 46.900000005960464,
+      "responseEnd": 77.2000000178814,
+      "duration": 30.30000001192093,
+      "transferSize": 8150,
+      "encodedBodySize": 7850,
+      "decodedBodySize": 22955,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "6607-82ce7a18ded596ee.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/4367-0323b910051511e3.js",
+      "initiatorType": "script",
+      "startTime": 46.900000005960464,
+      "responseEnd": 82,
+      "duration": 35.099999994039536,
+      "transferSize": 6250,
+      "encodedBodySize": 5950,
+      "decodedBodySize": 16277,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "4367-0323b910051511e3.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/2530-4da0544d2c208157.js",
+      "initiatorType": "script",
+      "startTime": 46.900000005960464,
+      "responseEnd": 81.90000000596046,
+      "duration": 35,
+      "transferSize": 3925,
+      "encodedBodySize": 3625,
+      "decodedBodySize": 8685,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "2530-4da0544d2c208157.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/9171-ae6fe4ee5ef85164.js",
+      "initiatorType": "script",
+      "startTime": 46.900000005960464,
+      "responseEnd": 84,
+      "duration": 37.099999994039536,
+      "transferSize": 2860,
+      "encodedBodySize": 2560,
+      "decodedBodySize": 6683,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "9171-ae6fe4ee5ef85164.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/1037-196e2a43ff24dbf2.js",
+      "initiatorType": "script",
+      "startTime": 47,
+      "responseEnd": 85.40000000596046,
+      "duration": 38.400000005960464,
+      "transferSize": 2123,
+      "encodedBodySize": 1823,
+      "decodedBodySize": 5770,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1037-196e2a43ff24dbf2.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/app/layout-5c4440fd3fe754da.js",
+      "initiatorType": "script",
+      "startTime": 47,
+      "responseEnd": 86.80000001192093,
+      "duration": 39.80000001192093,
+      "transferSize": 3937,
+      "encodedBodySize": 3637,
+      "decodedBodySize": 10539,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "layout-5c4440fd3fe754da.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/5736-730e998567bf74d5.js",
+      "initiatorType": "script",
+      "startTime": 47.10000002384186,
+      "responseEnd": 87.60000002384186,
+      "duration": 40.5,
+      "transferSize": 4031,
+      "encodedBodySize": 3731,
+      "decodedBodySize": 10315,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "5736-730e998567bf74d5.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/8859-04cee245a49ece8e.js",
+      "initiatorType": "script",
+      "startTime": 47.10000002384186,
+      "responseEnd": 89.10000002384186,
+      "duration": 42,
+      "transferSize": 2132,
+      "encodedBodySize": 1832,
+      "decodedBodySize": 5544,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8859-04cee245a49ece8e.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/1634-6bd70109bdb6e9c0.js",
+      "initiatorType": "script",
+      "startTime": 47.30000001192093,
+      "responseEnd": 89.40000000596046,
+      "duration": 42.099999994039536,
+      "transferSize": 2908,
+      "encodedBodySize": 2608,
+      "decodedBodySize": 7689,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "1634-6bd70109bdb6e9c0.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/app/page-a261b2f724e07bb4.js",
+      "initiatorType": "script",
+      "startTime": 47.30000001192093,
+      "responseEnd": 89.60000002384186,
+      "duration": 42.30000001192093,
+      "transferSize": 10712,
+      "encodedBodySize": 10412,
+      "decodedBodySize": 33159,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "page-a261b2f724e07bb4.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/8075-ade23aaeedbfed11.js",
+      "initiatorType": "script",
+      "startTime": 47.30000001192093,
+      "responseEnd": 90.40000000596046,
+      "duration": 43.099999994039536,
+      "transferSize": 5436,
+      "encodedBodySize": 5136,
+      "decodedBodySize": 14333,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "8075-ade23aaeedbfed11.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/app/lucky-meter/page-126c330299300e1e.js",
+      "initiatorType": "script",
+      "startTime": 47.400000005960464,
+      "responseEnd": 90.40000000596046,
+      "duration": 43,
+      "transferSize": 1233,
+      "encodedBodySize": 933,
+      "decodedBodySize": 933,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "page-126c330299300e1e.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/5105-7d2ab24c638cac3b.js",
+      "initiatorType": "script",
+      "startTime": 47.400000005960464,
+      "responseEnd": 94.80000001192093,
+      "duration": 47.400000005960464,
+      "transferSize": 41915,
+      "encodedBodySize": 41615,
+      "decodedBodySize": 122607,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "5105-7d2ab24c638cac3b.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/images/lucky-meter-night-sky.avif",
+      "initiatorType": "img",
+      "startTime": 47.5,
+      "responseEnd": 71.10000002384186,
+      "duration": 23.600000023841858,
+      "transferSize": 390634,
+      "encodedBodySize": 390334,
+      "decodedBodySize": 390334,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "lucky-meter-night-sky.avif",
+      "isAudio": false,
+      "contentTypeGroup": "img"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/c23c07e0.03f755df33144189.js",
+      "initiatorType": "script",
+      "startTime": 330.5,
+      "responseEnd": 347.5,
+      "duration": 17,
+      "transferSize": 102550,
+      "encodedBodySize": 102250,
+      "decodedBodySize": 385860,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "c23c07e0.03f755df33144189.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/d02cf09b.d0dbcf54162f077d.js",
+      "initiatorType": "script",
+      "startTime": 330.80000001192093,
+      "responseEnd": 345.80000001192093,
+      "duration": 15,
+      "transferSize": 88644,
+      "encodedBodySize": 88344,
+      "decodedBodySize": 368084,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "d02cf09b.d0dbcf54162f077d.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/_next/static/chunks/9638-e4cfb5132af586c0.js",
+      "initiatorType": "script",
+      "startTime": 3355.100000023842,
+      "responseEnd": 3360.5,
+      "duration": 5.399999976158142,
+      "transferSize": 9963,
+      "encodedBodySize": 9663,
+      "decodedBodySize": 36396,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "9638-e4cfb5132af586c0.js",
+      "isAudio": false,
+      "contentTypeGroup": "script"
+    },
+    {
+      "name": "http://127.0.0.1:3100/freesound_community-starship-rail-gun-charge-35904.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 3608.800000011921,
+      "responseEnd": 3614.800000011921,
+      "duration": 6,
+      "transferSize": 191340,
+      "encodedBodySize": 191040,
+      "decodedBodySize": 191040,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "freesound_community-starship-rail-gun-charge-35904.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "http://127.0.0.1:3100/sounds/crystal-ball-leaf.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 3609.100000023842,
+      "responseEnd": 3613.100000023842,
+      "duration": 4,
+      "transferSize": 17270,
+      "encodedBodySize": 16970,
+      "decodedBodySize": 16970,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "crystal-ball-leaf.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "http://127.0.0.1:3100/sounds/mixkit-magic-sparkles.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 3609.300000011921,
+      "responseEnd": 3617.100000023842,
+      "duration": 7.800000011920929,
+      "transferSize": 375234,
+      "encodedBodySize": 374934,
+      "decodedBodySize": 374934,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "mixkit-magic-sparkles.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    },
+    {
+      "name": "http://127.0.0.1:3100/sounds/chime-sound.mp3",
+      "initiatorType": "xmlhttprequest",
+      "startTime": 3609.5,
+      "responseEnd": 3614.300000011921,
+      "duration": 4.800000011920929,
+      "transferSize": 20735,
+      "encodedBodySize": 20435,
+      "decodedBodySize": 20435,
+      "renderBlockingStatus": "non-blocking",
+      "deliveryType": "",
+      "fileName": "chime-sound.mp3",
+      "isAudio": true,
+      "contentTypeGroup": "xmlhttprequest"
+    }
+  ]
+}

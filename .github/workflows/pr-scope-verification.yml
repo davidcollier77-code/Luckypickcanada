@@ -57,6 +57,11 @@ jobs:
           gh api --paginate --slurp \
             "repos/${REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
             | jq 'add // []' > "${RUNNER_TEMP}/comments.json"
+          # Commit records prove the narrow Dependabot maintenance exemption; a
+          # missing list leaves the exemption unverified (fail closed).
+          gh api --paginate --slurp \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/commits?per_page=100" \
+            | jq 'add // []' > "${RUNNER_TEMP}/commits.json"
 
       - name: Compare declared scope with the actual pull request diff
         env:
@@ -64,6 +69,7 @@ jobs:
           PR_FILE: ${{ runner.temp }}/pr.json
           FILES_FILE: ${{ runner.temp }}/files.json
           COMMENTS_FILE: ${{ runner.temp }}/comments.json
+          COMMITS_FILE: ${{ runner.temp }}/commits.json
           SUMMARY_FILE: ${{ runner.temp }}/qa-scope-summary.md
           REPORT_FILE: ${{ runner.temp }}/qa-scope-report.json
         shell: bash
@@ -74,6 +80,7 @@ jobs:
             --pull-request "$PR_FILE" \
             --files "$FILES_FILE" \
             --comments "$COMMENTS_FILE" \
+            --commits "$COMMITS_FILE" \
             --owner "$OWNER" \
             --summary "$SUMMARY_FILE" \
             --json "$REPORT_FILE"

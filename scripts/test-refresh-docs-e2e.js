@@ -56,6 +56,12 @@ async function run() {
   const manifestPath = path.join(docsDir, 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   const originalLastUpdated = manifest.lastUpdated;
+  const staticGsapLibrary = '/llmstxt/gsap_llms_txt';
+  const staticGsapSourceUrl = manifest.sources[staticGsapLibrary]?.url;
+  const staticGsapSnapshot = primaryPath(docsDir, manifest, staticGsapLibrary);
+  assert.ok(staticGsapSourceUrl, 'GSAP static reference must retain its source metadata');
+  assert.ok(staticGsapSnapshot && fs.existsSync(staticGsapSnapshot), 'GSAP static reference snapshot must remain routed and present');
+  const staticGsapSnapshotHash = hashFile(staticGsapSnapshot);
 
   const emptyLib = '/numpy/numpy';
   const garbledLib = '/goldfire/howler.js';
@@ -170,6 +176,16 @@ async function run() {
   // The real library is untouched.
   assert.strictEqual(hashFile(realManifestPath), realManifestHash, 'real manifest must not change');
   assert.strictEqual(hashFile(realSampleSnapshot), realSampleHash, 'real snapshot must not change');
+
+  // The GSAP reference remains routed and available, but its upstream source is
+  // never requested and its local snapshot is preserved byte-for-byte.
+  assert.ok(!requests.includes(staticGsapSourceUrl), 'static GSAP source URL must never be requested');
+  assert.strictEqual(hashFile(staticGsapSnapshot), staticGsapSnapshotHash, 'static GSAP snapshot must remain byte-identical');
+  assert.ok(updatedManifest.groups.polishing.includes(staticGsapLibrary), 'GSAP reference must remain routed in polishing');
+  assert.ok(updatedManifest.inventory.includes(staticGsapLibrary), 'GSAP reference must remain in manifest inventory');
+  assert.strictEqual(updatedManifest.sources[staticGsapLibrary].url, staticGsapSourceUrl, 'GSAP source metadata must remain intact');
+  assert.ok(report.includes('Static reference documents (not refreshed)'), 'report must identify static references');
+  assert.ok(report.includes(staticGsapLibrary), 'report must identify the retained GSAP reference');
 
   // Deliberate removals are permanent: never downloaded, indexed or on disk.
   assert.ok(!requests.includes(manifest.sources[retiredLib].url), 'removed document source must not be fetched');
