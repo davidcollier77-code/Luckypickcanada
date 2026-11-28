@@ -85,6 +85,12 @@ export const VISUAL_EXPERIENCES = Object.freeze([
     dimension: '3d',
     particles: true,
     chunks: ['three'],
+    // The reference artwork is the instrument's reflection source: the scene
+    // loads this exact AVIF (WebP is its fallback) and feeds it to the metal and
+    // crystal environment probe.
+    textures: Object.freeze([
+      { id: 'lucky-meter-artwork', url: '/assets/lucky-meter-artwork.avif', background: false },
+    ]),
     audio: Object.freeze([
       { id: 'lucky-meter-audio', prepare: lazyAudioPrepare(meterAudio, 'prepareLuckyMeterAudio'), background: false },
     ]),

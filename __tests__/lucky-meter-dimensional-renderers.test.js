@@ -24,7 +24,11 @@ import {
   sampleSceneLightLift,
 } from '../app/lib/gpu-scene-light';
 import { resolveRenderQuality } from '../app/lib/graphics-capabilities';
-import { READY_WATCHDOG_MS, createLuckyMeterScene } from '../app/lib/lucky-meter/meter-scene';
+import {
+  READY_WATCHDOG_MS,
+  createLuckyMeterScene,
+  revolvedRingGeometry,
+} from '../app/lib/lucky-meter/meter-scene';
 import { numberTransferPath, sampleNumberPath } from '../app/lib/lucky-meter/meter-layout';
 import { getPaletteForSeasonKey } from '../app/lib/lucky-meter/sparks-and-seasonal-colours';
 
@@ -156,6 +160,65 @@ describe('medallion construction', () => {
       for (let index = 2; index < mesh.positions.length; index += 3) zs.push(mesh.positions[index]);
       expect(Math.max(...zs) - Math.min(...zs)).toBeGreaterThan(0.05);
     }
+  });
+});
+
+describe('revolved gold rings', () => {
+  // The well ring's cross-section as the scene authors it: an open polyline.
+  // Left open, it revolved into a band with a slit through it, which showed as
+  // a hairline crack inside the medallion; the lathe's duplicated seam column
+  // then added a second break for the same reason.
+  const OPEN_PROFILE = [
+    [0.396, 0.128],
+    [0.424, 0.142],
+    [0.452, 0.126],
+    [0.448, 0.098],
+    [0.41, 0.1],
+  ];
+  const SEGMENTS = 24;
+  // The helper closes the loop, so the lathe revolves one more point than the
+  // profile it was given.
+  const columnLength = OPEN_PROFILE.length + 1;
+
+  it('closes the cross-section so the band has no slit', () => {
+    const geometry = revolvedRingGeometry(THREE, OPEN_PROFILE, SEGMENTS);
+    const positions = geometry.attributes.position;
+    expect(positions.count).toBe((SEGMENTS + 1) * columnLength);
+
+    for (let segment = 0; segment <= SEGMENTS; segment += 1) {
+      const first = segment * columnLength;
+      const closing = first + columnLength - 1;
+      // The last profile point is the first one again: a solid revolution.
+      expect(positions.getX(closing)).toBeCloseTo(positions.getX(first), 6);
+      expect(positions.getY(closing)).toBeCloseTo(positions.getY(first), 6);
+      expect(positions.getZ(closing)).toBeCloseTo(positions.getZ(first), 6);
+    }
+  });
+
+  it('welds the revolution seam so the ring has one unbroken normal', () => {
+    const geometry = revolvedRingGeometry(THREE, OPEN_PROFILE, SEGMENTS);
+    const normals = geometry.attributes.normal;
+    const seam = SEGMENTS * columnLength;
+
+    for (let index = 0; index < columnLength; index += 1) {
+      expect(normals.getX(index)).toBeCloseTo(normals.getX(seam + index), 6);
+      expect(normals.getY(index)).toBeCloseTo(normals.getY(seam + index), 6);
+      expect(normals.getZ(index)).toBeCloseTo(normals.getZ(seam + index), 6);
+      const length = Math.hypot(
+        normals.getX(index),
+        normals.getY(index),
+        normals.getZ(index),
+      );
+      expect(length).toBeCloseTo(1, 5);
+    }
+  });
+
+  it('leaves an already closed profile alone instead of folding a face', () => {
+    const closedProfile = [...OPEN_PROFILE, OPEN_PROFILE[0]];
+    const geometry = revolvedRingGeometry(THREE, closedProfile, SEGMENTS);
+    expect(geometry.attributes.position.count).toBe(
+      (SEGMENTS + 1) * closedProfile.length,
+    );
   });
 });
 

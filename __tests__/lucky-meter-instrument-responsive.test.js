@@ -3,10 +3,12 @@ import { instrumentFraming } from '../app/lib/lucky-meter/instrument-prototype.j
 import { stageFraming } from '../app/lib/lucky-meter/meter-layout.js';
 
 const PHONE_MAX_WIDTH = 500;
-// One portrait composition now frames the whole instrument: the wheel, the
-// twelve cups, the draining bowl, the plaque and the colour bar. Every screen
-// size uses that extent, so the camera distance only ever depends on 3.8.
-const VERTICAL_EXTENT = 3.8;
+// One portrait composition now frames the whole instrument: the raised arch,
+// the wheel, the twelve cups, the bowl, the plaque and the colour bar. Every
+// screen size uses that extent and that look-at, so the camera distance only
+// ever depends on 4.1.
+const VERTICAL_EXTENT = 4.1;
+const LOOK_Y = 0.14;
 
 describe('Lucky Meter responsive framing', () => {
   it('keeps the tall reference composition on small and large phones', () => {
@@ -20,7 +22,7 @@ describe('Lucky Meter responsive framing', () => {
       const framing = instrumentFraming(width, height);
       expect(framing.phone, `${width}×${height}`).toBe(true);
       expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(0.02);
+      expect(framing.lookY).toBe(LOOK_Y);
       expect(framing.aspect).toBeCloseTo(width / height, 6);
       expect(Number.isFinite(framing.distance)).toBe(true);
     }
@@ -35,7 +37,7 @@ describe('Lucky Meter responsive framing', () => {
       expect(framing.phone, `${width}×${height}`).toBe(false);
       expect(framing.tabletPortrait).toBe(true);
       expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(0.02);
+      expect(framing.lookY).toBe(LOOK_Y);
       expect(framing.distance).toBeCloseTo(
         VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
         6,
@@ -51,7 +53,7 @@ describe('Lucky Meter responsive framing', () => {
       expect(framing.phone, `${width}×${height}`).toBe(false);
       expect(framing.tabletPortrait).toBe(false);
       expect(framing.verticalExtent).toBe(VERTICAL_EXTENT);
-      expect(framing.lookY).toBe(0.02);
+      expect(framing.lookY).toBe(LOOK_Y);
       expect(framing.distance).toBeCloseTo(
         VERTICAL_EXTENT / (2 * Math.tan((32 * Math.PI) / 180 / 2)),
         6,
@@ -77,8 +79,8 @@ describe('Lucky Meter responsive framing', () => {
     const phone = stageFraming(390, 390);
     expect(phone.phone).toBe(true);
     expect(phone.verticalExtent).toBe(VERTICAL_EXTENT);
-    expect(phone.lookY).toBe(0.02);
-    expect(phone.wheelTop).toBeCloseTo(0.5 - (0.62 - 0.02) / VERTICAL_EXTENT, 6);
+    expect(phone.lookY).toBe(LOOK_Y);
+    expect(phone.wheelTop).toBeCloseTo(0.5 - (0.62 - LOOK_Y) / VERTICAL_EXTENT, 6);
 
     const large = stageFraming(480, 480);
     expect(large.phone).toBe(true);

@@ -22,12 +22,16 @@ export const POINTER_ANGLE_DEGREES = 225;
 export const STAGE_ASPECT = 0.76;
 
 /** The cup window inside each gold spoke, in world units. */
+// The compartment fills the punched window rather than floating inside it, so
+// the ring of glass segments is the wheel's dominant surface, as in the
+// reference. The twelve circles sit 0.41 units apart at radius 0.79, which a
+// 0.344-wide cup and a 0.372-wide window both clear.
 export const CHAMBER_CUP = Object.freeze({
-  radius: 0.132,
-  height: 0.3,
-  innerRadius: 0.092,
-  liquidRadius: 0.114,
-  liquidDepth: 0.245,
+  radius: 0.19,
+  height: 0.26,
+  innerRadius: 0.142,
+  liquidRadius: 0.172,
+  liquidDepth: 0.232,
 });
 
 /** Every world-space anchor the scene builds from. */
@@ -96,8 +100,10 @@ export const METER_LAYOUT = Object.freeze({
   }),
   banner: Object.freeze({
     x: 0,
-    y: 1.58,
-    z: 0.1,
+    y: 1.74,
+    // In front of the cell frames (which reach z ≈ 0.21) so the top chambers
+    // pass behind the plate instead of cutting through it.
+    z: 0.18,
     width: 1.7,
     height: 0.42,
   }),
@@ -105,8 +111,11 @@ export const METER_LAYOUT = Object.freeze({
 
 /** The longest stage that still uses the tall phone composition. */
 export const PHONE_MAX_WIDTH = 500;
-const STAGE_VERTICAL_EXTENT = 3.8;
-const STAGE_LOOK_Y = 0.02;
+// The raised arch and the taller crystal foot now define the instrument's
+// silhouette, so the portrait crop covers them with a little air above and
+// below rather than clipping the crown.
+const STAGE_VERTICAL_EXTENT = 4.1;
+const STAGE_LOOK_Y = 0.14;
 const FRAMING_FOV = 32;
 
 /**

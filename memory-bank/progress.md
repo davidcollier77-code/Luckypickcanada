@@ -1,3 +1,41 @@
+## 2026-11-28 — Third review pass: medallion relief, dead glaze, sparkle spread
+
+- The vein relief sat at ±0.058 inside the blade and behind the opaque enamel, which spans 0.034–0.090, so it never drew. Both sets now sit at ±0.0995, just outside the enamel cap for their 0.0085 thickness, so the maple reads as raised gold on the red inlay.
+- Removed the glazed cell face that was allocated, added to every cell group and then set `visible = false`, along with its crystal material and extrusion: the reference draws bare enamel, so the mesh was only wasted allocation and a per-frame uniform update. `chamberFills` no longer carries the unused `glass`/`dome` aliases.
+- The sparkle ring divided by a hardcoded 7 while the constrained tier builds three, clustering them in 3/7 of the circle; the divisor is now the count actually built.
+- Moved the maple-blade doc block off `insetOutline`, where it was orphaned, onto `mapleSilhouetteGeometry`.
+- Declined: `TextureLoader` cannot abort an in-flight request, and the arriving texture is disposed by the `disposed` guard, so the only cost is a decode that cannot be avoided without replacing the loader.
+- Verification: 46/46 across the four Lucky Meter suites, `tsc --noEmit` exit 0, and the page still renders `data-meter-renderer="three"` with no console errors.
+
+## 2026-11-28 — Second review round: shader, gradient and teardown repairs
+
+- The open review threads on the branch were re-read against the code. Five were valid and are repaired here: the bubble bead and ring used `smoothstep` with its edges reversed (undefined in GLSL and vendor-dependent, now written low-to-high); the compartment bubbles are gated off on the constrained tier again, as the plan requires; the crystal body-thickness gradient now rides a `uBodyGradient` uniform so it applies to the lathe shell only and the torus rim keeps one continuous alpha around its tube; `dispose()` sets `disposed` before anything else, closing the window where the artwork promise could assign an environment after teardown began; and the laurel leaf parameter guards a single-leaf division by zero.
+- Declined with reasoning: re-applying `scene.environmentIntensity` after the probe rebuild (it is a scene property that reassigning `scene.environment` does not touch). Left for the owner because they change rendered appearance and need fresh captures: the key light added on top of the full light-rig budget, the volute tube radius against the scroll centreline curvature, and the drain cut edge in screen-vertical space. The dead initial rim and glow opacities are overwritten in the frame loop and have no runtime effect.
+- Verification: 4 Lucky Meter suites pass, `tsc --noEmit` exit 0, and the page still reports `data-meter-renderer="three"` with no console errors after the shader change, so the new uniform compiles.
+
+## 2026-11-28 — Merge of main after the DevSkim remediation (#2065)
+
+- Merged `1ad132ec` into the meter branch so the pull request is no longer in conflict with `main`. The three conflicted files were append-only records: `memory-bank/activeContext.md` and `memory-bank/progress.md` keep both sides verbatim, and `.specify/feature.json` keeps `specs/230-lucky-meter-dimensional-artwork` because this PR is that feature.
+- Numbering collision to resolve by the owner: main now also holds `specs/230-devskim-findings-remediation`. Both 230 directories coexist, and this branchs own context was corrected to the current construction (single faceted bowl, closed and welded revolved rings, 40/40 tests, 406.94 MiB build) rather than renumbering a spec whose twelve evidence paths and QA declaration would all have to move.
+- The four DS173237 alerts this PR recorded as out of scope are removed at source on main by that merge; the next code-scanning run over the merged tree should close them.
+- CI on the merge head caught one stale pin: `__tests__/lucky-meter-instrument-responsive.test.js` still asserted the previous 3.8 portrait extent and 0.02 look-at, so Application Verification and Verify updater scheduler both failed on 4.1. The branch widened the composition to 4.1 with a 0.14 look-at on purpose (the raised arch and taller foot define the silhouette), so the test now pins those values while keeping its relational assertions: one camera distance at every size, the wheel centre in its safe band, and the invalid-dimension fallback. 46/46 across the four Lucky Meter suites.
+
+
+## 2026-11-28 — Lucky Meter: reference-shaped wedge cells (Spec 230 follow-up)
+
+- Replaced the cylindrical cups with wedge-shaped glazed cells (`chamberWedgePath`): each compartment now spans the chamber's radial band with rounded corners, a real gold frame ring cut from the same wedge, a bronze back, and an enamel body whose liquid line and bubbles are drawn in screen-vertical space so liquid stays level on every cell.
+- Kept the site's Lucky Colour palette but re-pitched each muzzle colour to pigment saturation and depth before it lights a cell; the previous pastel wash came from the site swatch values, not the shader.
+- Enlarged the reflection environment and warmed the key light, deepened the gold base and warmed its emissive.
+- Focused Vitest 29/29 and `tsc --noEmit` clean after restoring the `chamber-rim-<index>` envelope mesh on the cell frame (the choreography test requires it).
+- Still short of the reference: the medallion's maple silhouette and laurel wreath read coarse, the banner is a rectangle rather than an arch, and the crystal bowl and Lucky Number plaque below the wheel are far simpler and smaller than the reference's containers.
+
+## 2026-11-28 — Lucky Meter dimensional artwork reconstruction (Spec 230)
+
+- Rebuilt the Lucky Meter's physical construction from the supplied artwork: a layered sculpted gold housing with real bevels and rivets, twelve glazed and back-lit enamel compartments that fill their windows, a red-enamelled maple medallion inside a laurel wreath and turned rings, a double-walled diamond-cut crystal bowl with refraction and sparkles, and a dimensionally framed plaque with a recessed black interior and its own light.
+- Extended only the two scene shaders (enamel and crystal) and added two geometry helpers; no renderer, dependency, light, timing, persistence or layout contract changed.
+- Delivered the reference artwork as a retained source plus AVIF/WebP derivatives and used it as the instrument's reflection probe, so the metal and crystal reflect the design's own palette.
+- Focused Vitest suites 29/29, `tsc --noEmit` clean, and the ready state inspected at 900 × 1180 on the repository Playwright CLI.
+
 ## 2026-11-28 — DevSkim findings remediation: SARIF-anchored ledger identity (Spec 230, corrected)
 
 - Pullfrog's PR #2065 review demonstrated that the first repair's per-scan occurrence rank misattributes entries: executing `19fe6ee` over `194/749` → `194/300/749` appended a second entry for 749 and never recorded 300, and `194/749` → `194` → `194/300` appended nothing. A rank describes the scan's current set, not a finding.
@@ -1010,3 +1048,50 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Repaired the missing Timeline sequence example, truncated position-parameter bullet and Hint tokens, malformed `onInterrupt` description, missing `getById` method explanation and contradictory Spec 227 scope boundary.
 - Confirmed the report-rendering unit test is intentionally isolated; the end-to-end updater test exercises the allowlist/report path, checks that the GSAP source is not requested and confirms the static entry appears in the generated report. The separate concern about an undefined URL was ruled out by the preceding assertion and immutable `const` binding. No test-code change was necessary.
 - The new review-repair commit requires fresh current-head CI/report verification and a new scope approval digest; the previous digest is invalidated by the commit. No merge or deployment.
+
+
+## 2026-11-28 — Lucky Meter banner scrolls, maple silhouette and the captured flip (Spec 230)
+
+- The arched banner now finishes with cast volute scrolls: two-and-a-quarter-turn gold tube spirals with a turned boss at each end, so the plate curls away instead of cutting off radially. The plate itself, its two rolled rims and the lettering are unchanged.
+- The medallion's maple was re-cut from a narrower, deeper-notched outline (crown, two upper lobes, side point, lower lobes and a short stem) with the bevel reduced to a hairline, so the gold reads as an outline like the reference rather than a thick frame.
+- The centre flip was captured from a CDP screencast (`Page.startScreencast`) rather than repeated page screenshots, which could never land inside the turn. `flip-screencast.webp` (16 frames, 90 ms) and its `flip-filmstrip.png` are committed as evidence; both show the leaf narrowing, going edge-on and the percentage arriving.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` and the `.next + public` size gate re-run on this head.
+- Not verified here: the full unit suite, the PR's Playwright shards and physical-GPU smoothness.
+
+
+## 2026-11-28 — The gold band across the Lucky Meter medallion (Spec 230)
+
+- Removed the horizontal gold band that crossed the maple inside the reading well. It was not a separate ornament: the twelve-window plate was extruded as one disc with thirteen holes, and the triangulator bridged the central opening across the narrow web beside each window, leaving stray gold triangles lying over the well. The plate is now extruded as twelve wedge pieces with one window each, so it cannot produce that bridge. The wheel reads as separate gold-framed compartments, which is also closer to the reference.
+- The maple inlay is now cut from a mitred inset outline instead of a 0.9 scale, and its blade was narrowed at the waist, so the gold reads as an even outline with no bar across the notches.
+- Refreshed `ready-desktop.png`, `ready-instrument-closeup.png` (both previously stale), `flip-filmstrip.png` and `flip-screencast.webp` for the new configuration.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` compiled in 25.8 s and `du -sb .next public` measured 426,455,445 bytes (406.70 MiB), below 495 MiB.
+- Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.
+
+
+## 2026-11-28 — Large-render review of the Lucky Meter and refreshed QA evidence (Spec 230)
+
+- Reviewed the branch diff at 3x device scale. Repaired four real defects: the medallion's veins reached past the narrowed blade as loose gold lines; the banner sat behind the cell frames, so the top chambers cut through the plate; the twelve plate pieces left serrated gaps at the well and at the rim; and the wreath used the five-lobed pointer leaf, which read as starfish. Veins now stay inside the blade at ±0.058, the banner sits at z = 0.18 in front of the frames, the pieces meet at 0.25° and tuck under the bezel from radius 0.52, and the wreath is twelve smooth laurel leaves.
+- Removed the now-unused `chamberCentre` import left behind when the plate stopped calling it.
+- Refreshed every evidence capture on the final head: desktop ready state, instrument close-up, phone 390, spin, pour, reveal, and the flip filmstrip plus its 13-frame animated WebP.
+- Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` in 13.3 s, `du -sb .next public` 426,490,430 bytes (406.73 MiB) below 495 MiB.
+- Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.
+
+
+## 2026-11-28 — Well-ring seam and the bowl's crystal read (Spec 230)
+
+- Reviewed the meter geometry again. The well ring was revolved from an open cross-section, so its inner edge was a slit straight through the gold band, and `computeVertexNormals` left the duplicated lathe seam unwelded. `revolvedRingGeometry` now closes every profile into a solid loop and averages the two seam columns, so the ring framing the medallion is one continuous band. The same latent seam is gone from the housing band and the stepped bezel, which share the helper.
+- The bowl read colourless because the crystal shader's colour terms summed above 1.0 and clipped to white before `uBrightness` was applied. The terms now stay below 1.0, the diamond plates vary over a much wider range with a cool absorption tint in the dense ones, and the body carries a tint that deepens toward the base. An empty bowl now reads as cut crystal instead of a void, and a filled one still shows the seasonal colour through the cut.
+- Simplified the awkward construction: the bowl's inset second shell (the 0.885/0.94 scaled duplicate), the gold fillet hoop that crossed the glass mouth and the additive base ring floating inside the bowl are removed; the well floor and the plate recess are flat discs rather than 30 mm-thick cylinders, since only their faces are ever seen.
+- Refreshed all eight evidence captures on this head, including the 13-frame flip WebP and filmstrip, which were re-cut from a fresh CDP screencast.
+- Verification: focused Vitest 37/37 (dimensional renderers, stage, layout), `tsc --noEmit` exit 0, clean `next build --webpack`, `du -sb .next public` 426,697,533 bytes (406.93 MiB), below 495 MiB.
+- Not verified: the full unit suite, the PR Playwright shards and physical-GPU smoothness.
+
+
+## 2026-11-28 — Ring-seam regression guard, filmstrip framing and review fixes (Spec 230)
+
+- Added three regression tests to `__tests__/lucky-meter-dimensional-renderers.test.js` that pin the revolved-ring closure, the welded seam normals and the no-duplicate behaviour for an already closed profile; `revolvedRingGeometry` is exported for them. The well-ring hairline is now guarded by a test, not only by a fix.
+- Re-cut the flip filmstrip and its WebP crop so the well matches the earlier committed framing (195 px wide in a 300 px tile) instead of the tighter crop from the previous pass.
+- Repaired the two valid automated review findings: the sparkle `SpriteMaterial`s are now tracked and disposed on teardown, and `beadRingGeometry` takes its material as an argument rather than building an `InstancedMesh` with a null material. Reviewed and declined the environment-intensity and barrel-glass comments: `scene.environmentIntensity` is a scene property that replacing `scene.environment` does not touch, and the barrel lathe described there was replaced by the extruded wedge cell.
+- Corrected the PR's QA scope declaration (`file_purposes` as path/purpose objects) and its governance reporting (values on the label line), both of which the checker had rejected.
+- Verification: 40/40 focused Vitest, `tsc --noEmit` exit 0, clean `next build --webpack`, `du -sb .next public` 426,708,836 bytes (406.94 MiB), below 495 MiB.
+- Not verified: the full unit suite, the PR Playwright shards and physical-GPU smoothness.
