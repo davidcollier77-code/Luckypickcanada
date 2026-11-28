@@ -185,7 +185,7 @@ test.describe('Site-wide gold CTA', () => {
     test.setTimeout(180_000);
 
     await page.goto('/lucky-meter', { waitUntil: 'domcontentloaded', timeout: 60_000 });
-    const resonance = page.locator('button.gold-3d-btn:has-text("Reveal My Resonance")').first();
+    const resonance = page.locator('button.gold-3d-btn:has-text("Start My Lucky Meter")').first();
     await expect(resonance).toBeVisible({ timeout: 30_000 });
     await expect(resonance.locator('.gold-cta-emoji')).toHaveText('✨');
     expect(await resonance.evaluate((el) => getComputedStyle(el).backgroundImage)).toContain(MAIN_GOLD);

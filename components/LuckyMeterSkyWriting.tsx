@@ -119,12 +119,6 @@ export default function LuckyMeterSkyWriting({
       }`}
       aria-live="polite"
     >
-      <div className="lucky-sky-writing__header" aria-hidden="true">
-        <span className="lucky-sky-writing__rule" />
-        <span className="lucky-sky-writing__label">Little Spark</span>
-        <span className="lucky-sky-writing__rule" />
-      </div>
-
       {isWritten && <span className="sr-only">{message}</span>}
 
       {state === 'waiting' ? (
@@ -139,7 +133,6 @@ export default function LuckyMeterSkyWriting({
           className="lucky-sky-writing__text"
           style={isCompact ? { fontSize: '1.02rem' } : undefined}
         >
-          <span className="lucky-sky-writing__quote">“</span>
           <span data-testid="lucky-spark-visible">
             {/* Words are kept whole so a line never breaks mid-word, while each
                 glyph still arrives on its own writing beat. */}
@@ -174,11 +167,10 @@ export default function LuckyMeterSkyWriting({
               </svg>
             </span>
           )}
-          <span className="lucky-sky-writing__quote">”</span>
         </p>
       )}
 
-      <span aria-hidden="true" className="lucky-sky-writing__flourish" />
+      <span aria-hidden="true" className="lucky-sky-writing__ribbon" />
     </section>
   );
 }

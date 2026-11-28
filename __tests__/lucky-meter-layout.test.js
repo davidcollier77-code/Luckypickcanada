@@ -49,18 +49,34 @@ describe('Lucky Meter physical layout', () => {
     ).toBeCloseTo(METER_LAYOUT.pointer.radius, 6);
   });
 
-  it('keeps the arm and spout on the same lower-left side as the pointer', () => {
+  // `arm` is retained for the development-only instrument prototype; production
+  // geometry uses `spout`. This guards the inherited shape, so removing `arm`
+  // has to update this test deliberately.
+  it('keeps the retained legacy arm, the spout and the bowl on the pointer’s lower-left', () => {
     for (const point of [
       METER_LAYOUT.arm.base,
       METER_LAYOUT.arm.shoulder,
       METER_LAYOUT.arm.socket,
       METER_LAYOUT.arm.spout,
-      METER_LAYOUT.beam.from,
+      METER_LAYOUT.spout.mouth,
       [METER_LAYOUT.vessel.x, METER_LAYOUT.vessel.y],
     ]) {
       expect(point[0]).toBeLessThan(0);
     }
     expect(METER_LAYOUT.arm.spout[1]).toBeLessThan(METER_LAYOUT.arm.socket[1]);
+  });
+
+  it('keeps the bowl’s liquid band inside the crystal shell', () => {
+    const vessel = METER_LAYOUT.vessel;
+    // The liquid is the bowl's inner shell, not a cylinder through the flare:
+    // it starts above the glass floor, stays inside the wall, and stops short
+    // of the rim so cut crystal always shows above the surface.
+    expect(vessel.liquidFloor).toBeGreaterThan(0);
+    expect(vessel.liquidInset).toBeGreaterThan(0.9);
+    expect(vessel.liquidInset).toBeLessThan(1);
+    expect(vessel.liquidTop).toBeLessThan(vessel.height);
+    expect(vessel.height - vessel.liquidTop).toBeGreaterThan(0.05);
+    expect(vessel.liquidTop - vessel.liquidFloor).toBeGreaterThan(vessel.height * 0.6);
   });
 
   it('drains only the selected chamber, and leaves the other eleven full', () => {

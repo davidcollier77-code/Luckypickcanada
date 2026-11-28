@@ -298,7 +298,7 @@ test('Card Reveal, Crystal Ball and Lucky Meter read the same local-midnight cou
   const cardCountdown = cardPage.getByText(/Resets in:/);
   const crystalCountdown = crystalPage.getByLabel('Time until daily reset');
   const meterCountdown = meterPage
-    .getByText('Next Resonance In')
+    .getByText('Next Reveal In')
     .locator('..')
     .locator('div');
 
