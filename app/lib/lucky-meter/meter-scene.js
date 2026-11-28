@@ -604,11 +604,13 @@ function createCrystalMaterial(THREE, options = {}) {
     vertexShader: `
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
+      varying vec2 vUv;
 
       void main() {
         vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
         vNormalView = normalize(normalMatrix * normal);
         vViewDirection = normalize(-viewPosition.xyz);
+        vUv = uv;
         gl_Position = projectionMatrix * viewPosition;
       }
     `,
@@ -622,6 +624,7 @@ function createCrystalMaterial(THREE, options = {}) {
       uniform float uTime;
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
+      varying vec2 vUv;
 
       float hash21(vec2 value) {
         vec2 seeded = fract(value * vec2(123.34, 456.21));
@@ -666,6 +669,26 @@ function createCrystalMaterial(THREE, options = {}) {
 
         float alpha = 0.02 + fresnel * 0.44 + specularA * 0.4 + specularB * 0.045;
         alpha += twinkle * 0.2 * uFacet;
+
+        // The cut itself: a diamond lattice ground into the glass, each plate
+        // chiselled along its edges and tilted on its own so the bowl reads as
+        // thick cut crystal instead of a clear shell.
+        if (uFacet > 0.5) {
+          vec2 gridUv = vec2(vUv.x * 11.0, vUv.y * 3.6);
+          vec2 diamond = vec2(
+            abs(fract(gridUv.x + gridUv.y) - 0.5),
+            abs(fract(gridUv.x - gridUv.y) - 0.5)
+          );
+          float edge = 1.0 - smoothstep(0.0, 0.085, min(diamond.x, diamond.y));
+          float plate = hash21(
+            floor(vec2(gridUv.x + gridUv.y, gridUv.x - gridUv.y))
+          );
+          colour += vec3(1.0, 0.98, 0.92) * edge * 0.32;
+          colour += (uTint + uTintDeep) * (plate - 0.5) * 0.22;
+          alpha += edge * 0.16;
+          alpha += plate * 0.06;
+        }
+
         alpha *= uAlpha;
         gl_FragColor = vec4(colour * uBrightness, clamp(alpha, 0.0, 0.8));
         #include <colorspace_fragment>
@@ -2210,28 +2233,69 @@ export async function createLuckyMeterScene({
   plaqueInset.position.set(0, 0, -0.006);
   plaqueGroup.add(plaqueInset);
 
-  const plaqueSlotMaterial = trackMaterial(
-    new THREE.MeshBasicMaterial({
-      map: engraving('- - -', { width: 384, height: 128, fontSize: 66, spacing: 6, outline: 3 }),
-      transparent: true,
-      depthWrite: false,
-      toneMapped: false,
+  // The empty slot is two real gold bars sitting proud of the black well, not
+  // a painted dash: they catch the plaque's own light like the reference's.
+  const dashGeometry = trackGeometry(
+    new THREE.ExtrudeGeometry(roundedRectShape(THREE, 0.09, 0.03, 0.014), {
+      depth: 0.016,
+      bevelEnabled: true,
+      bevelThickness: 0.006,
+      bevelSize: 0.005,
+      bevelSegments: 2,
+      curveSegments: 6,
     }),
   );
-  const plaqueSlot = new THREE.Mesh(
-    trackGeometry(new THREE.PlaneGeometry(0.36, 0.13)),
-    plaqueSlotMaterial,
+  const plaqueSlotMaterial = trackMaterial(
+    new THREE.MeshPhysicalMaterial({
+      color: 0xffd489,
+      metalness: 0.86,
+      roughness: 0.18,
+      emissive: 0x5a3407,
+      emissiveIntensity: 0.5,
+      transparent: true,
+      envMapIntensity: 1.8,
+    }),
   );
-  plaqueSlot.position.set(0, -0.09, 0.085);
-  plaqueGroup.add(plaqueSlot);
-
-  const plaqueLaurelGeometry = trackGeometry(buildPointerLeafGeometry(THREE));
   for (const side of [-1, 1]) {
-    const laurel = new THREE.Mesh(plaqueLaurelGeometry, warmGold);
-    laurel.scale.setScalar(0.125);
-    laurel.position.set(side * 0.215, -0.09, 0.062);
-    laurel.rotation.z = side * 1.35;
-    plaqueGroup.add(laurel);
+    const dash = new THREE.Mesh(dashGeometry, plaqueSlotMaterial);
+    dash.position.set(side * 0.072, -0.088, 0.078);
+    plaqueGroup.add(dash);
+  }
+
+  // Laurel sprigs frame the slot: a slender stem with paired leaves, as in the
+  // reference, instead of a pair of medallions.
+  const laurelLeafGeometry = trackGeometry(new THREE.SphereGeometry(1, 8, 6));
+  const laurelStemGeometry = trackGeometry(
+    new THREE.CylinderGeometry(0.006, 0.0035, 0.4, 8),
+  );
+  for (const side of [-1, 1]) {
+    const sprig = new THREE.Group();
+    sprig.position.set(side * 0.226, -0.062, 0.068);
+    sprig.rotation.z = side * -0.16;
+    sprig.add(new THREE.Mesh(laurelStemGeometry, warmGold));
+
+    const leafCount = high ? 14 : 9;
+    const leaves = new THREE.InstancedMesh(laurelLeafGeometry, warmGold, leafCount);
+    leaves.frustumCulled = false;
+    const matrix = new THREE.Matrix4();
+    const position = new THREE.Vector3();
+    const quaternion = new THREE.Quaternion();
+    const euler = new THREE.Euler();
+    const scale = new THREE.Vector3();
+    for (let index = 0; index < leafCount; index += 1) {
+      const t = index / (leafCount - 1);
+      const outward = index % 2 === 0 ? 1 : -1;
+      position.set(side * outward * (0.024 + 0.014 * Math.sin(t * Math.PI)), -0.19 + t * 0.38, 0.004);
+      euler.set(0, 0, side * outward * (0.95 - 0.55 * t));
+      quaternion.setFromEuler(euler);
+      const size = 0.037 - 0.011 * t;
+      scale.set(size * 0.5, size, 0.006);
+      matrix.compose(position, quaternion, scale);
+      leaves.setMatrixAt(index, matrix);
+    }
+    leaves.instanceMatrix.needsUpdate = true;
+    sprig.add(leaves);
+    plaqueGroup.add(sprig);
   }
 
   // ── The gold colour bar beneath the bowl ───────────────────────────────
