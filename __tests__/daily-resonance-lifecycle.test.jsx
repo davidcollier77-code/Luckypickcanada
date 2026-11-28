@@ -74,7 +74,7 @@ describe('DailyResonance Lifecycle & Audio', () => {
     const { unmount } = render(<DailyResonance isCompact={false} />);
 
     await act(async () => {
-      fireEvent.click(screen.getByText('Reveal My Resonance'));
+      fireEvent.click(screen.getByText('Start My Lucky Meter'));
       await Promise.resolve();
       await Promise.resolve();
     });
@@ -91,7 +91,7 @@ describe('DailyResonance Lifecycle & Audio', () => {
     });
 
     const { unmount } = render(<DailyResonance isCompact={false} />);
-    fireEvent.click(screen.getByText('Reveal My Resonance'));
+    fireEvent.click(screen.getByText('Start My Lucky Meter'));
 
     // Audio is optional: a failed import must not cancel or block the reveal.
     // Wait for the asynchronous import rejection as well as the visible reading.

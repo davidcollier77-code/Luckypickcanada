@@ -158,8 +158,8 @@ describe('Lucky Meter cinematic lifecycle', () => {
   it('shows the meter, Home and Start in the welcome state without a reading', () => {
     render(<DailyResonance />);
 
-    expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Reveal My Resonance/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Daily Resonance Ritual/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Start My Lucky Meter/i })).toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'idle');
     expect(screen.getByTestId('lucky-meter-start')).toHaveAttribute('data-ready', 'false');
 
@@ -178,14 +178,14 @@ describe('Lucky Meter cinematic lifecycle', () => {
     render(<DailyResonance />);
     const start = screen.getByTestId('lucky-meter-start');
     expect(start).toHaveAttribute('data-ready', 'false');
-    expect(screen.getByRole('button', { name: /Reveal My Resonance/i })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Start My Lucky Meter/i })).toHaveAttribute(
       'tabindex',
       '-1',
     );
 
     advance(6000);
     expect(start).toHaveAttribute('data-ready', 'true');
-    expect(screen.getByRole('button', { name: /Reveal My Resonance/i })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Start My Lucky Meter/i })).toHaveAttribute(
       'tabindex',
       '0',
     );
@@ -193,7 +193,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
   it('keeps Home and the countdown away until the Spark has finished, then docks both', () => {
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const result = readStoredResult().result;
 
     expect(screen.queryByTestId('lucky-meter-home')).not.toBeInTheDocument();
@@ -243,7 +243,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
   it('resumes the stored cinematic after a refresh mid-cinematic', () => {
     const first = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const result = readStoredResult().result;
     advanceToCelebration(result.tier.message);
     const originalDuration = screen
@@ -254,7 +254,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     render(<DailyResonance />);
 
-    expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Start My Lucky Meter/i })).not.toBeInTheDocument();
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
       'data-value',
       String(result.percentage),
@@ -277,7 +277,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
   it('replays the reveal motions after a refresh mid-reveal instead of skipping them', () => {
     const first = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     advance(PERCENTAGE_START_MS + 500);
     const before = readStoredResult();
     expect(before.revealCompleted).toBe(false);
@@ -287,7 +287,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'spin');
     expect(screen.queryByTestId('cosmic-event-stage')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Reveal My Resonance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Start My Lucky Meter/i })).not.toBeInTheDocument();
 
     advanceToCelebration(before.result.tier.message);
     expect(screen.getByTestId('cosmic-event-stage')).toBeInTheDocument();
@@ -382,7 +382,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
     }));
 
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
 
     const result = readStoredResult().result;
     expect(screen.getByTestId('lucky-meter-value')).toHaveAttribute(
@@ -464,7 +464,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
 
   it('returns to the welcome state after local midnight', () => {
     const view = render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     const result = readStoredResult().result;
     advanceToCelebration(result.tier.message);
     act(() => {
@@ -482,7 +482,7 @@ describe('Lucky Meter cinematic lifecycle', () => {
       view.rerender(<DailyResonance />);
     });
 
-    expect(screen.getByRole('heading', { name: /AWAKEN TODAY/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Daily Resonance Ritual/i).length).toBeGreaterThan(0);
     expect(screen.getByTestId('lucky-meter-ring')).toHaveAttribute('data-phase', 'idle');
     // A new day returns to the welcome state: Home is still available, but the
     // previous reading's countdown is gone with the reading itself.

@@ -35,6 +35,12 @@ export const EVENT_CUE_LAYERS = Object.freeze({
   'wheel-stop': [{ sound: 'segmentOpen', rate: 0.78, volume: 0.34 }],
   'segment-open': [{ sound: 'segmentOpen', rate: 1.04, volume: 0.42 }],
   'colour-pour': [{ sound: 'colourPour', rate: 0.86, volume: 0.4 }],
+  // The bowl is full: a soft, low settling of the same sparkle, quieter than
+  // the pour so it reads as an arrival rather than a second pour.
+  'bowl-full': [{ sound: 'colourPour', rate: 0.64, volume: 0.2 }],
+  // The number detaches after the drain: a bright lift of the metal recording,
+  // clearly distinct from the pour and earlier than the arrival cue.
+  'number-depart': [{ sound: 'segmentOpen', rate: 1.92, volume: 0.24 }],
   // The number lands after the drain has finished: a short, bright lift of the
   // same metal recording, sitting clearly above the pour but below the finale.
   'number-reveal': [{ sound: 'segmentOpen', rate: 1.46, volume: 0.3 }],

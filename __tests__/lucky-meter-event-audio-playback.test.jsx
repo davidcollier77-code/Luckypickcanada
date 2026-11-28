@@ -100,7 +100,7 @@ describe('Lucky Meter event cue playback', () => {
 
   async function startEvent() {
     render(<DailyResonance />);
-    fireEvent.click(screen.getByRole('button', { name: /Reveal My Resonance/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Start My Lucky Meter/i }));
     await act(async () => {
       await Promise.resolve();
     });
