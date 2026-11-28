@@ -3,6 +3,8 @@
 - Merged `1ad132ec` into the meter branch so the pull request is no longer in conflict with `main`. The three conflicted files were append-only records: `memory-bank/activeContext.md` and `memory-bank/progress.md` keep both sides verbatim, and `.specify/feature.json` keeps `specs/230-lucky-meter-dimensional-artwork` because this PR is that feature.
 - Numbering collision to resolve by the owner: main now also holds `specs/230-devskim-findings-remediation`. Both 230 directories coexist, and this branchs own context was corrected to the current construction (single faceted bowl, closed and welded revolved rings, 40/40 tests, 406.94 MiB build) rather than renumbering a spec whose twelve evidence paths and QA declaration would all have to move.
 - The four DS173237 alerts this PR recorded as out of scope are removed at source on main by that merge; the next code-scanning run over the merged tree should close them.
+- CI on the merge head caught one stale pin: `__tests__/lucky-meter-instrument-responsive.test.js` still asserted the previous 3.8 portrait extent and 0.02 look-at, so Application Verification and Verify updater scheduler both failed on 4.1. The branch widened the composition to 4.1 with a 0.14 look-at on purpose (the raised arch and taller foot define the silhouette), so the test now pins those values while keeping its relational assertions: one camera distance at every size, the wheel centre in its safe band, and the invalid-dimension fallback. 46/46 across the four Lucky Meter suites.
+
 
 ## 2026-11-28 — Lucky Meter: reference-shaped wedge cells (Spec 230 follow-up)
 
