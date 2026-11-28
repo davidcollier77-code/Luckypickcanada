@@ -1507,14 +1507,27 @@ async function runTests() {
       inventory: ['/keep/doc', '/removed/doc'],
       githubShas: { '/keep/doc': 'keep-sha' }
     };
-    const defaultBranch = { groups: { creation: ['/keep/doc'] } };
+    const defaultBranch = {
+      lastUpdated: '2026-11-20T00:00:00-04:00',
+      groups: { creation: ['/keep/doc'] },
+      sources: { '/keep/doc': { type: 'url', url: 'https://example.com/keep' } },
+      inventory: ['/keep/doc'],
+      githubShas: { '/keep/doc': 'main-sha' }
+    };
 
     const merged = mergePendingBaselineManifest(pending, defaultBranch);
     assert.deepStrictEqual(merged.groups, defaultBranch.groups, 'removed documents must not be re-routed');
-    assert.deepStrictEqual(merged.sources, pending.sources, 'pending source metadata is reused');
+    assert.deepStrictEqual(merged.sources, defaultBranch.sources, 'owner-controlled sources come from the default branch');
+    assert.deepStrictEqual(merged.inventory, defaultBranch.inventory, 'the approved inventory comes from the default branch');
     assert.deepStrictEqual(merged.githubShas, pending.githubShas, 'pending SHA pins are reused');
-    assert.deepStrictEqual(merged.inventory, pending.inventory);
-    assert.strictEqual(merged.lastUpdated, pending.lastUpdated);
+    assert.strictEqual(merged.lastUpdated, pending.lastUpdated, 'the pending refresh timestamp is preserved');
+
+    const unknownKeys = mergePendingBaselineManifest(
+      { ...pending, obsolete: { stale: true } },
+      { groups: { creation: ['/keep/doc'] }, addedOwnerField: 'main-value' }
+    );
+    assert.strictEqual(unknownKeys.addedOwnerField, 'main-value', 'unknown default-branch keys stay authoritative');
+    assert.strictEqual(unknownKeys.obsolete, undefined, 'unknown pending keys are not carried forward');
 
     assert.throws(() => mergePendingBaselineManifest(null, defaultBranch), /Invalid pending/);
     assert.throws(() => mergePendingBaselineManifest(pending, {}), /default-branch/);
@@ -1545,6 +1558,10 @@ async function runTests() {
     );
     assert.throws(
       () => mergePendingBaselineManifest(pending, { groups: {}, inventory: {} }),
+      /inventory must be an array/
+    );
+    assert.throws(
+      () => mergePendingBaselineManifest({ ...pending, inventory: {} }, defaultBranch),
       /inventory must be an array/
     );
 

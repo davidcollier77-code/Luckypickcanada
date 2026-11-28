@@ -32,23 +32,28 @@ function mergePendingBaselineManifest(pendingManifest, defaultBranchManifest) {
   if (!isPlainObject(defaultBranchManifest) || !isPlainObject(defaultBranchManifest.groups)) {
     throw new Error('Invalid default-branch documentation manifest.');
   }
-  for (const section of ['sources', 'githubShas']) {
+  for (const section of ['groups', 'sources', 'githubShas']) {
     if (pendingManifest[section] !== undefined && !isPlainObject(pendingManifest[section])) {
       throw new Error(`Invalid pending documentation manifest: ${section} must be an object.`);
     }
   }
-  if (defaultBranchManifest.sources !== undefined && !isPlainObject(defaultBranchManifest.sources)) {
-    throw new Error('Invalid default-branch documentation manifest: sources must be an object.');
+  if (pendingManifest.inventory !== undefined && !Array.isArray(pendingManifest.inventory)) {
+    throw new Error('Invalid pending documentation manifest: inventory must be an array.');
+  }
+  for (const section of ['sources', 'githubShas']) {
+    if (defaultBranchManifest[section] !== undefined && !isPlainObject(defaultBranchManifest[section])) {
+      throw new Error(`Invalid default-branch documentation manifest: ${section} must be an object.`);
+    }
   }
   if (defaultBranchManifest.inventory !== undefined && !Array.isArray(defaultBranchManifest.inventory)) {
     throw new Error('Invalid default-branch documentation manifest: inventory must be an array.');
   }
-  const merged = {
-    ...pendingManifest,
-    groups: defaultBranchManifest.groups
-  };
-  if (defaultBranchManifest.sources !== undefined) merged.sources = defaultBranchManifest.sources;
-  if (defaultBranchManifest.inventory !== undefined) merged.inventory = defaultBranchManifest.inventory;
+  // The default branch is authoritative for every key it declares, including
+  // any field added later; only the updater-managed snapshot state is taken from
+  // the pending branch.
+  const merged = { ...defaultBranchManifest };
+  if (pendingManifest.lastUpdated !== undefined) merged.lastUpdated = pendingManifest.lastUpdated;
+  if (pendingManifest.githubShas !== undefined) merged.githubShas = pendingManifest.githubShas;
   return merged;
 }
 

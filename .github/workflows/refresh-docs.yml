@@ -84,6 +84,8 @@ jobs:
             echo "Open refresh pull request #$PR_NUMBER found; reusing its snapshots as the comparison baseline."
             cp .docs/manifest.json "$RUNNER_TEMP/default-branch-manifest.json"
             if git fetch --no-tags origin +refs/heads/auto/docs-refresh:refs/remotes/origin/auto/docs-refresh; then
+              # A failed checkout or helper run fails this step on purpose: continuing
+              # with a partly restored .docs tree could commit and force-push it.
               git checkout refs/remotes/origin/auto/docs-refresh -- .docs
               node scripts/prepare-docs-refresh-baseline.js \
                 --pending-manifest .docs/manifest.json \
