@@ -1022,3 +1022,13 @@ This file is a concise record of meaningful completed work, not a chronological 
 - Refreshed every evidence capture on the final head: desktop ready state, instrument close-up, phone 390, spin, pour, reveal, and the flip filmstrip plus its 13-frame animated WebP.
 - Verification: focused Vitest 29/29, `tsc --noEmit` exit 0, clean `next build --webpack` in 13.3 s, `du -sb .next public` 426,490,430 bytes (406.73 MiB) below 495 MiB.
 - Not verified: full unit suite, the PR Playwright shards, physical-GPU smoothness.
+
+
+## 2026-11-28 — Well-ring seam and the bowl's crystal read (Spec 230)
+
+- Reviewed the meter geometry again. The well ring was revolved from an open cross-section, so its inner edge was a slit straight through the gold band, and `computeVertexNormals` left the duplicated lathe seam unwelded. `revolvedRingGeometry` now closes every profile into a solid loop and averages the two seam columns, so the ring framing the medallion is one continuous band. The same latent seam is gone from the housing band and the stepped bezel, which share the helper.
+- The bowl read colourless because the crystal shader's colour terms summed above 1.0 and clipped to white before `uBrightness` was applied. The terms now stay below 1.0, the diamond plates vary over a much wider range with a cool absorption tint in the dense ones, and the body carries a tint that deepens toward the base. An empty bowl now reads as cut crystal instead of a void, and a filled one still shows the seasonal colour through the cut.
+- Simplified the awkward construction: the bowl's inset second shell (the 0.885/0.94 scaled duplicate), the gold fillet hoop that crossed the glass mouth and the additive base ring floating inside the bowl are removed; the well floor and the plate recess are flat discs rather than 30 mm-thick cylinders, since only their faces are ever seen.
+- Refreshed all eight evidence captures on this head, including the 13-frame flip WebP and filmstrip, which were re-cut from a fresh CDP screencast.
+- Verification: focused Vitest 37/37 (dimensional renderers, stage, layout), `tsc --noEmit` exit 0, clean `next build --webpack`, `du -sb .next public` 426,697,533 bytes (406.93 MiB), below 495 MiB.
+- Not verified: the full unit suite, the PR Playwright shards and physical-GPU smoothness.

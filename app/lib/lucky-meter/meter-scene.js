@@ -694,9 +694,16 @@ function createCrystalMaterial(THREE, options = {}) {
         vec3 refractionTint = mix(vec3(0.3, 0.44, 0.72), vec3(1.0, 0.86, 0.62), sky);
         refractionTint += vec3(0.14, -0.02, -0.12) * (facetId - 0.5) * uFacet;
 
-        vec3 colour = uTint * (0.46 + 0.54 * specularB) + refractionTint * 0.24;
+        // A thick glass wall absorbs light as it deepens. This is what keeps
+        // an empty bowl reading as tinted crystal instead of a clear void: the
+        // body carries its own cool cast, strongest where the wall is deepest.
+        float body = 1.0 - clamp(vUv.y, 0.0, 1.0);
+        // The terms stay summed below 1.0 until uBrightness lifts them: any
+        // brighter and every plate clipped to white, erasing the cut.
+        vec3 colour = uTint * (0.34 + 0.4 * specularB) + refractionTint * 0.18;
         colour += vec3(1.0, 0.97, 0.88) * specularA * 0.95;
-        colour += uTintDeep * fresnel * 0.3;
+        colour += uTintDeep * fresnel * 0.34;
+        colour += uTintDeep * body * body * 0.3;
 
         // A facet occasionally throws a hard sparkle as the light crosses it.
         float twinkle = pow(max(sin(uTime * 0.9 + facetId * 6.28318), 0.0), 22.0);
@@ -704,8 +711,8 @@ function createCrystalMaterial(THREE, options = {}) {
 
         // A solid block of glass, not a film: the body carries visible mass,
         // and it thickens toward the base where the wall is deepest.
-        float alpha = 0.14 + fresnel * 0.4 + specularA * 0.3 + specularB * 0.05;
-        alpha += (1.0 - clamp(vUv.y, 0.0, 1.0)) * 0.16;
+        float alpha = 0.2 + fresnel * 0.4 + specularA * 0.3 + specularB * 0.05;
+        alpha += body * 0.16;
         alpha += twinkle * 0.2 * uFacet;
 
         // The cut itself: a diamond lattice ground into the glass, each plate
@@ -721,12 +728,14 @@ function createCrystalMaterial(THREE, options = {}) {
           float plate = hash21(
             floor(vec2(gridUv.x + gridUv.y, gridUv.x - gridUv.y))
           );
-          // Each plate carries its own density, so the cut reads as mass rather
-          // than as bright lines drawn on a transparent sheet.
-          colour *= mix(0.84, 1.14, plate);
-          colour += vec3(1.0, 0.98, 0.92) * edge * 0.18;
-          colour += (uTint + uTintDeep) * (plate - 0.5) * 0.3;
-          alpha += clamp(plate, 0.0, 1.0) * 0.24;
+          // Each plate catches the light on its own. The range is deliberately
+          // wide: a narrow one left the cut as an even milky wash, whereas the
+          // reference sets bright plates beside deep, transparent ones. The
+          // dense plates also absorb toward the crystal's own cool cast.
+          colour *= mix(0.52, 1.2, plate);
+          colour += vec3(1.0, 0.98, 0.92) * edge * 0.2;
+          colour += uTintDeep * (1.0 - plate) * 0.16;
+          alpha += clamp(plate, 0.0, 1.0) * 0.16;
           alpha += edge * 0.1;
         }
 
@@ -751,13 +760,46 @@ function createCrystalMaterial(THREE, options = {}) {
  * @param {number} segments
  */
 function revolvedRingGeometry(THREE, profile, segments) {
-  const geometry = new THREE.LatheGeometry(
-    profile.map(([x, y]) => new THREE.Vector2(x, y)),
-    Math.max(3, Math.round(segments)),
-  );
+  const points = profile.map(([x, y]) => new THREE.Vector2(x, y));
+  // An open cross-section revolves into a band with a slit where the profile
+  // should meet itself. On the well ring that slit showed as a hairline crack
+  // inside the medallion, so every ring is closed into a solid revolution.
+  if (points.length > 2 && points[0].distanceTo(points[points.length - 1]) > 1e-6) {
+    points.push(points[0].clone());
+  }
+  const geometry = new THREE.LatheGeometry(points, Math.max(3, Math.round(segments)));
   geometry.rotateX(Math.PI / 2);
   geometry.computeVertexNormals();
+  weldLatheSeam(geometry, points.length);
   return geometry;
+}
+
+/**
+ * A lathe repeats its first column of vertices as its last, so vertex normals
+ * computed per-face leave a hard break down the join — the second half of the
+ * well ring's hairline. Averaging the two columns gives the ring one unbroken
+ * surface.
+ *
+ * @param {any} geometry a lathe with `segments + 1` columns of `columnLength`
+ * @param {number} columnLength
+ */
+function weldLatheSeam(geometry, columnLength) {
+  const normals = geometry.attributes.normal;
+  if (!normals || columnLength < 2) return;
+  const last = normals.count - columnLength;
+  if (last < columnLength) return;
+  for (let index = 0; index < columnLength; index += 1) {
+    let x = normals.getX(index) + normals.getX(last + index);
+    let y = normals.getY(index) + normals.getY(last + index);
+    let z = normals.getZ(index) + normals.getZ(last + index);
+    const length = Math.hypot(x, y, z) || 1;
+    x /= length;
+    y /= length;
+    z /= length;
+    normals.setXYZ(index, x, y, z);
+    normals.setXYZ(last + index, x, y, z);
+  }
+  normals.needsUpdate = true;
 }
 
 /**
@@ -1214,8 +1256,9 @@ export async function createLuckyMeterScene({
       envMapIntensity: 0.6,
     }),
   );
-  const wellGeometry = trackGeometry(new THREE.CylinderGeometry(0.505, 0.505, 0.03, high ? 80 : 48));
-  wellGeometry.rotateX(Math.PI / 2);
+  // Only the face of the well is ever seen: the plate's hole wall forms the
+  // recess, so a disc is enough and a capped cylinder is wasted geometry.
+  const wellGeometry = trackGeometry(new THREE.CircleGeometry(0.505, high ? 80 : 48));
   const well = new THREE.Mesh(wellGeometry, wellMaterial);
   well.position.z = 0.035;
   wheelGroup.add(well);
@@ -1300,10 +1343,9 @@ export async function createLuckyMeterScene({
   // A dark bronze well behind the plate: every window becomes a deep
   // compartment instead of a hole punched through a flat disc.
   const plateRecess = new THREE.Mesh(
-    trackGeometry(new THREE.CylinderGeometry(1.02, 1.02, 0.03, housingSegments)),
+    trackGeometry(new THREE.CircleGeometry(1.02, housingSegments)),
     bronze,
   );
-  plateRecess.rotation.x = Math.PI / 2;
   plateRecess.position.z = -0.075;
   wheelGroup.add(plateRecess);
 
@@ -1746,7 +1788,7 @@ export async function createLuckyMeterScene({
   // A single open shell, not a thick double wall: the liquid stays visible and
   // the twelve radial segments read as cut crystal instead of frosted glass.
   const bowlGlassMaterial = trackMaterial(
-    createCrystalMaterial(THREE, { facet: true, facets: 2.4, brightness: 1.62 }),
+    createCrystalMaterial(THREE, { facet: true, facets: 2.4, brightness: 1.08 }),
   );
   animatedMaterials.push(bowlGlassMaterial);
   const bowlGlassSource = trackGeometry(
@@ -1763,38 +1805,13 @@ export async function createLuckyMeterScene({
   bowlGlass.renderOrder = 2;
   bowlGroup.add(bowlGlass);
 
-  // A second wall of the same cut, inset inside the first: together they give
-  // the rim visible thickness and a second refractive layer behind the glass.
-  const bowlInnerMaterial = trackMaterial(
-    createCrystalMaterial(THREE, {
-      facet: true,
-      facets: 3.2,
-      brightness: 0.88,
-      deepTint: 0xd8f0ff,
-    }),
-  );
-  animatedMaterials.push(bowlInnerMaterial);
-  const bowlInner = new THREE.Mesh(
-    trackGeometry(
-      new THREE.LatheGeometry(
-        BOWL_PROFILE.map(([x, y]) =>
-          new THREE.Vector2(Math.max(0.002, x * 0.885), y * 0.94),
-        ),
-        constrained ? 10 : 12,
-      ),
-    ),
-    bowlInnerMaterial,
-  );
-  bowlInner.renderOrder = 1;
-  bowlGroup.add(bowlInner);
-
   const bowlEdges = new THREE.LineSegments(
     trackGeometry(new THREE.EdgesGeometry(bowlGlassSource, 24)),
     trackMaterial(
       new THREE.LineBasicMaterial({
-        color: 0xfff6e2,
+        color: 0xdff4ff,
         transparent: true,
-        opacity: 1,
+        opacity: 0.55,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
@@ -1803,8 +1820,8 @@ export async function createLuckyMeterScene({
   bowlEdges.renderOrder = 3;
   bowlGroup.add(bowlEdges);
 
-  // A crisp glass rim and base ring catch the light even when the body is almost
-  // transparent; together with the facet edges they define the crystal.
+  // A crisp glass rim catches the light even when the body is almost
+  // transparent; with the facet edges it defines the crystal.
   const bowlGlassRim = new THREE.Mesh(
     trackGeometry(
       new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.008, 0.006, 6, high ? 72 : 40),
@@ -1824,25 +1841,7 @@ export async function createLuckyMeterScene({
   bowlGlassRim.renderOrder = 4;
   bowlGroup.add(bowlGlassRim);
 
-  const bowlBaseHighlight = new THREE.Mesh(
-    trackGeometry(new THREE.TorusGeometry(0.235, 0.004, 6, high ? 48 : 28)),
-    trackMaterial(
-      new THREE.MeshBasicMaterial({
-        color: 0xdffcff,
-        transparent: true,
-        opacity: 0.32,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    ),
-  );
-  bowlBaseHighlight.rotation.x = Math.PI / 2;
-  bowlBaseHighlight.position.y = 0.045;
-  bowlBaseHighlight.renderOrder = 4;
-  bowlGroup.add(bowlBaseHighlight);
-
-  // The crystal rim itself: a real polished edge, with a fine gold fillet
-  // beneath it where the glass meets its mount.
+  // The crystal rim itself: a real polished edge around the glass mouth.
   const bowlRimMaterial = trackMaterial(
     createCrystalMaterial(THREE, { facet: false, brightness: 1.4, tint: 0xf2ffff }),
   );
@@ -1857,16 +1856,6 @@ export async function createLuckyMeterScene({
   bowlRim.position.y = METER_LAYOUT.vessel.height;
   bowlRim.renderOrder = 4;
   bowlGroup.add(bowlRim);
-
-  const bowlRimFillet = new THREE.Mesh(
-    trackGeometry(
-      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.004, 0.008, 6, high ? 72 : 40),
-    ),
-    polishedGold,
-  );
-  bowlRimFillet.rotation.x = Math.PI / 2;
-  bowlRimFillet.position.y = METER_LAYOUT.vessel.height - 0.026;
-  bowlGroup.add(bowlRimFillet);
 
   // A turned gold foot: a lathe profile with a knop, a step and a plinth.
   const bowlFoot = new THREE.Mesh(

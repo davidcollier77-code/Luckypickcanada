@@ -22,7 +22,7 @@
 - [x] T010 Stepped inner bezel with a beaded border and bronze recess behind the plate.
 - [x] T011 Enlarge `CHAMBER_CUP` and rebuild compartments as barrel glass, barrel enamel and a cabochon lens in bevelled seats.
 - [x] T012 Medallion: red enamel inlay, raised veins, laurel wreath, beaded border, turned rings.
-- [x] T013 Bowl: double-wall faceted shell, crystal rim with gold fillet, turned gold foot, sparkle sprites.
+- [x] T013 Bowl: single faceted shell with a thick crystal rim, turned gold foot, sparkle sprites.
 - [x] T014 Plaque: gilded frame with a real opening, deep black well, internal light, screws, finial.
 - [x] T015 Colour bar: recessed bronze field, turned end caps.
 - [x] T016 Banner: stronger arch, second raised enamel field, screws, lettering in front of the field.
