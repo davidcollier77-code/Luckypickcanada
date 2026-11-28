@@ -950,9 +950,14 @@ test.describe('production responsive composition', () => {
     expect(stage).not.toBeNull();
     expect(colour).not.toBeNull();
     expect(number).not.toBeNull();
-    // A portrait instrument on a 390 px-high phone scrolls vertically; what
-    // must never happen is horizontal overflow, a reading outside the
-    // instrument, or the two destinations swapping back to a stacked order.
+    // Both readings are reachable without scrolling: the colour and the number
+    // sit inside the 390 px viewport, the instrument itself ends above the fold,
+    // and the two destinations stay side by side rather than stacked.
+    expect(colour!.y).toBeGreaterThanOrEqual(0);
+    expect(number!.y).toBeGreaterThanOrEqual(0);
+    expect(colour!.y + colour!.height).toBeLessThanOrEqual(390);
+    expect(number!.y + number!.height).toBeLessThanOrEqual(390);
+    expect(stage!.y + stage!.height).toBeLessThanOrEqual(390);
     expect(number!.x).toBeGreaterThan(colour!.x + colour!.width);
     expect(colour!.x).toBeGreaterThanOrEqual(stage!.x);
     expect(number!.x + number!.width).toBeLessThanOrEqual(stage!.x + stage!.width);
