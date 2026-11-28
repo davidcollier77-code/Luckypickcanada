@@ -667,7 +667,10 @@ function createCrystalMaterial(THREE, options = {}) {
         float twinkle = pow(max(sin(uTime * 0.9 + facetId * 6.28318), 0.0), 22.0);
         colour += vec3(1.0, 0.98, 0.92) * twinkle * uFacet * 0.35;
 
-        float alpha = 0.02 + fresnel * 0.44 + specularA * 0.4 + specularB * 0.045;
+        // A solid block of glass, not a film: the body carries visible mass,
+        // and it thickens toward the base where the wall is deepest.
+        float alpha = 0.14 + fresnel * 0.4 + specularA * 0.3 + specularB * 0.05;
+        alpha += (1.0 - clamp(vUv.y, 0.0, 1.0)) * 0.16;
         alpha += twinkle * 0.2 * uFacet;
 
         // The cut itself: a diamond lattice ground into the glass, each plate
@@ -679,14 +682,17 @@ function createCrystalMaterial(THREE, options = {}) {
             abs(fract(gridUv.x + gridUv.y) - 0.5),
             abs(fract(gridUv.x - gridUv.y) - 0.5)
           );
-          float edge = 1.0 - smoothstep(0.0, 0.085, min(diamond.x, diamond.y));
+          float edge = 1.0 - smoothstep(0.0, 0.17, min(diamond.x, diamond.y));
           float plate = hash21(
             floor(vec2(gridUv.x + gridUv.y, gridUv.x - gridUv.y))
           );
-          colour += vec3(1.0, 0.98, 0.92) * edge * 0.32;
-          colour += (uTint + uTintDeep) * (plate - 0.5) * 0.22;
-          alpha += edge * 0.16;
-          alpha += plate * 0.06;
+          // Each plate carries its own density, so the cut reads as mass rather
+          // than as bright lines drawn on a transparent sheet.
+          colour *= mix(0.84, 1.14, plate);
+          colour += vec3(1.0, 0.98, 0.92) * edge * 0.18;
+          colour += (uTint + uTintDeep) * (plate - 0.5) * 0.3;
+          alpha += clamp(plate, 0.0, 1.0) * 0.24;
+          alpha += edge * 0.1;
         }
 
         alpha *= uAlpha;
@@ -1690,7 +1696,7 @@ export async function createLuckyMeterScene({
     trackGeometry(
       new THREE.LatheGeometry(
         BOWL_PROFILE.map(([x, y]) =>
-          new THREE.Vector2(Math.max(0.002, x * 0.93), y * 0.955),
+          new THREE.Vector2(Math.max(0.002, x * 0.885), y * 0.94),
         ),
         constrained ? 10 : 12,
       ),
@@ -1761,7 +1767,7 @@ export async function createLuckyMeterScene({
   animatedMaterials.push(bowlRimMaterial);
   const bowlRim = new THREE.Mesh(
     trackGeometry(
-      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.004, 0.024, 10, high ? 72 : 40),
+      new THREE.TorusGeometry(METER_LAYOUT.vessel.radius - 0.004, 0.032, 10, high ? 72 : 40),
     ),
     bowlRimMaterial,
   );
