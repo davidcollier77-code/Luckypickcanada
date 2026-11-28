@@ -572,9 +572,12 @@ function createFillMaterial(THREE, colourHex) {
           vec2 local = (fract(cellUv) - vec2(0.5, 0.45)) * vec2(1.0, 1.12);
           float radius = 0.09 + hash21(cell) * 0.1;
           float distanceToCentre = length(local);
-          float bead = smoothstep(radius, radius * 0.35, distanceToCentre);
-          float ring = smoothstep(radius, radius * 0.84, distanceToCentre) -
-            smoothstep(radius * 0.84, radius * 0.52, distanceToCentre);
+          // GLSL smoothstep is only defined for edge0 < edge1, so each edge is
+          // written low-to-high: the bead fills from the centre outwards and the
+          // ring is the annulus just inside the bead's rim.
+          float bead = 1.0 - smoothstep(radius * 0.35, radius, distanceToCentre);
+          float ring = smoothstep(radius * 0.52, radius * 0.84, distanceToCentre) -
+            smoothstep(radius * 0.84, radius, distanceToCentre);
           colour += mix(uColor, vec3(1.0), 0.8) * (bead * 0.3 + ring * 0.28) * uBubbles;
         }
 
@@ -634,6 +637,10 @@ function createCrystalMaterial(THREE, options = {}) {
       uFacetCount: { value: Number.isFinite(options.facets) ? options.facets : 5.5 },
       uBrightness: { value: Number.isFinite(options.brightness) ? options.brightness : 1 },
       uAlpha: { value: Number.isFinite(options.alphaScale) ? options.alphaScale : 1 },
+      // The base-thickness gradient reads `uv.y`, which only means "bottom to
+      // top" on a lathe shell. A torus wraps `uv.y` around the tube, so the rim
+      // opts out and keeps one continuous alpha around its section.
+      uBodyGradient: { value: options.bodyGradient === true ? 1 : 0 },
       uTime: { value: 0 },
     },
     vertexShader: `
@@ -656,6 +663,7 @@ function createCrystalMaterial(THREE, options = {}) {
       uniform float uFacetCount;
       uniform float uBrightness;
       uniform float uAlpha;
+      uniform float uBodyGradient;
       uniform float uTime;
       varying vec3 vNormalView;
       varying vec3 vViewDirection;
@@ -703,7 +711,7 @@ function createCrystalMaterial(THREE, options = {}) {
         vec3 colour = uTint * (0.34 + 0.4 * specularB) + refractionTint * 0.18;
         colour += vec3(1.0, 0.97, 0.88) * specularA * 0.95;
         colour += uTintDeep * fresnel * 0.34;
-        colour += uTintDeep * body * body * 0.3;
+        colour += uTintDeep * body * body * 0.3 * uBodyGradient;
 
         // A facet occasionally throws a hard sparkle as the light crosses it.
         float twinkle = pow(max(sin(uTime * 0.9 + facetId * 6.28318), 0.0), 22.0);
@@ -712,7 +720,7 @@ function createCrystalMaterial(THREE, options = {}) {
         // A solid block of glass, not a film: the body carries visible mass,
         // and it thickens toward the base where the wall is deepest.
         float alpha = 0.2 + fresnel * 0.4 + specularA * 0.3 + specularB * 0.05;
-        alpha += body * 0.16;
+        alpha += body * 0.16 * uBodyGradient;
         alpha += twinkle * 0.2 * uFacet;
 
         // The cut itself: a diamond lattice ground into the glass, each plate
@@ -1485,7 +1493,8 @@ export async function createLuckyMeterScene({
     // Internal illumination, suspended bubbles and the liquid line. The face is
     // never clipped: the whole cell is filled and the level is drawn as a line.
     fillMaterial.uniforms.uGlow.value = 1;
-    fillMaterial.uniforms.uBubbles.value = 0.4;
+    // Bubbles are hashed per fragment, so the constrained tier keeps them off.
+    fillMaterial.uniforms.uBubbles.value = constrained ? 0 : 0.4;
     fillMaterial.uniforms.uSurface.value = 1;
     fillMaterial.uniforms.uLevel.value = 0.078;
     fillMaterial.uniforms.uClip.value = 0;
@@ -1787,7 +1796,7 @@ export async function createLuckyMeterScene({
   // A single open shell, not a thick double wall: the liquid stays visible and
   // the twelve radial segments read as cut crystal instead of frosted glass.
   const bowlGlassMaterial = trackMaterial(
-    createCrystalMaterial(THREE, { facet: true, facets: 2.4, brightness: 1.08 }),
+    createCrystalMaterial(THREE, { facet: true, facets: 2.4, brightness: 1.08, bodyGradient: true }),
   );
   animatedMaterials.push(bowlGlassMaterial);
   const bowlGlassSource = trackGeometry(
@@ -2412,7 +2421,7 @@ export async function createLuckyMeterScene({
     const euler = new THREE.Euler();
     const scale = new THREE.Vector3();
     for (let index = 0; index < leafCount; index += 1) {
-      const t = index / (leafCount - 1);
+      const t = leafCount > 1 ? index / (leafCount - 1) : 0;
       const outward = index % 2 === 0 ? 1 : -1;
       position.set(side * outward * (0.024 + 0.014 * Math.sin(t * Math.PI)), -0.19 + t * 0.38, 0.004);
       euler.set(0, 0, side * outward * (0.95 - 0.55 * t));
@@ -3193,8 +3202,10 @@ export async function createLuckyMeterScene({
       surface.stop();
     },
     dispose() {
-      clearReadyWatch();
+      // Set first: the artwork promise checks this flag before touching the
+      // scene, so teardown has to be visible to it the moment it begins.
       disposed = true;
+      clearReadyWatch();
       failed = true;
       announced = true;
       watchdogStopped = false;

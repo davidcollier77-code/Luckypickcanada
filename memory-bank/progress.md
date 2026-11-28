@@ -1,3 +1,9 @@
+## 2026-11-28 — Second review round: shader, gradient and teardown repairs
+
+- The open review threads on the branch were re-read against the code. Five were valid and are repaired here: the bubble bead and ring used `smoothstep` with its edges reversed (undefined in GLSL and vendor-dependent, now written low-to-high); the compartment bubbles are gated off on the constrained tier again, as the plan requires; the crystal body-thickness gradient now rides a `uBodyGradient` uniform so it applies to the lathe shell only and the torus rim keeps one continuous alpha around its tube; `dispose()` sets `disposed` before anything else, closing the window where the artwork promise could assign an environment after teardown began; and the laurel leaf parameter guards a single-leaf division by zero.
+- Declined with reasoning: re-applying `scene.environmentIntensity` after the probe rebuild (it is a scene property that reassigning `scene.environment` does not touch). Left for the owner because they change rendered appearance and need fresh captures: the key light added on top of the full light-rig budget, the volute tube radius against the scroll centreline curvature, and the drain cut edge in screen-vertical space. The dead initial rim and glow opacities are overwritten in the frame loop and have no runtime effect.
+- Verification: 4 Lucky Meter suites pass, `tsc --noEmit` exit 0, and the page still reports `data-meter-renderer="three"` with no console errors after the shader change, so the new uniform compiles.
+
 ## 2026-11-28 — Merge of main after the DevSkim remediation (#2065)
 
 - Merged `1ad132ec` into the meter branch so the pull request is no longer in conflict with `main`. The three conflicted files were append-only records: `memory-bank/activeContext.md` and `memory-bank/progress.md` keep both sides verbatim, and `.specify/feature.json` keeps `specs/230-lucky-meter-dimensional-artwork` because this PR is that feature.
