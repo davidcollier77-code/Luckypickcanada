@@ -2391,6 +2391,9 @@ export async function createLuckyMeterScene({
       emissive: 0x5a3407,
       emissiveIntensity: 0.5,
       transparent: true,
+      // The bars fade to zero opacity when the number lands. Without this they
+      // would still write depth and punch an invisible hole in the plaque well.
+      depthWrite: false,
       envMapIntensity: 1.8,
     }),
   );
