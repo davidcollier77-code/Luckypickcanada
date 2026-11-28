@@ -59,14 +59,14 @@ plus one finding outside every allowlist.
 | Identical finding twice | 1 entry | 1 entry |
 | Same SARIF appended twice | 0 on the second run | 0 on the second run |
 | Report already holding an earlier-scheme entry | n/a | 0 appended (1 entry) |
-| New same-shape finding inserted between two known ones (Spec 231 revision) | 1 row appended at the **moved** known finding's line; the inserted finding is never recorded | 1 row appended at the inserted finding's line; both known ids unchanged |
-| Known finding remediated, then a different new finding (Spec 231 revision) | 0 appended — the new finding is skipped | 1 appended at the new finding's line |
+| New same-shape finding inserted between two known ones (Spec 230 revision) | 1 row appended at the **moved** known finding's line; the inserted finding is never recorded | 1 row appended at the inserted finding's line; both known ids unchanged |
+| Known finding remediated, then a different new finding (Spec 230 revision) | 0 appended — the new finding is skipped | 1 appended at the new finding's line |
 
 Those last two rows are Pullfrog's PR #2065 reproduction, re-run with `--old-scripts` holding the
 superseded `19fe6ee` script. The harness also writes booleans for them
 (`insertion_new_finding_recorded_at_expected_line`, `remediation_new_finding_recorded_at_expected_line`),
 which are `false` for the superseded script and `true` for the current one; the run is recorded in
-`specs/231-devskim-ledger-stable-identity/evidence/identity-benchmark.json`. The first four rows above
+`specs/230-devskim-findings-remediation/evidence/identity-benchmark.json`. The first four rows above
 compare against the pre-Spec-231 script, so their "after" column is unchanged.
 
 The `workspace_changed_appended` / `workspace_changed_entries` fields record a scan appended twice

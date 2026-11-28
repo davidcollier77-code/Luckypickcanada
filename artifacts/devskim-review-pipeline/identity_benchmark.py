@@ -21,7 +21,7 @@ identity can use the matched span instead of a per-scan rank.
 
     python3 artifacts/devskim-review-pipeline/identity_benchmark.py \
         --old-scripts /tmp/old-scripts \
-        --json specs/231-devskim-ledger-stable-identity/evidence/identity-benchmark.json
+        --json specs/230-devskim-findings-remediation/evidence/identity-benchmark.json
 """
 
 import argparse

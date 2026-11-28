@@ -1,4 +1,4 @@
-## 2026-11-28 — SARIF-anchored DevSkim ledger identity (Spec 231, corrected)
+## 2026-11-28 — DevSkim findings remediation: SARIF-anchored ledger identity (Spec 230, corrected)
 
 - Pullfrog's PR #2065 review demonstrated that the first repair's per-scan occurrence rank misattributes entries: executing `19fe6ee` over `194/749` → `194/300/749` appended a second entry for 749 and never recorded 300, and `194/749` → `194` → `194/300` appended nothing. A rank describes the scan's current set, not a finding.
 - Replaced it with the SARIF-only identity `("v4", "content", rule, uri, message, snippet text, column, span length)`. The first content identity (`v3`) also hashed the checked-out source line; Pullfrog showed the report job checks out an older `chore/devskim-report-update-*` branch after downloading the current SARIF, so the same SARIF produced two ids when only the workspace source differed. Reproduced against `aed9b241` (2 entries); the repair appends nothing (1 entry). No line number, absolute offset, source content or rank participates.
@@ -8,7 +8,7 @@
 - Recorded limitation: findings identical in every SARIF field and without a fingerprint cannot be told apart across scans, including on different lines; their occurrences are tracked, an extra copy appends one entry (attribution not guaranteed), and remove-then-add-identical appends nothing. No other finding-specific signal exists in the SARIF.
 - Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
 
-## 2026-11-28 — Line-insensitive DevSkim ledger identity (Spec 231, superseded)
+## 2026-11-28 — DevSkim ledger identity, first repair (Spec 230, superseded)
 
 - Established that the ledger's duplication in PR #2065 came from the fingerprint-less identity including the reported line; DevSkim omits `partialFingerprints` for most results, so PR #2063's one-line shift changed all four DS173237 ids.
 - Replaced the line-based half of the identity with `(rule, uri, message, startColumn, endColumn, span, occurrence)`, where `occurrence` is the result's index among identical shapes ordered by reported position. Renumbering changes neither the shape nor the index; identical findings on different lines stay separate; exact duplicate results still collapse; an added identical finding appends exactly one entry.
@@ -18,6 +18,8 @@
 - Follow-up on the open PR #2065 branch; no scanner, workflow, suppression, permission, dependency or application change, and the PR stays open and unmerged.
 
 ## 2026-11-28 — DevSkim DS173237 fixture remediation (Spec 230)
+
+Both 2026-11-28 DevSkim repairs are recorded in one feature directory, `specs/230-devskim-findings-remediation/`, after the Spec Kit governance gate rejected a PR changing two feature directories.
 
 - Established from live GitHub state that all four open code-scanning alerts are DS173237 false positives on the two synthetic Cloudflare email-protection fixture tokens in `scripts/test-refresh-docs.js` (lines 194, 195, 749, 768). The rule's published pattern is `["'][a-f0-9]{30,}["']`, so the literals — not their use — were the trigger.
 - Replaced the four long hex literals with `syntheticLongHex(seed)` expansions of two 8-character seeds, preserving both prefixes, both test sites and every assertion. No suppression was added or broadened and no scan path was excluded.
