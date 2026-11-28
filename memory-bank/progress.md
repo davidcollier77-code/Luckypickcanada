@@ -1,3 +1,11 @@
+## 2026-11-28 — Lucky Meter: reference-shaped wedge cells (Spec 230 follow-up)
+
+- Replaced the cylindrical cups with wedge-shaped glazed cells (`chamberWedgePath`): each compartment now spans the chamber's radial band with rounded corners, a real gold frame ring cut from the same wedge, a bronze back, and an enamel body whose liquid line and bubbles are drawn in screen-vertical space so liquid stays level on every cell.
+- Kept the site's Lucky Colour palette but re-pitched each muzzle colour to pigment saturation and depth before it lights a cell; the previous pastel wash came from the site swatch values, not the shader.
+- Enlarged the reflection environment and warmed the key light, deepened the gold base and warmed its emissive.
+- Focused Vitest 29/29 and `tsc --noEmit` clean after restoring the `chamber-rim-<index>` envelope mesh on the cell frame (the choreography test requires it).
+- Still short of the reference: the medallion's maple silhouette and laurel wreath read coarse, the banner is a rectangle rather than an arch, and the crystal bowl and Lucky Number plaque below the wheel are far simpler and smaller than the reference's containers.
+
 ## 2026-11-28 — Lucky Meter dimensional artwork reconstruction (Spec 230)
 
 - Rebuilt the Lucky Meter's physical construction from the supplied artwork: a layered sculpted gold housing with real bevels and rivets, twelve glazed and back-lit enamel compartments that fill their windows, a red-enamelled maple medallion inside a laurel wreath and turned rings, a double-walled diamond-cut crystal bowl with refraction and sparkles, and a dimensionally framed plaque with a recessed black interior and its own light.
